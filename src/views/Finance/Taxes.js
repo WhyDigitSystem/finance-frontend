@@ -53,29 +53,25 @@ const Taxes = () => {
     // Format your data to be exported as CSV (tableData in this case)
     // For example, transform your data into an array of arrays or objects
     // that represents rows and columns in the CSV file format
-
     // In this example, we'll use the tableData directly assuming it's in the right format for CSV export
     // You might need to modify the data structure to fit CSVLink requirements
-
-    const csvData = tableData.map((row) => ({
-      'S No': row.SNo,
-      TaxCode: row.taxCode,
-      Type: row.type,
-      Rate: row.rate,
-      Input: row.input,
-      Output: row.output
-    }));
-
-    // Define CSV headers
-    const headers = [
-      { label: 'S No', key: 'SNo' },
-      { label: 'TaxCode', key: 'TaxCode' },
-      { label: 'Type', key: 'Type' },
-      { label: 'Rate', key: 'Rate' },
-      { label: 'Input', key: 'Input' },
-      { label: 'Output', key: 'Output' }
-    ];
-
+    // const csvData = tableData.map((row) => ({
+    //   'S No': row.SNo,
+    //   TaxCode: row.taxCode,
+    //   Type: row.type,
+    //   Rate: row.rate,
+    //   Input: row.input,
+    //   Output: row.output
+    // }));
+    // // Define CSV headers
+    // const headers = [
+    //   { label: 'S No', key: 'SNo' },
+    //   { label: 'TaxCode', key: 'TaxCode' },
+    //   { label: 'Type', key: 'Type' },
+    //   { label: 'Rate', key: 'Rate' },
+    //   { label: 'Input', key: 'Input' },
+    //   { label: 'Output', key: 'Output' }
+    // ];
     // return (
     //   <CSVLink data={csvData} headers={headers} filename={'table_data.csv'}>
     //     <p>
@@ -85,20 +81,20 @@ const Taxes = () => {
     // );
   };
 
-  const handleDeleteRow = useCallback(
-    (row) => {
-      if (
-        // eslint-disable-next-line no-restricted-globals
-        !confirm(`Are you sure you want to delete ${row.getValue('firstName')}`)
-      ) {
-        return;
-      }
-      //send api delete request here, then refetch or update local table data for re-render
-      tableData.splice(row.index, 1);
-      setTableData([...tableData]);
-    },
-    [tableData]
-  );
+  //   const handleDeleteRow = useCallback(
+  //     (row) => {
+  //       if (
+  //         // eslint-disable-next-line no-restricted-globals
+  //         !confirm(`Are you sure you want to delete ${row.getValue('firstName')}`)
+  //       ) {
+  //         return;
+  //       }
+  //       //send api delete request here, then refetch or update local table data for re-render
+  //       tableData.splice(row.index, 1);
+  //       setTableData([...tableData]);
+  //     },
+  //     [tableData]
+  //   );
 
   const getCommonEditTextFieldProps = useCallback(
     (cell) => {

@@ -37,48 +37,35 @@ const HsnSacCodesListing = () => {
     setTableData([...tableData]);
   };
 
-  const handleSaveRowEdits = async ({ exitEditingMode, row, values }) => {
-    if (!Object.keys(validationErrors).length) {
-      tableData[row.index] = values;
-      //send/receive api updates here, then refetch or update local table data for re-render
-      setTableData([...tableData]);
-      exitEditingMode(); //required to exit editing mode and close modal
-    }
-  };
+  //   const handleSaveRowEdits = async ({ exitEditingMode, row, values }) => {
+  //     if (!Object.keys(validationErrors).length) {
+  //       tableData[row.index] = values;
+  //       //send/receive api updates here, then refetch or update local table data for re-render
+  //       setTableData([...tableData]);
+  //       exitEditingMode(); //required to exit editing mode and close modal
+  //     }
+  //   };
 
-  const handleCancelRowEdits = () => {
-    setValidationErrors({});
-  };
+  //   const handleCancelRowEdits = () => {
+  //     setValidationErrors({});
+  //   };
 
   const exportDataAsCSV = () => {
     // Format your data to be exported as CSV (tableData in this case)
     // For example, transform your data into an array of arrays or objects
     // that represents rows and columns in the CSV file format
-
     // In this example, we'll use the tableData directly assuming it's in the right format for CSV export
     // You might need to modify the data structure to fit CSVLink requirements
-
-    const csvData = tableData.map((row) => ({
-      'S No': row.SNo,
-      Type: row.type,
-      Chapter: row.chapter,
-      Code: row.code,
-      Description: row.description,
-      Rate: row.rate,
-      'Excempted (Yes/No)': row.excempted
-    }));
-
     // Define CSV headers
-    const headers = [
-      { label: 'S No', key: 'SNo' },
-      { label: 'Type', key: 'Type' },
-      { label: 'Chapter', key: 'Chapter' },
-      { label: 'Code', key: 'Code' },
-      { label: 'Description', key: 'Description' },
-      { label: 'Rate', key: 'Rate' },
-      { label: 'Excempted (Yes/No)', key: 'Excempted (Yes/No)' }
-    ];
-
+    // const headers = [
+    //   { label: 'S No', key: 'SNo' },
+    //   { label: 'Type', key: 'Type' },
+    //   { label: 'Chapter', key: 'Chapter' },
+    //   { label: 'Code', key: 'Code' },
+    //   { label: 'Description', key: 'Description' },
+    //   { label: 'Rate', key: 'Rate' },
+    //   { label: 'Excempted (Yes/No)', key: 'Excempted (Yes/No)' }
+    // ];
     // return (
     //   <CSVLink data={csvData} headers={headers} filename={'table_data.csv'}>
     //     <p>
@@ -88,20 +75,20 @@ const HsnSacCodesListing = () => {
     // );
   };
 
-  const handleDeleteRow = useCallback(
-    (row) => {
-      if (
-        // eslint-disable-next-line no-restricted-globals
-        !confirm(`Are you sure you want to delete ${row.getValue('firstName')}`)
-      ) {
-        return;
-      }
-      //send api delete request here, then refetch or update local table data for re-render
-      tableData.splice(row.index, 1);
-      setTableData([...tableData]);
-    },
-    [tableData]
-  );
+  //   const handleDeleteRow = useCallback(
+  //     (row) => {
+  //       if (
+  //         // eslint-disable-next-line no-restricted-globals
+  //         !confirm(`Are you sure you want to delete ${row.getValue('firstName')}`)
+  //       ) {
+  //         return;
+  //       }
+  //       //send api delete request here, then refetch or update local table data for re-render
+  //       tableData.splice(row.index, 1);
+  //       setTableData([...tableData]);
+  //     },
+  //     [tableData]
+  //   );
 
   const getCommonEditTextFieldProps = useCallback(
     (cell) => {

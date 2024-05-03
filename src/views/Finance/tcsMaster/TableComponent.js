@@ -1,24 +1,12 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { MaterialReactTable } from 'material-react-table';
-import {
-  Box,
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  MenuItem,
-  Stack,
-  TextField,
-  Tooltip
-} from '@mui/material';
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField, Tooltip } from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
-import { data, states } from './makeData';
+import { data } from './makeData';
 // import { CSVLink } from 'react-csv';
-import { MdGroups } from 'react-icons/md';
-import { FaUser } from 'react-icons/fa';
-import { FaDatabase } from 'react-icons/fa6';
+// import { MdGroups } from 'react-icons/md';
+// import { FaUser } from 'react-icons/fa';
+// import { FaDatabase } from 'react-icons/fa6';
 
 const TableComponent = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
@@ -47,32 +35,8 @@ const TableComponent = () => {
     // Format your data to be exported as CSV (tableData in this case)
     // For example, transform your data into an array of arrays or objects
     // that represents rows and columns in the CSV file format
-
     // In this example, we'll use the tableData directly assuming it's in the right format for CSV export
-    // You might need to modify the data structure to fit CSVLink requirements
-
-    const csvData = tableData.map((row) => ({
-      'S No': row.SNo,
-      'From Date': row.FromDate,
-      'To Date': row.ToDate,
-      'TCS%': row.Tcs
-    }));
-
-    // Define CSV headers
-    const headers = [
-      { label: 'S No', key: 'SNo' },
-      { label: 'From Date', key: 'FromDate' },
-      { label: 'To Date', key: 'ToDate' },
-      { label: 'TCS%', key: 'Tcs' }
-    ];
-
-    return (
-      <CSVLink data={csvData} headers={headers} filename={'table_data.csv'}>
-        <p>
-          <img src={process.env.REACT_APP_EXPORT_ICON} style={{ width: '30px' }} />
-        </p>
-      </CSVLink>
-    );
+    // You might need to modify the data structure to fit CSVLink requirement
   };
 
   const handleDeleteRow = useCallback(

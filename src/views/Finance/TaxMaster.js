@@ -7,8 +7,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import React, { useState } from 'react';
-import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
-import { BsListTask } from 'react-icons/bs';
+// import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
+// import { BsListTask } from 'react-icons/bs';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 export const TaxMaster = () => {
@@ -17,9 +17,9 @@ export const TaxMaster = () => {
   const handleTabSelect = (index) => {
     setTabIndex(index);
   };
-  const buttonStyle = {
-    fontSize: '20px' // Adjust the font size as needed save
-  };
+  //   const buttonStyle = {
+  //     fontSize: '20px' // Adjust the font size as needed save
+  //   };
 
   return (
     <>

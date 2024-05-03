@@ -32,36 +32,8 @@ const TableComponent = () => {
     // Format your data to be exported as CSV (tableData in this case)
     // For example, transform your data into an array of arrays or objects
     // that represents rows and columns in the CSV file format
-
     // In this example, we'll use the tableData directly assuming it's in the right format for CSV export
     // You might need to modify the data structure to fit CSVLink requirements
-
-    const csvData = tableData.map((row) => ({
-      'S No': row.SNo,
-      'From Date': row.FromDate,
-      'To Date': row.ToDate,
-      'TDS%': row.Tds,
-      'SUR%': row.Sur,
-      'Edcess%': row.Edcess
-    }));
-
-    // Define CSV headers
-    const headers = [
-      { label: 'S No', key: 'SNo' },
-      { label: 'From Date', key: 'FromDate' },
-      { label: 'To Date', key: 'ToDate' },
-      { label: 'TdS%', key: 'Tds' },
-      { label: 'Sur%', key: 'Sur' },
-      { label: 'Edcess%', key: 'Edcess' }
-    ];
-
-    return (
-      <CSVLink data={csvData} headers={headers} filename={'table_data.csv'}>
-        <p>
-          <img src={process.env.REACT_APP_EXPORT_ICON} style={{ width: '30px' }} />
-        </p>
-      </CSVLink>
-    );
   };
 
   const handleDeleteRow = useCallback(

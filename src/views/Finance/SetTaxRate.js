@@ -3,14 +3,14 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
-import { BsListTask } from 'react-icons/bs';
+// import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
+// import { BsListTask } from 'react-icons/bs';
 import 'react-tabs/style/react-tabs.css';
 
 export const SetTaxRate = () => {
-  const buttonStyle = {
-    fontSize: '20px' // Adjust the font size as needed save
-  };
+  //   const buttonStyle = {
+  //     fontSize: '20px' // Adjust the font size as needed save
+  //   };
 
   return (
     <>
