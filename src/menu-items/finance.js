@@ -29,11 +29,52 @@ const finance = {
           //   target: true
         },
         {
-          id: 'register3',
-          title: 'Register',
+          id: 'setTaxRate',
+          title: 'SetTaxRate',
           type: 'item',
-          url: '/pages/register/register3',
-          target: true
+          url: '/finance/setTaxRate'
+        },
+        {
+          id: 'taxMaster',
+          title: 'TaxMaster',
+          type: 'item',
+          url: '/finance/taxMaster'
+        },
+        {
+          id: 'taxes',
+          title: 'Taxes',
+          type: 'item',
+          url: '/finance/taxes'
+        },
+        {
+          id: 'tcsMaster',
+          title: 'TCS Master',
+          type: 'item',
+          url: '/finance/tcsMaster/TcsMaster'
+        },
+        {
+          id: 'tdsMaster',
+          title: 'TDS Master',
+          type: 'item',
+          url: '/finance/tdsMaster/TdsMaster'
+        },
+        {
+          id: 'hsnSacCode',
+          title: 'HSN SAC Code',
+          type: 'item',
+          url: '/finance/HsnSacCode'
+        },
+        {
+          id: 'hsnSacCodesListing',
+          title: 'HSN SAC Codes Listing',
+          type: 'item',
+          url: '/finance/HsnSacCodesListing'
+        },
+        {
+          id: 'group',
+          title: 'Group',
+          type: 'item',
+          url: '/finance/Group'
         }
       ]
     }
