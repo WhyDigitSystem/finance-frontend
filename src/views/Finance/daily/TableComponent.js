@@ -8,16 +8,16 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  MenuItem,
+  //   MenuItem,
   Stack,
   TextField,
   Tooltip
 } from '@mui/material';
 import { Delete, Edit } from '@mui/icons-material';
 import { data, states } from './makeData';
-import { MdGroups } from 'react-icons/md';
-import { FaUser } from 'react-icons/fa';
-import { FaDatabase } from 'react-icons/fa6';
+// import { MdGroups } from 'react-icons/md';
+// import { FaUser } from 'react-icons/fa';
+// import { FaDatabase } from 'react-icons/fa6';
 
 const TableComponent = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);

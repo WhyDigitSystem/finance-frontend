@@ -4,13 +4,13 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import React from 'react';
-import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
-import { BsListTask } from 'react-icons/bs';
+// import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
+// import { BsListTask } from 'react-icons/bs';
 
 const ExRates = () => {
-  const buttonStyle = {
-    fontSize: '20px'
-  };
+  //   const buttonStyle = {
+  //     fontSize: '20px'
+  //   };
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>

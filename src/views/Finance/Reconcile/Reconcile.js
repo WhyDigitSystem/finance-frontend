@@ -13,9 +13,9 @@ import TableComponent from './TableComponent';
 
 const Reconcile = () => {
   const [tabIndex, setTabIndex] = useState(0);
-  const buttonStyle = {
-    fontSize: '20px' // Adjust the font size as needed
-  };
+  // const buttonStyle = {
+  //   fontSize: '20px' // Adjust the font size as needed
+  // };
 
   const handleTabSelect = (index) => {
     setTabIndex(index);

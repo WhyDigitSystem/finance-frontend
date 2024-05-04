@@ -4,14 +4,14 @@ import TextField from '@mui/material/TextField';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
-import { BsListTask } from 'react-icons/bs';
+// import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
+// import { BsListTask } from 'react-icons/bs';
 import TableComponent from './TableComponent';
 
 const CostCentre = () => {
-  const buttonStyle = {
-    fontSize: '20px' // Adjust the font size as needed
-  };
+  //   const buttonStyle = {
+  //     fontSize: '20px' // Adjust the font size as needed
+  //   };
 
   return (
     <>

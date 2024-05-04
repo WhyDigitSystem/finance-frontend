@@ -4,14 +4,14 @@ import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
-import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
-import { BsListTask } from 'react-icons/bs';
+// import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
+// import { BsListTask } from 'react-icons/bs';
 import TableComponent from './TableComponent';
 
 const TdsMaster = () => {
-  const buttonStyle = {
-    fontSize: '20px' // Adjust the font size as needed
-  };
+  // const buttonStyle = {
+  //   fontSize: '20px' // Adjust the font size as needed
+  // };
 
   //   const [openBankModal, setOpenBankModal] = React.useState(false);
 

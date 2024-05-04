@@ -18,9 +18,9 @@ import 'react-tabs/style/react-tabs.css';
 import TableComponent from './TableComponent';
 
 const Receipt = () => {
-  const buttonStyle = {
-    fontSize: '20px' // Adjust the font size as needed
-  };
+  // const buttonStyle = {
+  //   fontSize: '20px' // Adjust the font size as needed
+  // };
   const [tabIndex, setTabIndex] = useState(0);
 
   const handleTabSelect = (index) => {

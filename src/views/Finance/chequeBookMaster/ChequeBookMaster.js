@@ -10,9 +10,9 @@ import * as React from 'react';
 import TableComponent from '../chequeBookMaster/TableComponent';
 
 const ChequeBookMaster = () => {
-  const buttonStyle = {
-    fontSize: '20px' // Adjust the font size as needed
-  };
+  //   const buttonStyle = {
+  //     fontSize: '20px' // Adjust the font size as needed
+  //   };
 
   const [openBankModal, setOpenBankModal] = React.useState(false);
 
