@@ -6,9 +6,8 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import React from 'react';
 
-export const Group = () => {
+const Group = () => {
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl">
@@ -186,3 +185,5 @@ export const Group = () => {
     </>
   );
 };
+
+export default Group;

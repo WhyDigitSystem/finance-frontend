@@ -6,11 +6,10 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import React from 'react';
 import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
 import { BsListTask } from 'react-icons/bs';
 
-export const HsnSacCode = () => {
+const HsnSacCode = () => {
   const buttonStyle = {
     fontSize: '20px' // Adjust the font size as needed
   };
@@ -203,3 +202,5 @@ export const HsnSacCode = () => {
     </div>
   );
 };
+
+export default HsnSacCode;

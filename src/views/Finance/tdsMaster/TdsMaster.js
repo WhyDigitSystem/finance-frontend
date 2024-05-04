@@ -4,12 +4,11 @@ import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
-import * as React from 'react';
 import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
 import { BsListTask } from 'react-icons/bs';
 import TableComponent from './TableComponent';
 
-export const TdsMaster = () => {
+const TdsMaster = () => {
   const buttonStyle = {
     fontSize: '20px' // Adjust the font size as needed
   };
@@ -85,3 +84,5 @@ export const TdsMaster = () => {
     </>
   );
 };
+
+export default TdsMaster;

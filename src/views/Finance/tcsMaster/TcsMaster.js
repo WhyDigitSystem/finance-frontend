@@ -3,12 +3,11 @@ import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
-import React from 'react';
 import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
 import { BsListTask } from 'react-icons/bs';
 import TableComponent from './TableComponent';
 
-export const TCSMaster = () => {
+const TcsMaster = () => {
   const buttonStyle = {
     fontSize: '20px' // Adjust the font size as needed
   };
@@ -87,3 +86,5 @@ export const TCSMaster = () => {
     </div>
   );
 };
+
+export default TcsMaster;
