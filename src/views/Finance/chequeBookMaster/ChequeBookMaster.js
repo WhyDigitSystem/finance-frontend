@@ -14,14 +14,14 @@ const ChequeBookMaster = () => {
   //     fontSize: '20px' // Adjust the font size as needed
   //   };
 
-  const [openBankModal, setOpenBankModal] = React.useState(false);
+  //   const [openBankModal, setOpenBankModal] = React.useState(false);
 
-  const handleBankOpen = () => {
-    setOpenBankModal(true);
-  };
-  const handleBankClose = () => {
-    setOpenBankModal(false);
-  };
+  //   const handleBankOpen = () => {
+  //     setOpenBankModal(true);
+  //   };
+  //   const handleBankClose = () => {
+  //     setOpenBankModal(false);
+  //   };
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>

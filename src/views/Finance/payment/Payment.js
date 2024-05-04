@@ -22,9 +22,9 @@ const Payment = () => {
   const handleTabSelect = (index) => {
     setTabIndex(index);
   };
-  const buttonStyle = {
-    fontSize: '20px' // Adjust the font size as needed
-  };
+  // const buttonStyle = {
+  //   fontSize: '20px' // Adjust the font size as needed
+  // };
   return (
     <div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
