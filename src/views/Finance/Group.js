@@ -10,7 +10,7 @@ import TextField from '@mui/material/TextField';
 const Group = () => {
   return (
     <>
-      <div className="card w-full p-6 bg-base-100 shadow-xl">
+      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         {/* <div className="d-flex justify-content-between">
           <h1 className="text-xl font-semibold mb-3">Group / Ledger</h1>
         </div> */}
@@ -165,22 +165,23 @@ const Group = () => {
             </FormGroup>
           </div>
         </div>
-      </div>
-      <div className="d-flex flex-row mt-3">
-        <button
-          type="button"
-          //onClick={handleCustomer}
-          className="btn btn-primary"
-        >
-          Save
-        </button>
-        <button
-          type="button"
-          //onClick={handleCustomerClose}
-          className="btn btn-primary"
-        >
-          Cancel
-        </button>
+        <div className="d-flex flex-row mt-3">
+          <button
+            type="button"
+            //onClick={handleCustomer}
+            className="btn btn-primary"
+            style={{ marginRight: '10px' }}
+          >
+            Save
+          </button>
+          <button
+            type="button"
+            //onClick={handleCustomerClose}
+            className="btn btn-primary"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </>
   );

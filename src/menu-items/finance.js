@@ -21,13 +21,13 @@ const finance = {
       icon: icons.IconKey,
 
       children: [
-        {
-          id: 'fin1',
-          title: 'Fin1',
-          type: 'item',
-          url: '/finance'
-          //   target: true
-        },
+        // {
+        //   id: 'fin1',
+        //   title: 'Fin1',
+        //   type: 'item',
+        //   url: '/finance'
+        //   //   target: true
+        // },
         {
           id: 'setTaxRate',
           title: 'SetTaxRate',
@@ -75,6 +75,114 @@ const finance = {
           title: 'Group',
           type: 'item',
           url: '/finance/Group'
+        },
+        {
+          id: 'account',
+          title: 'Account',
+          type: 'item',
+          url: '/finance/account/Account'
+        },
+        {
+          id: 'exRates',
+          title: 'ExRates',
+          type: 'item',
+          url: '/finance/ExRates'
+        },
+        {
+          id: 'subLedgerAccount',
+          title: 'Sub Ledger Account',
+          type: 'item',
+          url: '/finance/SubLedgerAccount'
+        },
+        {
+          id: 'costCenter',
+          title: 'Cost Center Values',
+          type: 'item',
+          url: '/finance/costcenter/CostCentre'
+        },
+        {
+          id: 'daily',
+          title: 'Daily / Monthly Ex. Rates',
+          type: 'item',
+          url: '/finance/daily/DailyRate'
+        },
+        {
+          id: 'chartOfCostCenter',
+          title: 'Chart of Costcenter',
+          type: 'item',
+          url: '/finance/chartOfCostcenter/ChartOfCostcenter'
+        },
+        {
+          id: 'brsOpening',
+          title: 'BRS Opening',
+          type: 'item',
+          url: '/finance/BRSOpening'
+        },
+        {
+          id: 'arApBill',
+          title: 'AR/AP Bill Balance',
+          type: 'item',
+          url: '/finance/ArApBill'
+        },
+        {
+          id: 'chequeBookMaster',
+          title: 'Cheque Book Master',
+          type: 'item',
+          url: '/finance/chequeBookMaster/ChequeBookMaster'
+        },
+        {
+          id: 'glOpening',
+          title: 'GL Opening Balance',
+          type: 'item',
+          url: '/finance/glOpening/GlOpening'
+        },
+        {
+          id: 'fundTransfer',
+          title: 'Fund Transfer',
+          type: 'item',
+          url: '/finance/FundTransfer'
+        },
+        {
+          id: 'generalJournal',
+          title: 'General Journal',
+          type: 'item',
+          url: '/finance/GeneralJournal/GeneralJournal'
+        },
+        {
+          id: 'receipt',
+          title: 'Receipt',
+          type: 'item',
+          url: '/finance/receipt/Receipt'
+        },
+        {
+          id: 'payment',
+          title: 'Payment',
+          type: 'item',
+          url: '/finance/payment/Payment'
+        },
+        {
+          id: 'reconcile',
+          title: 'Reconcile',
+          type: 'item',
+          url: '/finance/Reconcile/Reconcile'
+        },
+        {
+          id: 'receiptRegister',
+          title: 'Receipt Register',
+          type: 'item',
+          url: '/finance/receiptRegister/ReceiptRegister'
+        },
+        {
+          id: 'paymentRegister',
+          title: 'Payment Register',
+          type: 'item',
+          url: '/finance/paymentRegister/PaymentRegister'
+        },
+        {
+          id: 'reconciliationSummary',
+          title: 'Reconciliation Summary',
+          type: 'item',
+          url: '/finance/ReconciliationSummaryReport/ReconciliationSummary'
         }
       ]
     }

@@ -6,156 +6,54 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
-import { BsListTask } from 'react-icons/bs';
+import React from 'react';
 
-const HsnSacCode = () => {
-  const buttonStyle = {
-    fontSize: '20px' // Adjust the font size as needed
-  };
-
+const SubLedgerAccounts = () => {
   return (
-    <div>
-      <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
-        <div className="row d-flex align-items-center">
-          {/* <div className="d-flex flex-wrap justify-content-start mb-3">
-            <button className="btn btn-ghost btn-sm normal-case col-xs-2">
-              <AiOutlineWallet style={buttonStyle} />
-              <span className="ml-1">New</span>
-            </button>
-            <button className="btn btn-ghost btn-sm normal-case col-xs-2">
-              <AiOutlineSearch style={buttonStyle} />
-              <span className="ml-1">Search</span>
-            </button>
-            <button className="btn btn-ghost btn-sm normal-case col-xs-2">
-              <BsListTask style={buttonStyle} />
-              <span className="ml-1">List View</span>
-            </button>
-          </div> */}
+    <>
+      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
+        <div className="row d-flex ">
           <div className="col-md-4 mb-3">
             <FormControl fullWidth size="small">
-              <InputLabel id="demo-simple-select-label">Type</InputLabel>
+              <InputLabel id="demo-simple-select-label" required>
+                Accounts Category
+              </InputLabel>
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 // value={age}
-                label="Type"
+                label="Accounts Category"
                 // onChange={handleChange}
               >
-                <MenuItem value="Type-1">Type-1</MenuItem>
-                <MenuItem value="Type-2">Type-2</MenuItem>
-                <MenuItem value="Type-3">Type-3</MenuItem>
+                <MenuItem value={10}>Others</MenuItem>
               </Select>
-            </FormControl>
-          </div>
-          <div className="col-md-4 mb-3">
-            <FormControl fullWidth variant="filled">
-              <TextField
-                id="code"
-                label="Code"
-                size="small"
-                required
-                //placeholder="accountcode"
-                inputProps={{ maxLength: 30 }}
-              />
-            </FormControl>
-          </div>
-          <div className="col-md-4 mb-3">
-            <FormControl fullWidth variant="filled">
-              <TextField
-                id="description"
-                label="Description"
-                size="small"
-                required
-                //placeholder="accountcode"
-                inputProps={{ maxLength: 30 }}
-              />
-            </FormControl>
-          </div>
-          <div className="col-md-4 mb-3">
-            <FormControl fullWidth variant="filled">
-              <TextField
-                id="chapter"
-                label="Chapter"
-                size="small"
-                required
-                //placeholder="accountcode"
-                inputProps={{ maxLength: 30 }}
-              />
-            </FormControl>
-          </div>
-          <div className="col-md-4 mb-3">
-            <FormControl fullWidth variant="filled">
-              <TextField
-                id="chapter-code"
-                label="Chapter Code"
-                size="small"
-                required
-                //placeholder="accountcode"
-                inputProps={{ maxLength: 30 }}
-              />
-            </FormControl>
-          </div>
-          <div className="col-md-4 mb-3">
-            <FormControl fullWidth variant="filled">
-              <TextField
-                id="sub-chapter-code"
-                label="Sub Chapter Code"
-                size="small"
-                required
-                //placeholder="accountcode"
-                inputProps={{ maxLength: 30 }}
-              />
-            </FormControl>
-          </div>
-          <div className="col-md-4 mb-3">
-            <FormControl fullWidth variant="filled">
-              <TextField
-                id="sub-chapter"
-                label="Sub Chapter"
-                size="small"
-                required
-                //placeholder="accountcode"
-                inputProps={{ maxLength: 30 }}
-              />
-            </FormControl>
-          </div>
-          <div className="col-md-4 mb-3">
-            <FormControl fullWidth variant="filled">
-              <TextField
-                id="rate"
-                label="Rate"
-                size="small"
-                required
-                //placeholder="accountcode"
-                inputProps={{ maxLength: 30 }}
-              />
             </FormControl>
           </div>
           <div className="col-md-4 mb-3">
             <FormControl fullWidth size="small">
-              <InputLabel id="demo-simple-select-label">Excempted (Yes/No)</InputLabel>
+              <InputLabel id="demo-simple-select-label" required>
+                SubLedger Type
+              </InputLabel>
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
                 // value={age}
-                label="Excempted (Yes/No)"
+                label="SubLedger Type"
                 // onChange={handleChange}
               >
-                <MenuItem value="Value-1">Value-1</MenuItem>
-                <MenuItem value="Value-2">Value-2</MenuItem>
-                <MenuItem value="Value-3">Value-3</MenuItem>
+                <MenuItem value={10}>Others</MenuItem>
               </Select>
             </FormControl>
           </div>
-          {/* <div className="col-md-4 mb-3">
+
+          <div className="col-md-4 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
-                id="account"
-                label="Section"
+                // id="account"
+                label="New Code"
                 size="small"
                 required
-                placeholder="accountcode"
+                placeholder=""
                 inputProps={{ maxLength: 30 }}
               />
             </FormControl>
@@ -163,16 +61,97 @@ const HsnSacCode = () => {
           <div className="col-md-4 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
-                id="account"
-                label="Section Name"
+                // id="account"
+                label="Old Code"
                 size="small"
                 required
-                placeholder="accountcode"
+                placeholder=""
                 inputProps={{ maxLength: 30 }}
               />
             </FormControl>
-          </div> */}
-          <div className="col-md-4 mb-2">
+          </div>
+          <div className="col-md-4 mb-3">
+            <FormControl fullWidth variant="filled">
+              <TextField
+                // id="account"
+                label="SubLedger Name"
+                size="small"
+                required
+                placeholder=""
+                inputProps={{ maxLength: 30 }}
+              />
+            </FormControl>
+          </div>
+          <div className="col-md-4 mb-3">
+            <FormControl fullWidth variant="filled">
+              <TextField
+                // id="account"
+                label="Control Account"
+                size="small"
+                required
+                placeholder=""
+                inputProps={{ maxLength: 30 }}
+              />
+            </FormControl>
+          </div>
+          <div className="col-md-4 mb-3">
+            <FormControl fullWidth variant="filled">
+              <TextField
+                // id="account"
+                label="Currency"
+                size="small"
+                placeholder=""
+                inputProps={{ maxLength: 30 }}
+              />
+            </FormControl>
+          </div>
+          <div className="col-md-4 mb-3">
+            <FormControl fullWidth variant="filled">
+              <TextField
+                // id="account"
+                label="Credit Days"
+                size="small"
+                placeholder=""
+                inputProps={{ maxLength: 30 }}
+              />
+            </FormControl>
+          </div>
+          <div className="col-md-4 mb-3">
+            <FormControl fullWidth variant="filled">
+              <TextField
+                // id="account"
+                label="Credit Limit"
+                size="small"
+                placeholder=""
+                inputProps={{ maxLength: 30 }}
+              />
+            </FormControl>
+          </div>
+          <div className="col-md-4 mb-3">
+            <FormControl fullWidth variant="filled">
+              <TextField label="VAT No." size="small" placeholder="" inputProps={{ maxLength: 30 }} />
+            </FormControl>
+          </div>
+          <div className="col-md-4 mb-3">
+            <FormControl fullWidth variant="filled">
+              <TextField label="State Jurisdiction" size="small" placeholder="" inputProps={{ maxLength: 30 }} />
+            </FormControl>
+          </div>
+          <div className="col-md-4 mb-3">
+            <FormControl fullWidth size="small">
+              <InputLabel id="demo-simple-select-label">Invoice Type</InputLabel>
+              <Select
+                labelId="demo-simple-select-label"
+                id="demo-simple-select"
+                // value={age}
+                label="Invoice Type"
+                // onChange={handleChange}
+              >
+                <MenuItem value={10}>DOMESTIC</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+          <div className="col-md-4 mb-3">
             <FormGroup>
               <FormControlLabel control={<Checkbox defaultChecked />} label="Active" />
             </FormGroup>
@@ -196,8 +175,8 @@ const HsnSacCode = () => {
           </button>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
-export default HsnSacCode;
+export default SubLedgerAccounts;

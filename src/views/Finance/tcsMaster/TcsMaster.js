@@ -14,9 +14,9 @@ const TcsMaster = () => {
 
   return (
     <div>
-      <div className="card w-full p-6 bg-base-100 shadow-xl mb-3">
+      <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <div className="row d-flex justify-content-center align-items-center">
-          <div className="d-flex flex-wrap justify-content-start mb-3">
+          {/* <div className="d-flex flex-wrap justify-content-start mb-3">
             <button className="btn btn-ghost btn-sm normal-case col-xs-2">
               <AiOutlineWallet style={buttonStyle} />
               <span className="ml-1">New</span>
@@ -25,15 +25,11 @@ const TcsMaster = () => {
               <AiOutlineSearch style={buttonStyle} />
               <span className="ml-1">Search</span>
             </button>
-            {/* <button className="btn btn-ghost btn-sm normal-case col-xs-2">
-          <AiFillSave style={buttonStyle} />
-          <span className="ml-1">Save</span>
-        </button> */}
             <button className="btn btn-ghost btn-sm normal-case col-xs-2">
               <BsListTask style={buttonStyle} />
               <span className="ml-1">List View</span>
             </button>
-          </div>
+          </div> */}
           <div className="col-md-4 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
@@ -70,14 +66,15 @@ const TcsMaster = () => {
           <button
             type="button"
             //onClick={handleCustomer}
-            className="bg-blue me-5 inline-block rounded bg-primary h-fit px-6 pb-2 pt-2.5 text-xs font-medium leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
+            className="btn btn-primary"
+            style={{ marginRight: '10px' }}
           >
             Save
           </button>
           <button
             type="button"
             //onClick={handleCustomerClose}
-            className="bg-blue inline-block rounded bg-primary h-fit px-6 pb-2 pt-2.5 text-xs font-medium leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
+            className="btn btn-primary"
           >
             Cancel
           </button>
