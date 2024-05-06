@@ -1,8 +1,10 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { MaterialReactTable } from 'material-react-table';
+import { Delete, Edit } from '@mui/icons-material';
+import AddIcon from '@mui/icons-material/Add';
 import {
+  Avatar,
   Box,
   Button,
+  ButtonBase,
   Dialog,
   DialogActions,
   DialogContent,
@@ -13,7 +15,9 @@ import {
   TextField,
   Tooltip
 } from '@mui/material';
-import { Delete, Edit } from '@mui/icons-material';
+import { useTheme } from '@mui/material/styles';
+import { MaterialReactTable } from 'material-react-table';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { data } from './makeData';
 // import { MdGroups } from 'react-icons/md';
 // import { FaUser } from 'react-icons/fa';
@@ -23,6 +27,9 @@ const TableComponent = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [tableData, setTableData] = useState(() => data);
   const [validationErrors, setValidationErrors] = useState({});
+
+  const theme = useTheme();
+  const anchorRef = useRef(null);
 
   const handleCreateNewRow = (values) => {
     tableData.push(values);
@@ -202,10 +209,40 @@ const TableComponent = () => {
           <Stack direction="row" spacing={2} className="ml-5 ">
             <Tooltip title="Add">
               <div>
-                <button className="btn btn-primary btn-sm" onClick={() => setCreateModalOpen(true)}>
+                {/* <Button
+                  sx={{
+                    background: '#5e35b1',
+                    color: '#FFFFFF',
+                    '&:hover': {
+                      backgroundColor: '#5e35b1' // Change the background color on hover
+                    }
+                  }}
+                 
+                >
                   Add
-                </button>
+                </Button> */}
               </div>
+              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={() => setCreateModalOpen(true)}>
+                <Avatar
+                  variant="rounded"
+                  sx={{
+                    ...theme.typography.commonAvatar,
+                    ...theme.typography.mediumAvatar,
+                    transition: 'all .2s ease-in-out',
+                    background: theme.palette.secondary.light,
+                    color: theme.palette.secondary.dark,
+                    '&[aria-controls="menu-list-grow"],&:hover': {
+                      background: theme.palette.secondary.dark,
+                      color: theme.palette.secondary.light
+                    }
+                  }}
+                  ref={anchorRef}
+                  aria-haspopup="true"
+                  color="inherit"
+                >
+                  <AddIcon size="1.3rem" stroke={1.5} />
+                </Avatar>
+              </ButtonBase>
             </Tooltip>
           </Stack>
         )}
