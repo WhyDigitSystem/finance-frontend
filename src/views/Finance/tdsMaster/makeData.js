@@ -5,7 +5,7 @@ export const data = [
     ToDate: '22/05/2022',
     Tds: '1',
     Sur: '10',
-    Edcess: '100'
+    Excess: '100'
   },
   {
     SNo: '1',
@@ -13,7 +13,7 @@ export const data = [
     ToDate: '22/05/2022',
     Tds: '1',
     Sur: '10',
-    Edcess: '100'
+    Excess: '100'
   }
 
   // Add more sample data objects as needed...

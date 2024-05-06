@@ -51,14 +51,6 @@ const TableComponent = () => {
     setValidationErrors({});
   };
 
-  const exportDataAsCSV = () => {
-    // Format your data to be exported as CSV (tableData in this case)
-    // For example, transform your data into an array of arrays or objects
-    // that represents rows and columns in the CSV file format
-    // In this example, we'll use the tableData directly assuming it's in the right format for CSV export
-    // You might need to modify the data structure to fit CSVLink requirement
-  };
-
   const handleDeleteRow = useCallback(
     (row) => {
       if (
@@ -205,9 +197,6 @@ const TableComponent = () => {
                 </ButtonBase>
               </div>
             </Tooltip>
-            {/* <Tooltip title="Export Data as CSV">
-              <span>{exportDataAsCSV()}</span>
-            </Tooltip> */}
           </Stack>
         )}
       />

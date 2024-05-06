@@ -15,7 +15,6 @@ import {
 } from '@mui/material';
 import { MaterialReactTable } from 'material-react-table';
 import React, { useCallback, useMemo, useState } from 'react';
-// import { CSVLink } from 'react-csv';
 import { data } from './makeData';
 import { useTheme } from '@mui/material/styles';
 import { useRef } from 'react';
@@ -45,14 +44,6 @@ const TableComponent = () => {
 
   const handleCancelRowEdits = () => {
     setValidationErrors({});
-  };
-
-  const exportDataAsCSV = () => {
-    // Format your data to be exported as CSV (tableData in this case)
-    // For example, transform your data into an array of arrays or objects
-    // that represents rows and columns in the CSV file format
-    // In this example, we'll use the tableData directly assuming it's in the right format for CSV export
-    // You might need to modify the data structure to fit CSVLink requirements
   };
 
   const handleDeleteRow = useCallback(
@@ -144,8 +135,8 @@ const TableComponent = () => {
         })
       },
       {
-        accessorKey: 'Edcess',
-        header: 'Edcess%',
+        accessorKey: 'Excess',
+        header: 'Excess%',
         size: 140,
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
           ...getCommonEditTextFieldProps(cell)
@@ -214,9 +205,6 @@ const TableComponent = () => {
                 </ButtonBase>
               </div>
             </Tooltip>
-            {/* <Tooltip title="Export Data as CSV">
-              <span>{exportDataAsCSV()}</span>
-            </Tooltip> */}
           </Stack>
         )}
       />
