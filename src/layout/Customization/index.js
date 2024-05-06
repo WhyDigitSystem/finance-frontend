@@ -1,8 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
 import {
   Drawer,
   Fab,
@@ -16,16 +15,17 @@ import {
   Tooltip,
   Typography
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { IconSettings } from '@tabler/icons-react';
 
 // third-party
 import PerfectScrollbar from 'react-perfect-scrollbar';
 
 // project imports
-import SubCard from 'ui-component/cards/SubCard';
-import AnimateButton from 'ui-component/extended/AnimateButton';
 import { SET_BORDER_RADIUS, SET_FONT_FAMILY } from 'store/actions';
 import { gridSpacing } from 'store/constant';
+import SubCard from 'ui-component/cards/SubCard';
+import AnimateButton from 'ui-component/extended/AnimateButton';
 
 // concat 'px'
 function valueText(value) {
@@ -60,12 +60,12 @@ const Customization = () => {
     case `'Inter', sans-serif`:
       initialFont = 'Inter';
       break;
-    case `'Poppins', sans-serif`:
-      initialFont = 'Poppins';
-      break;
     case `'Roboto', sans-serif`:
-    default:
       initialFont = 'Roboto';
+      break;
+    case `' Poppins', sans-serif`:
+    default:
+      initialFont = 'Poppins';
       break;
   }
 

@@ -1,13 +1,15 @@
 import { Edit } from '@mui/icons-material';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField, Tooltip } from '@mui/material';
 import { MaterialReactTable } from 'material-react-table';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { data } from './makeData';
 
 const ReconciliationSummary = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [tableData, setTableData] = useState(() => data);
   const [validationErrors, setValidationErrors] = useState({});
+
+  // const theme = useTheme();
 
   const handleCreateNewRow = (values) => {
     tableData.push(values);
@@ -225,7 +227,17 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
       </DialogContent>
       <DialogActions sx={{ p: '1.25rem' }}>
         <Button onClick={onClose}>Cancel</Button>
-        <Button color="secondary" onClick={handleSubmit} variant="contained">
+        <Button
+          sx={{
+            background: '#5e35b1',
+            color: '#FFFFFF',
+            '&:hover': {
+              backgroundColor: '#5e35b1' // Change the background color on hover
+            }
+          }}
+          onClick={handleSubmit}
+          variant="contained"
+        >
           Add
         </Button>
       </DialogActions>

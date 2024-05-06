@@ -1,5 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { MaterialReactTable } from 'material-react-table';
+import { Delete, Edit } from '@mui/icons-material';
 import {
   Box,
   Button,
@@ -13,15 +12,23 @@ import {
   TextField,
   Tooltip
 } from '@mui/material';
-import { Delete, Edit } from '@mui/icons-material';
+import { MaterialReactTable } from 'material-react-table';
+import { useCallback, useMemo, useState } from 'react';
 import { data } from './makeData';
 // import { FaUser } from 'react-icons/fa';
 // import { FaDatabase } from 'react-icons/fa6';
+import AddIcon from '@mui/icons-material/Add';
+import { Avatar, ButtonBase } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { useRef } from 'react';
 
 const TableComponent = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [tableData, setTableData] = useState(() => data);
   const [validationErrors, setValidationErrors] = useState({});
+
+  const theme = useTheme();
+  const anchorRef = useRef(null);
 
   const handleCreateNewRow = (values) => {
     tableData.push(values);
@@ -184,11 +191,27 @@ const TableComponent = () => {
         renderTopToolbarCustomActions={() => (
           <Stack direction="row" spacing={2} className="ml-5 ">
             <Tooltip title="Add">
-              <div>
-                <button className="btn btn-primary btn-sm" onClick={() => setCreateModalOpen(true)}>
-                  Add
-                </button>
-              </div>
+              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={() => setCreateModalOpen(true)}>
+                <Avatar
+                  variant="rounded"
+                  sx={{
+                    ...theme.typography.commonAvatar,
+                    ...theme.typography.mediumAvatar,
+                    transition: 'all .2s ease-in-out',
+                    background: theme.palette.secondary.light,
+                    color: theme.palette.secondary.dark,
+                    '&[aria-controls="menu-list-grow"],&:hover': {
+                      background: theme.palette.secondary.dark,
+                      color: theme.palette.secondary.light
+                    }
+                  }}
+                  ref={anchorRef}
+                  aria-haspopup="true"
+                  color="inherit"
+                >
+                  <AddIcon size="1.3rem" stroke={1.5} />
+                </Avatar>
+              </ButtonBase>
             </Tooltip>
           </Stack>
         )}

@@ -1,7 +1,7 @@
 import { Edit } from '@mui/icons-material';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField, Tooltip } from '@mui/material';
 import { MaterialReactTable } from 'material-react-table';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 // import { CSVLink } from 'react-csv';
 // import { data } from './makeData';
 
@@ -135,7 +135,13 @@ const Taxes = () => {
         size: 140,
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
           ...getCommonEditTextFieldProps(cell)
-        })
+        }),
+        headerStyle: {
+          background: '#f0f0f0', // Custom background color
+          color: 'blue', // Custom text color
+          fontWeight: 'bold' // Custom font weight
+          // Add more custom styles as needed
+        }
       },
       {
         accessorKey: 'taxCode',
@@ -191,6 +197,12 @@ const Taxes = () => {
               align: 'center'
             },
             size: 120
+          }
+        }}
+        style={{
+          headerCellStyle: { backgroundColor: 'red', color: 'blue', fontWeight: 'bold' },
+          headerRowStyle: {
+            /* Add custom styles for the header row */
           }
         }}
         columns={columns}
