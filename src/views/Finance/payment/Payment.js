@@ -271,7 +271,10 @@ const Payment = () => {
             </div>
             <div className="col-md-4">
               <FormGroup>
-                <FormControlLabel control={<Checkbox defaultChecked />} label="Reconciled?" />
+                <FormControlLabel
+                  control={<Checkbox defaultChecked sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }} />}
+                  label="Reconciled?"
+                />
               </FormGroup>
             </div>
             <div className="col-md-4">
@@ -350,23 +353,6 @@ const Payment = () => {
                 </LocalizationProvider>
               </FormControl>
             </div>
-          </div>
-          <div className="d-flex flex-row mt-3">
-            <button
-              type="button"
-              //onClick={handleCustomer}
-              className="btn btn-primary"
-              style={{ marginRight: '10px' }}
-            >
-              Save
-            </button>
-            <button
-              type="button"
-              //onClick={handleCustomerClose}
-              className="btn btn-primary"
-            >
-              Cancel
-            </button>
           </div>
         </div>
       </div>
