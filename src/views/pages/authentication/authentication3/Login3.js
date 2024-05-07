@@ -1,15 +1,15 @@
 import { Link } from 'react-router-dom';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
 import { Divider, Grid, Stack, Typography, useMediaQuery } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // project imports
-import AuthWrapper1 from '../AuthWrapper1';
-import AuthCardWrapper from '../AuthCardWrapper';
-import AuthLogin from '../auth-forms/AuthLogin';
-import Logo from 'ui-component/Logo';
 import AuthFooter from 'ui-component/cards/AuthFooter';
+import LogoImage from '../../../../assets/images/BIN_BEE.png';
+import AuthCardWrapper from '../AuthCardWrapper';
+import AuthWrapper1 from '../AuthWrapper1';
+import AuthLogin from '../auth-forms/AuthLogin';
 
 // assets
 
@@ -27,9 +27,17 @@ const Login = () => {
             <Grid item sx={{ m: { xs: 1, sm: 3 }, mb: 0 }}>
               <AuthCardWrapper>
                 <Grid container spacing={2} alignItems="center" justifyContent="center">
-                  <Grid item sx={{ mb: 3 }}>
+                  <Grid item>
                     <Link to="#">
-                      <Logo />
+                      {/* <Logo /> */}
+                      <img
+                        src={LogoImage}
+                        alt="logo"
+                        style={{
+                          width: '150px',
+                          height: 'auto'
+                        }}
+                      ></img>
                     </Link>
                   </Grid>
                   <Grid item xs={12}>
@@ -38,9 +46,6 @@ const Login = () => {
                         <Stack alignItems="center" justifyContent="center" spacing={1}>
                           <Typography color={theme.palette.secondary.main} gutterBottom variant={matchDownSM ? 'h3' : 'h2'}>
                             Hi, Welcome Back
-                          </Typography>
-                          <Typography variant="caption" fontSize="16px" textAlign={matchDownSM ? 'center' : 'inherit'}>
-                            Enter your credentials to continue
                           </Typography>
                         </Stack>
                       </Grid>
@@ -64,7 +69,7 @@ const Login = () => {
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={12} sx={{ m: 3, mt: 1 }}>
+        <Grid item xs={12} sx={{ m: 1 }}>
           <AuthFooter />
         </Grid>
       </Grid>

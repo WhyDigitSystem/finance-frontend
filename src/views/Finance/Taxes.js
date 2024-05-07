@@ -208,6 +208,9 @@ const Taxes = () => {
         columns={columns}
         data={tableData}
         editingMode="modal"
+        options={{
+          density: 'comfortable' // Set the default density to 'compact'
+        }}
         enableColumnOrdering
         enableEditing
         onEditingRowSave={handleSaveRowEdits}

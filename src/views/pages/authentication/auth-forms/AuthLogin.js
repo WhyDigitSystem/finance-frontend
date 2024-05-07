@@ -1,5 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
+import Axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { encryptPassword } from 'views/utilities/passwordEnc';
 // material-ui
 import {
   Box,
@@ -18,7 +23,8 @@ import {
   Typography
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Link } from 'react-router-dom';
+import { useRef } from 'react';
+
 // third party
 import { Formik } from 'formik';
 import * as Yup from 'yup';
@@ -36,47 +42,96 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 const FirebaseLogin = ({ ...others }) => {
   const theme = useTheme();
   const scriptedRef = useScriptRef();
-  // const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
-  // const customization = useSelector((state) => state.customization);
-  const [checked, setChecked] = useState(true);
-
-  // const googleHandler = async () => {
-  //   console.error('Login');
-  // };
+  const [checked, setChecked] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
 
+  useEffect(() => {
+    const storedCredentials = localStorage.getItem('rememberedCredentials');
+    if (storedCredentials) {
+      const { email, password } = JSON.parse(storedCredentials);
+      formikRef.current.setValues({ email, password });
+      setChecked(true);
+    }
+  }, []);
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
 
+  const formikRef = useRef(null);
+  const navigate = useNavigate();
+  const resetForm = () => {
+    // Check if the formikRef is defined
+    if (formikRef.current) {
+      // Call the resetForm function using the ref
+      formikRef.current.resetForm({
+        values: {
+          email: '',
+          password: ''
+        }
+      });
+    }
+  };
+
+  const loginAPICall = async (values) => {
+    // Prepare the user registration data
+
+    const userData = {
+      password: encryptPassword(values.password),
+      userName: values.email
+    };
+    try {
+      const response = await Axios.post(`${process.env.REACT_APP_API_URL}/api/user/login`, userData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.data.status) {
+        // Handle authentication failure, display an error message, etc.
+        toast.error(response.data.paramObjectsMap.errorMessage, {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+        console.log('Test1', userData);
+      } else {
+        // Successful registration, perform actions like storing tokens and redirecting
+        localStorage.setItem('token', 'YourAuthTokenHere'); // Replace with the actual token
+        localStorage.setItem('LoginMessage', true);
+        resetForm();
+        // window.location.href = "/login";
+
+        navigate('/dashboard/default');
+        if (checked) {
+          localStorage.setItem('rememberedCredentials', JSON.stringify({ email: values.email, password: values.password }));
+        } else {
+          // Clear stored credentials if "Remember Me" is unchecked
+          localStorage.removeItem('rememberedCredentials');
+        }
+        // setTimeout(() => {
+        //   toast.success(response.data.paramObjectsMap.message, {
+        //     autoClose: 2000,
+        //     theme: 'colored'
+        //   });
+        // }, 2000);
+      }
+    } catch (error) {
+      toast.error('Network Error', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+    }
+  };
+
   return (
     <>
+      <div>
+        <ToastContainer />
+      </div>
       <Grid container direction="column" justifyContent="center" spacing={2}>
-        {/* <Grid item xs={12}>
-          <AnimateButton>
-            <Button
-              disableElevation
-              fullWidth
-              onClick={googleHandler}
-              size="large"
-              variant="outlined"
-              sx={{
-                color: 'grey.700',
-                backgroundColor: theme.palette.grey[50],
-                borderColor: theme.palette.grey[100]
-              }}
-            >
-              <Box sx={{ mr: { xs: 1, sm: 2, width: 20 } }}>
-                <img src={Google} alt="google" width={16} height={16} style={{ marginRight: matchDownSM ? 8 : 16 }} />
-              </Box>
-              Sign in with Google
-            </Button>
-          </AnimateButton>
-        </Grid> */}
         <Grid item xs={12}>
           <Box
             sx={{
@@ -84,26 +139,6 @@ const FirebaseLogin = ({ ...others }) => {
               display: 'flex'
             }}
           >
-            <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
-
-            {/* <Button
-              variant="outlined"
-              sx={{
-                cursor: 'unset',
-                m: 2,
-                py: 0.5,
-                px: 7,
-                borderColor: `${theme.palette.grey[100]} !important`,
-                color: `${theme.palette.grey[900]}!important`,
-                fontWeight: 500,
-                borderRadius: `${customization.borderRadius}px`
-              }}
-              disableRipple
-              disabled
-            >
-              OR
-            </Button> */}
-
             <Divider sx={{ flexGrow: 1 }} orientation="horizontal" />
           </Box>
         </Grid>
@@ -115,6 +150,12 @@ const FirebaseLogin = ({ ...others }) => {
       </Grid>
 
       <Formik
+        innerRef={formikRef}
+        initialValues={{
+          email: '',
+          password: '',
+          submit: null
+        }}
         validationSchema={Yup.object().shape({
           email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
           password: Yup.string().max(255).required('Password is required')
@@ -124,6 +165,7 @@ const FirebaseLogin = ({ ...others }) => {
             if (scriptedRef.current) {
               setStatus({ success: true });
               setSubmitting(false);
+              loginAPICall(values);
             }
           } catch (err) {
             console.error(err);
@@ -135,14 +177,14 @@ const FirebaseLogin = ({ ...others }) => {
           }
         }}
       >
-        {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched }) => (
+        {({ errors, handleBlur, handleChange, handleSubmit, isSubmitting, touched, values }) => (
           <form noValidate onSubmit={handleSubmit} {...others}>
             <FormControl fullWidth error={Boolean(touched.email && errors.email)} sx={{ ...theme.typography.customInput }}>
               <InputLabel htmlFor="outlined-adornment-email-login">Email Address / Username</InputLabel>
               <OutlinedInput
                 id="outlined-adornment-email-login"
                 type="email"
-                // value={values.email}
+                value={values.email}
                 name="email"
                 onBlur={handleBlur}
                 onChange={handleChange}
@@ -161,7 +203,7 @@ const FirebaseLogin = ({ ...others }) => {
               <OutlinedInput
                 id="outlined-adornment-password-login"
                 type={showPassword ? 'text' : 'password'}
-                // value={values.password}
+                value={values.password}
                 name="password"
                 onBlur={handleBlur}
                 onChange={handleChange}
@@ -206,17 +248,7 @@ const FirebaseLogin = ({ ...others }) => {
 
             <Box sx={{ mt: 2 }}>
               <AnimateButton>
-                <Button
-                  disableElevation
-                  disabled={isSubmitting}
-                  component={Link}
-                  to="/dashboard/default"
-                  fullWidth
-                  size="large"
-                  type="submit"
-                  variant="contained"
-                  color="secondary"
-                >
+                <Button disableElevation disabled={isSubmitting} fullWidth size="large" type="submit" variant="contained" color="secondary">
                   Sign in
                 </Button>
               </AnimateButton>

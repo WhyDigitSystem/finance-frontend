@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { Grid } from '@mui/material';
 
 // project imports
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { gridSpacing } from 'store/constant';
 import EarningCard from './EarningCard';
 import PopularCard from './PopularCard';
@@ -16,12 +18,30 @@ import TotalOrderLineChartCard from './TotalOrderLineChartCard';
 
 const Dashboard = () => {
   const [isLoading, setLoading] = useState(true);
+
   useEffect(() => {
     setLoading(false);
+    if (localStorage.getItem('LoginMessage') === 'true') {
+      toast.success('Login Successful, Welcome!', {
+        autoClose: 3000,
+        theme: 'colored'
+      });
+
+      // Set loginMessage to false after 2 seconds
+      const timeoutId = setTimeout(() => {
+        localStorage.setItem('LoginMessage', false);
+      }, 3000);
+
+      // Clear the timeout on component unmount to prevent memory leaks
+      return () => clearTimeout(timeoutId);
+    }
   }, []);
 
   return (
     <Grid container spacing={gridSpacing}>
+      <div>
+        <ToastContainer />
+      </div>
       <Grid item xs={12}>
         <Grid container spacing={gridSpacing}>
           <Grid item lg={4} md={6} sm={6} xs={12}>

@@ -1,31 +1,90 @@
-import { Tooltip } from '@mui/material';
+import ClearIcon from '@mui/icons-material/Clear';
+import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import SaveIcon from '@mui/icons-material/Save';
+import SearchIcon from '@mui/icons-material/Search';
+import { Avatar, ButtonBase, FormHelperText, Tooltip } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-// import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
-// import { BsListTask } from 'react-icons/bs';
-import ClearIcon from '@mui/icons-material/Clear';
-import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
-import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase } from '@mui/material';
-import { useRef } from 'react';
+import axios from 'axios';
+import { useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export const SetTaxRate = () => {
-  //   const buttonStyle = {
-  //     fontSize: '20px' // Adjust the font size as needed save
-  //   };
+  const [formData, setFormData] = useState({
+    chapter: '',
+    subChapter: '',
+    hsnCode: '',
+    branchLocation: '',
+    newRate: '',
+    exempted: ''
+  });
+
   const theme = useTheme();
   const anchorRef = useRef(null);
 
+  const [fieldErrors, setFieldErrors] = useState({
+    chapter: false,
+    subChapter: false,
+    hsnCode: false,
+    branchLocation: false,
+    newRate: false,
+    exempted: false
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    setFieldErrors({ ...fieldErrors, [name]: false });
+  };
+
+  const handleSave = () => {
+    // Check if any field is empty
+    const errors = Object.keys(formData).reduce((acc, key) => {
+      if (!formData[key]) {
+        acc[key] = true;
+      }
+      return acc;
+    }, {});
+    // If there are errors, set the corresponding fieldErrors state to true
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return; // Prevent API call if there are errors
+    }
+    axios
+      .post(`${process.env.REACT_APP_API_URL}/api/master/updateCreateSetTaxRate`, formData)
+      .then((response) => {
+        console.log('Response:', response.data);
+        setFormData({
+          chapter: '',
+          subChapter: '',
+          hsnCode: '',
+          branchLocation: '',
+          newRate: '',
+          exempted: ''
+        });
+        toast.success('Set Tax Rate Created Successfully', {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  };
+
   return (
     <>
+      <div>
+        <ToastContainer />
+      </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
-        <div className="row d-flex mt-3 ml">
+        <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
             <Tooltip title="Search" placement="top">
               <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
@@ -102,7 +161,7 @@ export const SetTaxRate = () => {
             </Tooltip>
             <Tooltip title="Save" placement="top">
               {' '}
-              <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }}>
+              <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleSave}>
                 <Avatar
                   variant="rounded"
                   sx={{
@@ -130,10 +189,14 @@ export const SetTaxRate = () => {
               id="outlined-textarea"
               label="Chapter"
               placeholder="Placeholder"
-              multiline
               variant="outlined"
               size="small"
+              name="chapter"
+              value={formData.chapter}
+              onChange={handleInputChange}
               fullWidth
+              // error={fieldErrors.chapter}
+              helperText={<span style={{ color: 'red' }}>{fieldErrors.chapter ? 'This field is required' : ''}</span>}
             />
           </div>
           <div className="col-md-4 mb-3">
@@ -141,10 +204,14 @@ export const SetTaxRate = () => {
               id="outlined-textarea"
               label="Sub Chapter"
               placeholder="Placeholder"
-              multiline
               variant="outlined"
               size="small"
+              name="subChapter"
               fullWidth
+              required
+              value={formData.subChapter}
+              onChange={handleInputChange}
+              helperText={<span style={{ color: 'red' }}>{fieldErrors.subChapter ? 'This field is required' : ''}</span>}
             />
           </div>
 
@@ -153,10 +220,14 @@ export const SetTaxRate = () => {
               id="outlined-textarea"
               label="HSN Code"
               placeholder="Placeholder"
-              multiline
               variant="outlined"
               size="small"
               fullWidth
+              required
+              name="hsnCode"
+              value={formData.hsnCode}
+              onChange={handleInputChange}
+              helperText={<span style={{ color: 'red' }}>{fieldErrors.hsnCode ? 'This field is required' : ''}</span>}
             />
           </div>
           <div className="col-md-4 mb-3">
@@ -164,10 +235,14 @@ export const SetTaxRate = () => {
               id="Old Rate"
               label="Branch/Location"
               placeholder="Placeholder"
-              multiline
+              value={formData.branchLocation}
+              onChange={handleInputChange}
+              required
               variant="outlined"
+              name="branchLocation"
               size="small"
               fullWidth
+              helperText={<span style={{ color: 'red' }}>{fieldErrors.branchLocation ? 'This field is required' : ''}</span>}
             />
           </div>
           <div className="col-md-4 mb-3">
@@ -175,10 +250,14 @@ export const SetTaxRate = () => {
               id="outlined-textarea"
               label="New Rate"
               placeholder="Placeholder"
-              multiline
               variant="outlined"
               size="small"
+              required
               fullWidth
+              name="newRate"
+              value={formData.newRate}
+              onChange={handleInputChange}
+              helperText={<span style={{ color: 'red' }}>{fieldErrors.newRate ? 'This field is required' : ''}</span>}
             />
           </div>
           <div className="col-md-4 mb-3">
@@ -187,13 +266,16 @@ export const SetTaxRate = () => {
               <Select
                 labelId="demo-simple-select-label"
                 id="demo-simple-select"
-                // value={age}
                 label="Excepmted"
-                // onChange={handleChange}
+                required
+                value={formData.exempted}
+                name="exempted"
+                onChange={handleInputChange}
               >
                 <MenuItem value="0">Yes</MenuItem>
                 <MenuItem value="1">No</MenuItem>
               </Select>
+              {fieldErrors.exempted && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
             </FormControl>
           </div>
         </div>

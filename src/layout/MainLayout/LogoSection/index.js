@@ -22,7 +22,7 @@ const LogoSection = () => {
         alt="logo"
         style={{
           width: '150px',
-          height: 'auto'
+          height: '58px'
         }}
       ></img>
     </ButtonBase>

@@ -1,5 +1,9 @@
+import Axios from 'axios';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { encryptPassword } from 'views/utilities/passwordEnc';
 
 // material-ui
 import {
@@ -22,6 +26,8 @@ import { useTheme } from '@mui/material/styles';
 
 // third party
 import { Formik } from 'formik';
+import { useRef } from 'react';
+import { Link } from 'react-router-dom';
 import * as Yup from 'yup';
 
 // project imports
@@ -38,6 +44,7 @@ import VisibilityOff from '@mui/icons-material/VisibilityOff';
 const FirebaseRegister = ({ ...others }) => {
   const theme = useTheme();
   const scriptedRef = useScriptRef();
+  const navigate = useNavigate();
   const matchDownSM = useMediaQuery(theme.breakpoints.down('md'));
   // const customization = useSelector((state) => state.customization);
   const [showPassword, setShowPassword] = useState(false);
@@ -45,11 +52,10 @@ const FirebaseRegister = ({ ...others }) => {
 
   const [strength, setStrength] = useState(0);
   const [level, setLevel] = useState();
-
-  // const googleHandler = async () => {
-  //   console.error('Register');
-  // };
-
+  // const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  // const [email, setEmail] = useState('');
+  // const [password, setPassword] = useState('');
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -68,8 +74,73 @@ const FirebaseRegister = ({ ...others }) => {
     changePassword('123456');
   }, []);
 
+  const formikRef = useRef(null);
+
+  const resetForm = () => {
+    // Check if the formikRef is defined
+    if (formikRef.current) {
+      // Call the resetForm function using the ref
+      formikRef.current.resetForm({
+        values: {
+          email: '',
+          password: '',
+          fname: ''
+        }
+      });
+      setLastName('');
+    }
+  };
+
+  const signupAPICall = async (values) => {
+    // Prepare the user registration data
+
+    const userData = {
+      firstName: values.fname,
+      email: values.email,
+      password: encryptPassword(values.password),
+      userName: values.email
+    };
+    try {
+      const response = await Axios.post(`${process.env.REACT_APP_API_URL}/api/user/signup`, userData, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.data.status) {
+        // Handle authentication failure, display an error message, etc.
+        toast.error(response.data.paramObjectsMap.errorMessage, {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+        console.log('Test1', userData);
+      } else {
+        // Successful registration, perform actions like storing tokens and redirecting
+        localStorage.setItem('token', 'YourAuthTokenHere'); // Replace with the actual token
+        resetForm();
+        // window.location.href = "/login";
+
+        toast.success(response.data.paramObjectsMap.message, {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+        setTimeout(() => {
+          navigate('/pages/login/login3');
+        }, 2000);
+      }
+    } catch (error) {
+      toast.error('Network Error', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+    }
+  };
+
   return (
     <>
+      <div>
+        <ToastContainer />
+      </div>
       <Grid container direction="column" justifyContent="center" spacing={2}>
         {/* <Grid item xs={12}>
           <AnimateButton>
@@ -115,27 +186,35 @@ const FirebaseRegister = ({ ...others }) => {
           </Box>
         </Grid> */}
         <Grid item xs={12} container alignItems="center" justifyContent="center">
-          <Box sx={{ mb: 2 }}>
-            <Typography variant="subtitle1">Sign up with Email address</Typography>
-          </Box>
+          <Box sx={{ mb: 2 }}>{/* <Typography variant="subtitle1">Sign up with Email address</Typography> */}</Box>
         </Grid>
       </Grid>
 
       <Formik
+        innerRef={formikRef}
         initialValues={{
           email: '',
           password: '',
+          fname: '',
           submit: null
         }}
         validationSchema={Yup.object().shape({
           email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
-          password: Yup.string().max(255).required('Password is required')
+          password: Yup.string()
+            .required('Password is required')
+            .min(8, 'Password must be at least 8 characters')
+            .matches(
+              /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
+              'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character'
+            ),
+          fname: Yup.string().max(255).required('First Name is required')
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
           try {
             if (scriptedRef.current) {
               setStatus({ success: true });
               setSubmitting(false);
+              signupAPICall(values);
             }
           } catch (err) {
             console.error(err);
@@ -143,6 +222,7 @@ const FirebaseRegister = ({ ...others }) => {
               setStatus({ success: false });
               setErrors({ submit: err.message });
               setSubmitting(false);
+              console.log('TestE');
             }
           }
         }}
@@ -157,7 +237,11 @@ const FirebaseRegister = ({ ...others }) => {
                   margin="normal"
                   name="fname"
                   type="text"
-                  defaultValue=""
+                  value={values.fname}
+                  error={touched.fname && Boolean(errors.fname)} // Add error prop
+                  helperText={touched.fname && errors.fname} // Add helperText prop
+                  // onChange={(e) => setFirstName(e.target.value)}
+                  onChange={handleChange}
                   sx={{ ...theme.typography.customInput }}
                 />
               </Grid>
@@ -168,7 +252,8 @@ const FirebaseRegister = ({ ...others }) => {
                   margin="normal"
                   name="lname"
                   type="text"
-                  defaultValue=""
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
                   sx={{ ...theme.typography.customInput }}
                 />
               </Grid>
