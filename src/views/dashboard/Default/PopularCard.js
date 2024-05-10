@@ -2,20 +2,20 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
 import { Avatar, Button, CardActions, CardContent, Divider, Grid, Menu, MenuItem, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // project imports
-import BajajAreaChartCard from './BajajAreaChartCard';
+import { gridSpacing } from 'store/constant';
 import MainCard from 'ui-component/cards/MainCard';
 import SkeletonPopularCard from 'ui-component/cards/Skeleton/PopularCard';
-import { gridSpacing } from 'store/constant';
+import BajajAreaChartCard from './BajajAreaChartCard';
 
 // assets
 import ChevronRightOutlinedIcon from '@mui/icons-material/ChevronRightOutlined';
-import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
-import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
 import KeyboardArrowDownOutlinedIcon from '@mui/icons-material/KeyboardArrowDownOutlined';
+import KeyboardArrowUpOutlinedIcon from '@mui/icons-material/KeyboardArrowUpOutlined';
+import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 
 // ==============================|| DASHBOARD DEFAULT - POPULAR CARD ||============================== //
 
@@ -95,7 +95,7 @@ const PopularCard = ({ isLoading }) => {
                         <Grid container alignItems="center" justifyContent="space-between">
                           <Grid item>
                             <Typography variant="subtitle1" color="inherit">
-                              $1839.00
+                              ₹1839.00
                             </Typography>
                           </Grid>
                           <Grid item>
@@ -136,7 +136,7 @@ const PopularCard = ({ isLoading }) => {
                         <Grid container alignItems="center" justifyContent="space-between">
                           <Grid item>
                             <Typography variant="subtitle1" color="inherit">
-                              $100.00
+                              ₹100.00
                             </Typography>
                           </Grid>
                           <Grid item>
@@ -177,7 +177,7 @@ const PopularCard = ({ isLoading }) => {
                         <Grid container alignItems="center" justifyContent="space-between">
                           <Grid item>
                             <Typography variant="subtitle1" color="inherit">
-                              $200.00
+                              ₹200.00
                             </Typography>
                           </Grid>
                           <Grid item>
@@ -218,7 +218,7 @@ const PopularCard = ({ isLoading }) => {
                         <Grid container alignItems="center" justifyContent="space-between">
                           <Grid item>
                             <Typography variant="subtitle1" color="inherit">
-                              $189.00
+                              ₹189.00
                             </Typography>
                           </Grid>
                           <Grid item>
@@ -259,7 +259,7 @@ const PopularCard = ({ isLoading }) => {
                         <Grid container alignItems="center" justifyContent="space-between">
                           <Grid item>
                             <Typography variant="subtitle1" color="inherit">
-                              $189.00
+                              ₹189.00
                             </Typography>
                           </Grid>
                           <Grid item>

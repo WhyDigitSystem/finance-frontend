@@ -33,6 +33,11 @@ const Reconcile = Loadable(lazy(() => import('views/Finance/Reconcile/Reconcile'
 const ReceiptRegister = Loadable(lazy(() => import('views/Finance/receiptRegister/ReceiptRegister')));
 const PaymentRegister = Loadable(lazy(() => import('views/Finance/paymentRegister/PaymentRegister')));
 const ReconciliationSummary = Loadable(lazy(() => import('views/Finance/ReconciliationSummaryReport/ReconciliationSummary')));
+const CompanySetup = Loadable(lazy(() => import('views/company/index')));
+const Country = Loadable(lazy(() => import('views/basicMaster/country')));
+const State = Loadable(lazy(() => import('views/basicMaster/state')));
+const City = Loadable(lazy(() => import('views/basicMaster/city')));
+const Currency = Loadable(lazy(() => import('views/basicMaster/currency')));
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
@@ -45,10 +50,10 @@ const FinanceRoute = {
       path: '/',
       element: <DashboardDefault />
     },
-    // {
-    //   path: '/Finance',
-    //   element: <Fin1 />
-    // },
+    {
+      path: '/company',
+      element: <CompanySetup />
+    },
     {
       path: '/Finance/SetTaxRate',
       element: <SetTaxRate />
@@ -152,6 +157,22 @@ const FinanceRoute = {
     {
       path: '/Finance/ReconciliationSummaryReport/ReconciliationSummary',
       element: <ReconciliationSummary />
+    },
+    {
+      path: '/basicMaster/country',
+      element: <Country />
+    },
+    {
+      path: '/basicMaster/state',
+      element: <State />
+    },
+    {
+      path: '/basicMaster/city',
+      element: <City />
+    },
+    {
+      path: '/basicMaster/currency',
+      element: <Currency />
     }
   ]
 };

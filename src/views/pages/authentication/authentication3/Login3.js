@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 
 // material-ui
-import { Divider, Grid, Stack, Typography, useMediaQuery } from '@mui/material';
+import { Chip, Divider, Grid, Stack, Typography, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 // project imports
@@ -57,13 +57,16 @@ const Login = () => {
                   <Grid item xs={12}>
                     <Divider />
                   </Grid>
-                  <Grid item xs={12}>
+                  {/* <Grid item xs={12}>
                     <Grid item container direction="column" alignItems="center" xs={12}>
                       <Typography component={Link} to="/pages/register/register3" variant="subtitle1" sx={{ textDecoration: 'none' }}>
                         Don&apos;t have an account?
                       </Typography>
                     </Grid>
-                  </Grid>
+                  </Grid> */}
+                  <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>
+                    <Chip label={process.env.REACT_APP_VERSION} disabled chipcolor="secondary" size="small" sx={{ cursor: 'pointer' }} />
+                  </Stack>
                 </Grid>
               </AuthCardWrapper>
             </Grid>

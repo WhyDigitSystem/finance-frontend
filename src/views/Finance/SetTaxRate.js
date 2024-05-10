@@ -10,37 +10,63 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import SetTaxRateTable from './SetTaxRateTable';
 
 export const SetTaxRate = () => {
   const [formData, setFormData] = useState({
     chapter: '',
     subChapter: '',
     hsnCode: '',
-    branchLocation: '',
+    branch: '',
     newRate: '',
-    exempted: ''
+    excepmted: '',
+    orgId: 1
   });
-
-  const theme = useTheme();
-  const anchorRef = useRef(null);
 
   const [fieldErrors, setFieldErrors] = useState({
     chapter: false,
     subChapter: false,
     hsnCode: false,
-    branchLocation: false,
+    branch: false,
     newRate: false,
-    exempted: false
+    excepmted: false
   });
+
+  const [showForm, setShowForm] = useState(true);
+  const [data, setData] = useState(true);
+
+  const theme = useTheme();
+  const anchorRef = useRef(null);
+
+  useEffect(() => {
+    getSetTaxRate();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const parsedValue = name === 'newRate' && value !== '' ? parseInt(value) : value;
+    setFormData({ ...formData, [name]: parsedValue });
     setFieldErrors({ ...fieldErrors, [name]: false });
+  };
+
+  const getSetTaxRate = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllSetTaxRate`);
+      console.log('API Response:', response);
+
+      if (response.status === 200) {
+        setData(response.data.paramObjectsMap.setTaxRateVO);
+      } else {
+        // Handle error
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
 
   const handleSave = () => {
@@ -57,17 +83,10 @@ export const SetTaxRate = () => {
       return; // Prevent API call if there are errors
     }
     axios
-      .post(`${process.env.REACT_APP_API_URL}/api/master/updateCreateSetTaxRate`, formData)
+      .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateSetTaxRate`, formData)
       .then((response) => {
         console.log('Response:', response.data);
-        setFormData({
-          chapter: '',
-          subChapter: '',
-          hsnCode: '',
-          branchLocation: '',
-          newRate: '',
-          exempted: ''
-        });
+        handleClear();
         toast.success('Set Tax Rate Created Successfully', {
           autoClose: 2000,
           theme: 'colored'
@@ -76,6 +95,59 @@ export const SetTaxRate = () => {
       .catch((error) => {
         console.error('Error:', error);
       });
+  };
+
+  const handleRowEdit = (rowId, newData) => {
+    console.log('Edit', rowId, newData);
+    // Send PUT request to update the row
+    axios
+      .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateSetTaxRate/${rowId}`, newData)
+      .then((response) => {
+        console.log('Edit successful:', response.data);
+        // Handle any further actions after successful edit
+        toast.success('Set Tax Rate Updated Successfully', {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+      })
+      .catch((error) => {
+        console.error('Error editing row:', error);
+        // Handle error scenarios
+        toast.error('Failed to Update Set Tax Rate', {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+      });
+  };
+
+  const handleList = () => {
+    setShowForm(!showForm);
+    setFieldErrors({
+      chapter: false,
+      subChapter: false,
+      hsnCode: false,
+      branch: false,
+      newRate: false,
+      excepmted: false
+    });
+  };
+  const handleClear = () => {
+    setFormData({
+      chapter: '',
+      subChapter: '',
+      hsnCode: '',
+      branch: '',
+      newRate: '',
+      excepmted: ''
+    });
+    setFieldErrors({
+      chapter: false,
+      subChapter: false,
+      hsnCode: false,
+      branch: false,
+      newRate: false,
+      excepmted: false
+    });
   };
 
   return (
@@ -112,7 +184,7 @@ export const SetTaxRate = () => {
 
             <Tooltip title="Clear" placement="top">
               {' '}
-              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
+              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={handleClear}>
                 <Avatar
                   variant="rounded"
                   sx={{
@@ -137,7 +209,7 @@ export const SetTaxRate = () => {
 
             <Tooltip title="List View" placement="top">
               {' '}
-              <ButtonBase sx={{ borderRadius: '12px' }}>
+              <ButtonBase sx={{ borderRadius: '12px' }} onClick={handleList}>
                 <Avatar
                   variant="rounded"
                   sx={{
@@ -184,100 +256,107 @@ export const SetTaxRate = () => {
               </ButtonBase>
             </Tooltip>
           </div>
-          <div className="col-md-4 mb-3">
-            <TextField
-              id="outlined-textarea"
-              label="Chapter"
-              placeholder="Placeholder"
-              variant="outlined"
-              size="small"
-              name="chapter"
-              value={formData.chapter}
-              onChange={handleInputChange}
-              fullWidth
-              // error={fieldErrors.chapter}
-              helperText={<span style={{ color: 'red' }}>{fieldErrors.chapter ? 'This field is required' : ''}</span>}
-            />
-          </div>
-          <div className="col-md-4 mb-3">
-            <TextField
-              id="outlined-textarea"
-              label="Sub Chapter"
-              placeholder="Placeholder"
-              variant="outlined"
-              size="small"
-              name="subChapter"
-              fullWidth
-              required
-              value={formData.subChapter}
-              onChange={handleInputChange}
-              helperText={<span style={{ color: 'red' }}>{fieldErrors.subChapter ? 'This field is required' : ''}</span>}
-            />
-          </div>
 
-          <div className="col-md-4 mb-3">
-            <TextField
-              id="outlined-textarea"
-              label="HSN Code"
-              placeholder="Placeholder"
-              variant="outlined"
-              size="small"
-              fullWidth
-              required
-              name="hsnCode"
-              value={formData.hsnCode}
-              onChange={handleInputChange}
-              helperText={<span style={{ color: 'red' }}>{fieldErrors.hsnCode ? 'This field is required' : ''}</span>}
-            />
-          </div>
-          <div className="col-md-4 mb-3">
-            <TextField
-              id="Old Rate"
-              label="Branch/Location"
-              placeholder="Placeholder"
-              value={formData.branchLocation}
-              onChange={handleInputChange}
-              required
-              variant="outlined"
-              name="branchLocation"
-              size="small"
-              fullWidth
-              helperText={<span style={{ color: 'red' }}>{fieldErrors.branchLocation ? 'This field is required' : ''}</span>}
-            />
-          </div>
-          <div className="col-md-4 mb-3">
-            <TextField
-              id="outlined-textarea"
-              label="New Rate"
-              placeholder="Placeholder"
-              variant="outlined"
-              size="small"
-              required
-              fullWidth
-              name="newRate"
-              value={formData.newRate}
-              onChange={handleInputChange}
-              helperText={<span style={{ color: 'red' }}>{fieldErrors.newRate ? 'This field is required' : ''}</span>}
-            />
-          </div>
-          <div className="col-md-4 mb-3">
-            <FormControl fullWidth size="small">
-              <InputLabel id="demo-simple-select-label">Excepmted</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                label="Excepmted"
-                required
-                value={formData.exempted}
-                name="exempted"
-                onChange={handleInputChange}
-              >
-                <MenuItem value="0">Yes</MenuItem>
-                <MenuItem value="1">No</MenuItem>
-              </Select>
-              {fieldErrors.exempted && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
-            </FormControl>
-          </div>
+          {showForm ? (
+            <div className="row d-flex ml">
+              <div className="col-md-4 mb-3">
+                <TextField
+                  id="outlined-textarea"
+                  label="Chapter"
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  name="chapter"
+                  value={formData.chapter}
+                  onChange={handleInputChange}
+                  fullWidth
+                  // error={fieldErrors.chapter}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.chapter ? 'This field is required' : ''}</span>}
+                />
+              </div>
+              <div className="col-md-4 mb-3">
+                <TextField
+                  id="outlined-textarea"
+                  label="Sub Chapter"
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  name="subChapter"
+                  fullWidth
+                  required
+                  value={formData.subChapter}
+                  onChange={handleInputChange}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.subChapter ? 'This field is required' : ''}</span>}
+                />
+              </div>
+
+              <div className="col-md-4 mb-3">
+                <TextField
+                  id="outlined-textarea"
+                  label="HSN Code"
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  required
+                  name="hsnCode"
+                  value={formData.hsnCode}
+                  onChange={handleInputChange}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.hsnCode ? 'This field is required' : ''}</span>}
+                />
+              </div>
+              <div className="col-md-4 mb-3">
+                <TextField
+                  id="Old Rate"
+                  label="Branch/Location"
+                  placeholder="Placeholder"
+                  value={formData.branch}
+                  onChange={handleInputChange}
+                  required
+                  variant="outlined"
+                  name="branch"
+                  size="small"
+                  fullWidth
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.branch ? 'This field is required' : ''}</span>}
+                />
+              </div>
+              <div className="col-md-4 mb-3">
+                <TextField
+                  id="outlined-textarea"
+                  label="New Rate"
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  required
+                  fullWidth
+                  name="newRate"
+                  value={formData.newRate}
+                  onChange={handleInputChange}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.newRate ? 'This field is required' : ''}</span>}
+                />
+              </div>
+              <div className="col-md-4 mb-3">
+                <FormControl fullWidth size="small">
+                  <InputLabel id="demo-simple-select-label">Excepmted</InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    label="Excepmted"
+                    required
+                    value={formData.excepmted}
+                    name="excepmted"
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="0">Yes</MenuItem>
+                    <MenuItem value="1">No</MenuItem>
+                  </Select>
+                  {fieldErrors.excepmted && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
+                </FormControl>
+              </div>
+            </div>
+          ) : (
+            <SetTaxRateTable data={data} onRowEditTable={handleRowEdit} />
+          )}
         </div>
       </div>
     </>

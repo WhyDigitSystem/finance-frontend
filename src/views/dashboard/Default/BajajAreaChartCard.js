@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
 // material-ui
-import { useTheme } from '@mui/material/styles';
 import { Card, Grid, Typography } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 // third-party
 import ApexCharts from 'apexcharts';
@@ -44,7 +44,7 @@ const BajajAreaChartCard = () => {
             </Grid>
             <Grid item>
               <Typography variant="h4" sx={{ color: theme.palette.grey[800] }}>
-                $1839.00
+                ₹1839.00
               </Typography>
             </Grid>
           </Grid>

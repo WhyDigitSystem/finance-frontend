@@ -99,7 +99,7 @@ const FirebaseLogin = ({ ...others }) => {
         console.log('Test1', userData);
       } else {
         // Successful registration, perform actions like storing tokens and redirecting
-        localStorage.setItem('token', 'YourAuthTokenHere'); // Replace with the actual token
+        localStorage.setItem('orgId', response.data.paramObjectsMap.userVO.orgId); // Replace with the actual token
         localStorage.setItem('LoginMessage', true);
         resetForm();
         // window.location.href = "/login";
@@ -157,7 +157,7 @@ const FirebaseLogin = ({ ...others }) => {
           submit: null
         }}
         validationSchema={Yup.object().shape({
-          email: Yup.string().email('Must be a valid email').max(255).required('Email is required'),
+          email: Yup.string().max(255).required('UserId is required'),
           password: Yup.string().max(255).required('Password is required')
         })}
         onSubmit={async (values, { setErrors, setStatus, setSubmitting }) => {
