@@ -142,6 +142,31 @@ const State = () => {
       });
   };
 
+  const editState = async (updatedState) => {
+    try {
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateState`, updatedState);
+      if (response.status === 200) {
+        toast.success('State Updated Successfully', {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+        getState();
+      } else {
+        console.error('API Error:', response.data);
+        toast.error('Failed to Update State', {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+      }
+    } catch (error) {
+      console.error('Error updating state:', error);
+      toast.error('Error Updating state', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+    }
+  };
+
   return (
     <div>
       <div>
@@ -313,7 +338,7 @@ const State = () => {
             </div>
           </div>
         ) : (
-          <CommonTable data={data} columns={columns} />
+          <CommonTable data={data} columns={columns} editCallback={editState} countryVO={countryVO} />
         )}
       </div>
     </div>

@@ -131,7 +131,7 @@ const ArApBill = () => {
               </ButtonBase>
             </Tooltip>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label" required>
                 Branch/Location
@@ -149,32 +149,32 @@ const ArApBill = () => {
               </Select>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Party Name" size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField disabled label="Party Code" size="small" inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField disabled label="Currency" size="small" inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField disabled label="Credit Days" size="small" inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Bill No" size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -188,17 +188,17 @@ const ArApBill = () => {
               </LocalizationProvider>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Bill Ex. Rate" size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Supp. Ref. No" size="small" inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -212,7 +212,7 @@ const ArApBill = () => {
               </LocalizationProvider>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -226,17 +226,17 @@ const ArApBill = () => {
               </LocalizationProvider>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Debit Amount" size="small" inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Credit Amount" size="small" inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormGroup>
               <FormControlLabel
                 control={<Checkbox defaultChecked sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }} />}

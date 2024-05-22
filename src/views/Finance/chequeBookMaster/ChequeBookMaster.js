@@ -136,7 +136,7 @@ const ChequeBookMaster = () => {
             </Tooltip>
           </div>
 
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label">Branch/Location</InputLabel>
               <Select
@@ -151,33 +151,33 @@ const ChequeBookMaster = () => {
               </Select>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-2">
+          <div className="col-md-3 mb-2">
             <FormControl fullWidth variant="filled">
               <TextField disabled label="Cheque Book ID" size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-2">
+          <div className="col-md-3 mb-2">
             <Box sx={{ minWidth: 120 }}>
               <FormControl fullWidth size="small">
                 <TextField id="bank" label="Bank" size="small" required inputProps={{ maxLength: 30 }} />
               </FormControl>
             </Box>
           </div>
-          <div className="col-md-4 mb-2">
+          <div className="col-md-3 mb-2">
             <Box sx={{ minWidth: 120 }}>
               <FormControl fullWidth size="small">
                 <TextField id="checkprefix" label="Check Prefix" size="small" required inputProps={{ maxLength: 30 }} />
               </FormControl>
             </Box>
           </div>
-          <div className="col-md-4 mb-2">
+          <div className="col-md-3 mb-2">
             <Box sx={{ minWidth: 120 }}>
               <FormControl fullWidth size="small">
                 <TextField id="checkstartno" label="Check Start No" size="small" required inputProps={{ maxLength: 30 }} />
               </FormControl>
             </Box>
           </div>
-          <div className="col-md-4 mb-2">
+          <div className="col-md-3 mb-2">
             <Box sx={{ minWidth: 120 }}>
               <FormControl fullWidth size="small">
                 <TextField id="noofchequeleaves" label="No of Cheque Leaves" size="small" required inputProps={{ maxLength: 30 }} />

@@ -12,10 +12,9 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase } from '@mui/material';
-import { useRef } from 'react';
-import { Tooltip } from '@mui/material';
+import { Avatar, ButtonBase, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useRef } from 'react';
 import 'react-tabs/style/react-tabs.css';
 
 const HsnSacCode = () => {
@@ -143,7 +142,7 @@ const HsnSacCode = () => {
               <span className="ml-1">List View</span>
             </button>
           </div> */}
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label">Type</InputLabel>
               <Select
@@ -159,7 +158,7 @@ const HsnSacCode = () => {
               </Select>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="code"
@@ -171,7 +170,7 @@ const HsnSacCode = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="description"
@@ -183,7 +182,7 @@ const HsnSacCode = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="chapter"
@@ -195,7 +194,7 @@ const HsnSacCode = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="chapter-code"
@@ -207,7 +206,7 @@ const HsnSacCode = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="sub-chapter-code"
@@ -219,7 +218,7 @@ const HsnSacCode = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="sub-chapter"
@@ -231,7 +230,7 @@ const HsnSacCode = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="rate"
@@ -243,7 +242,7 @@ const HsnSacCode = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label">Excempted (Yes/No)</InputLabel>
               <Select
@@ -259,7 +258,7 @@ const HsnSacCode = () => {
               </Select>
             </FormControl>
           </div>
-          {/* <div className="col-md-4 mb-3">
+          {/* <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="account"
@@ -271,7 +270,7 @@ const HsnSacCode = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="account"

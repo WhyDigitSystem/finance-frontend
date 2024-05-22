@@ -296,7 +296,7 @@ const Group = () => {
         </div> */}
         {showForm ? (
           <div className="row d-flex ">
-            <div className="col-md-4 mb-3">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <InputLabel id="demo-simple-select-label">Group Name</InputLabel>
                 <Select
@@ -314,7 +314,7 @@ const Group = () => {
                 {fieldErrors.groupName && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
             </div>
-            <div className="col-md-4 mb-2">
+            <div className="col-md-3 mb-2">
               <FormControl fullWidth size="small">
                 <InputLabel id="demo-simple-select-label">GST Tax Flag</InputLabel>
                 <Select
@@ -333,7 +333,7 @@ const Group = () => {
               </FormControl>
             </div>
 
-            <div className="col-md-4 mb-3">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="account"
@@ -349,7 +349,7 @@ const Group = () => {
                 />
               </FormControl>
             </div>
-            <div className="col-md-4 mb-3">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <InputLabel id="demo-simple-select-label">COA List</InputLabel>
                 <Select
@@ -368,7 +368,7 @@ const Group = () => {
               </FormControl>
             </div>
 
-            <div className="col-md-4 mb-3">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="account"
@@ -384,7 +384,7 @@ const Group = () => {
                 />
               </FormControl>
             </div>
-            <div className="col-md-4 mb-3">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <InputLabel id="demo-simple-select-label">Type</InputLabel>
                 <Select
@@ -403,7 +403,7 @@ const Group = () => {
               </FormControl>
             </div>
 
-            <div className="col-md-2 mb-2">
+            <div className="col-md-3 mb-2">
               <FormGroup>
                 <FormControlLabel
                   control={
@@ -418,7 +418,7 @@ const Group = () => {
                 />
               </FormGroup>
             </div>
-            <div className="col-md-2 mb-2">
+            <div className="col-md-3 mb-2">
               <FormGroup>
                 <FormControlLabel
                   control={
@@ -433,7 +433,7 @@ const Group = () => {
                 />
               </FormGroup>
             </div>
-            <div className="col-md-4 mb-3">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <InputLabel id="demo-simple-select-label">Category</InputLabel>
                 <Select
@@ -452,7 +452,7 @@ const Group = () => {
               </FormControl>
             </div>
 
-            <div className="col-md-4 mb-3">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <InputLabel id="demo-simple-select-label">Branch</InputLabel>
                 <Select
@@ -470,7 +470,7 @@ const Group = () => {
                 {fieldErrors.branch && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
             </div>
-            <div className="col-md-4 mb-3">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <InputLabel id="demo-simple-select-label">Currency</InputLabel>
                 <Select
@@ -489,7 +489,7 @@ const Group = () => {
               </FormControl>
             </div>
 
-            <div className="col-md-4 mb-3">
+            <div className="col-md-3 mb-3">
               <FormGroup>
                 <FormControlLabel
                   control={

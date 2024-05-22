@@ -141,7 +141,7 @@ const Receipt = () => {
               </ButtonBase>
             </Tooltip>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="branch_location"
@@ -153,7 +153,7 @@ const Receipt = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label">Receipt Type</InputLabel>
               <Select
@@ -170,7 +170,7 @@ const Receipt = () => {
             </FormControl>
           </div>
 
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -185,7 +185,7 @@ const Receipt = () => {
             </FormControl>
           </div>
 
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="docid"
@@ -197,7 +197,7 @@ const Receipt = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="mod"
@@ -209,7 +209,7 @@ const Receipt = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="bank_cash_ac"
@@ -221,7 +221,7 @@ const Receipt = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="currency"
@@ -233,7 +233,7 @@ const Receipt = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="exrates"
@@ -245,7 +245,7 @@ const Receipt = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="balance"
@@ -257,7 +257,7 @@ const Receipt = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="recfrom"
@@ -269,7 +269,7 @@ const Receipt = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="cheq_dd_cardbank"
@@ -281,7 +281,7 @@ const Receipt = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="cheq_dd_cardno"
@@ -293,7 +293,7 @@ const Receipt = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -308,7 +308,7 @@ const Receipt = () => {
             </FormControl>
           </div>
 
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormGroup>
               <FormControlLabel
                 control={<Checkbox defaultChecked sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }} />}
@@ -331,13 +331,13 @@ const Receipt = () => {
           <TabPanel>
             <div>
               <div className="row d-flex mt-4">
-                <div className="col-md-4 mb-3">
+                <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField id="netamt" label="Net Amount" size="small" placeholder="blcategory" inputProps={{ maxLength: 30 }} />
                   </FormControl>
                 </div>
 
-                <div className="col-md-4 mb-3">
+                <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField id="remarks" label="Remarks" size="small" placeholder="plcategory" inputProps={{ maxLength: 30 }} />
                   </FormControl>

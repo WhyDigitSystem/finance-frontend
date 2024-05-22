@@ -39,3 +39,22 @@ export const getStateByCountry = async (orgId, country) => {
     return [];
   }
 };
+
+export const getCityByState = async (orgId, state) => {
+  try {
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getAllCityByState?orgid=${orgId}&state=${state}`);
+    console.log('API Response:', response);
+
+    if (response.status === 200) {
+      const cityNameVO = response.data.paramObjectsMap.cityVO.map((city) => city.cityName);
+      return cityNameVO;
+    } else {
+      // Handle error
+      console.error('API Error:', response.data);
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return [];
+  }
+};

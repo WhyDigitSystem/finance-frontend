@@ -4,150 +4,154 @@ import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { Avatar, ButtonBase, InputLabel, MenuItem, Select, Tooltip } from '@mui/material';
-import FormControl from '@mui/material/FormControl';
+import { Avatar, ButtonBase, FormControl, InputLabel, MenuItem, Select, Tooltip } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import axios from 'axios';
+import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { getCityByState, getCountryByOrgId, getStateByCountry } from 'utils/common-functions';
 import CommonTable from 'views/basicMaster/CommonTable';
 import { encryptPassword } from 'views/utilities/passwordEnc';
-import CompanyCard from './card';
 
-const CompanySetup = () => {
+const Employee = () => {
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState(false);
+  const [branchData, setBranchData] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [countryVO, setCountryVO] = useState([]);
-  const [stateVO, setStateVO] = useState([]);
-  const [cityVO, setCityVO] = useState([]);
+  const [roleDataSelect, setRoleDataSelect] = useState([]);
 
   const [formData, setFormData] = useState({
-    companyName: '',
-    companyCode: '',
-    address: '',
-    city: '',
-    state: '',
-    country: '',
-    zip: '',
-    mainCurrency: '',
-    phone: '',
-    email: '',
-    webSite: '',
-    note: '',
     employeeCode: '',
     employeeName: '',
+    gender: '',
+    branch: '',
+    department: '',
+    designation: '',
+    dateOfBirth: '',
+    joiningDate: '',
+    active: true,
     password: '',
+    role: '',
     orgId: orgId
   });
 
   const [fieldErrors, setFieldErrors] = useState({
-    companyName: false,
-    companyCode: false,
-    address: false,
-    city: false,
-    state: false,
-    country: false,
-    zip: false,
-    mainCurrency: false,
-    phone: false,
-    email: false,
-    webSite: false,
-    note: false,
     employeeCode: false,
     employeeName: false,
-    password: false
+    gender: false,
+    branch: false,
+    department: false,
+    designation: false,
+    dateOfBirth: false,
+    joiningDate: false,
+    role: false,
+    Password: false
   });
 
   const columns = [
-    { accessorKey: 'companyName', header: 'Company', size: 140 },
-    { accessorKey: 'companyCode', header: 'Code', size: 140 },
-    { accessorKey: 'city', header: 'City', size: 140 },
-    { accessorKey: 'state', header: 'State', size: 140 },
-    { accessorKey: 'country', header: 'Country', size: 140 },
-    { accessorKey: 'phone', header: 'Phone', size: 140 },
-    { accessorKey: 'email', header: 'Email', size: 140 },
+    { accessorKey: 'employeeCode', header: 'EmployeeCode', size: 140 },
+    { accessorKey: 'employeeName', header: 'Name', size: 140 },
+    { accessorKey: 'gender', header: 'Gender', size: 140 },
+    { accessorKey: 'branch', header: 'Branch', size: 140 },
+    { accessorKey: 'department', header: 'Department', size: 140 },
+    { accessorKey: 'designation', header: 'Designation', size: 140 },
+    { accessorKey: 'dateOfBirth', header: 'DOB', size: 140 },
+    { accessorKey: 'joiningDate', header: 'DOJ', size: 140 },
     { accessorKey: 'active', header: 'active', size: 140 }
   ];
-
-  const handleEmailValidation = (email) => {
-    // Regular expression for email validation
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailPattern.test(email);
-  };
 
   const theme = useTheme();
   const anchorRef = useRef(null);
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Replace with your orgId or fetch it from somewhere
-        const countryData = await getCountryByOrgId(orgId);
-        setCountryVO(countryData);
-      } catch (error) {
-        console.error('Error fetching country data:', error);
-      }
-    };
-    fetchData();
-    getCompany();
+    getEmployee();
+    getBranch();
+    getRoleData();
   }, []);
 
   useEffect(() => {
-    const fetchDataState = async () => {
-      try {
-        // Replace with your orgId or fetch it from somewhere
-        const stateData = await getStateByCountry(orgId, formData.country);
-        setStateVO(stateData);
-      } catch (error) {
-        console.error('Error fetching country data:', error);
-      }
-    };
-    fetchDataState();
-  }, [formData.country]);
-
-  useEffect(() => {
-    const fetchDataCity = async () => {
-      try {
-        // Replace with your orgId or fetch it from somewhere
-        const cityData = await getCityByState(orgId, formData.state);
-        setCityVO(cityData);
-      } catch (error) {
-        console.error('Error fetching country data:', error);
-      }
-    };
-    fetchDataCity();
-  }, [formData.state]);
-
-  const handleTogglePasswordVisibility = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword);
-  };
+    // Reset the role to an empty string if the initial role value is not in the fetched roleDataSelect options
+    if (roleDataSelect.length > 0 && !roleDataSelect.includes(formData.role)) {
+      setFormData((prevFormData) => ({ ...prevFormData, role: '' }));
+    }
+  }, [roleDataSelect]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'email') {
-      setEmailError(!handleEmailValidation(value));
-    }
+
     const parsedValue = name === 'newRate' && value !== '' ? parseInt(value) : value;
     setFormData({ ...formData, [name]: parsedValue });
     setFieldErrors({ ...fieldErrors, [name]: false });
   };
+  const handleSelectChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    setFieldErrors({ ...fieldErrors, [name]: false });
+  };
 
-  const getCompany = async () => {
+  const getBranch = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getCompanyById`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getBranchByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === 200) {
-        setData(response.data.paramObjectsMap.companyVO);
+        setBranchData(response.data.paramObjectsMap.branchVO.map((branch) => branch.branch));
+
+        console.log(
+          'Testt',
+          response.data.paramObjectsMap.branchVO.map((branch) => branch.branch)
+        );
+      } else {
+        // Handle error
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getRoleData = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === 200) {
+        // setData(response.data.paramObjectsMap.roleMasterVO);
+        setRoleDataSelect(response.data.paramObjectsMap.roleMasterVO.map((list) => list.role));
+
+        console.log(
+          'Test',
+          response.data.paramObjectsMap.roleMasterVO.map((list) => list.role)
+        );
+      } else {
+        // Handle error
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getEmployee = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getEmployeeByOrgId?orgId=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === 200) {
+        setData(response.data.paramObjectsMap.employeeVO);
       } else {
         // Handle error
         console.error('API Error:', response.data);
@@ -160,28 +164,27 @@ const CompanySetup = () => {
   const handleSave = () => {
     // Check if any field is empty
     const requiredFields = [
-      'companyName',
-      'companyCode',
-      'phone',
-      'email',
-      'address',
-      'city',
-      'state',
-      'country',
-      'zip',
-      'mainCurrency',
-      'phone',
+      'branch',
       'employeeCode',
       'employeeName',
+      'gender',
+      'department',
+      'designation',
+      'dateOfBirth',
+      'joiningDate',
       'password'
+      // 'role'
     ];
     const errors = {};
+
+    console.log('Testtt', formData);
 
     requiredFields.forEach((field) => {
       if (!formData[field]) {
         errors[field] = true;
       }
     });
+
     // If there are errors, set the corresponding fieldErrors state to true
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
@@ -196,102 +199,103 @@ const CompanySetup = () => {
     };
 
     axios
-      .put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateCompany`, formDataWithEncryptedPassword)
+      .put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateEmployee`, formDataWithEncryptedPassword)
       .then((response) => {
         console.log('Response:', response.data);
         handleClear();
-        toast.success('Company Created Successfully', {
+        toast.success('Employee Created Successfully', {
           autoClose: 2000,
           theme: 'colored'
         });
-        getCompany();
+        getEmployee();
       })
       .catch((error) => {
         console.error('Error:', error);
       });
   };
 
-  const editBranch = async (updatedBranch) => {
+  const handleList = () => {
+    setShowForm(!showForm);
+    setFieldErrors({
+      employeeCode: false,
+      employeeName: false,
+      gender: false,
+      branch: false,
+      department: false,
+      designation: false,
+      dateOfBirth: false,
+      joiningDate: false,
+      password: false,
+      role: false
+    });
+  };
+  const handleClear = () => {
+    setFormData({
+      employeeCode: '',
+      employeeName: '',
+      gender: '',
+      branch: '',
+      department: '',
+      designation: '',
+      dateOfBirth: '',
+      joiningDate: '',
+      active: true,
+      password: '',
+      role: ''
+    });
+    setFieldErrors({
+      employeeCode: false,
+      employeeName: false,
+      gender: false,
+      branch: false,
+      department: false,
+      designation: false,
+      dateOfBirth: false,
+      joiningDate: false,
+      password: false,
+      role: false
+    });
+  };
+
+  const genderVO = ['Male', 'Female', 'Other'];
+
+  const handleDateChange = (name, date) => {
+    if (date && dayjs(date).isValid()) {
+      const dateString = dayjs(date).toISOString();
+      setFormData({ ...formData, [name]: dateString });
+      setFieldErrors({ ...fieldErrors, [name]: false });
+    } else {
+      setFormData({ ...formData, [name]: null });
+    }
+  };
+
+  const editEmployee = async (updatedBranch) => {
     try {
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateCompany`, updatedBranch);
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateEmployee`, updatedBranch);
       if (response.status === 200) {
-        toast.success('Company Updated Successfully', {
+        toast.success('Employee Updated Successfully', {
           autoClose: 2000,
           theme: 'colored'
         });
-        getCompany();
+        getEmployee();
       } else {
         console.error('API Error:', response.data);
-        toast.error('Failed to Update Country', {
+        toast.error('Failed to Update Employee', {
           autoClose: 2000,
           theme: 'colored'
         });
       }
     } catch (error) {
       console.error('Error updating country:', error);
-      toast.error('Error Updating Country', {
+      toast.error('Error Updating Employee', {
         autoClose: 2000,
         theme: 'colored'
       });
     }
   };
 
-  const handleList = () => {
-    setShowForm(!showForm);
-    setFieldErrors({
-      companyName: false,
-      companyCode: false,
-      address: false,
-      city: false,
-      state: false,
-      country: false,
-      zip: false,
-      mainCurrency: false,
-      phone: false,
-      email: false,
-      webSite: false,
-      note: false,
-      password: false,
-      employeeCode: false,
-      employeeName: false
-    });
-  };
-  const handleClear = () => {
-    setFormData({
-      companyName: '',
-      companyCode: '',
-      address: '',
-      city: '',
-      state: '',
-      country: '',
-      zip: '',
-      mainCurrency: '',
-      phone: '',
-      email: '',
-      webSite: '',
-      note: '',
-      password: '',
-      employeeCode: '',
-      employeeName: ''
-    });
-    setFieldErrors({
-      companyName: false,
-      companyCode: false,
-      address: false,
-      city: false,
-      state: false,
-      country: false,
-      zip: false,
-      mainCurrency: false,
-      phone: false,
-      email: false,
-      webSite: false,
-      note: false,
-      password: false,
-      employeeCode: false,
-      employeeName: false
-    });
-    setEmailError(false);
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword((prevShowPassword) => !prevShowPassword);
   };
 
   return (
@@ -406,65 +410,49 @@ const CompanySetup = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label="Company"
+                  label="EmployeeId"
                   variant="outlined"
                   size="small"
                   required
-                  value={formData.companyName}
+                  value={formData.employeeCode}
                   onChange={handleInputChange}
                   fullWidth
-                  name="companyName"
+                  name="employeeCode"
                   // error={fieldErrors.chapter}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.companyName ? 'This field is required' : ''}</span>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeCode ? 'This field is required' : ''}</span>}
                   inputProps={{ maxLength: 30 }}
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label="Code"
+                  label="Name"
                   variant="outlined"
                   size="small"
-                  name="companyCode"
+                  name="employeeName"
                   fullWidth
                   required
-                  value={formData.companyCode}
+                  value={formData.employeeName}
                   onChange={handleInputChange}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.companyCode ? 'This field is required' : ''}</span>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeName ? 'This field is required' : ''}</span>}
                   inputProps={{ maxLength: 15 }}
                 />
               </div>
 
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea"
-                  label="Address"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  multiline
-                  required
-                  name="address"
-                  value={formData.address}
-                  onChange={handleInputChange}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.address ? 'This field is required' : ''}</span>}
-                  inputProps={{ maxLength: 200 }}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="country">Country</InputLabel>
-                  <Select label="country-label" id="country" name="country" value={formData.country} onChange={handleInputChange}>
+                  <InputLabel id="country">Gender</InputLabel>
+                  <Select label="country-label" id="country" name="gender" value={formData.gender} onChange={handleInputChange}>
                     {/* <MenuItem value="">
                     <em>None</em>
                   </MenuItem> */}
-                    {countryVO.map((country) => (
-                      <MenuItem key={country} value={country}>
-                        {country}
+                    {genderVO.map((gender) => (
+                      <MenuItem key={gender} value={gender}>
+                        {gender}
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.country && (
+                  {fieldErrors.gender && (
                     <span className="mt-1" style={{ color: 'red', fontSize: '12px', marginLeft: '15px' }}>
                       This field is required
                     </span>
@@ -473,163 +461,102 @@ const CompanySetup = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="country">State</InputLabel>
-                  <Select label="state-label" id="state" name="state" value={formData.state} onChange={handleInputChange}>
+                  <InputLabel id="branch">Branch</InputLabel>
+                  <Select label="state-label" id="branch" name="branch" value={formData.branch} onChange={handleInputChange}>
                     {/* <MenuItem value="">
                     <em>None</em>
                   </MenuItem> */}
-                    {stateVO.map((state) => (
-                      <MenuItem key={state} value={state}>
-                        {state}
+                    {branchData.map((branch) => (
+                      <MenuItem key={branch} value={branch}>
+                        {branch}
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.state && (
+                  {fieldErrors.branch && (
                     <span className="mt-1" style={{ color: 'red', fontSize: '12px', marginLeft: '15px' }}>
                       This field is required
                     </span>
                   )}
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="country">City</InputLabel>
-                  <Select label="state-label" id="state" name="city" value={formData.city} onChange={handleInputChange}>
-                    {cityVO.map((city) => (
-                      <MenuItem key={city} value={city}>
-                        {city}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.city && (
-                    <span className="mt-1" style={{ color: 'red', fontSize: '12px', marginLeft: '15px' }}>
-                      This field is required
-                    </span>
-                  )}
-                </FormControl>
-              </div>
+
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea-zip"
-                  label="ZIP"
+                  label="Department"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="zip"
-                  value={formData.zip}
+                  name="department"
+                  value={formData.department}
                   onChange={handleInputChange}
                   required
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.zip ? 'This field is required' : ''}</span>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.department ? 'This field is required' : ''}</span>}
                   inputProps={{ maxLength: 10 }}
                 />
               </div>
+
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="outlined-textarea-currency"
-                  label="Main Currency"
+                  id="outlined-textarea-zip"
+                  label="Designation"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="mainCurrency"
-                  value={formData.mainCurrency}
+                  name="designation"
+                  value={formData.designation}
                   onChange={handleInputChange}
                   required
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.mainCurrency ? 'This field is required' : ''}</span>}
-                  inputProps={{ maxLength: 20 }}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea-phone"
-                  label="Phone"
-                  variant="outlined"
-                  size="small"
-                  required
-                  fullWidth
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.phone ? 'This field is required' : ''}</span>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.designation ? 'This field is required' : ''}</span>}
                   inputProps={{ maxLength: 10 }}
                 />
               </div>
+
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea-email"
-                  label="Email"
-                  variant="outlined"
-                  size="small"
-                  required
-                  fullWidth
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  helperText={
-                    <span style={{ color: 'red' }}>
-                      {emailError ? 'Please enter a valid email' : fieldErrors.email ? 'This field is required' : ''}
-                    </span>
-                  }
-                />
+                <FormControl fullWidth variant="filled" size="small">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Date of Birth"
+                      value={formData.dateOfBirth ? dayjs(formData.dateOfBirth) : null}
+                      onChange={(date) => handleDateChange('dateOfBirth', date)}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                      error={fieldErrors.dateOfBirth}
+                      helperText={fieldErrors.dateOfBirth && 'Required'}
+                    />
+                  </LocalizationProvider>
+                </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea-website"
-                  label="Website"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="webSite"
-                  value={formData.webSite}
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 30 }}
-                />
+                <FormControl fullWidth variant="filled" size="small">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Joining Date"
+                      value={formData.joiningDate ? dayjs(formData.joiningDate) : null}
+                      onChange={(date) => handleDateChange('joiningDate', date)}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                      error={fieldErrors.joiningDate}
+                      helperText={fieldErrors.joiningDate && 'Required'}
+                    />
+                  </LocalizationProvider>
+                </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea-note"
-                  label="Note"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="note"
-                  value={formData.note}
-                  multiline
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 200 }}
-                />
-              </div>
-              <div className="mb-4">
-                <CompanyCard />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea-empCode"
-                  label="Employee Code"
-                  variant="outlined"
-                  size="small"
-                  required
-                  fullWidth
-                  name="employeeCode"
-                  value={formData.employeeCode}
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 20 }}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeCode ? 'This field is required' : ''}</span>}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea-empName"
-                  label="Employee Name"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  required
-                  name="employeeName"
-                  value={formData.employeeName}
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 30 }}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeName ? 'This field is required' : ''}</span>}
-                />
+                <FormControl fullWidth size="small">
+                  <InputLabel id="role-label">Role</InputLabel>
+                  <Select labelId="role-label" id="role" name="role" value={formData.role} onChange={handleSelectChange} required>
+                    {roleDataSelect &&
+                      roleDataSelect.map((role, index) => (
+                        <MenuItem key={index} value={role}>
+                          {role}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                  <span style={{ color: 'red' }}>{fieldErrors.role ? 'This field is required' : ''}</span>
+                </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
@@ -659,13 +586,28 @@ const CompanySetup = () => {
                   }}
                 />
               </div>
+              <div className="col-md-3 mb-3">
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={formData.active}
+                        onChange={handleInputChange}
+                        name="active"
+                        sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                      />
+                    }
+                    label="Active"
+                  />
+                </FormGroup>
+              </div>
             </div>
           ) : (
-            <CommonTable data={data} columns={columns} editCallback={editBranch} countryVO={countryVO} />
+            <CommonTable data={data} columns={columns} editCallback={editEmployee} />
           )}
         </div>
       </div>
     </>
   );
 };
-export default CompanySetup;
+export default Employee;

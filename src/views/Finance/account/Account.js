@@ -1,3 +1,8 @@
+import ClearIcon from '@mui/icons-material/Clear';
+import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import SaveIcon from '@mui/icons-material/Save';
+import SearchIcon from '@mui/icons-material/Search';
+import { Avatar, ButtonBase, Tooltip } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -6,18 +11,11 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import React, { useState } from 'react';
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
-import TableComponent from './TableComponent';
-import ClearIcon from '@mui/icons-material/Clear';
-import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
-import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase } from '@mui/material';
-import { useRef } from 'react';
-import { Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useRef, useState } from 'react';
+import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
+import TableComponent from './TableComponent';
 
 const Account = () => {
   const [tabIndex, setTabIndex] = useState(0);
@@ -135,7 +133,7 @@ const Account = () => {
           <h1 className="text-xl font-semibold mb-3">Account</h1>
         </div> */}
         <div className="row d-flex">
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label">Account/Group</InputLabel>
               <Select
@@ -151,7 +149,7 @@ const Account = () => {
               </Select>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <TextField
               id="outlined-textarea"
               label="Branch/Location"
@@ -164,7 +162,7 @@ const Account = () => {
           </div>
           {/* </div>
           <div className="row d-flex justify-content-center align-items-center"> */}
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label">Account Type</InputLabel>
               <Select
@@ -180,7 +178,7 @@ const Account = () => {
               </Select>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label">Group Name</InputLabel>
               <Select
@@ -198,12 +196,12 @@ const Account = () => {
           </div>
           {/* </div>
           <div className="row d-flex justify-content-center align-items-center"> */}
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField id="account" label="Account Code" size="small" required placeholder="accountcode" inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="account"
@@ -217,7 +215,7 @@ const Account = () => {
           </div>
           {/* </div>
           <div className="row d-flex justify-content-center align-items-center"> */}
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label">Category</InputLabel>
               <Select
@@ -233,7 +231,7 @@ const Account = () => {
               </Select>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label">Currency</InputLabel>
               <Select
@@ -251,7 +249,7 @@ const Account = () => {
           </div>
           {/* </div>
           <div className="row d-flex justify-content-center align-items-center"> */}
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormGroup>
               <FormControlLabel
                 control={<Checkbox defaultChecked sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }} />}
@@ -259,7 +257,7 @@ const Account = () => {
               />
             </FormGroup>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormGroup>
               <FormControlLabel
                 control={<Checkbox defaultChecked sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }} />}
@@ -280,12 +278,12 @@ const Account = () => {
           <TabPanel>
             <div>
               <div className="row d-flex mt-4">
-                <div className="col-md-4 mb-3">
+                <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField id="account" label="Balance Sheet" size="small" placeholder="blcategory" inputProps={{ maxLength: 30 }} />
                   </FormControl>
                 </div>
-                <div className="col-md-4 mb-3">
+                <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel id="demo-simple-select-label">Cash Flow Statement</InputLabel>
                     <Select
@@ -302,7 +300,7 @@ const Account = () => {
                   </FormControl>
                 </div>
 
-                <div className="col-md-4 mb-3">
+                <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField id="account" label="Income Statement" size="small" placeholder="plcategory" inputProps={{ maxLength: 30 }} />
                   </FormControl>
@@ -314,7 +312,7 @@ const Account = () => {
           <TabPanel>
             <div>
               <div className="row d-flex mt-4">
-                <div className="col-md-4 mb-3">
+                <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel id="demo-simple-select-label">Bank Type</InputLabel>
                     <Select
@@ -330,7 +328,7 @@ const Account = () => {
                     </Select>
                   </FormControl>
                 </div>
-                <div className="col-md-4 mb-3">
+                <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField
                       id="account"
@@ -342,7 +340,7 @@ const Account = () => {
                   </FormControl>
                 </div>
 
-                <div className="col-md-4 mb-3">
+                <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField id="account" label="Over draft limit" size="small" placeholder="odlimit" inputProps={{ maxLength: 30 }} />
                   </FormControl>

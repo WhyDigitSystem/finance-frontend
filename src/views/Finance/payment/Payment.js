@@ -140,7 +140,7 @@ const Payment = () => {
             </Tooltip>
           </div>
           <div className="row d-flex mt-3">
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="branch"
@@ -152,7 +152,7 @@ const Payment = () => {
                 />
               </FormControl>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="payment"
@@ -164,7 +164,7 @@ const Payment = () => {
                 />
               </FormControl>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
@@ -178,9 +178,8 @@ const Payment = () => {
                 </LocalizationProvider>
               </FormControl>
             </div>
-          </div>
-          <div className="row d-flex mt-3">
-            <div className="col-md-4">
+         
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="docId"
@@ -191,7 +190,7 @@ const Payment = () => {
                 />
               </FormControl>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <InputLabel id="demo-simple-select-label">Bank / Cash A/c</InputLabel>
                 <Select
@@ -206,7 +205,7 @@ const Payment = () => {
                 </Select>
               </FormControl>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="balance"
@@ -217,9 +216,8 @@ const Payment = () => {
                 />
               </FormControl>
             </div>
-          </div>
-          <div className="row d-flex mt-3">
-            <div className="col-md-4">
+
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="currency"
@@ -231,7 +229,7 @@ const Payment = () => {
                 />
               </FormControl>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="exRate"
@@ -242,7 +240,7 @@ const Payment = () => {
                 />
               </FormControl>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
@@ -256,9 +254,8 @@ const Payment = () => {
                 </LocalizationProvider>
               </FormControl>
             </div>
-          </div>
-          <div className="row d-flex mt-3">
-            <div className="col-md-4">
+
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="refNo"
@@ -269,7 +266,7 @@ const Payment = () => {
                 />
               </FormControl>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormGroup>
                 <FormControlLabel
                   control={<Checkbox defaultChecked sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }} />}
@@ -277,7 +274,7 @@ const Payment = () => {
                 />
               </FormGroup>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="payeeType"
@@ -289,9 +286,7 @@ const Payment = () => {
                 />
               </FormControl>
             </div>
-          </div>
-          <div className="row d-flex mt-3">
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="payeeName"
@@ -303,7 +298,7 @@ const Payment = () => {
                 />
               </FormControl>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="modeofPayment"
@@ -315,7 +310,7 @@ const Payment = () => {
                 />
               </FormControl>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="chqBook"
@@ -326,9 +321,7 @@ const Payment = () => {
                 />
               </FormControl>
             </div>
-          </div>
-          <div className="row d-flex mt-3">
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="chqDdCardNo"
@@ -339,7 +332,7 @@ const Payment = () => {
                 />
               </FormControl>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
@@ -368,7 +361,7 @@ const Payment = () => {
           </TabPanel>
           <TabPanel>
             <div className="row d-flex mt-3">
-              <div className="col-md-4">
+              <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="netAmount"

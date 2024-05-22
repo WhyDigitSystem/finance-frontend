@@ -2,12 +2,11 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { Avatar, ButtonBase, InputLabel, MenuItem, Select, Tooltip } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
@@ -17,75 +16,67 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { getCityByState, getCountryByOrgId, getStateByCountry } from 'utils/common-functions';
 import CommonTable from 'views/basicMaster/CommonTable';
-import { encryptPassword } from 'views/utilities/passwordEnc';
-import CompanyCard from './card';
 
-const CompanySetup = () => {
+const Branch = () => {
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [countryVO, setCountryVO] = useState([]);
-  const [stateVO, setStateVO] = useState([]);
-  const [cityVO, setCityVO] = useState([]);
 
   const [formData, setFormData] = useState({
-    companyName: '',
-    companyCode: '',
-    address: '',
+    branch: '',
+    branchCode: '',
+    addressLine1: '',
+    addressLine2: '',
     city: '',
     state: '',
     country: '',
-    zip: '',
-    mainCurrency: '',
+    pinCode: '',
+    lccurrency: '',
     phone: '',
-    email: '',
-    webSite: '',
-    note: '',
-    employeeCode: '',
-    employeeName: '',
-    password: '',
+    pan: '',
+    gstIn: '',
+    active: true,
     orgId: orgId
   });
 
   const [fieldErrors, setFieldErrors] = useState({
-    companyName: false,
-    companyCode: false,
-    address: false,
+    branch: false,
+    branchCode: false,
+    addressLine1: false,
+    addressLine2: false,
     city: false,
     state: false,
     country: false,
-    zip: false,
-    mainCurrency: false,
+    pinCode: false,
+    lccurrency: false,
     phone: false,
-    email: false,
-    webSite: false,
-    note: false,
-    employeeCode: false,
-    employeeName: false,
-    password: false
+    pan: false,
+    gstIn: false
   });
 
   const columns = [
-    { accessorKey: 'companyName', header: 'Company', size: 140 },
-    { accessorKey: 'companyCode', header: 'Code', size: 140 },
-    { accessorKey: 'city', header: 'City', size: 140 },
-    { accessorKey: 'state', header: 'State', size: 140 },
+    { accessorKey: 'branch', header: 'Branch', size: 140 },
+    { accessorKey: 'branchCode', header: 'Code', size: 140 },
+    { accessorKey: 'addressLine1', header: 'Address 1', size: 140 },
+    { accessorKey: 'addressLine2', header: 'Address 2', size: 140 },
     { accessorKey: 'country', header: 'Country', size: 140 },
+    { accessorKey: 'state', header: 'State', size: 140 },
+    { accessorKey: 'city', header: 'City', size: 140 },
+    { accessorKey: 'pinCode', header: 'ZIP', size: 140 },
+    { accessorKey: 'lccurrency', header: 'Currency', size: 140 },
     { accessorKey: 'phone', header: 'Phone', size: 140 },
-    { accessorKey: 'email', header: 'Email', size: 140 },
+    { accessorKey: 'pan', header: 'PAN', size: 140 },
+    { accessorKey: 'gstIn', header: 'GST', size: 140 },
     { accessorKey: 'active', header: 'active', size: 140 }
   ];
 
-  const handleEmailValidation = (email) => {
-    // Regular expression for email validation
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailPattern.test(email);
-  };
-
   const theme = useTheme();
   const anchorRef = useRef(null);
+  const [countryVO, setCountryVO] = useState([]);
+  const [stateVO, setStateVO] = useState([]);
+  const [cityVO, setCityVO] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -98,7 +89,7 @@ const CompanySetup = () => {
       }
     };
     fetchData();
-    getCompany();
+    getBranch();
   }, []);
 
   useEffect(() => {
@@ -127,27 +118,21 @@ const CompanySetup = () => {
     fetchDataCity();
   }, [formData.state]);
 
-  const handleTogglePasswordVisibility = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword);
-  };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name === 'email') {
-      setEmailError(!handleEmailValidation(value));
-    }
+
     const parsedValue = name === 'newRate' && value !== '' ? parseInt(value) : value;
     setFormData({ ...formData, [name]: parsedValue });
     setFieldErrors({ ...fieldErrors, [name]: false });
   };
 
-  const getCompany = async () => {
+  const getBranch = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getCompanyById`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getBranchByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === 200) {
-        setData(response.data.paramObjectsMap.companyVO);
+        setData(response.data.paramObjectsMap.branchVO);
       } else {
         // Handle error
         console.error('API Error:', response.data);
@@ -160,20 +145,18 @@ const CompanySetup = () => {
   const handleSave = () => {
     // Check if any field is empty
     const requiredFields = [
-      'companyName',
-      'companyCode',
-      'phone',
-      'email',
-      'address',
+      'branch',
+      'branchCode',
+      'addressLine1',
+      'addressLine1',
       'city',
       'state',
       'country',
-      'zip',
-      'mainCurrency',
+      'pinCode',
+      'lccurrency',
       'phone',
-      'employeeCode',
-      'employeeName',
-      'password'
+      'pan',
+      'gstIn'
     ];
     const errors = {};
 
@@ -187,39 +170,105 @@ const CompanySetup = () => {
       setFieldErrors(errors);
       return; // Prevent API call if there are errors
     }
-    const encryptedPassword = encryptPassword(formData.password);
-
-    // Include the encrypted password in the form data
-    const formDataWithEncryptedPassword = {
-      ...formData,
-      password: encryptedPassword
-    };
 
     axios
-      .put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateCompany`, formDataWithEncryptedPassword)
+      .put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateBranch`, formData)
       .then((response) => {
         console.log('Response:', response.data);
         handleClear();
-        toast.success('Company Created Successfully', {
+        toast.success('Branch Created Successfully', {
           autoClose: 2000,
           theme: 'colored'
         });
-        getCompany();
+        getBranch();
       })
       .catch((error) => {
         console.error('Error:', error);
       });
   };
 
-  const editBranch = async (updatedBranch) => {
-    try {
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateCompany`, updatedBranch);
-      if (response.status === 200) {
-        toast.success('Company Updated Successfully', {
+  const handleRowEdit = (rowId, newData) => {
+    console.log('Edit', rowId, newData);
+    // Send PUT request to update the row
+    axios
+      .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateSetTaxRate/${rowId}`, newData)
+      .then((response) => {
+        console.log('Edit successful:', response.data);
+        // Handle any further actions after successful edit
+        toast.success('Company created Successfully', {
           autoClose: 2000,
           theme: 'colored'
         });
-        getCompany();
+      })
+      .catch((error) => {
+        console.error('Error editing row:', error);
+        // Handle error scenarios
+        toast.error('Company creation failed', {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+      });
+  };
+
+  const handleList = () => {
+    setShowForm(!showForm);
+    setFieldErrors({
+      branch: false,
+      branchCode: false,
+      address1: false,
+      address2: false,
+      city: false,
+      state: false,
+      country: false,
+      pinCode: false,
+      currency: false,
+      phone: false,
+      pan: false,
+      gst: false
+    });
+  };
+  const handleClear = () => {
+    setFormData({
+      branch: '',
+      branchCode: '',
+      addressLine1: '',
+      addressLine2: '',
+      city: '',
+      state: '',
+      country: '',
+      pinCode: '',
+      lccurrency: '',
+      phone: '',
+      pan: '',
+      gstIn: '',
+      active: ''
+    });
+    setFieldErrors({
+      branch: false,
+      branchCode: false,
+      addressLine1: false,
+      addressLine2: false,
+      city: false,
+      state: false,
+      country: false,
+      pinCode: false,
+      lccurrency: false,
+      phone: false,
+      pan: false,
+      gstIn: false
+    });
+    setEmailError(false);
+  };
+
+  const editBranch = async (updatedBranch) => {
+    try {
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateBranch`, updatedBranch);
+      if (response.status === 200) {
+        toast.success('Branch Updated Successfully', {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+        getBranch();
       } else {
         console.error('API Error:', response.data);
         toast.error('Failed to Update Country', {
@@ -234,64 +283,6 @@ const CompanySetup = () => {
         theme: 'colored'
       });
     }
-  };
-
-  const handleList = () => {
-    setShowForm(!showForm);
-    setFieldErrors({
-      companyName: false,
-      companyCode: false,
-      address: false,
-      city: false,
-      state: false,
-      country: false,
-      zip: false,
-      mainCurrency: false,
-      phone: false,
-      email: false,
-      webSite: false,
-      note: false,
-      password: false,
-      employeeCode: false,
-      employeeName: false
-    });
-  };
-  const handleClear = () => {
-    setFormData({
-      companyName: '',
-      companyCode: '',
-      address: '',
-      city: '',
-      state: '',
-      country: '',
-      zip: '',
-      mainCurrency: '',
-      phone: '',
-      email: '',
-      webSite: '',
-      note: '',
-      password: '',
-      employeeCode: '',
-      employeeName: ''
-    });
-    setFieldErrors({
-      companyName: false,
-      companyCode: false,
-      address: false,
-      city: false,
-      state: false,
-      country: false,
-      zip: false,
-      mainCurrency: false,
-      phone: false,
-      email: false,
-      webSite: false,
-      note: false,
-      password: false,
-      employeeCode: false,
-      employeeName: false
-    });
-    setEmailError(false);
   };
 
   return (
@@ -406,16 +397,16 @@ const CompanySetup = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label="Company"
+                  label="Branch"
                   variant="outlined"
                   size="small"
                   required
-                  value={formData.companyName}
+                  value={formData.branch}
                   onChange={handleInputChange}
                   fullWidth
-                  name="companyName"
+                  name="branch"
                   // error={fieldErrors.chapter}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.companyName ? 'This field is required' : ''}</span>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.branch ? 'This field is required' : ''}</span>}
                   inputProps={{ maxLength: 30 }}
                 />
               </div>
@@ -425,12 +416,12 @@ const CompanySetup = () => {
                   label="Code"
                   variant="outlined"
                   size="small"
-                  name="companyCode"
+                  name="branchCode"
                   fullWidth
                   required
-                  value={formData.companyCode}
+                  value={formData.branchCode}
                   onChange={handleInputChange}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.companyCode ? 'This field is required' : ''}</span>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.branchCode ? 'This field is required' : ''}</span>}
                   inputProps={{ maxLength: 15 }}
                 />
               </div>
@@ -438,19 +429,36 @@ const CompanySetup = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label="Address"
+                  label="Address 1"
                   variant="outlined"
                   size="small"
                   fullWidth
                   multiline
                   required
-                  name="address"
-                  value={formData.address}
+                  name="addressLine1"
+                  value={formData.addressLine1}
                   onChange={handleInputChange}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.address ? 'This field is required' : ''}</span>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.addressLine1 ? 'This field is required' : ''}</span>}
                   inputProps={{ maxLength: 200 }}
                 />
               </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="outlined-textarea"
+                  label="Address 2"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  multiline
+                  required
+                  name="addressLine2"
+                  value={formData.addressLine2}
+                  onChange={handleInputChange}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.addressLine2 ? 'This field is required' : ''}</span>}
+                  inputProps={{ maxLength: 200 }}
+                />
+              </div>
+
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <InputLabel id="country">Country</InputLabel>
@@ -515,29 +523,15 @@ const CompanySetup = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="zip"
-                  value={formData.zip}
+                  name="pinCode"
+                  value={formData.pinCode}
                   onChange={handleInputChange}
                   required
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.zip ? 'This field is required' : ''}</span>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.pinCode ? 'This field is required' : ''}</span>}
                   inputProps={{ maxLength: 10 }}
                 />
               </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea-currency"
-                  label="Main Currency"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="mainCurrency"
-                  value={formData.mainCurrency}
-                  onChange={handleInputChange}
-                  required
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.mainCurrency ? 'This field is required' : ''}</span>}
-                  inputProps={{ maxLength: 20 }}
-                />
-              </div>
+
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea-phone"
@@ -556,108 +550,61 @@ const CompanySetup = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea-email"
-                  label="Email"
+                  label="GST"
                   variant="outlined"
                   size="small"
                   required
                   fullWidth
-                  name="email"
-                  value={formData.email}
+                  name="gstIn"
+                  value={formData.gstIn}
                   onChange={handleInputChange}
-                  helperText={
-                    <span style={{ color: 'red' }}>
-                      {emailError ? 'Please enter a valid email' : fieldErrors.email ? 'This field is required' : ''}
-                    </span>
-                  }
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.gstIn ? 'This field is required' : ''}</span>}
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea-website"
-                  label="Website"
+                  label="PAN"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="webSite"
-                  value={formData.webSite}
+                  required
+                  name="pan"
+                  value={formData.pan}
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 30 }}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.pan ? 'This field is required' : ''}</span>}
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="outlined-textarea-note"
-                  label="Note"
+                  id="outlined-textarea-currency"
+                  label="Currency"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="note"
-                  value={formData.note}
-                  multiline
+                  name="lccurrency"
+                  value={formData.lccurrency}
                   onChange={handleInputChange}
-                  inputProps={{ maxLength: 200 }}
-                />
-              </div>
-              <div className="mb-4">
-                <CompanyCard />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea-empCode"
-                  label="Employee Code"
-                  variant="outlined"
-                  size="small"
                   required
-                  fullWidth
-                  name="employeeCode"
-                  value={formData.employeeCode}
-                  onChange={handleInputChange}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.lccurrency ? 'This field is required' : ''}</span>}
                   inputProps={{ maxLength: 20 }}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeCode ? 'This field is required' : ''}</span>}
                 />
               </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea-empName"
-                  label="Employee Name"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  required
-                  name="employeeName"
-                  value={formData.employeeName}
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 30 }}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeName ? 'This field is required' : ''}</span>}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea-password"
-                  label="Password"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  required
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  type={showPassword ? 'text' : 'password'} // Toggle password visibility based on showPassword state
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.password ? 'This field is required' : ''}</span>}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={handleTogglePasswordVisibility}
-                          onMouseDown={(e) => e.preventDefault()} // Prevents focusing the TextField
-                          edge="end"
-                        >
-                          {showPassword ? <Visibility /> : <VisibilityOff />}
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }}
-                />
+              <div className="col-md-3 mb-3 ml-4">
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={formData.active}
+                        onChange={handleInputChange}
+                        name="active"
+                        sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                      />
+                    }
+                    label="Active"
+                  />
+                </FormGroup>
               </div>
             </div>
           ) : (
@@ -668,4 +615,4 @@ const CompanySetup = () => {
     </>
   );
 };
-export default CompanySetup;
+export default Branch;

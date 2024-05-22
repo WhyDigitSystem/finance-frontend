@@ -136,7 +136,7 @@ const Reconcile = () => {
               </ButtonBase>
             </Tooltip>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label" required>
                 Branch/Location
@@ -154,12 +154,12 @@ const Reconcile = () => {
               </Select>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Doc ID" size="small" disabled required placeholder="Auto" inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -173,7 +173,7 @@ const Reconcile = () => {
               </LocalizationProvider>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -187,12 +187,12 @@ const Reconcile = () => {
               </LocalizationProvider>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Bank Account" size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -207,7 +207,7 @@ const Reconcile = () => {
               </LocalizationProvider>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -221,17 +221,17 @@ const Reconcile = () => {
               </LocalizationProvider>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Ledger Balance" disabled size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Begining Balance" size="small" disabled required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Ending Balance" size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
@@ -261,7 +261,7 @@ const Reconcile = () => {
           </TabPanel>
           <TabPanel>
             <div className="row d-flex mt-3">
-              <div className="col-md-4 mb-3">
+              <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     disabled
@@ -272,22 +272,22 @@ const Reconcile = () => {
                   />
                 </FormControl>
               </div>
-              <div className="col-md-4 mb-3">
+              <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField disabled label="Total Deposit" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
                 </FormControl>
               </div>
-              <div className="col-md-4 mb-3">
+              <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField disabled label="Ending Balance" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
                 </FormControl>
               </div>
-              <div className="col-md-4 mb-3">
+              <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField disabled label="Cleared Balance" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
                 </FormControl>
               </div>
-              <div className="col-md-4 mb-3">
+              <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField label="Difference" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
                 </FormControl>

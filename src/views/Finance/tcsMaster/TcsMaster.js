@@ -5,16 +5,15 @@ import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
 // import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
 // import { BsListTask } from 'react-icons/bs';
-import TableComponent from './TableComponent';
-import { useTheme } from '@mui/material/styles';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase } from '@mui/material';
+import { Avatar, ButtonBase, Tooltip } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { useRef } from 'react';
-import { Tooltip } from '@mui/material';
 import 'react-tabs/style/react-tabs.css';
+import TableComponent from './TableComponent';
 
 const TcsMaster = () => {
   // const buttonStyle = {
@@ -140,8 +139,8 @@ const TcsMaster = () => {
             </ButtonBase>
           </Tooltip>
         </div>
-        <div className="row d-flex justify-content-center align-items-center">
-          <div className="col-md-4 mb-3">
+        <div className="row d-flex">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="account"
@@ -153,7 +152,7 @@ const TcsMaster = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="account"
@@ -165,7 +164,7 @@ const TcsMaster = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormGroup>
               <FormControlLabel control={<Checkbox defaultChecked sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }} />} label="Active" />
             </FormGroup>

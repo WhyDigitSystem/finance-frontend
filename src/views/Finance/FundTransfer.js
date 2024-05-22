@@ -130,7 +130,7 @@ const FundTransfer = () => {
           </Tooltip>
         </div>
         <div className="row">
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label" required>
                 Branch/Location
@@ -148,12 +148,12 @@ const FundTransfer = () => {
               </Select>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Doc ID" size="small" disabled inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label" required>
                 Payment Type
@@ -171,7 +171,7 @@ const FundTransfer = () => {
               </Select>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -185,12 +185,12 @@ const FundTransfer = () => {
               </LocalizationProvider>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Reference No." size="small" inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -204,79 +204,79 @@ const FundTransfer = () => {
               </LocalizationProvider>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="From Account" size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField disabled label="Balance" size="small" inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField disabled label="Currency" size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
 
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Ex. Rate" size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="To Branch/Location" size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
 
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="To Bank" size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Currency" size="small" disabled inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Ex. Rate" size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Cheque Book" size="small" inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Cheque No" size="small" disabled inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Cheque Date" size="small" disabled inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Payment Amt." size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Conversion Rate" size="small" required disabled inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Receipt Amt." size="small" required disabled inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Gain/Loss" size="small" disabled inputProps={{ maxLength: 30 }} />
             </FormControl>

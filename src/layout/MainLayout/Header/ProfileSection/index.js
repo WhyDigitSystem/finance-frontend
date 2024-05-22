@@ -58,6 +58,7 @@ const ProfileSection = () => {
   const handleLogout = async () => {
     // history.push('/login');
     console.log('Logout');
+    localStorage.clear();
   };
 
   const handleClose = (event) => {

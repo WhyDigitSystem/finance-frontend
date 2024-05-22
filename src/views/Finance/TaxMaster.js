@@ -6,20 +6,19 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import React, { useState } from 'react';
+import { useState } from 'react';
 // import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
 // import { BsListTask } from 'react-icons/bs';
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, FormHelperText } from '@mui/material';
-import { Tooltip } from '@mui/material';
+import { Avatar, ButtonBase, FormHelperText, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { useRef } from 'react';
-import 'react-tabs/style/react-tabs.css';
 import axios from 'axios';
+import { useRef } from 'react';
+import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
+import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -307,7 +306,7 @@ export const TaxMaster = () => {
           </Tooltip>
         </div>
         <div className="row d-flex mt-3">
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="taxType-label">Tax Type</InputLabel>
               <Select
@@ -325,7 +324,7 @@ export const TaxMaster = () => {
               {fieldErrors.taxType && <FormHelperText error={true}>This field is required</FormHelperText>}
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <TextField
               id="taxPercentage"
               label="Tax Percentage"
@@ -339,7 +338,7 @@ export const TaxMaster = () => {
               helperText={fieldErrors.taxPercentage && 'This field is required'}
             />{' '}
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <TextField
               id="taxDescription"
               label="Tax Description"
@@ -353,7 +352,7 @@ export const TaxMaster = () => {
               helperText={fieldErrors.taxDescription && 'This field is required'}
             />
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormGroup>
               <FormControlLabel
                 control={<Checkbox name="active" checked={formData.active} onChange={handleInputChange} />}
@@ -370,7 +369,7 @@ export const TaxMaster = () => {
           <TabPanel>
             <div>
               <div className="row d-flex mt-3">
-                <div className="col-md-4 mb-3">
+                <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField
                       id="inputAccount"
@@ -386,7 +385,7 @@ export const TaxMaster = () => {
                     />
                   </FormControl>
                 </div>
-                <div className="col-md-4 mb-3">
+                <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField
                       id="outputAccount"
@@ -402,7 +401,7 @@ export const TaxMaster = () => {
                     />
                   </FormControl>
                 </div>
-                <div className="col-md-4 mb-3">
+                <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField
                       id="sgstRcmPayable"

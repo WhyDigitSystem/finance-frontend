@@ -14,7 +14,7 @@ import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import SetTaxRateTable from './SetTaxRateTable';
+import CommonTable from 'views/basicMaster/CommonTable';
 
 export const SetTaxRate = () => {
   const [formData, setFormData] = useState({
@@ -48,7 +48,15 @@ export const SetTaxRate = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    const parsedValue = name === 'newRate' && value !== '' ? parseInt(value) : value;
+    let parsedValue = value;
+
+    if (name === 'newRate') {
+      parsedValue = value !== '' ? parseInt(value, 10) : '';
+      if (isNaN(parsedValue)) {
+        parsedValue = '';
+      }
+    }
+
     setFormData({ ...formData, [name]: parsedValue });
     setFieldErrors({ ...fieldErrors, [name]: false });
   };
@@ -149,6 +157,16 @@ export const SetTaxRate = () => {
       excepmted: false
     });
   };
+
+  const columns = [
+    { accessorKey: 'chapter', header: 'Chapter', size: 140 },
+    { accessorKey: 'subChapter', header: 'Sub Chapter', size: 140 },
+    { accessorKey: 'hsnCode', header: 'HSN Code', size: 140 },
+    { accessorKey: 'branch', header: 'Branch', size: 140 },
+    { accessorKey: 'newRate', header: 'NewRAte', size: 140 },
+    { accessorKey: 'excepmted', header: 'Excepmted', size: 140 },
+    { accessorKey: 'active', header: 'active', size: 140 }
+  ];
 
   return (
     <>
@@ -259,7 +277,7 @@ export const SetTaxRate = () => {
 
           {showForm ? (
             <div className="row d-flex ml">
-              <div className="col-md-4 mb-3">
+              <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
                   label="Chapter"
@@ -274,7 +292,7 @@ export const SetTaxRate = () => {
                   helperText={<span style={{ color: 'red' }}>{fieldErrors.chapter ? 'This field is required' : ''}</span>}
                 />
               </div>
-              <div className="col-md-4 mb-3">
+              <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
                   label="Sub Chapter"
@@ -290,7 +308,7 @@ export const SetTaxRate = () => {
                 />
               </div>
 
-              <div className="col-md-4 mb-3">
+              <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
                   label="HSN Code"
@@ -305,7 +323,7 @@ export const SetTaxRate = () => {
                   helperText={<span style={{ color: 'red' }}>{fieldErrors.hsnCode ? 'This field is required' : ''}</span>}
                 />
               </div>
-              <div className="col-md-4 mb-3">
+              <div className="col-md-3 mb-3">
                 <TextField
                   id="Old Rate"
                   label="Branch/Location"
@@ -320,7 +338,7 @@ export const SetTaxRate = () => {
                   helperText={<span style={{ color: 'red' }}>{fieldErrors.branch ? 'This field is required' : ''}</span>}
                 />
               </div>
-              <div className="col-md-4 mb-3">
+              <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
                   label="New Rate"
@@ -335,7 +353,7 @@ export const SetTaxRate = () => {
                   helperText={<span style={{ color: 'red' }}>{fieldErrors.newRate ? 'This field is required' : ''}</span>}
                 />
               </div>
-              <div className="col-md-4 mb-3">
+              <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label">Excepmted</InputLabel>
                   <Select
@@ -355,7 +373,7 @@ export const SetTaxRate = () => {
               </div>
             </div>
           ) : (
-            <SetTaxRateTable data={data} onRowEditTable={handleRowEdit} />
+            <CommonTable data={data} columns={columns} onRowEditTable={handleRowEdit} />
           )}
         </div>
       </div>

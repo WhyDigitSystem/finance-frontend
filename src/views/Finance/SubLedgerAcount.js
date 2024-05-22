@@ -1,3 +1,8 @@
+import ClearIcon from '@mui/icons-material/Clear';
+import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import SaveIcon from '@mui/icons-material/Save';
+import SearchIcon from '@mui/icons-material/Search';
+import { Avatar, ButtonBase, Tooltip } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -6,15 +11,8 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import React from 'react';
-import ClearIcon from '@mui/icons-material/Clear';
-import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
-import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase } from '@mui/material';
-import { useRef } from 'react';
-import { Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useRef } from 'react';
 import 'react-tabs/style/react-tabs.css';
 
 const SubLedgerAccounts = () => {
@@ -124,7 +122,7 @@ const SubLedgerAccounts = () => {
           </Tooltip>
         </div>
         <div className="row d-flex ">
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label" required>
                 Accounts Category
@@ -140,7 +138,7 @@ const SubLedgerAccounts = () => {
               </Select>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label" required>
                 SubLedger Type
@@ -157,7 +155,7 @@ const SubLedgerAccounts = () => {
             </FormControl>
           </div>
 
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 // id="account"
@@ -169,7 +167,7 @@ const SubLedgerAccounts = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 // id="account"
@@ -181,7 +179,7 @@ const SubLedgerAccounts = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 // id="account"
@@ -193,7 +191,7 @@ const SubLedgerAccounts = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 // id="account"
@@ -205,7 +203,7 @@ const SubLedgerAccounts = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 // id="account"
@@ -216,7 +214,7 @@ const SubLedgerAccounts = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 // id="account"
@@ -227,7 +225,7 @@ const SubLedgerAccounts = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 // id="account"
@@ -238,17 +236,17 @@ const SubLedgerAccounts = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField label="VAT No." size="small" placeholder="" inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField label="State Jurisdiction" size="small" placeholder="" inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label">Invoice Type</InputLabel>
               <Select
@@ -262,7 +260,7 @@ const SubLedgerAccounts = () => {
               </Select>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormGroup>
               <FormControlLabel control={<Checkbox defaultChecked sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }} />} label="Active" />
             </FormGroup>

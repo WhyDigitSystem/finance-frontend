@@ -156,6 +156,31 @@ const Currency = () => {
       });
   };
 
+  const editCurrency = async (updatedCurrency) => {
+    try {
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateCurrency`, updatedCurrency);
+      if (response.status === 200) {
+        toast.success('Currency Updated Successfully', {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+        getCurrency();
+      } else {
+        console.error('API Error:', response.data);
+        toast.error('Failed to Update Currency', {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+      }
+    } catch (error) {
+      console.error('Error updating Currency:', error);
+      toast.error('Error Updating Currency', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+    }
+  };
+
   return (
     <div>
       <div>
@@ -263,7 +288,7 @@ const Currency = () => {
         </div>
         {showFields ? (
           <div className="row d-flex">
-            <div className="col-md-3 mb-3">
+            <div className="col-md-3 mb-2">
               <FormControl fullWidth size="small">
                 <InputLabel id="country">Country</InputLabel>
                 <Select label="country-label" id="country" name="country" value={formData.country} onChange={handleInputChange}>
@@ -345,7 +370,7 @@ const Currency = () => {
             </div>
           </div>
         ) : (
-          <CommonTable data={data} columns={columns} />
+          <CommonTable data={data} columns={columns} editCallback={editCurrency} />
         )}
       </div>
     </div>

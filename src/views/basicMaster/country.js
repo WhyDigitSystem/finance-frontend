@@ -38,12 +38,35 @@ const Country = () => {
   const columns = [
     { accessorKey: 'countryName', header: 'Country', size: 140 },
     { accessorKey: 'countryCode', header: 'Code', size: 140 },
-    { accessorKey: 'status', header: 'active', size: 140 }
+    { accessorKey: 'active', header: 'active', size: 140 }
   ];
 
   useEffect(() => {
     getCountry();
   }, [showFields]);
+
+  const [imageSrc, setImageSrc] = useState('');
+
+  // useEffect(() => {
+  //   const fetchImage = async () => {
+  //     try {
+  //       // Replace with your API endpoint or blob source
+  //       const response = await axios.get(`${process.env.REACT_APP_API_URL}/images/1`, { responseType: 'blob' });
+  //       const blob = response.data;
+  //       const imageUrl = URL.createObjectURL(blob);
+  //       setImageSrc(imageUrl);
+  //     } catch (error) {
+  //       console.error('Error fetching the image:', error);
+  //     }
+  //   };
+
+  //   fetchImage();
+
+  //   // Clean up the URL object when the component is unmounted
+  //   return () => {
+  //     URL.revokeObjectURL(imageSrc);
+  //   };
+  // }, []);
 
   const handleClear = () => {
     setFormData({
@@ -85,7 +108,7 @@ const Country = () => {
       console.log('API Response:', response);
 
       if (response.status === 200) {
-        setData(response.data.paramObjectsMap.countryVO);
+        setData(response.data.paramObjectsMap.countryVO || []);
       } else {
         // Handle error
         console.error('API Error:', response.data);
@@ -122,6 +145,31 @@ const Country = () => {
       .catch((error) => {
         console.error('Error:', error);
       });
+  };
+
+  const editCountry = async (updatedCountry) => {
+    try {
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateCountry`, updatedCountry);
+      if (response.status === 200) {
+        toast.success('Country Updated Successfully', {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+        getCountry();
+      } else {
+        console.error('API Error:', response.data);
+        toast.error('Failed to Update Country', {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+      }
+    } catch (error) {
+      console.error('Error updating country:', error);
+      toast.error('Error Updating Country', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+    }
   };
 
   return (
@@ -277,9 +325,10 @@ const Country = () => {
                   />
                 </FormGroup>
               </div>
+              {/* <div>{imageSrc ? <img src={imageSrc} alt="Blob" /> : <p>Loading...</p>}</div> */}
             </div>
           ) : (
-            <CommonTable data={data} columns={columns} />
+            <CommonTable data={Array.isArray(data) ? data : []} columns={columns} editCallback={editCountry} />
           )}
         </div>
       </div>

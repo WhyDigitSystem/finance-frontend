@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
-
 import Axios from 'axios';
+import { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { setUserRole } from 'store/actions';
 import { encryptPassword } from 'views/utilities/passwordEnc';
 // material-ui
 import {
@@ -43,7 +44,7 @@ const FirebaseLogin = ({ ...others }) => {
   const theme = useTheme();
   const scriptedRef = useScriptRef();
   const [checked, setChecked] = useState(false);
-
+  const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
@@ -90,17 +91,16 @@ const FirebaseLogin = ({ ...others }) => {
         }
       });
 
-      if (!response.data.status) {
+      if (response.data.status) {
         // Handle authentication failure, display an error message, etc.
-        toast.error(response.data.paramObjectsMap.errorMessage, {
-          autoClose: 2000,
-          theme: 'colored'
-        });
+
         console.log('Test1', userData);
-      } else {
-        // Successful registration, perform actions like storing tokens and redirecting
+
         localStorage.setItem('orgId', response.data.paramObjectsMap.userVO.orgId); // Replace with the actual token
         localStorage.setItem('LoginMessage', true);
+        const userRole = response.data.paramObjectsMap.userVO.role;
+        localStorage.setItem('ROLE', userRole);
+        dispatch(setUserRole(userRole));
         resetForm();
         // window.location.href = "/login";
 
@@ -111,6 +111,12 @@ const FirebaseLogin = ({ ...others }) => {
           // Clear stored credentials if "Remember Me" is unchecked
           localStorage.removeItem('rememberedCredentials');
         }
+      } else {
+        // Successful registration, perform actions like storing tokens and redirecting
+        toast.error(response.data.paramObjectsMap.errorMessage, {
+          autoClose: 2000,
+          theme: 'colored'
+        });
         // setTimeout(() => {
         //   toast.success(response.data.paramObjectsMap.message, {
         //     autoClose: 2000,

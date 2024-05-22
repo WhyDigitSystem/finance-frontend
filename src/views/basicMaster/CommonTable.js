@@ -9,23 +9,31 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
+  FormControlLabel,
+  InputLabel,
+  MenuItem,
+  Select,
   Stack,
+  Switch,
   TextField,
   Tooltip
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { MaterialReactTable } from 'material-react-table';
-import { useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getStateByCountry } from 'utils/common-functions';
 
-const CommonTable = ({ data, columns }) => {
+const CommonTable = ({ data, columns, editCallback, countryVO, roleData }) => {
   const [tableData, setTableData] = useState(data);
-  const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingRow, setEditingRow] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
-  const anchorRef = useRef(null);
+  const [selectedCountry, setSelectedCountry] = useState('');
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [stateVO, setStateVO] = useState([]);
+
   const theme = useTheme();
-  const handleCreateNewRow = (values) => {
-    setTableData([...tableData, values]);
-  };
 
   const chipSX = {
     height: 24,
@@ -39,26 +47,63 @@ const CommonTable = ({ data, columns }) => {
     height: 28
   };
 
-  const handleSaveRowEdits = async ({ exitEditingMode }) => {
+  const chipErrorSX = {
+    ...chipSX,
+    color: theme.palette.orange.dark,
+    backgroundColor: theme.palette.orange.light,
+    marginRight: '5px'
+  };
+
+  const handleEditClick = (row) => {
+    setEditingRow(row);
+    setEditModalOpen(true);
+    setSelectedCountry(row.original.country);
+  };
+
+  useEffect(() => {
+    const fetchDataState = async () => {
+      try {
+        const stateData = await getStateByCountry(orgId, selectedCountry);
+        setStateVO(stateData);
+      } catch (error) {
+        console.error('Error fetching country data:', error);
+      }
+    };
+    fetchDataState();
+  }, [selectedCountry]);
+
+  const handleSaveRowEdits = async () => {
     if (!Object.keys(validationErrors).length) {
-      exitEditingMode();
+      const updatedRows = [...tableData];
+      updatedRows[editingRow.index] = editingRow.original;
+      setTableData(updatedRows);
+
+      try {
+        await editCallback(editingRow.original);
+        setEditModalOpen(false);
+        setEditingRow(null);
+      } catch (error) {
+        console.error('Error updating row:', error);
+      }
     }
   };
 
   const customColumns = columns.map((column) => {
     if (column.accessorKey === 'active') {
-      console.log('Test', column.accessorKey === 'active');
       return {
         ...column,
-        render: (rowData) => <Chip label={rowData.active === true ? 'Active' : 'Inactive'} sx={chipSuccessSX} />
+        Cell: ({ cell }) => (
+          <Chip label={cell.getValue() === true ? 'Active' : 'Inactive'} sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX} />
+        )
       };
     }
     return column;
   });
-  const renderRowActions = ({ row, table }) => (
+
+  const renderRowActions = ({ row }) => (
     <Box sx={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
       <Tooltip title="Edit" placement="top">
-        <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
+        <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={() => handleEditClick(row)}>
           <Avatar
             variant="rounded"
             sx={{
@@ -72,10 +117,7 @@ const CommonTable = ({ data, columns }) => {
                 color: theme.palette.secondary.light
               }
             }}
-            ref={anchorRef}
-            aria-haspopup="true"
             color="inherit"
-            // Add any necessary event handlers here
           >
             <EditIcon size="1.3rem" stroke={1.5} />
           </Avatar>
@@ -86,31 +128,30 @@ const CommonTable = ({ data, columns }) => {
 
   const handleCancelRowEdits = () => {
     setValidationErrors({});
+    setEditModalOpen(false);
+    setEditingRow(null);
   };
 
-  const getCommonEditTextFieldProps = (cell) => {
-    return {
-      error: !!validationErrors[cell.id],
-      helperText: validationErrors[cell.id],
-      onBlur: (event) => {
-        const isValid =
-          cell.column.id === 'email'
-            ? validateEmail(event.target.value)
-            : cell.column.id === 'age'
-              ? validateAge(+event.target.value)
-              : validateRequired(event.target.value);
-        if (!isValid) {
-          setValidationErrors({
-            ...validationErrors,
-            [cell.id]: `${cell.column.columnDef.header} is required`
-          });
-        } else {
-          delete validationErrors[cell.id];
-          setValidationErrors({ ...validationErrors });
-        }
-      }
-    };
+  const validateRequired = (value) => {
+    return value !== '';
   };
+
+  const getCommonEditTextFieldProps = (cell) => ({
+    error: !!validationErrors[cell.id],
+    helperText: validationErrors[cell.id],
+    onBlur: (event) => {
+      const isValid = validateRequired(event.target.value);
+      if (!isValid) {
+        setValidationErrors({
+          ...validationErrors,
+          [cell.id]: `${cell.column.columnDef.header} is required`
+        });
+      } else {
+        delete validationErrors[cell.id];
+        setValidationErrors({ ...validationErrors });
+      }
+    }
+  });
 
   return (
     <>
@@ -125,81 +166,113 @@ const CommonTable = ({ data, columns }) => {
         }}
         columns={customColumns}
         data={tableData}
-        editingMode="modal"
-        options={{
-          density: 'comfortable'
-        }}
         enableColumnOrdering
         enableEditing
-        onEditingRowSave={handleSaveRowEdits}
-        onEditingRowCancel={handleCancelRowEdits}
         renderRowActions={renderRowActions}
         renderTopToolbarCustomActions={() => <Stack direction="row" spacing={2} className="ml-5 "></Stack>}
       />
-      <CreateNewAccountModal
-        columns={columns}
-        open={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-        onSubmit={handleCreateNewRow}
-      />
+      {editingRow && (
+        <Dialog open={editModalOpen} onClose={handleCancelRowEdits}>
+          <DialogTitle textAlign="center">
+            <h6>Edit</h6>
+          </DialogTitle>
+          <DialogContent>
+            <form onSubmit={(e) => e.preventDefault()}>
+              <Stack
+                sx={{
+                  width: '100%',
+                  minWidth: { xs: '300px', sm: '360px', md: '400px' },
+                  gap: '1rem',
+                  marginTop: '10px'
+                }}
+              >
+                {customColumns.map((column) => (
+                  <Box key={column.accessorKey}>
+                    {column.accessorKey === 'active' ? (
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={editingRow.original[column.accessorKey]}
+                            onChange={(e) =>
+                              setEditingRow({ ...editingRow, original: { ...editingRow.original, [column.accessorKey]: e.target.checked } })
+                            }
+                          />
+                        }
+                        label={column.header}
+                      />
+                    ) : column.accessorKey === 'country' ? (
+                      <FormControl fullWidth>
+                        <InputLabel>{column.header}</InputLabel>
+                        <Select
+                          value={editingRow.original[column.accessorKey]}
+                          onChange={(e) =>
+                            setEditingRow({ ...editingRow, original: { ...editingRow.original, [column.accessorKey]: e.target.value } })
+                          }
+                        >
+                          {countryVO &&
+                            countryVO.map((country) => (
+                              <MenuItem key={country} value={country}>
+                                {country}
+                              </MenuItem>
+                            ))}
+                        </Select>
+                      </FormControl>
+                    ) : column.accessorKey === 'state' ? (
+                      <FormControl fullWidth>
+                        <InputLabel>{column.header}</InputLabel>
+                        <Select
+                          value={editingRow.original[column.accessorKey]}
+                          onChange={(e) =>
+                            setEditingRow({ ...editingRow, original: { ...editingRow.original, [column.accessorKey]: e.target.value } })
+                          }
+                        >
+                          {stateVO &&
+                            stateVO.map((state) => (
+                              <MenuItem key={state} value={state}>
+                                {state}
+                              </MenuItem>
+                            ))}
+                        </Select>
+                      </FormControl>
+                    ) : column.accessorKey === 'screenVO' ? (
+                      <Box>
+                        <InputLabel>{column.header}</InputLabel>
+                        <Stack direction="row" spacing={1}>
+                          {editingRow.original[column.accessorKey].map((screen) => (
+                            <Chip key={screen.id} label={screen.screenName} />
+                          ))}
+                        </Stack>
+                      </Box>
+                    ) : (
+                      <TextField
+                        fullWidth
+                        label={column.header}
+                        name={column.accessorKey}
+                        defaultValue={editingRow.original[column.accessorKey]}
+                        onChange={(e) =>
+                          setEditingRow({
+                            ...editingRow,
+                            original: { ...editingRow.original, [column.accessorKey]: e.target.value.toUpperCase() }
+                          })
+                        }
+                        {...getCommonEditTextFieldProps({ id: column.accessorKey })}
+                      />
+                    )}
+                  </Box>
+                ))}
+              </Stack>
+            </form>
+          </DialogContent>
+          <DialogActions sx={{ p: '1.25rem' }}>
+            <Button onClick={handleCancelRowEdits}>Cancel</Button>
+            <Button color="secondary" onClick={handleSaveRowEdits} variant="contained">
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
     </>
   );
 };
-
-export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
-  const [values, setValues] = useState(() =>
-    columns.reduce((acc, column) => {
-      acc[column.accessorKey ?? ''] = '';
-      return acc;
-    }, {})
-  );
-
-  const handleSubmit = () => {
-    onSubmit(values);
-    onClose();
-  };
-
-  return (
-    <Dialog open={open}>
-      <DialogTitle textAlign="center">Add</DialogTitle>
-      <DialogContent>
-        <form onSubmit={(e) => e.preventDefault()}>
-          <Stack
-            sx={{
-              width: '100%',
-              minWidth: { xs: '300px', sm: '360px', md: '400px' },
-              gap: '1.5rem'
-            }}
-          >
-            {columns.map((column) => (
-              <TextField
-                key={column.accessorKey}
-                label={column.header}
-                name={column.accessorKey}
-                onChange={(e) => setValues({ ...values, [e.target.name]: e.target.value })}
-              />
-            ))}
-          </Stack>
-        </form>
-      </DialogContent>
-      <DialogActions sx={{ p: '1.25rem' }}>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button color="secondary" onClick={handleSubmit} variant="contained">
-          Add
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
-
-const validateRequired = (value) => !!value.length;
-const validateEmail = (email) =>
-  !!email.length &&
-  email
-    .toLowerCase()
-    .match(
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    );
-const validateAge = (age) => age >= 18 && age <= 50;
 
 export default CommonTable;

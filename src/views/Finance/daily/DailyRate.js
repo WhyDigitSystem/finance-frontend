@@ -1,18 +1,16 @@
-import React from 'react';
-import FormControl from '@mui/material/FormControl';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import TableComponent from './TableComponent';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase } from '@mui/material';
-import { useRef } from 'react';
-import { Tooltip } from '@mui/material';
+import { Avatar, ButtonBase, Tooltip } from '@mui/material';
+import FormControl from '@mui/material/FormControl';
 import { useTheme } from '@mui/material/styles';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { useRef } from 'react';
 import 'react-tabs/style/react-tabs.css';
+import TableComponent from './TableComponent';
 
 const DailyRate = () => {
   const theme = useTheme();
@@ -124,7 +122,7 @@ const DailyRate = () => {
           <h1 className="text-xl font-semibold mb-3">Account</h1>
         </div> */}
         <div className="row d-flex">
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -138,7 +136,7 @@ const DailyRate = () => {
               </LocalizationProvider>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker

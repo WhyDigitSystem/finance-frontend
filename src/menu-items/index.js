@@ -1,14 +1,35 @@
 import ap from './ap';
 import ar from './ar';
 import basicMaster from './basicMaster';
+import companySetup from './companySetup';
 import dashboard from './dashboard';
 import finance from './finance';
 import transaction from './transaction';
 
-// ==============================|| MENU ITEMS ||============================== //
+// Function to get menu items based on localStorage value
+const getMenuItems = () => {
+  const localStorageValue = localStorage.getItem('ROLE'); // Replace 'your_key_here' with the key you are using to store the value
 
-const menuItems = {
-  items: [dashboard, basicMaster, finance, transaction, ar, ap]
+  // Define default menu items
+  const defaultMenuItems = {
+    items: [dashboard, basicMaster, finance, transaction, ar, ap]
+  };
+
+  // Define menu items based on localStorage value
+  switch (localStorageValue) {
+    case 'ROLE_SUPER_ADMIN':
+      return {
+        items: [dashboard, companySetup]
+      };
+    case 'ROLE_ADMIN':
+      return {
+        items: [dashboard, basicMaster, finance, transaction, ar, ap]
+      };
+    // Add more cases as needed
+    default:
+      return defaultMenuItems; // Return default menu items if no match found
+  }
 };
 
-export default menuItems;
+// Export default menu items
+export default getMenuItems();

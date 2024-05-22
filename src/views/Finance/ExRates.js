@@ -3,17 +3,15 @@ import TextField from '@mui/material/TextField';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import React from 'react';
 // import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
 // import { BsListTask } from 'react-icons/bs';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase } from '@mui/material';
-import { useRef } from 'react';
-import { Tooltip } from '@mui/material';
+import { Avatar, ButtonBase, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useRef } from 'react';
 import 'react-tabs/style/react-tabs.css';
 
 const ExRates = () => {
@@ -150,7 +148,7 @@ const ExRates = () => {
           </button>
         </div> */}
         <div className="row d-flex mt-3">
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -165,7 +163,7 @@ const ExRates = () => {
             </FormControl>
           </div>
 
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -181,7 +179,7 @@ const ExRates = () => {
               </LocalizationProvider>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="currency"
@@ -193,7 +191,7 @@ const ExRates = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="sellrate"
@@ -205,7 +203,7 @@ const ExRates = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="buyrate"
@@ -217,7 +215,7 @@ const ExRates = () => {
               />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
               <TextField
                 id="avgrate"

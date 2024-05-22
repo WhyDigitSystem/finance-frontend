@@ -57,14 +57,14 @@ const Login = () => {
                   <Grid item xs={12}>
                     <Divider />
                   </Grid>
-                  {/* <Grid item xs={12}>
+                  <Grid item xs={12}>
                     <Grid item container direction="column" alignItems="center" xs={12}>
                       <Typography component={Link} to="/pages/register/register3" variant="subtitle1" sx={{ textDecoration: 'none' }}>
                         Don&apos;t have an account?
                       </Typography>
                     </Grid>
-                  </Grid> */}
-                  <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>
+                  </Grid>
+                  <Stack direction="row" justifyContent="center" sx={{ mb: 1, mt: 1 }}>
                     <Chip label={process.env.REACT_APP_VERSION} disabled chipcolor="secondary" size="small" sx={{ cursor: 'pointer' }} />
                   </Stack>
                 </Grid>

@@ -1,21 +1,19 @@
-import * as React from 'react';
 import FormControl from '@mui/material/FormControl';
-import TextField from '@mui/material/TextField';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
 // import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
 // import { BsListTask } from 'react-icons/bs';
-import TableComponent from './TableComponent';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase } from '@mui/material';
-import { useRef } from 'react';
-import { Tooltip } from '@mui/material';
+import { Avatar, ButtonBase, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useRef } from 'react';
 import 'react-tabs/style/react-tabs.css';
+import TableComponent from './TableComponent';
 
 const CostCentre = () => {
   //   const buttonStyle = {
@@ -142,7 +140,7 @@ const CostCentre = () => {
           </button>
         </div> */}
         <div className="row">
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label" required>
                 Dimension Type
@@ -160,12 +158,12 @@ const CostCentre = () => {
               </Select>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Value Code" size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <TextField label="Value Description" size="small" required inputProps={{ maxLength: 30 }} />
             </FormControl>

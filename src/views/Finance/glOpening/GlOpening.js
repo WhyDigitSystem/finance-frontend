@@ -135,7 +135,7 @@ const GlOpening = () => {
           </div>
 
           <div className="row d-flex mt-3">
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="branch"
@@ -147,7 +147,7 @@ const GlOpening = () => {
                 />
               </FormControl>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
@@ -161,7 +161,7 @@ const GlOpening = () => {
                 </LocalizationProvider>
               </FormControl>
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="docid"
@@ -173,83 +173,81 @@ const GlOpening = () => {
               </FormControl>
             </div>
           </div>
-          <div className="row d-flex mt-3">
-            <div className="col-md-4">
-              <FormControl fullWidth variant="filled">
-                <TextField
-                  id="currency"
-                  label="Currency"
-                  size="small"
-                  required
-                  //placeholder="accountcode"
-                  inputProps={{ maxLength: 30 }}
-                />
-              </FormControl>
-            </div>
-            <div className="col-md-4">
-              <FormControl fullWidth variant="filled">
-                <TextField
-                  id="exRate"
-                  label="Ex. Rate"
-                  size="small"
-                  required
-                  //placeholder="accountcode"
-                  inputProps={{ maxLength: 30 }}
-                />
-              </FormControl>
-            </div>
-            <div className="col-md-4">
-              <FormControl fullWidth variant="filled">
-                <TextField
-                  id="referenceNo"
-                  label="Reference No"
-                  size="small"
-                  //placeholder="accountcode"
-                  inputProps={{ maxLength: 30 }}
-                />
-              </FormControl>
-            </div>
+
+          <div className="col-md-3 mb-3">
+            <FormControl fullWidth variant="filled">
+              <TextField
+                id="currency"
+                label="Currency"
+                size="small"
+                required
+                //placeholder="accountcode"
+                inputProps={{ maxLength: 30 }}
+              />
+            </FormControl>
           </div>
-          <div className="row d-flex mt-3">
-            <div className="col-md-4">
-              <FormControl fullWidth>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    label="Reference Date"
-                    slotProps={{
-                      textField: { size: 'small', clearable: true }
-                    }}
-                    //value={boDate}
-                    //onChange={(newValue) => setBoDate(newValue)}
-                  />
-                </LocalizationProvider>
-              </FormControl>
-            </div>
-            <div className="col-md-4">
-              <FormControl fullWidth variant="filled">
-                <TextField
-                  id="suppRefNo"
-                  label="Supp. Ref. No"
-                  size="small"
-                  //placeholder="accountcode"
-                  inputProps={{ maxLength: 30 }}
+          <div className="col-md-3 mb-3">
+            <FormControl fullWidth variant="filled">
+              <TextField
+                id="exRate"
+                label="Ex. Rate"
+                size="small"
+                required
+                //placeholder="accountcode"
+                inputProps={{ maxLength: 30 }}
+              />
+            </FormControl>
+          </div>
+          <div className="col-md-3 mb-3">
+            <FormControl fullWidth variant="filled">
+              <TextField
+                id="referenceNo"
+                label="Reference No"
+                size="small"
+                //placeholder="accountcode"
+                inputProps={{ maxLength: 30 }}
+              />
+            </FormControl>
+          </div>
+
+          <div className="col-md-3 mb-3">
+            <FormControl fullWidth>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  label="Reference Date"
+                  slotProps={{
+                    textField: { size: 'small', clearable: true }
+                  }}
+                  //value={boDate}
+                  //onChange={(newValue) => setBoDate(newValue)}
                 />
-              </FormControl>
-            </div>
-            <div className="col-md-4">
-              <FormControl fullWidth>
-                <LocalizationProvider dateAdapter={AdapterDayjs}>
-                  <DatePicker
-                    label="Supp Ref. Date"
-                    slotProps={{
-                      textField: { size: 'small', clearable: true }
-                    }}
-                    //value={boDate}
-                    //onChange={(newValue) => setBoDate(newValue)}
-                  />
-                </LocalizationProvider>
-              </FormControl>
-            </div>
+              </LocalizationProvider>
+            </FormControl>
+          </div>
+          <div className="col-md-3 mb-3">
+            <FormControl fullWidth variant="filled">
+              <TextField
+                id="suppRefNo"
+                label="Supp. Ref. No"
+                size="small"
+                //placeholder="accountcode"
+                inputProps={{ maxLength: 30 }}
+              />
+            </FormControl>
+          </div>
+          <div className="col-md-3 mb-3">
+            <FormControl fullWidth>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  label="Supp Ref. Date"
+                  slotProps={{
+                    textField: { size: 'small', clearable: true }
+                  }}
+                  //value={boDate}
+                  //onChange={(newValue) => setBoDate(newValue)}
+                />
+              </LocalizationProvider>
+            </FormControl>
           </div>
           <div className="row d-flex mt-3">
             <div className="col-md-8">

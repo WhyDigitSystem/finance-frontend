@@ -131,7 +131,7 @@ const BRSOpening = () => {
           </Tooltip>
         </div>
         <div className="row d-flex mt-3">
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
               <InputLabel id="demo-simple-select-label" required>
                 Branch/Location
@@ -148,10 +148,10 @@ const BRSOpening = () => {
               </Select>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <TextField id="outlined-textarea" label="Bill No." placeholder="Bill No." variant="outlined" size="small" required fullWidth />
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -165,11 +165,11 @@ const BRSOpening = () => {
               </LocalizationProvider>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <TextField id="Old Rate" label="Ref./Chq.No" placeholder="Ref./Chq.No" variant="outlined" size="small" fullWidth />
           </div>
 
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormControl fullWidth>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DatePicker
@@ -183,7 +183,7 @@ const BRSOpening = () => {
               </LocalizationProvider>
             </FormControl>
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <TextField
               id="outlined-textarea"
               label="Bank/Cash/A/C"
@@ -194,13 +194,13 @@ const BRSOpening = () => {
               fullWidth
             />
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <TextField id="outlined-textarea" label="Currency" placeholder="Currency" variant="outlined" size="small" fullWidth />
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <TextField id="outlined-textarea" label="Ex.rate" placeholder="Ex.rate" variant="outlined" size="small" fullWidth required />
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <TextField
               id="outlined-textarea"
               label="Receipt Amount"
@@ -210,7 +210,7 @@ const BRSOpening = () => {
               fullWidth
             />
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <TextField
               id="outlined-textarea"
               label="Payment Amount"
@@ -220,7 +220,7 @@ const BRSOpening = () => {
               fullWidth
             />
           </div>
-          <div className="col-md-4 mb-3">
+          <div className="col-md-3 mb-3">
             <FormGroup>
               <FormControlLabel
                 control={<Checkbox defaultChecked sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }} />}

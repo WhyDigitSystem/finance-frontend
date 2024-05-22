@@ -23,14 +23,18 @@ const Dashboard = () => {
     setLoading(false);
     if (localStorage.getItem('LoginMessage') === 'true') {
       toast.success('Login Successful, Welcome!', {
-        autoClose: 3000,
+        autoClose: 2000,
         theme: 'colored'
       });
 
       // Set loginMessage to false after 2 seconds
       const timeoutId = setTimeout(() => {
         localStorage.setItem('LoginMessage', false);
-      }, 3000);
+      }, 2000);
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
 
       // Clear the timeout on component unmount to prevent memory leaks
       return () => clearTimeout(timeoutId);

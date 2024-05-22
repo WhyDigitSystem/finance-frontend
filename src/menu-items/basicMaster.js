@@ -22,12 +22,16 @@ const basicMaster = {
 
       children: [
         {
-          id: 'company',
-          title: 'Company',
+          id: 'branch',
+          title: 'Branch',
           type: 'item',
-          url: '/company',
-          icon: icons.IconDashboard
-          //   breadcrumbs: false
+          url: '/company/branch'
+        },
+        {
+          id: 'employee',
+          title: 'Employee',
+          type: 'item',
+          url: '/basicMaster/employee'
         },
         {
           id: 'country',
@@ -52,6 +56,18 @@ const basicMaster = {
           title: 'Currency',
           type: 'item',
           url: '/basicMaster/currency'
+        },
+        {
+          id: 'finYear',
+          title: 'FinYear',
+          type: 'item',
+          url: '/basicMaster/finYear'
+        },
+        {
+          id: 'roles',
+          title: 'Roles',
+          type: 'item',
+          url: '/basicMaster/roles'
         }
       ]
     }

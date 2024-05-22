@@ -38,6 +38,10 @@ const Country = Loadable(lazy(() => import('views/basicMaster/country')));
 const State = Loadable(lazy(() => import('views/basicMaster/state')));
 const City = Loadable(lazy(() => import('views/basicMaster/city')));
 const Currency = Loadable(lazy(() => import('views/basicMaster/currency')));
+const FinYear = Loadable(lazy(() => import('views/basicMaster/finYear')));
+const Branch = Loadable(lazy(() => import('views/company/branch')));
+const Roles = Loadable(lazy(() => import('views/basicMaster/roles')));
+const Employee = Loadable(lazy(() => import('views/basicMaster/employee')));
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
@@ -53,6 +57,10 @@ const FinanceRoute = {
     {
       path: '/company',
       element: <CompanySetup />
+    },
+    {
+      path: '/company/branch',
+      element: <Branch />
     },
     {
       path: '/Finance/SetTaxRate',
@@ -173,6 +181,18 @@ const FinanceRoute = {
     {
       path: '/basicMaster/currency',
       element: <Currency />
+    },
+    {
+      path: '/basicMaster/finYear',
+      element: <FinYear />
+    },
+    {
+      path: '/basicMaster/roles',
+      element: <Roles />
+    },
+    {
+      path: '/basicMaster/employee',
+      element: <Employee />
     }
   ]
 };
