@@ -42,6 +42,7 @@ const FinYear = Loadable(lazy(() => import('views/basicMaster/finYear')));
 const Branch = Loadable(lazy(() => import('views/company/branch')));
 const Roles = Loadable(lazy(() => import('views/basicMaster/roles')));
 const Employee = Loadable(lazy(() => import('views/basicMaster/employee')));
+const ChargeTypeRequest = Loadable(lazy(() => import('views/Finance/ChargeTypeRequest')));
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
@@ -193,6 +194,10 @@ const FinanceRoute = {
     {
       path: '/basicMaster/employee',
       element: <Employee />
+    },
+    {
+      path: '/Finance/ChargeTypeRequest',
+      element: <ChargeTypeRequest />
     }
   ]
 };

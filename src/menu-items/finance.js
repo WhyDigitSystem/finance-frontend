@@ -28,6 +28,12 @@ const finance = {
           url: '/finance/setTaxRate'
         },
         {
+          id: 'chargeTypeRequest',
+          title: 'Charge Type Request',
+          type: 'item',
+          url: '/finance/ChargeTypeRequest'
+        },
+        {
           id: 'taxMaster',
           title: 'TaxMaster',
           type: 'item',
