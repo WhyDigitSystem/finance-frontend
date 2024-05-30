@@ -130,12 +130,7 @@ const Employee = () => {
 
       if (response.status === 200) {
         // setData(response.data.paramObjectsMap.roleMasterVO);
-        setRoleDataSelect(response.data.paramObjectsMap.roleMasterVO.map((list) => list.role));
-
-        console.log(
-          'Test',
-          response.data.paramObjectsMap.roleMasterVO.map((list) => list.role)
-        );
+        setRoleDataSelect(response.data.paramObjectsMap.roleVO.map((list) => list.role));
       } else {
         // Handle error
         console.error('API Error:', response.data);

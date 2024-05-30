@@ -385,7 +385,7 @@ const Responsibilities = () => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl sx={{ width: 215 }} size="small">
-                    <InputLabel id="demo-multiple-chip-label">Chip</InputLabel>
+                    <InputLabel id="demo-multiple-chip-label">Screens</InputLabel>
                     <Select
                       labelId="demo-multiple-chip-label"
                       id="demo-multiple-chip"

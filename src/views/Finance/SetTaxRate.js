@@ -10,7 +10,7 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -24,7 +24,7 @@ export const SetTaxRate = () => {
     branch: '',
     newRate: '',
     excepmted: '',
-    orgId: 1
+    orgId: localStorage.getItem('orgId')
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -37,14 +37,14 @@ export const SetTaxRate = () => {
   });
 
   const [showForm, setShowForm] = useState(true);
-  const [data, setData] = useState(true);
+  const [data, setData] = useState([]);
 
   const theme = useTheme();
   const anchorRef = useRef(null);
 
-  useEffect(() => {
-    getSetTaxRate();
-  }, []);
+  // useEffect(() => {
+  //   getSetTaxRate();
+  // }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -63,11 +63,13 @@ export const SetTaxRate = () => {
 
   const getSetTaxRate = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllSetTaxRate`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllSetTaxRateByOrgId?orgId=${formData.orgId}`);
       console.log('API Response:', response);
 
       if (response.status === 200) {
         setData(response.data.paramObjectsMap.setTaxRateVO);
+
+        console.log('Test', response.data.paramObjectsMap.setTaxRateVO);
       } else {
         // Handle error
         console.error('API Error:', response.data);
@@ -138,6 +140,8 @@ export const SetTaxRate = () => {
       newRate: false,
       excepmted: false
     });
+
+    getSetTaxRate();
   };
   const handleClear = () => {
     setFormData({

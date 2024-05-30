@@ -19,7 +19,7 @@ const getMenuItems = () => {
   switch (localStorageValue) {
     case 'ROLE_SUPER_ADMIN':
       return {
-        items: [dashboard, companySetup]
+        items: [dashboard, companySetup, basicMaster]
       };
     case 'ROLE_ADMIN':
       return {
