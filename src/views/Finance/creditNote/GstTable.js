@@ -1,36 +1,68 @@
-import { Edit } from '@mui/icons-material';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField, Tooltip } from '@mui/material';
+import { Delete, Edit } from '@mui/icons-material';
+import AddIcon from '@mui/icons-material/Add';
+import {
+  Avatar,
+  Box,
+  Button,
+  ButtonBase,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  // MenuItem,
+  Stack,
+  TextField,
+  Tooltip
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { MaterialReactTable } from 'material-react-table';
-import { useCallback, useMemo, useState } from 'react';
-// import { CSVLink } from 'react-csv';
+import { useCallback, useMemo, useRef, useState } from 'react';
 // import { data } from './makeData';
+// import { MdGroups } from 'react-icons/md';
+// import { FaUser } from 'react-icons/fa';
+// import { FaDatabase } from 'react-icons/fa6';
 
-const GroupTable = (data, onRowEditTable) => {
+const GstTable = () => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [tableData, setTableData] = useState(() => data.data);
-
+  const [tableData, setTableData] = useState('');
   const [validationErrors, setValidationErrors] = useState({});
 
-  console.log('tableData', data);
+  const theme = useTheme();
+  const anchorRef = useRef(null);
 
   const handleCreateNewRow = (values) => {
     tableData.push(values);
     setTableData([...tableData]);
   };
 
-  
-
   const handleSaveRowEdits = async ({ exitEditingMode, row, values }) => {
     if (!Object.keys(validationErrors).length) {
-      // Call the parent component's edit function with the updated data
-      onRowEditTable(row.original.setTaxRateId, values);
-      exitEditingMode();
+      tableData[row.index] = values;
+      //send/receive api updates here, then refetch or update local table data for re-render
+      setTableData([...tableData]);
+      exitEditingMode(); //required to exit editing mode and close modal
     }
   };
 
   const handleCancelRowEdits = () => {
     setValidationErrors({});
   };
+
+  const handleDeleteRow = useCallback(
+    (row) => {
+      if (
+        // eslint-disable-next-line no-restricted-globals
+        !confirm(`Are you sure you want to delete ${row.getValue('firstName')}`)
+      ) {
+        return;
+      }
+      //send api delete request here, then refetch or update local table data for re-render
+      tableData.splice(row.index, 1);
+      setTableData([...tableData]);
+    },
+    [tableData]
+  );
 
   const getCommonEditTextFieldProps = useCallback(
     (cell) => {
@@ -65,71 +97,49 @@ const GroupTable = (data, onRowEditTable) => {
 
   const columns = useMemo(
     () => [
-      //   {
-      //     accessorKey: 'SNo',
-      //     header: 'S No',
-      //     size: 140,
-      //     muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-      //       ...getCommonEditTextFieldProps(cell)
-      //     }),
-      //     headerStyle: {
-      //       background: '#f0f0f0', // Custom background color
-      //       color: 'blue', // Custom text color
-      //       fontWeight: 'bold' // Custom font weight
-      //       // Add more custom styles as needed
-      //     }
-      //   },
       {
-        accessorKey: 'groupName',
-        header: 'GroupName',
+        accessorKey: 'gstPartyA/c',
+        header: 'GST Party A/C',
         size: 140,
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
           ...getCommonEditTextFieldProps(cell)
         })
       },
       {
-        accessorKey: 'gstTaxFlag',
-        header: 'Gst Tax Flag',
+        accessorKey: 'gstSubledgerCode',
+        header: 'Gst Subledger Code',
         size: 140,
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
           ...getCommonEditTextFieldProps(cell)
         })
       },
       {
-        accessorKey: 'accountCode',
-        header: 'Account Code',
+        accessorKey: 'gstdbBillAmount',
+        header: 'GST DB Bill Amount',
         size: 140,
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
           ...getCommonEditTextFieldProps(cell)
         })
       },
       {
-        accessorKey: 'coaList',
-        header: 'COA List',
+        accessorKey: 'gstcrBillAmount',
+        header: 'GST CR Bill Amount',
         size: 140,
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
           ...getCommonEditTextFieldProps(cell)
         })
       },
       {
-        accessorKey: 'accountGroupName',
-        header: 'Account/Group Name',
+        accessorKey: 'gstDbLcAmount',
+        header: 'GST DB LC Amount',
         size: 140,
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
           ...getCommonEditTextFieldProps(cell)
         })
       },
       {
-        accessorKey: 'type',
-        header: 'Type',
-        size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell)
-        })
-      },
-      {
-        accessorKey: 'currency',
-        header: 'Currency',
+        accessorKey: 'gstCrLcAmount',
+        header: 'GST CR LC Amount',
         size: 140,
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
           ...getCommonEditTextFieldProps(cell)
@@ -150,29 +160,20 @@ const GroupTable = (data, onRowEditTable) => {
             size: 120
           }
         }}
-        style={{
-          headerCellStyle: { backgroundColor: 'red', color: 'blue', fontWeight: 'bold' },
-          headerRowStyle: {
-            /* Add custom styles for the header row */
-          }
-        }}
         columns={columns}
         data={tableData}
         editingMode="modal"
-        options={{
-          density: 'comfortable' // Set the default density to 'compact'
-        }}
         enableColumnOrdering
         enableEditing
         onEditingRowSave={handleSaveRowEdits}
         onEditingRowCancel={handleCancelRowEdits}
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-            {/* <Tooltip arrow placement="left" title="Delete">
+            <Tooltip arrow placement="left" title="Delete">
               <IconButton color="error" onClick={() => handleDeleteRow(row)}>
                 <Delete />
               </IconButton>
-            </Tooltip> */}
+            </Tooltip>
             <Tooltip arrow placement="right" title="Edit">
               <IconButton onClick={() => table.setEditingRow(row)}>
                 <Edit />
@@ -180,7 +181,47 @@ const GroupTable = (data, onRowEditTable) => {
             </Tooltip>
           </Box>
         )}
-        renderTopToolbarCustomActions={() => <Stack direction="row" spacing={2} className="ml-5 "></Stack>}
+        renderTopToolbarCustomActions={() => (
+          <Stack direction="row" spacing={2} className="ml-5 ">
+            <Tooltip title="Add">
+              <div>
+                {/* <Button
+                  sx={{
+                    background: '#5e35b1',
+                    color: '#FFFFFF',
+                    '&:hover': {
+                      backgroundColor: '#5e35b1' // Change the background color on hover
+                    }
+                  }}
+                 
+                >
+                  Add
+                </Button> */}
+              </div>
+              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={() => setCreateModalOpen(true)}>
+                <Avatar
+                  variant="rounded"
+                  sx={{
+                    ...theme.typography.commonAvatar,
+                    ...theme.typography.mediumAvatar,
+                    transition: 'all .2s ease-in-out',
+                    background: theme.palette.secondary.light,
+                    color: theme.palette.secondary.dark,
+                    '&[aria-controls="menu-list-grow"],&:hover': {
+                      background: theme.palette.secondary.dark,
+                      color: theme.palette.secondary.light
+                    }
+                  }}
+                  ref={anchorRef}
+                  aria-haspopup="true"
+                  color="inherit"
+                >
+                  <AddIcon size="1.3rem" stroke={1.5} />
+                </Avatar>
+              </ButtonBase>
+            </Tooltip>
+          </Stack>
+        )}
       />
       <CreateNewAccountModal
         columns={columns}
@@ -250,4 +291,4 @@ const validateEmail = (email) =>
     );
 const validateAge = (age) => age >= 18 && age <= 50;
 
-export default GroupTable;
+export default GstTable;

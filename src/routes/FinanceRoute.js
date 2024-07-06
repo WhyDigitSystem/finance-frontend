@@ -43,6 +43,9 @@ const Branch = Loadable(lazy(() => import('views/company/branch')));
 const Roles = Loadable(lazy(() => import('views/basicMaster/roles')));
 const Employee = Loadable(lazy(() => import('views/basicMaster/employee')));
 const ChargeTypeRequest = Loadable(lazy(() => import('views/Finance/ChargeTypeRequest')));
+
+const TaxInvoiceDetail = Loadable(lazy(() => import('views/Finance/taxInvoice/taxInvoiceDetail')));
+const CreditNoteDetail = Loadable(lazy(() => import('views/Finance/creditNote/CreditNoteDetail')));
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
@@ -198,6 +201,14 @@ const FinanceRoute = {
     {
       path: '/Finance/ChargeTypeRequest',
       element: <ChargeTypeRequest />
+    },
+    {
+      path: '/Finance/taxInvoice/TaxInvoiceDetail',
+      element: <TaxInvoiceDetail />
+    },
+    {
+      path: '/Finance/creditNote/CreditNoteDetail',
+      element: <CreditNoteDetail />
     }
   ]
 };

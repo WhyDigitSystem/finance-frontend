@@ -22,10 +22,11 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { MaterialReactTable } from 'material-react-table';
 import { useEffect, useState } from 'react';
+
 import { getStateByCountry } from 'utils/common-functions';
 
-const CommonTable = ({ data, columns, editCallback, countryVO, roleData }) => {
-  const [tableData, setTableData] = useState(data);
+const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEdit, toEdit }) => {
+  const [tableData, setTableData] = useState(data || []);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
@@ -60,7 +61,16 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData }) => {
     setSelectedCountry(row.original.country);
   };
 
+  const handleButtonClick = (row) => {
+    if (blockEdit) {
+      toEdit(row);
+    } else {
+      handleEditClick(row);
+    }
+  };
+
   useEffect(() => {
+    console.log('BlockEdit', blockEdit);
     const fetchDataState = async () => {
       try {
         const stateData = await getStateByCountry(orgId, selectedCountry);
@@ -103,7 +113,7 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData }) => {
   const renderRowActions = ({ row }) => (
     <Box sx={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
       <Tooltip title="Edit" placement="top">
-        <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={() => handleEditClick(row)}>
+        <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={() => handleButtonClick(row)}>
           <Avatar
             variant="rounded"
             sx={{
@@ -165,7 +175,7 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData }) => {
           }
         }}
         columns={customColumns}
-        data={tableData}
+        data={tableData && tableData}
         enableColumnOrdering
         enableEditing
         renderRowActions={renderRowActions}

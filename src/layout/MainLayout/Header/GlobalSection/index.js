@@ -25,7 +25,6 @@ import PerfectScrollbar from 'react-perfect-scrollbar';
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
 import Transitions from 'ui-component/extended/Transitions';
-import NotificationList from './NotificationList';
 
 // assets
 
@@ -33,58 +32,58 @@ import { IconWorld } from '@tabler/icons-react';
 
 // notification status options
 const FinYear = [
+  // {
+  //   value: 'all',
+  //   label: 'Financial Year'
+  // },
   {
-    value: 'all',
-    label: 'Financial Year'
+    value: '2020-2021',
+    label: '2020-2021'
   },
   {
-    value: 'new',
-    label: 'New'
+    value: '2021-2022',
+    label: '2022-2022'
   },
   {
-    value: 'unread',
-    label: 'Unread'
-  },
-  {
-    value: 'other',
-    label: 'Other'
+    value: '2023-2024',
+    label: '2023-2024'
   }
 ];
 
 const branch = [
   {
-    value: 'all',
-    label: 'Branch'
+    value: 'Chennai',
+    label: 'Chennai'
   },
   {
-    value: 'new',
-    label: 'New'
+    value: 'Bangalore',
+    label: 'Bangalore'
   },
   {
-    value: 'unread',
-    label: 'Unread'
+    value: 'Delhi',
+    label: 'Delhi'
   },
   {
-    value: 'other',
-    label: 'Other'
+    value: 'Kochin',
+    label: 'Kochi'
   }
 ];
 const Company = [
+  // {
+  //   value: 'all',
+  //   label: 'Company'
+  // },
   {
-    value: 'all',
-    label: 'Company'
+    value: 'AIPacks',
+    label: 'AIPacks'
   },
   {
-    value: 'new',
-    label: 'New'
+    value: 'WDS',
+    label: 'WDS'
   },
   {
-    value: 'unread',
-    label: 'Unread'
-  },
-  {
-    value: 'other',
-    label: 'Other'
+    value: 'MSI',
+    label: 'MSI'
   }
 ];
 
@@ -206,7 +205,7 @@ const GlobalSection = () => {
                       </Grid>
                     </Grid>
                     <Grid item xs={12}>
-                      <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 205px)', overflowX: 'hidden' }}>
+                      <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 205px)', overflowX: 'hidden', width: '300px' }}>
                         <Grid container direction="column" spacing={2}>
                           <Grid item xs={12}>
                             <Box sx={{ px: 2, pt: 0.25 }}>
@@ -272,7 +271,7 @@ const GlobalSection = () => {
                             <Divider sx={{ my: 0 }} />
                           </Grid>
                         </Grid>
-                        <NotificationList />
+                        {/* <NotificationList /> */}
                       </PerfectScrollbar>
                     </Grid>
                   </Grid>

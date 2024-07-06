@@ -69,6 +69,18 @@ const transaction = {
           title: 'Reconciliation Summary',
           type: 'item',
           url: '/finance/ReconciliationSummaryReport/ReconciliationSummary'
+        },
+        {
+          id: 'taxInvoiceDetail',
+          title: 'Tax Invoice',
+          type: 'item',
+          url: '/finance/taxInvoice/taxInvoiceDetail'
+        },
+        {
+          id: 'creditNoteDetail',
+          title: 'IRN Credit Note',
+          type: 'item',
+          url: '/finance/creditNote/creditNoteDetail'
         }
       ]
     }

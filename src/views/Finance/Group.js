@@ -24,7 +24,7 @@ const Group = () => {
   const anchorRef = useRef(null);
   const [data, setData] = useState([]);
   const [showForm, setShowForm] = useState(true);
-
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [formData, setFormData] = useState({
     groupName: '',
     gstTaxflag: '',
@@ -68,11 +68,11 @@ const Group = () => {
 
   const getGroup = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllSetTaxRate`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllGroupLedgerByOrgId?orgId`);
       console.log('API Response:', response);
 
       if (response.status === 200) {
-        setData(response.data.paramObjectsMap.setTaxRateVO);
+        setData(response.data.paramObjectsMap.groupLedgerVO);
       } else {
         // Handle error
         console.error('API Error:', response.data);
@@ -104,10 +104,11 @@ const Group = () => {
       .then((response) => {
         console.log('Response:', response.data);
         handleClear();
-        toast.success('Set Tax Rate Created Successfully', {
+        toast.success('Group Created Successfully', {
           autoClose: 2000,
           theme: 'colored'
         });
+        getGroup();
       })
       .catch((error) => {
         console.error('Error:', error);
