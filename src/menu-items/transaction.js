@@ -1,4 +1,5 @@
 // assets
+import { breadcrumbs } from '@material-tailwind/react';
 import { IconKey } from '@tabler/icons-react';
 
 // constant
@@ -81,6 +82,18 @@ const transaction = {
           title: 'IRN Credit Note',
           type: 'item',
           url: '/finance/creditNote/creditNoteDetail'
+        },
+        {
+          id: 'costInvoice',
+          title: 'Cost Invoice',
+          type: 'item',
+          url: '/finance/costInvoice/CostInvoice'
+        },
+        {
+          id: 'costDebitNote',
+          title: 'Cost Debit Note',
+          type: 'item',
+          url: '/finance/costDebitNote/CostDebitNote'
         }
       ]
     }

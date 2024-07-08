@@ -46,6 +46,8 @@ const ChargeTypeRequest = Loadable(lazy(() => import('views/Finance/ChargeTypeRe
 
 const TaxInvoiceDetail = Loadable(lazy(() => import('views/Finance/taxInvoice/taxInvoiceDetail')));
 const CreditNoteDetail = Loadable(lazy(() => import('views/Finance/creditNote/CreditNoteDetail')));
+const CostInvoice = Loadable(lazy(() => import('views/Finance/costInvoice/CostInvoice')));
+const CostDebitNote = Loadable(lazy(() => import('views/Finance/costDebitNote/CostDebitNote')));
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
@@ -209,6 +211,14 @@ const FinanceRoute = {
     {
       path: '/Finance/creditNote/CreditNoteDetail',
       element: <CreditNoteDetail />
+    },
+    {
+      path: '/Finance/costInvoice/CostInvoice',
+      element: <CostInvoice />
+    },
+    {
+      path: '/Finance/costDebitNote/CostDebitNote',
+      element: <CostDebitNote />
     }
   ]
 };
