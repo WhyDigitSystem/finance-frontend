@@ -28,10 +28,6 @@ import TableComponent from './TableComponent';
 const CreditNoteDetails = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
-  // const buttonStyle = {
-  //   fontSize: '20px' // Adjust the font size as needed
-  // };
-
   const [listView, setlistView] = useState(false);
   const [data, setData] = useState(false);
 
@@ -57,7 +53,7 @@ const CreditNoteDetails = () => {
     recipientGSTIN: '',
     salesType: '',
     status: '',
-    orginBill: '',
+    originBill: '',
     updatedBy: '',
     summaryTaxInvoiceDTO: []
   });
@@ -76,14 +72,13 @@ const CreditNoteDetails = () => {
     dueDate: '',
     billCurr: '',
     salesType: '',
-    orginBill: ''
+    originBill: ''
   });
 
   const theme = useTheme();
   const anchorRef = useRef(null);
   const [value, setValue] = useState('1');
   const [fieldErrors, setFieldErrors] = useState({});
-
   const [tableData, setTableData] = useState([]);
   const [tableData1, setTableData1] = useState([]);
 
@@ -109,11 +104,11 @@ const CreditNoteDetails = () => {
 
   const getAllTaxInvoice = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/transaction/getTaxInvoiceByActive`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/transaction/getAllIrnCreditByOrgId?orgId=0`);
       console.log('API Response:', response);
 
       if (response.status === 200) {
-        setData(response.data.paramObjectsMap.taxInvoiceVO);
+        setData(response.data.paramObjectsMap.irnCreditVO);
       } else {
         // Handle error
         console.error('API Error:', response.data);
@@ -151,79 +146,6 @@ const CreditNoteDetails = () => {
     { accessorKey: 'active', header: 'active', size: 140 }
     // { accessorKey: 'active', header: 'Recipient', size: 140 }
   ];
-
-  // const data = [
-  //   {
-  //     cityName: 'New York',
-  //     cityCode: 'NYC',
-  //     state: 'New York',
-  //     country: 'USA',
-  //     active: true
-  //   },
-  //   {
-  //     cityName: 'Los Angeles',
-  //     cityCode: 'LA',
-  //     state: 'California',
-  //     country: 'USA',
-  //     active: true
-  //   },
-  //   {
-  //     cityName: 'Chicago',
-  //     cityCode: 'CHI',
-  //     state: 'Illinois',
-  //     country: 'USA',
-  //     active: false
-  //   },
-  //   {
-  //     cityName: 'Houston',
-  //     cityCode: 'HOU',
-  //     state: 'Texas',
-  //     country: 'USA',
-  //     active: true
-  //   },
-  //   {
-  //     cityName: 'Phoenix',
-  //     cityCode: 'PHX',
-  //     state: 'Arizona',
-  //     country: 'USA',
-  //     active: false
-  //   },
-  //   {
-  //     cityName: 'Toronto',
-  //     cityCode: 'TOR',
-  //     state: 'Ontario',
-  //     country: 'Canada',
-  //     active: true
-  //   },
-  //   {
-  //     cityName: 'Vancouver',
-  //     cityCode: 'VAN',
-  //     state: 'British Columbia',
-  //     country: 'Canada',
-  //     active: true
-  //   },
-  //   {
-  //     cityName: 'London',
-  //     cityCode: 'LON',
-  //     state: 'England',
-  //     country: 'UK',
-  //     active: true
-  //   },
-  //   {
-  //     cityName: 'Sydney',
-  //     cityCode: 'SYD',
-  //     state: 'New South Wales',
-  //     country: 'Australia',
-  //     active: true
-  //   },
-  //   {
-  //     cityName: 'Melbourne',
-  //     cityCode: 'MEL',
-  //     state: 'Victoria',
-  //     country: 'Australia',
-  //     active: false
-  //   }
-  // ];
 
   const handleClear = () => {
     setFormData({
@@ -264,13 +186,23 @@ const CreditNoteDetails = () => {
 
   // const handleChangeField = (e) => {
   //   const { name, value } = e.target;
+  //   const gstTaxInvoiceFields = ['gstdbBillAmount', 'gstcrBillAmount', 'gstDbLcAmount', 'gstCrLcAmount'];
   //   if (name.startsWith('summaryTaxInvoiceDTO.')) {
   //     const summaryField = name.split('.')[1];
   //     setFormData((prevData) => ({
   //       ...prevData,
   //       summaryTaxInvoiceDTO: {
   //         ...prevData.summaryTaxInvoiceDTO,
-  //         [summaryField]: summaryField === 'amountInWords' || summaryField === 'billingRemarks' ? value : parseInt(value, 10)
+  //         [summaryField]: ['amountInWords', 'billingRemarks'].includes(summaryField) ? value : parseInt(value, 10)
+  //       }
+  //     }));
+  //   } else if (name.startsWith('gstTaxInvoiceDTO.')) {
+  //     const gstField = name.split('.')[1];
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       gstTaxInvoiceDTO: {
+  //         ...prevData.gstTaxInvoiceDTO,
+  //         [gstField]: gstTaxInvoiceFields.includes(gstField) ? parseInt(value, 10) : value
   //       }
   //     }));
   //   } else {
@@ -281,40 +213,9 @@ const CreditNoteDetails = () => {
   //   }
   // };
 
-  const handleChangeField = (e) => {
-    const { name, value } = e.target;
-    const gstTaxInvoiceFields = ['gstdbBillAmount', 'gstcrBillAmount', 'gstDbLcAmount', 'gstCrLcAmount'];
-    if (name.startsWith('summaryTaxInvoiceDTO.')) {
-      const summaryField = name.split('.')[1];
-      setFormData((prevData) => ({
-        ...prevData,
-        summaryTaxInvoiceDTO: {
-          ...prevData.summaryTaxInvoiceDTO,
-          [summaryField]: ['amountInWords', 'billingRemarks'].includes(summaryField) ? value : parseInt(value, 10)
-        }
-      }));
-    } else if (name.startsWith('gstTaxInvoiceDTO.')) {
-      const gstField = name.split('.')[1];
-      setFormData((prevData) => ({
-        ...prevData,
-        gstTaxInvoiceDTO: {
-          ...prevData.gstTaxInvoiceDTO,
-          [gstField]: gstTaxInvoiceFields.includes(gstField) ? parseInt(value, 10) : value
-        }
-      }));
-    } else {
-      setFormData({
-        ...formData,
-        [name]: value
-      });
-    }
-  };
   const validateForm = () => {
     let formValid = true;
     const newErrors = { ...errors };
-
-    // Validation logic for each field
-
     // Party Name
     if (!formData.partyName) {
       newErrors.partyName = 'Party Name is required';
@@ -428,11 +329,15 @@ const CreditNoteDetails = () => {
 
     if (validateForm()) {
       axios
-        .put(`${process.env.REACT_APP_API_URL}/api/transaction/updateCreateTaxInvoice`, formData)
+        .put(`${process.env.REACT_APP_API_URL}/api/transaction/updateCreateIrnCredit`, formData)
         .then((response) => {
-          console.log('Response:', response.data);
-          showToast('success', 'Tax Invoice Created Successfully');
-          handleClear();
+          if (response.data.statusFlag === 'Error') {
+            showToast('error', 'IRN Credit Note Creation Failed');
+          } else {
+            console.log('Response:', response.data);
+            showToast('success', 'IRN Credit Note Created Successfully');
+            // handleClear();
+          }
         })
         .catch((error) => {
           console.error('Error:', error);
@@ -700,10 +605,10 @@ const CreditNoteDetails = () => {
                     size="small"
                     required
                     inputProps={{ maxLength: 30 }}
-                    value={formData.orginBill}
-                    onChange={(e) => setFormData({ ...formData, orginBill: e.target.value })}
-                    error={!!errors.orginBill}
-                    // helperText={errors.orginBill}
+                    value={formData.originBill}
+                    onChange={(e) => setFormData({ ...formData, originBill: e.target.value })}
+                    error={!!errors.originBill}
+                    // helperText={errors.originBill}
                   />
                 </FormControl>
               </div>
