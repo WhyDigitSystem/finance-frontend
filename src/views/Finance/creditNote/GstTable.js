@@ -10,7 +10,7 @@ import {
   DialogContent,
   DialogTitle,
   IconButton,
-  // MenuItem,
+  MenuItem,
   Stack,
   TextField,
   Tooltip
@@ -18,30 +18,41 @@ import {
 import { useTheme } from '@mui/material/styles';
 import { MaterialReactTable } from 'material-react-table';
 import { useCallback, useMemo, useRef, useState } from 'react';
-// import { data } from './makeData';
-// import { MdGroups } from 'react-icons/md';
-// import { FaUser } from 'react-icons/fa';
-// import { FaDatabase } from 'react-icons/fa6';
 
-const GstTable = () => {
+const GstTable = ({ tableData: initialTableData, onCreateNewRow }) => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [tableData, setTableData] = useState('');
+  const [tableData, setTableData] = useState(initialTableData || []);
   const [validationErrors, setValidationErrors] = useState({});
 
   const theme = useTheme();
   const anchorRef = useRef(null);
 
   const handleCreateNewRow = (values) => {
-    tableData.push(values);
-    setTableData([...tableData]);
+    setTableData((prevData) => {
+      const newData = [...prevData, values];
+      onCreateNewRow(values);
+      return newData;
+    });
   };
 
   const handleSaveRowEdits = async ({ exitEditingMode, row, values }) => {
-    if (!Object.keys(validationErrors).length) {
+    const newValidationErrors = {};
+    Object.keys(values).forEach((key) => {
+      if (!values[key]) {
+        newValidationErrors[key] = `${key} is required`;
+      }
+    });
+
+    if (!validateInteger(values.gstdbBillAmount)) {
+      newValidationErrors['gstdbBillAmount'] = 'Qty must be a valid integer';
+    }
+
+    if (!Object.keys(newValidationErrors).length) {
       tableData[row.index] = values;
-      //send/receive api updates here, then refetch or update local table data for re-render
       setTableData([...tableData]);
-      exitEditingMode(); //required to exit editing mode and close modal
+      exitEditingMode(); // required to exit editing mode and close modal
+    } else {
+      setValidationErrors(newValidationErrors);
     }
   };
 
@@ -98,7 +109,7 @@ const GstTable = () => {
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'gstPartyA/c',
+        accessorKey: 'gstPartyAc',
         header: 'GST Party A/C',
         size: 140,
         muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
@@ -184,20 +195,6 @@ const GstTable = () => {
         renderTopToolbarCustomActions={() => (
           <Stack direction="row" spacing={2} className="ml-5 ">
             <Tooltip title="Add">
-              <div>
-                {/* <Button
-                  sx={{
-                    background: '#5e35b1',
-                    color: '#FFFFFF',
-                    '&:hover': {
-                      backgroundColor: '#5e35b1' // Change the background color on hover
-                    }
-                  }}
-                 
-                >
-                  Add
-                </Button> */}
-              </div>
               <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={() => setCreateModalOpen(true)}>
                 <Avatar
                   variant="rounded"
@@ -242,10 +239,55 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
     }, {})
   );
 
+  const handleChange = (e, accessorKey) => {
+    const value = e.target.value;
+    if (integerFields.includes(accessorKey)) {
+      // Allow only numeric values
+      if (/^\d*$/.test(value)) {
+        setValues({ ...values, [e.target.name]: value });
+      }
+    } else {
+      setValues({ ...values, [e.target.name]: value });
+    }
+  };
+
+  const [validationErrors, setValidationErrors] = useState({}); // Define validationErrors state
+
+  const integerFields = ['gstPartyAc', 'gstdbBillAmount', 'gstcrBillAmount', 'gstDbLcAmount', 'gstCrLcAmount'];
+
   const handleSubmit = () => {
-    //put your validation logic here
-    onSubmit(values);
-    onClose();
+    const newValidationErrors = {};
+    // Validate all fields to ensure they are not empty
+    // Object.keys(values).forEach((key) => {
+    //   if (!values[key]) {
+    //     newValidationErrors[key] = `${key} is required`;
+    //   }
+    // });
+    if (!values.gstSubledgerCode) {
+      newValidationErrors['gstSubledgerCode'] = 'GST SubLedger Code is Required';
+    }
+    if (!validateNumber(values.gstPartyAc)) {
+      newValidationErrors['gstPartyAc'] = 'Party AC must be a valid Integer';
+    }
+    if (!validateNumber(values.gstdbBillAmount)) {
+      newValidationErrors['gstdbBillAmount'] = 'GST Debit Bill Amount must be a valid integer';
+    }
+    if (!validateNumber(values.gstcrBillAmount)) {
+      newValidationErrors['gstcrBillAmount'] = 'GST Credit Bill Amount must be a valid integer';
+    }
+    if (!validateNumber(values.gstDbLcAmount)) {
+      newValidationErrors['gstDbLcAmount'] = 'GST Debit LC Amount must be a valid integer';
+    }
+    if (!validateNumber(values.gstCrLcAmount)) {
+      newValidationErrors['gstCrLcAmount'] = 'GST Credit LC Amount must be a valid integer';
+    }
+
+    if (!Object.keys(newValidationErrors).length) {
+      onSubmit(values);
+      onClose();
+    } else {
+      setValidationErrors(newValidationErrors); // Set validation errors if there are any
+    }
   };
 
   return (
@@ -266,6 +308,8 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
                 label={column.header}
                 name={column.accessorKey}
                 onChange={(e) => setValues({ ...values, [e.target.name]: e.target.value })}
+                error={!!validationErrors[column.accessorKey]} // Set error state based on validation
+                helperText={validationErrors[column.accessorKey]}
               />
             ))}
           </Stack>
@@ -281,7 +325,7 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
   );
 };
 
-const validateRequired = (value) => !!value.length;
+// const validateRequired = (value) => !!value.length;
 const validateEmail = (email) =>
   !!email.length &&
   email
@@ -290,5 +334,16 @@ const validateEmail = (email) =>
       /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
     );
 const validateAge = (age) => age >= 18 && age <= 50;
+
+const validateInteger = (value) => Number.isInteger(Number(value));
+
+const validateNumber = (value) => {
+  const number = Number(value);
+  return !Number.isNaN(number);
+};
+
+const validateRequired = (value) => {
+  return !!value.trim(); // Example: Checks if value is not empty after trimming whitespace
+};
 
 export default GstTable;

@@ -20,47 +20,96 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import axios from 'axios';
 import { useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
+import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
 import GstTable from './GstTable';
 import TableComponent from './TableComponent';
 
 const CreditNoteDetails = () => {
   const [tabIndex, setTabIndex] = useState(0);
+  const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
   // const buttonStyle = {
   //   fontSize: '20px' // Adjust the font size as needed
   // };
 
+  const [listView, setlistView] = useState(false);
+  const [data, setData] = useState(false);
+
+  const [formData, setFormData] = useState({
+    active: true,
+    address: '',
+    addressType: '',
+    billCurr: '',
+    chargerTaxInvoiceDTO: [],
+    createdBy: '',
+    docDate: new Date(),
+    dueDate: null,
+    gstTaxInvoiceDTO: [],
+    gsttype: '',
+    headerColumns: '',
+    invoiceDate: new Date(),
+    orgId: orgId,
+    partyCode: '',
+    partyName: '',
+    partyType: '',
+    pincode: '',
+    placeOfSupply: '',
+    recipientGSTIN: '',
+    salesType: '',
+    status: '',
+    orginBill: '',
+    updatedBy: '',
+    summaryTaxInvoiceDTO: []
+  });
+
+  const [errors, setErrors] = useState({
+    partyName: '',
+    partyCode: '',
+    partyType: '',
+    addressType: '',
+    recipientGSTIN: '',
+    placeOfSupply: '',
+    address: '',
+    pincode: '',
+    status: '',
+    gsttype: '',
+    dueDate: '',
+    billCurr: '',
+    salesType: '',
+    orginBill: ''
+  });
+
   const theme = useTheme();
   const anchorRef = useRef(null);
   const [value, setValue] = useState('1');
-  const [listView, setListView] = useState(false);
-  const [data, setData] = useState([]);
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  const handleTabSelect = (index) => {
-    setTabIndex(index);
+  const [tableData, setTableData] = useState([]);
+  const [tableData1, setTableData1] = useState([]);
+
+  const handleCreateNewRow = (values) => {
+    // Ensure that relevant fields in gstTaxInvoiceDTO are integers
+    const updatedValues = {
+      ...values,
+      gstBdBillAmount: parseInt(values.gstBdBillAmount, 10),
+      gstCrBillAmount: parseInt(values.gstCrBillAmount, 10),
+      gstCrLcAmount: parseInt(values.gstCrLcAmount, 10),
+      gstDbLcAmount: parseInt(values.gstDbLcAmount, 10)
+    };
+
+    setFormData((prevData) => ({
+      ...prevData,
+      gstTaxInvoiceDTO: [...prevData.gstTaxInvoiceDTO, updatedValues]
+    }));
   };
-
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
-
   const handleListView = () => {
-    setListView(!listView);
-    getAllCreditNote();
+    setlistView(!listView);
+    getAllTaxInvoice();
   };
 
-  const columns = [
-    { accessorKey: 'cityName', header: 'Party Name', size: 140 },
-    { accessorKey: 'cityCode', header: 'Code', size: 140 },
-    { accessorKey: 'state', header: 'Type', size: 140 },
-    { accessorKey: 'country', header: 'Address Type', size: 140 },
-    { accessorKey: 'active', header: 'active', size: 140 }
-    // { accessorKey: 'active', header: 'Recipient', size: 140 }
-  ];
-
-  const getAllCreditNote = async () => {
+  const getAllTaxInvoice = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/transaction/getIrnCreditByActive`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/transaction/getTaxInvoiceByActive`);
       console.log('API Response:', response);
 
       if (response.status === 200) {
@@ -74,9 +123,327 @@ const CreditNoteDetails = () => {
     }
   };
 
+  const handleCreateNewRow1 = (values) => {
+    // Ensure that 'qty' is an integer
+    const updatedValues = {
+      ...values,
+      qty: parseInt(values.qty, 10)
+    };
+
+    setTableData1((prevData) => {
+      const updatedData = [...prevData, updatedValues];
+
+      // Update formData with the new tableData1
+      setFormData((prevData) => ({
+        ...prevData,
+        chargerTaxInvoiceDTO: updatedData
+      }));
+
+      console.log('Updated GSTTableData1', updatedData);
+      return updatedData;
+    });
+  };
+  const columns = [
+    { accessorKey: 'partyName', header: 'Party Name', size: 140 },
+    { accessorKey: 'partyCode', header: 'Code', size: 140 },
+    { accessorKey: 'partyType', header: 'Type', size: 140 },
+    { accessorKey: 'address', header: 'Address Type', size: 140 },
+    { accessorKey: 'active', header: 'active', size: 140 }
+    // { accessorKey: 'active', header: 'Recipient', size: 140 }
+  ];
+
+  // const data = [
+  //   {
+  //     cityName: 'New York',
+  //     cityCode: 'NYC',
+  //     state: 'New York',
+  //     country: 'USA',
+  //     active: true
+  //   },
+  //   {
+  //     cityName: 'Los Angeles',
+  //     cityCode: 'LA',
+  //     state: 'California',
+  //     country: 'USA',
+  //     active: true
+  //   },
+  //   {
+  //     cityName: 'Chicago',
+  //     cityCode: 'CHI',
+  //     state: 'Illinois',
+  //     country: 'USA',
+  //     active: false
+  //   },
+  //   {
+  //     cityName: 'Houston',
+  //     cityCode: 'HOU',
+  //     state: 'Texas',
+  //     country: 'USA',
+  //     active: true
+  //   },
+  //   {
+  //     cityName: 'Phoenix',
+  //     cityCode: 'PHX',
+  //     state: 'Arizona',
+  //     country: 'USA',
+  //     active: false
+  //   },
+  //   {
+  //     cityName: 'Toronto',
+  //     cityCode: 'TOR',
+  //     state: 'Ontario',
+  //     country: 'Canada',
+  //     active: true
+  //   },
+  //   {
+  //     cityName: 'Vancouver',
+  //     cityCode: 'VAN',
+  //     state: 'British Columbia',
+  //     country: 'Canada',
+  //     active: true
+  //   },
+  //   {
+  //     cityName: 'London',
+  //     cityCode: 'LON',
+  //     state: 'England',
+  //     country: 'UK',
+  //     active: true
+  //   },
+  //   {
+  //     cityName: 'Sydney',
+  //     cityCode: 'SYD',
+  //     state: 'New South Wales',
+  //     country: 'Australia',
+  //     active: true
+  //   },
+  //   {
+  //     cityName: 'Melbourne',
+  //     cityCode: 'MEL',
+  //     state: 'Victoria',
+  //     country: 'Australia',
+  //     active: false
+  //   }
+  // ];
+
+  const handleClear = () => {
+    setFormData({
+      active: true,
+      address: '',
+      addressType: '',
+      billCurr: '',
+      chargerTaxInvoiceDTO: [],
+      createdBy: '',
+      docDate: new Date(),
+      dueDate: null,
+      gstTaxInvoiceDTO: [],
+      gsttype: '',
+      headerColumns: '',
+      id: 0,
+      invoiceDate: new Date(),
+      orgId: 0,
+      partyCode: '',
+      partyName: '',
+      partyType: '',
+      pincode: '',
+      placeOfSupply: '',
+      recipientGSTIN: '',
+      salesType: '',
+      status: '',
+      summaryTaxInvoiceDTO: [],
+      updatedBy: ''
+    });
+  };
+
+  const handleTabSelect = (index) => {
+    setTabIndex(index);
+  };
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+
+  // const handleChangeField = (e) => {
+  //   const { name, value } = e.target;
+  //   if (name.startsWith('summaryTaxInvoiceDTO.')) {
+  //     const summaryField = name.split('.')[1];
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       summaryTaxInvoiceDTO: {
+  //         ...prevData.summaryTaxInvoiceDTO,
+  //         [summaryField]: summaryField === 'amountInWords' || summaryField === 'billingRemarks' ? value : parseInt(value, 10)
+  //       }
+  //     }));
+  //   } else {
+  //     setFormData({
+  //       ...formData,
+  //       [name]: value
+  //     });
+  //   }
+  // };
+
+  const handleChangeField = (e) => {
+    const { name, value } = e.target;
+    const gstTaxInvoiceFields = ['gstdbBillAmount', 'gstcrBillAmount', 'gstDbLcAmount', 'gstCrLcAmount'];
+    if (name.startsWith('summaryTaxInvoiceDTO.')) {
+      const summaryField = name.split('.')[1];
+      setFormData((prevData) => ({
+        ...prevData,
+        summaryTaxInvoiceDTO: {
+          ...prevData.summaryTaxInvoiceDTO,
+          [summaryField]: ['amountInWords', 'billingRemarks'].includes(summaryField) ? value : parseInt(value, 10)
+        }
+      }));
+    } else if (name.startsWith('gstTaxInvoiceDTO.')) {
+      const gstField = name.split('.')[1];
+      setFormData((prevData) => ({
+        ...prevData,
+        gstTaxInvoiceDTO: {
+          ...prevData.gstTaxInvoiceDTO,
+          [gstField]: gstTaxInvoiceFields.includes(gstField) ? parseInt(value, 10) : value
+        }
+      }));
+    } else {
+      setFormData({
+        ...formData,
+        [name]: value
+      });
+    }
+  };
+  const validateForm = () => {
+    let formValid = true;
+    const newErrors = { ...errors };
+
+    // Validation logic for each field
+
+    // Party Name
+    if (!formData.partyName) {
+      newErrors.partyName = 'Party Name is required';
+      formValid = false;
+    } else {
+      newErrors.partyName = '';
+    }
+
+    // Party Code
+    if (!formData.partyCode) {
+      newErrors.partyCode = 'Party Code is required';
+      formValid = false;
+    } else {
+      newErrors.partyCode = '';
+    }
+
+    // Party Type
+    if (!formData.partyType) {
+      newErrors.partyType = 'Party Type is required';
+      formValid = false;
+    } else {
+      newErrors.partyType = '';
+    }
+
+    // Address Type
+    if (!formData.addressType) {
+      newErrors.addressType = 'Address Type is required';
+      formValid = false;
+    } else {
+      newErrors.addressType = '';
+    }
+
+    // Recipient GSTIN
+    if (!formData.recipientGSTIN) {
+      newErrors.recipientGSTIN = 'Recipient GSTIN is required';
+      formValid = false;
+    } else {
+      newErrors.recipientGSTIN = '';
+    }
+
+    // Place of Supply
+    if (!formData.placeOfSupply) {
+      newErrors.placeOfSupply = 'Place of Supply is required';
+      formValid = false;
+    } else {
+      newErrors.placeOfSupply = '';
+    }
+
+    // Address
+    if (!formData.address) {
+      newErrors.address = 'Address is required';
+      formValid = false;
+    } else {
+      newErrors.address = '';
+    }
+
+    // Pincode
+    if (!formData.pincode) {
+      newErrors.pincode = 'Pincode is required';
+      formValid = false;
+    } else {
+      newErrors.pincode = '';
+    }
+
+    // Status
+    if (!formData.status) {
+      newErrors.status = 'Status is required';
+      formValid = false;
+    } else {
+      newErrors.status = '';
+    }
+
+    // GST Type
+    if (!formData.gsttype) {
+      newErrors.gsttype = 'GST Type is required';
+      formValid = false;
+    } else {
+      newErrors.gsttype = '';
+    }
+
+    // Due Date
+    if (!formData.dueDate) {
+      newErrors.dueDate = 'Due Date is required';
+      formValid = false;
+    } else {
+      newErrors.dueDate = '';
+    }
+
+    // Bill Curr
+    if (!formData.billCurr) {
+      newErrors.billCurr = 'Bill Curr is required';
+      formValid = false;
+    } else {
+      newErrors.billCurr = '';
+    }
+
+    // Sales Type
+    if (!formData.salesType) {
+      newErrors.salesType = 'Sales Type is required';
+      formValid = false;
+    } else {
+      newErrors.salesType = '';
+    }
+
+    setErrors(newErrors);
+    return formValid;
+  };
+
+  const handleSave = () => {
+    console.log('handleSave', formData);
+
+    if (validateForm()) {
+      axios
+        .put(`${process.env.REACT_APP_API_URL}/api/transaction/updateCreateTaxInvoice`, formData)
+        .then((response) => {
+          console.log('Response:', response.data);
+          showToast('success', 'Tax Invoice Created Successfully');
+          handleClear();
+        })
+        .catch((error) => {
+          console.error('Error:', error);
+        });
+    }
+  };
+
   return (
-    <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
-      <div className="">
+    <>
+      <ToastComponent />
+      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
             <Tooltip title="Search" placement="top">
@@ -105,7 +472,7 @@ const CreditNoteDetails = () => {
 
             <Tooltip title="Clear" placement="top">
               {' '}
-              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
+              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={handleClear}>
                 <Avatar
                   variant="rounded"
                   sx={{
@@ -172,22 +539,39 @@ const CreditNoteDetails = () => {
                   aria-haspopup="true"
                   color="inherit"
                 >
-                  <SaveIcon size="1.3rem" stroke={1.5} />
+                  <SaveIcon size="1.3rem" stroke={1.5} onClick={handleSave} />
                 </Avatar>
               </ButtonBase>
             </Tooltip>
           </div>
-
           {!listView && (
-            <div className="row d-flex flex-wrap justify-content-start">
+            <div className="d-flex flex-wrap justify-content-start row">
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <TextField label="Party Name" size="small" required inputProps={{ maxLength: 30 }} />
+                  <TextField
+                    label="Party Name"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.partyName}
+                    onChange={(e) => setFormData({ ...formData, partyName: e.target.value })}
+                    error={!!errors.partyName}
+                    // helperText={errors.partyName}
+                  />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <TextField label="Party Code" size="small" required inputProps={{ maxLength: 30 }} />
+                  <TextField
+                    label="Party Code"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.partyCode}
+                    onChange={(e) => setFormData({ ...formData, partyCode: e.target.value })}
+                    error={!!errors.partyCode}
+                    // helperText={errors.partyCode}
+                  />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -196,15 +580,16 @@ const CreditNoteDetails = () => {
                     Party Type
                   </InputLabel>
                   <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    required
-                    // value={age}
+                    labelId="partyTypeLabel"
+                    value={formData.partyType}
+                    onChange={(e) => setFormData({ ...formData, partyType: e.target.value })}
                     label="Party Type"
-                    // onChange={handleChange}
+                    required
+                    error={!!errors.partyType}
+                    helperText={errors.partyType}
                   >
-                    <MenuItem value={20}>Customer</MenuItem>
-                    <MenuItem value={10}>Vendor</MenuItem>
+                    <MenuItem value="Customer">Customer</MenuItem>
+                    <MenuItem value="Vendor">Vendor</MenuItem>
                   </Select>
                 </FormControl>
               </div>
@@ -214,21 +599,31 @@ const CreditNoteDetails = () => {
                     Address Type
                   </InputLabel>
                   <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    required
-                    // value={age}
+                    labelId="addressTypeLabel"
+                    value={formData.addressType}
+                    onChange={(e) => setFormData({ ...formData, addressType: e.target.value })}
                     label="Address Type"
-                    // onChange={handleChange}
+                    required
+                    error={!!errors.addressType}
+                    helperText={errors.addressType}
                   >
-                    <MenuItem value={20}>Customer</MenuItem>
-                    <MenuItem value={10}>Vendor</MenuItem>
+                    <MenuItem value="Customer">Customer</MenuItem>
+                    <MenuItem value="Vendor">Vendor</MenuItem>
                   </Select>
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <TextField label="Recipient GSTIN" size="small" required inputProps={{ maxLength: 30 }} />
+                  <TextField
+                    label="Recipient GSTIN"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.recipientGSTIN}
+                    onChange={(e) => setFormData({ ...formData, recipientGSTIN: e.target.value })}
+                    error={!!errors.recipientGSTIN}
+                    // helperText={errors.recipientGSTIN}
+                  />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -237,26 +632,46 @@ const CreditNoteDetails = () => {
                     Place of Supply
                   </InputLabel>
                   <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
+                    labelId="placeOfSupplyLabel"
+                    value={formData.placeOfSupply}
+                    onChange={(e) => setFormData({ ...formData, placeOfSupply: e.target.value })}
+                    label="Place of Supply"
                     required
-                    // value={age}
-                    label="Address Type"
-                    // onChange={handleChange}
+                    error={!!errors.placeOfSupply}
+                    helperText={errors.placeOfSupply}
                   >
-                    <MenuItem value={20}>Customer</MenuItem>
-                    <MenuItem value={10}>Vendor</MenuItem>
+                    <MenuItem value="Customer">Customer</MenuItem>
+                    <MenuItem value="Vendor">Vendor</MenuItem>
                   </Select>
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <TextField label="Address" size="small" required multiline inputProps={{ maxLength: 30 }} />
+                  <TextField
+                    label="Address"
+                    size="small"
+                    required
+                    multiline
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    error={!!errors.address}
+                    // helperText={errors.address}
+                  />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <TextField label="Pincode" size="small" required inputProps={{ maxLength: 30 }} />
+                  <TextField
+                    label="Pincode"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.pincode}
+                    onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                    error={!!errors.pincode}
+                    // helperText={errors.pincode}
+                  />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -265,21 +680,31 @@ const CreditNoteDetails = () => {
                     Status
                   </InputLabel>
                   <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    required
-                    // value={age}
+                    labelId="statusLabel"
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                     label="Status"
-                    // onChange={handleChange}
+                    required
+                    error={!!errors.status}
+                    // helperText={errors.status}
                   >
-                    <MenuItem value={20}>Tax</MenuItem>
-                    <MenuItem value={10}>Tax</MenuItem>
+                    <MenuItem value="Tax">Tax</MenuItem>
+                    <MenuItem value="Other">Other</MenuItem>
                   </Select>
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <TextField label="Orgin Bill" size="small" required inputProps={{ maxLength: 30 }} />
+                  <TextField
+                    label="Orgin Bill"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.orginBill}
+                    onChange={(e) => setFormData({ ...formData, orginBill: e.target.value })}
+                    error={!!errors.orginBill}
+                    // helperText={errors.orginBill}
+                  />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -288,15 +713,16 @@ const CreditNoteDetails = () => {
                     GST Type
                   </InputLabel>
                   <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
+                    labelId="gstTypeLabel"
+                    value={formData.gsttype}
+                    onChange={(e) => setFormData({ ...formData, gsttype: e.target.value })}
+                    label="GST Type"
                     required
-                    // value={age}
-                    label="Status"
-                    // onChange={handleChange}
+                    error={!!errors.gsttype}
+                    helperText={errors.gsttype}
                   >
-                    <MenuItem value={20}>Inter</MenuItem>
-                    <MenuItem value={10}>Intra</MenuItem>
+                    <MenuItem value="Inter">Inter</MenuItem>
+                    <MenuItem value="Intra">Intra</MenuItem>
                   </Select>
                 </FormControl>
               </div>
@@ -306,11 +732,9 @@ const CreditNoteDetails = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Due Date"
-                      slotProps={{
-                        textField: { size: 'small', clearable: true }
-                      }}
-                      //value={boDate}
-                      //onChange={(newValue) => setBoDate(newValue)}
+                      value={formData.dueDate}
+                      onChange={(newValue) => setFormData({ ...formData, dueDate: newValue })}
+                      renderInput={(params) => <TextField {...params} size="small" />}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -322,15 +746,17 @@ const CreditNoteDetails = () => {
                     Bill Curr
                   </InputLabel>
                   <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    required
-                    // value={age}
+                    labelId="billCurrLabel"
+                    value={formData.billCurr}
+                    onChange={(e) => setFormData({ ...formData, billCurr: e.target.value })}
                     label="Bill Curr"
-                    // onChange={handleChange}
+                    required
+                    error={!!errors.billCurr}
+                    helperText={errors.billCurr}
                   >
-                    <MenuItem value={20}>Inter</MenuItem>
-                    <MenuItem value={10}>Intra</MenuItem>
+                    <MenuItem value="USD">USD</MenuItem>
+                    <MenuItem value="EUR">EUR</MenuItem>
+                    <MenuItem value="INR">INR</MenuItem>
                   </Select>
                 </FormControl>
               </div>
@@ -340,185 +766,198 @@ const CreditNoteDetails = () => {
                     Sales Type
                   </InputLabel>
                   <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    required
-                    // value={age}
+                    labelId="salesTypeLabel"
+                    value={formData.salesType}
+                    onChange={(e) => setFormData({ ...formData, salesType: e.target.value })}
                     label="Sales Type"
-                    // onChange={handleChange}
+                    required
+                    error={!!errors.salesType}
+                    helperText={errors.salesType}
                   >
-                    <MenuItem value={20}>Inter</MenuItem>
-                    <MenuItem value={10}>Intra</MenuItem>
+                    <MenuItem value="Retail">Retail</MenuItem>
+                    <MenuItem value="Wholesale">Wholesale</MenuItem>
                   </Select>
                 </FormControl>
               </div>
             </div>
           )}
         </div>
-        {/* <div className="d-flex flex-row mt-4">
-          <button type="button" className="btn btn-primary" style={{ marginRight: '10px' }}>
-            Save
-          </button>
-          <button type="button" className="btn btn-primary">
-            Cancel
-          </button>
-        </div> */}
-      </div>
-      {/* <div className="card w-full p-6 bg-base-100 shadow-xl mt-2" style={{ padding: '20px' }}>
-        <Tabs selectedIndex={tabIndex} onSelect={handleTabSelect}>
-          <TabList style={{ marginBottom: 0 }}>
-            <Tab>Charge Particulars</Tab>
-            <Tab>Summary</Tab>
-            <Tab>GST</Tab>
-          </TabList>
-          <TabPanel>
-            <TableComponent />
-          </TabPanel>
-          <TabPanel>
-            <TableComponent />
-            <div className="row d-flex mt-3">
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField label="Tot. Charge Amt.(LC)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField label="Tot. Tax Amt.(LC)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField label="Tot. Inv Amt.(LC)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField label="Round Off Amt.(LC)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField label="Tot Charge Amt.(Bill Curr.)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField label="Tot Tax Amt.(Bill Curr.)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField label="Tot Inv Amt.(Bill Curr.)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField label="Tot Taxable Amt.(Bill Curr.)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                </FormControl>
-              </div>
-              <div className="col-md-6 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField label="Amount In Words" size="small" inputProps={{ maxLength: 30 }} />
-                </FormControl>
-              </div>
-              <div className="col-md-6 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField label="Billing Remarks" size="small" inputProps={{ maxLength: 30 }} />
-                </FormControl>
-              </div>
-            </div>
-          </TabPanel>
-          <TabPanel></TabPanel>
-        </Tabs>
-      </div> */}
-      <br></br>
-      {!listView && (
-        <div className="card w-full p-6 bg-base-100 shadow-xl mb-3">
-          <Box sx={{ width: '100%', typography: 'body1' }}>
-            <TabContext value={value}>
-              <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
-                  <Tab label="Charge Particulars" value="1" />
-                  <Tab label="Summary" value="2" />
-                  <Tab label="GST" value="3">
-                    {' '}
-                  </Tab>
-                </TabList>
-              </Box>
-              <TabPanel value="1">
-                <TableComponent />
-              </TabPanel>
-              <TabPanel value="2">
-                <div className="row d-flex mt-3">
-                  <div className="col-md-3 mb-3">
-                    <FormControl fullWidth variant="filled">
-                      <TextField label="Tot. Charge Amt.(LC)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                    </FormControl>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                    <FormControl fullWidth variant="filled">
-                      <TextField label="Tot. Tax Amt.(LC)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                    </FormControl>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                    <FormControl fullWidth variant="filled">
-                      <TextField label="Tot. Inv Amt.(LC)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                    </FormControl>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                    <FormControl fullWidth variant="filled">
-                      <TextField label="Round Off Amt.(LC)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                    </FormControl>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                    <FormControl fullWidth variant="filled">
-                      <TextField label="Tot Charge Amt.(Bill Curr.)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                    </FormControl>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                    <FormControl fullWidth variant="filled">
-                      <TextField label="Tot Tax Amt.(Bill Curr.)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                    </FormControl>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                    <FormControl fullWidth variant="filled">
-                      <TextField label="Tot Inv Amt.(Bill Curr.)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                    </FormControl>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                    <FormControl fullWidth variant="filled">
-                      <TextField label="Tot Taxable Amt.(Bill Curr.)" size="small" placeholder="0.00" inputProps={{ maxLength: 30 }} />
-                    </FormControl>
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <FormControl fullWidth variant="filled">
-                      <TextField label="Amount In Words" size="small" inputProps={{ maxLength: 30 }} />
-                    </FormControl>
-                  </div>
-                  <div className="col-md-6 mb-3">
-                    <FormControl fullWidth variant="filled">
-                      <TextField label="Billing Remarks" size="small" inputProps={{ maxLength: 30 }} />
-                    </FormControl>
-                  </div>
-                </div>
-              </TabPanel>
-              <TabPanel value="3">
-                {' '}
-                <GstTable />
-              </TabPanel>
-            </TabContext>
-          </Box>
-        </div>
-      )}
 
-      {listView && (
-        <div>
-          {' '}
-          <CommonTable columns={columns} data={data} />{' '}
-        </div>
-      )}
-    </div>
+        <br></br>
+        {!listView && (
+          <div className="card w-full p-6 bg-base-100 shadow-xl mb-3">
+            <Box sx={{ width: '100%', typography: 'body1' }}>
+              <TabContext value={value}>
+                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                  <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
+                    <Tab label="Charge Particulars" value="1" />
+                    <Tab label="Summary" value="2" />
+                    <Tab label="GST" value="3">
+                      {' '}
+                    </Tab>
+                  </TabList>
+                </Box>
+                <TabPanel value="1">
+                  <TableComponent tableData={formData.chargerTaxInvoiceDTO} onCreateNewRow={handleCreateNewRow1} />
+                </TabPanel>
+                <TabPanel value="2">
+                  <div className="row d-flex mt-3">
+                    <div className="col-md-3 mb-3">
+                      <FormControl fullWidth variant="filled">
+                        <TextField
+                          label="Tot. Charge Amt.(LC)"
+                          name="lcChargeAmount"
+                          value={formData.lcChargeAmount}
+                          onChange={(e) => setFormData({ ...formData, lcChargeAmount: e.target.value })}
+                          size="small"
+                          placeholder="0.00"
+                          inputProps={{ maxLength: 30 }}
+                          error={fieldErrors['summaryTaxInvoiceDTO.lcChargeAmount']}
+                        />
+                      </FormControl>
+                    </div>
+                    <div className="col-md-3 mb-3">
+                      <FormControl fullWidth variant="filled">
+                        <TextField
+                          label="Tot. Tax Amt.(LC)"
+                          name="summaryTaxInvoiceDTO.lcTaxAmount"
+                          value={formData.lcTaxAmount}
+                          onChange={(e) => setFormData({ ...formData, lcTaxAmount: e.target.value })}
+                          size="small"
+                          placeholder="0.00"
+                          inputProps={{ maxLength: 30 }}
+                          error={fieldErrors['lcTaxAmount']}
+                        />
+                      </FormControl>
+                    </div>
+                    <div className="col-md-3 mb-3">
+                      <FormControl fullWidth variant="filled">
+                        <TextField
+                          label="Tot. Inv Amt.(LC)"
+                          name="lcInvAmount"
+                          value={formData.lcInvAmount}
+                          onChange={(e) => setFormData({ ...formData, lcInvAmount: e.target.value })}
+                          size="small"
+                          placeholder="0.00"
+                          inputProps={{ maxLength: 30 }}
+                          error={fieldErrors['lcInvAmount']}
+                        />
+                      </FormControl>
+                    </div>
+                    <div className="col-md-3 mb-3">
+                      <FormControl fullWidth variant="filled">
+                        <TextField
+                          label="Round Off Amt.(LC)"
+                          name="lcRoundOffAmount"
+                          value={formData.lcRoundOffAmount}
+                          onChange={(e) => setFormData({ ...formData, lcRoundOffAmount: e.target.value })}
+                          size="small"
+                          placeholder="0.00"
+                          inputProps={{ maxLength: 30 }}
+                          error={fieldErrors['lcRoundOffAmount']}
+                        />
+                      </FormControl>
+                    </div>
+                    <div className="col-md-3 mb-3">
+                      <FormControl fullWidth variant="filled">
+                        <TextField
+                          label="Tot Charge Amt.(Bill Curr.)"
+                          name="billlcChargeAmount"
+                          value={formData.billlcChargeAmount}
+                          onChange={(e) => setFormData({ ...formData, billlcChargeAmount: e.target.value })}
+                          size="small"
+                          placeholder="0.00"
+                          inputProps={{ maxLength: 30 }}
+                          error={fieldErrors['billlcChargeAmount']}
+                        />
+                      </FormControl>
+                    </div>
+                    <div className="col-md-3 mb-3">
+                      <FormControl fullWidth variant="filled">
+                        <TextField
+                          label="Tot Tax Amt.(Bill Curr.)"
+                          name="billTaxAmount"
+                          value={formData.billTaxAmount}
+                          onChange={(e) => setFormData({ ...formData, billTaxAmount: e.target.value })}
+                          size="small"
+                          placeholder="0.00"
+                          inputProps={{ maxLength: 30 }}
+                          error={fieldErrors['billTaxAmount']}
+                        />
+                      </FormControl>
+                    </div>
+                    <div className="col-md-3 mb-3">
+                      <FormControl fullWidth variant="filled">
+                        <TextField
+                          label="Tot Inv Amt.(Bill Curr.)"
+                          name="billInvAmount"
+                          value={formData.billInvAmount}
+                          onChange={(e) => setFormData({ ...formData, billInvAmount: e.target.value })}
+                          size="small"
+                          placeholder="0.00"
+                          inputProps={{ maxLength: 30 }}
+                          error={fieldErrors['billInvAmount']}
+                        />
+                      </FormControl>
+                    </div>
+                    <div className="col-md-3 mb-3">
+                      <FormControl fullWidth variant="filled">
+                        <TextField
+                          label="Tot Taxable Amt.(Bill Curr.)"
+                          name="lcTaxableAmount"
+                          value={formData.lcTaxableAmount}
+                          onChange={(e) => setFormData({ ...formData, lcTaxableAmount: e.target.value })}
+                          size="small"
+                          placeholder="0.00"
+                          inputProps={{ maxLength: 30 }}
+                          error={fieldErrors['lcTaxableAmount']}
+                        />
+                      </FormControl>
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <FormControl fullWidth variant="filled">
+                        <TextField
+                          label="Amount In Words"
+                          name="amountInWords"
+                          value={formData.amountInWords}
+                          onChange={(e) => setFormData({ ...formData, amountInWords: e.target.value })}
+                          size="small"
+                          inputProps={{ maxLength: 30 }}
+                          error={fieldErrors['amountInWords']}
+                        />
+                      </FormControl>
+                    </div>
+                    <div className="col-md-6 mb-3">
+                      <FormControl fullWidth variant="filled">
+                        <TextField
+                          label="Billing Remarks"
+                          name="billingRemarks"
+                          value={formData.billingRemarks}
+                          onChange={(e) => setFormData({ ...formData, billingRemarks: e.target.value })}
+                          size="small"
+                          inputProps={{ maxLength: 30 }}
+                          error={fieldErrors['billingRemarks']}
+                        />
+                      </FormControl>
+                    </div>
+                  </div>
+                </TabPanel>
+                <TabPanel value="3">
+                  {' '}
+                  <GstTable tableData={formData.gstTaxInvoiceDTO} onCreateNewRow={handleCreateNewRow} />
+                </TabPanel>
+              </TabContext>
+            </Box>
+          </div>
+        )}
+        {listView && (
+          <div>
+            {/* <CommonTable data={data} columns={columns} editCallback={editCity} countryVO={countryVO} stateVO={stateVO} /> */}
+            {data && <CommonTable data={data} columns={columns} />}
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 
