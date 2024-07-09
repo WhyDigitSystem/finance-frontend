@@ -636,6 +636,20 @@ const CreditNoteDetails = () => {
                 <FormControl fullWidth>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
+                      sx={{
+                        '& .MuiInputBase-root': {
+                          height: '40px'
+                        },
+                        '& .MuiOutlinedInput-input': {
+                          padding: '10px 14px'
+                        },
+                        '& .MuiInputLabel-root': {
+                          transform: 'translate(15px, 9px) scale(1)' // Adjust label position
+                        },
+                        '& .MuiInputLabel-shrink': {
+                          transform: 'translate(14px, -6px) scale(0.75)' // Adjust label position when focused
+                        }
+                      }}
                       label="Due Date"
                       value={formData.dueDate}
                       onChange={(newValue) => setFormData({ ...formData, dueDate: newValue })}
@@ -819,6 +833,7 @@ const CreditNoteDetails = () => {
                         />
                       </FormControl>
                     </div>
+
                     <div className="col-md-6 mb-3">
                       <FormControl fullWidth variant="filled">
                         <TextField
