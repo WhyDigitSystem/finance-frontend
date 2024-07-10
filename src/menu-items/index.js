@@ -9,7 +9,7 @@ import transaction from './transaction';
 
 // Function to get menu items based on localStorage value
 const getMenuItems = () => {
-  const localStorageValue = localStorage.getItem('ROLE'); // Replace 'your_key_here' with the key you are using to store the value
+  const localStorageValue = 'ROLE_ADMIN'; // Replace 'your_key_here' with the key you are using to store the value
 
   // Define default menu items
   const defaultMenuItems = {
@@ -24,7 +24,7 @@ const getMenuItems = () => {
       };
     case 'ROLE_ADMIN':
       return {
-        items: [dashboard, admin, basicMaster, finance, transaction, ar, ap]
+        items: [dashboard, companySetup, admin, basicMaster, finance, transaction, ar, ap]
       };
     // Add more cases as needed
     default:

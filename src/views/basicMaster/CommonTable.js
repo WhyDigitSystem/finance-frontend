@@ -34,6 +34,10 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [stateVO, setStateVO] = useState([]);
 
+  const headerStyle = {
+    backgroundColor: '#f5f5f5' // Change this to your desired color
+  };
+
   const theme = useTheme();
 
   const chipSX = {
@@ -102,6 +106,9 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
     if (column.accessorKey === 'active') {
       return {
         ...column,
+        muiTableHeadCellProps: {
+          sx: headerStyle
+        },
         Cell: ({ cell }) => (
           <Chip label={cell.getValue() === true ? 'Active' : 'Inactive'} sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX} />
         )

@@ -26,7 +26,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/action-button';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
-import { decryptPassword, encryptPassword } from 'views/utilities/passwordEnc';
+import { encryptPassword } from 'views/utilities/passwordEnc';
 import BranchTable from './BranchTable';
 import RoleTable from './RoleTable';
 
@@ -183,9 +183,7 @@ const UserCreation = () => {
         setDataToEdit(response.data.paramObjectsMap.userVO);
         const userVO = response.data.paramObjectsMap.userVO;
         setEditMode(true);
-        const dePassword = decryptPassword(userVO.password);
 
-        console.log('Decrypted Password:', dePassword);
         setFormData({
           employeeCode: userVO.employeeCode || '',
           employeeName: userVO.employeeName || '',
@@ -228,7 +226,6 @@ const UserCreation = () => {
     // Check if any field is empty
     const requiredFields = [
       'userName',
-      'userId',
       'userType',
       'employeeCode',
       'employeeName',
@@ -266,12 +263,12 @@ const UserCreation = () => {
     };
 
     axios
-      .post(`${process.env.REACT_APP_API_URL}/api/user/createuser`, formDataWithEncryptedPassword)
+      .put(`${process.env.REACT_APP_API_URL}/api/user/createuser`, formDataWithEncryptedPassword)
       .then((response) => {
         console.log('Response:', response.data);
         if (response.data.status) {
           handleClear();
-          showToast('success', 'User created successfully');
+          showToast('success', editMode ? ' User Updated Successfully' : 'User created successfully');
         } else {
           showToast('error', response.data.errorMessage || 'User creation failed');
         }
@@ -400,23 +397,6 @@ const UserCreation = () => {
 
           {showForm ? (
             <div className="row d-flex ml">
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea"
-                  label="User Id"
-                  variant="outlined"
-                  size="small"
-                  required
-                  disabled={editMode}
-                  value={formData.userId}
-                  onChange={handleInputChange}
-                  fullWidth
-                  name="userId"
-                  // error={fieldErrors.chapter}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.userId ? 'This field is required' : ''}</span>}
-                  inputProps={{ maxLength: 30 }}
-                />
-              </div>
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"

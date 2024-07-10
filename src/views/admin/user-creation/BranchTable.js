@@ -4,12 +4,14 @@ import EditIcon from '@mui/icons-material/Edit';
 import {
   Avatar,
   Box,
-  Button, // Import Button from Material-UI
+  Button,
   ButtonBase,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
+  InputLabel,
   MenuItem,
   Select,
   Stack,
@@ -23,17 +25,19 @@ import ActionButton from 'utils/action-button';
 
 const BranchTable = ({ data, onUpdateBranch, branchData }) => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [tableData, setTableData] = useState(data || []);
   const [validationErrors, setValidationErrors] = useState({});
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [rowToDelete, setRowToDelete] = useState(null);
+  const [rowToEdit, setRowToEdit] = useState(null);
 
   const theme = useTheme();
 
   const handleCreateNewRow = (values) => {
     setTableData((prev) => {
       const newData = [...prev, values];
-      onUpdateBranch(newData); // Update parent component
+      onUpdateBranch(newData);
       return newData;
     });
   };
@@ -43,11 +47,22 @@ const BranchTable = ({ data, onUpdateBranch, branchData }) => {
       setTableData((prev) => {
         const newData = [...prev];
         newData[row.index] = values;
-        onUpdateBranch(newData); // Update parent component
+        onUpdateBranch(newData);
         return newData;
       });
       exitEditingMode();
     }
+  };
+
+  const handleSaveEditedRow = (values) => {
+    setTableData((prev) => {
+      const newData = [...prev];
+      newData[rowToEdit.index] = values;
+      onUpdateBranch(newData);
+      return newData;
+    });
+    setEditModalOpen(false);
+    setRowToEdit(null);
   };
 
   const handleCancelRowEdits = () => {
@@ -62,24 +77,12 @@ const BranchTable = ({ data, onUpdateBranch, branchData }) => {
   const confirmDeleteRow = () => {
     setTableData((prev) => {
       const newData = prev.filter((_, index) => index !== rowToDelete.index);
-      onUpdateBranch(newData); // Update parent component
+      onUpdateBranch(newData);
       return newData;
     });
     setDeleteConfirmOpen(false);
     setRowToDelete(null);
   };
-
-  function validateEmail(email) {
-    // Validation logic
-  }
-
-  function validateAge(age) {
-    // Validation logic
-  }
-
-  function validateRequired(value) {
-    // Validation logic
-  }
 
   const getCommonEditTextFieldProps = useCallback(
     (cell) => {
@@ -87,12 +90,7 @@ const BranchTable = ({ data, onUpdateBranch, branchData }) => {
         error: !!validationErrors[cell.id],
         helperText: validationErrors[cell.id],
         onBlur: (event) => {
-          const isValid =
-            cell.column.id === 'email'
-              ? validateEmail(event.target.value)
-              : cell.column.id === 'age'
-                ? validateAge(+event.target.value)
-                : validateRequired(event.target.value);
+          const isValid = validateRequired(event.target.value);
           if (!isValid) {
             setValidationErrors({
               ...validationErrors,
@@ -145,7 +143,14 @@ const BranchTable = ({ data, onUpdateBranch, branchData }) => {
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
             <ActionButton title="delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row)} />
-            <ActionButton title="edit" icon={EditIcon} onClick={() => table.setEditingRow(row)} />
+            <ActionButton
+              title="edit"
+              icon={EditIcon}
+              onClick={() => {
+                setRowToEdit(row);
+                setEditModalOpen(true);
+              }}
+            />
           </Box>
         )}
         renderTopToolbarCustomActions={() => (
@@ -182,6 +187,16 @@ const BranchTable = ({ data, onUpdateBranch, branchData }) => {
         onSubmit={handleCreateNewRow}
         branchData={branchData}
       />
+      {rowToEdit && (
+        <EditBranchModal
+          open={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          onSubmit={handleSaveEditedRow}
+          rowToEdit={rowToEdit}
+          columns={columns}
+          branchData={branchData}
+        />
+      )}
       <ConfirmDeleteModal open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)} onConfirm={confirmDeleteRow} />
     </>
   );
@@ -257,17 +272,91 @@ const CreateNewAccountModal = ({ open, columns, onClose, onSubmit, branchData })
   );
 };
 
-const ConfirmDeleteModal = ({ open, onClose, onConfirm }) => (
-  <Dialog open={open}>
-    <DialogTitle>Confirm Delete</DialogTitle>
-    <DialogContent>Are you sure you want to delete this role?</DialogContent>
-    <DialogActions>
-      <Button onClick={onClose}>Cancel</Button>
-      <Button onClick={onConfirm} color="error">
-        Delete
-      </Button>
-    </DialogActions>
-  </Dialog>
-);
+const EditBranchModal = ({ open, columns, onClose, onSubmit, rowToEdit, branchData }) => {
+  const [values, setValues] = useState(rowToEdit ? rowToEdit.original : {});
+
+  const handleSubmit = () => {
+    onSubmit(values);
+  };
+
+  return (
+    <Dialog open={open}>
+      <DialogTitle textAlign="center">Edit</DialogTitle>
+      <DialogContent>
+        <form onSubmit={(e) => e.preventDefault()}>
+          <Stack
+            sx={{
+              width: '100%',
+              minWidth: { xs: '300px', sm: '360px', md: '400px' },
+              gap: '1.5rem'
+            }}
+          >
+            {columns.map((column) => (
+              <div key={column.accessorKey}>
+                {column.accessorKey === 'branch' ? (
+                  <FormControl fullWidth>
+                    <InputLabel htmlFor={column.accessorKey}>{column.label}</InputLabel>
+                    <Select
+                      labelId={`${column.accessorKey}-label`}
+                      id={column.accessorKey}
+                      name={column.accessorKey}
+                      value={values[column.accessorKey]}
+                      onChange={(e) => setValues({ ...values, [e.target.name]: e.target.value })}
+                      fullWidth
+                      displayEmpty
+                    >
+                      <MenuItem value="" disabled>
+                        Select a Branch
+                      </MenuItem>
+                      {branchData &&
+                        branchData.map((branch, index) => (
+                          <MenuItem key={index} value={branch}>
+                            {branch}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                  </FormControl>
+                ) : (
+                  <TextField
+                    label={column.header}
+                    name={column.accessorKey}
+                    value={values[column.accessorKey]}
+                    onChange={(e) => setValues({ ...values, [e.target.name]: e.target.value })}
+                    fullWidth
+                  />
+                )}
+              </div>
+            ))}
+          </Stack>
+        </form>
+      </DialogContent>
+      <DialogActions sx={{ p: '1.25rem' }}>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button color="secondary" onClick={handleSubmit} variant="contained">
+          Save
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+const ConfirmDeleteModal = ({ open, onClose, onConfirm }) => {
+  return (
+    <Dialog open={open}>
+      <DialogTitle textAlign="center">Confirm Delete</DialogTitle>
+      <DialogContent>
+        <p>Are you sure you want to delete this row?</p>
+      </DialogContent>
+      <DialogActions sx={{ p: '1.25rem' }}>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button color="secondary" onClick={onConfirm} variant="contained">
+          Delete
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
+
+const validateRequired = (value) => !!value.length;
 
 export default BranchTable;

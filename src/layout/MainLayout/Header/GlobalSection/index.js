@@ -18,9 +18,9 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import axios from 'axios';
 
 // third-party
-import PerfectScrollbar from 'react-perfect-scrollbar';
 
 // project imports
 import MainCard from 'ui-component/cards/MainCard';
@@ -95,10 +95,27 @@ const GlobalSection = () => {
 
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('');
+  const [finYearValue, setFinYearValue] = useState('');
+  const [companyValue, setCompanyValue] = useState('');
+  const [branchValue, setBranchValue] = useState('');
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [userId, setUserId] = useState(parseInt(localStorage.getItem('userId')));
+  const [branchVO, setBranchVO] = useState([]);
+  const [finVO, setFinVO] = useState([]);
+  const [companyVO, setCompanyVO] = useState([]);
+  const [globalParameter, setGlobalParameter] = useState([]);
+
   /**
    * anchorRef is used on different componets and specifying one type leads to other components throwing an error
    * */
   const anchorRef = useRef(null);
+
+  useEffect(() => {
+    getGlobalParameter();
+    getAccessBranch();
+    getFinYear();
+    getCompany();
+  }, []);
 
   const handleToggle = () => {
     setOpen((prevOpen) => !prevOpen);
@@ -111,6 +128,99 @@ const GlobalSection = () => {
     setOpen(false);
   };
 
+  const getAccessBranch = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/GlobalParam/getAccessBranchByUserId?userId=${userId}`);
+      console.log('API Response:', response);
+
+      if (response.status === 200) {
+        setBranchVO(response.data.paramObjectsMap.userAccessBranch);
+      } else {
+        // Handle error
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getFinYear = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/GlobalParam/getFinYearforGlobalParam?orgId=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === 200) {
+        setFinVO(response.data.paramObjectsMap.finYear || []);
+      } else {
+        // Handle error
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getCompany = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/GlobalParam/getCompanyByUserID?userId=${userId}`);
+      console.log('API Response:', response);
+
+      if (response.status === 200) {
+        setCompanyVO(response.data.paramObjectsMap.company);
+      } else {
+        // Handle error
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getGlobalParameter = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/GlobalParam/getGlobalParametrByUserId?userId=${userId}`);
+      console.log('API Response:', response);
+
+      if (response.status === 200) {
+        // setGlobalParameter(response.data.paramObjectsMap.globalParameterVO);
+        const globalParameterVO = response.data.paramObjectsMap.globalParameterVO;
+        setGlobalParameter(globalParameterVO);
+        setBranchValue(globalParameterVO.branch);
+        setCompanyValue(globalParameterVO.company);
+        setFinYearValue(globalParameterVO.finYear);
+      } else {
+        // Handle error
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleSubmit = () => {
+    const formData = {
+      branch: branchValue,
+      branchCode: branchValue,
+      company: companyValue,
+      finYear: finYearValue,
+      userId
+    };
+    axios
+      .put(`${process.env.REACT_APP_API_URL}/api/GlobalParam/createUpdateGlobalParameter`, formData)
+      .then((response) => {
+        // console.log('Response:', response.data);
+        // handleClear();
+        // toast.success('City Created Successfully', {
+        //   autoClose: 2000,
+        //   theme: 'colored'
+        // });
+        // getCity();
+      })
+      .catch((error) => {
+        console.error('Error:', error);
+      });
+  };
+
   const prevOpen = useRef(open);
   useEffect(() => {
     if (prevOpen.current === true && open === false) {
@@ -121,6 +231,18 @@ const GlobalSection = () => {
 
   const handleChange = (event) => {
     if (event?.target.value) setValue(event?.target.value);
+  };
+
+  const handleFinYearChange = (event) => {
+    setFinYearValue(event.target.value);
+  };
+
+  const handleCompanyChange = (event) => {
+    setCompanyValue(event.target.value);
+  };
+
+  const handleBranchChange = (event) => {
+    setBranchValue(event.target.value);
   };
 
   return (
@@ -178,7 +300,7 @@ const GlobalSection = () => {
       >
         {({ TransitionProps }) => (
           <Transitions position={matchesXs ? 'top' : 'top-right'} in={open} {...TransitionProps}>
-            <Paper>
+            <Paper sx={{ width: 300 }}>
               <ClickAwayListener onClickAway={handleClose}>
                 <MainCard border={false} elevation={16} content={false} boxShadow shadow={theme.shadows[16]}>
                   <Grid container direction="column" spacing={2}>
@@ -205,80 +327,92 @@ const GlobalSection = () => {
                       </Grid>
                     </Grid>
                     <Grid item xs={12}>
-                      <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 205px)', overflowX: 'hidden', width: '300px' }}>
-                        <Grid container direction="column" spacing={2}>
-                          <Grid item xs={12}>
-                            <Box sx={{ px: 2, pt: 0.25 }}>
-                              <TextField
-                                id="outlined-select-currency-native"
-                                select
-                                fullWidth
-                                value={value}
-                                onChange={handleChange}
-                                SelectProps={{
-                                  native: true
-                                }}
-                              >
-                                {FinYear.map((option) => (
-                                  <option key={option.value} value={option.value}>
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </TextField>
-                            </Box>
-                          </Grid>
-                          <Grid item xs={12}>
-                            <Box sx={{ px: 2, pt: 0.25 }}>
-                              <TextField
-                                id="outlined-select-currency-native"
-                                select
-                                fullWidth
-                                value={value}
-                                onChange={handleChange}
-                                SelectProps={{
-                                  native: true
-                                }}
-                              >
-                                {Company.map((option) => (
-                                  <option key={option.value} value={option.value}>
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </TextField>
-                            </Box>
-                          </Grid>
-                          <Grid item xs={12}>
-                            <Box sx={{ px: 2, pt: 0.25 }}>
-                              <TextField
-                                id="outlined-select-currency-native"
-                                select
-                                fullWidth
-                                value={value}
-                                onChange={handleChange}
-                                SelectProps={{
-                                  native: true
-                                }}
-                              >
-                                {branch.map((option) => (
-                                  <option key={option.value} value={option.value}>
-                                    {option.label}
-                                  </option>
-                                ))}
-                              </TextField>
-                            </Box>
-                          </Grid>
-                          <Grid item xs={12} p={0}>
-                            <Divider sx={{ my: 0 }} />
-                          </Grid>
+                      <Box sx={{ px: 2, pt: 0.25 }}>
+                        <TextField
+                          id="outlined-select-currency-native"
+                          select
+                          fullWidth
+                          label="Company"
+                          disabled
+                          value={companyValue}
+                          onChange={handleCompanyChange}
+                          SelectProps={{
+                            native: true
+                          }}
+                        >
+                          <option value="" disabled>
+                            Select Company
+                          </option>
+                          {companyVO?.map((option) => (
+                            <option key={option.companyName} value={option.companyName}>
+                              {option.companyName}
+                            </option>
+                          ))}
+                        </TextField>
+                      </Box>
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Grid container direction="column" spacing={2}>
+                        <Grid item xs={12}>
+                          <Box sx={{ px: 2, pt: 0.25 }}>
+                            <TextField
+                              id="outlined-select-currency-native"
+                              select
+                              fullWidth
+                              label="Fin Year"
+                              value={finYearValue}
+                              onChange={handleFinYearChange}
+                              SelectProps={{
+                                native: true
+                              }}
+                            >
+                              <option value="" disabled>
+                                Select FinYear
+                              </option>
+                              {finVO?.map((option) => (
+                                <option key={option.finYear} value={option.finYear}>
+                                  {option.finYear}
+                                </option>
+                              ))}
+                            </TextField>
+                          </Box>
                         </Grid>
-                        {/* <NotificationList /> */}
-                      </PerfectScrollbar>
+
+                        <Grid item xs={12}>
+                          <Box sx={{ px: 2, pt: 0.25, mb: 2 }}>
+                            <TextField
+                              id="outlined-select-currency-native"
+                              select
+                              fullWidth
+                              label="Branch"
+                              value={branchValue}
+                              onChange={handleBranchChange}
+                              SelectProps={{
+                                native: true
+                              }}
+                            >
+                              <option value="" disabled>
+                                Select Branch
+                              </option>
+                              {branchVO.map((option) => (
+                                <option key={option.branchCode} value={option.branchCode}>
+                                  {option.branchName}
+                                </option>
+                              ))}
+                            </TextField>
+                          </Box>
+                        </Grid>
+                        <Grid item xs={12} p={0}>
+                          <Divider sx={{ my: 0 }} />
+                        </Grid>
+                      </Grid>
+                      {/* <NotificationList /> */}
                     </Grid>
                   </Grid>
                   <Divider />
                   <CardActions sx={{ p: 1.25, justifyContent: 'center' }}>
-                    <Button size="small" disableElevation>
-                      View All
+                    <Button size="small" disableElevation onClick={handleSubmit}>
+                      change
                     </Button>
                   </CardActions>
                 </MainCard>
