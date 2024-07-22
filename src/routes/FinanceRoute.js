@@ -48,6 +48,10 @@ const TaxInvoiceDetail = Loadable(lazy(() => import('views/Finance/taxInvoice/ta
 const CreditNoteDetail = Loadable(lazy(() => import('views/Finance/creditNote/CreditNoteDetail')));
 const CostInvoice = Loadable(lazy(() => import('views/Finance/costInvoice/CostInvoice')));
 const CostDebitNote = Loadable(lazy(() => import('views/Finance/costDebitNote/CostDebitNote')));
+const ListOfValues = Loadable(lazy(() => import('views/Finance/listOfValues/listOfValues')));
+const PaymentVoucher = Loadable(lazy(() => import('views/Finance/paymentVoucher/paymentVoucher')));
+const ARAPDetail = Loadable(lazy(() => import('views/Finance/ARAP-Details')));
+const ARAPAdjustment = Loadable(lazy(() => import('views/Finance/APAP-Adjustment')));
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
@@ -219,6 +223,22 @@ const FinanceRoute = {
     {
       path: '/Finance/costDebitNote/CostDebitNote',
       element: <CostDebitNote />
+    },
+    {
+      path: 'Finance/listOfValues/listOfValues',
+      element: <ListOfValues />
+    },
+    {
+      path: 'Finance/paymentVoucher/paymentVoucher',
+      element: <PaymentVoucher />
+    },
+    {
+      path: 'Finance/ARAP-Details',
+      element: <ARAPDetail />
+    },
+    {
+      path: 'Finance/ARAP-Adjustment',
+      element: <ARAPAdjustment />
     }
   ]
 };

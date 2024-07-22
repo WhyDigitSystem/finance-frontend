@@ -13,27 +13,26 @@ import ActionButton from 'utils/action-button';
 import CommonTable from 'views/basicMaster/CommonTable';
 import TableComponent from './TableComponent';
 
-const TcsMaster = () => {
+const ListOfValues = () => {
   const theme = useTheme();
   const anchorRef = useRef(null);
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
   const [formValues, setFormValues] = useState({
+    listCode: '',
+    listDescription: '',
     active: true,
-    createdBy: '',
-    orgId: orgId,
-    section: '',
-    sectionName: '',
-    tcsMaster2DTO: [],
-    updatedBy: ''
+    createdBy: 'currentUser', // replace with actual user
+    updatedBy: 'currentUser', // replace with actual user
+    orgId: orgId, // replace with actual org ID
+    listOfValues1DTO: []
   });
   const [validationErrors, setValidationErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
-    getAllTcsMasterByOrgId();
+    getAllListOfValuesByOrgId();
   }, []);
 
   const handleInputChange = (e) => {
@@ -44,7 +43,7 @@ const TcsMaster = () => {
     }));
 
     // Validate the input fields
-    if (id === 'section' || id === 'sectionName') {
+    if (id === 'listCode' || id === 'listDescription') {
       if (!value.trim()) {
         setValidationErrors((prev) => ({
           ...prev,
@@ -60,52 +59,35 @@ const TcsMaster = () => {
   };
 
   const columns = [
-    { accessorKey: 'section', header: 'Section', size: 140 },
-    { accessorKey: 'sectionName', header: 'Section Name', size: 140 },
+    { accessorKey: 'listCode', header: 'List Code', size: 140 },
+    { accessorKey: 'listDescription', header: 'Description', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
   const handleClear = () => {
     setFormValues({
-      section: '',
-      sectionName: '',
+      listCode: '',
+      listDescription: '',
       active: true,
       createdBy: 'currentUser',
       updatedBy: 'currentUser',
       orgId: 1,
-      tcsMaster2DTO: []
+      listOfValues1DTO: []
     });
     setValidationErrors({});
   };
 
-  const formatDate = (date) => {
-    if (!date) return '';
-    const formattedDate = new Date(date);
-    const year = formattedDate.getFullYear();
-    const month = String(formattedDate.getMonth() + 1).padStart(2, '0'); // Months are zero based
-    const day = String(formattedDate.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
   const handleSave = async () => {
-    const formDataWithEncryptedPassword = {
-      ...formValues,
-      tcsMaster2DTO: formValues.tcsMaster2DTO.map((item) => ({
-        ...item,
-        fromDate: formatDate(item.fromDate),
-        toDate: formatDate(item.toDate)
-      }))
-    };
     if (validateForm()) {
       try {
         setIsLoading(true);
-        const response = await apiCall('put', '/master/updateCreateTcsMaster', formDataWithEncryptedPassword);
+        const response = await apiCall('put', '/master/updateCreateListOfValues', formValues);
         console.log('Save Successful', response.data);
-        toast.success(editMode ? ' Tcs Master Updated Successfully' : ' Tcs Master created successfully', {
+        toast.success('List of value created successfully', {
           autoClose: 2000,
           theme: 'colored'
         });
-        getAllTcsMasterByOrgId();
+        getAllListOfValuesByOrgId();
         handleClear();
         setIsLoading(false);
       } catch (error) {
@@ -116,10 +98,10 @@ const TcsMaster = () => {
     }
   };
 
-  const getAllTcsMasterByOrgId = async () => {
+  const getAllListOfValuesByOrgId = async () => {
     try {
-      const result = await apiCall('get', `/master/getAllTcsMasterByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.tcsMasterVO || []);
+      const result = await apiCall('get', `/master/getListOfValuesByOrgId?orgId=${orgId}`);
+      setData(result.paramObjectsMap.listOfValuesVO || []);
       showForm(true);
       console.log('Test', result);
     } catch (err) {
@@ -127,25 +109,26 @@ const TcsMaster = () => {
     }
   };
 
-  const getTcsMasterById = async (row) => {
+  const getListOfValueById = async (row) => {
     console.log('first', row);
     setShowForm(true);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllTcsMasterById?id=${row.original.id}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getListOfValuesById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === 200) {
-        const tcsMasterVO = response.data.paramObjectsMap.tcsMasterVO[0];
-        setEditMode(true);
+        const listValueVO = response.data.paramObjectsMap.listOfValuesVO[0];
+        // setEditMode(true);
 
         setFormValues({
-          section: tcsMasterVO.section || '',
-          sectionName: tcsMasterVO.sectionName || '',
-          active: tcsMasterVO.active || false,
-          id: tcsMasterVO.id || 0,
-          tcsMaster2DTO: tcsMasterVO.tcsMaster2VO || [],
-          orgId: orgId
+          listCode: listValueVO.listCode || '',
+          listDescription: listValueVO.listDescription || '',
+          active: listValueVO.active || false,
+          id: listValueVO.id || 0,
+          listOfValues1DTO: listValueVO.listOfValues1VO || []
         });
+
+        console.log('DataToEdit', listValueVO);
       } else {
         // Handle error
         console.error('API Error:', response.data);
@@ -161,11 +144,11 @@ const TcsMaster = () => {
 
   const validateForm = () => {
     const errors = {};
-    if (!formValues.section.trim()) {
-      errors.section = 'This field is required';
+    if (!formValues.listCode.trim()) {
+      errors.listCode = 'This field is required';
     }
-    if (!formValues.sectionName.trim()) {
-      errors.sectionName = 'This field is required';
+    if (!formValues.listDescription.trim()) {
+      errors.listDescription = 'This field is required';
     }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -187,30 +170,30 @@ const TcsMaster = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="section"
-                    label="Section"
+                    id="listCode"
+                    label="List Code"
                     size="small"
                     required
-                    value={formValues.section}
+                    value={formValues.listCode}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
-                    error={!!validationErrors.section}
-                    helperText={validationErrors.section}
+                    error={!!validationErrors.listCode}
+                    helperText={validationErrors.listCode}
                   />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="sectionName"
-                    label="Section Name"
+                    id="listDescription"
+                    label="List Description"
                     size="small"
                     required
-                    value={formValues.sectionName}
+                    value={formValues.listDescription}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
-                    error={!!validationErrors.sectionName}
-                    helperText={validationErrors.sectionName}
+                    error={!!validationErrors.listDescription}
+                    helperText={validationErrors.listDescription}
                   />
                 </FormControl>
               </div>
@@ -233,11 +216,11 @@ const TcsMaster = () => {
             <TableComponent formValues={formValues} setFormValues={setFormValues} />
           </>
         ) : (
-          <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getTcsMasterById} />
+          <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getListOfValueById} />
         )}
       </div>
     </div>
   );
 };
 
-export default TcsMaster;
+export default ListOfValues;

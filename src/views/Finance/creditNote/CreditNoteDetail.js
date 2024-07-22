@@ -18,6 +18,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import axios from 'axios';
+import dayjs from 'dayjs';
 import { useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import ToastComponent, { showToast } from 'utils/toast-component';
@@ -30,17 +31,18 @@ const CreditNoteDetails = () => {
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
   const [listView, setlistView] = useState(false);
   const [data, setData] = useState(false);
+  const [editMode, setEditMode] = useState();
 
   const [formData, setFormData] = useState({
     active: true,
     address: '',
     addressType: '',
     billCurr: '',
-    chargerTaxInvoiceDTO: [],
+    chargerIrnCreditDTO: [],
     createdBy: '',
     docDate: new Date(),
     dueDate: null,
-    gstTaxInvoiceDTO: [],
+    gstIrnCreditDTO: [],
     gsttype: '',
     headerColumns: '',
     invoiceDate: new Date(),
@@ -153,7 +155,7 @@ const CreditNoteDetails = () => {
       address: '',
       addressType: '',
       billCurr: '',
-      chargerTaxInvoiceDTO: [],
+      chargerIrnCreditDTO: [],
       createdBy: '',
       docDate: new Date(),
       dueDate: null,
@@ -212,6 +214,56 @@ const CreditNoteDetails = () => {
   //     });
   //   }
   // };
+
+  const getCreditNoteById = async (id) => {
+    console.log('first', id);
+    setlistView(false);
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/transaction/getAllIrnCreditById?id=${id.original.id}`);
+      console.log('API Response:', response);
+
+      if (response.status === 200) {
+        const irnCreditVO = response.data.paramObjectsMap.irnCreditVO[0];
+        setEditMode(true);
+
+        setFormData({
+          active: irnCreditVO.active,
+          address: irnCreditVO.address,
+          addressType: irnCreditVO.addressType,
+          billCurr: irnCreditVO.billCurr,
+          chargerTaxInvoiceDTO: irnCreditVO.chargerIrnCreditVO || [],
+          createdBy: irnCreditVO.createdBy,
+          docDate: dayjs(irnCreditVO.docDate),
+          dueDate: irnCreditVO.dueDate ? dayjs(irnCreditVO.dueDate) : null,
+          gstTaxInvoiceDTO: irnCreditVO.gstIrnCreditVO || [],
+          gsttype: irnCreditVO.gsttype,
+          headerColumns: irnCreditVO.headerColumns,
+          invoiceDate: dayjs(irnCreditVO.invoiceDate),
+          orgId: irnCreditVO.orgId,
+          partyCode: irnCreditVO.partyCode,
+          partyName: irnCreditVO.partyName,
+          partyType: irnCreditVO.partyType,
+          pincode: irnCreditVO.pincode,
+          placeOfSupply: irnCreditVO.placeOfSupply,
+          recipientGSTIN: irnCreditVO.recipientGSTIN,
+          salesType: irnCreditVO.salesType,
+          status: irnCreditVO.status,
+          originBill: irnCreditVO.originBill,
+          updatedBy: irnCreditVO.updatedBy,
+          summaryTaxInvoiceDTO: [] // Add any necessary mapping for this field if available
+        });
+
+        handleChange(1);
+
+        console.log('DataToEdit', irnCreditVO);
+      } else {
+        // Handle error
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const validateForm = () => {
     let formValid = true;
@@ -833,7 +885,6 @@ const CreditNoteDetails = () => {
                         />
                       </FormControl>
                     </div>
-
                     <div className="col-md-6 mb-3">
                       <FormControl fullWidth variant="filled">
                         <TextField
@@ -873,7 +924,7 @@ const CreditNoteDetails = () => {
         {listView && (
           <div>
             {/* <CommonTable data={data} columns={columns} editCallback={editCity} countryVO={countryVO} stateVO={stateVO} /> */}
-            {data && <CommonTable data={data} columns={columns} />}
+            {data && <CommonTable data={data} columns={columns} blockEdit={true} toEdit={getCreditNoteById} />}
           </div>
         )}
       </div>

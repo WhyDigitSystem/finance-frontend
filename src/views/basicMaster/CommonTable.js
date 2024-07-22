@@ -25,7 +25,7 @@ import { useEffect, useState } from 'react';
 
 import { getStateByCountry } from 'utils/common-functions';
 
-const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEdit, toEdit }) => {
+const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEdit, toEdit, handleRowEdit }) => {
   const [tableData, setTableData] = useState(data || []);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);

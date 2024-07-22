@@ -2,10 +2,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormGroup from '@mui/material/FormGroup';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
@@ -19,7 +16,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/action-button';
 import CommonTable from 'views/basicMaster/CommonTable';
 
-export const ChargeTypeRequest = () => {
+export const ARAPDetail = () => {
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
   const [formData, setFormData] = useState({
     active: true,
@@ -292,7 +289,6 @@ export const ChargeTypeRequest = () => {
           taxable: chargeTypeRequestVO.taxable || '',
           taxablePercentage: chargeTypeRequestVO.taxablePercentage || '',
           ccJob: chargeTypeRequestVO.ccJob || '',
-          id: chargeTypeRequestVO.id || 0,
           govtSac: chargeTypeRequestVO.govtSac || '',
           excempted: chargeTypeRequestVO.excempted || '',
           orgId: chargeTypeRequestVO.orgId || orgId,
@@ -415,375 +411,464 @@ export const ChargeTypeRequest = () => {
 
           {showForm ? (
             <div className="row d-flex ml">
+              {/* Branch */}
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.chargeType}>
-                  <InputLabel id="demo-simple-select-label">Charge Type</InputLabel>
+                <FormControl fullWidth size="small" error={!!fieldErrors.branch}>
+                  <InputLabel id="branch-select-label">Branch</InputLabel>
                   <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Charge Type"
+                    labelId="branch-select-label"
+                    id="branch-select"
+                    label="Branch"
                     required
-                    value={formData.chargeType}
-                    name="chargeType"
+                    value={formData.branch}
+                    name="branch"
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="string">String</MenuItem>
+                    <MenuItem value="branch1">Branch 1</MenuItem>
+                    <MenuItem value="branch2">Branch 2</MenuItem>
                   </Select>
-                  {fieldErrors.chargeType && (
+                  {fieldErrors.branch && (
                     <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.chargeType}
+                      {fieldErrors.branch}
                     </p>
                   )}
                 </FormControl>
               </div>
 
+              {/* FinYr */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="outlined-textarea"
-                  label="Charge Code"
+                  id="finyr"
+                  label="FinYr"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="chargeCode"
-                  value={formData.chargeCode}
+                  name="finyr"
+                  value={formData.finyr}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.chargeCode}
-                  helperText={fieldErrors.chargeCode}
+                  error={!!fieldErrors.finyr}
+                  helperText={fieldErrors.finyr}
                 />
               </div>
+
+              {/* Source TransID */}
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.product}>
-                  <InputLabel id="demo-simple-select-label">Product</InputLabel>
+                <TextField
+                  id="sourceTransid"
+                  label="Source TransID"
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  name="sourceTransid"
+                  value={formData.sourceTransid}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.sourceTransid}
+                  helperText={fieldErrors.sourceTransid}
+                />
+              </div>
+
+              {/* Doc ID */}
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="docId"
+                  label="Doc ID"
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  name="docId"
+                  value={formData.docId}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.docId}
+                  helperText={fieldErrors.docId}
+                />
+              </div>
+
+              {/* Ref. No. */}
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="refNo"
+                  label="Ref. No."
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  name="refNo"
+                  value={formData.refNo}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.refNo}
+                  helperText={fieldErrors.refNo}
+                />
+              </div>
+
+              {/* Account Name */}
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small" error={!!fieldErrors.accountName}>
+                  <InputLabel id="accountName-select-label">Account Name</InputLabel>
                   <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Product"
+                    labelId="accountName-select-label"
+                    id="accountName-select"
+                    label="Account Name"
                     required
-                    value={formData.product}
-                    name="product"
+                    value={formData.accountName}
+                    name="accountName"
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="string">String</MenuItem>
+                    <MenuItem value="account1">Account 1</MenuItem>
+                    <MenuItem value="account2">Account 2</MenuItem>
                   </Select>
-                  {fieldErrors.product && (
+                  {fieldErrors.accountName && (
                     <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.product}
+                      {fieldErrors.accountName}
                     </p>
                   )}
                 </FormControl>
               </div>
+
+              {/* Currency */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="outlined-textarea"
-                  label="Charge Description"
+                  id="currency"
+                  label="Currency"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="chargeDescription"
-                  value={formData.chargeDescription}
+                  name="currency"
+                  value={formData.currency}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.chargeDescription}
-                  helperText={fieldErrors.chargeDescription}
+                  error={!!fieldErrors.currency}
+                  helperText={fieldErrors.currency}
                 />
               </div>
+
+              {/* Account Currency */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="outlined-textarea"
-                  label="Local Charge Description"
+                  id="accountCurrency"
+                  label="Account Currency"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="localChargeDescripition"
-                  value={formData.localChargeDescripition}
+                  name="accountCurrency"
+                  value={formData.accountCurrency}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.localChargeDescripition}
-                  helperText={fieldErrors.localChargeDescripition}
+                  error={!!fieldErrors.accountCurrency}
+                  helperText={fieldErrors.accountCurrency}
                 />
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.serviceAccountCode}>
-                  <InputLabel id="demo-simple-select-label">Service Account Code</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Service Account Code"
-                    required
-                    value={formData.serviceAccountCode}
-                    name="serviceAccountCode"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="string">String</MenuItem>
-                  </Select>
-                  {fieldErrors.serviceAccountCode && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.serviceAccountCode}
-                    </p>
-                  )}
-                </FormControl>
-              </div>
+
+              {/* Ex. Rate */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="outlined-textarea"
-                  label="SAC Description"
+                  id="exRate"
+                  label="Ex. Rate"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="sacDescripition"
-                  value={formData.sacDescripition}
+                  name="exRate"
+                  value={formData.exRate}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.sacDescripition}
-                  helperText={fieldErrors.sacDescripition}
+                  error={!!fieldErrors.exRate}
+                  helperText={fieldErrors.exRate}
                 />
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.salesAccount}>
-                  <InputLabel id="demo-simple-select-label">Sales Account</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Sales Account"
-                    required
-                    value={formData.salesAccount}
-                    name="salesAccount"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="string">String</MenuItem>
-                  </Select>
-                  {fieldErrors.salesAccount && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.salesAccount}
-                    </p>
-                  )}
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.purchaseAccount}>
-                  <InputLabel id="demo-simple-select-label">Purchase Account</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Purchase Account"
-                    required
-                    value={formData.purchaseAccount}
-                    name="purchaseAccount"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="string">String</MenuItem>
-                  </Select>
-                  {fieldErrors.purchaseAccount && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.purchaseAccount}
-                    </p>
-                  )}
-                </FormControl>
-              </div>
+
+              {/* Amount */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="outlined-textarea"
-                  label="Taxable"
+                  id="amount"
+                  label="Amount"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="taxable"
-                  value={formData.taxable}
+                  name="amount"
+                  value={formData.amount}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.taxable}
-                  helperText={fieldErrors.taxable}
+                  error={!!fieldErrors.amount}
+                  helperText={fieldErrors.amount}
                 />
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.taxType}>
-                  <InputLabel id="demo-simple-select-label">Tax Type</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Tax Type"
-                    required
-                    value={formData.taxType}
-                    name="taxType"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="string">String</MenuItem>
-                  </Select>
-                  {fieldErrors.taxType && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.taxType}
-                    </p>
-                  )}
-                </FormControl>
-              </div>
+
+              {/* Base Amount */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="outlined-textarea"
-                  label="CC Fee Applicable"
+                  id="baseAmount"
+                  label="Base Amount"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="ccFeeApplicable"
-                  value={formData.ccFeeApplicable}
+                  name="baseAmount"
+                  value={formData.baseAmount}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.ccFeeApplicable}
-                  helperText={fieldErrors.ccFeeApplicable}
+                  error={!!fieldErrors.baseAmount}
+                  helperText={fieldErrors.baseAmount}
                 />
               </div>
+
+              {/* Native Amount */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="taxable100%"
-                  label="Taxable %"
+                  id="nativeAmount"
+                  label="Native Amount"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="taxablePercentage"
-                  value={formData.taxablePercentage}
+                  name="nativeAmount"
+                  value={formData.nativeAmount}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.taxablePercentage}
-                  helperText={fieldErrors.taxablePercentage}
+                  error={!!fieldErrors.nativeAmount}
+                  helperText={fieldErrors.nativeAmount}
                 />
               </div>
+
+              {/* Chargeable Amount */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="outlined-textarea"
-                  label="CC Job"
+                  id="chargeableAmount"
+                  label="Chargeable Amount"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="ccJob"
-                  value={formData.ccJob}
+                  name="chargeableAmount"
+                  value={formData.chargeableAmount}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.ccJob}
-                  helperText={fieldErrors.ccJob}
+                  error={!!fieldErrors.chargeableAmount}
+                  helperText={fieldErrors.chargeableAmount}
                 />
               </div>
+
+              {/* GST Flag */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="outlined-textarea"
-                  label="Govt. SAC"
+                  id="gstFlag"
+                  label="GST Flag"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="govtSac"
-                  value={formData.govtSac}
+                  name="gstFlag"
+                  value={formData.gstFlag}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.govtSac}
-                  helperText={fieldErrors.govtSac}
+                  error={!!fieldErrors.gstFlag}
+                  helperText={fieldErrors.gstFlag}
                 />
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.excempted}>
-                  <InputLabel id="demo-simple-select-label">Exempted</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Exempted"
-                    required
-                    value={formData.excempted}
-                    name="excempted"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="yes">Yes</MenuItem>
-                    <MenuItem value="no">No</MenuItem>
-                  </Select>
-                  {fieldErrors.excempted && (
-                    <p className="error-text ml-2 " style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.excempted}
-                    </p>
-                  )}
-                </FormControl>
-              </div>
+
+              {/* Doc Type Code */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="outlined-textarea"
-                  label="GST Tax"
+                  id="docTypeCode"
+                  label="Doc Type Code"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="gstTax"
-                  value={formData.gstTax}
+                  name="docTypeCode"
+                  value={formData.docTypeCode}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.gstTax}
-                  helperText={fieldErrors.gstTax}
+                  error={!!fieldErrors.docTypeCode}
+                  helperText={fieldErrors.docTypeCode}
                 />
               </div>
+
+              {/* Sub Type Code */}
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.gstControl}>
-                  <InputLabel id="demo-simple-select-label">GST Control</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="GST Control"
-                    required
-                    value={formData.gstControl}
-                    name="gstControl"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="string">String</MenuItem>
-                  </Select>
-                  {fieldErrors.gstControl && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.gstControl}
-                    </p>
-                  )}
-                </FormControl>
+                <TextField
+                  id="subTypeCode"
+                  label="Sub Type Code"
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  name="subTypeCode"
+                  value={formData.subTypeCode}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.subTypeCode}
+                  helperText={fieldErrors.subTypeCode}
+                />
               </div>
+
+              {/* Subledger Division */}
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.service}>
-                  <InputLabel id="demo-simple-select-label">Service</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Service"
-                    required
-                    value={formData.service}
-                    name="service"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="string">String</MenuItem>
-                  </Select>
-                  {fieldErrors.service && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.service}
-                    </p>
-                  )}
-                </FormControl>
+                <TextField
+                  id="subledgerDivision"
+                  label="Subledger Division"
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  name="subledgerDivision"
+                  value={formData.subledgerDivision}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.subledgerDivision}
+                  helperText={fieldErrors.subledgerDivision}
+                />
               </div>
+
+              {/* Doc Date */}
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.type}>
-                  <InputLabel id="demo-simple-select-label">Type</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Type"
-                    required
-                    value={formData.type}
-                    name="type"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="string">String</MenuItem>
-                  </Select>
-                  {fieldErrors.type && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.type}
-                    </p>
-                  )}
-                </FormControl>
+                <TextField
+                  id="docDate"
+                  label="Doc Date"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  variant="outlined"
+                  size="small"
+                  name="docDate"
+                  value={formData.docDate}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.docDate}
+                  helperText={fieldErrors.docDate}
+                />
               </div>
+
+              {/* Ref. Date */}
               <div className="col-md-3 mb-3">
-                <FormGroup>
-                  <FormControlLabel
-                    control={<Checkbox name="active" checked={formData.active} onChange={handleInputChange} />}
-                    label="Active"
-                  />
-                </FormGroup>
+                <TextField
+                  id="refDate"
+                  label="Ref. Date"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  variant="outlined"
+                  size="small"
+                  name="refDate"
+                  value={formData.refDate}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.refDate}
+                  helperText={fieldErrors.refDate}
+                />
+              </div>
+
+              {/* Supp. Ref. No. */}
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="suppRefNo"
+                  label="Supp. Ref. No."
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  name="suppRefNo"
+                  value={formData.suppRefNo}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.suppRefNo}
+                  helperText={fieldErrors.suppRefNo}
+                />
+              </div>
+
+              {/* Supp. Ref. Date */}
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="suppRefDate"
+                  label="Supp. Ref. Date"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  variant="outlined"
+                  size="small"
+                  name="suppRefDate"
+                  value={formData.suppRefDate}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.suppRefDate}
+                  helperText={fieldErrors.suppRefDate}
+                />
+              </div>
+
+              {/* Subledger Code */}
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="subledgerCode"
+                  label="Subledger Code"
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  name="subledgerCode"
+                  value={formData.subledgerCode}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.subledgerCode}
+                  helperText={fieldErrors.subledgerCode}
+                />
+              </div>
+
+              {/* Credit Days */}
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="creditDays"
+                  label="Credit Days"
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  name="creditDays"
+                  value={formData.creditDays}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.creditDays}
+                  helperText={fieldErrors.creditDays}
+                />
+              </div>
+
+              {/* Due Date */}
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="dueDate"
+                  label="Due Date"
+                  type="date"
+                  InputLabelProps={{ shrink: true }}
+                  variant="outlined"
+                  size="small"
+                  name="dueDate"
+                  value={formData.dueDate}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.dueDate}
+                  helperText={fieldErrors.dueDate}
+                />
+              </div>
+
+              {/* TDS Amount */}
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="tdsAmount"
+                  label="TDS Amount"
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  name="tdsAmount"
+                  value={formData.tdsAmount}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.tdsAmount}
+                  helperText={fieldErrors.tdsAmount}
+                />
+              </div>
+
+              {/* HNO */}
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="hno"
+                  label="HNO"
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  name="hno"
+                  value={formData.hno}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.hno}
+                  helperText={fieldErrors.hno}
+                />
               </div>
             </div>
           ) : (
@@ -794,4 +879,4 @@ export const ChargeTypeRequest = () => {
     </>
   );
 };
-export default ChargeTypeRequest;
+export default ARAPDetail;

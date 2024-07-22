@@ -58,3 +58,22 @@ export const getCityByState = async (orgId, state) => {
     return [];
   }
 };
+
+export const getCurrencyByOrgId = async (orgId) => {
+  try {
+    const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getCurrencyByOrgId?orgId=${orgId}`);
+    console.log('API Response:', response);
+
+    if (response.status === 200) {
+      const currencyVO = response.data.paramObjectsMap.currencyVO.map((currency) => currency.currency);
+      return currencyVO;
+    } else {
+      // Handle error
+      console.error('API Error:', response.data);
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return [];
+  }
+};

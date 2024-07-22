@@ -25,6 +25,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { useRef } from 'react';
+import { useSelector } from 'react-redux';
 
 // third party
 import { Formik } from 'formik';
@@ -37,6 +38,7 @@ import AnimateButton from 'ui-component/extended/AnimateButton';
 // assets
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { setUser } from '../../../../redux/userSlice';
 
 // ============================|| FIREBASE - LOGIN ||============================ //
 
@@ -58,6 +60,9 @@ const FirebaseLogin = ({ ...others }) => {
       setChecked(true);
     }
   }, []);
+
+  const user = useSelector((state) => state.user);
+
   const handleMouseDownPassword = (event) => {
     event.preventDefault();
   };
@@ -95,8 +100,10 @@ const FirebaseLogin = ({ ...others }) => {
         // Handle authentication failure, display an error message, etc.
 
         console.log('Test1', userData);
+        dispatch(setUser({ orgId: response.data.paramObjectsMap.userVO.orgId }));
 
         localStorage.setItem('orgId', response.data.paramObjectsMap.userVO.orgId); // Replace with the actual token
+        localStorage.setItem('userId', response.data.paramObjectsMap.userVO.userId);
         localStorage.setItem('LoginMessage', true);
         const userRole = response.data.paramObjectsMap.userVO.role;
         localStorage.setItem('ROLE', userRole);

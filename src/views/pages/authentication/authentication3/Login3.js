@@ -44,7 +44,12 @@ const Login = () => {
                     <Grid container direction={matchDownSM ? 'column-reverse' : 'row'} alignItems="center" justifyContent="center">
                       <Grid item>
                         <Stack alignItems="center" justifyContent="center" spacing={1}>
-                          <Typography color={theme.palette.secondary.main} gutterBottom variant={matchDownSM ? 'h3' : 'h2'}>
+                          <Typography
+                            className="gradient-text"
+                            color={theme.palette.secondary.main}
+                            gutterBottom
+                            variant={matchDownSM ? 'h3' : 'h2'}
+                          >
                             Hi, Welcome Back
                           </Typography>
                         </Stack>

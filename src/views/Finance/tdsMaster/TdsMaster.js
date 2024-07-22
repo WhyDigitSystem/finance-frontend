@@ -1,195 +1,242 @@
-import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormGroup from '@mui/material/FormGroup';
-import TextField from '@mui/material/TextField';
-// import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
-// import { BsListTask } from 'react-icons/bs';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, Tooltip } from '@mui/material';
+import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { useRef } from 'react';
-import 'react-tabs/style/react-tabs.css';
+import apiCall from 'apicalls';
+import axios from 'axios';
+import { useEffect, useRef, useState } from 'react';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/action-button';
+import CommonTable from 'views/basicMaster/CommonTable';
 import TableComponent from './TableComponent';
 
 const TdsMaster = () => {
-  // const buttonStyle = {
-  //   fontSize: '20px' // Adjust the font size as needed
-  // };
-
-  //   const [openBankModal, setOpenBankModal] = React.useState(false);
-
-  //   const handleBankOpen = () => {
-  //     setOpenBankModal(true);
-  //   };
-  //   const handleBankClose = () => {
-  //     setOpenBankModal(false);
-  //   };
-
   const theme = useTheme();
   const anchorRef = useRef(null);
+  const [showForm, setShowForm] = useState(true);
+  const [data, setData] = useState([]);
+  const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
+  const [formValues, setFormValues] = useState({
+    active: true,
+    createdBy: '',
+    orgId: orgId,
+    section: '',
+    sectionName: '',
+    tcsMaster2DTO: [],
+    updatedBy: ''
+  });
+  const [validationErrors, setValidationErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+
+  useEffect(() => {
+    getAllTcsMasterByOrgId();
+  }, []);
+
+  const handleInputChange = (e) => {
+    const { id, value, checked, type } = e.target;
+    setFormValues((prev) => ({
+      ...prev,
+      [id]: type === 'checkbox' ? checked : value
+    }));
+
+    // Validate the input fields
+    if (id === 'section' || id === 'sectionName') {
+      if (!value.trim()) {
+        setValidationErrors((prev) => ({
+          ...prev,
+          [id]: 'This field is required'
+        }));
+      } else {
+        setValidationErrors((prev) => {
+          const { [id]: removed, ...rest } = prev;
+          return rest;
+        });
+      }
+    }
+  };
+
+  const columns = [
+    { accessorKey: 'section', header: 'Section', size: 140 },
+    { accessorKey: 'sectionName', header: 'Section Name', size: 140 },
+    { accessorKey: 'active', header: 'Active', size: 140 }
+  ];
+
+  const handleClear = () => {
+    setFormValues({
+      section: '',
+      sectionName: '',
+      active: true,
+      createdBy: 'currentUser',
+      updatedBy: 'currentUser',
+      orgId: 1,
+      tcsMaster2DTO: []
+    });
+    setValidationErrors({});
+  };
+
+  const formatDate = (date) => {
+    if (!date) return '';
+    const formattedDate = new Date(date);
+    const year = formattedDate.getFullYear();
+    const month = String(formattedDate.getMonth() + 1).padStart(2, '0'); // Months are zero based
+    const day = String(formattedDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+
+  const handleSave = async () => {
+    const formDataWithEncryptedPassword = {
+      ...formValues,
+      tcsMaster2DTO: formValues.tcsMaster2DTO.map((item) => ({
+        ...item,
+        fromDate: formatDate(item.fromDate),
+        toDate: formatDate(item.toDate)
+      }))
+    };
+    if (validateForm()) {
+      try {
+        setIsLoading(true);
+        const response = await apiCall('put', '/master/updateCreateTcsMaster', formDataWithEncryptedPassword);
+        console.log('Save Successful', response.data);
+        toast.success(editMode ? ' Tcs Master Updated Successfully' : ' Tcs Master created successfully', {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+        getAllTcsMasterByOrgId();
+        handleClear();
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Save Failed', error);
+      }
+    } else {
+      console.error('Validation Errors:', validationErrors);
+    }
+  };
+
+  const getAllTcsMasterByOrgId = async () => {
+    try {
+      const result = await apiCall('get', `/master/getAllTcsMasterByOrgId?orgId=${orgId}`);
+      setData(result.paramObjectsMap.tcsMasterVO || []);
+      showForm(true);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
+
+  const getTcsMasterById = async (row) => {
+    console.log('first', row);
+    setShowForm(true);
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllTcsMasterById?id=${row.original.id}`);
+      console.log('API Response:', response);
+
+      if (response.status === 200) {
+        const tcsMasterVO = response.data.paramObjectsMap.tcsMasterVO[0];
+        setEditMode(true);
+
+        setFormValues({
+          section: tcsMasterVO.section || '',
+          sectionName: tcsMasterVO.sectionName || '',
+          active: tcsMasterVO.active || false,
+          id: tcsMasterVO.id || 0,
+          tcsMaster2DTO: tcsMasterVO.tcsMaster2VO || [],
+          orgId: orgId
+        });
+      } else {
+        // Handle error
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleList = () => {
+    setShowForm(!showForm);
+  };
+
+  const validateForm = () => {
+    const errors = {};
+    if (!formValues.section.trim()) {
+      errors.section = 'This field is required';
+    }
+    if (!formValues.sectionName.trim()) {
+      errors.sectionName = 'This field is required';
+    }
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
 
   return (
-    <>
-      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
+    <div>
+      <ToastContainer />
+      <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <div className="d-flex flex-wrap justify-content-start mb-4">
-          <Tooltip title="Search" placement="top">
-            <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <SearchIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
-
-          <Tooltip title="Clear" placement="top">
-            {' '}
-            <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <ClearIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
-
-          <Tooltip title="List View" placement="top">
-            {' '}
-            <ButtonBase sx={{ borderRadius: '12px' }}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <FormatListBulletedTwoToneIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
-          <Tooltip title="Save" placement="top">
-            {' '}
-            <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <SaveIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
+          <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+          <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+          <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} isLoading={isLoading} margin="0 10px 0 10px" />
         </div>
-        <div className="d-flex justify-content-between">{/* <h1 className="text-xl font-semibold mb-3">Group / Ledger</h1> */}</div>
-        <div className="row d-flex">
-          {/* <div className="d-flex flex-wrap justify-content-start mb-3">
-            <button className="btn btn-ghost btn-sm normal-case col-xs-2">
-              <AiOutlineWallet style={buttonStyle} />
-              <span className="ml-1">New</span>
-            </button>
-            <button className="btn btn-ghost btn-sm normal-case col-xs-2">
-              <AiOutlineSearch style={buttonStyle} />
-              <span className="ml-1">Search</span>
-            </button>
-            <button className="btn btn-ghost btn-sm normal-case col-xs-2">
-              <BsListTask style={buttonStyle} />
-              <span className="ml-1">List View</span>
-            </button>
-          </div> */}
-          <div className="col-md-3 mb-2">
-            <FormControl fullWidth variant="filled">
-              <TextField id="Section" label="Section" size="small" required inputProps={{ maxLength: 30 }} />
-            </FormControl>
-          </div>
-          <div className="col-md-3 mb-2">
-            <Box sx={{ minWidth: 120 }}>
-              <FormControl fullWidth size="small">
-                <TextField id="Section" label="Section Name" size="small" required inputProps={{ maxLength: 30 }} />
-              </FormControl>
-            </Box>
-          </div>
-          <div className="col-md-3 mb-2">
-            <FormGroup>
-              <FormControlLabel control={<Checkbox defaultChecked sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }} />} label="Active" />
-            </FormGroup>
-          </div>
-        </div>
-
-        <TableComponent />
-        {/* <div className="d-flex flex-row mt-3">
-          <button
-            type="button"
-            //onClick={handleCustomer}
-            className="btn btn-primary"
-            style={{ marginRight: '10px' }}
-          >
-            Save
-          </button>
-          <button
-            type="button"
-            //onClick={handleCustomerClose}
-            className="btn btn-primary"
-          >
-            Cancel
-          </button>
-        </div> */}
+        {showForm ? (
+          <>
+            <div className="row d-flex">
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="section"
+                    label="Section"
+                    size="small"
+                    required
+                    value={formValues.section}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 30 }}
+                    error={!!validationErrors.section}
+                    helperText={validationErrors.section}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="sectionName"
+                    label="Section Name"
+                    size="small"
+                    required
+                    value={formValues.sectionName}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 30 }}
+                    error={!!validationErrors.sectionName}
+                    helperText={validationErrors.sectionName}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        id="active"
+                        checked={formValues.active}
+                        onChange={handleInputChange}
+                        sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                      />
+                    }
+                    label="Active"
+                  />
+                </FormGroup>
+              </div>
+            </div>
+            <TableComponent formValues={formValues} setFormValues={setFormValues} />
+          </>
+        ) : (
+          <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getTcsMasterById} />
+        )}
       </div>
-    </>
+    </div>
   );
 };
 

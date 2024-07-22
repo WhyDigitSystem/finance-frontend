@@ -1,250 +1,314 @@
-import FormControl from '@mui/material/FormControl';
-import TextField from '@mui/material/TextField';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-// import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
-// import { BsListTask } from 'react-icons/bs';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, Tooltip } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import { useRef } from 'react';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import axios from 'axios';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/action-button';
+import { getCurrencyByOrgId } from 'utils/common-functions';
+import CommonTable from 'views/basicMaster/CommonTable';
 
 const ExRates = () => {
-  //   const buttonStyle = {
-  //     fontSize: '20px'
-  //   };
+  const [fieldErrors, setFieldErrors] = useState({});
+  const [showForm, setShowForm] = useState(true);
+  const [data, setData] = useState([]);
+  const [editMode, setEditMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [currencies, setCurrencies] = useState([]);
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
 
-  const theme = useTheme();
-  const anchorRef = useRef(null);
+  const [formData, setFormData] = useState({
+    docDate: null,
+    docMonth: null,
+    currency: '',
+    cellRate: '',
+    byRate: '',
+    avgRate: '',
+    orgId: orgId
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Replace with your orgId or fetch it from somewhere
+        const currencyData = await getCurrencyByOrgId(orgId);
+        setCurrencies(currencyData);
+
+        console.log('currency', currencyData);
+      } catch (error) {
+        console.error('Error fetching country data:', error);
+      }
+    };
+
+    fetchData();
+    getExRates();
+  }, []);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+    setFieldErrors({ ...fieldErrors, [name]: false });
+  };
+
+  const handleDateChange = (name, value) => {
+    setFormData({ ...formData, [name]: value });
+    setFieldErrors({ ...fieldErrors, [name]: false });
+  };
+
+  const getExRates = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllExRatesByOrgId?orgId=${orgId}`);
+      if (response.status === 200) {
+        setData(response.data.paramObjectsMap.exRatesVO);
+      } else {
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleSave = async () => {
+    const visibleFields = ['docDate', 'docMonth', 'currency', 'cellRate', 'byRate', 'avgRate'];
+    const errors = {};
+
+    visibleFields.forEach((key) => {
+      if (!formData[key]) {
+        errors[key] = true;
+      }
+    });
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      console.log('Saving Exchange Rate with payload:', formData);
+
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateExRates`, formData);
+
+      if (response.status === 200) {
+        if (response.data.status === true || response.data.statusFlag === 'Ok') {
+          handleClear();
+          toast.success(editMode ? 'Exchange Rate Updated Successfully' : 'Exchange Rate Created Successfully', {
+            autoClose: 2000,
+            theme: 'colored'
+          });
+
+          getExRates();
+          setEditMode(false);
+        } else {
+          console.error('API Error:', response.data);
+          toast.error(response.data.message || 'Failed to Save Exchange Rate', {
+            autoClose: 2000,
+            theme: 'colored'
+          });
+        }
+      } else {
+        console.error('API Error:', response.data);
+        toast.error(response.data.message || 'Failed to Save Exchange Rate', {
+          autoClose: 2000,
+          theme: 'colored'
+        });
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error(error.response?.data?.message || 'Failed to Save Exchange Rate', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const columns = [
+    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'docMonth', header: 'Doc Month', size: 140 },
+    { accessorKey: 'currency', header: 'Currency', size: 100 },
+    { accessorKey: 'cellRate', header: 'Cell Rate', size: 100 },
+    { accessorKey: 'byRate', header: 'By Rate', size: 100 },
+    { accessorKey: 'avgRate', header: 'Avg Rate', size: 100 }
+  ];
+
+  const handleClear = () => {
+    setFormData({
+      docDate: null,
+      docMonth: null,
+      currency: '',
+      cellRate: '',
+      byRate: '',
+      avgRate: ''
+    });
+    setFieldErrors({});
+  };
+
+  const handleList = () => {
+    setShowForm(!showForm);
+    setFieldErrors({});
+  };
+
+  const getExRateById = async (row) => {
+    console.log('Editing Exchange Rate:', row);
+    setShowForm(true);
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllExRatesById?id=${row.original.id}`);
+
+      console.log('API Response:', response);
+
+      if (response.status === 200) {
+        const exRate = response.data.paramObjectsMap.exRatesVO[0];
+        setEditMode(true);
+
+        setFormData({
+          docDate: exRate.docDate ? dayjs(exRate.docDate) : null,
+          docMonth: exRate.docMonth ? dayjs(exRate.docMonth) : null,
+          currency: exRate.currency || '',
+          cellRate: exRate.cellRate || '',
+          byRate: exRate.byRate || '',
+          id: exRate.id || 0,
+          avgRate: exRate.avgRate || '',
+          orgId: orgId
+        });
+
+        console.log('DataToEdit', exRate);
+      } else {
+        console.error('API Error:', response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   return (
     <>
+      <ToastContainer />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
-        <div className="d-flex flex-wrap justify-content-start mb-2">
-          <Tooltip title="Search" placement="top">
-            <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <SearchIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
-
-          <Tooltip title="Clear" placement="top">
-            {' '}
-            <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <ClearIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
-
-          <Tooltip title="List View" placement="top">
-            {' '}
-            <ButtonBase sx={{ borderRadius: '12px' }}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <FormatListBulletedTwoToneIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
-          <Tooltip title="Save" placement="top">
-            {' '}
-            <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <SaveIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
+        <div className="d-flex flex-wrap justify-content-start mb-4">
+          <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+          <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+          <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+          &nbsp;{' '}
         </div>
-        {/* <div className="d-flex justify-content-between">
-          <h1 className="text-xl font-semibold mb-3">Group / Ledger</h1>
-        </div> */}
-        {/* <div className="d-flex flex-wrap justify-content-start mb-2">
-          <button
-            className="btn btn-ghost btn-sm normal-case col-xs-2"
-            //onClick={handleNew}
-          >
-            <AiOutlineWallet style={buttonStyle} />
-            <span className="ml-1">New</span>
-          </button>
-          <button className="btn btn-ghost btn-sm normal-case col-xs-2">
-            <AiOutlineSearch style={buttonStyle} />
-            <span className="ml-1">Search</span>
-          </button>
-          <button
-            className="btn btn-ghost btn-sm normal-case col-xs-2"
-            //onClick={getAllCompanyFields}
-          >
-            <BsListTask style={buttonStyle} />
-            <span className="ml-1">List View</span>
-          </button>
-        </div> */}
         <div className="row d-flex mt-3">
-          <div className="col-md-3 mb-3">
-            <FormControl fullWidth>
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                  label="Doc Date"
-                  slotProps={{
-                    textField: { size: 'small', clearable: true }
-                  }}
-                  //value={boDate}
-                  //onChange={(newValue) => setBoDate(newValue)}
-                />
-              </LocalizationProvider>
-            </FormControl>
-          </div>
+          {showForm ? (
+            <>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Doc Date"
+                      value={formData.docDate}
+                      onChange={(newValue) => handleDateChange('docDate', newValue)}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                    />
+                  </LocalizationProvider>
+                  {fieldErrors.docDate && <span style={{ color: 'red' }}>This field is required</span>}
+                </FormControl>
+              </div>
 
-          <div className="col-md-3 mb-3">
-            <FormControl fullWidth variant="filled">
-              <LocalizationProvider dateAdapter={AdapterDayjs}>
-                <DatePicker
-                  label="Doc Month"
-                  openTo="month"
-                  views={['year', 'month']}
-                  slotProps={{
-                    textField: { size: 'small', clearable: true }
-                  }}
-                  //value={boDate}
-                  //onChange={(newValue) => setBoDate(newValue)}
-                />
-              </LocalizationProvider>
-            </FormControl>
-          </div>
-          <div className="col-md-3 mb-3">
-            <FormControl fullWidth variant="filled">
-              <TextField
-                id="currency"
-                label="Currency"
-                size="small"
-                required
-                //placeholder="40003600104"
-                inputProps={{ maxLength: 30 }}
-              />
-            </FormControl>
-          </div>
-          <div className="col-md-3 mb-3">
-            <FormControl fullWidth variant="filled">
-              <TextField
-                id="sellrate"
-                label="Sell Rate"
-                size="small"
-                required
-                //placeholder="40003600104"
-                inputProps={{ maxLength: 30 }}
-              />
-            </FormControl>
-          </div>
-          <div className="col-md-3 mb-3">
-            <FormControl fullWidth variant="filled">
-              <TextField
-                id="buyrate"
-                label="Buy Rate"
-                size="small"
-                required
-                //placeholder="40003600104"
-                inputProps={{ maxLength: 30 }}
-              />
-            </FormControl>
-          </div>
-          <div className="col-md-3 mb-3">
-            <FormControl fullWidth variant="filled">
-              <TextField
-                id="avgrate"
-                label="Avg Rate"
-                size="small"
-                required
-                //placeholder="40003600104"
-                inputProps={{ maxLength: 30 }}
-              />
-            </FormControl>
-          </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Doc Month"
+                      openTo="month"
+                      views={['year', 'month']}
+                      value={formData.docMonth}
+                      onChange={(newValue) => handleDateChange('docMonth', newValue)}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                    />
+                  </LocalizationProvider>
+                  {fieldErrors.docMonth && <span style={{ color: 'red' }}>This field is required</span>}
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <InputLabel id="currency-label" required>
+                    Currency
+                  </InputLabel>
+                  <Select
+                    labelId="currency-label"
+                    id="currency-label"
+                    name="currency"
+                    value={formData.currency}
+                    onChange={handleInputChange}
+                  >
+                    {currencies.map((currency) => (
+                      <MenuItem key={currency} value={currency}>
+                        {currency}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.currency && <span style={{ color: 'red' }}>This field is required</span>}
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    label="Cell Rate"
+                    size="small"
+                    required
+                    name="cellRate"
+                    value={formData.cellRate}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 30 }}
+                  />
+                  {fieldErrors.cellRate && <span style={{ color: 'red' }}>This field is required</span>}
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    label="By Rate"
+                    size="small"
+                    required
+                    name="byRate"
+                    value={formData.byRate}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 30 }}
+                  />
+                  {fieldErrors.byRate && <span style={{ color: 'red' }}>This field is required</span>}
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    label="Avg Rate"
+                    size="small"
+                    required
+                    name="avgRate"
+                    value={formData.avgRate}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 30 }}
+                  />
+                  {fieldErrors.avgRate && <span style={{ color: 'red' }}>This field is required</span>}
+                </FormControl>
+              </div>
+            </>
+          ) : (
+            <CommonTable columns={columns} data={data} blockEdit={true} toEdit={getExRateById} />
+          )}
         </div>
-        {/* <div className="d-flex flex-row mt-3">
-          <button
-            type="button"
-            //onClick={handleCustomer}
-            className="btn btn-primary"
-            style={{ marginRight: '10px' }}
-          >
-            Save
-          </button>
-          <button
-            type="button"
-            //onClick={handleCustomerClose}
-            className="btn btn-primary"
-          >
-            Cancel
-          </button>
-        </div> */}
       </div>
     </>
   );

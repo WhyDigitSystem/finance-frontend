@@ -1,15 +1,16 @@
 // ReusableButton.js
+import CircularProgress from '@material-ui/core/CircularProgress';
 import { Avatar, ButtonBase, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React from 'react';
 
-const ActionButton = ({ title, icon: Icon, onClick, placement = 'top', margin = '10px' }) => {
+const ActionButton = ({ title, icon: Icon, onClick, placement = 'top', margin = '10px', isLoading }) => {
   const theme = useTheme();
   const anchorRef = React.useRef(null);
 
   return (
     <Tooltip title={title} placement={placement}>
-      <ButtonBase sx={{ borderRadius: '12px', marginRight: margin }} onClick={onClick}>
+      <ButtonBase sx={{ borderRadius: '12px', marginRight: margin }} onClick={onClick} disabled={isLoading}>
         <Avatar
           variant="rounded"
           sx={{
@@ -27,7 +28,7 @@ const ActionButton = ({ title, icon: Icon, onClick, placement = 'top', margin = 
           aria-haspopup="true"
           color="inherit"
         >
-          <Icon size="1.3rem" stroke={1.5} />
+          {isLoading ? <CircularProgress size={22} color="inherit" /> : <Icon size="1.3rem" stroke={1.5} />}
         </Avatar>
       </ButtonBase>
     </Tooltip>

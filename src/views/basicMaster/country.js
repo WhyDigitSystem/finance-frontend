@@ -8,7 +8,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import axios from 'axios';
+import apiCall from 'apicalls';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
@@ -22,6 +22,8 @@ const Country = () => {
   const [showFields, setShowFields] = useState(true);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [data, setData] = useState([]);
+  const [data1, setData1] = useState([]);
+  const [Loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     countryName: '',
@@ -42,8 +44,8 @@ const Country = () => {
   ];
 
   useEffect(() => {
-    getCountry();
-  }, [showFields]);
+    fetchData();
+  }, [showFields, orgId]);
 
   const [imageSrc, setImageSrc] = useState('');
 
@@ -102,73 +104,67 @@ const Country = () => {
     setShowFields(!showFields);
   };
 
-  const getCountry = async () => {
+  const fetchData = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getCountryByOrgId?orgId=${orgId}`);
-      console.log('API Response:', response);
-
-      if (response.status === 200) {
-        setData(response.data.paramObjectsMap.countryVO || []);
-      } else {
-        // Handle error
-        console.error('API Error:', response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
+      const result = await apiCall('get', `/basicMaster/getCountryByOrgId?orgId=${orgId}`);
+      setData(result.paramObjectsMap.countryVO || []);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
     }
   };
 
-  const handleSubmit = () => {
-    // Check if any field is empty
-    const errors = Object.keys(formData).reduce((acc, key) => {
-      if (!formData[key]) {
-        acc[key] = true;
+  const handleSubmit = async () => {
+    try {
+      const errors = Object.keys(formData).reduce((acc, key) => {
+        if (!formData[key]) {
+          acc[key] = true;
+        }
+        return acc;
+      }, {});
+      // If there are errors, set the corresponding fieldErrors state to true
+      if (Object.keys(errors).length > 0) {
+        setFieldErrors(errors);
+        return; // Prevent API call if there are errors
       }
-      return acc;
-    }, {});
-    // If there are errors, set the corresponding fieldErrors state to true
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return; // Prevent API call if there are errors
-    }
-    axios
-      .put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateCountry`, formData)
-      .then((response) => {
-        console.log('Response:', response.data);
-        handleClear();
-        toast.success('Country Created Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getCountry();
-      })
-      .catch((error) => {
-        console.error('Error:', error);
+      setLoading(true);
+      const response = await apiCall('put', 'basicMaster/updateCreateCountry', formData);
+      console.log('Post response:', response);
+      toast.success('Country Created successfully', {
+        autoClose: 2000,
+        theme: 'colored'
       });
+      handleClear();
+      // Handle successful response (e.g., clear form, update state, etc.)
+    } catch (error) {
+      console.error('Error posting data:', error);
+
+      toast.error('Error posting data', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const editCountry = async (updatedCountry) => {
     try {
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateCountry`, updatedCountry);
-      if (response.status === 200) {
-        toast.success('Country Updated Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getCountry();
-      } else {
-        console.error('API Error:', response.data);
-        toast.error('Failed to Update Country', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-      }
+      setLoading(true);
+      const response = await apiCall('put', '/api/basicMaster/updateCreateCountry', updatedCountry);
+      toast.success('Country Updated Successfully', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+      fetchData();
     } catch (error) {
       console.error('Error updating country:', error);
       toast.error('Error Updating Country', {
         autoClose: 2000,
         theme: 'colored'
       });
+    } finally {
+      setLoading(false);
     }
   };
 

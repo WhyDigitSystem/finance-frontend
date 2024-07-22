@@ -15,6 +15,17 @@
   margin-right: 8px;
 }
 
+/* src/styles.css or any CSS file you are using */
+/* src/styles.css */
+.gradient-text {
+  background: linear-gradient(to right, #0061ff, #60efff); /* Gemini AI colors */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+
+
+
 // ==============================|| PERFECT SCROLLBAR ||============================== //
 
 .scrollbar-container {

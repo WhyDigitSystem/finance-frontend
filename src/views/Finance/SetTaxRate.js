@@ -10,7 +10,7 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -42,9 +42,9 @@ export const SetTaxRate = () => {
   const theme = useTheme();
   const anchorRef = useRef(null);
 
-  // useEffect(() => {
-  //   getSetTaxRate();
-  // }, []);
+  useEffect(() => {
+    getSetTaxRate();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -107,11 +107,11 @@ export const SetTaxRate = () => {
       });
   };
 
-  const handleRowEdit = (rowId, newData) => {
-    console.log('Edit', rowId, newData);
+  const handleRowEdit = (newData) => {
+    console.log('Edit', newData);
     // Send PUT request to update the row
     axios
-      .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateSetTaxRate/${rowId}`, newData)
+      .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateSetTaxRate`, newData)
       .then((response) => {
         console.log('Edit successful:', response.data);
         // Handle any further actions after successful edit
@@ -119,6 +119,7 @@ export const SetTaxRate = () => {
           autoClose: 2000,
           theme: 'colored'
         });
+        getSetTaxRate();
       })
       .catch((error) => {
         console.error('Error editing row:', error);
@@ -132,6 +133,7 @@ export const SetTaxRate = () => {
 
   const handleList = () => {
     setShowForm(!showForm);
+
     setFieldErrors({
       chapter: false,
       subChapter: false,
@@ -140,8 +142,6 @@ export const SetTaxRate = () => {
       newRate: false,
       excepmted: false
     });
-
-    getSetTaxRate();
   };
   const handleClear = () => {
     setFormData({
@@ -377,7 +377,7 @@ export const SetTaxRate = () => {
               </div>
             </div>
           ) : (
-            <CommonTable data={data} columns={columns} onRowEditTable={handleRowEdit} />
+            <CommonTable data={data} columns={columns} editCallback={handleRowEdit} />
           )}
         </div>
       </div>

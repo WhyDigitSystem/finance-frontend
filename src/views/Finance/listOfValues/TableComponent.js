@@ -17,10 +17,6 @@ import {
   Tooltip
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
 import { MaterialReactTable } from 'material-react-table';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ActionButton from 'utils/action-button';
@@ -33,9 +29,11 @@ const TableComponent = ({ formValues, setFormValues }) => {
   const theme = useTheme();
   const anchorRef = useRef(null);
 
+  console.log('tableTest', tableData);
+
   useEffect(() => {
-    if (formValues.tcsMaster2DTO) {
-      setTableData(formValues.tcsMaster2DTO);
+    if (formValues.listOfValues1DTO) {
+      setTableData(formValues.listOfValues1DTO);
     }
   }, [formValues]);
 
@@ -44,7 +42,7 @@ const TableComponent = ({ formValues, setFormValues }) => {
     setTableData(updatedListOfValues);
     setFormValues((prev) => ({
       ...prev,
-      tcsMaster2DTO: updatedListOfValues
+      listOfValues1DTO: updatedListOfValues
     }));
   };
 
@@ -54,7 +52,7 @@ const TableComponent = ({ formValues, setFormValues }) => {
       setTableData(updatedListOfValues);
       setFormValues((prev) => ({
         ...prev,
-        tcsMaster2DTO: updatedListOfValues
+        listOfValues1DTO: updatedListOfValues
       }));
       exitEditingMode();
     }
@@ -70,7 +68,7 @@ const TableComponent = ({ formValues, setFormValues }) => {
       setTableData(updatedListOfValues);
       setFormValues((prev) => ({
         ...prev,
-        tcsMaster2DTO: updatedListOfValues
+        listOfValues1DTO: updatedListOfValues
       }));
     },
     [tableData, setFormValues]
@@ -107,56 +105,14 @@ const TableComponent = ({ formValues, setFormValues }) => {
         enableEditing: false // Disable editing for S No as it is auto-generated
       },
       {
-        accessorKey: 'fromDate',
-        header: 'From Date',
+        accessorKey: 'valueCode',
+        header: 'Value Code',
         size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell),
-          renderEditCell: (params) => (
-            <DatePicker
-              value={params.value}
-              onChange={(newValue) => {
-                const updatedListOfValues = tableData.map((item, index) =>
-                  index === params.row.index ? { ...item, fromDate: newValue } : item
-                );
-                setTableData(updatedListOfValues);
-                setFormValues((prev) => ({
-                  ...prev,
-                  tcsMaster2DTO: updatedListOfValues
-                }));
-              }}
-              renderInput={(params) => <TextField {...params} size="small" />}
-            />
-          )
-        })
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
       },
       {
-        accessorKey: 'toDate',
-        header: 'To Date',
-        size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell),
-          renderEditCell: (params) => (
-            <DatePicker
-              value={params.value}
-              onChange={(newValue) => {
-                const updatedListOfValues = tableData.map((item, index) =>
-                  index === params.row.index ? { ...item, toDate: newValue } : item
-                );
-                setTableData(updatedListOfValues);
-                setFormValues((prev) => ({
-                  ...prev,
-                  tcsMaster2DTO: updatedListOfValues
-                }));
-              }}
-              renderInput={(params) => <TextField {...params} size="small" />}
-            />
-          )
-        })
-      },
-      {
-        accessorKey: 'tcsPercentage',
-        header: 'TCS %',
+        accessorKey: 'valueDescription',
+        header: 'Value Description',
         size: 140,
         muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
       },
@@ -174,7 +130,7 @@ const TableComponent = ({ formValues, setFormValues }) => {
               setTableData(updatedListOfValues);
               setFormValues((prev) => ({
                 ...prev,
-                tcsMaster2DTO: updatedListOfValues
+                listOfValues1DTO: updatedListOfValues
               }));
             }}
             color="primary"
@@ -258,14 +214,6 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
     }, {})
   );
 
-  const handleDateChange = (date, accessorKey) => {
-    const formattedDate = date ? `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}` : '';
-    setValues((prevValues) => ({
-      ...prevValues,
-      [accessorKey]: formattedDate
-    }));
-  };
-
   const handleSubmit = () => {
     onSubmit(values);
     onClose();
@@ -290,19 +238,6 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
                   }
                   label={column.header}
                 />
-              ) : column.accessorKey === 'fromDate' || column.accessorKey === 'toDate' ? (
-                <LocalizationProvider dateAdapter={AdapterDateFns}>
-                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-                    <MobileDatePicker
-                      label={column.header}
-                      value={values[column.accessorKey]}
-                      onChange={(date) => handleDateChange(date, column.accessorKey)}
-                      inputFormat="dd-MM-yyyy"
-                      sx={{ flexGrow: 1, maxWidth: 400 }}
-                      renderInput={(params) => <TextField {...params} />}
-                    />
-                  </Box>
-                </LocalizationProvider>
               ) : (
                 <TextField
                   key={column.accessorKey}

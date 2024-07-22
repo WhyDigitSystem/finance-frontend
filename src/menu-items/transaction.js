@@ -1,5 +1,4 @@
 // assets
-import { breadcrumbs } from '@material-tailwind/react';
 import { IconKey } from '@tabler/icons-react';
 
 // constant
@@ -94,6 +93,24 @@ const transaction = {
           title: 'Cost Debit Note',
           type: 'item',
           url: '/finance/costDebitNote/CostDebitNote'
+        },
+        {
+          id: 'paymentVoucher',
+          title: 'Payment Voucher',
+          type: 'item',
+          url: '/finance/paymentVoucher/paymentVoucher'
+        },
+        {
+          id: 'ARAPDetail',
+          title: 'ARAP Detail',
+          type: 'item',
+          url: '/finance/ARAP-Details'
+        },
+        {
+          id: 'ARAPAdjustment',
+          title: 'ARAP Adjustment',
+          type: 'item',
+          url: '/finance/ARAP-Adjustment'
         }
       ]
     }

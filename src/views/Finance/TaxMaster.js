@@ -1,116 +1,72 @@
-import Checkbox from '@mui/material/Checkbox';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormGroup from '@mui/material/FormGroup';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
-import { useState } from 'react';
-// import { AiOutlineSearch, AiOutlineWallet } from 'react-icons/ai';
-// import { BsListTask } from 'react-icons/bs';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, FormHelperText, Tooltip } from '@mui/material';
+import {
+  Avatar,
+  ButtonBase,
+  Checkbox,
+  FormControl,
+  FormControlLabel,
+  FormGroup,
+  FormHelperText,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Tooltip
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import axios from 'axios';
-import { useRef } from 'react';
+import { useState } from 'react';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-export const TaxMaster = () => {
+const TaxMaster = () => {
+  const theme = useTheme();
   const [tabIndex, setTabIndex] = useState(0);
-
   const [formData, setFormData] = useState({
-    taxType: '',
-    taxPercentage: '',
-    taxDescription: '',
     active: true,
+    taxType: '',
+    taxPercentage: 0,
+    taxDescription: '',
     taxMaster2DTO: [
       {
         inputAccount: '',
         outputAccount: '',
-        sgstRcmPayable: '',
-        taxMaster2Id: 0
+        sgstRcmPayable: true
       }
-    ],
-    taxMasterId: 0,
-    orgId: 0
+    ]
   });
+  const [fieldErrors, setFieldErrors] = useState({});
 
-  const [fieldErrors, setFieldErrors] = useState({
-    taxType: false,
-    taxPercentage: false,
-    taxDescription: false,
-    inputAccount: false,
-    outputAccount: false,
-    sgstRcmPayable: false
-  });
+  const handleChange = (event) => {
+    const { name, value, checked, type } = event.target;
 
-  // const handleInputChange = (e) => {
-  //   const { name, value, type, checked } = e.target;
-  //   const newValue = type === 'checkbox' ? checked : value;
-  //   setFormData({ ...formData, [name]: newValue });
+    if (type === 'checkbox') {
+      setFormData({
+        ...formData,
+        [name]: checked
+      });
+    } else if (name.startsWith('taxMaster2DTO')) {
+      const [fieldName, dtoIndex] = name.split('.');
+      const updatedTaxMaster2DTO = [...formData.taxMaster2DTO];
+      updatedTaxMaster2DTO[dtoIndex] = {
+        ...updatedTaxMaster2DTO[dtoIndex],
+        [fieldName]: value
+      };
 
-  //   // Only clear the error if the field is not empty
-  //   if (value.trim() !== '') {
-  //     setFieldErrors({ ...fieldErrors, [name]: false });
-  //   }
-  // };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value, type, checked } = e.target;
-  //   const newValue = type === 'checkbox' ? checked : value;
-
-  //   // Check if the input belongs to fields within the TabPanel
-  //   if (name.startsWith('taxMaster2DTO')) {
-  //     const field = name.split('.').pop(); // Get the field name
-  //     const updatedTaxMaster2DTO = { ...formData.taxMaster2DTO[0], [field]: newValue };
-  //     const updatedFormData = { ...formData, taxMaster2DTO: [updatedTaxMaster2DTO] };
-  //     setFormData(updatedFormData);
-
-  //     // Only clear the error if the field is not empty
-  //     if (value.trim() !== '') {
-  //       setFieldErrors({ ...fieldErrors, [name]: false });
-  //     }
-  //   } else {
-  //     // For fields outside the TabPanel
-  //     setFormData({ ...formData, [name]: newValue });
-
-  //     // Only clear the error if the field is not empty
-  //     if (value.trim() !== '') {
-  //       setFieldErrors({ ...fieldErrors, [name]: false });
-  //     }
-  //   }
-  // };
-
-  const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    const newValue = type === 'checkbox' ? checked : value;
-
-    if (name.startsWith('taxMaster2DTO')) {
-      const field = name.split('.').pop();
-      const updatedTaxMaster2DTO = { ...formData.taxMaster2DTO[0], [field]: newValue };
-      const updatedFormData = { ...formData, taxMaster2DTO: [updatedTaxMaster2DTO] };
-      setFormData(updatedFormData);
-
-      if (value.trim() !== '') {
-        setFieldErrors({ ...fieldErrors, [name]: false });
-      } else {
-        setFieldErrors({ ...fieldErrors, [name]: true });
-      }
+      setFormData({
+        ...formData,
+        taxMaster2DTO: updatedTaxMaster2DTO
+      });
     } else {
-      setFormData({ ...formData, [name]: newValue });
-
-      if (value.trim() !== '') {
-        setFieldErrors({ ...fieldErrors, [name]: false });
-      } else {
-        setFieldErrors({ ...fieldErrors, [name]: true });
-      }
+      setFormData({
+        ...formData,
+        [name]: value
+      });
     }
   };
 
@@ -118,10 +74,8 @@ export const TaxMaster = () => {
     setTabIndex(index);
   };
 
-  const theme = useTheme();
-  const anchorRef = useRef(null);
-
   const handleSave = () => {
+    // Check if any field is empty
     const errors = Object.keys(formData).reduce((acc, key) => {
       if (!formData[key]) {
         acc[key] = true;
@@ -129,76 +83,36 @@ export const TaxMaster = () => {
       return acc;
     }, {});
 
-    if (!formData.taxMaster2DTO[0].inputAccount.trim()) {
-      errors.inputAccount = true;
-    }
-    if (!formData.taxMaster2DTO[0].outputAccount.trim()) {
-      errors.outputAccount = true;
-    }
-    if (!formData.taxMaster2DTO[0].sgstRcmPayable.trim()) {
-      errors.sgstRcmPayable = true;
-    }
+    // Check nested fields in taxMaster2DTO
+    const dtoErrors = formData.taxMaster2DTO.reduce((acc, dto, index) => {
+      if (!dto.inputAccount || !dto.outputAccount || !dto.sgstRcmPayable) {
+        acc[index] = true;
+      }
+      return acc;
+    }, {});
 
-    setFieldErrors(errors);
-
-    if (Object.keys(errors).length > 0) {
-      return;
+    // If there are errors, set the corresponding fieldErrors state to true
+    if (Object.keys(errors).length > 0 || Object.keys(dtoErrors).length > 0) {
+      setFieldErrors({ ...errors, ...dtoErrors });
+      return; // Prevent API call if there are errors
     }
-    console.log('formData', formData);
 
     axios
-      .PUT(`${process.env.REACT_APP_API_URL}/api/master/updateCreateTaxMaster`, formData)
+      .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateTaxMaster`, formData)
       .then((response) => {
         console.log('Response:', response.data);
-        setFormData({
-          taxType: '',
-          taxPercentage: '',
-          taxDescription: '',
-          active: true,
-          taxMaster2DTO: {
-            inputAccount: '',
-            outputAccount: '',
-            sgstRcmPayable: '',
-            taxMaster2Id: 0
-          },
-          taxMasterId: 0,
-          orgId: 0
-        });
-        toast.success('Data Saved Successfully', {
+        toast.success('Tax Master Updated Successfully', {
           autoClose: 2000,
           theme: 'colored'
         });
       })
-
       .catch((error) => {
         console.error('Error:', error);
+        toast.error('Error updating Tax Master', {
+          autoClose: 2000,
+          theme: 'colored'
+        });
       });
-  };
-
-  const handleClear = () => {
-    setFormData({
-      taxType: '',
-      taxPercentage: '',
-      taxDescription: '',
-      active: true,
-      taxMaster2DTO: [
-        {
-          inputAccount: '',
-          outputAccount: '',
-          sgstRcmPayable: ''
-        }
-      ]
-    });
-
-    // Also clear fieldErrors state
-    setFieldErrors({
-      taxType: false,
-      taxPercentage: false,
-      taxDescription: false,
-      inputAccount: false,
-      outputAccount: false,
-      sgstRcmPayable: false
-    });
   };
 
   return (
@@ -222,7 +136,6 @@ export const TaxMaster = () => {
                     color: theme.palette.secondary.light
                   }
                 }}
-                ref={anchorRef}
                 aria-haspopup="true"
                 color="inherit"
               >
@@ -231,8 +144,7 @@ export const TaxMaster = () => {
             </ButtonBase>
           </Tooltip>
 
-          <Tooltip title="Clear" placement="top" onClick={handleClear}>
-            {' '}
+          <Tooltip title="Clear" placement="top">
             <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
               <Avatar
                 variant="rounded"
@@ -247,7 +159,6 @@ export const TaxMaster = () => {
                     color: theme.palette.secondary.light
                   }
                 }}
-                ref={anchorRef}
                 aria-haspopup="true"
                 color="inherit"
               >
@@ -257,7 +168,6 @@ export const TaxMaster = () => {
           </Tooltip>
 
           <Tooltip title="List View" placement="top">
-            {' '}
             <ButtonBase sx={{ borderRadius: '12px' }}>
               <Avatar
                 variant="rounded"
@@ -272,7 +182,6 @@ export const TaxMaster = () => {
                     color: theme.palette.secondary.light
                   }
                 }}
-                ref={anchorRef}
                 aria-haspopup="true"
                 color="inherit"
               >
@@ -280,8 +189,8 @@ export const TaxMaster = () => {
               </Avatar>
             </ButtonBase>
           </Tooltip>
+
           <Tooltip title="Save" placement="top">
-            {' '}
             <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleSave}>
               <Avatar
                 variant="rounded"
@@ -296,7 +205,6 @@ export const TaxMaster = () => {
                     color: theme.palette.secondary.light
                   }
                 }}
-                ref={anchorRef}
                 aria-haspopup="true"
                 color="inherit"
               >
@@ -305,6 +213,7 @@ export const TaxMaster = () => {
             </ButtonBase>
           </Tooltip>
         </div>
+
         <div className="row d-flex mt-3">
           <div className="col-md-3 mb-3">
             <FormControl fullWidth size="small">
@@ -314,16 +223,17 @@ export const TaxMaster = () => {
                 id="taxType"
                 name="taxType"
                 value={formData.taxType}
-                onChange={handleInputChange}
+                onChange={handleChange}
                 label="Tax Type"
-                error={fieldErrors.taxType}
+                error={fieldErrors.hasOwnProperty('taxType')}
               >
                 <MenuItem value="SGST">SGST</MenuItem>
                 <MenuItem value="Option1">Option1</MenuItem>
               </Select>
-              {fieldErrors.taxType && <FormHelperText error={true}>This field is required</FormHelperText>}
+              {fieldErrors.hasOwnProperty('taxType') && <FormHelperText error={true}>This field is required</FormHelperText>}
             </FormControl>
           </div>
+
           <div className="col-md-3 mb-3">
             <TextField
               id="taxPercentage"
@@ -332,12 +242,13 @@ export const TaxMaster = () => {
               size="small"
               name="taxPercentage"
               value={formData.taxPercentage}
-              onChange={handleInputChange}
+              onChange={handleChange}
               fullWidth
-              error={fieldErrors.taxPercentage}
-              helperText={fieldErrors.taxPercentage && 'This field is required'}
-            />{' '}
+              error={fieldErrors.hasOwnProperty('taxPercentage')}
+              helperText={fieldErrors.hasOwnProperty('taxPercentage') ? 'This field is required' : ''}
+            />
           </div>
+
           <div className="col-md-3 mb-3">
             <TextField
               id="taxDescription"
@@ -346,77 +257,76 @@ export const TaxMaster = () => {
               size="small"
               name="taxDescription"
               value={formData.taxDescription}
-              onChange={handleInputChange}
+              onChange={handleChange}
               fullWidth
-              error={fieldErrors.taxDescription}
-              helperText={fieldErrors.taxDescription && 'This field is required'}
+              error={fieldErrors.hasOwnProperty('taxDescription')}
+              helperText={fieldErrors.hasOwnProperty('taxDescription') ? 'This field is required' : ''}
             />
           </div>
+
           <div className="col-md-3 mb-3">
             <FormGroup>
-              <FormControlLabel
-                control={<Checkbox name="active" checked={formData.active} onChange={handleInputChange} />}
-                label="Active"
-              />
+              <FormControlLabel control={<Checkbox name="active" checked={formData.active} onChange={handleChange} />} label="Active" />
             </FormGroup>
           </div>
         </div>
+
         <Tabs selectedIndex={tabIndex} onSelect={handleTabSelect}>
           <TabList>
             <Tab>SGST</Tab>
           </TabList>
 
           <TabPanel>
-            <div>
-              <div className="row d-flex mt-3">
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled">
-                    <TextField
-                      id="inputAccount"
-                      label="Input Account"
-                      variant="outlined"
-                      size="small"
-                      name="taxMaster2DTO.inputAccount"
-                      value={formData.taxMaster2DTO[0].inputAccount}
-                      onChange={handleInputChange}
-                      fullWidth
-                      error={fieldErrors.inputAccount}
-                      helperText={fieldErrors.inputAccount && 'This field is required'}
-                    />
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled">
-                    <TextField
-                      id="outputAccount"
-                      label="Output Account"
-                      variant="outlined"
-                      size="small"
-                      name="taxMaster2DTO.outputAccount"
-                      value={formData.taxMaster2DTO[0].outputAccount}
-                      onChange={handleInputChange}
-                      fullWidth
-                      error={fieldErrors.outputAccount}
-                      helperText={fieldErrors.outputAccount && 'This field is required'}
-                    />
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled">
-                    <TextField
-                      id="sgstRcmPayable"
-                      label="SGST RCM Payable"
-                      variant="outlined"
-                      size="small"
-                      name="taxMaster2DTO.sgstRcmPayable"
-                      value={formData.taxMaster2DTO[0].sgstRcmPayable}
-                      onChange={handleInputChange}
-                      fullWidth
-                      error={fieldErrors.sgstRcmPayable}
-                      helperText={fieldErrors.sgstRcmPayable && 'This field is required'}
-                    />
-                  </FormControl>
-                </div>
+            <div className="row d-flex mt-3">
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="inputAccount"
+                    label="Input Account"
+                    variant="outlined"
+                    size="small"
+                    name="taxMaster2DTO.0.inputAccount"
+                    value={formData.taxMaster2DTO[0].inputAccount}
+                    onChange={handleChange}
+                    fullWidth
+                    error={fieldErrors.hasOwnProperty('taxMaster2DTO.0.inputAccount')}
+                    helperText={fieldErrors.hasOwnProperty('taxMaster2DTO.0.inputAccount') ? 'This field is required' : ''}
+                  />
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="outputAccount"
+                    label="Output Account"
+                    variant="outlined"
+                    size="small"
+                    name="taxMaster2DTO.0.outputAccount"
+                    value={formData.taxMaster2DTO[0].outputAccount}
+                    onChange={handleChange}
+                    fullWidth
+                    error={fieldErrors.hasOwnProperty('taxMaster2DTO.0.outputAccount')}
+                    helperText={fieldErrors.hasOwnProperty('taxMaster2DTO.0.outputAccount') ? 'This field is required' : ''}
+                  />
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="sgstRcmPayable"
+                    label="SGST RCM Payable"
+                    variant="outlined"
+                    size="small"
+                    name="taxMaster2DTO.0.sgstRcmPayable"
+                    value={formData.taxMaster2DTO[0].sgstRcmPayable}
+                    onChange={handleChange}
+                    fullWidth
+                    error={fieldErrors.hasOwnProperty('taxMaster2DTO.0.sgstRcmPayable')}
+                    helperText={fieldErrors.hasOwnProperty('taxMaster2DTO.0.sgstRcmPayable') ? 'This field is required' : ''}
+                  />
+                </FormControl>
               </div>
             </div>
           </TabPanel>
@@ -425,4 +335,5 @@ export const TaxMaster = () => {
     </>
   );
 };
+
 export default TaxMaster;
