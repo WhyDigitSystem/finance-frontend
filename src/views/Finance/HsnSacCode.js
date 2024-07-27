@@ -2,8 +2,8 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Checkbox, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Select, TextField } from '@mui/material';
-import axios from 'axios';
+import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField } from '@mui/material';
+import apiCall from 'apicalls';
 import { useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -13,24 +13,17 @@ import CommonTable from 'views/basicMaster/CommonTable';
 const HsnSacCode = () => {
   const [formData, setFormData] = useState({
     active: true,
-    chapter: '',
-    chapterCode: '',
-    code: '',
-    createdBy: '',
-    description: '',
-    excempted: true,
-    orgId: localStorage.getItem('orgId'),
-    rate: '',
-    subChapter: '',
-    subChapterCode: '',
-    type: '',
-    updatedBy: ''
+    serviceAccountCode: '',
+    sacDescription: '',
+    product: '',
+    orgId: localStorage.getItem('orgId')
   });
 
   const [fieldErrors, setFieldErrors] = useState({});
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [editMode, setEditMode] = useState(false);
 
   const handleInputChange = (event) => {
     const { name, value } = event.target;
@@ -50,7 +43,7 @@ const HsnSacCode = () => {
     const errors = {};
 
     // Check if required fields are filled
-    const requiredFields = ['code', 'description', 'chapter', 'chapterCode', 'subChapter', 'subChapterCode', 'rate', 'type'];
+    const requiredFields = ['serviceAccountCode', 'sacDescription', 'product'];
     requiredFields.forEach((field) => {
       if (!formData[field] || (typeof formData[field] === 'string' && formData[field].trim() === '')) {
         errors[field] = 'This field is required';
@@ -58,9 +51,9 @@ const HsnSacCode = () => {
     });
 
     // Validate rate to be a number
-    if (isNaN(formData.rate) || formData.rate <= 0) {
-      errors.rate = 'Rate must be a positive number';
-    }
+    // if (isNaN(formData.rate) || formData.rate <= 0) {
+    //   errors.rate = 'Rate must be a positive number';
+    // }
 
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
@@ -82,14 +75,13 @@ const HsnSacCode = () => {
       rate: parseInt(formData.rate, 10) // Ensure this converts to integer
     };
     try {
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateHsnSacCode`, formDataWithIntegerRate);
-      toast.success('HSN code Created Successfully', {
+      const response = await apiCall('put', '/master/updateCreateSacCode', formDataWithIntegerRate);
+      toast.success(editMode ? 'SAC code Updated Successfully ' : 'SAC code Created Successfully', {
         autoClose: 2000,
         theme: 'colored'
       });
       getAllHsnSacCode();
       handleClear();
-      console.log('API Response:', response.data);
     } catch (error) {
       console.error('API Error:', error);
       toast.error('Error occurred while saving HSN code', {
@@ -102,18 +94,10 @@ const HsnSacCode = () => {
   const handleClear = () => {
     setFormData({
       active: true,
-      chapter: '',
-      chapterCode: '',
-      code: '',
-      createdBy: '',
-      description: '',
-      excempted: true,
-      orgId: localStorage.getItem('orgId'),
-      rate: '',
-      subChapter: '',
-      subChapterCode: '',
-      type: '',
-      updatedBy: ''
+      serviceAccountCode: '',
+      sacDescription: '',
+      product: '',
+      orgId: localStorage.getItem('orgId')
     });
     setFieldErrors({});
   };
@@ -124,11 +108,10 @@ const HsnSacCode = () => {
 
   const getAllHsnSacCode = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllHsnSacCodeByOrgId?orgId=${orgId}`);
-      if (response.status === 200) {
-        setData(response.data.paramObjectsMap.hsnSacCodeVO);
+      const result = await apiCall('get', `/master/getAllSacCodeByOrgId?orgId=${orgId}`);
+      if (result) {
+        setData(result.paramObjectsMap.sacCodeVO);
       } else {
-        console.error('API Error:', response.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -136,37 +119,28 @@ const HsnSacCode = () => {
   };
 
   const columns = [
-    { accessorKey: 'type', header: 'Type', size: 140 },
-    { accessorKey: 'code', header: 'Code', size: 140 },
-    { accessorKey: 'description', header: 'Description', size: 140 },
-    { accessorKey: 'chapter', header: 'Chapter', size: 140 },
-    { accessorKey: 'chapterCode', header: 'Chapter Code', size: 140 },
-    { accessorKey: 'rate', header: 'Rate', size: 140 },
+    { accessorKey: 'serviceAccountCode', header: 'Service Account Code', size: 140 },
+    { accessorKey: 'sacDescription', header: 'SAC Description', size: 140 },
+    { accessorKey: 'product', header: 'product', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
   const getAllUserById = async (row) => {
     setShowForm(true);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllHsnSacCodeById?id=${row.original.id}`);
-      if (response.status === 200) {
-        const hsnSocCodeVO = response.data.paramObjectsMap.hsnSacCodeVO[0];
+      const result = await apiCall('get', `/master/getAllSacCodeById?id=${row.original.id}`);
+      if (result) {
+        const hsnSocCodeVO = result.paramObjectsMap.sacCodeVO[0];
+        setEditMode(true);
         setFormData({
           active: hsnSocCodeVO.active || false,
-          chapter: hsnSocCodeVO.chapter || '',
-          chapterCode: hsnSocCodeVO.chapterCode || '',
-          code: hsnSocCodeVO.code || '',
-          description: hsnSocCodeVO.description || '',
-          excempted: hsnSocCodeVO.excempted || '',
-          rate: hsnSocCodeVO.rate || '',
+          serviceAccountCode: hsnSocCodeVO.serviceAccountCode || '',
+          sacDescription: hsnSocCodeVO.sacDescription || '',
+          product: hsnSocCodeVO.product || '',
           id: hsnSocCodeVO.id || 0,
-          subChapter: hsnSocCodeVO.subChapter || '',
-          subChapterCode: hsnSocCodeVO.subChapterCode || '',
-          type: hsnSocCodeVO.type || '',
           orgId: orgId
         });
       } else {
-        console.error('API Error:', response.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -189,136 +163,48 @@ const HsnSacCode = () => {
         {showForm ? (
           <div className="row d-flex align-items-center">
             <div className="col-md-3 mb-3">
-              <FormControl fullWidth size="small">
-                <InputLabel id="type-label">Type</InputLabel>
-                <Select labelId="type-label" id="type" name="type" value={formData.type} onChange={handleInputChange} label="Type">
-                  <MenuItem value="Type-1">Type-1</MenuItem>
-                  <MenuItem value="Type-2">Type-2</MenuItem>
-                  <MenuItem value="Type-3">Type-3</MenuItem>
-                </Select>
-                {fieldErrors.type && <span style={{ color: 'red' }}>{fieldErrors.type}</span>}
+              <FormControl fullWidth variant="filled">
+                <TextField
+                  id="serviceAccountCode"
+                  name="serviceAccountCode"
+                  label="Service Account Code"
+                  size="small"
+                  required
+                  value={formData.serviceAccountCode}
+                  onChange={handleInputChange}
+                  inputProps={{ maxLength: 30 }}
+                />
+                {fieldErrors.serviceAccountCode && <span style={{ color: 'red' }}>{fieldErrors.serviceAccountCode}</span>}
               </FormControl>
             </div>
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
-                  id="code"
-                  name="code"
-                  label="Code"
+                  id="sacDescription"
+                  name="sacDescription"
+                  label="SAC Description"
                   size="small"
                   required
-                  value={formData.code}
+                  value={formData.sacDescription}
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 30 }}
                 />
-                {fieldErrors.code && <span style={{ color: 'red' }}>{fieldErrors.code}</span>}
+                {fieldErrors.sacDescription && <span style={{ color: 'red' }}>{fieldErrors.sacDescription}</span>}
               </FormControl>
             </div>
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
-                  id="description"
-                  name="description"
-                  label="Description"
+                  id="product"
+                  name="product"
+                  label="Product"
                   size="small"
                   required
-                  value={formData.description}
+                  value={formData.product}
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 30 }}
                 />
-                {fieldErrors.description && <span style={{ color: 'red' }}>{fieldErrors.description}</span>}
-              </FormControl>
-            </div>
-            <div className="col-md-3 mb-3">
-              <FormControl fullWidth variant="filled">
-                <TextField
-                  id="chapter"
-                  name="chapter"
-                  label="Chapter"
-                  size="small"
-                  required
-                  value={formData.chapter}
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 30 }}
-                />
-                {fieldErrors.chapter && <span style={{ color: 'red' }}>{fieldErrors.chapter}</span>}
-              </FormControl>
-            </div>
-            <div className="col-md-3 mb-3">
-              <FormControl fullWidth variant="filled">
-                <TextField
-                  id="chapterCode"
-                  name="chapterCode"
-                  label="Chapter Code"
-                  size="small"
-                  required
-                  value={formData.chapterCode}
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 30 }}
-                />
-                {fieldErrors.chapterCode && <span style={{ color: 'red' }}>{fieldErrors.chapterCode}</span>}
-              </FormControl>
-            </div>
-            <div className="col-md-3 mb-3">
-              <FormControl fullWidth variant="filled">
-                <TextField
-                  id="subChapterCode"
-                  name="subChapterCode"
-                  label="Sub Chapter Code"
-                  size="small"
-                  required
-                  value={formData.subChapterCode}
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 30 }}
-                />
-                {fieldErrors.subChapterCode && <span style={{ color: 'red' }}>{fieldErrors.subChapterCode}</span>}
-              </FormControl>
-            </div>
-            <div className="col-md-3 mb-3">
-              <FormControl fullWidth variant="filled">
-                <TextField
-                  id="subChapter"
-                  name="subChapter"
-                  label="Sub Chapter"
-                  size="small"
-                  required
-                  value={formData.subChapter}
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 30 }}
-                />
-                {fieldErrors.subChapter && <span style={{ color: 'red' }}>{fieldErrors.subChapter}</span>}
-              </FormControl>
-            </div>
-            <div className="col-md-3 mb-3">
-              <FormControl fullWidth variant="filled">
-                <TextField
-                  id="rate"
-                  name="rate"
-                  label="Rate"
-                  size="small"
-                  required
-                  value={formData.rate}
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 30 }}
-                />
-                {fieldErrors.rate && <span style={{ color: 'red' }}>{fieldErrors.rate}</span>}
-              </FormControl>
-            </div>
-            <div className="col-md-3 mb-3">
-              <FormControl fullWidth size="small">
-                <InputLabel id="excempted-label">Exempted (Yes/No)</InputLabel>
-                <Select
-                  labelId="excempted-label"
-                  id="excempted"
-                  name="excempted"
-                  value={formData.excempted ? 'true' : 'false'}
-                  onChange={handleInputChange}
-                  label="Exempted (Yes/No)"
-                >
-                  <MenuItem value="true">Yes</MenuItem>
-                  <MenuItem value="false">No</MenuItem>
-                </Select>
-                {fieldErrors.excempted && <span style={{ color: 'red' }}>{fieldErrors.excempted}</span>}
+                {fieldErrors.product && <span style={{ color: 'red' }}>{fieldErrors.product}</span>}
               </FormControl>
             </div>
             <div className="col-md-4 mb-2">

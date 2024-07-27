@@ -5,7 +5,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import apiCall from 'apicalls';
-import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -113,11 +112,10 @@ const ListOfValues = () => {
     console.log('first', row);
     setShowForm(true);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getListOfValuesById?id=${row.original.id}`);
-      console.log('API Response:', response);
+      const result = await apiCall('get', `/master/getListOfValuesById?id=${row.original.id}`);
 
-      if (response.status === 200) {
-        const listValueVO = response.data.paramObjectsMap.listOfValuesVO[0];
+      if (result) {
+        const listValueVO = result.paramObjectsMap.listOfValuesVO[0];
         // setEditMode(true);
 
         setFormValues({
@@ -130,8 +128,7 @@ const ListOfValues = () => {
 
         console.log('DataToEdit', listValueVO);
       } else {
-        // Handle error
-        console.error('API Error:', response.data);
+        // Handle erro
       }
     } catch (error) {
       console.error('Error fetching data:', error);

@@ -2,18 +2,20 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, InputLabel, MenuItem, Select, Tooltip } from '@mui/material';
+import { InputLabel, MenuItem, Select } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
+import apiCall from 'apicalls';
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/action-button';
 import { getCountryByOrgId } from 'utils/common-functions';
 import CommonTable from './CommonTable';
 
@@ -24,7 +26,7 @@ const State = () => {
   const [data, setData] = useState([]);
   const [showFields, setShowFields] = useState(true);
   const [countryVO, setCountryVO] = useState([]);
-
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     stateName: '',
     stateCode: '',
@@ -99,47 +101,53 @@ const State = () => {
 
   const getState = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getStateByOrgId?orgId=${orgId}`);
-      console.log('API Response:', response);
+      const result = await apiCall('get', `/basicMaster/getStateByOrgId?orgId=${orgId}`);
 
-      if (response.status === 200) {
-        setData(response.data.paramObjectsMap.stateVO);
+      if (result) {
+        setData(result.paramObjectsMap.stateVO);
       } else {
         // Handle error
-        console.error('API Error:', response.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const handleSubmit = () => {
-    // Check if any field is empty
+  const handleSave = async () => {
+    // Check for errors in the form fields
     const errors = Object.keys(formData).reduce((acc, key) => {
       if (!formData[key]) {
         acc[key] = true;
       }
       return acc;
     }, {});
-    // If there are errors, set the corresponding fieldErrors state to true
+
+    // If there are errors, set the fieldErrors state and prevent API call
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      return; // Prevent API call if there are errors
+      return;
     }
-    axios
-      .put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateState`, formData)
-      .then((response) => {
-        console.log('Response:', response.data);
-        handleClear();
-        toast.success('State Created Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getState();
-      })
-      .catch((error) => {
-        console.error('Error:', error);
+
+    // Proceed with the API call
+    try {
+      setLoading(true);
+      const response = await apiCall('put', 'basicMaster/updateCreateState', formData);
+      console.log('Response:', response.data);
+      handleClear();
+      toast.success('State Created Successfully', {
+        autoClose: 2000,
+        theme: 'colored'
       });
+      getState();
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error posting data', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const editState = async (updatedState) => {
@@ -174,103 +182,10 @@ const State = () => {
       </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <div className="d-flex flex-wrap justify-content-start mb-4">
-          <Tooltip title="Search" placement="top">
-            <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <SearchIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
-
-          <Tooltip title="Clear" placement="top">
-            {' '}
-            <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={handleClear}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <ClearIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
-
-          <Tooltip title="List View" placement="top">
-            {' '}
-            <ButtonBase sx={{ borderRadius: '12px' }} onClick={handleList}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <FormatListBulletedTwoToneIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
-          <Tooltip title="Save" placement="top">
-            {' '}
-            <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleSubmit}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  ...theme.typography.commonAvatar,
-                  ...theme.typography.mediumAvatar,
-                  transition: 'all .2s ease-in-out',
-                  background: theme.palette.secondary.light,
-                  color: theme.palette.secondary.dark,
-                  '&[aria-controls="menu-list-grow"],&:hover': {
-                    background: theme.palette.secondary.dark,
-                    color: theme.palette.secondary.light
-                  }
-                }}
-                ref={anchorRef}
-                aria-haspopup="true"
-                color="inherit"
-              >
-                <SaveIcon size="1.3rem" stroke={1.5} />
-              </Avatar>
-            </ButtonBase>
-          </Tooltip>
+          <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+          <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+          <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} isLoading={loading} margin="0 10px 0 10px" />
         </div>
         {showFields ? (
           <div className="row d-flex">

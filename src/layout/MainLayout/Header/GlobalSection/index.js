@@ -333,7 +333,7 @@ const GlobalSection = () => {
                           select
                           fullWidth
                           label="Company"
-                          disabled
+                          // disabled
                           value={companyValue}
                           onChange={handleCompanyChange}
                           SelectProps={{

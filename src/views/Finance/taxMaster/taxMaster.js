@@ -3,9 +3,6 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField } from '@mui/material';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
 import apiCall from 'apicalls';
 import { useEffect, useRef, useState } from 'react';
@@ -15,7 +12,7 @@ import ActionButton from 'utils/action-button';
 import CommonTable from 'views/basicMaster/CommonTable';
 import TableComponent from './TableComponent';
 
-const ChequeBookMaster = () => {
+const TaxMaster = () => {
   const theme = useTheme();
   const anchorRef = useRef(null);
   const [showForm, setShowForm] = useState(true);
@@ -23,23 +20,25 @@ const ChequeBookMaster = () => {
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
   const [formValues, setFormValues] = useState({
     active: true,
-    bank: '',
-    branch: '',
-    checkPrefix: '',
-    checkStartNo: '',
-    chequeBookDetailsDTO: [],
-    chequeId: '',
+    cancel: true,
+    cancelRemarks: '',
     createdBy: '',
-    noOfChequeLeaves: '',
+    finYear: '',
+    gst: '',
+    gstSlab: 0,
     orgId: orgId,
-    updatedBy: ''
+    serviceAccountCode: '',
+    taxMasterDetailsDTO: [],
+    updatedBy: '',
+    warehouse: ''
   });
+
   const [validationErrors, setValidationErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
-    getAllChequeBookMasterByOrgId();
+    getAllTaxMasterByOrgId();
   }, []);
 
   const handleInputChange = (e) => {
@@ -50,14 +49,7 @@ const ChequeBookMaster = () => {
     }));
 
     // Validate the input fields
-    if (
-      id === 'bank' ||
-      // id === 'branch' ||
-      id === 'checkPrefix' ||
-      id === 'checkStartNo' ||
-      id === 'chequeId' ||
-      id === 'noOfChequeLeaves'
-    ) {
+    if (id === 'finYear' || id === 'gst' || id === 'gstSlab' || id === 'serviceAccountCode' || id === 'warehouse') {
       if (!value.trim()) {
         setValidationErrors((prev) => ({
           ...prev,
@@ -73,51 +65,54 @@ const ChequeBookMaster = () => {
   };
 
   const columns = [
-    { accessorKey: 'branch', header: 'Branch/Account', size: 140 },
-    { accessorKey: 'chequeId', header: 'Cheque Book Id', size: 140 },
-    { accessorKey: 'bank', header: 'Bank', size: 140 },
-    { accessorKey: 'checkPrefix', header: 'Cheque Prefix', size: 140 },
-    { accessorKey: 'checkStartNo', header: 'cheque Start No', size: 140 },
-    { accessorKey: 'noOfChequeLeaves', header: 'No Of Cheque Leaves', size: 140 },
+    { accessorKey: 'finYear', header: 'FinYear', size: 140 },
+    { accessorKey: 'serviceAccountCode', header: 'Service Account Code', size: 140 },
+    { accessorKey: 'warehouse', header: 'warehouse', size: 140 },
+    { accessorKey: 'gst', header: 'GST', size: 140 },
+    { accessorKey: 'gstSlab', header: 'GSTSlab', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
   const handleClear = () => {
     setFormValues({
+      finYear: '',
+      serviceAccountCode: '',
       active: true,
-      bank: '',
-      branch: '',
-      checkPrefix: '',
-      checkStartNo: '',
-      chequeBookDetailsDTO: [],
-      chequeId: '',
-      createdBy: '',
-      noOfChequeLeaves: '',
-      orgId: orgId,
-      updatedBy: ''
+      warehouse: '',
+      gst: '',
+      gstSlab: ''
     });
     setValidationErrors({});
+  };
+
+  const formatDate = (date) => {
+    if (!date) return '';
+    const formattedDate = new Date(date);
+    const year = formattedDate.getFullYear();
+    const month = String(formattedDate.getMonth() + 1).padStart(2, '0'); // Months are zero based
+    const day = String(formattedDate.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   };
 
   const handleSave = async () => {
     const formDataWithEncryptedPassword = {
       ...formValues,
-      chequeBookDetailsDTO: formValues.chequeBookDetailsDTO.map((item) => ({
+      taxMasterDetailsDTO: formValues.taxMasterDetailsDTO.map((item) => ({
         ...item,
-        chequeNo: parseInt(item.chequeNo)
+        fromDate: formatDate(item.fromDate),
+        toDate: formatDate(item.fromDate)
       }))
     };
-
     if (validateForm()) {
       try {
         setIsLoading(true);
-        const response = await apiCall('put', '/master/updateCreateChequeBook', formDataWithEncryptedPassword);
-        console.log('Save Successful', response.data);
-        toast.success(editMode ? ' Cheque Book Master Updated Successfully' : ' Cheque Book Master created successfully', {
+        const response = await apiCall('put', '/master/updateCreateTaxMaster', formDataWithEncryptedPassword);
+
+        toast.success(editMode ? ' Tax Master Updated Successfully' : ' Tax Master created successfully', {
           autoClose: 2000,
           theme: 'colored'
         });
-        getAllChequeBookMasterByOrgId();
+        getAllTaxMasterByOrgId();
         handleClear();
         setIsLoading(false);
       } catch (error) {
@@ -128,10 +123,10 @@ const ChequeBookMaster = () => {
     }
   };
 
-  const getAllChequeBookMasterByOrgId = async () => {
+  const getAllTaxMasterByOrgId = async () => {
     try {
-      const result = await apiCall('get', `/master/getAllChequeBookByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.chequeBookVO || []);
+      const result = await apiCall('get', `/master/getAllTaxMasterByOrgId?orgId=${orgId}`);
+      setData(result.paramObjectsMap.taxMasterVO || []);
       showForm(true);
       console.log('Test', result);
     } catch (err) {
@@ -139,27 +134,25 @@ const ChequeBookMaster = () => {
     }
   };
 
-  const getChequeBookMasterById = async (row) => {
+  const getTaxMasterById = async (row) => {
     console.log('first', row);
     setShowForm(true);
     try {
-      const result = await apiCall('get', `/master/getAllChequeBookById?id=${row.original.id}`);
+      const result = await apiCall('get', `/master/getAllTaxMasterById?id=${row.original.id}`);
+
       if (result) {
-        const chequeBookVO = result.paramObjectsMap.chequeBookVO[0];
+        const taxMasterVO = result.paramObjectsMap.taxMasterVO[0];
         setEditMode(true);
 
         setFormValues({
-          active: chequeBookVO.active || false,
-          id: chequeBookVO.id || 0,
-          orgId: orgId,
-          bank: chequeBookVO.bank || '',
-          branch: chequeBookVO.branch || '',
-          checkPrefix: chequeBookVO.bank || '',
-          checkStartNo: chequeBookVO.bank || '',
-          chequeBookDetailsDTO: chequeBookVO.chequeBookDetailsVO,
-          chequeId: chequeBookVO.bank || '',
-          createdBy: chequeBookVO.bank || '',
-          noOfChequeLeaves: chequeBookVO.bank || '',
+          finYear: taxMasterVO.finYear || '',
+          gst: taxMasterVO.gst || '',
+          gstSlab: taxMasterVO.gstSlab || '',
+          serviceAccountCode: taxMasterVO.serviceAccountCode || '',
+          warehouse: taxMasterVO.warehouse || '',
+          active: taxMasterVO.active || false,
+          id: taxMasterVO.id || 0,
+          taxMasterDetailsDTO: taxMasterVO.taxMasterDetailsVO || [],
           orgId: orgId
         });
       } else {
@@ -176,23 +169,20 @@ const ChequeBookMaster = () => {
 
   const validateForm = () => {
     const errors = {};
-    if (!formValues.bank.trim()) {
-      errors.bank = 'This field is required';
+    if (!formValues.finYear.trim()) {
+      errors.finYear = 'This field is required';
     }
-    // if (!formValues.branch.trim()) {
-    //   errors.branch = 'This field is required';
+    if (!formValues.serviceAccountCode.trim()) {
+      errors.serviceAccountCode = 'This field is required';
+    }
+    if (!formValues.gst.trim()) {
+      errors.gst = 'This field is required';
+    }
+    // if (!formValues.gstSlab.trim()) {
+    //   errors.gstSlab = 'This field is required';
     // }
-    if (!formValues.checkPrefix.trim()) {
-      errors.checkPrefix = 'This field is required';
-    }
-    if (!formValues.checkStartNo.trim()) {
-      errors.checkStartNo = 'This field is required';
-    }
-    if (!formValues.chequeId.trim()) {
-      errors.chequeId = 'This field is required';
-    }
-    if (!formValues.noOfChequeLeaves.trim()) {
-      errors.noOfChequeLeaves = 'This field is required';
+    if (!formValues.warehouse.trim()) {
+      errors.warehouse = 'This field is required';
     }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
@@ -212,88 +202,77 @@ const ChequeBookMaster = () => {
           <>
             <div className="row d-flex">
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="branchAccount" required>
-                    Branch/Account
-                  </InputLabel>
-                  <Select labelId="branch" id="branch" value={formValues.branch} onChange={handleInputChange} label="Accounts Category">
-                    <MenuItem value="Others">Others</MenuItem>
-                  </Select>
-                  {validationErrors.branch && <span style={{ color: 'red' }}>This field is required</span>}
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="chequeId"
-                    label="Check Book Id"
+                    id="finYear"
+                    label="FinYear"
                     size="small"
                     required
-                    value={formValues.chequeId}
+                    value={formValues.finYear}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
-                    error={!!validationErrors.chequeId}
-                    helperText={validationErrors.chequeId}
+                    error={!!validationErrors.finYear}
+                    helperText={validationErrors.finYear}
                   />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="bank"
-                    label="Bank"
+                    id="serviceAccountCode"
+                    label="Service Account Code"
                     size="small"
                     required
-                    value={formValues.bank}
+                    value={formValues.serviceAccountCode}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
-                    error={!!validationErrors.bank}
-                    helperText={validationErrors.bank}
+                    error={!!validationErrors.serviceAccountCode}
+                    helperText={validationErrors.serviceAccountCode}
                   />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="checkPrefix"
-                    label="Check Prefix"
+                    id="warehouse"
+                    label="Warehouse"
                     size="small"
                     required
-                    value={formValues.checkPrefix}
+                    value={formValues.warehouse}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
-                    error={!!validationErrors.checkPrefix}
-                    helperText={validationErrors.checkPrefix}
+                    error={!!validationErrors.warehouse}
+                    helperText={validationErrors.warehouse}
                   />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="checkStartNo"
-                    label="Check Start No"
+                    id="gst"
+                    label="GST"
                     size="small"
                     required
-                    value={formValues.checkStartNo}
+                    value={formValues.gst}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
-                    error={!!validationErrors.checkStartNo}
-                    helperText={validationErrors.checkStartNo}
+                    error={!!validationErrors.gst}
+                    helperText={validationErrors.gst}
                   />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="noOfChequeLeaves"
-                    label="NO Of Check Leaves"
+                    id="gstSlab"
+                    label="GST slab"
                     size="small"
                     required
-                    value={formValues.noOfChequeLeaves}
+                    value={formValues.gstSlab}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
-                    error={!!validationErrors.noOfChequeLeaves}
-                    helperText={validationErrors.noOfChequeLeaves}
+                    error={!!validationErrors.gstSlab}
+                    helperText={validationErrors.gstSlab}
                   />
                 </FormControl>
               </div>
@@ -316,11 +295,11 @@ const ChequeBookMaster = () => {
             <TableComponent formValues={formValues} setFormValues={setFormValues} />
           </>
         ) : (
-          <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getChequeBookMasterById} />
+          <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getTaxMasterById} />
         )}
       </div>
     </div>
   );
 };
 
-export default ChequeBookMaster;
+export default TaxMaster;

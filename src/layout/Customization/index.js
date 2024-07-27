@@ -1,55 +1,35 @@
-import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-
-// material-ui
-import {
-  Drawer,
-  Fab,
-  FormControl,
-  FormControlLabel,
-  Grid,
-  IconButton,
-  Radio,
-  RadioGroup,
-  Slider,
-  Tooltip,
-  Typography
-} from '@mui/material';
+import { Button, Drawer, Fab, Grid, IconButton, TextField, Tooltip, Typography } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { IconSettings } from '@tabler/icons-react';
-
-// third-party
+import { IconHelp } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
 import PerfectScrollbar from 'react-perfect-scrollbar';
-
-// project imports
+import { useDispatch, useSelector } from 'react-redux';
+import 'react-toastify/dist/ReactToastify.css';
 import { SET_BORDER_RADIUS, SET_FONT_FAMILY } from 'store/actions';
 import { gridSpacing } from 'store/constant';
 import SubCard from 'ui-component/cards/SubCard';
 import AnimateButton from 'ui-component/extended/AnimateButton';
 
-// concat 'px'
 function valueText(value) {
   return `${value}px`;
 }
-
-// ==============================|| LIVE CUSTOMIZATION ||============================== //
 
 const Customization = () => {
   const theme = useTheme();
   const dispatch = useDispatch();
   const customization = useSelector((state) => state.customization);
 
-  // drawer on/off
   const [open, setOpen] = useState(false);
   const handleToggle = () => {
     setOpen(!open);
   };
 
-  // state - border radius
   const [borderRadius, setBorderRadius] = useState(customization.borderRadius);
   const handleBorderRadius = (event, newValue) => {
     setBorderRadius(newValue);
   };
+
+  const [fileName, setFileName] = useState('');
 
   useEffect(() => {
     dispatch({ type: SET_BORDER_RADIUS, borderRadius });
@@ -69,7 +49,6 @@ const Customization = () => {
       break;
   }
 
-  // state - font family
   const [fontFamily, setFontFamily] = useState(initialFont);
   useEffect(() => {
     let newFont;
@@ -88,9 +67,49 @@ const Customization = () => {
     dispatch({ type: SET_FONT_FAMILY, fontFamily: newFont });
   }, [dispatch, fontFamily]);
 
+  // Help form state variables
+  const [helpFormData, setHelpFormData] = useState({
+    name: '',
+    email: '',
+    message: '',
+    attachments: null
+  });
+
+  const handleHelpInputChange = (event) => {
+    const { name, value, files } = event.target;
+    const file = event.target.files[0];
+    if (file) {
+      setFileName(file.name);
+    } else {
+      setHelpFormData({
+        ...helpFormData,
+        [name]: value
+      });
+    }
+  };
+
+  const handleHelpSubmit = async (event) => {
+    // event.preventDefault();
+    // try {
+    //   const formData = new FormData();
+    //   Object.keys(helpFormData).forEach((key) => {
+    //     formData.append(key, helpFormData[key]);
+    //   });
+    //   await apiCall('post', 'path/to/help/api', formData);
+    //   toast.success('Help request sent successfully!', {
+    //     autoClose: 2000,
+    //     theme: 'colored'
+    //   });
+    // } catch (error) {
+    //   toast.error(`Error: ${error.message}`, {
+    //     autoClose: 2000,
+    //     theme: 'colored'
+    //   });
+    // }
+  };
+
   return (
     <>
-      {/* toggle button */}
       <Tooltip title="Live Customize">
         <Fab
           component="div"
@@ -104,7 +123,7 @@ const Customization = () => {
             borderBottomLeftRadius: '50%',
             borderTopRightRadius: '50%',
             borderBottomRightRadius: '4px',
-            top: '25%',
+            bottom: '2%',
             position: 'fixed',
             right: 10,
             zIndex: theme.zIndex.speedDial
@@ -112,7 +131,7 @@ const Customization = () => {
         >
           <AnimateButton type="rotate">
             <IconButton color="inherit" size="large" disableRipple>
-              <IconSettings />
+              <IconHelp stroke={2} />
             </IconButton>
           </AnimateButton>
         </Fab>
@@ -124,88 +143,72 @@ const Customization = () => {
         open={open}
         PaperProps={{
           sx: {
-            width: 280
+            width: 300
           }
         }}
       >
         <PerfectScrollbar component="div">
-          <Grid container spacing={gridSpacing} sx={{ p: 3 }}>
+          <Grid container spacing={gridSpacing} sx={{ p: 1 }}>
             <Grid item xs={12}>
-              {/* font family */}
-              <SubCard title="Font Family">
-                <FormControl>
-                  <RadioGroup
-                    aria-label="font-family"
-                    value={fontFamily}
-                    onChange={(e) => setFontFamily(e.target.value)}
-                    name="row-radio-buttons-group"
-                  >
-                    <FormControlLabel
-                      value="Roboto"
-                      control={<Radio />}
-                      label="Roboto"
-                      sx={{
-                        '& .MuiSvgIcon-root': { fontSize: 28 },
-                        '& .MuiFormControlLabel-label': { color: theme.palette.grey[900] }
-                      }}
-                    />
-                    <FormControlLabel
-                      value="Poppins"
-                      control={<Radio />}
-                      label="Poppins"
-                      sx={{
-                        '& .MuiSvgIcon-root': { fontSize: 28 },
-                        '& .MuiFormControlLabel-label': { color: theme.palette.grey[900] }
-                      }}
-                    />
-                    <FormControlLabel
-                      value="Inter"
-                      control={<Radio />}
-                      label="Inter"
-                      sx={{
-                        '& .MuiSvgIcon-root': { fontSize: 28 },
-                        '& .MuiFormControlLabel-label': { color: theme.palette.grey[900] }
-                      }}
-                    />
-                  </RadioGroup>
-                </FormControl>
-              </SubCard>
-            </Grid>
-            <Grid item xs={12}>
-              {/* border radius */}
-              <SubCard title="Border Radius">
-                <Grid item xs={12} container spacing={2} alignItems="center" sx={{ mt: 2.5 }}>
-                  <Grid item>
-                    <Typography variant="h6" color="secondary">
-                      4px
-                    </Typography>
+              <SubCard title="Leave us a message">
+                <form onSubmit={handleHelpSubmit}>
+                  <Grid container spacing={gridSpacing}>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Name"
+                        name="name"
+                        size="small"
+                        value={helpFormData.name}
+                        onChange={handleHelpInputChange}
+                        required
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="Email ID"
+                        name="email"
+                        size="small"
+                        value={helpFormData.email}
+                        onChange={handleHelpInputChange}
+                        type="email"
+                        required
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <TextField
+                        fullWidth
+                        label="How can I help you?"
+                        name="message"
+                        size="small"
+                        value={helpFormData.message}
+                        onChange={handleHelpInputChange}
+                        multiline
+                        rows={4}
+                        required
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Button variant="contained" component="label" fullWidth sx={{ textTransform: 'none' }}>
+                        Attach File
+                        <input type="file" hidden name="attachments" onChange={handleHelpInputChange} />
+                      </Button>
+                    </Grid>
+                    {fileName && (
+                      <Grid item xs={12}>
+                        <Typography variant="body2" sx={{ mt: 1 }}>
+                          File: {fileName}
+                        </Typography>
+                      </Grid>
+                    )}
+                    <Grid item xs={12}>
+                      <Button type="submit" variant="contained" color="primary" fullWidth sx={{ textTransform: 'none' }}>
+                        Send
+                      </Button>
+                    </Grid>
                   </Grid>
-                  <Grid item xs>
-                    <Slider
-                      size="small"
-                      value={borderRadius}
-                      onChange={handleBorderRadius}
-                      getAriaValueText={valueText}
-                      valueLabelDisplay="on"
-                      aria-labelledby="discrete-slider-small-steps"
-                      marks
-                      step={2}
-                      min={4}
-                      max={24}
-                      color="secondary"
-                      sx={{
-                        '& .MuiSlider-valueLabel': {
-                          color: 'secondary.light'
-                        }
-                      }}
-                    />
-                  </Grid>
-                  <Grid item>
-                    <Typography variant="h6" color="secondary">
-                      24px
-                    </Typography>
-                  </Grid>
-                </Grid>
+                </form>
               </SubCard>
             </Grid>
           </Grid>

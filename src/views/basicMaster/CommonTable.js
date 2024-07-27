@@ -106,9 +106,7 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
     if (column.accessorKey === 'active') {
       return {
         ...column,
-        muiTableHeadCellProps: {
-          sx: headerStyle
-        },
+
         Cell: ({ cell }) => (
           <Chip label={cell.getValue() === true ? 'Active' : 'Inactive'} sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX} />
         )

@@ -1,33 +1,61 @@
-import { Delete, Edit } from '@mui/icons-material';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField, Tooltip } from '@mui/material';
-import { MaterialReactTable } from 'material-react-table';
-import { useCallback, useMemo, useState } from 'react';
-import { data } from './makeData';
-
 import AddIcon from '@mui/icons-material/Add';
-import { Avatar, ButtonBase } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import {
+  Avatar,
+  Box,
+  Button,
+  ButtonBase,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControlLabel,
+  Stack,
+  Switch,
+  TextField,
+  Tooltip
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { useRef } from 'react';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
+import { MaterialReactTable } from 'material-react-table';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import ActionButton from 'utils/action-button';
 
-const TableComponent = () => {
+const TableComponent = ({ formValues, setFormValues }) => {
   const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [tableData, setTableData] = useState(() => data);
+  const [tableData, setTableData] = useState([]);
   const [validationErrors, setValidationErrors] = useState({});
 
   const theme = useTheme();
   const anchorRef = useRef(null);
 
+  useEffect(() => {
+    if (formValues.chequeBookDetailsDTO) {
+      setTableData(formValues.chequeBookDetailsDTO);
+    }
+  }, [formValues]);
+
   const handleCreateNewRow = (values) => {
-    tableData.push(values);
-    setTableData([...tableData]);
+    const updatedListOfValues = [...tableData, { ...values, sno: tableData.length + 1 }];
+    setTableData(updatedListOfValues);
+    setFormValues((prev) => ({
+      ...prev,
+      chequeBookDetailsDTO: updatedListOfValues
+    }));
   };
 
   const handleSaveRowEdits = async ({ exitEditingMode, row, values }) => {
     if (!Object.keys(validationErrors).length) {
-      tableData[row.index] = values;
-      //send/receive api updates here, then refetch or update local table data for re-render
-      setTableData([...tableData]);
-      exitEditingMode(); //required to exit editing mode and close modal
+      const updatedListOfValues = tableData.map((item, index) => (index === row.index ? { ...values, sno: row.index + 1 } : item));
+      setTableData(updatedListOfValues);
+      setFormValues((prev) => ({
+        ...prev,
+        chequeBookDetailsDTO: updatedListOfValues
+      }));
+      exitEditingMode();
     }
   };
 
@@ -37,86 +65,67 @@ const TableComponent = () => {
 
   const handleDeleteRow = useCallback(
     (row) => {
-      if (
-        // eslint-disable-next-line no-restricted-globals
-        !confirm(`Are you sure you want to delete ${row.getValue('firstName')}`)
-      ) {
-        return;
-      }
-      //send api delete request here, then refetch or update local table data for re-render
-      tableData.splice(row.index, 1);
-      setTableData([...tableData]);
+      const updatedListOfValues = tableData.filter((_, index) => index !== row.index).map((item, index) => ({ ...item, sno: index + 1 }));
+      setTableData(updatedListOfValues);
+      setFormValues((prev) => ({
+        ...prev,
+        chequeBookDetailsDTO: updatedListOfValues
+      }));
     },
-    [tableData]
+    [tableData, setFormValues]
   );
 
   const getCommonEditTextFieldProps = useCallback(
-    (cell) => {
-      return {
-        error: !!validationErrors[cell.id],
-        helperText: validationErrors[cell.id],
-        onBlur: (event) => {
-          const isValid =
-            cell.column.id === 'email'
-              ? validateEmail(event.target.value)
-              : cell.column.id === 'age'
-                ? validateAge(+event.target.value)
-                : validateRequired(event.target.value);
-          if (!isValid) {
-            //set validation error for cell if invalid
-            setValidationErrors({
-              ...validationErrors,
-              [cell.id]: `${cell.column.columnDef.header} is required`
-            });
-          } else {
-            //remove validation error for cell if valid
-            delete validationErrors[cell.id];
-            setValidationErrors({
-              ...validationErrors
-            });
-          }
+    (cell) => ({
+      error: !!validationErrors[cell.id],
+      helperText: validationErrors[cell.id],
+      onBlur: (event) => {
+        const isValid = cell.column.id === 'email' ? validateEmail(event.target.value) : validateRequired(event.target.value);
+        if (!isValid) {
+          setValidationErrors((prev) => ({
+            ...prev,
+            [cell.id]: `${cell.column.columnDef.header} is required`
+          }));
+        } else {
+          delete validationErrors[cell.id];
+          setValidationErrors((prev) => ({
+            ...prev
+          }));
         }
-      };
-    },
+      }
+    }),
     [validationErrors]
   );
 
   const columns = useMemo(
     () => [
       {
-        accessorKey: 'SNo',
+        accessorKey: 'sno',
         header: 'S No',
-        size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell)
-        })
+        size: 80,
+        enableEditing: false // Disable editing for S No as it is auto-generated
       },
+
       {
-        accessorKey: 'chequeno',
+        accessorKey: 'chequeNo',
         header: 'Cheque No',
         size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell)
-        })
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
       },
       {
         accessorKey: 'status',
         header: 'Status',
         size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell)
-        })
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
       },
       {
         accessorKey: 'cancelled',
         header: 'Cancelled',
         size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell)
-        })
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
       }
     ],
-    [getCommonEditTextFieldProps]
+    [getCommonEditTextFieldProps, tableData, setFormValues]
   );
 
   return (
@@ -139,48 +148,42 @@ const TableComponent = () => {
         onEditingRowCancel={handleCancelRowEdits}
         renderRowActions={({ row, table }) => (
           <Box sx={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-            <Tooltip arrow placement="left" title="Delete">
-              <IconButton color="error" onClick={() => handleDeleteRow(row)}>
-                <Delete />
-              </IconButton>
-            </Tooltip>
-            <Tooltip arrow placement="right" title="Edit">
-              <IconButton onClick={() => table.setEditingRow(row)}>
-                <Edit />
-              </IconButton>
-            </Tooltip>
+            <ActionButton title="delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row)} />
+            <ActionButton title="edit" icon={EditIcon} onClick={() => table.setEditingRow(row)} />
           </Box>
         )}
         renderTopToolbarCustomActions={() => (
           <Stack direction="row" spacing={2} className="ml-5 ">
             <Tooltip title="Add">
-              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={() => setCreateModalOpen(true)}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <AddIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
+              <div>
+                <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={() => setCreateModalOpen(true)}>
+                  <Avatar
+                    variant="rounded"
+                    sx={{
+                      ...theme.typography.commonAvatar,
+                      ...theme.typography.mediumAvatar,
+                      transition: 'all .2s ease-in-out',
+                      background: theme.palette.secondary.light,
+                      color: theme.palette.secondary.dark,
+                      '&[aria-controls="menu-list-grow"],&:hover': {
+                        background: theme.palette.secondary.dark,
+                        color: theme.palette.secondary.light
+                      }
+                    }}
+                    ref={anchorRef}
+                    aria-haspopup="true"
+                    color="inherit"
+                  >
+                    <AddIcon size="1.3rem" stroke={1.5} />
+                  </Avatar>
+                </ButtonBase>
+              </div>
             </Tooltip>
           </Stack>
         )}
       />
       <CreateNewAccountModal
-        columns={columns}
+        columns={columns.filter((col) => col.accessorKey !== 'sno')}
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
         onSubmit={handleCreateNewRow}
@@ -189,17 +192,23 @@ const TableComponent = () => {
   );
 };
 
-//example of creating a mui dialog modal for creating new rows
 export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
   const [values, setValues] = useState(() =>
     columns.reduce((acc, column) => {
-      acc[column.accessorKey ?? ''] = '';
+      acc[column.accessorKey ?? ''] = column.accessorKey === 'active' ? true : '';
       return acc;
     }, {})
   );
 
+  const handleDateChange = (date, accessorKey) => {
+    const formattedDate = date ? `${date.getFullYear()}/${date.getMonth() + 1}/${date.getDate()}` : '';
+    setValues((prevValues) => ({
+      ...prevValues,
+      [accessorKey]: formattedDate
+    }));
+  };
+
   const handleSubmit = () => {
-    //put your validation logic here
     onSubmit(values);
     onClose();
   };
@@ -209,21 +218,42 @@ export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
       <DialogTitle textAlign="center">Add</DialogTitle>
       <DialogContent>
         <form onSubmit={(e) => e.preventDefault()}>
-          <Stack
-            sx={{
-              width: '100%',
-              minWidth: { xs: '300px', sm: '360px', md: '400px' },
-              gap: '1.5rem'
-            }}
-          >
-            {columns.map((column) => (
-              <TextField
-                key={column.accessorKey}
-                label={column.header}
-                name={column.accessorKey}
-                onChange={(e) => setValues({ ...values, [e.target.name]: e.target.value })}
-              />
-            ))}
+          <Stack sx={{ width: '100%', minWidth: { xs: '300px', sm: '360px', md: '400px' }, gap: '1.5rem' }}>
+            {columns.map((column) =>
+              column.accessorKey === 'active' ? (
+                <FormControlLabel
+                  key={column.accessorKey}
+                  control={
+                    <Switch
+                      checked={values[column.accessorKey]}
+                      onChange={(e) => setValues({ ...values, [column.accessorKey]: e.target.checked })}
+                      color="primary"
+                    />
+                  }
+                  label={column.header}
+                />
+              ) : column.accessorKey === 'fromDate' || column.accessorKey === 'toDate' ? (
+                <LocalizationProvider dateAdapter={AdapterDateFns}>
+                  <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                    <MobileDatePicker
+                      label={column.header}
+                      value={values[column.accessorKey]}
+                      onChange={(date) => handleDateChange(date, column.accessorKey)}
+                      inputFormat="dd-MM-yyyy"
+                      sx={{ flexGrow: 1, maxWidth: 400 }}
+                      renderInput={(params) => <TextField {...params} />}
+                    />
+                  </Box>
+                </LocalizationProvider>
+              ) : (
+                <TextField
+                  key={column.accessorKey}
+                  label={column.header}
+                  name={column.accessorKey}
+                  onChange={(e) => setValues({ ...values, [e.target.name]: e.target.value })}
+                />
+              )
+            )}
           </Stack>
         </form>
       </DialogContent>

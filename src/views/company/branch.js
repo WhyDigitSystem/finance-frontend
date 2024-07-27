@@ -2,18 +2,20 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, InputLabel, MenuItem, Select, Tooltip } from '@mui/material';
+import { InputLabel, MenuItem, Select } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
+import apiCall from 'apicalls';
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/action-button';
 import { getCityByState, getCountryByOrgId, getStateByCountry } from 'utils/common-functions';
 import CommonTable from 'views/basicMaster/CommonTable';
 
@@ -23,6 +25,7 @@ const Branch = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     branch: '',
@@ -34,6 +37,7 @@ const Branch = () => {
     country: '',
     pinCode: '',
     lccurrency: '',
+    orgId: orgId,
     phone: '',
     pan: '',
     gstIn: '',
@@ -129,10 +133,12 @@ const Branch = () => {
   const getBranch = async () => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getBranchByOrgId?orgId=${orgId}`);
+
+      const result = await apiCall('get', `/basicMaster/getBranchByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
-      if (response.status === 200) {
-        setData(response.data.paramObjectsMap.branchVO);
+      if (result) {
+        setData(result.paramObjectsMap.branchVO);
       } else {
         // Handle error
         console.error('API Error:', response.data);
@@ -142,12 +148,11 @@ const Branch = () => {
     }
   };
 
-  const handleSave = () => {
-    // Check if any field is empty
+  const handleSave = async () => {
+    // Define the required fields
     const requiredFields = [
       'branch',
       'branchCode',
-      'addressLine1',
       'addressLine1',
       'city',
       'state',
@@ -158,33 +163,41 @@ const Branch = () => {
       'pan',
       'gstIn'
     ];
-    const errors = {};
 
-    requiredFields.forEach((field) => {
+    // Check for errors in the required fields
+    const errors = requiredFields.reduce((acc, field) => {
       if (!formData[field]) {
-        errors[field] = true;
+        acc[field] = true;
       }
-    });
-    // If there are errors, set the corresponding fieldErrors state to true
+      return acc;
+    }, {});
+
+    // If there are errors, set the fieldErrors state and prevent API call
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      return; // Prevent API call if there are errors
+      return;
     }
 
-    axios
-      .put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateBranch`, formData)
-      .then((response) => {
-        console.log('Response:', response.data);
-        handleClear();
-        toast.success('Branch Created Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getBranch();
-      })
-      .catch((error) => {
-        console.error('Error:', error);
+    // Proceed with the API call
+    try {
+      setLoading(true);
+      const response = await apiCall('put', '/basicMaster/updateCreateBranch', formData);
+      console.log('Response:', response.data);
+      handleClear();
+      toast.success('Branch Created Successfully', {
+        autoClose: 2000,
+        theme: 'colored'
       });
+      getBranch();
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error posting data', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleRowEdit = (rowId, newData) => {
@@ -293,103 +306,10 @@ const Branch = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <Tooltip title="Search" placement="top">
-              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <SearchIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-
-            <Tooltip title="Clear" placement="top">
-              {' '}
-              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={handleClear}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <ClearIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-
-            <Tooltip title="List View" placement="top">
-              {' '}
-              <ButtonBase sx={{ borderRadius: '12px' }} onClick={handleList}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <FormatListBulletedTwoToneIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-            <Tooltip title="Save" placement="top">
-              {' '}
-              <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleSave}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <SaveIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
+            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={loading} onClick={handleSave} margin="0 10px 0 10px" />
           </div>
 
           {showForm ? (

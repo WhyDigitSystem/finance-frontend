@@ -2,27 +2,16 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import {
-  Avatar,
-  Box,
-  ButtonBase,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  FormGroup,
-  InputLabel,
-  MenuItem,
-  Select,
-  Tooltip
-} from '@mui/material';
+import { Box, Checkbox, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Select } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import { useTheme } from '@mui/material/styles';
-import axios from 'axios';
+import apiCall from 'apicalls';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/action-button';
 import CommonTable from './CommonTable';
 
 const ITEM_HEIGHT = 48;
@@ -162,11 +151,10 @@ const Responsibilities = () => {
 
   const getRole = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getResponsibilitiesByOrgId?orgId=${orgId}`);
-      console.log('API Response:', response);
+      const result = await apiCall('get', `/basicMaster/getResponsibilitiesByOrgId?orgId=${orgId}`);
 
-      if (response.status === 200) {
-        const responsibilities = response.data.paramObjectsMap.responsibilitiesVO;
+      if (result) {
+        const responsibilities = result.paramObjectsMap.responsibilitiesVO;
         setData(responsibilities);
 
         const screenNames = responsibilities.flatMap((item) => item.screenVO.map((screen) => screen.screenName));
@@ -174,8 +162,6 @@ const Responsibilities = () => {
 
         console.log('Test', screenNames);
       } else {
-        // Handle error
-        console.error('API Error:', response.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -184,75 +170,73 @@ const Responsibilities = () => {
 
   const getRoleData = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
-      console.log('API Response:', response);
+      const result = await apiCall('get', `/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
 
-      if (response.status === 200) {
+      if (result) {
         // setData(response.data.paramObjectsMap.roleMasterVO);
-        setRoleDataSelect(response.data.paramObjectsMap.roleVO.map((list) => list.role));
-
-        console.log(
-          'Test',
-          response.data.paramObjectsMap.roleMasterVO.map((list) => list.role)
-        );
+        setRoleDataSelect(result.paramObjectsMap.roleVO.map((list) => list.role));
       } else {
         // Handle error
-        console.error('API Error:', response.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const handleSubmit = () => {
-    // Check if any field is empty
-    const errors = Object.keys(formData).reduce((acc, key) => {
-      if (!formData[key]) {
-        acc[key] = true;
+  const handleSubmit = async () => {
+    try {
+      // Check if any field is empty
+      const errors = Object.keys(formData).reduce((acc, key) => {
+        if (!formData[key]) {
+          acc[key] = true;
+        }
+        return acc;
+      }, {});
+
+      // If there are errors, set the corresponding fieldErrors state to true
+      if (Object.keys(errors).length > 0) {
+        setFieldErrors(errors);
+        return; // Prevent API call if there are errors
       }
-      return acc;
-    }, {});
 
-    // If there are errors, set the corresponding fieldErrors state to true
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return; // Prevent API call if there are errors
-    }
+      // Make the API call using the apiCall method
+      const response = await apiCall('put', 'basicMaster/updateCreateResponsibilities', formData);
 
-    axios
-      .put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateResponsibilities`, formData)
-      .then((response) => {
-        console.log('Response:', response.data);
-        handleClear();
-        toast.success('Role Created Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getRole();
-      })
-      .catch((error) => {
-        console.error('Error:', error);
+      // Handle successful response
+      console.log('Response:', response.data);
+      handleClear();
+      toast.success('Role Created Successfully', {
+        autoClose: 2000,
+        theme: 'colored'
       });
+      getRole();
+    } catch (error) {
+      // Error handling is already managed by the apiCall method
+      console.error('Error:', error);
+      toast.error(error.message, {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+    }
   };
 
   const editRole = async (updatedCountry) => {
     try {
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateRoleMaster`, updatedCountry);
-      if (response.status === 200) {
+      const result = await apiCall('get', `/basicMaster/updateCreateRoleMaster`, updatedCountry);
+
+      if (result) {
         toast.success('Role Updated Successfully', {
           autoClose: 2000,
           theme: 'colored'
         });
         getRole();
       } else {
-        console.error('API Error:', response.data);
         toast.error('Failed to Update Role', {
           autoClose: 2000,
           theme: 'colored'
         });
       }
     } catch (error) {
-      console.error('Error updating country:', error);
       toast.error('Error Updating Role', {
         autoClose: 2000,
         theme: 'colored'
@@ -269,103 +253,10 @@ const Responsibilities = () => {
         <div>
           <Box sx={{ width: '100%', typography: 'body1' }}>
             <div className="d-flex flex-wrap justify-content-start mb-4">
-              <Tooltip title="Search" placement="top">
-                <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
-                  <Avatar
-                    variant="rounded"
-                    sx={{
-                      ...theme.typography.commonAvatar,
-                      ...theme.typography.mediumAvatar,
-                      transition: 'all .2s ease-in-out',
-                      background: theme.palette.secondary.light,
-                      color: theme.palette.secondary.dark,
-                      '&[aria-controls="menu-list-grow"],&:hover': {
-                        background: theme.palette.secondary.dark,
-                        color: theme.palette.secondary.light
-                      }
-                    }}
-                    ref={anchorRef}
-                    aria-haspopup="true"
-                    color="inherit"
-                  >
-                    <SearchIcon size="1.3rem" stroke={1.5} />
-                  </Avatar>
-                </ButtonBase>
-              </Tooltip>
-
-              <Tooltip title="Clear" placement="top">
-                {' '}
-                <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={handleClear}>
-                  <Avatar
-                    variant="rounded"
-                    sx={{
-                      ...theme.typography.commonAvatar,
-                      ...theme.typography.mediumAvatar,
-                      transition: 'all .2s ease-in-out',
-                      background: theme.palette.secondary.light,
-                      color: theme.palette.secondary.dark,
-                      '&[aria-controls="menu-list-grow"],&:hover': {
-                        background: theme.palette.secondary.dark,
-                        color: theme.palette.secondary.light
-                      }
-                    }}
-                    ref={anchorRef}
-                    aria-haspopup="true"
-                    color="inherit"
-                  >
-                    <ClearIcon size="1.3rem" stroke={1.5} />
-                  </Avatar>
-                </ButtonBase>
-              </Tooltip>
-
-              <Tooltip title="List View" placement="top" onClick={handleList}>
-                {' '}
-                <ButtonBase sx={{ borderRadius: '12px' }}>
-                  <Avatar
-                    variant="rounded"
-                    sx={{
-                      ...theme.typography.commonAvatar,
-                      ...theme.typography.mediumAvatar,
-                      transition: 'all .2s ease-in-out',
-                      background: theme.palette.secondary.light,
-                      color: theme.palette.secondary.dark,
-                      '&[aria-controls="menu-list-grow"],&:hover': {
-                        background: theme.palette.secondary.dark,
-                        color: theme.palette.secondary.light
-                      }
-                    }}
-                    ref={anchorRef}
-                    aria-haspopup="true"
-                    color="inherit"
-                  >
-                    <FormatListBulletedTwoToneIcon size="1.3rem" stroke={1.5} />
-                  </Avatar>
-                </ButtonBase>
-              </Tooltip>
-              <Tooltip title="Save" placement="top">
-                {' '}
-                <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleSubmit}>
-                  <Avatar
-                    variant="rounded"
-                    sx={{
-                      ...theme.typography.commonAvatar,
-                      ...theme.typography.mediumAvatar,
-                      transition: 'all .2s ease-in-out',
-                      background: theme.palette.secondary.light,
-                      color: theme.palette.secondary.dark,
-                      '&[aria-controls="menu-list-grow"],&:hover': {
-                        background: theme.palette.secondary.dark,
-                        color: theme.palette.secondary.light
-                      }
-                    }}
-                    ref={anchorRef}
-                    aria-haspopup="true"
-                    color="inherit"
-                  >
-                    <SaveIcon size="1.3rem" stroke={1.5} />
-                  </Avatar>
-                </ButtonBase>
-              </Tooltip>
+              <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+              <ActionButton title="Save" icon={SaveIcon} onClick={handleSubmit} margin="0 10px 0 10px" />
             </div>
             {showFields ? (
               <div className="row d-flex">

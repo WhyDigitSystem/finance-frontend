@@ -4,7 +4,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { Avatar, ButtonBase, FormControl, InputLabel, MenuItem, Select, Tooltip } from '@mui/material';
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
@@ -15,12 +15,13 @@ import { useTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import axios from 'axios';
+import apiCall from 'apicalls';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/action-button';
 import CommonTable from 'views/basicMaster/CommonTable';
 import { encryptPassword } from 'views/utilities/passwordEnc';
 
@@ -29,6 +30,7 @@ const Employee = () => {
   const [data, setData] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [branchData, setBranchData] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [roleDataSelect, setRoleDataSelect] = useState([]);
@@ -104,19 +106,12 @@ const Employee = () => {
 
   const getBranch = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getBranchByOrgId?orgId=${orgId}`);
-      console.log('API Response:', response);
+      const result = await apiCall('get', `/basicMaster/getBranchByOrgId?orgId=${orgId}`);
 
-      if (response.status === 200) {
-        setBranchData(response.data.paramObjectsMap.branchVO.map((branch) => branch.branch));
-
-        console.log(
-          'Testt',
-          response.data.paramObjectsMap.branchVO.map((branch) => branch.branch)
-        );
+      if (result) {
+        setBranchData(result.paramObjectsMap.branchVO.map((branch) => branch.branch));
       } else {
         // Handle error
-        console.error('API Error:', response.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -125,15 +120,13 @@ const Employee = () => {
 
   const getRoleData = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
-      console.log('API Response:', response);
+      const result = await apiCall('get', `/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
 
-      if (response.status === 200) {
+      if (result) {
         // setData(response.data.paramObjectsMap.roleMasterVO);
-        setRoleDataSelect(response.data.paramObjectsMap.roleVO.map((list) => list.role));
+        setRoleDataSelect(result.paramObjectsMap.roleVO.map((list) => list.role));
       } else {
         // Handle error
-        console.error('API Error:', response.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -142,22 +135,20 @@ const Employee = () => {
 
   const getEmployee = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getEmployeeByOrgId?orgId=${orgId}`);
-      console.log('API Response:', response);
+      const result = await apiCall('get', `/basicMaster/getEmployeeByOrgId?orgId=${orgId}`);
 
-      if (response.status === 200) {
-        setData(response.data.paramObjectsMap.employeeVO);
+      if (result) {
+        setData(result.paramObjectsMap.employeeVO);
       } else {
         // Handle error
-        console.error('API Error:', response.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const handleSave = () => {
-    // Check if any field is empty
+  const handleSave = async () => {
+    // Define the required fields
     const requiredFields = [
       'branch',
       'employeeCode',
@@ -170,21 +161,21 @@ const Employee = () => {
       'password'
       // 'role'
     ];
-    const errors = {};
 
-    console.log('Testtt', formData);
-
-    requiredFields.forEach((field) => {
+    // Check for errors in the required fields
+    const errors = requiredFields.reduce((acc, field) => {
       if (!formData[field]) {
-        errors[field] = true;
+        acc[field] = true;
       }
-    });
+      return acc;
+    }, {});
 
-    // If there are errors, set the corresponding fieldErrors state to true
+    // If there are errors, set the fieldErrors state and prevent API call
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      return; // Prevent API call if there are errors
+      return;
     }
+
     const encryptedPassword = encryptPassword(formData.password);
 
     // Include the encrypted password in the form data
@@ -193,20 +184,26 @@ const Employee = () => {
       password: encryptedPassword
     };
 
-    axios
-      .put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateEmployee`, formDataWithEncryptedPassword)
-      .then((response) => {
-        console.log('Response:', response.data);
-        handleClear();
-        toast.success('Employee Created Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getEmployee();
-      })
-      .catch((error) => {
-        console.error('Error:', error);
+    // Proceed with the API call
+    try {
+      setLoading(true);
+      const response = await apiCall('put', 'basicMaster/updateCreateEmployee', formDataWithEncryptedPassword);
+      console.log('Response:', response.data);
+      handleClear();
+      toast.success('Employee Created Successfully', {
+        autoClose: 2000,
+        theme: 'colored'
       });
+      getEmployee();
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Error posting data', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleList = () => {
@@ -266,15 +263,14 @@ const Employee = () => {
 
   const editEmployee = async (updatedBranch) => {
     try {
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateEmployee`, updatedBranch);
-      if (response.status === 200) {
+      const result = await apiCall('put', `/basicMaster/updateCreateEmployee`, updatedBranch);
+      if (result) {
         toast.success('Employee Updated Successfully', {
           autoClose: 2000,
           theme: 'colored'
         });
         getEmployee();
       } else {
-        console.error('API Error:', response.data);
         toast.error('Failed to Update Employee', {
           autoClose: 2000,
           theme: 'colored'
@@ -301,103 +297,10 @@ const Employee = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <Tooltip title="Search" placement="top">
-              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <SearchIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-
-            <Tooltip title="Clear" placement="top">
-              {' '}
-              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={handleClear}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <ClearIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-
-            <Tooltip title="List View" placement="top">
-              {' '}
-              <ButtonBase sx={{ borderRadius: '12px' }} onClick={handleList}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <FormatListBulletedTwoToneIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-            <Tooltip title="Save" placement="top">
-              {' '}
-              <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }} onClick={handleSave}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <SaveIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
+            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} isLoading={loading} margin="0 10px 0 10px" />
           </div>
 
           {showForm ? (

@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
 import { MaterialReactTable } from 'material-react-table';
@@ -33,8 +34,8 @@ const TableComponent = ({ formValues, setFormValues }) => {
   const anchorRef = useRef(null);
 
   useEffect(() => {
-    if (formValues.tcsMaster2DTO) {
-      setTableData(formValues.tcsMaster2DTO);
+    if (formValues.taxMasterDetailsDTO) {
+      setTableData(formValues.taxMasterDetailsDTO);
     }
   }, [formValues]);
 
@@ -43,7 +44,7 @@ const TableComponent = ({ formValues, setFormValues }) => {
     setTableData(updatedListOfValues);
     setFormValues((prev) => ({
       ...prev,
-      tcsMaster2DTO: updatedListOfValues
+      taxMasterDetailsDTO: updatedListOfValues
     }));
   };
 
@@ -53,7 +54,7 @@ const TableComponent = ({ formValues, setFormValues }) => {
       setTableData(updatedListOfValues);
       setFormValues((prev) => ({
         ...prev,
-        tcsMaster2DTO: updatedListOfValues
+        taxMasterDetailsDTO: updatedListOfValues
       }));
       exitEditingMode();
     }
@@ -69,7 +70,7 @@ const TableComponent = ({ formValues, setFormValues }) => {
       setTableData(updatedListOfValues);
       setFormValues((prev) => ({
         ...prev,
-        tcsMaster2DTO: updatedListOfValues
+        taxMasterDetailsDTO: updatedListOfValues
       }));
     },
     [tableData, setFormValues]
@@ -106,9 +107,109 @@ const TableComponent = ({ formValues, setFormValues }) => {
         enableEditing: false // Disable editing for S No as it is auto-generated
       },
       {
-        accessorKey: 'listOfAccounts',
-        header: 'List Of Accounts',
+        accessorKey: 'gst',
+        header: 'GST',
         size: 140,
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
+      },
+      {
+        accessorKey: 'gstType',
+        header: 'GST Type',
+        size: 140,
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
+      },
+      {
+        accessorKey: 'percentage',
+        header: 'Percentage',
+        size: 140,
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
+      },
+      {
+        accessorKey: 'taxType',
+        header: 'Tax Type',
+        size: 140,
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
+      },
+      {
+        accessorKey: 'fromDate',
+        header: 'From Date',
+        size: 140,
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
+          ...getCommonEditTextFieldProps(cell),
+          renderEditCell: (params) => (
+            <DatePicker
+              value={params.value}
+              onChange={(newValue) => {
+                const updatedListOfValues = tableData.map((item, index) =>
+                  index === params.row.index ? { ...item, fromDate: newValue } : item
+                );
+                setTableData(updatedListOfValues);
+                setFormValues((prev) => ({
+                  ...prev,
+                  taxMasterDetailsDTO: updatedListOfValues
+                }));
+              }}
+              renderInput={(params) => <TextField {...params} size="small" />}
+            />
+          )
+        })
+      },
+      {
+        accessorKey: 'toDate',
+        header: 'To Date',
+        size: 140,
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
+          ...getCommonEditTextFieldProps(cell),
+          renderEditCell: (params) => (
+            <DatePicker
+              value={params.value}
+              onChange={(newValue) => {
+                const updatedListOfValues = tableData.map((item, index) =>
+                  index === params.row.index ? { ...item, toDate: newValue } : item
+                );
+                setTableData(updatedListOfValues);
+                setFormValues((prev) => ({
+                  ...prev,
+                  taxMasterDetailsDTO: updatedListOfValues
+                }));
+              }}
+              renderInput={(params) => <TextField {...params} size="small" />}
+            />
+          )
+        })
+      },
+      {
+        accessorKey: 'revenueLedger',
+        header: 'Revenue Ledger',
+        size: 140,
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
+      },
+      {
+        accessorKey: 'costLedger',
+        header: 'Cost Ledger',
+        size: 140,
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
+      },
+      {
+        accessorKey: 'active',
+        header: 'Active',
+        size: 140,
+        Cell: ({ cell }) => (
+          <Switch
+            checked={cell.getValue()}
+            onChange={(e) => {
+              const updatedListOfValues = tableData.map((item, index) =>
+                index === cell.row.index ? { ...item, active: e.target.checked } : item
+              );
+              setTableData(updatedListOfValues);
+              setFormValues((prev) => ({
+                ...prev,
+                taxMasterDetailsDTO: updatedListOfValues
+              }));
+            }}
+            color="primary"
+          />
+        ),
         muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
       }
     ],

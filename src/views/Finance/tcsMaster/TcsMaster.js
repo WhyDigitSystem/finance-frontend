@@ -5,7 +5,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import apiCall from 'apicalls';
-import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -131,11 +130,9 @@ const TcsMaster = () => {
     console.log('first', row);
     setShowForm(true);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllTcsMasterById?id=${row.original.id}`);
-      console.log('API Response:', response);
-
-      if (response.status === 200) {
-        const tcsMasterVO = response.data.paramObjectsMap.tcsMasterVO[0];
+      const result = await apiCall('get', `/master/getAllTcsMasterById?id=${row.original.id}`);
+      if (result) {
+        const tcsMasterVO = result.paramObjectsMap.tcsMasterVO[0];
         setEditMode(true);
 
         setFormValues({
@@ -148,7 +145,6 @@ const TcsMaster = () => {
         });
       } else {
         // Handle error
-        console.error('API Error:', response.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);

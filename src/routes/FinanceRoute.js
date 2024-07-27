@@ -8,7 +8,7 @@ const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')))
 // login option 3 routing
 // const Fin1 = Loadable(lazy(() => import('views/Finance')));
 const SetTaxRate = Loadable(lazy(() => import('views/Finance/SetTaxRate')));
-const TaxMaster = Loadable(lazy(() => import('views/Finance/TaxMaster')));
+const TaxMaster = Loadable(lazy(() => import('views/Finance/taxMaster/taxMaster')));
 const Taxes = Loadable(lazy(() => import('views/Finance/Taxes')));
 const TcsMaster = Loadable(lazy(() => import('views/Finance/tcsMaster/TcsMaster')));
 const TdsMaster = Loadable(lazy(() => import('views/Finance/tdsMaster/TdsMaster')));

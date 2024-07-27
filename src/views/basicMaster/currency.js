@@ -9,7 +9,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import axios from 'axios';
+import apiCall from 'apicalls';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
@@ -113,60 +113,66 @@ const Currency = () => {
 
   const getCurrency = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getCurrencyByOrgId?orgId=${orgId}`);
-      console.log('API Response:', response);
+      const result = await apiCall('get', `/basicMaster/getCurrencyByOrgId?orgId=${orgId}`);
+      console.log('API Response:', result);
 
-      if (response.status === 200) {
-        setData(response.data.paramObjectsMap.currencyVO);
+      if (result) {
+        setData(result.paramObjectsMap.currencyVO);
       } else {
         // Handle error
-        console.error('API Error:', response.data);
+        console.error('API Error:', result);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const handleSubmit = () => {
-    // Check if any field is empty
-    const errors = Object.keys(formData).reduce((acc, key) => {
-      if (!formData[key]) {
-        acc[key] = true;
+  const handleSubmit = async () => {
+    try {
+      // Check if any field is empty
+      const errors = Object.keys(formData).reduce((acc, key) => {
+        if (!formData[key]) {
+          acc[key] = true;
+        }
+        return acc;
+      }, {});
+
+      // If there are errors, set the corresponding fieldErrors state to true
+      if (Object.keys(errors).length > 0) {
+        setFieldErrors(errors);
+        return; // Prevent API call if there are errors
       }
-      return acc;
-    }, {});
-    // If there are errors, set the corresponding fieldErrors state to true
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return; // Prevent API call if there are errors
-    }
-    axios
-      .put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateCurrency`, formData)
-      .then((response) => {
-        console.log('Response:', response.data);
-        handleClear();
-        toast.success('Currency Created Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getCurrency();
-      })
-      .catch((error) => {
-        console.error('Error:', error);
+
+      // Make the API call using the apiCall method
+      const response = await apiCall('put', 'basicMaster/updateCreateCurrency', formData);
+
+      // Handle successful response
+      console.log('Response:', response.data);
+      handleClear();
+      toast.success('Currency Created Successfully', {
+        autoClose: 2000,
+        theme: 'colored'
       });
+      getCurrency();
+    } catch (error) {
+      // Error handling is already managed by the apiCall method
+      toast.error(error.message, {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+    }
   };
 
   const editCurrency = async (updatedCurrency) => {
     try {
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateCurrency`, updatedCurrency);
-      if (response.status === 200) {
+      const result = await apiCall('put', `/basicMaster/updateCreateCurrency`, updatedCurrency);
+      if (result) {
         toast.success('Currency Updated Successfully', {
           autoClose: 2000,
           theme: 'colored'
         });
         getCurrency();
       } else {
-        console.error('API Error:', response.data);
         toast.error('Failed to Update Currency', {
           autoClose: 2000,
           theme: 'colored'

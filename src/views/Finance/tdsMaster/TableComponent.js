@@ -34,8 +34,8 @@ const TableComponent = ({ formValues, setFormValues }) => {
   const anchorRef = useRef(null);
 
   useEffect(() => {
-    if (formValues.tcsMaster2DTO) {
-      setTableData(formValues.tcsMaster2DTO);
+    if (formValues.tdsMaster2DTO) {
+      setTableData(formValues.tdsMaster2DTO);
     }
   }, [formValues]);
 
@@ -44,7 +44,7 @@ const TableComponent = ({ formValues, setFormValues }) => {
     setTableData(updatedListOfValues);
     setFormValues((prev) => ({
       ...prev,
-      tcsMaster2DTO: updatedListOfValues
+      tdsMaster2DTO: updatedListOfValues
     }));
   };
 
@@ -54,7 +54,7 @@ const TableComponent = ({ formValues, setFormValues }) => {
       setTableData(updatedListOfValues);
       setFormValues((prev) => ({
         ...prev,
-        tcsMaster2DTO: updatedListOfValues
+        tdsMaster2DTO: updatedListOfValues
       }));
       exitEditingMode();
     }
@@ -70,7 +70,7 @@ const TableComponent = ({ formValues, setFormValues }) => {
       setTableData(updatedListOfValues);
       setFormValues((prev) => ({
         ...prev,
-        tcsMaster2DTO: updatedListOfValues
+        tdsMaster2DTO: updatedListOfValues
       }));
     },
     [tableData, setFormValues]
@@ -122,7 +122,7 @@ const TableComponent = ({ formValues, setFormValues }) => {
                 setTableData(updatedListOfValues);
                 setFormValues((prev) => ({
                   ...prev,
-                  tcsMaster2DTO: updatedListOfValues
+                  tdsMaster2DTO: updatedListOfValues
                 }));
               }}
               renderInput={(params) => <TextField {...params} size="small" />}
@@ -146,7 +146,7 @@ const TableComponent = ({ formValues, setFormValues }) => {
                 setTableData(updatedListOfValues);
                 setFormValues((prev) => ({
                   ...prev,
-                  tcsMaster2DTO: updatedListOfValues
+                  tdsMaster2DTO: updatedListOfValues
                 }));
               }}
               renderInput={(params) => <TextField {...params} size="small" />}
@@ -157,6 +157,18 @@ const TableComponent = ({ formValues, setFormValues }) => {
       {
         accessorKey: 'tcsPercentage',
         header: 'TCS %',
+        size: 140,
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
+      },
+      {
+        accessorKey: 'surPercentage',
+        header: 'Sur %',
+        size: 140,
+        muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
+      },
+      {
+        accessorKey: 'edcessPercentage',
+        header: 'EDS %',
         size: 140,
         muiTableBodyCellEditTextFieldProps: ({ cell }) => getCommonEditTextFieldProps(cell)
       },
@@ -174,7 +186,7 @@ const TableComponent = ({ formValues, setFormValues }) => {
               setTableData(updatedListOfValues);
               setFormValues((prev) => ({
                 ...prev,
-                tcsMaster2DTO: updatedListOfValues
+                tdsMaster2DTO: updatedListOfValues
               }));
             }}
             color="primary"

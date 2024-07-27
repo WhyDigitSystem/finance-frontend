@@ -9,7 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import axios from 'axios';
+import apiCall from 'apicalls';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
@@ -38,6 +38,7 @@ export const SetTaxRate = () => {
 
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const theme = useTheme();
   const anchorRef = useRef(null);
@@ -63,72 +64,67 @@ export const SetTaxRate = () => {
 
   const getSetTaxRate = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllSetTaxRateByOrgId?orgId=${formData.orgId}`);
-      console.log('API Response:', response);
+      const result = await apiCall('get', `/master/getAllSetTaxRateByOrgId?orgId=${formData.orgId}`);
+      setData(result.paramObjectsMap.setTaxRateVO || []);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
 
-      if (response.status === 200) {
-        setData(response.data.paramObjectsMap.setTaxRateVO);
-
-        console.log('Test', response.data.paramObjectsMap.setTaxRateVO);
-      } else {
-        // Handle error
-        console.error('API Error:', response.data);
+  const handleSave = async () => {
+    try {
+      const errors = Object.keys(formData).reduce((acc, key) => {
+        if (!formData[key]) {
+          acc[key] = true;
+        }
+        return acc;
+      }, {});
+      // If there are errors, set the corresponding fieldErrors state to true
+      if (Object.keys(errors).length > 0) {
+        setFieldErrors(errors);
+        return; // Prevent API call if there are errors
       }
+      setIsLoading(true);
+      const response = await apiCall('put', '/master/updateCreateSetTaxRate', formData);
+      console.log('Post response:', response);
+      getSetTaxRate();
+      toast.success('Set Tax Rate Created successfully', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+      handleClear();
+      // Handle successful response (e.g., clear form, update state, etc.)
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error posting data:', error);
+
+      toast.error('Error posting data', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleSave = () => {
-    // Check if any field is empty
-    const errors = Object.keys(formData).reduce((acc, key) => {
-      if (!formData[key]) {
-        acc[key] = true;
-      }
-      return acc;
-    }, {});
-    // If there are errors, set the corresponding fieldErrors state to true
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return; // Prevent API call if there are errors
+  const handleRowEdit = async (newData) => {
+    try {
+      setIsLoading(true);
+      const response = await apiCall('put', '/master/updateCreateSetTaxRate', newData);
+      toast.success('Set Tax Rate Updated Successfully', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+      getSetTaxRate();
+    } catch (error) {
+      console.error('Error updating country:', error);
+      toast.error('Error Updating Country', {
+        autoClose: 2000,
+        theme: 'colored'
+      });
+    } finally {
+      setIsLoading(false);
     }
-    axios
-      .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateSetTaxRate`, formData)
-      .then((response) => {
-        console.log('Response:', response.data);
-        handleClear();
-        toast.success('Set Tax Rate Created Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
-  };
-
-  const handleRowEdit = (newData) => {
-    console.log('Edit', newData);
-    // Send PUT request to update the row
-    axios
-      .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateSetTaxRate`, newData)
-      .then((response) => {
-        console.log('Edit successful:', response.data);
-        // Handle any further actions after successful edit
-        toast.success('Set Tax Rate Updated Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getSetTaxRate();
-      })
-      .catch((error) => {
-        console.error('Error editing row:', error);
-        // Handle error scenarios
-        toast.error('Failed to Update Set Tax Rate', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-      });
   };
 
   const handleList = () => {

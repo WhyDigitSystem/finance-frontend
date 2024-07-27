@@ -2,6 +2,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
+import { FormHelperText } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -32,8 +33,8 @@ const ExRates = () => {
     docDate: null,
     docMonth: null,
     currency: '',
-    cellRate: '',
-    byRate: '',
+    sellRate: '',
+    buyRate: '',
     avgRate: '',
     orgId: orgId
   });
@@ -80,7 +81,7 @@ const ExRates = () => {
   };
 
   const handleSave = async () => {
-    const visibleFields = ['docDate', 'docMonth', 'currency', 'cellRate', 'byRate', 'avgRate'];
+    const visibleFields = ['docDate', 'docMonth', 'currency', 'sellRate', 'buyRate', 'avgRate'];
     const errors = {};
 
     visibleFields.forEach((key) => {
@@ -140,8 +141,8 @@ const ExRates = () => {
     { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
     { accessorKey: 'docMonth', header: 'Doc Month', size: 140 },
     { accessorKey: 'currency', header: 'Currency', size: 100 },
-    { accessorKey: 'cellRate', header: 'Cell Rate', size: 100 },
-    { accessorKey: 'byRate', header: 'By Rate', size: 100 },
+    { accessorKey: 'sellRate', header: 'sell Rate', size: 100 },
+    { accessorKey: 'buyRate', header: 'Buy Rate', size: 100 },
     { accessorKey: 'avgRate', header: 'Avg Rate', size: 100 }
   ];
 
@@ -150,8 +151,8 @@ const ExRates = () => {
       docDate: null,
       docMonth: null,
       currency: '',
-      cellRate: '',
-      byRate: '',
+      sellRate: '',
+      buyRate: '',
       avgRate: ''
     });
     setFieldErrors({});
@@ -178,8 +179,8 @@ const ExRates = () => {
           docDate: exRate.docDate ? dayjs(exRate.docDate) : null,
           docMonth: exRate.docMonth ? dayjs(exRate.docMonth) : null,
           currency: exRate.currency || '',
-          cellRate: exRate.cellRate || '',
-          byRate: exRate.byRate || '',
+          sellRate: exRate.sellRate || '',
+          buyRate: exRate.buyRate || '',
           id: exRate.id || 0,
           avgRate: exRate.avgRate || '',
           orgId: orgId
@@ -243,15 +244,14 @@ const ExRates = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="currency-label" required>
-                    Currency
-                  </InputLabel>
+                  <InputLabel id="demo-simple-select-label">Currency</InputLabel>
                   <Select
-                    labelId="currency-label"
-                    id="currency-label"
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    label="Currency"
+                    onChange={handleInputChange}
                     name="currency"
                     value={formData.currency}
-                    onChange={handleInputChange}
                   >
                     {currencies.map((currency) => (
                       <MenuItem key={currency} value={currency}>
@@ -259,35 +259,35 @@ const ExRates = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.currency && <span style={{ color: 'red' }}>This field is required</span>}
+                  {fieldErrors.currency && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    label="Cell Rate"
+                    label="Sell Rate"
                     size="small"
                     required
-                    name="cellRate"
-                    value={formData.cellRate}
+                    name="sellRate"
+                    value={formData.sellRate}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
                   />
-                  {fieldErrors.cellRate && <span style={{ color: 'red' }}>This field is required</span>}
+                  {fieldErrors.sellRate && <span style={{ color: 'red' }}>This field is required</span>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    label="By Rate"
+                    label="Buy Rate"
                     size="small"
                     required
-                    name="byRate"
-                    value={formData.byRate}
+                    name="buyRate"
+                    value={formData.buyRate}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
                   />
-                  {fieldErrors.byRate && <span style={{ color: 'red' }}>This field is required</span>}
+                  {fieldErrors.buyRate && <span style={{ color: 'red' }}>This field is required</span>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">

@@ -31,7 +31,7 @@ const finance = {
           id: 'listOfValues',
           title: 'List Of Values',
           type: 'item',
-          url: 'Finance/listOfValues/listOfValues'
+          url: '/finance/listOfValues/listOfValues'
         },
         {
           id: 'chargeTypeRequest',
@@ -45,12 +45,12 @@ const finance = {
           type: 'item',
           url: '/finance/taxMaster'
         },
-        {
-          id: 'taxes',
-          title: 'Taxes',
-          type: 'item',
-          url: '/finance/taxes'
-        },
+        // {
+        //   id: 'taxes',
+        //   title: 'Taxes',
+        //   type: 'item',
+        //   url: '/finance/taxMaster/taxMaster'
+        // },
         {
           id: 'tcsMaster',
           title: 'TCS Master',
@@ -69,12 +69,12 @@ const finance = {
           type: 'item',
           url: '/finance/HsnSacCode'
         },
-        {
-          id: 'hsnSacCodesListing',
-          title: 'HSN SAC Codes Listing',
-          type: 'item',
-          url: '/finance/HsnSacCodesListing'
-        },
+        // {
+        //   id: 'hsnSacCodesListing',
+        //   title: 'HSN SAC Codes Listing',
+        //   type: 'item',
+        //   url: '/finance/HsnSacCodesListing'
+        // },
         {
           id: 'group',
           title: 'Group',

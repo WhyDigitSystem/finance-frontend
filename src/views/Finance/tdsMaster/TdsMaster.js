@@ -5,7 +5,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import apiCall from 'apicalls';
-import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -25,7 +24,7 @@ const TdsMaster = () => {
     orgId: orgId,
     section: '',
     sectionName: '',
-    tcsMaster2DTO: [],
+    tdsMaster2DTO: [],
     updatedBy: ''
   });
   const [validationErrors, setValidationErrors] = useState({});
@@ -33,7 +32,7 @@ const TdsMaster = () => {
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
-    getAllTcsMasterByOrgId();
+    getAllTdsMasterByOrgId();
   }, []);
 
   const handleInputChange = (e) => {
@@ -72,8 +71,8 @@ const TdsMaster = () => {
       active: true,
       createdBy: 'currentUser',
       updatedBy: 'currentUser',
-      orgId: 1,
-      tcsMaster2DTO: []
+      orgId: '',
+      tdsMaster2DTO: []
     });
     setValidationErrors({});
   };
@@ -90,7 +89,7 @@ const TdsMaster = () => {
   const handleSave = async () => {
     const formDataWithEncryptedPassword = {
       ...formValues,
-      tcsMaster2DTO: formValues.tcsMaster2DTO.map((item) => ({
+      tdsMaster2DTO: formValues.tdsMaster2DTO.map((item) => ({
         ...item,
         fromDate: formatDate(item.fromDate),
         toDate: formatDate(item.toDate)
@@ -99,13 +98,13 @@ const TdsMaster = () => {
     if (validateForm()) {
       try {
         setIsLoading(true);
-        const response = await apiCall('put', '/master/updateCreateTcsMaster', formDataWithEncryptedPassword);
+        const response = await apiCall('put', '/master/updateCreateTdsMaster', formDataWithEncryptedPassword);
         console.log('Save Successful', response.data);
-        toast.success(editMode ? ' Tcs Master Updated Successfully' : ' Tcs Master created successfully', {
+        toast.success(editMode ? ' Tds Master Updated Successfully' : ' Tds Master created successfully', {
           autoClose: 2000,
           theme: 'colored'
         });
-        getAllTcsMasterByOrgId();
+        getAllTdsMasterByOrgId();
         handleClear();
         setIsLoading(false);
       } catch (error) {
@@ -116,10 +115,10 @@ const TdsMaster = () => {
     }
   };
 
-  const getAllTcsMasterByOrgId = async () => {
+  const getAllTdsMasterByOrgId = async () => {
     try {
-      const result = await apiCall('get', `/master/getAllTcsMasterByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.tcsMasterVO || []);
+      const result = await apiCall('get', `/master/getAllTdsMasterByOrgId?orgId=${orgId}`);
+      setData(result.paramObjectsMap.tdsMasterVO || []);
       showForm(true);
       console.log('Test', result);
     } catch (err) {
@@ -127,28 +126,25 @@ const TdsMaster = () => {
     }
   };
 
-  const getTcsMasterById = async (row) => {
+  const getTdsMasterById = async (row) => {
     console.log('first', row);
     setShowForm(true);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllTcsMasterById?id=${row.original.id}`);
-      console.log('API Response:', response);
-
-      if (response.status === 200) {
-        const tcsMasterVO = response.data.paramObjectsMap.tcsMasterVO[0];
+      const result = await apiCall('get', `/master/getAllTdsMasterById?id=${row.original.id}`);
+      if (result) {
+        const tdsMasterVO = result.paramObjectsMap.tdsMasterVO[0];
         setEditMode(true);
 
         setFormValues({
-          section: tcsMasterVO.section || '',
-          sectionName: tcsMasterVO.sectionName || '',
-          active: tcsMasterVO.active || false,
-          id: tcsMasterVO.id || 0,
-          tcsMaster2DTO: tcsMasterVO.tcsMaster2VO || [],
+          section: tdsMasterVO.section || '',
+          sectionName: tdsMasterVO.sectionName || '',
+          active: tdsMasterVO.active || false,
+          id: tdsMasterVO.id || 0,
+          tdsMaster2DTO: tdsMasterVO.tdsMaster2VO || [],
           orgId: orgId
         });
       } else {
         // Handle error
-        console.error('API Error:', response.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -233,7 +229,7 @@ const TdsMaster = () => {
             <TableComponent formValues={formValues} setFormValues={setFormValues} />
           </>
         ) : (
-          <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getTcsMasterById} />
+          <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getTdsMasterById} />
         )}
       </div>
     </div>
