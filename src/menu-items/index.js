@@ -5,6 +5,7 @@ import basicMaster from './basicMaster';
 import companySetup from './companySetup';
 import dashboard from './dashboard';
 import finance from './finance';
+import RolesAndResponsibilities from './RolesAndResponsibilities';
 import transaction from './transaction';
 
 // Function to get menu items based on localStorage value
@@ -24,7 +25,7 @@ const getMenuItems = () => {
       };
     case 'ROLE_ADMIN':
       return {
-        items: [dashboard, companySetup, admin, basicMaster, finance, transaction, ar, ap]
+        items: [dashboard, companySetup, admin, RolesAndResponsibilities, basicMaster, finance, transaction, ar, ap]
       };
     // Add more cases as needed
     default:

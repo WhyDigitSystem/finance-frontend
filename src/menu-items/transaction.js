@@ -15,7 +15,7 @@ const transaction = {
   type: 'group',
   children: [
     {
-      id: 'authentication',
+      id: 'transaction',
       title: 'Transaction',
       type: 'collapse',
       icon: icons.IconKey,

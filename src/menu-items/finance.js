@@ -10,13 +10,13 @@ const icons = {
 
 const finance = {
   id: 'finance',
-  title: 'Master',
+  title: 'Finance Master',
   //   caption: 'Pages Caption',
   type: 'group',
   children: [
     {
-      id: 'authentication',
-      title: 'Master',
+      id: 'finance',
+      title: 'Finance Master',
       type: 'collapse',
       icon: icons.IconKey,
 
@@ -110,6 +110,12 @@ const finance = {
           title: 'Cheque Book Master',
           type: 'item',
           url: '/finance/chequeBookMaster/ChequeBookMaster'
+        },
+        {
+          id: 'finYear',
+          title: 'FinYear',
+          type: 'item',
+          url: '/basicMaster/finYear'
         }
       ]
     }

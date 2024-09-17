@@ -27,7 +27,18 @@ const NavCollapse = ({ menu, level }) => {
   const handleClick = () => {
     setOpen(!open);
     setSelected(!selected ? menu.id : null);
-    if (menu?.id !== 'authentication') {
+    if (
+      // menu?.id !== 'authentication' &&
+      // menu?.id !== 'icons' &&
+      // menu?.id !== 'rolesAndResponsibilities' &&
+      menu?.id !== 'companySetup' &&
+      menu?.id !== 'rolesAndResponsibilities' &&
+      menu?.id !== 'basicMasters' &&
+      menu?.id !== 'finance' &&
+      menu?.id !== 'transaction' &&
+      menu?.id !== 'ar' &&
+      menu?.id !== 'ap'
+    ) {
       navigate(menu.children[0]?.url);
     }
   };

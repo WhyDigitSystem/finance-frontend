@@ -33,14 +33,17 @@ const Reconcile = Loadable(lazy(() => import('views/Finance/Reconcile/Reconcile'
 const ReceiptRegister = Loadable(lazy(() => import('views/Finance/receiptRegister/ReceiptRegister')));
 const PaymentRegister = Loadable(lazy(() => import('views/Finance/paymentRegister/PaymentRegister')));
 const ReconciliationSummary = Loadable(lazy(() => import('views/Finance/ReconciliationSummaryReport/ReconciliationSummary')));
-const CompanySetup = Loadable(lazy(() => import('views/company/index')));
+const CompanyMain = Loadable(lazy(() => import('views/company/companyMain')));
+const CreateCompany = Loadable(lazy(() => import('views/company/CreateCompany')));
 const Country = Loadable(lazy(() => import('views/basicMaster/country')));
 const State = Loadable(lazy(() => import('views/basicMaster/state')));
 const City = Loadable(lazy(() => import('views/basicMaster/city')));
 const Currency = Loadable(lazy(() => import('views/basicMaster/currency')));
+const Region = Loadable(lazy(() => import('views/basicMaster/RegionMaster')));
 const FinYear = Loadable(lazy(() => import('views/basicMaster/finYear')));
-const Branch = Loadable(lazy(() => import('views/company/branch')));
+// const Branch = Loadable(lazy(() => import('views/company/branch')));
 const Roles = Loadable(lazy(() => import('views/basicMaster/roles')));
+const ScreenNames = Loadable(lazy(() => import('views/basicMaster/ScreenNames')));
 const Employee = Loadable(lazy(() => import('views/basicMaster/employee')));
 const ChargeTypeRequest = Loadable(lazy(() => import('views/Finance/ChargeTypeRequest')));
 
@@ -65,12 +68,12 @@ const FinanceRoute = {
       element: <DashboardDefault />
     },
     {
-      path: '/company',
-      element: <CompanySetup />
+      path: '/company/companyMain',
+      element: <CompanyMain />
     },
     {
-      path: '/company/branch',
-      element: <Branch />
+      path: '/company/CreateCompany',
+      element: <CreateCompany />
     },
     {
       path: '/Finance/SetTaxRate',
@@ -193,12 +196,20 @@ const FinanceRoute = {
       element: <Currency />
     },
     {
+      path: '/basicMaster/RegionMaster',
+      element: <Region />
+    },
+    {
       path: '/basicMaster/finYear',
       element: <FinYear />
     },
     {
       path: '/basicMaster/roles',
       element: <Roles />
+    },
+    {
+      path: '/basicMaster/ScreenNames',
+      element: <ScreenNames />
     },
     {
       path: '/basicMaster/employee',

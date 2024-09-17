@@ -21,12 +21,12 @@ const basicMaster = {
       icon: icons.IconKey,
 
       children: [
-        {
-          id: 'branch',
-          title: 'Branch',
-          type: 'item',
-          url: '/company/branch'
-        },
+        // {
+        //   id: 'branch',
+        //   title: 'Branch',
+        //   type: 'item',
+        //   url: '/company/branch'
+        // },
         {
           id: 'employee',
           title: 'Employee',
@@ -58,17 +58,23 @@ const basicMaster = {
           url: '/basicMaster/currency'
         },
         {
-          id: 'finYear',
-          title: 'FinYear',
+          id: 'region',
+          title: 'Region',
           type: 'item',
-          url: '/basicMaster/finYear'
-        },
-        {
-          id: 'roles',
-          title: 'Roles',
-          type: 'item',
-          url: '/basicMaster/roles'
+          url: '/basicMaster/RegionMaster'
         }
+        // {
+        //   id: 'finYear',
+        //   title: 'FinYear',
+        //   type: 'item',
+        //   url: '/basicMaster/finYear'
+        // },
+        // {
+        //   id: 'roles',
+        //   title: 'Roles',
+        //   type: 'item',
+        //   url: '/basicMaster/roles'
+        // }
       ]
     }
   ]
