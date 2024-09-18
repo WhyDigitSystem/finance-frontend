@@ -129,11 +129,11 @@ const Customization = () => {
             zIndex: theme.zIndex.speedDial
           }}
         >
-          <AnimateButton type="rotate">
-            <IconButton color="inherit" size="large" disableRipple>
-              <IconHelp stroke={2} />
-            </IconButton>
-          </AnimateButton>
+          {/* <AnimateButton type="rotate"> */}
+          <IconButton color="inherit" size="large" disableRipple>
+            <IconHelp stroke={2} />
+          </IconButton>
+          {/* </AnimateButton> */}
         </Fab>
       </Tooltip>
 

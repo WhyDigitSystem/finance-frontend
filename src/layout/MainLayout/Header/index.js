@@ -63,7 +63,20 @@ const Header = ({ handleLeftDrawerToggle }) => {
       {/* <Box sx={{ flexGrow: 1 }} /> */}
 
       {/* notification & profile */}
-
+      <div className="mt-2" style={{ display: 'flex', alignItems: 'center' }}>
+        <span
+          style={{
+            height: '11px',
+            width: '11px',
+            backgroundColor: '#25BE2B',
+            borderRadius: '50%',
+            display: 'inline-block',
+            marginRight: '8px',
+            marginBottom: '8px'
+          }}
+        ></span>
+        <h6>FINANCE</h6>
+      </div>
       <NotificationSection />
       <GlobalSection />
       <ProfileSection />

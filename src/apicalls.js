@@ -1,13 +1,14 @@
 // src/apiCalls.js
 import api from './api';
 
-const apiCall = async (method, url, data = {}, params = {}) => {
+const apiCall = async (method, url, data = {}, params = {}, headers = {}) => {
   try {
     const response = await api({
       method: method,
       url: url,
       data: data,
-      params: params
+      params: params,
+      headers: headers
     });
     return response.data;
   } catch (error) {
