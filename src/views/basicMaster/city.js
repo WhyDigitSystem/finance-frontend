@@ -9,12 +9,12 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import { getCountryByOrgId, getStateByCountry } from 'utils/common-functions';
 import CommonTable from './CommonTable';
 
@@ -118,7 +118,7 @@ const City = () => {
 
   const getCity = async () => {
     try {
-      const result = await apiCall('get', `/basicMaster/getCityByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/basicMaster/getCityByOrgId?orgId=${orgId}`);
       console.log('API Response:', result);
 
       if (result) {
@@ -147,8 +147,8 @@ const City = () => {
         return; // Prevent API call if there are errors
       }
 
-      // Make the API call using the apiCall method
-      const response = await apiCall('put', 'basicMaster/updateCreateCity', formData);
+      // Make the API call using the apiCalls method
+      const response = await apiCalls('put', 'basicMaster/updateCreateCity', formData);
 
       // Handle successful response
       console.log('Response:', response.data);
@@ -169,7 +169,7 @@ const City = () => {
 
   const editCity = async (updatedCity) => {
     try {
-      const response = await apiCall('put', `/basicMaster/updateCreateCity`, updatedCity);
+      const response = await apiCalls('put', `/basicMaster/updateCreateCity`, updatedCity);
 
       if (response) {
         toast.success('City Updated Successfully', {

@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { refreshToken } from './utils/authUtils';
 
 const api = axios.create({
-  baseURL: 'http://139.5.189.195:8051/api',
+  baseURL: `${process.env.REACT_APP_API_URL}/api`,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json'

@@ -11,7 +11,7 @@ import Checkbox from '@mui/material/Checkbox';
 // import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 // import apiCalls from 'apicall';
-// import CommonListViewTable from '../basic-masters/CommonListViewTable';
+// import CommonTable from '../basic-masters/CommonTable';
 
 export const ScreenNames = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -188,7 +188,7 @@ export const ScreenNames = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            {/* <CommonListViewTable
+            {/* <CommonTable
               data={listViewData}
               columns={listViewColumns}
               blockEdit={true} // DISAPLE THE MODAL IF TRUE

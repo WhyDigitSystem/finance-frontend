@@ -7,11 +7,11 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import { useEffect, useRef, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import CommonTable from 'views/basicMaster/CommonTable';
 import TableComponent from './TableComponent';
 
@@ -111,7 +111,7 @@ const ChequeBookMaster = () => {
     if (validateForm()) {
       try {
         setIsLoading(true);
-        const response = await apiCall('put', '/master/updateCreateChequeBook', formDataWithEncryptedPassword);
+        const response = await apiCalls('put', '/master/updateCreateChequeBook', formDataWithEncryptedPassword);
         console.log('Save Successful', response.data);
         toast.success(editMode ? ' Cheque Book Master Updated Successfully' : ' Cheque Book Master created successfully', {
           autoClose: 2000,
@@ -130,7 +130,7 @@ const ChequeBookMaster = () => {
 
   const getAllChequeBookMasterByOrgId = async () => {
     try {
-      const result = await apiCall('get', `/master/getAllChequeBookByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/master/getAllChequeBookByOrgId?orgId=${orgId}`);
       setData(result.paramObjectsMap.chequeBookVO || []);
       showForm(true);
       console.log('Test', result);
@@ -143,7 +143,7 @@ const ChequeBookMaster = () => {
     console.log('first', row);
     setShowForm(true);
     try {
-      const result = await apiCall('get', `/master/getAllChequeBookById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/master/getAllChequeBookById?id=${row.original.id}`);
       if (result) {
         const chequeBookVO = result.paramObjectsMap.chequeBookVO[0];
         setEditMode(true);

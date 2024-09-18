@@ -18,7 +18,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import TableComponent from './TableComponent';
 
 const PaymentVoucher = () => {

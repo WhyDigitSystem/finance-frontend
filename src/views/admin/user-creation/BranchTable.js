@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import { MaterialReactTable } from 'material-react-table';
 import { useCallback, useMemo, useState } from 'react';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 
 const BranchTable = ({ data, onUpdateBranch, branchData }) => {
   const [createModalOpen, setCreateModalOpen] = useState(false);

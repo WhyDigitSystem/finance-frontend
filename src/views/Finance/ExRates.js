@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import { getCurrencyByOrgId } from 'utils/common-functions';
 import CommonTable from 'views/basicMaster/CommonTable';
 

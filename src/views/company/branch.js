@@ -9,13 +9,13 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import { getCityByState, getCountryByOrgId, getStateByCountry } from 'utils/common-functions';
 import CommonTable from 'views/basicMaster/CommonTable';
 
@@ -134,7 +134,7 @@ const Branch = () => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/basicMaster/getBranchByOrgId?orgId=${orgId}`);
 
-      const result = await apiCall('get', `/basicMaster/getBranchByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/basicMaster/getBranchByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (result) {
@@ -181,7 +181,7 @@ const Branch = () => {
     // Proceed with the API call
     try {
       setLoading(true);
-      const response = await apiCall('put', '/basicMaster/updateCreateBranch', formData);
+      const response = await apiCalls('put', '/basicMaster/updateCreateBranch', formData);
       console.log('Response:', response.data);
       handleClear();
       toast.success('Branch Created Successfully', {

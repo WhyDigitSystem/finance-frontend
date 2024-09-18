@@ -1,8 +1,8 @@
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 
 export const getCountryByOrgId = async (orgId) => {
   try {
-    const response = await apiCall('get', `/basicMaster/getCountryByOrgId?orgId=${orgId}`);
+    const response = await apiCalls('get', `/basicMaster/getCountryByOrgId?orgId=${orgId}`);
 
     console.log('API Response:', response);
 
@@ -21,7 +21,7 @@ export const getCountryByOrgId = async (orgId) => {
 
 export const getStateByCountry = async (orgId, country) => {
   try {
-    const response = await apiCall('get', `/basicMaster/getAllStateByCountry?orgId=${orgId}&country=${country}`);
+    const response = await apiCalls('get', `/basicMaster/getAllStateByCountry?orgId=${orgId}&country=${country}`);
 
     if (response) {
       const countryNameVO = response.paramObjectsMap.stateVO.map((state) => state.stateName);
@@ -39,7 +39,7 @@ export const getStateByCountry = async (orgId, country) => {
 
 export const getCityByState = async (orgId, state) => {
   try {
-    const response = await apiCall('get', `/basicMaster/getAllCityByState?orgid=${orgId}&state=${state}`);
+    const response = await apiCalls('get', `/basicMaster/getAllCityByState?orgid=${orgId}&state=${state}`);
 
     if (response) {
       const cityNameVO = response.paramObjectsMap.cityVO.map((city) => city.cityName);
@@ -56,7 +56,7 @@ export const getCityByState = async (orgId, state) => {
 
 export const getCurrencyByOrgId = async (orgId) => {
   try {
-    const response = await apiCall('get', `/basicMaster/getCurrencyByOrgId?orgId=${orgId}`);
+    const response = await apiCalls('get', `/basicMaster/getCurrencyByOrgId?orgId=${orgId}`);
 
     if (response) {
       const currencyVO = response.paramObjectsMap.currencyVO.map((currency) => currency.currency);

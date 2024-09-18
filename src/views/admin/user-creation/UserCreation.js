@@ -23,7 +23,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
 import { encryptPassword } from 'views/utilities/passwordEnc';

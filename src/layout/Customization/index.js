@@ -95,7 +95,7 @@ const Customization = () => {
     //   Object.keys(helpFormData).forEach((key) => {
     //     formData.append(key, helpFormData[key]);
     //   });
-    //   await apiCall('post', 'path/to/help/api', formData);
+    //   await apiCalls('post', 'path/to/help/api', formData);
     //   toast.success('Help request sent successfully!', {
     //     autoClose: 2000,
     //     theme: 'colored'

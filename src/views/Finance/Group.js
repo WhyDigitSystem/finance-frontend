@@ -12,13 +12,13 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import { getCurrencyByOrgId } from 'utils/common-functions';
 import CommonTable from 'views/basicMaster/CommonTable';
 
@@ -87,7 +87,7 @@ const Group = () => {
 
   const getGroup = async () => {
     try {
-      const result = await apiCall('get', `/master/getAllGroupLedgerByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/master/getAllGroupLedgerByOrgId?orgId=${orgId}`);
       if (result) {
         setData(result.paramObjectsMap.groupLedgerVO);
       } else {
@@ -196,7 +196,7 @@ const Group = () => {
     console.log('Editing Exchange Rate:', row);
     setShowForm(true);
     try {
-      const result = await apiCall('get', `/master/getAllGroupLedgerById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/master/getAllGroupLedgerById?id=${row.original.id}`);
 
       if (result) {
         const exRate = result.paramObjectsMap.groupLedgerVO[0];

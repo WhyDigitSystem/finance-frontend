@@ -1,7 +1,7 @@
 // src/apiCalls.js
 import api from './api';
 
-const apiCall = async (method, url, data = {}, params = {}, headers = {}) => {
+const apiCalls = async (method, url, data = {}, params = {}, headers = {}) => {
   try {
     const response = await api({
       method: method,
@@ -16,4 +16,4 @@ const apiCall = async (method, url, data = {}, params = {}, headers = {}) => {
   }
 };
 
-export default apiCall;
+export default apiCalls;

@@ -13,7 +13,7 @@ import 'react-toastify/dist/ReactToastify.css';
 // import ActionButton from 'utils/ActionButton';
 // import { showToast } from 'utils/toast-component';
 // import { encryptPassword } from 'views/utilities/encryptPassword';
-// import CommonListViewTable from '../basic-masters/CommonListViewTable';
+// import CommonTable from '../basic-masters/CommonTable';
 
 const CreateCompany = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -259,7 +259,7 @@ const CreateCompany = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            {/* <CommonListViewTable
+            {/* <CommonTable
               data={listViewData}
               columns={listViewColumns}
               // editCallback={editEmployee}

@@ -6,12 +6,12 @@ import { Box, Checkbox, FormControl, FormControlLabel, FormGroup, InputLabel, Me
 import Chip from '@mui/material/Chip';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import { useTheme } from '@mui/material/styles';
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import CommonTable from './CommonTable';
 
 const ITEM_HEIGHT = 48;
@@ -151,7 +151,7 @@ const Responsibilities = () => {
 
   const getRole = async () => {
     try {
-      const result = await apiCall('get', `/basicMaster/getResponsibilitiesByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/basicMaster/getResponsibilitiesByOrgId?orgId=${orgId}`);
 
       if (result) {
         const responsibilities = result.paramObjectsMap.responsibilitiesVO;
@@ -170,7 +170,7 @@ const Responsibilities = () => {
 
   const getRoleData = async () => {
     try {
-      const result = await apiCall('get', `/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
 
       if (result) {
         // setData(response.data.paramObjectsMap.roleMasterVO);
@@ -199,8 +199,8 @@ const Responsibilities = () => {
         return; // Prevent API call if there are errors
       }
 
-      // Make the API call using the apiCall method
-      const response = await apiCall('put', 'basicMaster/updateCreateResponsibilities', formData);
+      // Make the API call using the apiCalls method
+      const response = await apiCalls('put', 'basicMaster/updateCreateResponsibilities', formData);
 
       // Handle successful response
       console.log('Response:', response.data);
@@ -211,7 +211,7 @@ const Responsibilities = () => {
       });
       getRole();
     } catch (error) {
-      // Error handling is already managed by the apiCall method
+      // Error handling is already managed by the apiCalls method
       console.error('Error:', error);
       toast.error(error.message, {
         autoClose: 2000,
@@ -222,7 +222,7 @@ const Responsibilities = () => {
 
   const editRole = async (updatedCountry) => {
     try {
-      const result = await apiCall('get', `/basicMaster/updateCreateRoleMaster`, updatedCountry);
+      const result = await apiCalls('get', `/basicMaster/updateCreateRoleMaster`, updatedCountry);
 
       if (result) {
         toast.success('Role Updated Successfully', {

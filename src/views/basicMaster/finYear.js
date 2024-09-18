@@ -11,13 +11,13 @@ import { useTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import CommonTable from './CommonTable';
 
 const FinYear = () => {
@@ -108,7 +108,7 @@ const FinYear = () => {
 
   const getFinYear = async () => {
     try {
-      const result = await apiCall('get', `/basicMaster/getFinancialYearByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/basicMaster/getFinancialYearByOrgId?orgId=${orgId}`);
 
       if (result) {
         setData(result.paramObjectsMap.financialYearVO || []);
@@ -147,8 +147,8 @@ const FinYear = () => {
         return; // Prevent API call if there are errors
       }
 
-      // Make the API call using the apiCall method
-      const response = await apiCall('post', 'basicMaster/financial', formData);
+      // Make the API call using the apiCalls method
+      const response = await apiCalls('post', 'basicMaster/financial', formData);
 
       // Handle successful response
       console.log('Response:', response.data);
@@ -159,7 +159,7 @@ const FinYear = () => {
       });
       getFinYear();
     } catch (error) {
-      // Error handling is already managed by the apiCall method
+      // Error handling is already managed by the apiCalls method
       toast.error(error.message, {
         autoClose: 2000,
         theme: 'colored'

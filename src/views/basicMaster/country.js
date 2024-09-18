@@ -8,12 +8,12 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import CommonTable from './CommonTable';
 
 const Country = () => {
@@ -106,7 +106,7 @@ const Country = () => {
 
   const fetchData = async () => {
     try {
-      const result = await apiCall('get', `/basicMaster/getCountryByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/basicMaster/getCountryByOrgId?orgId=${orgId}`);
       setData(result.paramObjectsMap.countryVO || []);
       console.log('Test', result);
     } catch (err) {
@@ -128,7 +128,7 @@ const Country = () => {
         return; // Prevent API call if there are errors
       }
       setLoading(true);
-      const response = await apiCall('put', 'basicMaster/updateCreateCountry', formData);
+      const response = await apiCalls('put', 'basicMaster/updateCreateCountry', formData);
       console.log('Post response:', response);
       toast.success('Country Created successfully', {
         autoClose: 2000,
@@ -151,7 +151,7 @@ const Country = () => {
   const editCountry = async (updatedCountry) => {
     try {
       setLoading(true);
-      const response = await apiCall('put', '/api/basicMaster/updateCreateCountry', updatedCountry);
+      const response = await apiCalls('put', '/api/basicMaster/updateCreateCountry', updatedCountry);
       toast.success('Country Updated Successfully', {
         autoClose: 2000,
         theme: 'colored'

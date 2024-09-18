@@ -4,11 +4,11 @@ import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import { useEffect, useRef, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import CommonTable from 'views/basicMaster/CommonTable';
 import TableComponent from './TableComponent';
 
@@ -80,7 +80,7 @@ const ListOfValues = () => {
     if (validateForm()) {
       try {
         setIsLoading(true);
-        const response = await apiCall('put', '/master/updateCreateListOfValues', formValues);
+        const response = await apiCalls('put', '/master/updateCreateListOfValues', formValues);
         console.log('Save Successful', response.data);
         toast.success('List of value created successfully', {
           autoClose: 2000,
@@ -99,7 +99,7 @@ const ListOfValues = () => {
 
   const getAllListOfValuesByOrgId = async () => {
     try {
-      const result = await apiCall('get', `/master/getListOfValuesByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/master/getListOfValuesByOrgId?orgId=${orgId}`);
       setData(result.paramObjectsMap.listOfValuesVO || []);
       showForm(true);
       console.log('Test', result);
@@ -112,7 +112,7 @@ const ListOfValues = () => {
     console.log('first', row);
     setShowForm(true);
     try {
-      const result = await apiCall('get', `/master/getListOfValuesById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/master/getListOfValuesById?id=${row.original.id}`);
 
       if (result) {
         const listValueVO = result.paramObjectsMap.listOfValuesVO[0];

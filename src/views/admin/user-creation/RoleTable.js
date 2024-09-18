@@ -24,7 +24,7 @@ import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
 import { MaterialReactTable } from 'material-react-table';
 import { useCallback, useMemo, useState } from 'react';
 
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 
 const RoleTable = ({ data, onUpdateRoles, roleData }) => {
   const [createModalOpen, setCreateModalOpen] = useState(false);

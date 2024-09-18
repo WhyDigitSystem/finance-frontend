@@ -17,10 +17,10 @@ import { useEffect, useState } from 'react';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import { getCurrencyByOrgId } from 'utils/common-functions';
 import CommonTable from 'views/basicMaster/CommonTable';
 import TableComponent from './TableComponent';
@@ -131,7 +131,7 @@ const Account = () => {
 
   const fetchData = async () => {
     try {
-      const result = await apiCall('get', `/master/getAllAccountByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/master/getAllAccountByOrgId?orgId=${orgId}`);
       setData(result.paramObjectsMap.accountVO || []);
       console.log('Test', result);
     } catch (err) {
@@ -151,7 +151,7 @@ const Account = () => {
 
     try {
       setLoading(true);
-      const response = await apiCall('put', '/master/updateCreateAccount', preparedFormData);
+      const response = await apiCalls('put', '/master/updateCreateAccount', preparedFormData);
       console.log('Post response:', response);
       toast.success('Account Created successfully', {
         autoClose: 2000,
@@ -177,7 +177,7 @@ const Account = () => {
     try {
       // const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getListOfValuesById?id=${row.original.id}`);
       // console.log('API Response:', response);
-      const result = await apiCall('get', `/master/getAllAccountById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/master/getAllAccountById?id=${row.original.id}`);
       if (result) {
         const listValueVO = result.paramObjectsMap.accountVO[0];
         // setEditMode(true);

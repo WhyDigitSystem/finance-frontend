@@ -8,7 +8,7 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
-// import CommonListViewTable from './CommonListViewTable';
+// import CommonTable from './CommonTable';
 import axios from 'axios';
 import { useRef, useState, useMemo, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
@@ -202,7 +202,7 @@ export const RegionMaster = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            {/* <CommonListViewTable
+            {/* <CommonTable
               data={listViewData}
               columns={listViewColumns}
               blockEdit={true}

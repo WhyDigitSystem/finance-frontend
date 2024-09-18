@@ -9,7 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
@@ -64,7 +64,7 @@ export const SetTaxRate = () => {
 
   const getSetTaxRate = async () => {
     try {
-      const result = await apiCall('get', `/master/getAllSetTaxRateByOrgId?orgId=${formData.orgId}`);
+      const result = await apiCalls('get', `/master/getAllSetTaxRateByOrgId?orgId=${formData.orgId}`);
       setData(result.paramObjectsMap.setTaxRateVO || []);
       console.log('Test', result);
     } catch (err) {
@@ -86,7 +86,7 @@ export const SetTaxRate = () => {
         return; // Prevent API call if there are errors
       }
       setIsLoading(true);
-      const response = await apiCall('put', '/master/updateCreateSetTaxRate', formData);
+      const response = await apiCalls('put', '/master/updateCreateSetTaxRate', formData);
       console.log('Post response:', response);
       getSetTaxRate();
       toast.success('Set Tax Rate Created successfully', {
@@ -110,7 +110,7 @@ export const SetTaxRate = () => {
   const handleRowEdit = async (newData) => {
     try {
       setIsLoading(true);
-      const response = await apiCall('put', '/master/updateCreateSetTaxRate', newData);
+      const response = await apiCalls('put', '/master/updateCreateSetTaxRate', newData);
       toast.success('Set Tax Rate Updated Successfully', {
         autoClose: 2000,
         theme: 'colored'

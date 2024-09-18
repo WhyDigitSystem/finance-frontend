@@ -1,11 +1,11 @@
 // utils/authUtils.js
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import { handleSessionExpiration } from './sessionUtils';
 // Import your session expiration handler
 
 export const refreshToken = async (tokenId, userName) => {
   try {
-    const result = await apiCall('get', `/user/getRefreshToken?tokenId=${tokenId}&userName=${userName}`);
+    const result = await apiCalls('get', `/user/getRefreshToken?tokenId=${tokenId}&userName=${userName}`);
     const { newToken } = result.data.paramObjectsMap.refreshToken.token;
 
     // Update the token in localStorage

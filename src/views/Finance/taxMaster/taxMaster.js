@@ -4,11 +4,11 @@ import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import { useEffect, useRef, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import CommonTable from 'views/basicMaster/CommonTable';
 import TableComponent from './TableComponent';
 
@@ -106,7 +106,7 @@ const TaxMaster = () => {
     if (validateForm()) {
       try {
         setIsLoading(true);
-        const response = await apiCall('put', '/master/updateCreateTaxMaster', formDataWithEncryptedPassword);
+        const response = await apiCalls('put', '/master/updateCreateTaxMaster', formDataWithEncryptedPassword);
 
         toast.success(editMode ? ' Tax Master Updated Successfully' : ' Tax Master created successfully', {
           autoClose: 2000,
@@ -125,7 +125,7 @@ const TaxMaster = () => {
 
   const getAllTaxMasterByOrgId = async () => {
     try {
-      const result = await apiCall('get', `/master/getAllTaxMasterByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/master/getAllTaxMasterByOrgId?orgId=${orgId}`);
       setData(result.paramObjectsMap.taxMasterVO || []);
       showForm(true);
       console.log('Test', result);
@@ -138,7 +138,7 @@ const TaxMaster = () => {
     console.log('first', row);
     setShowForm(true);
     try {
-      const result = await apiCall('get', `/master/getAllTaxMasterById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/master/getAllTaxMasterById?id=${row.original.id}`);
 
       if (result) {
         const taxMasterVO = result.paramObjectsMap.taxMasterVO[0];

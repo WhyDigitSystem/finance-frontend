@@ -7,11 +7,11 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import { useEffect, useRef, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import CommonTable from 'views/basicMaster/CommonTable';
 
 const CostCenter = () => {
@@ -83,7 +83,7 @@ const CostCenter = () => {
     if (validateForm()) {
       try {
         setIsLoading(true);
-        const response = await apiCall('put', '/master/updateCreateCostCenter', formValues);
+        const response = await apiCalls('put', '/master/updateCreateCostCenter', formValues);
         console.log('Save Successful', response.data);
         toast.success(editMode ? ' Cost Center Updated Successfully' : ' Cost center created successfully', {
           autoClose: 2000,
@@ -102,7 +102,7 @@ const CostCenter = () => {
 
   const getAllCostCenterByOrgId = async () => {
     try {
-      const result = await apiCall('get', `/master/getAllCostCenterByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/master/getAllCostCenterByOrgId?orgId=${orgId}`);
       setData(result.paramObjectsMap.costCenterVO || []);
       showForm(true);
       console.log('Test', result);
@@ -115,7 +115,7 @@ const CostCenter = () => {
     console.log('first', row);
     setShowForm(true);
     try {
-      const result = await apiCall('get', `/master/getCostCenterById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/master/getCostCenterById?id=${row.original.id}`);
       if (result) {
         const costCenterVO = result.paramObjectsMap.costCenterVO[0];
         setEditMode(true);

@@ -3,11 +3,11 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField } from '@mui/material';
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import CommonTable from 'views/basicMaster/CommonTable';
 
 const HsnSacCode = () => {
@@ -75,7 +75,7 @@ const HsnSacCode = () => {
       rate: parseInt(formData.rate, 10) // Ensure this converts to integer
     };
     try {
-      const response = await apiCall('put', '/master/updateCreateSacCode', formDataWithIntegerRate);
+      const response = await apiCalls('put', '/master/updateCreateSacCode', formDataWithIntegerRate);
       toast.success(editMode ? 'SAC code Updated Successfully ' : 'SAC code Created Successfully', {
         autoClose: 2000,
         theme: 'colored'
@@ -108,7 +108,7 @@ const HsnSacCode = () => {
 
   const getAllHsnSacCode = async () => {
     try {
-      const result = await apiCall('get', `/master/getAllSacCodeByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/master/getAllSacCodeByOrgId?orgId=${orgId}`);
       if (result) {
         setData(result.paramObjectsMap.sacCodeVO);
       } else {
@@ -128,7 +128,7 @@ const HsnSacCode = () => {
   const getAllUserById = async (row) => {
     setShowForm(true);
     try {
-      const result = await apiCall('get', `/master/getAllSacCodeById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/master/getAllSacCodeById?id=${row.original.id}`);
       if (result) {
         const hsnSocCodeVO = result.paramObjectsMap.sacCodeVO[0];
         setEditMode(true);

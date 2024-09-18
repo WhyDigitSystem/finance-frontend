@@ -23,7 +23,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { MobileDatePicker } from '@mui/x-date-pickers/MobileDatePicker';
 import { MaterialReactTable } from 'material-react-table';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 
 const TableComponent = ({ formValues, setFormValues }) => {
   const [createModalOpen, setCreateModalOpen] = useState(false);

@@ -15,13 +15,13 @@ import { useTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import apiCall from 'apicalls';
+import apiCalls from 'apicall';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/action-button';
+import ActionButton from 'utils/ActionButton';
 import CommonTable from 'views/basicMaster/CommonTable';
 import { encryptPassword } from 'views/utilities/passwordEnc';
 
@@ -106,7 +106,7 @@ const Employee = () => {
 
   const getBranch = async () => {
     try {
-      const result = await apiCall('get', `/basicMaster/getBranchByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/basicMaster/getBranchByOrgId?orgId=${orgId}`);
 
       if (result) {
         setBranchData(result.paramObjectsMap.branchVO.map((branch) => branch.branch));
@@ -120,7 +120,7 @@ const Employee = () => {
 
   const getRoleData = async () => {
     try {
-      const result = await apiCall('get', `/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
 
       if (result) {
         // setData(response.data.paramObjectsMap.roleMasterVO);
@@ -135,7 +135,7 @@ const Employee = () => {
 
   const getEmployee = async () => {
     try {
-      const result = await apiCall('get', `/basicMaster/getEmployeeByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/basicMaster/getEmployeeByOrgId?orgId=${orgId}`);
 
       if (result) {
         setData(result.paramObjectsMap.employeeVO);
@@ -187,7 +187,7 @@ const Employee = () => {
     // Proceed with the API call
     try {
       setLoading(true);
-      const response = await apiCall('put', 'basicMaster/updateCreateEmployee', formDataWithEncryptedPassword);
+      const response = await apiCalls('put', 'basicMaster/updateCreateEmployee', formDataWithEncryptedPassword);
       console.log('Response:', response.data);
       handleClear();
       toast.success('Employee Created Successfully', {
@@ -263,7 +263,7 @@ const Employee = () => {
 
   const editEmployee = async (updatedBranch) => {
     try {
-      const result = await apiCall('put', `/basicMaster/updateCreateEmployee`, updatedBranch);
+      const result = await apiCalls('put', `/basicMaster/updateCreateEmployee`, updatedBranch);
       if (result) {
         toast.success('Employee Updated Successfully', {
           autoClose: 2000,
