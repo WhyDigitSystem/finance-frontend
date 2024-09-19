@@ -33,10 +33,12 @@ const Reconcile = Loadable(lazy(() => import('views/Finance/Reconcile/Reconcile'
 const ReceiptRegister = Loadable(lazy(() => import('views/Finance/receiptRegister/ReceiptRegister')));
 const PaymentRegister = Loadable(lazy(() => import('views/Finance/paymentRegister/PaymentRegister')));
 const ReconciliationSummary = Loadable(lazy(() => import('views/Finance/ReconciliationSummaryReport/ReconciliationSummary')));
-const CompanyMain = Loadable(lazy(() => import('views/company/companyMain')));
-const CreateCompany = Loadable(lazy(() => import('views/company/CreateCompany')));
+// const CompanyMain = Loadable(lazy(() => import('views/company/companyMain')));
+// const CreateCompany = Loadable(lazy(() => import('views/company/CreateCompany')));
+const CreateCompany = Loadable(lazy(() => import('views/companySetup/CreateCompany')));
+const CompanySetup = Loadable(lazy(() => import('views/companySetup/CompanySetup')));
 const Country = Loadable(lazy(() => import('views/basicMaster/country')));
-const State = Loadable(lazy(() => import('views/basicMaster/state')));
+const State = Loadable(lazy(() => import('views/basicMaster/State')));
 const City = Loadable(lazy(() => import('views/basicMaster/city')));
 const Currency = Loadable(lazy(() => import('views/basicMaster/currency')));
 const Region = Loadable(lazy(() => import('views/basicMaster/RegionMaster')));
@@ -68,13 +70,21 @@ const FinanceRoute = {
       element: <DashboardDefault />
     },
     {
-      path: '/company/companyMain',
-      element: <CompanyMain />
-    },
-    {
-      path: '/company/CreateCompany',
+      path: '/companysetup/createcompany',
       element: <CreateCompany />
     },
+    {
+      path: '/companysetup/companysetup',
+      element: <CompanySetup />
+    },
+    // {
+    //   path: '/company/companyMain',
+    //   element: <CompanyMain />
+    // },
+    // {
+    //   path: '/company/CreateCompany',
+    //   element: <CreateCompany />
+    // },
     {
       path: '/Finance/SetTaxRate',
       element: <SetTaxRate />

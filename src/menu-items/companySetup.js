@@ -1,9 +1,18 @@
 // assets
 import { IconKey } from '@tabler/icons-react';
+import { IconCopyright } from '@tabler/icons-react';
+import { IconSettingsPlus, IconSquareRoundedPlus } from '@tabler/icons-react';
 
 // constant
 const icons = {
-  IconKey
+  IconCopyright
+};
+
+const icons1 = {
+  IconSquareRoundedPlus
+};
+const icons2 = {
+  IconSettingsPlus
 };
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -33,24 +42,24 @@ const companySetup = {
   children: [
     {
       id: 'companySetup',
-      title: 'companySetup',
+      title: 'Company Setup',
       type: 'collapse',
-      icon: icons.IconKey,
+      icon: icons.IconCopyright,
 
       children: [
         {
           id: 'createCompany',
           title: 'Create Company',
           type: 'item',
-          url: '/company/CreateCompany',
-          icon: icons.IconDashboard
+          url: '/companysetup/createcompany',
+          icon: icons1.IconSquareRoundedPlus
         },
         {
           id: 'company',
           title: 'Company Setup',
           type: 'item',
-          url: '/company/companyMain',
-          icon: icons.IconDashboard
+          url: '/companysetup/companysetup',
+          icon: icons2.IconSettingsPlus
         }
       ]
     }
