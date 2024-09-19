@@ -8,16 +8,16 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
-// import CommonTable from './CommonTable';
+import CommonListViewTable from './CommonListViewTable';
 import axios from 'axios';
 import { useRef, useState, useMemo, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import IconButton from '@mui/material/IconButton';
 import EditIcon from '@mui/icons-material/Edit';
-// import ActionButton from 'utils/ActionButton';
-// import { showToast } from 'utils/toast-component';
-// import apiCalls from 'apicall';
-// import { getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
+import ActionButton from 'utils/ActionButton';
+import { showToast } from 'utils/toast-component';
+import apiCalls from 'apicall';
+import { getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
 
 export const RegionMaster = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -38,9 +38,9 @@ export const RegionMaster = () => {
   const inputRef = useRef(null);
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
-  // useEffect(() => {
-  //   getAllRegions();
-  // }, []);
+  useEffect(() => {
+    getAllRegions();
+  }, []);
 
   // const getAllCountries = async () => {
   //   try {
@@ -96,88 +96,88 @@ export const RegionMaster = () => {
     // console.log('THE EDIT ID AFTER HANDLE CLEAR:');
   };
 
-  // const getAllRegions = async () => {
-  //   try {
-  //     const response = await apiCalls('get', `commonmaster/getAllRegionsByOrgId?orgId=${orgId}`);
-  //     console.log('API Response:', response);
+  const getAllRegions = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/getAllRegionsByOrgId?orgId=${orgId}`);
+      console.log('API Response:', response);
 
-  //     if (response.status === true) {
-  //       setListViewData(response.paramObjectsMap.regionVO);
-  //     } else {
-  //       console.error('API Error:', response);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.regionVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
-  // const getRegionById = async (row) => {
-  //   console.log('THE SELECTED region ID IS:', row.original.id);
-  //   setEditId(row.original.id);
-  //   try {
-  //     const response = await apiCalls('get', `commonmaster/region/${row.original.id}`);
-  //     console.log('API Response:', response);
+  const getRegionById = async (row) => {
+    console.log('THE SELECTED region ID IS:', row.original.id);
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `commonmaster/region/${row.original.id}`);
+      console.log('API Response:', response);
 
-  //     if (response.status === true) {
-  //       setListView(false);
-  //       const particularregion = response.paramObjectsMap.regionVO;
+      if (response.status === true) {
+        setListView(false);
+        const particularregion = response.paramObjectsMap.regionVO;
 
-  //       setFormData({
-  //         regionCode: particularregion.regionCode,
-  //         regionName: particularregion.regionName,
-  //         active: particularregion.active === 'Active' ? true : false
-  //       });
-  //     } else {
-  //       console.error('API Error:', response);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
+        setFormData({
+          regionCode: particularregion.regionCode,
+          regionName: particularregion.regionName,
+          active: particularregion.active === 'Active' ? true : false
+        });
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
-  // const handleSave = async () => {
-  //   const errors = {};
-  //   if (!formData.regionCode) {
-  //     errors.regionCode = 'Region Code is required';
-  //   }
-  //   if (!formData.regionName) {
-  //     errors.regionName = 'Region Name is required';
-  //   }
+  const handleSave = async () => {
+    const errors = {};
+    if (!formData.regionCode) {
+      errors.regionCode = 'Region Code is required';
+    }
+    if (!formData.regionName) {
+      errors.regionName = 'Region Name is required';
+    }
 
-  //   if (Object.keys(errors).length === 0) {
-  //     setIsLoading(true);
-  //     const saveData = {
-  //       ...(editId && { id: editId }),
-  //       active: formData.active,
-  //       regionCode: formData.regionCode,
-  //       regionName: formData.regionName,
-  //       orgId: orgId,
-  //       createdBy: loginUserName
-  //     };
+    if (Object.keys(errors).length === 0) {
+      setIsLoading(true);
+      const saveData = {
+        ...(editId && { id: editId }),
+        active: formData.active,
+        regionCode: formData.regionCode,
+        regionName: formData.regionName,
+        orgId: orgId,
+        createdBy: loginUserName
+      };
 
-  //     console.log('DATA TO SAVE', saveData);
+      console.log('DATA TO SAVE', saveData);
 
-  //     try {
-  //       const response = await apiCalls('put', `commonmaster/createUpdateRegion`, saveData);
-  //       if (response.status === true) {
-  //         console.log('Response:', response);
-  //         showToast('success', editId ? ' Region Updated Successfully' : 'Region created successfully');
-  //         handleClear();
-  //         getAllRegions();
-  //         setIsLoading(false);
-  //       } else {
-  //         showToast('error', response.paramObjectsMap.errorMessage || 'Region creation failed');
-  //         setIsLoading(false);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error:', error);
-  //       showToast('error', 'Region creation failed');
-  //       setIsLoading(false);
-  //     }
-  //   } else {
-  //     setFieldErrors(errors);
-  //   }
-  // };
+      try {
+        const response = await apiCalls('put', `commonmaster/createUpdateRegion`, saveData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? ' Region Updated Successfully' : 'Region created successfully');
+          handleClear();
+          getAllRegions();
+          setIsLoading(false);
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Region creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Region creation failed');
+        setIsLoading(false);
+      }
+    } else {
+      setFieldErrors(errors);
+    }
+  };
 
   const handleView = () => {
     setListView(!listView);
@@ -193,22 +193,16 @@ export const RegionMaster = () => {
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
-          {/* <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
-          </div> */}
+          </div>
         </div>
         {listView ? (
           <div className="mt-4">
-            {/* <CommonTable
-              data={listViewData}
-              columns={listViewColumns}
-              blockEdit={true}
-              toEdit={getRegionById}
-            /> */}
-            Table
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getRegionById} />
           </div>
         ) : (
           <>
