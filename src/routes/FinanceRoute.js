@@ -38,7 +38,7 @@ const ReconciliationSummary = Loadable(lazy(() => import('views/Finance/Reconcil
 const CreateCompany = Loadable(lazy(() => import('views/companySetup/CreateCompany')));
 const CompanySetup = Loadable(lazy(() => import('views/companySetup/CompanySetup')));
 const Country = Loadable(lazy(() => import('views/basicMaster/country')));
-const State = Loadable(lazy(() => import('views/basicMaster/state')));
+const State = Loadable(lazy(() => import('views/basicMaster/State')));
 const City = Loadable(lazy(() => import('views/basicMaster/city')));
 const Currency = Loadable(lazy(() => import('views/basicMaster/currency')));
 const Region = Loadable(lazy(() => import('views/basicMaster/RegionMaster')));

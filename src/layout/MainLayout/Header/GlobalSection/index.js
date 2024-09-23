@@ -18,7 +18,6 @@ import {
   useMediaQuery
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import axios from 'axios';
 
 // third-party
 
@@ -29,63 +28,11 @@ import Transitions from 'ui-component/extended/Transitions';
 // assets
 
 import { IconWorld } from '@tabler/icons-react';
+import apiCalls from 'apicall';
+import { ToastContainer } from 'react-toastify';
+import { showToast } from 'utils/toast-component';
 
 // notification status options
-const FinYear = [
-  // {
-  //   value: 'all',
-  //   label: 'Financial Year'
-  // },
-  {
-    value: '2020-2021',
-    label: '2020-2021'
-  },
-  {
-    value: '2021-2022',
-    label: '2022-2022'
-  },
-  {
-    value: '2023-2024',
-    label: '2023-2024'
-  }
-];
-
-const branch = [
-  {
-    value: 'Chennai',
-    label: 'Chennai'
-  },
-  {
-    value: 'Bangalore',
-    label: 'Bangalore'
-  },
-  {
-    value: 'Delhi',
-    label: 'Delhi'
-  },
-  {
-    value: 'Kochin',
-    label: 'Kochi'
-  }
-];
-const Company = [
-  // {
-  //   value: 'all',
-  //   label: 'Company'
-  // },
-  {
-    value: 'AIPacks',
-    label: 'AIPacks'
-  },
-  {
-    value: 'WDS',
-    label: 'WDS'
-  },
-  {
-    value: 'MSI',
-    label: 'MSI'
-  }
-];
 
 // ==============================|| NOTIFICATION ||============================== //
 
@@ -97,13 +44,20 @@ const GlobalSection = () => {
   const [value, setValue] = useState('');
   const [finYearValue, setFinYearValue] = useState('');
   const [companyValue, setCompanyValue] = useState('');
+  const [customerValue, setCustomerValue] = useState('');
+  // const [warehouseValue, setWarehouseValue] = useState('');
+  const [clientValue, setClientValue] = useState('');
   const [branchValue, setBranchValue] = useState('');
-  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [userId, setUserId] = useState(parseInt(localStorage.getItem('userId')));
+  const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId')));
+  const [userId, setUserId] = useState(localStorage.getItem('userId'));
+  const [userName, setUserName] = useState(localStorage.getItem('userName'));
   const [branchVO, setBranchVO] = useState([]);
   const [finVO, setFinVO] = useState([]);
-  const [companyVO, setCompanyVO] = useState([]);
+  const [warehouseVO, setWarehouseVO] = useState([]);
+  const [customerVO, setCustomerVO] = useState([]);
+  const [clientVO, setClientVO] = useState([]);
   const [globalParameter, setGlobalParameter] = useState([]);
+  const [branchName, setBranchName] = useState('');
 
   /**
    * anchorRef is used on different componets and specifying one type leads to other components throwing an error
@@ -113,8 +67,7 @@ const GlobalSection = () => {
   useEffect(() => {
     getGlobalParameter();
     getAccessBranch();
-    getFinYear();
-    getCompany();
+    // getFinYear();
   }, []);
 
   const handleToggle = () => {
@@ -128,97 +81,125 @@ const GlobalSection = () => {
     setOpen(false);
   };
 
+  const [selectedBranch, setSelectedBranch] = useState({ branch: '', branchcode: '' });
+
+  const handleBranchChange = (event) => {
+    const branchcode = event.target.value;
+    const branch = branchVO.find((option) => option.branchcode === branchcode);
+
+    if (branch) {
+      setSelectedBranch({ branch: branch.branch, branchcode: branchcode });
+      setBranchName(branch.branch); // Set the branchName state
+    }
+
+    setBranchValue(branchcode);
+
+    getCustomer(branchcode);
+  };
   const getAccessBranch = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/GlobalParam/getAccessBranchByUserId?userId=${userId}`);
-      console.log('API Response:', response);
-
-      if (response.status === 200) {
-        setBranchVO(response.data.paramObjectsMap.userAccessBranch);
-      } else {
-        // Handle error
-        console.error('API Error:', response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
+      const result = await apiCalls('get', `GlobalParam/globalparamBranchByUserName?orgid=${orgId}&userName=${userName}`);
+      setBranchVO(result.paramObjectsMap.GlopalParameters || []);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
     }
   };
 
   const getFinYear = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/GlobalParam/getFinYearforGlobalParam?orgId=${orgId}`);
-      console.log('API Response:', response);
-
-      if (response.status === 200) {
-        setFinVO(response.data.paramObjectsMap.finYear || []);
-      } else {
-        // Handle error
-        console.error('API Error:', response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
+      const result = await apiCalls('get', `/commonmaster/getAllAciveFInYear?orgId=${orgId}`);
+      setFinVO(result.paramObjectsMap.financialYearVOs || []);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
     }
   };
 
-  const getCompany = async () => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/GlobalParam/getCompanyByUserID?userId=${userId}`);
-      console.log('API Response:', response);
+  const getCustomer = async (branchcode) => {
+    const formData = {
+      branchcode: branchcode,
+      orgid: orgId,
+      userName: userName
+    };
 
-      if (response.status === 200) {
-        setCompanyVO(response.data.paramObjectsMap.company);
-      } else {
-        // Handle error
-        console.error('API Error:', response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
+    const queryParams = new URLSearchParams(formData).toString();
+
+    try {
+      const result = await apiCalls('get', `GlobalParam/globalparamCustomerByUserName?${queryParams}`);
+      setCustomerVO(result.paramObjectsMap.GlopalParameterCustomer);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
+
+  const getClient = async (customer, branchCode) => {
+    const formData = {
+      branchcode: branchCode,
+      orgid: orgId,
+      userName: userName,
+      customer: customer
+    };
+
+    const queryParams = new URLSearchParams(formData).toString();
+
+    try {
+      const result = await apiCalls('get', `GlobalParam/globalparamClientByUserName?${queryParams}`);
+      setClientVO(result.paramObjectsMap.GlopalParameterClient);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
     }
   };
 
   const getGlobalParameter = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/GlobalParam/getGlobalParametrByUserId?userId=${userId}`);
-      console.log('API Response:', response);
+      const result = await apiCalls('get', `GlobalParam/globalparam/username?orgid=${orgId}&userId=${userId}`);
+      const globalParameterVO = result.paramObjectsMap.globalParam;
+      setGlobalParameter(globalParameterVO);
+      setCustomerValue(globalParameterVO.customer);
+      setClientValue(globalParameterVO.client);
+      setFinYearValue(globalParameterVO.finYear);
+      // setWarehouseValue(globalParameterVO.warehouse);
+      setBranchValue(globalParameterVO.branchcode);
+      setBranchName(globalParameterVO.branch);
+      console.log('Test', result);
 
-      if (response.status === 200) {
-        // setGlobalParameter(response.data.paramObjectsMap.globalParameterVO);
-        const globalParameterVO = response.data.paramObjectsMap.globalParameterVO;
-        setGlobalParameter(globalParameterVO);
-        setBranchValue(globalParameterVO.branch);
-        setCompanyValue(globalParameterVO.company);
-        setFinYearValue(globalParameterVO.finYear);
-      } else {
-        // Handle error
-        console.error('API Error:', response.data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
+      localStorage.setItem('customer', globalParameterVO.customer);
+      localStorage.setItem('client', globalParameterVO.client);
+      localStorage.setItem('finYear', globalParameterVO.finYear);
+      localStorage.setItem('warehouse', globalParameterVO.warehouse);
+      localStorage.setItem('branchcode', globalParameterVO.branchcode);
+      localStorage.setItem('branch', globalParameterVO.branch);
+
+      getCustomer(globalParameterVO.branchcode);
+      getClient(globalParameterVO.customer, globalParameterVO.branchcode);
+      // getWareHouse(globalParameterVO.branchcode);
+    } catch (err) {
+      console.log('error', err);
     }
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const formData = {
-      branch: branchValue,
-      branchCode: branchValue,
-      company: companyValue,
+      branch: branchName,
+      branchcode: branchValue,
+      customer: customerValue,
+      client: clientValue,
       finYear: finYearValue,
-      userId
+      // warehouse: warehouseValue,
+      userid: userId,
+      orgId
     };
-    axios
-      .put(`${process.env.REACT_APP_API_URL}/api/GlobalParam/createUpdateGlobalParameter`, formData)
-      .then((response) => {
-        // console.log('Response:', response.data);
-        // handleClear();
-        // toast.success('City Created Successfully', {
-        //   autoClose: 2000,
-        //   theme: 'colored'
-        // });
-        // getCity();
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
+    try {
+      const result = await apiCalls('put', `GlobalParam/globalparam`, formData);
+      showToast('success', 'Global Parameter updated succesfully');
+      // setOpen(false);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
+    }
   };
 
   const prevOpen = useRef(open);
@@ -237,13 +218,20 @@ const GlobalSection = () => {
     setFinYearValue(event.target.value);
   };
 
-  const handleCompanyChange = (event) => {
-    setCompanyValue(event.target.value);
+  const handleClientChange = (event) => {
+    setClientValue(event.target.value);
+    // getWareHouse(selectedBranch.branchcode);
   };
 
-  const handleBranchChange = (event) => {
-    setBranchValue(event.target.value);
+  const handleCustomerChange = (event) => {
+    setCustomerValue(event.target.value);
+
+    getClient(event.target.value, selectedBranch.branchcode);
   };
+
+  // const handleWarehouseChange = (event) => {
+  //   setWarehouseValue(event.target.value);
+  // };
 
   return (
     <>
@@ -309,51 +297,14 @@ const GlobalSection = () => {
                         <Grid item>
                           <Stack direction="row" spacing={2}>
                             <Typography variant="subtitle1">Global Parameter</Typography>
-                            {/* <Chip
-                              size="small"
-                              label="01"
-                              sx={{
-                                color: theme.palette.background.default,
-                                bgcolor: theme.palette.warning.dark
-                              }}
-                            /> */}
                           </Stack>
                         </Grid>
-                        {/* <Grid item>
-                          <Typography component={Link} to="#" variant="subtitle2" color="primary">
-                            Mark as all read
-                          </Typography>
-                        </Grid> */}
                       </Grid>
                     </Grid>
-                    <Grid item xs={12}>
-                      <Box sx={{ px: 2, pt: 0.25 }}>
-                        <TextField
-                          id="outlined-select-currency-native"
-                          select
-                          fullWidth
-                          label="Company"
-                          // disabled
-                          value={companyValue}
-                          onChange={handleCompanyChange}
-                          SelectProps={{
-                            native: true
-                          }}
-                        >
-                          <option value="" disabled>
-                            Select Company
-                          </option>
-                          {companyVO?.map((option) => (
-                            <option key={option.companyName} value={option.companyName}>
-                              {option.companyName}
-                            </option>
-                          ))}
-                        </TextField>
-                      </Box>
-                    </Grid>
+
                     <Grid item xs={12}>
                       <Grid container direction="column" spacing={2}>
-                        <Grid item xs={12}>
+                        {/* <Grid item xs={12}>
                           <Box sx={{ px: 2, pt: 0.25 }}>
                             <TextField
                               id="outlined-select-currency-native"
@@ -365,24 +316,26 @@ const GlobalSection = () => {
                               SelectProps={{
                                 native: true
                               }}
+                              size="small"
                             >
                               <option value="" disabled>
-                                Select FinYear
+                                {/* Select FinYear 
                               </option>
                               {finVO?.map((option) => (
-                                <option key={option.finYear} value={option.finYear}>
+                                <option key={option.id} value={option.finYear}>
                                   {option.finYear}
                                 </option>
                               ))}
                             </TextField>
                           </Box>
-                        </Grid>
+                        </Grid> */}
 
                         <Grid item xs={12}>
-                          <Box sx={{ px: 2, pt: 0.25, mb: 2 }}>
+                          <Box sx={{ px: 2, pt: 0.25 }}>
                             <TextField
                               id="outlined-select-currency-native"
                               select
+                              small
                               fullWidth
                               label="Branch"
                               value={branchValue}
@@ -390,18 +343,91 @@ const GlobalSection = () => {
                               SelectProps={{
                                 native: true
                               }}
+                              size="small"
                             >
                               <option value="" disabled>
-                                Select Branch
+                                {/* Select Branch */}
                               </option>
                               {branchVO.map((option) => (
-                                <option key={option.branchCode} value={option.branchCode}>
-                                  {option.branchName}
+                                <option key={option.branchcode} value={option.branchcode}>
+                                  {option.branch}
                                 </option>
                               ))}
                             </TextField>
                           </Box>
                         </Grid>
+
+                        <Grid item xs={12}>
+                          <Box sx={{ px: 2, pt: 0.25 }}>
+                            <TextField
+                              id="outlined-select-currency-native"
+                              select
+                              fullWidth
+                              label="customer"
+                              value={customerValue}
+                              onChange={handleCustomerChange}
+                              SelectProps={{
+                                native: true
+                              }}
+                              size="small"
+                            >
+                              <option value="" disabled></option>
+                              {customerVO?.map((option) => (
+                                <option key={option.customer} value={option.customer}>
+                                  {option.customer}
+                                </option>
+                              ))}
+                            </TextField>
+                          </Box>
+                        </Grid>
+
+                        <Grid item xs={12}>
+                          <Box sx={{ px: 2, pt: 0.25 }}>
+                            <TextField
+                              id="outlined-select-currency-native"
+                              select
+                              fullWidth
+                              label="client"
+                              value={clientValue}
+                              onChange={handleClientChange}
+                              SelectProps={{
+                                native: true
+                              }}
+                              size="small"
+                            >
+                              <option value="" disabled></option>
+                              {clientVO?.map((option) => (
+                                <option key={option.client} value={option.client}>
+                                  {option.client}
+                                </option>
+                              ))}
+                            </TextField>
+                          </Box>
+                        </Grid>
+
+                        {/* <Grid item xs={12}>
+                          <Box sx={{ px: 2, pt: 0.25 }}>
+                            <TextField
+                              id="outlined-select-currency-native"
+                              select
+                              fullWidth
+                              label="Warehouse"
+                              value={warehouseValue}
+                              onChange={handleWarehouseChange}
+                              SelectProps={{
+                                native: true
+                              }}
+                              size="small"
+                            >
+                              <option value="" disabled></option>
+                              {warehouseVO?.map((option) => (
+                                <option key={option.Warehouse} value={option.Warehouse}>
+                                  {option.Warehouse}
+                                </option>
+                              ))}
+                            </TextField>
+                          </Box>
+                        </Grid> */}
                         <Grid item xs={12} p={0}>
                           <Divider sx={{ my: 0 }} />
                         </Grid>
@@ -421,6 +447,7 @@ const GlobalSection = () => {
           </Transitions>
         )}
       </Popper>
+      <ToastContainer />
     </>
   );
 };

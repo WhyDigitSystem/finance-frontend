@@ -90,7 +90,7 @@ const FirebaseLogin = ({ ...others }) => {
       userName: values.email
     };
     try {
-      const response = await Axios.post(`${process.env.REACT_APP_API_URL}/api/user/login`, userData, {
+      const response = await Axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, userData, {
         headers: {
           'Content-Type': 'application/json'
         }
@@ -103,12 +103,12 @@ const FirebaseLogin = ({ ...others }) => {
         dispatch(setUser({ orgId: response.data.paramObjectsMap.userVO.orgId }));
 
         localStorage.setItem('orgId', response.data.paramObjectsMap.userVO.orgId); // Replace with the actual token
-        localStorage.setItem('userId', response.data.paramObjectsMap.userVO.userId);
+        localStorage.setItem('userId', response.data.paramObjectsMap.userVO.usersId);
         localStorage.setItem('token', response.data.paramObjectsMap.userVO.token);
         localStorage.setItem('tokenId', response.data.paramObjectsMap.userVO.tokenId);
         localStorage.setItem('userName', response.data.paramObjectsMap.userVO.userName);
         localStorage.setItem('LoginMessage', true);
-        const userRole = response.data.paramObjectsMap.userVO.role;
+        const userRole = response.data.paramObjectsMap.userVO.roleVO;
         localStorage.setItem('ROLE', userRole);
         dispatch(setUserRole(userRole));
         resetForm();
