@@ -18,13 +18,14 @@ const ListOfValues = () => {
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
+
   const [formValues, setFormValues] = useState({
     listCode: '',
     listDescription: '',
     active: true,
-    createdBy: 'currentUser', // replace with actual user
-    updatedBy: 'currentUser', // replace with actual user
-    orgId: orgId, // replace with actual org ID
+    createdBy: 'currentUser',
+    updatedBy: 'currentUser',
+    // orgId: orgId,
     listOfValues1DTO: []
   });
   const [validationErrors, setValidationErrors] = useState({});
@@ -70,7 +71,7 @@ const ListOfValues = () => {
       active: true,
       createdBy: 'currentUser',
       updatedBy: 'currentUser',
-      orgId: 1,
+      // orgId: 1,
       listOfValues1DTO: []
     });
     setValidationErrors({});
@@ -168,9 +169,12 @@ const ListOfValues = () => {
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="listCode"
-                    label="List Code"
+                    label={
+                      <span>
+                        List Code <span className="asterisk">*</span>
+                      </span>
+                    }
                     size="small"
-                    required
                     value={formValues.listCode}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
@@ -183,9 +187,12 @@ const ListOfValues = () => {
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="listDescription"
-                    label="List Description"
+                    label={
+                      <span>
+                        List Description <span className="asterisk">*</span>
+                      </span>
+                    }
                     size="small"
-                    required
                     value={formValues.listDescription}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
