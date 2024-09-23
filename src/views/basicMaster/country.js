@@ -151,7 +151,7 @@ export const Country = () => {
         countryCode: formData.countryCode,
         countryName: formData.countryName,
         orgId: orgId,
-        createdby: loginUserName
+        createdBy: loginUserName
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);

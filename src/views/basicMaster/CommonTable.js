@@ -73,18 +73,18 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
     }
   };
 
-  useEffect(() => {
-    console.log('BlockEdit', blockEdit);
-    const fetchDataState = async () => {
-      try {
-        const stateData = await getStateByCountry(orgId, selectedCountry);
-        setStateVO(stateData);
-      } catch (error) {
-        console.error('Error fetching country data:', error);
-      }
-    };
-    fetchDataState();
-  }, [selectedCountry]);
+  // useEffect(() => {
+  //   console.log('BlockEdit', blockEdit);
+  //   const fetchDataState = async () => {
+  //     try {
+  //       const stateData = await getStateByCountry(orgId, selectedCountry);
+  //       setStateVO(stateData);
+  //     } catch (error) {
+  //       console.error('Error fetching country data:', error);
+  //     }
+  //   };
+  //   fetchDataState();
+  // }, [selectedCountry]);
 
   const handleSaveRowEdits = async () => {
     if (!Object.keys(validationErrors).length) {
