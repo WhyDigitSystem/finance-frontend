@@ -269,7 +269,7 @@ const Company = () => {
   };
   const getCompanyDetails = async () => {
     try {
-      const response = await apiCalls('get', `commonmaster/company/${'1000000007'}`);
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -342,7 +342,7 @@ const Company = () => {
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       const saveFormData = {
-        id: 1000000007,
+        id: orgId,
         companyCode: formData.companyCode,
         companyName: formData.companyName,
         ceo: formData.ceo,
