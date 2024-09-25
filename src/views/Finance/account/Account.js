@@ -21,7 +21,7 @@ import apiCalls from 'apicall';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import { getCurrencyByOrgId } from 'utils/common-functions';
+import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonTable from 'views/basicMaster/CommonTable';
 import TableComponent from './TableComponent';
 
@@ -64,7 +64,6 @@ const Account = () => {
     fetchData();
     const getCurrency = async () => {
       try {
-        // Replace with your orgId or fetch it from somewhere
         const currencyData = await getCurrencyByOrgId(orgId);
         setCurrencies(currencyData);
 

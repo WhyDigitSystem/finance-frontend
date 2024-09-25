@@ -23,7 +23,7 @@ import { useTheme } from '@mui/material/styles';
 import { MaterialReactTable } from 'material-react-table';
 import { useEffect, useState } from 'react';
 
-import { getStateByCountry } from 'utils/common-functions';
+// import { getStateByCountry } from 'utils/common-functions';
 
 const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEdit, toEdit, handleRowEdit }) => {
   const [tableData, setTableData] = useState(data || []);
