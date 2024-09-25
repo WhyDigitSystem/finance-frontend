@@ -57,6 +57,25 @@ export const getAllActiveCitiesByState = async (state, orgId) => {
   }
 };
 
+export const getAllActiveCurrency = async (orgId) => {
+  try {
+    const response = await apiCalls('get', `commonmaster/currency?orgid=${orgId}`);
+    if (response.status === true) {
+      const currencyData = response.paramObjectsMap.currencyVO
+        .filter((row) => row.active === 'Active')
+        .map(({ id, currency, currencySymbol, subCurrency, country }) => ({ id, currency, currencySymbol, subCurrency, country }));
+
+      return currencyData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
+
 export const getAllActiveEmployees = async (orgId) => {
   try {
     const response = await apiCalls('get', `warehousemastercontroller/getAllEmployeeByOrgId?orgId=${orgId}`);
