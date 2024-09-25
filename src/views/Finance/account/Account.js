@@ -64,7 +64,7 @@ const Account = () => {
     fetchData();
     const getCurrency = async () => {
       try {
-        const currencyData = await getCurrencyByOrgId(orgId);
+        const currencyData = await getAllActiveCurrency(orgId);
         setCurrencies(currencyData);
 
         console.log('currency', currencyData);
