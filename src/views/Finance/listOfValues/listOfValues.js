@@ -3,14 +3,12 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import apiCalls from 'apicall';
 import { useEffect, useRef, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import CommonTable from 'views/basicMaster/CommonTable';
-import TableComponent from './TableComponent';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -19,8 +17,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { showToast } from 'utils/toast-component';
 
 const ListOfValues = () => {
-  const theme = useTheme();
-  const anchorRef = useRef(null);
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
@@ -64,24 +60,46 @@ const ListOfValues = () => {
   }, []);
 
   const handleInputChange = (e) => {
-    const { id, value, checked, type } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [id]: type === 'checkbox' ? checked : value
-    }));
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+    const nameRegex = /^[A-Za-z ]*$/;
+    const alphaNumericRegex = /^[A-Za-z0-9]*$/;
+    const numericRegex = /^[0-9]*$/;
+    const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
+    const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
 
-    // Validate the input fields
-    if (id === 'listCode' || id === 'listDescription') {
-      if (!value.trim()) {
-        setFieldErrors((prev) => ({
-          ...prev,
-          [id]: 'This field is required'
-        }));
+    let errorMessage = '';
+
+    switch (name) {
+      case 'customer':
+      case 'shortName':
+      case 'contactPerson':
+        if (!nameRegex.test(value)) {
+          errorMessage = 'Only alphabetic characters are allowed';
+        }
+        break;
+      default:
+        break;
+    }
+
+    if (errorMessage) {
+      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+    } else {
+      if (name === 'active') {
+        setFormData({ ...formData, [name]: checked });
       } else {
-        setFieldErrors((prev) => {
-          const { [id]: removed, ...rest } = prev;
-          return rest;
-        });
+        setFormData({ ...formData, [name]: value.toUpperCase() });
+      }
+
+      setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      // Preserve the cursor position for text-based inputs
+      if (type === 'text' || type === 'textarea') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement && inputElement.setSelectionRange) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
       }
     }
   };
@@ -153,9 +171,7 @@ const ListOfValues = () => {
       listDescription: '',
       active: true,
       createdBy: 'currentUser',
-      updatedBy: 'currentUser',
-      // orgId: 1,
-      listOfValues1DTO: []
+      updatedBy: 'currentUser'
     });
     setFieldErrors({});
     setDetailsTableData([
@@ -167,46 +183,13 @@ const ListOfValues = () => {
       }
     ]);
     setDetailsTableErrors('');
+    setEditId('');
   };
 
-  // const validateForm = () => {
-  //   const errors = {};
-  //   if (!formData.listCode.trim()) {
-  //     errors.listCode = 'This field is required';
-  //   }
-  //   if (!formData.listDescription.trim()) {
-  //     errors.listDescription = 'This field is required';
-  //   }
-  //   setFieldErrors(errors);
-
-  //   return Object.keys(errors).length === 0;
-  // };
-
-  // const handleSave = async () => {
-  //   if (validateForm()) {
-  //     try {
-  //       setIsLoading(true);
-  //       const response = await apiCalls('put', '/master/updateCreateListOfValues', formData);
-  //       console.log('Save Successful', response.data);
-  //       toast.success('List of value created successfully', {
-  //         autoClose: 2000,
-  //         theme: 'colored'
-  //       });
-  //       getAllListOfValuesByOrgId();
-  //       handleClear();
-  //       setIsLoading(false);
-  //     } catch (error) {
-  //       console.error('Save Failed', error);
-  //     }
-  //   } else {
-  //     console.error('Validation Errors:', fieldErrors);
-  //   }
-  // };
   const handleSave = async () => {
     console.log('THE HANDLE SAVE IS WORKING');
 
     const errors = {};
-    // let firstInvalidFieldRef = null;
     if (!formData.listCode) errors.listCode = 'List Code is required';
     if (!formData.listDescription) errors.listDescription = 'List Description is required';
 
@@ -219,17 +202,15 @@ const ListOfValues = () => {
         const rowErrors = {};
         if (!row.valueCode) {
           rowErrors.valueCode = 'Value Code is required';
-          // if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].lr_Hawb_Hbl_No;
           detailsTableDataValid = false;
         }
         if (!row.valueDesc) {
           rowErrors.valueDesc = 'Value Desc is required';
-          // if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].invNo;
           detailsTableDataValid = false;
         }
-        if (!row.active) {
+
+        if (row.active === undefined || row.active === null) {
           rowErrors.active = 'Active is required';
-          // if (!firstInvalidFieldRef) firstInvalidFieldRef = lrNoDetailsRefs.current[index].invNo;
           detailsTableDataValid = false;
         }
 
@@ -239,20 +220,16 @@ const ListOfValues = () => {
     }
     setFieldErrors(errors);
 
-    // if (!lrTableDataValid || Object.keys(errors).length > 0) {
-    //   if (firstInvalidFieldRef && firstInvalidFieldRef.current) {
-    //     firstInvalidFieldRef.current.focus();
-    //   }
-    // }
     if (Object.keys(errors).length === 0 && detailsTableDataValid) {
       setIsLoading(true);
 
       const detailsVo = detailsTableData.map((row) => ({
         ...(editId && { id: row.id }),
-        valeCode: row.valueCode,
+        valueCode: row.valueCode,
         valueDescription: row.valueDesc,
-        active: row.active
+        active: row.active === 'true' || row.active === true // Convert string 'true' to boolean true if necessary
       }));
+
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
@@ -262,10 +239,10 @@ const ListOfValues = () => {
         createdBy: loginUserName,
         orgId: orgId
       };
+
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        // const response = await apiCalls('put', `grn/createUpdateGRN`, saveFormData);
         const response = await apiCalls('put', '/master/updateCreateListOfValues', saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
@@ -313,7 +290,6 @@ const ListOfValues = () => {
           listDescription: listValueVO.listDescription || '',
           active: listValueVO.active || false,
           id: listValueVO.id || 0
-          // listOfValues1DTO: listValueVO.listOfValues1VO || []
         });
         setDetailsTableData(
           listValueVO.listOfValues1VO.map((cl) => ({
@@ -362,6 +338,7 @@ const ListOfValues = () => {
                         List Code <span className="asterisk">*</span>
                       </span>
                     }
+                    name="listCode"
                     size="small"
                     value={formData.listCode}
                     onChange={handleInputChange}
@@ -381,6 +358,7 @@ const ListOfValues = () => {
                       </span>
                     }
                     size="small"
+                    name="listDescription"
                     value={formData.listDescription}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
@@ -390,19 +368,11 @@ const ListOfValues = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormGroup>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        id="active"
-                        checked={formData.active}
-                        onChange={handleInputChange}
-                        sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
-                      />
-                    }
-                    label="Active"
-                  />
-                </FormGroup>
+                <FormControlLabel
+                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" color="primary" />}
+                  label="Active"
+                  sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                />
               </div>
             </div>
             {/* <TableComponent formData={formData} setFormData={setFormData} /> */}
