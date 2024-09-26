@@ -10,17 +10,22 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import axios from 'axios';
-import { useRef, useState } from 'react';
+import apiCalls from 'apicall';
+import { useState, useEffect } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
+import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
 
 export const ChargeTypeRequest = () => {
-  const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [editId, setEditId] = useState('');
+  const [showForm, setShowForm] = useState(true);
+  const [data, setData] = useState([]);
+  const [listValues, setListValues] = useState([]);
   const [formData, setFormData] = useState({
     active: true,
     chargeType: '',
@@ -29,7 +34,7 @@ export const ChargeTypeRequest = () => {
     chargeDescription: '',
     localChargeDescripition: '',
     serviceAccountCode: '',
-    sACDescription: '',
+    sacDescripition: '',
     salesAccount: '',
     purchaseAccount: '',
     taxType: '',
@@ -69,95 +74,29 @@ export const ChargeTypeRequest = () => {
     type: ''
   });
 
-  const validateForm = () => {
-    let errors = {};
-    let hasError = false;
-
-    if (!formData.chargeType) {
-      errors.chargeType = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.chargeCode) {
-      errors.chargeCode = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.product) {
-      errors.product = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.chargeDescription) {
-      errors.chargeDescription = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.localChargeDescripition) {
-      errors.localChargeDescripition = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.serviceAccountCode) {
-      errors.serviceAccountCode = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.sacDescripition) {
-      errors.sacDescripition = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.salesAccount) {
-      errors.salesAccount = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.purchaseAccount) {
-      errors.purchaseAccount = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.taxable) {
-      errors.taxable = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.taxablePercentage) {
-      errors.taxablePercentage = '* Field is required';
-      hasError = true;
-    }
-
-    if (!formData.taxType) {
-      errors.taxType = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.ccFeeApplicable) {
-      errors.ccFeeApplicable = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.ccJob) {
-      errors.ccJob = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.govtSac) {
-      errors.govtSac = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.excempted) {
-      errors.excempted = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.gstTax) {
-      errors.gstTax = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.gstControl) {
-      errors.gstControl = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.service) {
-      errors.service = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.type) {
-      errors.type = '* Field is required';
-      hasError = true;
-    }
-
-    setFieldErrors(errors);
-    return !hasError;
-  };
+  const columns = [
+    { accessorKey: 'chargeType', header: 'Charge Type', size: 140 },
+    { accessorKey: 'chargeCode', header: 'Charge Code', size: 140 },
+    { accessorKey: 'product', header: 'Product', size: 140 },
+    { accessorKey: 'chargeDescription', header: 'Charge Description', size: 140 },
+    // { accessorKey: 'localChargeDescripition', header: 'Local Charge Description', size: 140 },
+    // { accessorKey: 'serviceAccountCode', header: 'Service Account Code', size: 140 },
+    // { accessorKey: 'sACDescription', header: 'SAC Description', size: 140 },
+    // { accessorKey: 'salesAccount', header: 'Sales Account', size: 140 },
+    // { accessorKey: 'purchaseAccount', header: 'Purchase Account', size: 140 },
+    // { accessorKey: 'taxType', header: 'Tax Type', size: 140 },
+    // { accessorKey: 'ccFeeApplicable', header: 'CC Fee Applicable', size: 140 },
+    // { accessorKey: 'taxable', header: 'Taxable', size: 140 },
+    // { accessorKey: 'taxablePercentage', header: 'Taxable Percentage', size: 140 },
+    // { accessorKey: 'ccJob', header: 'CC Job', size: 140 },
+    // { accessorKey: 'govtSac', header: 'Govt SAC', size: 140 },
+    // { accessorKey: 'excempted', header: 'Exempted', size: 140 },
+    { accessorKey: 'gstTax', header: 'GST Tax', size: 140 },
+    // { accessorKey: 'gSTControl', header: 'GST Control', size: 140 },
+    // { accessorKey: 'service', header: 'Service', size: 140 },
+    // { accessorKey: 'type', header: 'Type', size: 140 },
+    { accessorKey: 'active', header: 'Active', size: 140 }
+  ];
 
   const handleInputChange = (event) => {
     const { name, value, type, checked } = event.target;
@@ -165,115 +104,55 @@ export const ChargeTypeRequest = () => {
     setFormData({ ...formData, [name]: newValue });
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // Handle form submission with formData
-    console.log(formData);
-    // Example: Submit formData to backend or perform further actions
-  };
+  useEffect(() => {
+    getAllChargeTypeRequestByOrgId();
+    getListOfValuesByOrgId();
+  }, []);
 
-  const [showForm, setShowForm] = useState(true);
-  const [data, setData] = useState([]);
-
-  const theme = useTheme();
-  const anchorRef = useRef(null);
-
-  // useEffect(() => {
-  //   getSetTaxRate();
-  // }, []);
-
-  const getSetTaxRate = async () => {
+  const getAllChargeTypeRequestByOrgId = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllChargeTypeRequestByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `master/getAllChargeTypeRequestByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
-
-      if (response.status === 200) {
-        setData(response.data.paramObjectsMap.chargeTypeRequestVO);
-
-        console.log('Test', response.data.paramObjectsMap.chargeTypeRequestVO);
-      } else {
-        // Handle error
-        console.error('API Error:', response.data);
-      }
+      setData(response.paramObjectsMap.chargeTypeRequestVO);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const handleSave = () => {
-    const formDataToSend = {
-      ...formData,
-      taxablePercentage: formData.taxablePercentage ? parseInt(formData.taxablePercentage, 10) : 0
-    };
-
-    if (validateForm()) {
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateChargeTypeRequest`, formDataToSend)
-        .then((response) => {
-          if (response.data.status) {
-            console.log('Response:', response.data);
-            handleClear();
-            toast.success('Set Tax Rate Created Successfully', {
-              autoClose: 2000,
-              theme: 'colored'
-            });
-          } else {
-            console.error('API Error:', response.data);
-            toast.error('Error in creating/updating charge type request', {
-              autoClose: 2000,
-              theme: 'colored'
-            });
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          toast.error('An error occurred while saving', {
-            autoClose: 2000,
-            theme: 'colored'
-          });
-        });
-    } else {
-      toast.error('Please fill in all required fields', {
-        autoClose: 2000,
-        theme: 'colored'
-      });
+  const getListOfValuesByOrgId = async () => {
+    try {
+      const result = await apiCalls('get', `/master/getListOfValuesByOrgId?orgId=${orgId}`);
+      setListValues(result.paramObjectsMap.listOfValuesVO || []);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
     }
   };
 
-  const handleRowEdit = (rowId, newData) => {
-    console.log('Edit', rowId, newData);
-    // Send PUT request to update the row
-    axios
-      .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateChargeTypeRequest/${rowId}`, newData)
-      .then((response) => {
-        console.log('Edit successful:', response.data);
-        // Handle any further actions after successful edit
-        toast.success('Set Tax Rate Updated Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-      })
-      .catch((error) => {
-        console.error('Error editing row:', error);
-        // Handle error scenarios
-        toast.error('Failed to Update Set Tax Rate', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-      });
-  };
+  // const handleRowEdit = (rowId, newData) => {
+  //   console.log('Edit', rowId, newData);
+  // axios
+  //   .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateChargeTypeRequest/${rowId}`, newData)
+  //   .then((response) => {
+  //     console.log('Edit successful:', response.data);
+  //     getAllChargeTypeRequestByOrgId();
+  //     showToast('success', rowId && 'Charge Type Request Updated Successfully');
+  //   })
+  //   .catch((error) => {
+  //     console.error('Error editing row:', error);
+  //     showToast('error', 'Failed to Update Charge Type Request');
+  //   });
+  // };
 
-  const getAllChargeTypeById = async (emitterId) => {
-    console.log('first', emitterId);
-
+  const getAllChargeTypeById = async (row) => {
+    handleClear();
+    console.log('THE SELECTED ID IS:', row.original.id);
+    setEditId(row.original.id);
     try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/master/getAllChargeTypeRequestById?id=${emitterId.original.id}`
-      );
-      console.log('API Response:', response);
+      const response = await apiCalls('get', `master/getAllChargeTypeRequestById?id=${row.original.id}`);
 
-      if (response.status === 200) {
-        const chargeTypeRequestVO = response.data.paramObjectsMap.chargeTypeRequestVO[0];
+      if (response.status === true) {
+        const chargeTypeRequestVO = response.paramObjectsMap.chargeTypeRequestVO[0];
         setShowForm(true);
 
         setFormData({
@@ -281,10 +160,10 @@ export const ChargeTypeRequest = () => {
           chargeType: chargeTypeRequestVO.chargeType || '',
           chargeCode: chargeTypeRequestVO.chargeCode || '',
           product: chargeTypeRequestVO.product || '',
-          chargeDescription: chargeTypeRequestVO.chargeDescripition || '',
+          chargeDescription: chargeTypeRequestVO.chargeDescription || '',
           localChargeDescripition: chargeTypeRequestVO.localChargeDescripition || '',
           serviceAccountCode: chargeTypeRequestVO.serviceAccountCode || '',
-          sACDescription: chargeTypeRequestVO.sacDescripition || '',
+          sacDescripition: chargeTypeRequestVO.sacDescripition || '',
           salesAccount: chargeTypeRequestVO.salesAccount || '',
           purchaseAccount: chargeTypeRequestVO.purchaseAccount || '',
           taxType: chargeTypeRequestVO.taxType || '',
@@ -304,7 +183,6 @@ export const ChargeTypeRequest = () => {
 
         console.log('DataToEdit', chargeTypeRequestVO);
       } else {
-        // Handle error
         console.error('API Error:', response.data);
       }
     } catch (error) {
@@ -322,9 +200,9 @@ export const ChargeTypeRequest = () => {
     //   newRate: false,
     //   excepmted: false
     // });
-
-    getSetTaxRate();
+    getAllChargeTypeRequestByOrgId();
   };
+
   const handleClear = () => {
     setFormData({
       active: true,
@@ -334,7 +212,7 @@ export const ChargeTypeRequest = () => {
       chargeDescription: '',
       localChargeDescripition: '',
       serviceAccountCode: '',
-      sACDescription: '',
+      sacDescripition: '',
       salesAccount: '',
       purchaseAccount: '',
       taxType: '',
@@ -375,29 +253,143 @@ export const ChargeTypeRequest = () => {
     });
   };
 
-  const columns = [
-    { accessorKey: 'chargeType', header: 'Charge Type', size: 140 },
-    { accessorKey: 'chargeCode', header: 'Charge Code', size: 140 },
-    { accessorKey: 'product', header: 'Product', size: 140 },
-    { accessorKey: 'chargeDescription', header: 'Charge Description', size: 140 },
-    // { accessorKey: 'localChargeDescripition', header: 'Local Charge Description', size: 140 },
-    // { accessorKey: 'serviceAccountCode', header: 'Service Account Code', size: 140 },
-    // { accessorKey: 'sACDescription', header: 'SAC Description', size: 140 },
-    // { accessorKey: 'salesAccount', header: 'Sales Account', size: 140 },
-    // { accessorKey: 'purchaseAccount', header: 'Purchase Account', size: 140 },
-    // { accessorKey: 'taxType', header: 'Tax Type', size: 140 },
-    // { accessorKey: 'ccFeeApplicable', header: 'CC Fee Applicable', size: 140 },
-    // { accessorKey: 'taxable', header: 'Taxable', size: 140 },
-    // { accessorKey: 'taxablePercentage', header: 'Taxable Percentage', size: 140 },
-    // { accessorKey: 'ccJob', header: 'CC Job', size: 140 },
-    // { accessorKey: 'govtSac', header: 'Govt SAC', size: 140 },
-    // { accessorKey: 'excempted', header: 'Exempted', size: 140 },
-    { accessorKey: 'gSTTax', header: 'GST Tax', size: 140 },
-    { accessorKey: 'gSTControl', header: 'GST Control', size: 140 },
-    { accessorKey: 'service', header: 'Service', size: 140 },
-    { accessorKey: 'type', header: 'Type', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140 }
-  ];
+  const validateForm = () => {
+    let errors = {};
+    let hasError = false;
+
+    if (!formData.chargeType) {
+      errors.chargeType = 'Charge Type is required';
+      hasError = true;
+    }
+    if (!formData.chargeCode) {
+      errors.chargeCode = 'Charge Code is required';
+      hasError = true;
+    }
+    // if (!formData.product) {
+    //   errors.product = 'Product is required';
+    //   hasError = true;
+    // }
+    if (!formData.chargeDescription) {
+      errors.chargeDescription = 'Charge Desc is required';
+      hasError = true;
+    }
+    if (!formData.localChargeDescripition) {
+      errors.localChargeDescripition = 'Local Charge Desc is required';
+      hasError = true;
+    }
+    if (!formData.serviceAccountCode) {
+      errors.serviceAccountCode = 'Service Account Code is required';
+      hasError = true;
+    }
+    if (!formData.sacDescripition) {
+      errors.sacDescripition = 'Sac Desc is required';
+      hasError = true;
+    }
+    if (!formData.salesAccount) {
+      errors.salesAccount = 'Sales Account is required';
+      hasError = true;
+    }
+    if (!formData.purchaseAccount) {
+      errors.purchaseAccount = 'Purchase Account is required';
+      hasError = true;
+    }
+    if (!formData.taxable) {
+      errors.taxable = 'Taxable is required';
+      hasError = true;
+    }
+    if (!formData.taxablePercentage) {
+      errors.taxablePercentage = 'Taxable Percentage is required';
+      hasError = true;
+    }
+
+    if (!formData.taxType) {
+      errors.taxType = 'Tax Type is required';
+      hasError = true;
+    }
+    if (!formData.ccFeeApplicable) {
+      errors.ccFeeApplicable = 'CC Fee Applicable is required';
+      hasError = true;
+    }
+    if (!formData.ccJob) {
+      errors.ccJob = 'CC Job is required';
+      hasError = true;
+    }
+    if (!formData.govtSac) {
+      errors.govtSac = 'Govt Sac is required';
+      hasError = true;
+    }
+    if (!formData.excempted) {
+      errors.excempted = 'Excempted is required';
+      hasError = true;
+    }
+    if (!formData.gstTax) {
+      errors.gstTax = 'GST Tax is required';
+      hasError = true;
+    }
+    // if (!formData.gstControl) {
+    //   errors.gstControl = 'Field is required';
+    //   hasError = true;
+    // }
+    // if (!formData.service) {
+    //   errors.service = 'Field is required';
+    //   hasError = true;
+    // }
+    // if (!formData.type) {
+    //   errors.type = 'Field is required';
+    //   hasError = true;
+    // }
+
+    setFieldErrors(errors);
+    return !hasError;
+  };
+
+  const handleSave = async () => {
+    if (validateForm()) {
+      const formDataToSend = {
+        ...(editId && { id: editId }),
+        taxablePercentage: formData.taxablePercentage ? parseInt(formData.taxablePercentage, 10) : 0,
+        chargeType: formData.chargeType,
+        chargeCode: formData.chargeCode,
+        // product: formData.product,
+        chargeDescription: formData.chargeDescription,
+        localChargeDescripition: formData.localChargeDescripition,
+        serviceAccountCode: formData.serviceAccountCode,
+        sacDescripition: formData.sacDescripition,
+        salesAccount: formData.salesAccount,
+        purchaseAccount: formData.purchaseAccount,
+        taxable: formData.taxable,
+        taxType: formData.taxType,
+        ccFeeApplicable: formData.ccFeeApplicable,
+        ccJob: formData.ccJob,
+        govtSac: formData.govtSac,
+        excempted: formData.excempted,
+        gstTax: formData.gstTax,
+        orgId: orgId,
+        // createdBy: loginUserName,
+        active: formData.active
+      };
+
+      console.log('Data to save is:', formDataToSend);
+
+      try {
+        const result = await apiCalls('put', `master/updateCreateChargeTypeRequest`, formDataToSend);
+
+        if (result.status === true) {
+          console.log('Response:', result.data);
+          showToast('success', editId ? 'Charge Type Updated Successfully' : 'Charge Type created successfully');
+          handleClear();
+          getAllChargeTypeRequestByOrgId();
+        } else {
+          showToast('error', result.data.paramObjectsMap.errorMessage || 'Charge Type creation failed');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'An error occurred while saving');
+      }
+    } else {
+      showToast('error', 'Please fill in all required fields');
+    }
+  };
 
   return (
     <>
@@ -417,7 +409,13 @@ export const ChargeTypeRequest = () => {
             <div className="row d-flex ml">
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.chargeType}>
-                  <InputLabel id="demo-simple-select-label">Charge Type</InputLabel>
+                  <InputLabel id="demo-simple-select-label">
+                    {
+                      <span>
+                        Charge Type <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
@@ -427,7 +425,11 @@ export const ChargeTypeRequest = () => {
                     name="chargeType"
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="string">String</MenuItem>
+                    {listValues.map((item) => (
+                      <MenuItem key={item.id} value={item.listCode}>
+                        {item.listCode}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.chargeType && (
                     <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
@@ -440,7 +442,11 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label="Charge Code"
+                  label={
+                    <span>
+                      Charge Code <span className="asterisk">*</span>
+                    </span>
+                  }
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
@@ -452,9 +458,15 @@ export const ChargeTypeRequest = () => {
                   helperText={fieldErrors.chargeCode}
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.product}>
-                  <InputLabel id="demo-simple-select-label">Product</InputLabel>
+                  <InputLabel id="demo-simple-select-label">
+                    {
+                      <span>
+                        Product <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
@@ -472,11 +484,15 @@ export const ChargeTypeRequest = () => {
                     </p>
                   )}
                 </FormControl>
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label="Charge Description"
+                  label={
+                    <span>
+                      Charge Description <span className="asterisk">*</span>
+                    </span>
+                  }
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
@@ -491,7 +507,11 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label="Local Charge Description"
+                  label={
+                    <span>
+                      Local Charge Description <span className="asterisk">*</span>
+                    </span>
+                  }
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
@@ -504,30 +524,32 @@ export const ChargeTypeRequest = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.serviceAccountCode}>
-                  <InputLabel id="demo-simple-select-label">Service Account Code</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Service Account Code"
-                    required
-                    value={formData.serviceAccountCode}
-                    name="serviceAccountCode"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="string">String</MenuItem>
-                  </Select>
-                  {fieldErrors.serviceAccountCode && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.serviceAccountCode}
-                    </p>
-                  )}
-                </FormControl>
+                <TextField
+                  id="outlined-textarea"
+                  label={
+                    <span>
+                      Service Account Code <span className="asterisk">*</span>
+                    </span>
+                  }
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  name="serviceAccountCode"
+                  value={formData.serviceAccountCode}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.serviceAccountCode}
+                  helperText={fieldErrors.serviceAccountCode}
+                />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label="SAC Description"
+                  label={
+                    <span>
+                      SAC Description <span className="asterisk">*</span>
+                    </span>
+                  }
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
@@ -541,7 +563,13 @@ export const ChargeTypeRequest = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.salesAccount}>
-                  <InputLabel id="demo-simple-select-label">Sales Account</InputLabel>
+                  <InputLabel id="demo-simple-select-label">
+                    {
+                      <span>
+                        Sales Account <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
@@ -562,7 +590,13 @@ export const ChargeTypeRequest = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.purchaseAccount}>
-                  <InputLabel id="demo-simple-select-label">Purchase Account</InputLabel>
+                  <InputLabel id="demo-simple-select-label">
+                    {
+                      <span>
+                        Purchase Account <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
@@ -584,7 +618,11 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label="Taxable"
+                  label={
+                    <span>
+                      Taxable <span className="asterisk">*</span>
+                    </span>
+                  }
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
@@ -597,30 +635,32 @@ export const ChargeTypeRequest = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.taxType}>
-                  <InputLabel id="demo-simple-select-label">Tax Type</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Tax Type"
-                    required
-                    value={formData.taxType}
-                    name="taxType"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="string">String</MenuItem>
-                  </Select>
-                  {fieldErrors.taxType && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.taxType}
-                    </p>
-                  )}
-                </FormControl>
+                <TextField
+                  id="outlined-textarea"
+                  label={
+                    <span>
+                      Tax Type <span className="asterisk">*</span>
+                    </span>
+                  }
+                  placeholder="Placeholder"
+                  variant="outlined"
+                  size="small"
+                  name="taxType"
+                  value={formData.taxType}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.taxType}
+                  helperText={fieldErrors.taxType}
+                />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label="CC Fee Applicable"
+                  label={
+                    <span>
+                      CC Fee Applicable <span className="asterisk">*</span>
+                    </span>
+                  }
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
@@ -635,7 +675,11 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="taxable100%"
-                  label="Taxable %"
+                  label={
+                    <span>
+                      Taxable % <span className="asterisk">*</span>
+                    </span>
+                  }
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
@@ -650,7 +694,11 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label="CC Job"
+                  label={
+                    <span>
+                      CC Job <span className="asterisk">*</span>
+                    </span>
+                  }
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
@@ -665,7 +713,11 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label="Govt. SAC"
+                  label={
+                    <span>
+                      Govt. SAC <span className="asterisk">*</span>
+                    </span>
+                  }
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
@@ -679,7 +731,13 @@ export const ChargeTypeRequest = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.excempted}>
-                  <InputLabel id="demo-simple-select-label">Exempted</InputLabel>
+                  <InputLabel id="demo-simple-select-label">
+                    {
+                      <span>
+                        Exempted <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
@@ -702,7 +760,11 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label="GST Tax"
+                  label={
+                    <span>
+                      GST Tax <span className="asterisk">*</span>
+                    </span>
+                  }
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
@@ -714,7 +776,7 @@ export const ChargeTypeRequest = () => {
                   helperText={fieldErrors.gstTax}
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.gstControl}>
                   <InputLabel id="demo-simple-select-label">GST Control</InputLabel>
                   <Select
@@ -776,7 +838,7 @@ export const ChargeTypeRequest = () => {
                     </p>
                   )}
                 </FormControl>
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <FormGroup>
                   <FormControlLabel
@@ -787,7 +849,7 @@ export const ChargeTypeRequest = () => {
               </div>
             </div>
           ) : (
-            <CommonTable data={data} columns={columns} onRowEditTable={handleRowEdit} blockEdit={true} toEdit={getAllChargeTypeById} />
+            <CommonTable data={data} columns={columns} blockEdit={true} toEdit={getAllChargeTypeById} />
           )}
         </div>
       </div>
