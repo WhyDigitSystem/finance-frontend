@@ -33,6 +33,8 @@ import { getAllActiveBranches, getAllActiveRoles } from 'utils/CommonFunctions';
 const UserCreation = () => {
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState(true);
+  const [listViewData, setListViewData] = useState([]);
+
   const [showPassword, setShowPassword] = useState(false);
   const [emailError, setEmailError] = useState(false);
   const [branchData, setBranchData] = useState([]);
@@ -43,6 +45,29 @@ const UserCreation = () => {
   const [roleDataSelect, setRoleDataSelect] = useState([]);
   const [value, setValue] = useState(0);
   const [editMode, setEditMode] = useState(false);
+  const [editId, setEditId] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [listView, setListView] = useState(false);
+  const [empList, setEmpList] = useState([
+    {
+      id: 1,
+      empCode: 'WDS010',
+      empName: 'RAMBABU',
+      email: 'ram@whydigit.com'
+    },
+    {
+      id: 2,
+      empCode: 'WDS012',
+      empName: 'KARUPU',
+      email: 'karupu@whydigit.com'
+    },
+    {
+      id: 3,
+      empCode: 'WDS016',
+      empName: 'RICHARD',
+      email: 'richard@whydigit.com'
+    }
+  ]);
 
   const [formData, setFormData] = useState({
     employeeCode: '',
@@ -56,9 +81,7 @@ const UserCreation = () => {
     deactivatedOn: '', // Rename to match DTO structure
     userType: '',
     reportingTO: '',
-    orgId: orgId, // Assuming orgId is defined elsewhere in your component
-    branchAccessDTO: [],
-    userRoleDTO: []
+    orgId: orgId // Assuming orgId is defined elsewhere in your component
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -76,17 +99,13 @@ const UserCreation = () => {
     orgId: orgId
   });
 
-  const columns = [
+  const listViewColumns = [
     { accessorKey: 'employeeCode', header: 'EmployeeCode', size: 140 },
     { accessorKey: 'employeeName', header: 'Name', size: 140 },
-    { accessorKey: 'userId', header: 'User Id', size: 140 },
     { accessorKey: 'userName', header: 'User Name', size: 140 },
     { accessorKey: 'email', header: 'Email', size: 140 },
-    { accessorKey: 'reportingTO', header: 'Reporting To', size: 140 }
+    { accessorKey: 'active', header: 'Active', size: 140 }
   ];
-
-  const theme = useTheme();
-  const anchorRef = useRef(null);
 
   const [branchTableData, setBranchTableData] = useState([
     {
@@ -112,25 +131,76 @@ const UserCreation = () => {
   ]);
 
   useEffect(() => {
-    getAllUserByOrgId();
+    getAllUsers();
     getAllBranches();
     getAllRoles();
   }, []);
 
-  useEffect(() => {
-    // Reset the role to an empty string if the initial role value is not in the fetched roleDataSelect options
-    if (roleDataSelect.length > 0 && !roleDataSelect.includes(formData.role)) {
-      setFormData((prevFormData) => ({ ...prevFormData }));
-    }
-  }, [roleDataSelect]);
-
   const handleInputChange = (e) => {
-    const { name, value, type, checked } = e.target;
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+    const nameRegex = /^[A-Za-z ]*$/;
+    const alphaNumericRegex = /^[A-Za-z0-9]*$/;
+    const numericRegex = /^[0-9]*$/;
+    const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
+    const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
 
-    const parsedValue = type === 'checkbox' ? checked : name === 'newRate' && value !== '' ? parseInt(value) : value;
+    let errorMessage = '';
 
-    setFormData({ ...formData, [name]: parsedValue });
-    setFieldErrors({ ...fieldErrors, [name]: false });
+    switch (name) {
+      case 'employeeName':
+        if (!nameRegex.test(value)) {
+          errorMessage = 'Only alphabetic characters are allowed';
+        }
+        break;
+      case 'mobile':
+        if (!numericRegex.test(value)) {
+          errorMessage = 'Only numeric characters are allowed';
+        } else if (value.length > 10) {
+          errorMessage = 'Invalid Format';
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    if (errorMessage) {
+      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+    } else {
+      if (name === 'active') {
+        setFormData({ ...formData, [name]: checked });
+      } else if (name === 'allIndiaAccess') {
+        setFormData({ ...formData, [name]: checked });
+      } else if (name === 'email') {
+        setFormData({ ...formData, [name]: value.toLowerCase() });
+      } else if (name === 'userName') {
+        setFormData({ ...formData, [name]: value });
+      } else if (name === 'employeeCode') {
+        const selectedEmp = empList.find((emp) => emp.empCode === value);
+        if (selectedEmp) {
+          setFormData((prevData) => ({
+            ...prevData,
+            employeeCode: selectedEmp.empCode,
+            employeeName: selectedEmp.empName,
+            email: selectedEmp.email
+          }));
+        }
+      } else {
+        setFormData({ ...formData, [name]: value.toUpperCase() });
+      }
+
+      setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      // Preserve the cursor position for text-based inputs
+      if (type === 'text' || type === 'textarea') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement && inputElement.setSelectionRange) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
+      }
+    }
   };
 
   const handleSelectChange = (e) => {
@@ -156,73 +226,72 @@ const UserCreation = () => {
     }
   };
 
-  const getAllUserByOrgId = async () => {
+  const getAllUsers = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/user/getAllUserByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `auth/allUsersByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
-      if (response.status === 200) {
-        setData(response.data.paramObjectsMap.userVO);
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.userVO);
       } else {
-        // Handle error
-        console.error('API Error:', response.data);
+        console.error('API Error:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const getAllUserById = async (emitterId) => {
-    console.log('first', emitterId);
-    setShowForm(true);
+  const getUserById = async (row) => {
+    console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
+    setEditId(row.original.id);
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/user/getUserById?userId=${emitterId.original.userId}`);
+      const response = await apiCalls('get', `auth/getUserById?userId=${row.original.id}`);
       console.log('API Response:', response);
 
-      if (response.status === 200) {
-        setDataToEdit(response.data.paramObjectsMap.userVO);
-        const userVO = response.data.paramObjectsMap.userVO;
-        setEditMode(true);
+      if (response.status === true) {
+        setListView(false);
+        const particularUser = response.paramObjectsMap.userVO;
+        const foundBranch1 = branchList.find((branch) => branch.branchCode === particularUser.branchAccessibleVO.branchcode);
+        console.log('THE FOUND BRANCH 1 IS:', foundBranch1);
 
         setFormData({
-          employeeCode: userVO.employeeCode || '',
-          employeeName: userVO.employeeName || '',
-          userId: userVO.userId || '',
-          userName: userVO.userName || '',
-          password: '********',
-          email: userVO.email || '',
-          active: userVO.active || false,
-          allIndiaAccess: userVO.allIndiaAccess || false,
-          deactivatedOn: userVO.deactivatedOn || '', // Assuming deactivatedOn matches your DTO structure
-          userType: userVO.userType || '',
-          reportingTO: userVO.reportingTO || '',
-          orgId: userVO.orgId || orgId, // If orgId is not in the response, keep the existing orgId
-          branchAccessDTO: userVO.branchAccessVO || [], // Assuming branchAccessVO matches the structure
-          userRoleDTO: userVO.userRoleVO || [] // Assuming userRoleVO matches the structure
+          userName: particularUser.userName,
+          userType: particularUser.userType,
+          employeeCode: particularUser.employeeCode || '',
+          employeeName: particularUser.employeeName,
+          email: particularUser.email,
+          allIndiaAccess: particularUser.allIndiaAcces,
+          active: particularUser.active
         });
+        setRoleTableData(
+          particularUser.roleAccessVO.map((role) => ({
+            id: role.id,
+            role: role.role,
+            // roleId: role.roleId,
+            startDate: role.startDate,
+            endDate: role.endDate
+          }))
+        );
 
-        handleChange(1);
-
-        console.log('DataToEdit', response.data.paramObjectsMap.userVO);
+        const alreadySelectedBranch = particularUser.branchAccessibleVO.map((role) => {
+          const foundBranch = branchList.find((branch) => branch.branchCode === role.branchcode);
+          console.log(`Searching for branch with code ${role.branchcode}:`, foundBranch);
+          return {
+            id: role.id,
+            branchCode: foundBranch ? foundBranch.branchCode : 'Not Found',
+            branch: foundBranch.branch ? foundBranch.branch : 'Not Found'
+          };
+        });
+        setBranchTableData(alreadySelectedBranch);
       } else {
-        // Handle error
-        console.error('API Error:', response.data);
+        console.error('API Error:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const formatDate = (date) => {
-    if (!date) return '';
-    const formattedDate = new Date(date);
-    const year = formattedDate.getFullYear();
-    const month = String(formattedDate.getMonth() + 1).padStart(2, '0'); // Months are zero based
-    const day = String(formattedDate.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-
-  const handleSave = () => {
+  const handleSave = async () => {
     const errors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.userName) {
@@ -242,11 +311,6 @@ const UserCreation = () => {
     } else if (!emailRegex.test(formData.email)) {
       errors.email = 'Invalid MailID Format';
     }
-    // if (!formData.mobileNo) {
-    //   errors.mobileNo = 'Mobile No is required';
-    // } else if (formData.mobileNo.length < 10) {
-    //   errors.mobileNo = ' Mobile No must be in 10 digit';
-    // }
 
     let roleTableDataValid = true;
     const newTableErrors = roleTableData.map((row) => {
@@ -257,10 +321,6 @@ const UserCreation = () => {
       }
       if (!row.startDate) {
         rowErrors.startDate = 'Start Date is required';
-        roleTableDataValid = false;
-      }
-      if (!row.endDate) {
-        rowErrors.endDate = 'End Date is required';
         roleTableDataValid = false;
       }
 
@@ -284,55 +344,59 @@ const UserCreation = () => {
     setBranchTableErrors(newTableErrors1);
 
     if (Object.keys(errors).length === 0 && roleTableDataValid && branchTableDataValid) {
-      setFieldErrors(errors);
-      return; // Prevent API call if there are errors
-    }
-    const encryptedPassword = encryptPassword('Wds@2022');
+      setIsLoading(true);
 
-    const formDataWithEncryptedPassword = {
-      ...formData,
-      password: encryptedPassword,
-      userId: parseInt(formData.userId, 10),
-      userRoleDTO: formData.userRoleDTO.map((item) => ({
-        ...item,
-        startdate: formatDate(item.startdate),
-        enddate: formatDate(item.enddate)
-      }))
-    };
+      const encryptedPassword = encryptPassword('Wds@2022');
+      const roleVo = roleTableData.map((row) => ({
+        ...(editId && { id: row.id }),
+        role: row.role,
+        // roleId: row.roleId,
+        startDate: dayjs(row.startDate).format('YYYY-MM-DD'),
+        endDate: row.endDate ? dayjs(row.endDate).format('YYYY-MM-DD') : null
+      }));
+      const branchVo = branchTableData.map((row) => ({
+        ...(editId && { id: row.id }),
+        branchCode: row.branchCode,
+        branch: row.branch
+      }));
 
-    axios
-      .put(`${process.env.REACT_APP_API_URL}/api/user/createuser`, formDataWithEncryptedPassword)
-      .then((response) => {
-        console.log('Response:', response.data);
-        if (response.data.status) {
+      const saveFormData = {
+        ...formData,
+        userName: formData.userName,
+        password: encryptedPassword,
+        userType: formData.userType,
+        employeeCode: formData.employeeCode,
+        employeeName: formData.employeeName,
+        email: formData.email,
+        allIndiaAcces: formData.allIndiaAccess,
+        active: formData.active,
+        orgId: orgId,
+        roleAccessDTO: roleVo,
+        branchAccessDTOList: branchVo
+      };
+      console.log('DATA TO SAVE IS:', saveFormData);
+      try {
+        const response = await apiCalls('put', `auth/signup`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? 'User Updated Successfully' : 'User created successfully');
           handleClear();
-          showToast('success', editMode ? ' User Updated Successfully' : 'User created successfully');
+          // getAllUsers();
+          setIsLoading(false);
         } else {
-          showToast('error', response.data.errorMessage || 'User creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'User creation failed');
+          setIsLoading(false);
         }
-      })
-      .catch((error) => {
+      } catch (error) {
         console.error('Error:', error);
-        const errorMessage = error.response?.data?.errorMessage || 'An error occurred';
-        showToast('error', errorMessage);
-      });
+        showToast('error', 'User creation failed');
+        setIsLoading(false);
+      }
+    } else {
+      setFieldErrors(errors);
+    }
   };
 
-  const handleList = () => {
-    setShowForm(!showForm);
-    setFieldErrors({
-      employeeCode: false,
-      employeeName: false,
-      gender: false,
-      branch: false,
-      department: false,
-      designation: false,
-      dateOfBirth: false,
-      joiningDate: false,
-      password: false,
-      role: false
-    });
-  };
   const handleClear = () => {
     setFormData({
       employeeCode: '',
@@ -343,12 +407,10 @@ const UserCreation = () => {
       email: '',
       active: true,
       allIndiaAccess: false,
-      deactivatedOn: '', // Rename to match DTO structure
+      deactivatedOn: '',
       userType: '',
       reportingTO: '',
-      orgId: orgId,
-      branchAccessDTO: [],
-      userRoleDTO: []
+      orgId: orgId
     });
     setFieldErrors({
       employeeCode: false,
@@ -362,6 +424,11 @@ const UserCreation = () => {
       password: false,
       role: false
     });
+    setRoleTableData([{ id: 1, role: '', roleId: '', startDate: null, endDate: null }]);
+    setRoleTableDataErrors('');
+    setBranchTableData([{ id: 1, branchCode: '', branch: '' }]);
+    setBranchTableErrors('');
+    setEditId('');
   };
 
   const handleKeyDown = (e, row, table) => {
@@ -495,61 +562,10 @@ const UserCreation = () => {
       return newErrors;
     });
   };
-
-  const genderVO = ['Male', 'Female', 'Other'];
-
-  const handleDateChange = (name, date) => {
-    if (date && dayjs(date).isValid()) {
-      const dateString = dayjs(date).toISOString();
-      setFormData({ ...formData, [name]: dateString });
-      setFieldErrors({ ...fieldErrors, [name]: false });
-    } else {
-      setFormData({ ...formData, [name]: null });
-    }
+  const handleView = () => {
+    setListView(!listView);
   };
 
-  const handleRoleTableUpdate = useCallback((updatedRoles) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      userRoleDTO: updatedRoles
-    }));
-  }, []);
-
-  const handleBranchTableUpdate = useCallback((updatedBranch) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      branchAccessDTO: updatedBranch
-    }));
-  }, []);
-
-  const editEmployee = async (updatedBranch) => {
-    try {
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/basicMaster/updateCreateEmployee`, updatedBranch);
-      if (response.status === 200) {
-        toast.success('Employee Updated Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getAllUserByOrgId();
-      } else {
-        console.error('API Error:', response.data);
-        toast.error('Failed to Update Employee', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-      }
-    } catch (error) {
-      console.error('Error updating country:', error);
-      toast.error('Error Updating Employee', {
-        autoClose: 2000,
-        theme: 'colored'
-      });
-    }
-  };
-
-  const handleTogglePasswordVisibility = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword);
-  };
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
@@ -564,11 +580,11 @@ const UserCreation = () => {
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
-            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} margin="0 10px 0 10px" />
+            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            {!editId && <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} margin="0 10px 0 10px" />}
           </div>
 
-          {showForm ? (
+          {!listView ? (
             <>
               <div className="row d-flex ml">
                 <div className="col-md-3 mb-3">
@@ -588,36 +604,6 @@ const UserCreation = () => {
                   />
                 </div>
 
-                <div className="col-md-3 mb-3">
-                  <TextField
-                    id="outlined-textarea-password"
-                    label="Password"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    required
-                    disabled={editMode}
-                    name="password"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                    type={showPassword ? 'text' : 'password'} // Toggle password visibility based on showPassword state
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.password ? 'This field is required' : ''}</span>}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={handleTogglePasswordVisibility}
-                            onMouseDown={(e) => e.preventDefault()} // Prevents focusing the TextField
-                            edge="end"
-                            disabled={editMode}
-                          >
-                            {showPassword ? <Visibility /> : <VisibilityOff />}
-                          </IconButton>
-                        </InputAdornment>
-                      )
-                    }}
-                  />
-                </div>
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.userType}>
                     <InputLabel id="userType-label">User Type</InputLabel>
@@ -639,19 +625,27 @@ const UserCreation = () => {
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
-                  <TextField
-                    id="outlined-textarea-zip"
-                    label="Employee Code"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="employeeCode"
-                    value={formData.employeeCode}
-                    onChange={handleInputChange}
-                    required
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeCode ? 'This field is required' : ''}</span>}
-                    inputProps={{ maxLength: 10 }}
-                  />
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.employeeCode}>
+                    <InputLabel id="employeeCode-label">Employee Code</InputLabel>
+                    <Select
+                      labelId="employeeCode-label"
+                      label="employeeCode"
+                      value={formData.employeeCode}
+                      onChange={handleInputChange}
+                      name="employeeCode"
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      {empList.length > 0 &&
+                        empList.map((emp, index) => (
+                          <MenuItem key={index} value={emp.empCode}>
+                            {emp.empCode} {/* Corrected the way to display employee code */}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                    {fieldErrors.employeeCode && <FormHelperText>{fieldErrors.employeeCode}</FormHelperText>}
+                  </FormControl>
                 </div>
 
                 <div className="col-md-3 mb-3">
@@ -664,7 +658,7 @@ const UserCreation = () => {
                     name="employeeName"
                     value={formData.employeeName}
                     onChange={handleInputChange}
-                    required
+                    disabled
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeName ? 'This field is required' : ''}</span>}
                     inputProps={{ maxLength: 10 }}
                   />
@@ -680,12 +674,12 @@ const UserCreation = () => {
                     name="email"
                     value={formData.email}
                     onChange={handleInputChange}
-                    required
+                    disabled
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.email ? 'This field is required' : ''}</span>}
                     inputProps={{ maxLength: 40 }}
                   />
                 </div>
-                <div className="col-md-3 mb-3">
+                {/* <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.reportingTO}>
                     <InputLabel id="reportingTO-label">Reporting To</InputLabel>
                     <Select
@@ -698,16 +692,16 @@ const UserCreation = () => {
                       <MenuItem value="">
                         <em>None</em>
                       </MenuItem>
-                      {roleList &&
-                        roleList.map((role, index) => (
-                          <MenuItem key={index} value={role.role}>
-                            {role.role}
+                      {empList.length > 0 &&
+                        empList.map((emp, index) => (
+                          <MenuItem key={index} value={emp.empCode}>
+                            {emp.empCode}
                           </MenuItem>
                         ))}
                     </Select>
                     {fieldErrors.reportingTO && <FormHelperText>{fieldErrors.reportingTO}</FormHelperText>}
                   </FormControl>
-                </div>
+                </div> */}
 
                 <div className="col-md-3 mb-3">
                   <FormGroup>
@@ -977,7 +971,7 @@ const UserCreation = () => {
               </div>
             </>
           ) : (
-            <CommonTable data={data && data} columns={columns} editCallback={editEmployee} blockEdit={true} toEdit={getAllUserById} />
+            <CommonTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getUserById} />
           )}
         </div>
       </div>

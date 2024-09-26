@@ -4,23 +4,14 @@ import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { Avatar, ButtonBase, FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
 import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import axios from 'axios';
 import { useRef, useState, useMemo, useEffect } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import IconButton from '@mui/material/IconButton';
-import EditIcon from '@mui/icons-material/Edit';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import BrowserUpdatedIcon from '@mui/icons-material/BrowserUpdated';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import apiCalls from 'apicall';
@@ -105,56 +96,49 @@ export const ChartOfCostcenter = () => {
   };
 
   useEffect(() => {
-    // getAllBranches();
-    // getAllCountries();
-    // if (formData.country) {
-    //   getAllStates();
-    // }
-    // if (formData.state) {
-    //   getAllCities();
-    // }
-    // getAllCustomers();
+    // getAllChartofCostCenter();
   }, []);
 
-  const getAllCountries = async () => {
+  // const getAllCountries = async () => {
+  //   try {
+  //     const countryData = await getAllActiveCountries(orgId);
+  //     setCountryList(countryData);
+  //   } catch (error) {
+  //     console.error('Error fetching country data:', error);
+  //   }
+  // };
+  // const getAllStates = async () => {
+  //   try {
+  //     const stateData = await getAllActiveStatesByCountry(formData.country, orgId);
+  //     setStateList(stateData);
+  //   } catch (error) {
+  //     console.error('Error fetching country data:', error);
+  //   }
+  // };
+  // const getAllCities = async () => {
+  //   try {
+  //     const cityData = await getAllActiveCitiesByState(formData.state, orgId);
+  //     setCityList(cityData);
+  //   } catch (error) {
+  //     console.error('Error fetching country data:', error);
+  //   }
+  // };
+  // const getAllBranches = async () => {
+  //   try {
+  //     const branchData = await getAllActiveBranches(orgId);
+  //     setBranchList(branchData);
+  //   } catch (error) {
+  //     console.error('Error fetching country data:', error);
+  //   }
+  // };
+
+  const getAllChartofCostCenter = async () => {
     try {
-      const countryData = await getAllActiveCountries(orgId);
-      setCountryList(countryData);
-    } catch (error) {
-      console.error('Error fetching country data:', error);
-    }
-  };
-  const getAllStates = async () => {
-    try {
-      const stateData = await getAllActiveStatesByCountry(formData.country, orgId);
-      setStateList(stateData);
-    } catch (error) {
-      console.error('Error fetching country data:', error);
-    }
-  };
-  const getAllCities = async () => {
-    try {
-      const cityData = await getAllActiveCitiesByState(formData.state, orgId);
-      setCityList(cityData);
-    } catch (error) {
-      console.error('Error fetching country data:', error);
-    }
-  };
-  const getAllBranches = async () => {
-    try {
-      const branchData = await getAllActiveBranches(orgId);
-      setBranchList(branchData);
-    } catch (error) {
-      console.error('Error fetching country data:', error);
-    }
-  };
-  const getAllCustomers = async () => {
-    try {
-      const response = await apiCalls('get', `warehousemastercontroller/customer?orgid=${orgId}`);
+      const response = await apiCalls('get', `/master/getAllCostCenterByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.CustomerVO);
+        setListViewData(response.paramObjectsMap.costCenterVO);
       } else {
         console.error('API Error:', response);
       }
@@ -162,142 +146,139 @@ export const ChartOfCostcenter = () => {
       console.error('Error fetching data:', error);
     }
   };
+  const getChartofCostCenterById = async (row) => {
+    console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `warehousemastercontroller/customer/${row.original.id}`);
+      console.log('API Response:', response);
 
-  // const getCustomerById = async (row) => {
-  //   console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
-  //   setEditId(row.original.id);
-  //   try {
-  //     const response = await apiCalls('get', `warehousemastercontroller/customer/${row.original.id}`);
-  //     console.log('API Response:', response);
+      if (response.status === true) {
+        setListView(false);
+        const particularCustomer = response.paramObjectsMap.Customer;
+        console.log('THE PARTICULAR CUSTOMER IS:', particularCustomer);
 
-  //     if (response.status === true) {
-  //       setListView(false);
-  //       const particularCustomer = response.paramObjectsMap.Customer;
-  //       console.log('THE PARTICULAR CUSTOMER IS:', particularCustomer);
+        setFormData({
+          customer: particularCustomer.customerName,
+          shortName: particularCustomer.customerShortName,
+          pan: particularCustomer.panNo,
+          contactPerson: particularCustomer.contactPerson,
+          mobile: particularCustomer.mobileNumber,
+          gstReg: particularCustomer.gstRegistration,
+          email: particularCustomer.emailId,
+          groupOf: particularCustomer.groupOf,
+          tanNo: particularCustomer.tanNo,
+          address: particularCustomer.address1,
+          country: particularCustomer.country,
+          state: particularCustomer.state,
+          city: particularCustomer.city,
+          gst: particularCustomer.gstNo,
+          active: particularCustomer.active === 'Active' ? true : false
+        });
+        setDetailsTableData(
+          particularCustomer.clientVO.map((cl) => ({
+            id: cl.id,
+            client: cl.client,
+            clientCode: cl.clientCode,
+            clientType: cl.clientType,
+            fifoFife: cl.fifofife
+          }))
+        );
 
-  //       setFormData({
-  //         customer: particularCustomer.customerName,
-  //         shortName: particularCustomer.customerShortName,
-  //         pan: particularCustomer.panNo,
-  //         contactPerson: particularCustomer.contactPerson,
-  //         mobile: particularCustomer.mobileNumber,
-  //         gstReg: particularCustomer.gstRegistration,
-  //         email: particularCustomer.emailId,
-  //         groupOf: particularCustomer.groupOf,
-  //         tanNo: particularCustomer.tanNo,
-  //         address: particularCustomer.address1,
-  //         country: particularCustomer.country,
-  //         state: particularCustomer.state,
-  //         city: particularCustomer.city,
-  //         gst: particularCustomer.gstNo,
-  //         active: particularCustomer.active === 'Active' ? true : false
-  //       });
-  //       setDetailsTableData(
-  //         particularCustomer.clientVO.map((cl) => ({
-  //           id: cl.id,
-  //           client: cl.client,
-  //           clientCode: cl.clientCode,
-  //           clientType: cl.clientType,
-  //           fifoFife: cl.fifofife
-  //         }))
-  //       );
+        const alreadySelectedBranch = particularCustomer.clientBranchVO.map((br) => {
+          const foundBranch = branchList.find((branch) => branch.branchCode === br.branchCode);
+          console.log(`Searching for branch with code ${br.branchcode}:`, foundBranch);
+          return {
+            id: br.id,
+            branchCode: foundBranch ? foundBranch.branchCode : 'Not Found',
+            branch: foundBranch.branch ? foundBranch.branch : 'Not Found'
+          };
+        });
+        setDetailsTableData(alreadySelectedBranch);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const handleInputChange = (e) => {
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+    const nameRegex = /^[A-Za-z ]*$/;
+    const alphaNumericRegex = /^[A-Za-z0-9]*$/;
+    const numericRegex = /^[0-9]*$/;
+    const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
+    const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
 
-  //       const alreadySelectedBranch = particularCustomer.clientBranchVO.map((br) => {
-  //         const foundBranch = branchList.find((branch) => branch.branchCode === br.branchCode);
-  //         console.log(`Searching for branch with code ${br.branchcode}:`, foundBranch);
-  //         return {
-  //           id: br.id,
-  //           branchCode: foundBranch ? foundBranch.branchCode : 'Not Found',
-  //           branch: foundBranch.branch ? foundBranch.branch : 'Not Found'
-  //         };
-  //       });
-  //       setDetailsTableData(alreadySelectedBranch);
-  //     } else {
-  //       console.error('API Error:', response);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
+    let errorMessage = '';
 
-  // const handleInputChange = (e) => {
-  //   const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
-  //   const numericRegex = /^[0-9]*$/;
-  //   const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
-  //   const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    switch (name) {
+      case 'customer':
+      case 'shortName':
+      case 'contactPerson':
+        if (!nameRegex.test(value)) {
+          errorMessage = 'Only alphabetic characters are allowed';
+        }
+        break;
+      case 'pan':
+        if (!alphaNumericRegex.test(value)) {
+          errorMessage = 'Only alphanumeric characters are allowed';
+        } else if (value.length > 10) {
+          errorMessage = 'Invalid Format';
+        }
+        break;
+      case 'branchName':
+        if (!branchNameRegex.test(value)) {
+          errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
+        }
+        break;
+      case 'mobile':
+        if (!numericRegex.test(value)) {
+          errorMessage = 'Only numeric characters are allowed';
+        } else if (value.length > 10) {
+          errorMessage = 'Invalid Format';
+        }
+        break;
+      case 'gst':
+        if (formData.gstReg === 'YES') {
+          if (!alphaNumericRegex.test(value)) {
+            errorMessage = 'Only alphanumeric characters are allowed';
+          } else if (value.length > 15) {
+            errorMessage = 'Invalid Format';
+          }
+        }
+        break;
+      default:
+        break;
+    }
 
-  //   let errorMessage = '';
+    if (errorMessage) {
+      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+    } else {
+      if (name === 'active') {
+        setFormData({ ...formData, [name]: checked });
+      } else if (name === 'email') {
+        setFormData({ ...formData, [name]: value.toLowerCase() });
+      } else if (name === 'gstReg' && value === 'NO') {
+        setFormData({ ...formData, [name]: value, gst: '' });
+        setFieldErrors((prevErrors) => ({ ...prevErrors, gst: '' }));
+      } else {
+        setFormData({ ...formData, [name]: value.toUpperCase() });
+      }
 
-  //   switch (name) {
-  //     case 'customer':
-  //     case 'shortName':
-  //     case 'contactPerson':
-  //       if (!nameRegex.test(value)) {
-  //         errorMessage = 'Only alphabetic characters are allowed';
-  //       }
-  //       break;
-  //     case 'pan':
-  //       if (!alphaNumericRegex.test(value)) {
-  //         errorMessage = 'Only alphanumeric characters are allowed';
-  //       } else if (value.length > 10) {
-  //         errorMessage = 'Invalid Format';
-  //       }
-  //       break;
-  //     case 'branchName':
-  //       if (!branchNameRegex.test(value)) {
-  //         errorMessage = 'Only alphanumeric characters and @, _, -, * are allowed';
-  //       }
-  //       break;
-  //     case 'mobile':
-  //       if (!numericRegex.test(value)) {
-  //         errorMessage = 'Only numeric characters are allowed';
-  //       } else if (value.length > 10) {
-  //         errorMessage = 'Invalid Format';
-  //       }
-  //       break;
-  //     case 'gst':
-  //       if (formData.gstReg === 'YES') {
-  //         if (!alphaNumericRegex.test(value)) {
-  //           errorMessage = 'Only alphanumeric characters are allowed';
-  //         } else if (value.length > 15) {
-  //           errorMessage = 'Invalid Format';
-  //         }
-  //       }
-  //       break;
-  //     default:
-  //       break;
-  //   }
+      setFieldErrors({ ...fieldErrors, [name]: '' });
 
-  //   if (errorMessage) {
-  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-  //   } else {
-  //     if (name === 'active') {
-  //       setFormData({ ...formData, [name]: checked });
-  //     } else if (name === 'email') {
-  //       setFormData({ ...formData, [name]: value.toLowerCase() });
-  //     } else if (name === 'gstReg' && value === 'NO') {
-  //       setFormData({ ...formData, [name]: value, gst: '' });
-  //       setFieldErrors((prevErrors) => ({ ...prevErrors, gst: '' }));
-  //     } else {
-  //       setFormData({ ...formData, [name]: value.toUpperCase() });
-  //     }
-
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-
-  //     // Preserve the cursor position for text-based inputs
-  //     if (type === 'text' || type === 'textarea') {
-  //       setTimeout(() => {
-  //         const inputElement = document.getElementsByName(name)[0];
-  //         if (inputElement && inputElement.setSelectionRange) {
-  //           inputElement.setSelectionRange(selectionStart, selectionEnd);
-  //         }
-  //       }, 0);
-  //     }
-  //   }
-  // };
-
+      // Preserve the cursor position for text-based inputs
+      if (type === 'text' || type === 'textarea') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement && inputElement.setSelectionRange) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
+      }
+    }
+  };
   const handleClear = () => {
     setDetailsTableData([
       {
@@ -509,7 +490,7 @@ export const ChartOfCostcenter = () => {
               data={listViewData}
               columns={listViewColumns}
               blockEdit={true}
-              // toEdit={getListOfValueById}
+              // toEdit={getChartofCostCenterById}
             />
           </div>
         ) : (
