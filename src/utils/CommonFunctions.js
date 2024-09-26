@@ -150,6 +150,45 @@ export const getAllActiveScreens = async () => {
     return error;
   }
 };
+export const getAllActiveRoles = async (orgId) => {
+  try {
+    // const response = await apiCalls('get', `auth/allRolesByOrgId?orgId=${orgId}`);
+    const response = await apiCalls('get', `auth/allRolesByOrgId?orgId=1000000001`);
+    console.log('API Response:', response);
+
+    if (response.status === true) {
+      const rolesData = response.paramObjectsMap.rolesVO.filter((row) => row.active === 'Active').map(({ id, role }) => ({ id, role }));
+
+      return rolesData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
+export const getAllActiveBranches = async (orgId) => {
+  try {
+    const response = await apiCalls('get', `master/branch?orgid=${orgId}`);
+    console.log('API Response:', response);
+
+    if (response.status === true) {
+      const branchData = response.paramObjectsMap.branchVO
+        .filter((row) => row.active === 'Active')
+        .map(({ id, branch, branchCode }) => ({ id, branch, branchCode }));
+
+      return branchData;
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
 
 export const initCaps = (str) => {
   return str
