@@ -13,6 +13,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import CommonTable from 'views/basicMaster/CommonTable';
+import { FormHelperText } from '@mui/material';
 
 const CostCenter = () => {
   const theme = useTheme();
@@ -37,23 +38,115 @@ const CostCenter = () => {
     getAllCostCenterByOrgId();
   }, []);
 
-  const handleInputChange = (e) => {
-    const { id, value, checked, type } = e.target;
-    setFormValues((prev) => ({
-      ...prev,
-      [id]: type === 'checkbox' ? checked : value
-    }));
+  // const handleInputChange = (e) => {
+  //   const { id, value, checked, type } = e.target;
+  //   setFormValues((prev) => ({
+  //     ...prev,
+  //     [id]: type === 'checkbox' ? checked : value
+  //   }));
 
-    // Validate the input fields
-    if (id === 'valueCode' || id === 'valueDescription') {
-      if (!value.trim()) {
+  //   // Validate the input fields
+  //   if (id === 'valueCode' || id === 'valueDescription') {
+  //     if (!value.trim()) {
+  //       setValidationErrors((prev) => ({
+  //         ...prev,
+  //         [id]: 'This field is required'
+  //       }));
+  //     } else {
+  //       setValidationErrors((prev) => {
+  //         const { [id]: removed, ...rest } = prev;
+  //         return rest;
+  //       });
+  //     }
+  //   }
+  // };
+
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked, type } = e.target;
+
+  //   // Update form values
+  //   setFormValues((prev) => ({
+  //     ...prev,
+  //     [name]: type === 'checkbox' ? checked : value
+  //   }));
+
+  //   // Validate the input fields
+  //   if (name === 'valueCode' || name === 'valueDescription') {
+  //     if (!value.trim()) {
+  //       setValidationErrors((prev) => ({
+  //         ...prev,
+  //         [name]: 'This field is required'
+  //       }));
+  //     } else {
+  //       setValidationErrors((prev) => {
+  //         const { [name]: removed, ...rest } = prev;
+  //         return rest;
+  //       });
+  //     }
+  //   }
+  // };
+
+  const handleInputChange = (e) => {
+    const { name, value, checked, type } = e.target;
+
+    // Convert input to uppercase
+    const uppercasedValue = value.toUpperCase();
+
+    // Validation regex
+    const numberOnlyRegex = /^[0-9]*$/; // Numbers only
+    const alphanumericRegex = /^[a-zA-Z0-9\s]*$/; // Alphanumeric only (letters, numbers, spaces)
+
+    // Check and restrict input for valueCode
+    if (name === 'valueCode') {
+      // Restrict input to numbers only
+      const filteredValue = uppercasedValue.replace(/[^0-9\s]/g, ''); // Remove any non-numeric characters
+      setFormValues((prev) => ({
+        ...prev,
+        [name]: filteredValue
+      }));
+
+      // Show error if the user entered any non-numeric characters
+      if (uppercasedValue !== filteredValue) {
         setValidationErrors((prev) => ({
           ...prev,
-          [id]: 'This field is required'
+          [name]: 'Only numbers are allowed'
+        }));
+      } else if (!filteredValue.trim()) {
+        setValidationErrors((prev) => ({
+          ...prev,
+          [name]: 'This field is required'
         }));
       } else {
         setValidationErrors((prev) => {
-          const { [id]: removed, ...rest } = prev;
+          const { [name]: removed, ...rest } = prev;
+          return rest;
+        });
+      }
+    }
+
+    // Check and restrict input for valueDescription
+    if (name === 'valueDescription') {
+      // Restrict input to alphanumeric characters and spaces only
+      const filteredValue = uppercasedValue.replace(/[^a-zA-Z0-9\s]/g, ''); // Remove any special characters
+      setFormValues((prev) => ({
+        ...prev,
+        [name]: filteredValue
+      }));
+
+      // Show error if the user entered any non-alphanumeric characters
+      if (uppercasedValue !== filteredValue) {
+        setValidationErrors((prev) => ({
+          ...prev,
+          [name]: 'Only alphabets and numbers are allowed'
+        }));
+      } else if (!filteredValue.trim()) {
+        setValidationErrors((prev) => ({
+          ...prev,
+          [name]: 'This field is required'
+        }));
+      } else {
+        setValidationErrors((prev) => {
+          const { [name]: removed, ...rest } = prev;
           return rest;
         });
       }
@@ -89,8 +182,8 @@ const CostCenter = () => {
           autoClose: 2000,
           theme: 'colored'
         });
-        getAllCostCenterByOrgId();
         handleClear();
+        getAllCostCenterByOrgId();
         setIsLoading(false);
       } catch (error) {
         console.error('Save Failed', error);
@@ -142,9 +235,9 @@ const CostCenter = () => {
 
   const validateForm = () => {
     const errors = {};
-    // if (!formValues.dimensionType.trim()) {
-    //   errors.dimensionType = 'This field is required';
-    // }
+    if (!formValues.dimensionType.trim()) {
+      errors.dimensionType = 'This field is required';
+    }
     if (!formValues.valueCode.trim()) {
       errors.valueCode = 'This field is required';
     }
@@ -170,20 +263,18 @@ const CostCenter = () => {
             <div className="row d-flex">
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="dimensionType" required>
-                    Dimention Type
-                  </InputLabel>
+                  <InputLabel id="dimensionType">Dimension Type</InputLabel>
                   <Select
                     labelId="dimensionType"
                     id="dimensionType"
+                    label="Dimension Type"
+                    onChange={handleInputChange}
                     name="dimensionType"
                     value={formValues.dimensionType}
-                    onChange={handleInputChange}
-                    label="Accounts Category"
                   >
                     <MenuItem value="Others">Others</MenuItem>
                   </Select>
-                  {validationErrors.dimensionType && <span style={{ color: 'red' }}>This field is required</span>}
+                  {validationErrors.dimensionType && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -191,6 +282,7 @@ const CostCenter = () => {
                   <TextField
                     id="valueCode"
                     label="Value Code"
+                    name="valueCode"
                     size="small"
                     required
                     value={formValues.valueCode}
@@ -206,6 +298,7 @@ const CostCenter = () => {
                   <TextField
                     id="valueDescription"
                     label="Value Description"
+                    name="valueDescription"
                     size="small"
                     required
                     value={formValues.valueDescription}
@@ -222,6 +315,7 @@ const CostCenter = () => {
                     control={
                       <Checkbox
                         id="active"
+                        name="active"
                         checked={formValues.active}
                         onChange={handleInputChange}
                         sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
