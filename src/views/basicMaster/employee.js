@@ -1,146 +1,232 @@
+import React, { useState, useRef, useEffect } from 'react';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormGroup from '@mui/material/FormGroup';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import TextField from '@mui/material/TextField';
+import { TextField, Checkbox, FormControlLabel, FormHelperText, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import apiCalls from 'apicall';
-import dayjs from 'dayjs';
-import { useEffect, useRef, useState } from 'react';
-import 'react-tabs/style/react-tabs.css';
+import { DatePicker } from '@mui/x-date-pickers';
+import CommonListViewTable from '../basicMaster/CommonListViewTable';
 import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import CommonTable from 'views/basicMaster/CommonTable';
-import { encryptPassword } from 'views/utilities/passwordEnc';
+import { showToast } from 'utils/toast-component';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import dayjs from 'dayjs';
+import { getAllActiveBranches } from 'utils/CommonFunctions';
+import apiCalls from 'apicall';
 
-const Employee = () => {
-  const [showForm, setShowForm] = useState(true);
-  const [data, setData] = useState(true);
-  const [showPassword, setShowPassword] = useState(false);
-  const [emailError, setEmailError] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [branchData, setBranchData] = useState([]);
+export const Employee = () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [editId, setEditId] = useState('');
+  const [branchList, setBranchList] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [roleDataSelect, setRoleDataSelect] = useState([]);
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
 
   const [formData, setFormData] = useState({
-    employeeCode: '',
-    employeeName: '',
+    empCode: '',
+    empName: '',
     gender: '',
     branch: '',
-    department: '',
+    branchCode: '',
+    dept: '',
     designation: '',
-    dateOfBirth: '',
-    joiningDate: '',
-    active: true,
-    password: '',
-    role: '',
-    orgId: orgId
+    dob: null,
+    doj: null,
+    active: true
   });
-
-  const [fieldErrors, setFieldErrors] = useState({
-    employeeCode: false,
-    employeeName: false,
-    gender: false,
-    branch: false,
-    department: false,
-    designation: false,
-    dateOfBirth: false,
-    joiningDate: false,
-    role: false,
-    Password: false
-  });
-
-  const columns = [
-    { accessorKey: 'employeeCode', header: 'EmployeeCode', size: 140 },
-    { accessorKey: 'employeeName', header: 'Name', size: 140 },
-    { accessorKey: 'gender', header: 'Gender', size: 140 },
-    { accessorKey: 'branch', header: 'Branch', size: 140 },
-    { accessorKey: 'department', header: 'Department', size: 140 },
-    { accessorKey: 'designation', header: 'Designation', size: 140 },
-    { accessorKey: 'dateOfBirth', header: 'DOB', size: 140 },
-    { accessorKey: 'joiningDate', header: 'DOJ', size: 140 },
-    { accessorKey: 'active', header: 'active', size: 140 }
-  ];
 
   const theme = useTheme();
   const anchorRef = useRef(null);
 
+  const [fieldErrors, setFieldErrors] = useState({
+    empCode: '',
+    empName: '',
+    gender: '',
+    branch: '',
+    branchCode: '',
+    dept: '',
+    designation: '',
+    dob: '',
+    doj: ''
+  });
+  const [listView, setListView] = useState(false);
+  const [listViewData, setListViewData] = useState([]);
+
   useEffect(() => {
-    getEmployee();
-    getBranch();
-    getRoleData();
+    getAllBranches();
+    getAllEmployees();
   }, []);
 
-  useEffect(() => {
-    // Reset the role to an empty string if the initial role value is not in the fetched roleDataSelect options
-    if (roleDataSelect.length > 0 && !roleDataSelect.includes(formData.role)) {
-      setFormData((prevFormData) => ({ ...prevFormData, role: '' }));
-    }
-  }, [roleDataSelect]);
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked } = e.target;
+  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+
+  //   if (name === 'empCode' && !codeRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else if (name === 'empName' && !nameRegex.test(value)) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+  //   } else if (name === 'branch') {
+  //     const selectedBranch = branchList.find((br) => br.branch === value);
+  //     if (selectedBranch) {
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         branch: value,
+  //         branchCode: selectedBranch.branchCode
+  //       }));
+  //     }
+  //   } else {
+  //     setFormData({ ...formData, [name]: value.toUpperCase() });
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+  //   }
+  // };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, checked, type, selectionStart, selectionEnd } = e.target;
+    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const nameRegex = /^[A-Za-z ]*$/;
 
-    const parsedValue = name === 'newRate' && value !== '' ? parseInt(value) : value;
-    setFormData({ ...formData, [name]: parsedValue });
-    setFieldErrors({ ...fieldErrors, [name]: false });
-  };
-  const handleSelectChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    setFieldErrors({ ...fieldErrors, [name]: false });
-  };
+    let errorMessage = '';
 
-  const getBranch = async () => {
-    try {
-      const result = await apiCalls('get', `/basicMaster/getBranchByOrgId?orgId=${orgId}`);
+    // Validation for empCode
+    if (name === 'empCode' && !codeRegex.test(value)) {
+      errorMessage = 'Invalid Format';
+    }
+    // Validation for empName
+    else if (name === 'empName' && !nameRegex.test(value)) {
+      errorMessage = 'Invalid Format';
+    }
 
-      if (result) {
-        setBranchData(result.paramObjectsMap.branchVO.map((branch) => branch.branch));
+    // Set or clear error messages
+    if (errorMessage) {
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
+    } else {
+      setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
+
+      if (name === 'branch') {
+        // Handle branch selection
+        const selectedBranch = branchList.find((br) => br.branch === value);
+        if (selectedBranch) {
+          setFormData((prevData) => ({
+            ...prevData,
+            branch: value,
+            branchCode: selectedBranch.branchCode
+          }));
+        } else {
+          // Optionally handle cases where the branch is not found
+          setFormData((prevData) => ({
+            ...prevData,
+            branch: value,
+            branchCode: ''
+          }));
+        }
+      } else if (type === 'checkbox') {
+        // Handle checkbox inputs
+        setFormData((prevData) => ({ ...prevData, [name]: checked }));
+      } else if (type === 'text' || type === 'textarea') {
+        // Handle text-based inputs: convert to uppercase and maintain cursor
+        const upperCaseValue = value.toUpperCase();
+        setFormData((prevData) => ({ ...prevData, [name]: upperCaseValue }));
+
+        // Maintain cursor position
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement && inputElement.setSelectionRange) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
       } else {
-        // Handle error
+        // Handle other input types (e.g., select, radio) without transformation
+        setFormData((prevData) => ({ ...prevData, [name]: value }));
+      }
+    }
+  };
+
+  const handleDateChange = (field, date) => {
+    const formattedDate = dayjs(date).format('YYYY-MM-DD');
+    setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+  };
+
+  const maxDate = dayjs().subtract(18, 'years');
+
+  const handleClear = () => {
+    setFormData({
+      empCode: '',
+      empName: '',
+      gender: '',
+      branch: '',
+      branchCode: '',
+      dept: '',
+      designation: '',
+      dob: null,
+      doj: null,
+      active: true
+    });
+    setFieldErrors({
+      empCode: '',
+      empName: '',
+      gender: '',
+      branch: '',
+      branchCode: '',
+      dept: '',
+      designation: '',
+      dob: '',
+      doj: ''
+    });
+  };
+
+  const getAllBranches = async () => {
+    try {
+      const branchData = await getAllActiveBranches(orgId);
+      setBranchList(branchData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+
+  const getAllEmployees = async () => {
+    try {
+      const response = await apiCalls('get', `master/getAllEmployeeByOrgId?orgId=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListViewData(response.paramObjectsMap.employeeVO);
+      } else {
+        console.error('API Error:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const getRoleData = async () => {
+  const getEmployeeById = async (row) => {
+    console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
+    setEditId(row.original.id);
     try {
-      const result = await apiCalls('get', `/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `master/employee/${row.original.id}`);
+      console.log('API Response:', response);
 
-      if (result) {
-        // setData(response.data.paramObjectsMap.roleMasterVO);
-        setRoleDataSelect(result.paramObjectsMap.roleVO.map((list) => list.role));
+      if (response.status === true) {
+        setListView(false);
+        const particularEmp = response.paramObjectsMap.Employee;
+        const selectedBranch = branchList.find((br) => br.branch === particularEmp.branch);
+        console.log('THE SELECTED BRANCH IS:', selectedBranch);
+
+        setFormData({
+          empCode: particularEmp.employeeCode,
+          empName: particularEmp.employeeName,
+          gender: particularEmp.gender,
+          dept: particularEmp.department,
+          designation: particularEmp.designation,
+          branch: particularEmp.branch,
+          branchCode: selectedBranch ? selectedBranch.branchCode : '', // Handle case where selectedBranch might be undefined
+          dob: particularEmp.dateOfBirth,
+          doj: particularEmp.joiningDate,
+          active: particularEmp.active === 'Active' ? true : false
+        });
       } else {
-        // Handle error
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  const getEmployee = async () => {
-    try {
-      const result = await apiCalls('get', `/basicMaster/getEmployeeByOrgId?orgId=${orgId}`);
-
-      if (result) {
-        setData(result.paramObjectsMap.employeeVO);
-      } else {
-        // Handle error
+        console.error('API Error:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -148,280 +234,197 @@ const Employee = () => {
   };
 
   const handleSave = async () => {
-    // Define the required fields
-    const requiredFields = [
-      'branch',
-      'employeeCode',
-      'employeeName',
-      'gender',
-      'department',
-      'designation',
-      'dateOfBirth',
-      'joiningDate',
-      'password'
-      // 'role'
-    ];
+    const errors = {};
+    if (!formData.empCode) {
+      errors.empCode = 'Employee Code is required';
+    }
+    if (!formData.empName) {
+      errors.empName = 'Employee Name is required';
+    }
+    if (!formData.gender) {
+      errors.gender = 'Gender is required';
+    }
+    if (!formData.branch) {
+      errors.branch = 'Branch is required';
+    }
+    if (!formData.dept) {
+      errors.dept = 'Department is required';
+    }
+    if (!formData.designation) {
+      errors.designation = 'Designation is required';
+    }
+    if (!formData.dob) {
+      errors.dob = 'Date of Birth is required';
+    }
+    if (!formData.doj) {
+      errors.doj = 'Date of Joining is required';
+    }
 
-    // Check for errors in the required fields
-    const errors = requiredFields.reduce((acc, field) => {
-      if (!formData[field]) {
-        acc[field] = true;
+    if (Object.keys(errors).length === 0) {
+      setIsLoading(true);
+      const saveFormData = {
+        ...(editId && { id: editId }),
+        // active: formData.active,
+        active: true,
+        employeeCode: formData.empCode,
+        employeeName: formData.empName,
+        gender: formData.gender,
+        branch: formData.branch,
+        branchCode: formData.branchCode,
+        department: formData.dept,
+        designation: formData.designation,
+        dateOfBirth: formData.dob,
+        joiningdate: formData.doj,
+        orgId: orgId,
+        createdBy: loginUserName
+      };
+      console.log('DATA TO SAVE', saveFormData);
+
+      try {
+        const response = await apiCalls('put', `master/createUpdateEmployee`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? 'Employee Updated Successfully' : 'Employee created successfully');
+          handleClear();
+          getAllEmployees();
+          setIsLoading(false);
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Employee creation failed');
+          setIsLoading(false);
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Employee creation failed');
+        setIsLoading(false);
       }
-      return acc;
-    }, {});
-
-    // If there are errors, set the fieldErrors state and prevent API call
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      return;
-    }
-
-    const encryptedPassword = encryptPassword(formData.password);
-
-    // Include the encrypted password in the form data
-    const formDataWithEncryptedPassword = {
-      ...formData,
-      password: encryptedPassword
-    };
-
-    // Proceed with the API call
-    try {
-      setLoading(true);
-      const response = await apiCalls('put', 'basicMaster/updateCreateEmployee', formDataWithEncryptedPassword);
-      console.log('Response:', response.data);
-      handleClear();
-      toast.success('Employee Created Successfully', {
-        autoClose: 2000,
-        theme: 'colored'
-      });
-      getEmployee();
-    } catch (error) {
-      console.error('Error:', error);
-      toast.error('Error posting data', {
-        autoClose: 2000,
-        theme: 'colored'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleList = () => {
-    setShowForm(!showForm);
-    setFieldErrors({
-      employeeCode: false,
-      employeeName: false,
-      gender: false,
-      branch: false,
-      department: false,
-      designation: false,
-      dateOfBirth: false,
-      joiningDate: false,
-      password: false,
-      role: false
-    });
-  };
-  const handleClear = () => {
-    setFormData({
-      employeeCode: '',
-      employeeName: '',
-      gender: '',
-      branch: '',
-      department: '',
-      designation: '',
-      dateOfBirth: '',
-      joiningDate: '',
-      active: true,
-      password: '',
-      role: ''
-    });
-    setFieldErrors({
-      employeeCode: false,
-      employeeName: false,
-      gender: false,
-      branch: false,
-      department: false,
-      designation: false,
-      dateOfBirth: false,
-      joiningDate: false,
-      password: false,
-      role: false
-    });
-  };
-
-  const genderVO = ['Male', 'Female', 'Other'];
-
-  const handleDateChange = (name, date) => {
-    if (date && dayjs(date).isValid()) {
-      const dateString = dayjs(date).toISOString();
-      setFormData({ ...formData, [name]: dateString });
-      setFieldErrors({ ...fieldErrors, [name]: false });
     } else {
-      setFormData({ ...formData, [name]: null });
+      setFieldErrors(errors);
     }
   };
 
-  const editEmployee = async (updatedBranch) => {
-    try {
-      const result = await apiCalls('put', `/basicMaster/updateCreateEmployee`, updatedBranch);
-      if (result) {
-        toast.success('Employee Updated Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getEmployee();
-      } else {
-        toast.error('Failed to Update Employee', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-      }
-    } catch (error) {
-      console.error('Error updating country:', error);
-      toast.error('Error Updating Employee', {
-        autoClose: 2000,
-        theme: 'colored'
-      });
-    }
+  const handleView = () => {
+    setListView(!listView);
   };
 
-  const handleTogglePasswordVisibility = () => {
-    setShowPassword((prevShowPassword) => !prevShowPassword);
-  };
+  const listViewColumns = [
+    { accessorKey: 'employeeCode', header: 'Emp Code', size: 140 },
+    { accessorKey: 'employeeName', header: 'Employee', size: 140 },
+    { accessorKey: 'branch', header: 'Branch', size: 140 },
+    { accessorKey: 'department', header: 'Dept', size: 140 },
+    { accessorKey: 'designation', header: 'Designation', size: 140 },
+    { accessorKey: 'joiningDate', header: 'Joining Date', size: 140 },
+    { accessorKey: 'active', header: 'Active', size: 140 }
+  ];
 
   return (
     <>
-      <div>
-        <ToastContainer />
-      </div>
-      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
+      <div>{/* <ToastContainer /> */}</div>
+      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
-            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} isLoading={loading} margin="0 10px 0 10px" />
+            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
           </div>
-
-          {showForm ? (
-            <div className="row d-flex ml">
+        </div>
+        {listView ? (
+          <div className="">
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getEmployeeById} />
+          </div>
+        ) : (
+          <>
+            <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="outlined-textarea"
-                  label="EmployeeId"
+                  label="Code"
                   variant="outlined"
                   size="small"
-                  required
-                  value={formData.employeeCode}
-                  onChange={handleInputChange}
                   fullWidth
-                  name="employeeCode"
-                  // error={fieldErrors.chapter}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeCode ? 'This field is required' : ''}</span>}
-                  inputProps={{ maxLength: 30 }}
+                  name="empCode"
+                  value={formData.empCode}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.empCode}
+                  helperText={fieldErrors.empCode}
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="outlined-textarea"
                   label="Name"
                   variant="outlined"
                   size="small"
-                  name="employeeName"
                   fullWidth
-                  required
-                  value={formData.employeeName}
+                  name="empName"
+                  value={formData.empName}
                   onChange={handleInputChange}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeName ? 'This field is required' : ''}</span>}
-                  inputProps={{ maxLength: 15 }}
+                  error={!!fieldErrors.empName}
+                  helperText={fieldErrors.empName}
                 />
               </div>
 
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="country">Gender</InputLabel>
-                  <Select label="country-label" id="country" name="gender" value={formData.gender} onChange={handleInputChange}>
-                    {/* <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem> */}
-                    {genderVO.map((gender) => (
-                      <MenuItem key={gender} value={gender}>
-                        {gender}
-                      </MenuItem>
-                    ))}
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gender}>
+                  <InputLabel id="gender-label">Gender</InputLabel>
+                  <Select labelId="gender-label" label="Gender" value={formData.gender} onChange={handleInputChange} name="gender">
+                    <MenuItem value="MALE">Male</MenuItem>
+                    <MenuItem value="FEMALE">Female</MenuItem>
                   </Select>
-                  {fieldErrors.gender && (
-                    <span className="mt-1" style={{ color: 'red', fontSize: '12px', marginLeft: '15px' }}>
-                      This field is required
-                    </span>
-                  )}
+                  {fieldErrors.gender && <FormHelperText>{fieldErrors.gender}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="branch">Branch</InputLabel>
-                  <Select label="state-label" id="branch" name="branch" value={formData.branch} onChange={handleInputChange}>
-                    {/* <MenuItem value="">
-                    <em>None</em>
-                  </MenuItem> */}
-                    {branchData.map((branch) => (
-                      <MenuItem key={branch} value={branch}>
-                        {branch}
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
+                  <InputLabel id="branch-label">Branch</InputLabel>
+                  <Select labelId="branch-label" label="Branch" value={formData.branch} onChange={handleInputChange} name="branch">
+                    {branchList?.map((row) => (
+                      <MenuItem key={row.id} value={row.branch}>
+                        {row.branch}
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.branch && (
-                    <span className="mt-1" style={{ color: 'red', fontSize: '12px', marginLeft: '15px' }}>
-                      This field is required
-                    </span>
-                  )}
+                  {fieldErrors.branch && <FormHelperText>{fieldErrors.branch}</FormHelperText>}
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea-zip"
-                  label="Department"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="department"
-                  value={formData.department}
-                  onChange={handleInputChange}
-                  required
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.department ? 'This field is required' : ''}</span>}
-                  inputProps={{ maxLength: 10 }}
-                />
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.dept}>
+                  <InputLabel id="dept-label">Department</InputLabel>
+                  <Select labelId="dept-label" label="Department" value={formData.dept} onChange={handleInputChange} name="dept">
+                    <MenuItem value="DEPT1">DEPT1</MenuItem>
+                    <MenuItem value="DEPT2">DEPT2</MenuItem>
+                  </Select>
+                  {fieldErrors.dept && <FormHelperText>{fieldErrors.dept}</FormHelperText>}
+                </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea-zip"
-                  label="Designation"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="designation"
-                  value={formData.designation}
-                  onChange={handleInputChange}
-                  required
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.designation ? 'This field is required' : ''}</span>}
-                  inputProps={{ maxLength: 10 }}
-                />
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.designation}>
+                  <InputLabel id="designation-label">Designation</InputLabel>
+                  <Select
+                    labelId="designation-label"
+                    label="Designation"
+                    value={formData.designation}
+                    onChange={handleInputChange}
+                    name="designation"
+                  >
+                    <MenuItem value="DESIGNATION1">DESIGNATION1</MenuItem>
+                    <MenuItem value="DESIGNATION2">DESIGNATION2</MenuItem>
+                  </Select>
+                  {fieldErrors.designation && <FormHelperText>{fieldErrors.designation}</FormHelperText>}
+                </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Date of Birth"
-                      value={formData.dateOfBirth ? dayjs(formData.dateOfBirth) : null}
-                      onChange={(date) => handleDateChange('dateOfBirth', date)}
+                      value={formData.dob ? dayjs(formData.dob, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('dob', date)}
+                      maxDate={maxDate}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      error={fieldErrors.dateOfBirth}
-                      helperText={fieldErrors.dateOfBirth && 'Required'}
+                      format="DD-MM-YYYY"
+                      error={fieldErrors.dob}
+                      helperText={fieldErrors.dob && 'Required'}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -430,82 +433,33 @@ const Employee = () => {
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Joining Date"
-                      value={formData.joiningDate ? dayjs(formData.joiningDate) : null}
-                      onChange={(date) => handleDateChange('joiningDate', date)}
+                      label="Date of Join"
+                      value={formData.doj ? dayjs(formData.doj, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('doj', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
-                      error={fieldErrors.joiningDate}
-                      helperText={fieldErrors.joiningDate && 'Required'}
+                      format="DD-MM-YYYY"
+                      error={fieldErrors.doj}
+                      helperText={fieldErrors.doj && 'Required'}
                     />
                   </LocalizationProvider>
                 </FormControl>
               </div>
+
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="role-label">Role</InputLabel>
-                  <Select labelId="role-label" id="role" name="role" value={formData.role} onChange={handleSelectChange} required>
-                    {roleDataSelect &&
-                      roleDataSelect.map((role, index) => (
-                        <MenuItem key={index} value={role}>
-                          {role}
-                        </MenuItem>
-                      ))}
-                  </Select>
-                  <span style={{ color: 'red' }}>{fieldErrors.role ? 'This field is required' : ''}</span>
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea-password"
-                  label="Password"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  required
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  type={showPassword ? 'text' : 'password'} // Toggle password visibility based on showPassword state
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.password ? 'This field is required' : ''}</span>}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton
-                          onClick={handleTogglePasswordVisibility}
-                          onMouseDown={(e) => e.preventDefault()} // Prevents focusing the TextField
-                          edge="end"
-                        >
-                          {showPassword ? <Visibility /> : <VisibilityOff />}
-                        </IconButton>
-                      </InputAdornment>
-                    )
-                  }}
+                <FormControlLabel
+                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
+                  label="Active"
                 />
               </div>
-              <div className="col-md-3 mb-3">
-                <FormGroup>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={formData.active}
-                        onChange={handleInputChange}
-                        name="active"
-                        sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
-                      />
-                    }
-                    label="Active"
-                  />
-                </FormGroup>
-              </div>
             </div>
-          ) : (
-            <CommonTable data={data} columns={columns} editCallback={editEmployee} />
-          )}
-        </div>
+          </>
+        )}
       </div>
+      <ToastContainer />
     </>
   );
 };
+
 export default Employee;
