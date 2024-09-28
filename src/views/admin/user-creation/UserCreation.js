@@ -70,6 +70,7 @@ const UserCreation = () => {
   ]);
 
   const [formData, setFormData] = useState({
+    docId: '',
     employeeCode: '',
     employeeName: '',
     userId: '',
@@ -255,6 +256,7 @@ const UserCreation = () => {
         console.log('THE FOUND BRANCH 1 IS:', foundBranch1);
 
         setFormData({
+          docId: particularUser.id,
           userName: particularUser.userName,
           userType: particularUser.userType,
           employeeCode: particularUser.employeeCode || '',
@@ -348,20 +350,20 @@ const UserCreation = () => {
 
       const encryptedPassword = encryptPassword('Wds@2022');
       const roleVo = roleTableData.map((row) => ({
-        ...(editId && { id: row.id }),
+        // ...(editId && { id: row.id }),
         role: row.role,
         // roleId: row.roleId,
         startDate: dayjs(row.startDate).format('YYYY-MM-DD'),
         endDate: row.endDate ? dayjs(row.endDate).format('YYYY-MM-DD') : null
       }));
       const branchVo = branchTableData.map((row) => ({
-        ...(editId && { id: row.id }),
+        // ...(editId && { id: row.id }),
         branchCode: row.branchCode,
         branch: row.branch
       }));
 
       const saveFormData = {
-        ...formData,
+        ...(editId && { id: formData.docId }),
         userName: formData.userName,
         password: encryptedPassword,
         userType: formData.userType,
@@ -381,7 +383,7 @@ const UserCreation = () => {
           console.log('Response:', response);
           showToast('success', editId ? 'User Updated Successfully' : 'User created successfully');
           handleClear();
-          // getAllUsers();
+          getAllUsers();
           setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'User creation failed');
@@ -399,6 +401,7 @@ const UserCreation = () => {
 
   const handleClear = () => {
     setFormData({
+      docId: '',
       employeeCode: '',
       employeeName: '',
       userId: '',
@@ -581,7 +584,7 @@ const UserCreation = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            {!editId && <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} margin="0 10px 0 10px" />}
+            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
           </div>
 
           {!listView ? (

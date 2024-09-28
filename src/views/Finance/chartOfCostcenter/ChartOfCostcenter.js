@@ -96,7 +96,7 @@ export const ChartOfCostcenter = () => {
   };
 
   useEffect(() => {
-    // getAllChartofCostCenter();
+    getAllChartofCostCenter();
   }, []);
 
   // const getAllCountries = async () => {
@@ -134,11 +134,11 @@ export const ChartOfCostcenter = () => {
 
   const getAllChartofCostCenter = async () => {
     try {
-      const response = await apiCalls('get', `/master/getAllCostCenterByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `transaction/getAllChartCostCenterByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.costCenterVO);
+        setListViewData(response.paramObjectsMap.chartCostCenterVO);
       } else {
         console.error('API Error:', response);
       }
@@ -150,51 +150,23 @@ export const ChartOfCostcenter = () => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `warehousemastercontroller/customer/${row.original.id}`);
+      const response = await apiCalls('get', `transaction/getAllChartCostCenterById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
         setListView(false);
-        const particularCustomer = response.paramObjectsMap.Customer;
-        console.log('THE PARTICULAR CUSTOMER IS:', particularCustomer);
+        const particularChartOfCostCenter = response.paramObjectsMap.chartCostCenterVO;
+        console.log('THE PARTICULAR Chart Of Cost Center IS:', particularChartOfCostCenter);
 
-        setFormData({
-          customer: particularCustomer.customerName,
-          shortName: particularCustomer.customerShortName,
-          pan: particularCustomer.panNo,
-          contactPerson: particularCustomer.contactPerson,
-          mobile: particularCustomer.mobileNumber,
-          gstReg: particularCustomer.gstRegistration,
-          email: particularCustomer.emailId,
-          groupOf: particularCustomer.groupOf,
-          tanNo: particularCustomer.tanNo,
-          address: particularCustomer.address1,
-          country: particularCustomer.country,
-          state: particularCustomer.state,
-          city: particularCustomer.city,
-          gst: particularCustomer.gstNo,
-          active: particularCustomer.active === 'Active' ? true : false
-        });
         setDetailsTableData(
-          particularCustomer.clientVO.map((cl) => ({
+          particularChartOfCostCenter.map((cl) => ({
             id: cl.id,
-            client: cl.client,
-            clientCode: cl.clientCode,
-            clientType: cl.clientType,
-            fifoFife: cl.fifofife
+            costCenterCode: cl.costCenterCode,
+            costCenterName: cl.costCenterName,
+            credit: cl.credit,
+            debit: cl.debit
           }))
         );
-
-        const alreadySelectedBranch = particularCustomer.clientBranchVO.map((br) => {
-          const foundBranch = branchList.find((branch) => branch.branchCode === br.branchCode);
-          console.log(`Searching for branch with code ${br.branchcode}:`, foundBranch);
-          return {
-            id: br.id,
-            branchCode: foundBranch ? foundBranch.branchCode : 'Not Found',
-            branch: foundBranch.branch ? foundBranch.branch : 'Not Found'
-          };
-        });
-        setDetailsTableData(alreadySelectedBranch);
       } else {
         console.error('API Error:', response);
       }
@@ -296,55 +268,24 @@ export const ChartOfCostcenter = () => {
     const errors = {};
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    // if (!emailRegex.test(formData.email)) {
-    //   errors.email = 'Invalid MailID Format';
-    // }
-    // if (!formData.customer) {
-    //   errors.customer = 'Customer is required';
-    // }
-    // if (!formData.shortName) {
-    //   errors.shortName = 'Short Name is required';
-    // }
-    // if (!formData.contactPerson) {
-    //   errors.contactPerson = 'Contact Person is required';
-    // }
-    // if (!formData.email) {
-    //   errors.email = 'Email ID is required';
-    // }
-    // if (!formData.groupOf) {
-    //   errors.groupOf = 'Group Of is required';
-    // }
-    // if (!formData.address) {
-    //   errors.address = 'Address is required';
-    // }
-    // if (!formData.country) {
-    //   errors.country = 'Country is required';
-    // }
-    // if (!formData.state) {
-    //   errors.state = 'State is required';
-    // }
-    // if (!formData.city) {
-    //   errors.city = 'City is required';
-    // }
-    // if (!formData.mobile) {
-    //   errors.mobile = 'Mobile is required';
-    // } else if (formData.mobile.length < 10) {
-    //   errors.mobile = 'Invalid Mobile Format';
-    // }
-    // if (formData.pan.length > 0 && formData.pan.length < 10) {
-    //   errors.pan = 'Invalid PAN Format';
-    // }
-    // if (formData.gstReg === 'YES' && !formData.gst) {
-    //   errors.gst = 'GST is Required';
-    // } else if (formData.gstReg === 'YES' && formData.gst.length < 15) {
-    //   errors.gst = 'Invalid GST Format';
-    // }
-
     let detailsTableDataValid = true;
     const newTableErrors1 = detailsTableData.map((row) => {
       const rowErrors = {};
-      if (!row.branchCode) {
-        rowErrors.branchCode = 'Branch Code is required';
+      if (!row.costCenterCode) {
+        rowErrors.costCenterCode = 'Cost Center Code is required';
+        detailsTableDataValid = false;
+      }
+      if (!row.costCenterName) {
+        rowErrors.costCenterName = 'Cost Center Code is required';
+        detailsTableDataValid = false;
+      }
+
+      if (!row.credit) {
+        rowErrors.credit = 'Credit is required';
+        detailsTableDataValid = false;
+      }
+      if (!row.debit) {
+        rowErrors.debit = 'Debit is required';
         detailsTableDataValid = false;
       }
       return rowErrors;
@@ -355,50 +296,37 @@ export const ChartOfCostcenter = () => {
 
     if (Object.keys(errors).length === 0 && detailsTableDataValid) {
       setIsLoading(true);
-      const branchVo = detailsTableData.map((row) => ({
-        branchCode: row.branchCode,
-        branch: row.branch
+      const saveFormData = detailsTableData.map((row) => ({
+        // ...(editId && { id: row.id }),
+        active: true,
+        costCenterCode: row.costCenterCode,
+        costCenterName: row.costCenterName,
+        credit: parseInt(row.credit),
+        debit: parseInt(row.debit),
+        createdBy: loginUserName,
+        orgId: orgId
       }));
 
-      const saveFormData = {
-        ...(editId && { id: editId })
-        // active: formData.active,
-        // customerName: formData.customer,
-        // customerShortName: formData.shortName,
-        // panNo: formData.pan,
-        // contactPerson: formData.contactPerson,
-        // mobileNumber: formData.mobile,
-        // gstRegistration: formData.gstReg,
-        // emailId: formData.email,
-        // groupOf: formData.groupOf,
-        // tanNo: formData.tanNo,
-        // address1: formData.address,
-        // address2: formData.address,
-        // country: formData.country,
-        // state: formData.state,
-        // city: formData.city,
-        // gstNo: formData.gst,
-        // clientDTO: clientVo,
-        // clientBranchDTO: branchVo,
-        // orgId: orgId,
-        // createdBy: loginUserName
-      };
+      // const saveFormData = {
+      //   ...(editId && { id: editId })
+      // };
 
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `warehousemastercontroller/createUpdateCustomer`, saveFormData);
+        const response = await apiCalls('put', `transaction/updateCreateChartCostCenter`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           handleClear();
-          showToast('success', editId ? ' Customer Updated Successfully' : 'Customer created successfully');
+          showToast('success', editId ? ' Chart of Cost Center Updated Successfully' : 'Chart of Cost Center created successfully');
+          getAllChartofCostCenter();
           setIsLoading(false);
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Customer creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'Chart of Cost Center creation failed');
           setIsLoading(false);
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'Customer creation failed');
+        showToast('error', 'Chart of Cost Center creation failed');
         setIsLoading(false);
       }
     } else {
@@ -486,12 +414,7 @@ export const ChartOfCostcenter = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonTable
-              data={listViewData}
-              columns={listViewColumns}
-              blockEdit={true}
-              // toEdit={getChartofCostCenterById}
-            />
+            <CommonTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getChartofCostCenterById} />
           </div>
         ) : (
           <>
