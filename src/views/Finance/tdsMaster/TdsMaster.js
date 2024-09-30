@@ -24,11 +24,10 @@ const TdsMaster = () => {
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState('');
-  const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [formValues, setFormValues] = useState({
     active: true,
-    createdBy: '',
-    orgId: orgId,
     section: '',
     sectionName: ''
     // tdsMaster2DTO: []
@@ -441,17 +440,23 @@ const TdsMaster = () => {
     if (Object.keys(errors).length === 0 && !hasTableErrors) {
       setIsLoading(true);
 
-      const tdsTableVo = tdsTableData.map((item) => ({
-        fromDate: formatDate(item.fromDate),
-        toDate: formatDate(item.toDate),
-        tcsPercentage: parseFloat(item.tcs) || 0,
-        surPercentage: parseFloat(item.sur) || 0,
-        edcessPercentage: parseFloat(item.eds) || 0
+      const tdsTableVo = tdsTableData.map((row) => ({
+        // id: item.id || 0, // If id exists, otherwise 0
+        ...(editId && { id: row.id }),
+        fromDate: formatDate(row.fromDate),
+        toDate: formatDate(row.toDate),
+        tcsPercentage: parseFloat(row.tcs) || 0,
+        surPercentage: parseFloat(row.sur) || 0,
+        edcessPercentage: parseFloat(row.eds) || 0
       }));
 
       const saveFormData = {
-        ...(editId && { id: formValues.docId }),
-        ...formValues,
+        ...(editId && { id: editId }),
+        section: formValues.section,
+        sectionName: formValues.sectionName,
+        active: formValues.active,
+        createdBy: loginUserName,
+        orgId: orgId,
         tdsMaster2DTO: tdsTableVo
       };
 

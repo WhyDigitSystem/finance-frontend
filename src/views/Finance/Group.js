@@ -90,32 +90,36 @@ const Group = () => {
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const inputValue = type === 'checkbox' ? checked : value.toUpperCase(); // Convert input to uppercase
+    const inputValue = type === 'checkbox' ? checked : value;
 
-    // Alphanumeric regex (numbers and alphabets) for accountCode
-    const accountCodeRegex = /^[A-Z0-9\s]*$/; // Updated to account for uppercase
-    // Alphabet only regex for accountGroupName
-    const alphabetRegex = /^[A-Z\s]*$/; // Updated to account for uppercase
+    let errorMessage = '';
+    let validInputValue = inputValue; // Initialize valid input value
 
+    // Validation for accountCode (alphanumeric only)
     if (name === 'accountCode') {
-      // Allow only alphanumeric values, removing any invalid characters
-      if (accountCodeRegex.test(inputValue)) {
-        setFormData({ ...formData, [name]: inputValue });
-        setFieldErrors({ ...fieldErrors, [name]: false });
-      } else {
-        setFieldErrors({ ...fieldErrors, [name]: 'Only numbers and alphabets are allowed' });
+      const alphanumericPattern = /^[a-zA-Z0-9]*$/; // Pattern for alphanumeric
+      if (!alphanumericPattern.test(inputValue)) {
+        errorMessage = 'Only alphabets and numbers are allowed.';
+        // Set validInputValue to prevent invalid character input
+        validInputValue = inputValue.replace(/[^a-zA-Z0-9]/g, '');
       }
     }
 
+    // Validation for accountGroupName (alphabets only)
     if (name === 'accountGroupName') {
-      // Allow only alphabetic values, removing any invalid characters
-      if (alphabetRegex.test(inputValue)) {
-        setFormData({ ...formData, [name]: inputValue });
-        setFieldErrors({ ...fieldErrors, [name]: false });
-      } else {
-        setFieldErrors({ ...fieldErrors, [name]: 'Only alphabets are allowed' });
+      const alphabetPattern = /^[a-zA-Z]*$/; // Pattern for alphabets
+      if (!alphabetPattern.test(inputValue)) {
+        errorMessage = 'Only alphabets are allowed.';
+        // Set validInputValue to prevent invalid character input
+        validInputValue = inputValue.replace(/[^a-zA-Z]/g, '');
       }
     }
+
+    // Update the form data with the valid input value
+    setFormData({ ...formData, [name]: validInputValue });
+
+    // Update the error messages
+    setFieldErrors({ ...fieldErrors, [name]: errorMessage });
   };
 
   const getGroup = async () => {
@@ -380,8 +384,8 @@ const Group = () => {
               <FormControl fullWidth size="small">
                 <InputLabel id="demo-simple-select-label">Group Name</InputLabel>
                 <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
+                  labelId="groupName"
+                  id="groupName"
                   label="Group Name"
                   onChange={handleInputChange}
                   name="groupName"
@@ -396,10 +400,10 @@ const Group = () => {
             </div>
             <div className="col-md-3 mb-2">
               <FormControl fullWidth size="small">
-                <InputLabel id="demo-simple-select-label">GST Tax Flag</InputLabel>
+                <InputLabel id="gstTaxflag">GST Tax Flag</InputLabel>
                 <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
+                  labelId="gstTaxflag"
+                  id="gstTaxflag"
                   label="GST Tax Flag"
                   onChange={handleInputChange}
                   name="gstTaxflag"
@@ -412,23 +416,6 @@ const Group = () => {
                 {fieldErrors.gstTaxflag && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
             </div>
-
-            {/* <div className="col-md-3 mb-3">
-              <FormControl fullWidth variant="filled">
-                <TextField
-                  id="account"
-                  label="Account Code"
-                  size="small"
-                  required
-                  placeholder="40003600104"
-                  inputProps={{ maxLength: 30 }}
-                  onChange={handleInputChange}
-                  name="accountCode"
-                  value={formData.accountCode}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.accountCode ? 'This field is required' : ''}</span>}
-                />
-              </FormControl>
-            </div> */}
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
@@ -467,20 +454,6 @@ const Group = () => {
             </div>
 
             <div className="col-md-3 mb-3">
-              {/* <FormControl fullWidth variant="filled">
-                <TextField
-                  id="account"
-                  label="Account/Group Name"
-                  size="small"
-                  required
-                  placeholder="40003600104"
-                  inputProps={{ maxLength: 30 }}
-                  onChange={handleInputChange}
-                  name="accountGroupName"
-                  value={formData.accountGroupName}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.accountGroupName ? 'This field is required' : ''}</span>}
-                />
-              </FormControl> */}
               <FormControl fullWidth variant="filled">
                 <TextField
                   id="accountGroupName"
@@ -523,11 +496,11 @@ const Group = () => {
                     <Checkbox
                       checked={formData.interBranchAc}
                       onChange={handleInputChange}
+                      name="interBranchAc"
                       sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
                     />
                   }
                   label="Interbranch A/c"
-                  name="interBranchAc"
                 />
               </FormGroup>
             </div>
@@ -538,11 +511,11 @@ const Group = () => {
                     <Checkbox
                       checked={formData.controllAc}
                       onChange={handleInputChange}
+                      name="controllAc"
                       sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
                     />
                   }
                   label="Control A/c"
-                  name="controllAc"
                 />
               </FormGroup>
             </div>
@@ -608,10 +581,14 @@ const Group = () => {
               <FormGroup>
                 <FormControlLabel
                   control={
-                    <Checkbox checked={formData.active} onChange={handleInputChange} sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }} />
+                    <Checkbox
+                      checked={formData.active}
+                      name="active"
+                      onChange={handleInputChange}
+                      sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                    />
                   }
                   label="Active"
-                  name="active"
                 />
               </FormGroup>
             </div>
