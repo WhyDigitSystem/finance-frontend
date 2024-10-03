@@ -13,8 +13,8 @@ import CommonTable from 'views/basicMaster/CommonTable';
 import TableComponent from './TableComponent';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import 'react-datepicker/dist/react-datepicker.css';
-import DatePicker from 'react-datepicker';
+// import 'react-datepicker/dist/react-datepicker.css';
+// import DatePicker from 'react-datepicker';
 import { toDate } from 'date-fns';
 import ToastComponent, { showToast } from 'utils/toast-component';
 
