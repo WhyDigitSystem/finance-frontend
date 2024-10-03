@@ -116,6 +116,12 @@ const finance = {
           title: 'FinYear',
           type: 'item',
           url: '/basicMaster/finYear'
+        },
+        {
+          id: 'partyMaster',
+          title: 'Party Master',
+          type: 'item',
+          url: '/finance/partyMaster'
         }
       ]
     }

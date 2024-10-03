@@ -57,6 +57,7 @@ const ListOfValues = Loadable(lazy(() => import('views/Finance/listOfValues/list
 const PaymentVoucher = Loadable(lazy(() => import('views/Finance/paymentVoucher/paymentVoucher')));
 const ARAPDetail = Loadable(lazy(() => import('views/Finance/ARAP-Details')));
 const ARAPAdjustment = Loadable(lazy(() => import('views/Finance/APAP-Adjustment')));
+const PartMaster = Loadable(lazy(() => import('views/Finance/PartyMaster')));
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
@@ -88,6 +89,10 @@ const FinanceRoute = {
     {
       path: '/Finance/SetTaxRate',
       element: <SetTaxRate />
+    },
+    {
+      path: '/finance/partyMaster',
+      element: <PartMaster />
     },
     {
       path: '/Finance/TaxMaster',
