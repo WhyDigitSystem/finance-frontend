@@ -239,6 +239,7 @@ const BRSOpening = () => {
 
     // Proceed with saving the data if no errors
     const saveFormData = {
+      ...(editId && { id: editId }),
       active: formData.active,
       billNo: formData.billNo,
       billDate: formData.billDate,

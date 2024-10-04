@@ -42,7 +42,7 @@ const FundTransfer = () => {
     paymentType: '',
     docDate: null,
     referenceNo: '',
-    referenceDate: '',
+    referenceDate: null,
     fromAccount: '',
     balance: '',
     currency: '',
@@ -66,7 +66,7 @@ const FundTransfer = () => {
     paymentType: '',
     docDate: null,
     referenceNo: '',
-    referenceDate: '',
+    referenceDate: null,
     fromAccount: '',
     balance: '',
     currency: '',
@@ -115,7 +115,7 @@ const FundTransfer = () => {
       paymentType: '',
       docDate: null,
       referenceNo: '',
-      referenceDate: '',
+      referenceDate: null,
       fromAccount: '',
       balance: '',
       currency: '',
@@ -137,7 +137,7 @@ const FundTransfer = () => {
       paymentType: '',
       docDate: null,
       referenceNo: '',
-      referenceDate: '',
+      referenceDate: null,
       fromAccount: '',
       balance: '',
       currency: '',
@@ -170,6 +170,47 @@ const FundTransfer = () => {
 
       if (response.status === true) {
         setListViewData(response.paramObjectsMap.fundTransferVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getFundTransferById = async (row) => {
+    console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `transaction/getAllFundTransferById?id=${row.original.id}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setListView(false);
+        const particularEmp = response.paramObjectsMap.fundTransferVO[0];
+
+        setFormData({
+          branch: particularEmp.branch,
+          docId: particularEmp.docId,
+          paymentType: particularEmp.paymentType,
+          docDate: particularEmp.docDate,
+          referenceNo: particularEmp.referenceNo,
+          referenceDate: particularEmp.referenceDate,
+          fromAccount: particularEmp.fromAccount,
+          balance: particularEmp.balance,
+          currency: particularEmp.currency,
+          exRate: particularEmp.exRate,
+          toBranch: particularEmp.toBranch,
+          toBank: particularEmp.toBank,
+          chequeBook: particularEmp.chequeBook,
+          chequeNo: particularEmp.chequeNo,
+          chequeDate: particularEmp.chequeDate,
+          paymentAmount: particularEmp.paymentAmount,
+          conversionRate: particularEmp.conversionRate,
+          receiptAmount: particularEmp.receiptAmount,
+          gainLoss: particularEmp.gainLoss,
+          remarks: particularEmp.remarks
+        });
       } else {
         console.error('API Error:', response);
       }
@@ -250,6 +291,7 @@ const FundTransfer = () => {
 
     // Prepare the API payload with the necessary fields
     const saveFormData = {
+      ...(editId && { id: editId }),
       active: formData.active,
       branch: formData.branch || '',
       docId: formData.docId,
@@ -310,7 +352,7 @@ const FundTransfer = () => {
               data={listViewData}
               columns={listViewColumns}
               blockEdit={true}
-              // toEdit={getBrsOpeningsById}
+              toEdit={getFundTransferById}
             />
           </div>
         ) : (
