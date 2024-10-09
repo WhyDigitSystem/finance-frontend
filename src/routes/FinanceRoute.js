@@ -3,6 +3,8 @@ import { lazy } from 'react';
 // project imports
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
+import ReconcileCash from 'views/Finance/Reconcile/ReconcileCash';
+import ReconcileCorp from 'views/Finance/Reconcile/ReconcileCorp';
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
 // login option 3 routing
@@ -181,6 +183,14 @@ const FinanceRoute = {
     {
       path: '/Finance/Reconcile/Reconcile',
       element: <Reconcile />
+    },
+    {
+      path: '/Finance/Reconcile/ReconcileCash',
+      element: <ReconcileCash />
+    },
+    {
+      path: '/Finance/Reconcile/ReconcileCorp',
+      element: <ReconcileCorp />
     },
     {
       path: '/Finance/receiptRegister/ReceiptRegister',

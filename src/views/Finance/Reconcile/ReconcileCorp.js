@@ -17,7 +17,7 @@ import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
 
-const Reconcile = () => {
+const ReconcileCorp = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const theme = useTheme();
   const anchorRef = useRef(null);
@@ -35,7 +35,7 @@ const Reconcile = () => {
   };
 
   useEffect(() => {
-    getAllReconsileBank();
+    getAllReconsileCorp();
   }, []);
 
   const [formData, setFormData] = useState({
@@ -64,10 +64,10 @@ const Reconcile = () => {
     console.log('Search action');
   };
 
-  const getAllReconsileBank = async () => {
+  const getAllReconsileCorp = async () => {
     try {
-      const result = await apiCalls('get', `/transaction/getAllReconcileBankByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.reconcileBankVO || []);
+      const result = await apiCalls('get', `/transaction/getAllReconcileCorpBankByOrgId?orgId=${orgId}`);
+      setData(result.paramObjectsMap.reconcileCorpBankVO || []);
       showForm(true);
       console.log('Test', result);
     } catch (err) {
@@ -400,7 +400,7 @@ const Reconcile = () => {
         bankStmtDate: formData.bankStmtDate,
         bankAccount: formData.bankAccount,
         remarks: formData.remarks,
-        particularsReconcileDTO: detailsVo,
+        particularsReconcileCorpBankDTO: detailsVo,
         createdBy: loginUserName,
         totalDeposit: 7,
         totalWithdrawal: 4,
@@ -410,20 +410,20 @@ const Reconcile = () => {
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const response = await apiCalls('put', '/transaction/updateCreateReconcileBank', saveFormData);
+        const response = await apiCalls('put', '/transaction/updateCreateReconcileCorpBank', saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
-          showToast('success', editId ? 'Reconcile Bank updated successfully' : 'Reconcile Bank created successfully');
-          getAllReconsileBank();
+          showToast('success', editId ? 'Reconcile Corp updated successfully' : 'Reconcile Corp created successfully');
+          getAllReconsileCorp();
           handleClear();
           setIsLoading(false);
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'List of value creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'Corp creation failed');
           setIsLoading(false);
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'List of value creation failed');
+        showToast('error', 'Corp creation failed');
         setIsLoading(false);
       }
     } else {
@@ -435,10 +435,10 @@ const Reconcile = () => {
     console.log('first', row);
     setShowForm(true);
     try {
-      const result = await apiCalls('get', `/transaction/getAllReconcileBankById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/transaction/getAllReconcileCorpBankById?id=${row.original.id}`);
 
       if (result) {
-        const listValueVO = result.paramObjectsMap.reconcileBankVO[0];
+        const listValueVO = result.paramObjectsMap.reconcileCorpBankVO[0];
         setEditId(row.original.id);
 
         setFormData({
@@ -449,7 +449,7 @@ const Reconcile = () => {
           remarks: listValueVO.remarks
         });
         setWithdrawalsTableData(
-          listValueVO.particularsReconcileVO.map((cl) => ({
+          listValueVO.particularsReconcileCorpBankVO.map((cl) => ({
             id: cl.id,
             voucherNo: cl.voucherNo,
             voucherDate: cl.voucherDate,
@@ -870,4 +870,4 @@ const Reconcile = () => {
   );
 };
 
-export default Reconcile;
+export default ReconcileCorp;
