@@ -59,13 +59,13 @@ const transaction = {
         },
 
         {
-          id: 'reconcile',
+          id: 'reconcile-bank',
           title: 'Reconcile Bank',
           type: 'item',
           url: '/finance/Reconcile/Reconcile'
         },
         {
-          id: 'reconcile',
+          id: 'reconcile-corp',
           title: 'Reconcile Corp',
           type: 'item',
           url: '/finance/Reconcile/ReconcileCorp'

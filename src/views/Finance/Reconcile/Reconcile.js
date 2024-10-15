@@ -43,7 +43,9 @@ const Reconcile = () => {
     docDate: null,
     bankStmtDate: null,
     bankAccount: '',
-    remarks: ''
+    remarks: '',
+    totalDeposit: '',
+    totalWithdrawal: ''
   });
 
   const [formDataErrors, setFormDataErrors] = useState({
@@ -51,7 +53,9 @@ const Reconcile = () => {
     docDate: null,
     bankStmtDate: null,
     bankAccount: '',
-    remarks: ''
+    remarks: '',
+    totalDeposit: '',
+    totalWithdrawal: ''
   });
 
   // Handle tab changes
@@ -210,7 +214,9 @@ const Reconcile = () => {
       docDate: null,
       bankStmtDate: null,
       bankAccount: '',
-      remarks: ''
+      remarks: '',
+      totalDeposit: '',
+      totalWithdrawal: ''
     });
 
     // Set the table to only have one empty row
@@ -318,7 +324,9 @@ const Reconcile = () => {
     { accessorKey: 'docId', header: 'Doc Id', size: 140 },
     { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
     { accessorKey: 'bankStmtDate', header: 'Bank Stmt Date', size: 140 },
-    { accessorKey: 'bankAccount', header: 'bankAccount', size: 140 }
+    { accessorKey: 'bankAccount', header: 'bankAccount', size: 140 },
+    { accessorKey: 'totalDeposit', header: 'Total Deposit', size: 140 },
+    { accessorKey: 'totalWithdrawal', header: 'Total Withdrawal', size: 140 }
   ];
 
   const handleList = () => {
@@ -402,8 +410,8 @@ const Reconcile = () => {
         remarks: formData.remarks,
         particularsReconcileDTO: detailsVo,
         createdBy: loginUserName,
-        totalDeposit: 7,
-        totalWithdrawal: 4,
+        totalDeposit: parseInt(formData.totalDeposit),
+        totalWithdrawal: parseInt(formData.totalWithdrawal),
         orgId: orgId
       };
 
@@ -446,7 +454,9 @@ const Reconcile = () => {
           docDate: listValueVO.docDate ? dayjs(listValueVO.docDate) : null, // handle invalid or null dates
           bankStmtDate: listValueVO.bankStmtDate ? dayjs(listValueVO.bankStmtDate) : null, // handle invalid or null dates
           bankAccount: listValueVO.bankAccount,
-          remarks: listValueVO.remarks
+          remarks: listValueVO.remarks,
+          totalDeposit: listValueVO.totalDeposit,
+          totalWithdrawal: listValueVO.totalWithdrawal
         });
         setWithdrawalsTableData(
           listValueVO.particularsReconcileVO.map((cl) => ({
@@ -547,6 +557,28 @@ const Reconcile = () => {
                   required
                   placeholder="Auto"
                   onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <TextField
+                  label="Total Deposit"
+                  value={formData.totalDeposit}
+                  size="small"
+                  fullWidth
+                  required
+                  placeholder="Auto"
+                  onChange={(e) => setFormData({ ...formData, totalDeposit: e.target.value })}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6} md={3}>
+                <TextField
+                  label="Total Withdrawal"
+                  value={formData.totalWithdrawal}
+                  size="small"
+                  fullWidth
+                  required
+                  placeholder="Auto"
+                  onChange={(e) => setFormData({ ...formData, totalWithdrawal: e.target.value })}
                 />
               </Grid>
             </Grid>{' '}

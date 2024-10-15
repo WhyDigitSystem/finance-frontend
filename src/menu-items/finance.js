@@ -21,12 +21,12 @@ const finance = {
       icon: icons.IconKey,
 
       children: [
-        {
-          id: 'setTaxRate',
-          title: 'SetTaxRate',
-          type: 'item',
-          url: '/finance/setTaxRate'
-        },
+        // {
+        //   id: 'setTaxRate',
+        //   title: 'SetTaxRate',
+        //   type: 'item',
+        //   url: '/finance/setTaxRate'
+        // },
         {
           id: 'listOfValues',
           title: 'List Of Values',
@@ -39,24 +39,24 @@ const finance = {
           type: 'item',
           url: '/finance/ChargeTypeRequest'
         },
-        {
-          id: 'taxMaster',
-          title: 'TaxMaster',
-          type: 'item',
-          url: '/finance/taxMaster'
-        },
+        // {
+        //   id: 'taxMaster',
+        //   title: 'TaxMaster',
+        //   type: 'item',
+        //   url: '/finance/taxMaster'
+        // },
         // {
         //   id: 'taxes',
         //   title: 'Taxes',
         //   type: 'item',
         //   url: '/finance/taxMaster/taxMaster'
         // },
-        {
-          id: 'tcsMaster',
-          title: 'TCS Master',
-          type: 'item',
-          url: '/finance/tcsMaster/TcsMaster'
-        },
+        // {
+        //   id: 'tcsMaster',
+        //   title: 'TCS Master',
+        //   type: 'item',
+        //   url: '/finance/tcsMaster/TcsMaster'
+        // },
         {
           id: 'tdsMaster',
           title: 'TDS Master',
@@ -81,36 +81,36 @@ const finance = {
           type: 'item',
           url: '/finance/Group'
         },
-        {
-          id: 'account',
-          title: 'Account',
-          type: 'item',
-          url: '/finance/account/Account'
-        },
+        // {
+        //   id: 'account',
+        //   title: 'Account',
+        //   type: 'item',
+        //   url: '/finance/account/Account'
+        // },
         {
           id: 'exRates',
           title: 'ExRates',
           type: 'item',
           url: '/finance/ExRates'
         },
-        {
-          id: 'subLedgerAccount',
-          title: 'Sub Ledger Account',
-          type: 'item',
-          url: '/finance/SubLedgerAccount'
-        },
+        // {
+        //   id: 'subLedgerAccount',
+        //   title: 'Sub Ledger Account',
+        //   type: 'item',
+        //   url: '/finance/SubLedgerAccount'
+        // },
         {
           id: 'costCenter',
           title: 'Cost Center Values',
           type: 'item',
           url: '/finance/costcenter/CostCentre'
         },
-        {
-          id: 'chequeBookMaster',
-          title: 'Cheque Book Master',
-          type: 'item',
-          url: '/finance/chequeBookMaster/ChequeBookMaster'
-        },
+        // {
+        //   id: 'chequeBookMaster',
+        //   title: 'Cheque Book Master',
+        //   type: 'item',
+        //   url: '/finance/chequeBookMaster/ChequeBookMaster'
+        // },
         {
           id: 'finYear',
           title: 'FinYear',
