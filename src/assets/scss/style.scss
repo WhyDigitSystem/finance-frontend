@@ -155,3 +155,14 @@
   margin-bottom: 0;
   margin-left: 14px;
 }
+
+.table-header {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0.5rem; /* Equivalent to 'px-2 py-2' */
+  border: 1px solid #dee2e6; /* Adjust this as needed */
+  text-align: center; /* For centering text */
+  background-color: #673AB7; /* For background color */
+  color: white; /* For text color */
+}
