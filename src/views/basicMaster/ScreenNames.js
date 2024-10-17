@@ -8,10 +8,10 @@ import 'react-tabs/style/react-tabs.css';
 import 'react-toastify/dist/ReactToastify.css';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
-// import ActionButton from 'utils/ActionButton';
+import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-// import apiCalls from 'apicall';
-// import CommonTable from '../basic-masters/CommonTable';
+import apiCalls from 'apicall';
+import CommonListViewTable from '../basicMaster/CommonListViewTable';
 
 export const ScreenNames = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -41,41 +41,41 @@ export const ScreenNames = () => {
   ];
   const [listViewData, setListViewData] = useState([]);
 
-  // useEffect(() => {
-  //   getAllScreens();
-  // }, []);
+  useEffect(() => {
+    getAllScreens();
+  }, []);
 
-  // const getAllScreens = async () => {
-  //   try {
-  //     const result = await apiCalls('get', `commonmaster/allScreenNames`);
-  //     setListViewData(result.paramObjectsMap.screenNamesVO);
-  //     console.log('Test', result);
-  //   } catch (err) {
-  //     console.log('error', err);
-  //   }
-  // };
+  const getAllScreens = async () => {
+    try {
+      const result = await apiCalls('get', `/commonmaster/getFinScreenByOrgId?id=${orgId}`);
+      setListViewData(result.paramObjectsMap.finScreenVO);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
 
-  // const getScreenById = async (row) => {
-  //   console.log('THE SELECTED SCREEN ID IS:', row.original.id);
-  //   setEditId(row.original.id);
-  //   try {
-  //     const response = await apiCalls('get', `commonmaster/screenNamesById?id=${row.original.id}`);
+  const getScreenById = async (row) => {
+    console.log('THE SELECTED SCREEN ID IS:', row.original.id);
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `/commonmaster/getFinScreenById?id=${row.original.id}`);
 
-  //     if (response.status === true) {
-  //       const particularScreen = response.paramObjectsMap.screenNamesVO;
-  //       setFormData({
-  //         screenCode: particularScreen.screenCode,
-  //         screenName: particularScreen.screenName,
-  //         active: particularScreen.active === 'Active' ? true : false
-  //       });
-  //       setListView(false);
-  //     } else {
-  //       console.error('API Error');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
+      if (response.status === true) {
+        const particularScreen = response.paramObjectsMap.finScreenVO[0];
+        setFormData({
+          screenCode: particularScreen.screenCode,
+          screenName: particularScreen.screenName,
+          active: particularScreen.active === 'Active' ? true : false,
+        });
+        setListView(false);
+      } else {
+        console.error('API Error');
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -106,61 +106,61 @@ export const ScreenNames = () => {
     });
   };
 
-  // const handleSave = async () => {
-  //   const errors = {};
-  //   if (!formData.screenCode) {
-  //     errors.screenCode = 'Code is required';
-  //   }
-  //   if (!formData.screenName) {
-  //     errors.screenName = 'Screen Name is required';
-  //   }
+  const handleSave = async () => {
+    const errors = {};
+    if (!formData.screenCode) {
+      errors.screenCode = 'Code is required';
+    }
+    if (!formData.screenName) {
+      errors.screenName = 'Screen Name is required';
+    }
 
-  //   if (Object.keys(errors).length === 0) {
-  //     setIsLoading(true);
-  //     const saveFormData = {
-  //       ...(editId && { id: editId }),
-  //       active: formData.active,
-  //       screenCode: formData.screenCode,
-  //       screenName: formData.screenName,
-  //       createdby: loginUserName
-  //     };
+    if (Object.keys(errors).length === 0) {
+      setIsLoading(true);
+      const saveFormData = {
+        ...(editId && { id: editId }),
+        active: formData.active,
+        screenCode: formData.screenCode,
+        screenName: formData.screenName,
+        createdby: loginUserName
+      };
 
-  //     console.log('DATA TO SAVE IS:', saveFormData);
+      console.log('DATA TO SAVE IS:', saveFormData);
 
-  //     try {
-  //       const result = await apiCalls('put', `commonmaster/createUpdateScreenNames`, saveFormData);
+      try {
+        const result = await apiCalls('put', `/commonmaster/updateFinScreen`, saveFormData);
 
-  //       if (result.status === true) {
-  //         console.log('Response:', result);
-  //         showToast('success', editId ? ' Screen Updated Successfully' : 'Screen Added successfully');
-  //         handleClear();
-  //         getAllScreens();
-  //         setIsLoading(false);
-  //       } else {
-  //         showToast('error', result.paramObjectsMap.errorMessage || 'Screen Added failed');
-  //         setIsLoading(false);
-  //       }
-  //     } catch (err) {
-  //       console.log('error', err);
-  //       showToast('error', 'Screen Added failed');
-  //       setIsLoading(false);
-  //     }
-  //   } else {
-  //     setFieldErrors(errors);
-  //   }
-  // };
+        if (result.status === true) {
+          console.log('Response:', result);
+          showToast('success', editId ? ' Screen Updated Successfully' : 'Screen Added successfully');
+          handleClear();
+          getAllScreens();
+          setIsLoading(false);
+        } else {
+          showToast('error', result.paramObjectsMap.errorMessage || 'Screen Added failed');
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.log('error', err);
+        showToast('error', 'Screen Added failed');
+        setIsLoading(false);
+      }
+    } else {
+      setFieldErrors(errors);
+    }
+  };
 
   const handleView = () => {
     setListView(!listView);
   };
 
-  // const handleClose = () => {
-  //   setEditMode(false);
-  //   setFormData({
-  //     country: '',
-  //     screenCode: ''
-  //   });
-  // };
+  const handleClose = () => {
+    setEditMode(false);
+    setFormData({
+      country: '',
+      screenCode: ''
+    });
+  };
 
   const handleCheckboxChange = (event) => {
     setFormData({
@@ -172,7 +172,7 @@ export const ScreenNames = () => {
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
-          {/* <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
@@ -180,21 +180,19 @@ export const ScreenNames = () => {
               title="Save"
               icon={SaveIcon}
               isLoading={isLoading}
-              // onClick={() => handleSave()}
+              onClick={() => handleSave()}
               margin="0 10px 0 10px"
-            />{' '}
-            &nbsp;{' '}
-          </div> */}
+            /> &nbsp;{' '}
+          </div>
         </div>
         {listView ? (
           <div className="mt-4">
-            {/* <CommonTable
+            <CommonListViewTable
               data={listViewData}
               columns={listViewColumns}
               blockEdit={true} // DISAPLE THE MODAL IF TRUE
               toEdit={getScreenById}
-            /> */}
-            table
+            />
           </div>
         ) : (
           <>
