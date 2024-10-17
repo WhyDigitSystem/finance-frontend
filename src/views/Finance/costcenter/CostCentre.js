@@ -21,14 +21,16 @@ const CostCenter = () => {
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+
   const [formValues, setFormValues] = useState({
     active: true,
-    createdBy: '',
+    createdBy: loginUserName,
     orgId: orgId,
     dimensionType: '',
     valueCode: '',
-    valueDescription: '',
-    updatedBy: ''
+    valueDescription: ''
+    // updatedBy: ''
   });
   const [validationErrors, setValidationErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -38,74 +40,51 @@ const CostCenter = () => {
     getAllCostCenterByOrgId();
   }, []);
 
-  // const handleInputChange = (e) => {
-  //   const { id, value, checked, type } = e.target;
-  //   setFormValues((prev) => ({
-  //     ...prev,
-  //     [id]: type === 'checkbox' ? checked : value
-  //   }));
-
-  //   // Validate the input fields
-  //   if (id === 'valueCode' || id === 'valueDescription') {
-  //     if (!value.trim()) {
-  //       setValidationErrors((prev) => ({
-  //         ...prev,
-  //         [id]: 'This field is required'
-  //       }));
-  //     } else {
-  //       setValidationErrors((prev) => {
-  //         const { [id]: removed, ...rest } = prev;
-  //         return rest;
-  //       });
-  //     }
-  //   }
-  // };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value, checked, type } = e.target;
-
-  //   // Update form values
-  //   setFormValues((prev) => ({
-  //     ...prev,
-  //     [name]: type === 'checkbox' ? checked : value
-  //   }));
-
-  //   // Validate the input fields
-  //   if (name === 'valueCode' || name === 'valueDescription') {
-  //     if (!value.trim()) {
-  //       setValidationErrors((prev) => ({
-  //         ...prev,
-  //         [name]: 'This field is required'
-  //       }));
-  //     } else {
-  //       setValidationErrors((prev) => {
-  //         const { [name]: removed, ...rest } = prev;
-  //         return rest;
-  //       });
-  //     }
-  //   }
-  // };
-
   const handleInputChange = (e) => {
     const { name, value, checked, type } = e.target;
+
+    // Handle checkboxes separately
+    if (type === 'checkbox') {
+      setFormValues((prev) => ({
+        ...prev,
+        [name]: checked // Use 'checked' for checkboxes
+      }));
+
+      return;
+    }
+
+    // Handle dropdown (Select)
+    if (name === 'dimensionType') {
+      setFormValues((prev) => ({
+        ...prev,
+        [name]: value
+      }));
+
+      if (!value) {
+        setValidationErrors((prev) => ({
+          ...prev,
+          [name]: 'This field is required'
+        }));
+      } else {
+        setValidationErrors((prev) => {
+          const { [name]: removed, ...rest } = prev;
+          return rest;
+        });
+      }
+      return;
+    }
 
     // Convert input to uppercase
     const uppercasedValue = value.toUpperCase();
 
-    // Validation regex
-    const numberOnlyRegex = /^[0-9]*$/; // Numbers only
-    const alphanumericRegex = /^[a-zA-Z0-9\s]*$/; // Alphanumeric only (letters, numbers, spaces)
-
     // Check and restrict input for valueCode
     if (name === 'valueCode') {
-      // Restrict input to numbers only
-      const filteredValue = uppercasedValue.replace(/[^0-9\s]/g, ''); // Remove any non-numeric characters
+      const filteredValue = uppercasedValue.replace(/[^0-9\s]/g, ''); // Allow only numbers
       setFormValues((prev) => ({
         ...prev,
         [name]: filteredValue
       }));
 
-      // Show error if the user entered any non-numeric characters
       if (uppercasedValue !== filteredValue) {
         setValidationErrors((prev) => ({
           ...prev,
@@ -122,18 +101,17 @@ const CostCenter = () => {
           return rest;
         });
       }
+      return;
     }
 
     // Check and restrict input for valueDescription
     if (name === 'valueDescription') {
-      // Restrict input to alphanumeric characters and spaces only
-      const filteredValue = uppercasedValue.replace(/[^a-zA-Z0-9\s]/g, ''); // Remove any special characters
+      const filteredValue = uppercasedValue.replace(/[^a-zA-Z0-9\s]/g, ''); // Alphanumeric only
       setFormValues((prev) => ({
         ...prev,
         [name]: filteredValue
       }));
 
-      // Show error if the user entered any non-alphanumeric characters
       if (uppercasedValue !== filteredValue) {
         setValidationErrors((prev) => ({
           ...prev,
