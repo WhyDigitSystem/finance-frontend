@@ -106,7 +106,7 @@ export const ChargeTypeRequest = () => {
 
   useEffect(() => {
     getAllChargeTypeRequestByOrgId();
-    getListOfValuesByOrgId();
+    getChargeType();
   }, []);
 
   const getAllChargeTypeRequestByOrgId = async () => {
@@ -119,10 +119,10 @@ export const ChargeTypeRequest = () => {
     }
   };
 
-  const getListOfValuesByOrgId = async () => {
+  const getChargeType = async () => {
     try {
-      const result = await apiCalls('get', `/master/getListOfValuesByOrgId?orgId=${orgId}`);
-      setListValues(result.paramObjectsMap.listOfValuesVO || []);
+      const result = await apiCalls('get', `/master/getChargeType?orgId=${orgId}`);
+      setListValues(result.paramObjectsMap.chargeTypeDetails || []);
       console.log('Test', result);
     } catch (err) {
       console.log('error', err);
@@ -426,8 +426,8 @@ export const ChargeTypeRequest = () => {
                     onChange={handleInputChange}
                   >
                     {listValues.map((item) => (
-                      <MenuItem key={item.id} value={item.listCode}>
-                        {item.listCode}
+                      <MenuItem key={item.id} value={item.chargeType}>
+                        {item.chargeType}
                       </MenuItem>
                     ))}
                   </Select>
