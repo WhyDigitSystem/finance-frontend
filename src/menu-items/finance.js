@@ -122,6 +122,18 @@ const finance = {
           title: 'Party Master',
           type: 'item',
           url: '/finance/partyMaster'
+        },
+        {
+          id: 'documentType',
+          title: 'Document Type',
+          type: 'item',
+          url: '/finance/DocumentType/documentType'
+        },
+        {
+          id: 'documentTypeMaping',
+          title: 'Document Type Mapping',
+          type: 'item',
+          url: '/finance/DocumentType/documentTypeMapping'
         }
       ]
     }

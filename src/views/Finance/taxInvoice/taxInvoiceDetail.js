@@ -1,11 +1,12 @@
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { TabContext } from '@mui/lab';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import { Avatar, ButtonBase, Tooltip } from '@mui/material';
 import Box from '@mui/material/Box';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -14,16 +15,13 @@ import Select from '@mui/material/Select';
 import Tab from '@mui/material/Tab';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import axios from 'axios';
 import { useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
+import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
 import GstTable from './GstTable';
-import TableComponent from './TableComponent';
 
 const TaxInvoiceDetails = () => {
   const [tabIndex, setTabIndex] = useState(0);
@@ -36,27 +34,29 @@ const TaxInvoiceDetails = () => {
   const [data, setData] = useState(false);
 
   const [formData, setFormData] = useState({
-    active: true,
-    address: '',
-    addressType: '',
-    billCurr: '',
-    chargerTaxInvoiceDTO: [],
-    createdBy: '',
-    docDate: new Date(),
-    dueDate: null,
-    gstTaxInvoiceDTO: [],
-    gsttype: '',
-    headerColumns: '',
-    invoiceDate: new Date(),
-    orgId: orgId,
+    bizType: '',
+    bizMode: '',
     partyCode: '',
     partyName: '',
     partyType: '',
-    pincode: '',
+    stateNo: '',
+    stateCode: '',
+    address: '',
+    addressType: '',
+    gstType: '',
+    pinCode: '',
     placeOfSupply: '',
     recipientGSTIN: '',
-    salesType: '',
     status: '',
+    docId: '',
+    docDate: new Date(),
+
+    active: true,
+
+    orgId: orgId,
+
+    salesType: '',
+
     updatedBy: '',
     summaryTaxInvoiceDTO: []
   });
@@ -71,7 +71,7 @@ const TaxInvoiceDetails = () => {
     address: '',
     pincode: '',
     status: '',
-    gsttype: '',
+    gstType: '',
     dueDate: '',
     billCurr: '',
     salesType: ''
@@ -84,6 +84,141 @@ const TaxInvoiceDetails = () => {
 
   const [tableData, setTableData] = useState([]);
   const [tableData1, setTableData1] = useState([]);
+
+  const [withdrawalsTableData, setWithdrawalsTableData] = useState([
+    {
+      sno: '',
+      chargeCode: '',
+      chargeName: '',
+      chargeType: '',
+      currency: '',
+      exRate: '',
+      exempted: '',
+      govChargeCode: '',
+      gstpercent: '',
+      ledger: '',
+      qty: '',
+      rate: '',
+      sac: '',
+      taxable: ''
+    }
+  ]);
+
+  const [withdrawalsTableErrors, setWithdrawalsTableErrors] = useState([
+    {
+      sno: '',
+      chargeCode: '',
+      chargeName: '',
+      chargeType: '',
+      currency: '',
+      exRate: '',
+      exempted: '',
+      govChargeCode: '',
+      gstpercent: '',
+      ledger: '',
+      qty: '',
+      rate: '',
+      sac: '',
+      taxable: ''
+    }
+  ]);
+
+  const handleAddRow = () => {
+    if (isLastRowEmpty(withdrawalsTableData)) {
+      displayRowError(withdrawalsTableData);
+      return;
+    }
+    const newRow = {
+      id: Date.now(),
+      sno: '',
+      chargeCode: '',
+      chargeName: '',
+      chargeType: '',
+      currency: '',
+      exRate: '',
+      exempted: '',
+      govChargeCode: '',
+      gstpercent: '',
+      ledger: '',
+      qty: '',
+      rate: '',
+      sac: '',
+      taxable: ''
+    };
+    setWithdrawalsTableData([...withdrawalsTableData, newRow]);
+    setWithdrawalsTableErrors([
+      ...withdrawalsTableErrors,
+      {
+        sno: '',
+        chargeCode: '',
+        chargeName: '',
+        chargeType: '',
+        currency: '',
+        exRate: '',
+        exempted: '',
+        govChargeCode: '',
+        gstpercent: '',
+        ledger: '',
+        qty: '',
+        rate: '',
+        sac: '',
+        taxable: ''
+      }
+    ]);
+  };
+
+  const isLastRowEmpty = (table) => {
+    const lastRow = table[table.length - 1];
+    if (!lastRow) return false;
+
+    if (table === withdrawalsTableData) {
+      return (
+        !lastRow.chargeCode ||
+        !lastRow.chargeName ||
+        !lastRow.chargeType ||
+        !lastRow.currency ||
+        !lastRow.exRate ||
+        !lastRow.exempted ||
+        !lastRow.govChargeCode ||
+        !lastRow.gstpercent ||
+        !lastRow.ledger ||
+        !lastRow.qty ||
+        !lastRow.rate ||
+        !lastRow.sac ||
+        !lastRow.taxable
+      );
+    }
+    return false;
+  };
+
+  const displayRowError = (table) => {
+    if (table === withdrawalsTableErrors) {
+      setWithdrawalsTableErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          chargeCode: !table[table.length - 1].chargeCode ? 'chargeCode is required' : '',
+          chargeName: !table[table.length - 1].chargeName ? 'chargeName is required' : '',
+          chargeType: !table[table.length - 1].chargeType ? 'chargeType is required' : '',
+          currency: !table[table.length - 1].currency ? 'currency is required' : '',
+          exRate: !table[table.length - 1].exRate ? 'exRate is required' : '',
+          exempted: !table[table.length - 1].exempted ? 'exempted is required' : '',
+          govChargeCode: !table[table.length - 1].govChargeCode ? 'govChargeCode is required' : '',
+          gstpercent: !table[table.length - 1].gstpercent ? 'gstpercent is required' : '',
+          ledger: !table[table.length - 1].ledger ? 'ledger is required' : '',
+          qty: !table[table.length - 1].qty ? 'qty is required' : '',
+          rate: !table[table.length - 1].rate ? 'rate is required' : '',
+          sac: !table[table.length - 1].sac ? 'sac is required' : '',
+          taxable: !table[table.length - 1].taxable ? 'taxable is required' : ''
+        };
+        return newErrors;
+      });
+    }
+  };
+
+  const handleDeleteRow = (rowId) => {
+    setWithdrawalsTableData((prev) => prev.filter((row) => row.id !== rowId));
+  };
 
   const handleCreateNewRow = (values) => {
     // Ensure that relevant fields in gstTaxInvoiceDTO are integers
@@ -108,6 +243,7 @@ const TaxInvoiceDetails = () => {
   const getAllTaxInvoice = async () => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/transaction/getTaxInvoiceByActive`);
+      // const result = await apiCalls('get', `/payable/getAllPaymentByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === 200) {
@@ -150,79 +286,6 @@ const TaxInvoiceDetails = () => {
     // { accessorKey: 'active', header: 'Recipient', size: 140 }
   ];
 
-  // const data = [
-  //   {
-  //     cityName: 'New York',
-  //     cityCode: 'NYC',
-  //     state: 'New York',
-  //     country: 'USA',
-  //     active: true
-  //   },
-  //   {
-  //     cityName: 'Los Angeles',
-  //     cityCode: 'LA',
-  //     state: 'California',
-  //     country: 'USA',
-  //     active: true
-  //   },
-  //   {
-  //     cityName: 'Chicago',
-  //     cityCode: 'CHI',
-  //     state: 'Illinois',
-  //     country: 'USA',
-  //     active: false
-  //   },
-  //   {
-  //     cityName: 'Houston',
-  //     cityCode: 'HOU',
-  //     state: 'Texas',
-  //     country: 'USA',
-  //     active: true
-  //   },
-  //   {
-  //     cityName: 'Phoenix',
-  //     cityCode: 'PHX',
-  //     state: 'Arizona',
-  //     country: 'USA',
-  //     active: false
-  //   },
-  //   {
-  //     cityName: 'Toronto',
-  //     cityCode: 'TOR',
-  //     state: 'Ontario',
-  //     country: 'Canada',
-  //     active: true
-  //   },
-  //   {
-  //     cityName: 'Vancouver',
-  //     cityCode: 'VAN',
-  //     state: 'British Columbia',
-  //     country: 'Canada',
-  //     active: true
-  //   },
-  //   {
-  //     cityName: 'London',
-  //     cityCode: 'LON',
-  //     state: 'England',
-  //     country: 'UK',
-  //     active: true
-  //   },
-  //   {
-  //     cityName: 'Sydney',
-  //     cityCode: 'SYD',
-  //     state: 'New South Wales',
-  //     country: 'Australia',
-  //     active: true
-  //   },
-  //   {
-  //     cityName: 'Melbourne',
-  //     cityCode: 'MEL',
-  //     state: 'Victoria',
-  //     country: 'Australia',
-  //     active: false
-  //   }
-  // ];
-
   const handleClear = () => {
     setFormData({
       active: true,
@@ -234,7 +297,7 @@ const TaxInvoiceDetails = () => {
       docDate: new Date(),
       dueDate: null,
       gstTaxInvoiceDTO: [],
-      gsttype: '',
+      gstType: '',
       headerColumns: '',
       id: 0,
       invoiceDate: new Date(),
@@ -386,11 +449,11 @@ const TaxInvoiceDetails = () => {
     }
 
     // GST Type
-    if (!formData.gsttype) {
-      newErrors.gsttype = 'GST Type is required';
+    if (!formData.gstType) {
+      newErrors.gstType = 'GST Type is required';
       formValid = false;
     } else {
-      newErrors.gsttype = '';
+      newErrors.gstType = '';
     }
 
     // Due Date
@@ -438,112 +501,77 @@ const TaxInvoiceDetails = () => {
     }
   };
 
+  const handleList = () => {
+    setlistView(!listView);
+  };
+
   return (
     <>
       <ToastComponent />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <Tooltip title="Search" placement="top">
-              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <SearchIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-
-            <Tooltip title="Clear" placement="top">
-              {' '}
-              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={handleClear}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <ClearIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-
-            <Tooltip title="List View" placement="top">
-              {' '}
-              <ButtonBase sx={{ borderRadius: '12px' }}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <FormatListBulletedTwoToneIcon size="1.3rem" stroke={1.5} onClick={handleListView} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-            <Tooltip title="Save" placement="top">
-              {' '}
-              <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <SaveIcon size="1.3rem" stroke={1.5} onClick={handleSave} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
+            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
           </div>
           {!listView && (
             <div className="d-flex flex-wrap justify-content-start row">
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Biz Type"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.bizType}
+                    onChange={(e) => setFormData({ ...formData, bizType: e.target.value })}
+                    error={!!errors.bizType}
+                    // helperText={errors.partyName}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Biz Mode"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.bizMode}
+                    onChange={(e) => setFormData({ ...formData, bizMode: e.target.value })}
+                    error={!!errors.bizMode}
+                    // helperText={errors.partyName}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Doc Id"
+                    size="small"
+                    disabled
+                    value={formData.docId}
+                    onChange={(e) => setFormData({ ...formData, docId: e.target.value })}
+                    error={!!errors.docId}
+                    // helperText={errors.partyName}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Doc Date"
+                    size="small"
+                    disabled
+                    value={formData.docDate}
+                    onChange={(e) => setFormData({ ...formData, docDate: e.target.value })}
+                    error={!!errors.docDate}
+                    // helperText={errors.partyName}
+                  />
+                </FormControl>
+              </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
@@ -593,6 +621,74 @@ const TaxInvoiceDetails = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
+                  <TextField
+                    label="State No"
+                    size="small"
+                    disabled
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.stateNo}
+                    onChange={(e) => setFormData({ ...formData, stateNo: e.target.value })}
+                    error={!!errors.stateNo}
+                    // helperText={errors.partyCode}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <InputLabel id="demo-simple-select-label" required>
+                    State Code
+                  </InputLabel>
+                  <Select
+                    labelId="addressTypeLabel"
+                    value={formData.stateCode}
+                    onChange={(e) => setFormData({ ...formData, stateCode: e.target.value })}
+                    label="State Code"
+                    required
+                    error={!!errors.stateCode}
+                    helperText={errors.stateCode}
+                  >
+                    <MenuItem value="BLR">BLR</MenuItem>
+                    <MenuItem value="GJ">GJ</MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Recipient GSTIN"
+                    size="small"
+                    disabled
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.recipientGSTIN}
+                    onChange={(e) => setFormData({ ...formData, recipientGSTIN: e.target.value })}
+                    error={!!errors.recipientGSTIN}
+                    // helperText={errors.partyCode}
+                  />
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <InputLabel id="demo-simple-select-label" required>
+                    Place Of Supply
+                  </InputLabel>
+                  <Select
+                    labelId="addressTypeLabel"
+                    value={formData.placeOfSupply}
+                    onChange={(e) => setFormData({ ...formData, placeOfSupply: e.target.value })}
+                    label="Place Of Supply"
+                    required
+                    error={!!errors.placeOfSupply}
+                    helperText={errors.placeOfSupply}
+                  >
+                    <MenuItem value="BLR">BLR</MenuItem>
+                    <MenuItem value="GJ">GJ</MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label" required>
                     Address Type
                   </InputLabel>
@@ -610,20 +706,7 @@ const TaxInvoiceDetails = () => {
                   </Select>
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Recipient GSTIN"
-                    size="small"
-                    required
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.recipientGSTIN}
-                    onChange={(e) => setFormData({ ...formData, recipientGSTIN: e.target.value })}
-                    error={!!errors.recipientGSTIN}
-                    // helperText={errors.recipientGSTIN}
-                  />
-                </FormControl>
-              </div>
+
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label" required>
@@ -650,25 +733,11 @@ const TaxInvoiceDetails = () => {
                     size="small"
                     required
                     multiline
-                    inputProps={{ maxLength: 30 }}
+                    inputProps={{ maxLength: 100 }}
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     error={!!errors.address}
-                    // helperText={errors.address}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Pincode"
-                    size="small"
-                    required
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.pincode}
-                    onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
-                    error={!!errors.pincode}
-                    // helperText={errors.pincode}
+                    // helperText={errors.address || `${formData.address.length}/50`}
                   />
                 </FormControl>
               </div>
@@ -693,25 +762,68 @@ const TaxInvoiceDetails = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
+                  <TextField
+                    label="Pincode"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.pincode}
+                    onChange={(e) => setFormData({ ...formData, pincode: e.target.value })}
+                    error={!!errors.pincode}
+                    // helperText={errors.pincode}
+                  />
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label" required>
                     GST Type
                   </InputLabel>
                   <Select
                     labelId="gstTypeLabel"
-                    value={formData.gsttype}
-                    onChange={(e) => setFormData({ ...formData, gsttype: e.target.value })}
+                    value={formData.gstType}
+                    onChange={(e) => setFormData({ ...formData, gstType: e.target.value })}
                     label="GST Type"
                     required
-                    error={!!errors.gsttype}
-                    helperText={errors.gsttype}
+                    error={!!errors.gstType}
+                    helperText={errors.gstType}
                   >
                     <MenuItem value="Inter">Inter</MenuItem>
                     <MenuItem value="Intra">Intra</MenuItem>
                   </Select>
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Supplier BillNo"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.supplierBillNo}
+                    onChange={(e) => setFormData({ ...formData, supplierBillNo: e.target.value })}
+                    error={!!errors.supplierBillNo}
+                    // helperText={errors.pincode}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Supplier BillDate"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.supplierBillDate}
+                    onChange={(e) => setFormData({ ...formData, supplierBillDate: e.target.value })}
+                    error={!!errors.supplierBillDate}
+                    // helperText={errors.pincode}
+                  />
+                </FormControl>
+              </div>
+
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
@@ -722,7 +834,7 @@ const TaxInvoiceDetails = () => {
                     />
                   </LocalizationProvider>
                 </FormControl>
-              </div>
+              </div> */}
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
@@ -744,6 +856,140 @@ const TaxInvoiceDetails = () => {
                   </Select>
                 </FormControl>
               </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Bill Curr Rate"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.billCurrRate}
+                    onChange={(e) => setFormData({ ...formData, billCurrRate: e.target.value })}
+                    error={!!errors.billCurrRate}
+                    // helperText={errors.pincode}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Ex Amount"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.exAmount}
+                    onChange={(e) => setFormData({ ...formData, exAmount: e.target.value })}
+                    error={!!errors.exAmount}
+                    // helperText={errors.pincode}
+                  />
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Credit Days"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.creditDays}
+                    onChange={(e) => setFormData({ ...formData, creditDays: e.target.value })}
+                    error={!!errors.creditDays}
+                    // helperText={errors.pincode}
+                  />
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Contact Person"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.contactPerson}
+                    onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
+                    error={!!errors.contactPerson}
+                    // helperText={errors.pincode}
+                  />
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Shipper InvoiceNo"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.shipperInvoiceNo}
+                    onChange={(e) => setFormData({ ...formData, shipperInvoiceNo: e.target.value })}
+                    error={!!errors.shipperInvoiceNo}
+                    // helperText={errors.pincode}
+                  />
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Bill Of Entry"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.billOfEntry}
+                    onChange={(e) => setFormData({ ...formData, billOfEntry: e.target.value })}
+                    error={!!errors.billOfEntry}
+                    // helperText={errors.pincode}
+                  />
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Bill Month"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.billMonth}
+                    onChange={(e) => setFormData({ ...formData, billMonth: e.target.value })}
+                    error={!!errors.billMonth}
+                    // helperText={errors.pincode}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Invoice No"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.invoiceNo}
+                    onChange={(e) => setFormData({ ...formData, invoiceNo: e.target.value })}
+                    error={!!errors.invoiceNo}
+                    // helperText={errors.pincode}
+                  />
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Invoice Date"
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.invoiceDate}
+                    onChange={(e) => setFormData({ ...formData, invoiceDate: e.target.value })}
+                    error={!!errors.invoiceDate}
+                    // helperText={errors.pincode}
+                  />
+                </FormControl>
+              </div>
+
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label" required>
@@ -782,7 +1028,657 @@ const TaxInvoiceDetails = () => {
                   </TabList>
                 </Box>
                 <TabPanel value="1">
-                  <TableComponent tableData={formData.chargerTaxInvoiceDTO} onCreateNewRow={handleCreateNewRow1} />
+                  <div className="row d-flex ml">
+                    <div className="mb-1">
+                      <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                    </div>
+                    <div className="row mt-2">
+                      <div className="col-lg-12">
+                        <div className="table-responsive">
+                          <table className="table table-bordered">
+                            <thead>
+                              <tr style={{ backgroundColor: '#673AB7' }}>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                  Action
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                  S.No
+                                </th>
+                                <th className="px-2 py-2 text-white text-center">Charge Code</th>
+                                <th className="px-2 py-2 text-white text-center">GCharge Code</th>
+                                <th className="px-2 py-2 text-white text-center">Charge Name</th>
+                                <th className="px-2 py-2 text-white text-center">Charge Type</th>
+                                <th className="px-2 py-2 text-white text-center">Taxable</th>
+                                <th className="px-2 py-2 text-white text-center">Qty</th>
+                                <th className="px-2 py-2 text-white text-center">Rate</th>
+                                <th className="px-2 py-2 text-white text-center">Currency</th>
+                                <th className="px-2 py-2 text-white text-center">Ex Rate</th>
+                                <th className="px-2 py-2 text-white text-center">FC Amount</th>
+                                <th className="px-2 py-2 text-white text-center">LC Amount</th>
+                                <th className="px-2 py-2 text-white text-center">Bill Amount</th>
+                                <th className="px-2 py-2 text-white text-center">sac</th>
+                                <th className="px-2 py-2 text-white text-center">GST %</th>
+                                <th className="px-2 py-2 text-white text-center">GST</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {Array.isArray(withdrawalsTableData) &&
+                                withdrawalsTableData.map((row, index) => (
+                                  <tr key={row.id}>
+                                    <td className="border px-2 py-2 text-center">
+                                      <ActionButton
+                                        title="Delete"
+                                        icon={DeleteIcon}
+                                        onClick={() =>
+                                          handleDeleteRow(
+                                            row.id,
+                                            withdrawalsTableData,
+                                            setWithdrawalsTableData,
+                                            withdrawalsTableErrors,
+                                            setWithdrawalsTableErrors
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                    <td className="text-center">
+                                      <div className="pt-2">{index + 1}</div>
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.chargeCode}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, chargeCode: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                chargeCode: !value ? 'chargeCode is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                chargeCode: 'Only numeric characters are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.chargeCode ? 'error form-control' : 'form-control'}
+                                      />
+                                      {withdrawalsTableErrors[index]?.chargeCode && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].chargeCode}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.govChargeCode}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, govChargeCode: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                govChargeCode: !value ? 'govChargeCode is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                govChargeCode: 'Only numeric characters are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.govChargeCode ? 'error form-control' : 'form-control'}
+                                      />
+                                      {withdrawalsTableErrors[index]?.govChargeCode && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].govChargeCode}
+                                        </div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.chargeName}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, chargeName: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                chargeName: !value ? 'chargeName is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                chargeName: 'Only numeric characters are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.chargeName ? 'error form-control' : 'form-control'}
+                                      />
+                                      {withdrawalsTableErrors[index]?.chargeName && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].chargeName}
+                                        </div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.chargeType}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, chargeType: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                chargeType: !value ? 'chargeType is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], chargeType: 'Only numeric characters are allowed' };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.chargeType ? 'error form-control' : 'form-control'}
+                                      />
+                                      {withdrawalsTableErrors[index]?.chargeType && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].chargeType}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.taxable}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, taxable: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                taxable: !value ? 'taxable is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                taxable: 'Only numeric characters are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.taxable ? 'error form-control' : 'form-control'}
+                                        // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      />
+                                      {withdrawalsTableErrors[index]?.taxable && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].taxable}
+                                        </div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.qty}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, qty: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                qty: !value ? 'qty is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                qty: 'Only numeric characters are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.qty ? 'error form-control' : 'form-control'}
+                                        // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      />
+                                      {withdrawalsTableErrors[index]?.qty && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].qty}
+                                        </div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.rate}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, rate: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                rate: !value ? 'rate is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                rate: 'Only numeric characters are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.rate ? 'error form-control' : 'form-control'}
+                                        // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      />
+                                      {withdrawalsTableErrors[index]?.rate && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].rate}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.currency}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, currency: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], currency: !value ? 'Eds is required' : '' };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                currency: 'Only numeric characters are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.currency ? 'error form-control' : 'form-control'}
+                                        // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      />
+                                      {withdrawalsTableErrors[index]?.currency && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].currency}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.exRate}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], exRate: !value ? 'exRate is required' : '' };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                exRate: 'Only numeric characters are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.exRate ? 'error form-control' : 'form-control'}
+                                        // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      />
+                                      {withdrawalsTableErrors[index]?.exRate && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].exRate}
+                                        </div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.fcAmount}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, fcAmount: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], fcAmount: !value ? 'fcAmount is required' : '' };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                fcAmount: 'Only numeric characters are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
+                                        // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      />
+                                      {withdrawalsTableErrors[index]?.fcAmount && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].fcAmount}
+                                        </div>
+                                      )}
+                                    </td>
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.lcAmount}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, lcAmount: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                lcAmount: !value ? 'lcAmount is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                lcAmount: 'Only numeric characters are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
+                                        // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      />
+                                      {withdrawalsTableErrors[index]?.lcAmount && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].lcAmount}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.billAmount}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, billAmount: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], billAmount: !value ? 'Settled is required' : '' };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                billAmount: 'Only numeric characters are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.billAmount ? 'error form-control' : 'form-control'}
+                                        // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      />
+                                      {withdrawalsTableErrors[index]?.billAmount && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].billAmount}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.sac}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, sac: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                sac: !value ? 'sac is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                sac: 'Only numeric characters are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.sac ? 'error form-control' : 'form-control'}
+                                        // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      />
+                                      {withdrawalsTableErrors[index]?.sac && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].sac}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.gstpercent}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, gstpercent: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                gstpercent: !value ? 'gstpercent is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                gstpercent: 'Only numeric characters are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.gstpercent ? 'error form-control' : 'form-control'}
+                                        // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      />
+                                      {withdrawalsTableErrors[index]?.gstpercent && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].gstpercent}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.gst}
+                                        style={{ width: '100px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, gst: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                gst: !value ? 'gst is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                gst: 'Only numeric characters are allowed'
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={withdrawalsTableErrors[index]?.gst ? 'error form-control' : 'form-control'}
+                                        // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      />
+                                      {withdrawalsTableErrors[index]?.gst && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {withdrawalsTableErrors[index].gst}
+                                        </div>
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </TabPanel>
                 <TabPanel value="2">
                   <div className="row d-flex mt-3">
@@ -937,7 +1833,7 @@ const TaxInvoiceDetails = () => {
         {listView && (
           <div>
             {/* <CommonTable data={data} columns={columns} editCallback={editCity} countryVO={countryVO} stateVO={stateVO} /> */}
-            {data && <CommonTable data={data} columns={columns} />}
+            {<CommonTable data={data} columns={columns} />}
           </div>
         )}
       </div>

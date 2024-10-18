@@ -5,7 +5,6 @@ import { Divider, Grid, Stack, Typography, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 // project imports
-import AuthFooter from 'ui-component/cards/AuthFooter';
 import AuthCardWrapper from '../AuthCardWrapper';
 import AuthWrapper1 from '../AuthWrapper1';
 import AuthRegister from '../auth-forms/AuthRegister';
@@ -76,9 +75,9 @@ const Register = () => {
             </Grid>
           </Grid>
         </Grid>
-        <Grid item xs={12} sx={{ m: 3, mt: 1 }}>
+        {/* <Grid item xs={12} sx={{ m: 3, mt: 1 }}>
           <AuthFooter />
-        </Grid>
+        </Grid> */}
       </Grid>
     </AuthWrapper1>
   );

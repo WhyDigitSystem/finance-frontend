@@ -640,8 +640,8 @@ const UserCreation = () => {
                       <MenuItem value="">
                         <em>None</em>
                       </MenuItem>
-                      {empList.length > 0 &&
-                        empList.map((emp, index) => (
+                      {listViewData.length > 0 &&
+                        listViewData.map((emp, index) => (
                           <MenuItem key={index} value={emp.empCode}>
                             {emp.empCode} {/* Corrected the way to display employee code */}
                           </MenuItem>

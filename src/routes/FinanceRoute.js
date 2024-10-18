@@ -3,6 +3,8 @@ import { lazy } from 'react';
 // project imports
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
+import DocumentTypeMaster from 'views/Finance/DocumentType/documentType';
+import DocumentTypeMappingMaster from 'views/Finance/DocumentType/documentTypeMapping';
 import ReconcileCash from 'views/Finance/Reconcile/ReconcileCash';
 import ReconcileCorp from 'views/Finance/Reconcile/ReconcileCorp';
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
@@ -275,6 +277,14 @@ const FinanceRoute = {
     {
       path: 'Finance/ARAP-Adjustment',
       element: <ARAPAdjustment />
+    },
+    {
+      path: 'Finance/DocumentType/documentType',
+      element: <DocumentTypeMaster />
+    },
+    {
+      path: 'Finance/DocumentType/documentTypeMapping',
+      element: <DocumentTypeMappingMaster />
     }
   ]
 };

@@ -1,7 +1,6 @@
 // api.js
 import axios from 'axios';
-import { toast } from 'react-toastify';
-import { refreshToken } from './utils/authUtils';
+import { refreshToken } from 'utils/authUtils';
 
 const api = axios.create({
   baseURL: `${process.env.REACT_APP_API_URL}/api`,
@@ -43,6 +42,8 @@ api.interceptors.response.use(
           const userName = localStorage.getItem('userName'); // Retrieve the userName from your context or storage
           const newToken = await refreshToken(token, userName);
 
+          console.log('NewToken => ', newToken);
+
           // Retry the original request with the new token
           originalRequest.headers.Authorization = `Bearer ${newToken}`;
           return api(originalRequest);
@@ -52,10 +53,10 @@ api.interceptors.response.use(
           return Promise.reject(refreshError);
         }
       } else {
-        toast.error(`Error: ${error.response.status} - ${error.response.data.message || 'An error occurred'}`, {
-          autoClose: 2000,
-          theme: 'colored'
-        });
+        // toast.error(`Error: ${error.response.status} - ${error.response.data.message || 'An error occurred'}`, {
+        //   autoClose: 2000,
+        //   theme: 'colored'
+        // });
       }
     } else if (error.request) {
       console.error('Error request:', error.request);
@@ -65,10 +66,10 @@ api.interceptors.response.use(
       // });
     } else {
       console.error('Error message:', error.message);
-      toast.error(`Error: ${error.message}`, {
-        autoClose: 2000,
-        theme: 'colored'
-      });
+      // toast.error(`Error: ${error.message}`, {
+      //   autoClose: 2000,
+      //   theme: 'colored'
+      // });
     }
 
     return Promise.reject(error);

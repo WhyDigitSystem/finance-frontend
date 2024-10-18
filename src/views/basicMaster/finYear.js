@@ -7,78 +7,77 @@ import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
+
 import dayjs from 'dayjs';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import CommonTable from './CommonTable';
+import CommonListViewTable from './CommonListViewTable';
 
 const FinYear = () => {
-  const theme = useTheme();
-  const anchorRef = useRef(null);
-  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId')));
   const [data, setData] = useState([]);
+  const [editId, setEditId] = useState('');
   const [showFields, setShowFields] = useState(true);
-  const [countryVO, setCountryVO] = useState([]);
 
   const [formData, setFormData] = useState({
-    finYr: '',
-    finYrId: '',
-    finYrIdentifier: '',
-    startDate: null,
-    endDate: null,
-    currentFinYr: false,
-    sno: '',
+    finYear: dayjs(),
+    finYearIdentifier: '',
+    finYearId: '',
+    startDate: dayjs(),
+    endDate: dayjs(),
+    currentFinYear: false,
+    // sno: '',
     active: true,
-    orgId: orgId
+    createdBy: localStorage.getItem('userName'),
+    orgId: parseInt(orgId)
   });
 
   const [fieldErrors, setFieldErrors] = useState({
-    finYr: false,
-    finYrId: false,
-    finYrIdentifier: false,
+    finYear: false,
+    finYearIdentifier: false,
+    finYearId: false,
     startDate: false,
     endDate: false,
-    currentFinYr: false,
-    sno: false
+    currentFinYear: false
+    // sno: false
   });
 
   const handleClear = () => {
     setFormData({
-      finYr: '',
-      finYrId: '',
-      finYrIdentifier: '',
-      startDate: '',
-      endDate: '',
-      currentFinYr: false,
-      sno: ''
+      finYear: dayjs(),
+      finYearId: '',
+      finYearIdentifier: '',
+      startDate: dayjs(),
+      endDate: dayjs(),
+      currentFinYear: false
+      // sno: ''
     });
 
     setFieldErrors({
-      finYr: false,
-      finYrId: false,
-      finYrIdentifier: false,
+      finYear: false,
+      finYearIdentifier: false,
+      finYearId: false,
       startDate: false,
       endDate: false,
-      currentFinYr: false,
-      sno: false
+      currentFinYear: false
+      // sno: false
     });
   };
 
   const columns = [
-    { accessorKey: 'finYr', header: 'FinYear', size: 140 },
-    { accessorKey: 'finYrId', header: 'FinYearId', size: 140 },
-    { accessorKey: 'finYrIdentifier', header: 'FinYearIdentifier', size: 140 },
+    { accessorKey: 'finYear', header: 'FinYear', size: 140 },
+    // { accessorKey: 'finYearId', header: 'FinYearId', size: 140 },
+    { accessorKey: 'finYearIdentifier', header: 'FinYearIdentifier', size: 140 },
     { accessorKey: 'startDate', header: 'Start Date', size: 140 },
     { accessorKey: 'endDate', header: 'End Date', size: 140 },
-    { accessorKey: 'currentFinYr', header: 'Current FinYear', size: 140 },
+    { accessorKey: 'currentFinYear', header: 'Current FinYear', size: 140 },
     { accessorKey: 'active', header: 'active', size: 140 }
   ];
 
@@ -86,13 +85,13 @@ const FinYear = () => {
     getFinYear();
   }, []);
 
-  const handleInputChange = (e) => {
+  const handleInputChange1 = (e) => {
     const { name, value, checked } = e.target;
     let newValue = value;
 
     if (name === 'sno') {
       newValue = parseInt(value, 10) || 0; // fallback to 0 if value is not a valid number
-    } else if (name === 'active' || name === 'currentFinYr') {
+    } else if (name === 'active' || name === 'currentFinYear') {
       newValue = checked;
     } else {
       newValue = value.toUpperCase();
@@ -102,16 +101,43 @@ const FinYear = () => {
     setFieldErrors({ ...fieldErrors, [name]: false });
   };
 
+  const handleInputChange = (e) => {
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const nameRegex = /^[A-Za-z ]*$/;
+    const numericRegex = /^[0-9]*$/;
+
+    if (name === 'finYearId' && !numericRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: name === 'active' || name === 'currentFinYear' ? checked : value.toUpperCase()
+      });
+      setFieldErrors({ ...fieldErrors, [name]: '' });
+
+      // Update the cursor position after the input change
+      if (type === 'text' || type === 'textarea') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
+      }
+    }
+  };
+
   const handleList = () => {
     setShowFields(!showFields);
   };
 
   const getFinYear = async () => {
     try {
-      const result = await apiCalls('get', `/basicMaster/getFinancialYearByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `commonmaster/getAllFInYearByOrgId?orgId=${orgId}`);
 
       if (result) {
-        setData(result.paramObjectsMap.financialYearVO || []);
+        setData(result.paramObjectsMap.financialYearVOs || []);
       } else {
         // Handle error
       }
@@ -128,6 +154,17 @@ const FinYear = () => {
     } else {
       setFormData({ ...formData, [name]: null });
     }
+
+    // Perform additional validation if both dates are set
+    if (formData.startDate && formData.endDate) {
+      const start = dayjs(formData.startDate);
+      const end = dayjs(formData.endDate);
+      if (start.isAfter(end)) {
+        setFieldErrors({ ...fieldErrors, endDate: true });
+      } else {
+        setFieldErrors({ ...fieldErrors, endDate: false });
+      }
+    }
   };
 
   const handleSubmit = async () => {
@@ -135,35 +172,91 @@ const FinYear = () => {
       // Check if any field is empty
       console.log('formData', formData);
       const errors = Object.keys(formData).reduce((acc, key) => {
-        if (!formData[key]) {
+        // Skip validation for 'active' and 'currentFinYear'
+        if (key !== 'active' && key !== 'currentFinYear' && !formData[key]) {
           acc[key] = true;
         }
         return acc;
       }, {});
+
+      // Check date validation
+      if (formData.startDate && formData.endDate) {
+        const start = dayjs(formData.startDate);
+        const end = dayjs(formData.endDate);
+        if (start.isAfter(end)) {
+          errors.endDate = true;
+        }
+      }
 
       // If there are errors, set the corresponding fieldErrors state to true
       if (Object.keys(errors).length > 0) {
         setFieldErrors(errors);
         return; // Prevent API call if there are errors
       }
+      const formatedFinYear = formData.finYear ? dayjs(formData.finYear).format('YYYY') : null;
+      // Format startDate, endDate, and convert finYear to integer before making the API call
+      const formattedData = {
+        startDate: formData.startDate ? dayjs(formData.startDate).format('YYYY-MM-DD') : null,
+        endDate: formData.endDate ? dayjs(formData.endDate).format('YYYY-MM-DD') : null,
+        // finYear: formData.finYear ? parseInt(formData.finYear, 10) : null,
+        finYear: parseInt(formatedFinYear),
+        finYearId: parseInt(formData.finYearId),
+        finYearIdentifier: formData.finYearIdentifier,
+        currentFinYear: false,
+        active: formData.active,
+        createdBy: localStorage.getItem('userName'),
+        id: editId ? formData.id : undefined,
+        orgId
+      };
 
-      // Make the API call using the apiCalls method
-      const response = await apiCalls('post', 'basicMaster/financial', formData);
+      // Make the API call using the apiCall method
+      const response = await apiCalls('put', 'commonmaster/createUpdateFinYear', formattedData);
 
       // Handle successful response
       console.log('Response:', response.data);
       handleClear();
-      toast.success('FinYear Created Successfully', {
+      toast.success(editId ? 'FinYear Updated Successfully' : 'FinYear Created Successfully', {
         autoClose: 2000,
         theme: 'colored'
       });
       getFinYear();
     } catch (error) {
-      // Error handling is already managed by the apiCalls method
+      // Error handling is already managed by the apiCall method
       toast.error(error.message, {
         autoClose: 2000,
         theme: 'colored'
       });
+    }
+  };
+
+  const getFinYearById = async (row) => {
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `commonmaster/getAllFInYearById?id=${row.original.id}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setShowFields(true);
+        const particularFin = response.paramObjectsMap.financialYearVOs;
+
+        setFormData({
+          // finYear: particularFin.finYear ? dayjs(particularFin.finYear).format('YYYY') : null,
+          finYear: particularFin.finYear ? dayjs().year(particularFin.finYear).format('YYYY') : null,
+          finYearId: particularFin.finYearId,
+          finYearIdentifier: particularFin.finYearIdentifier,
+          currentFinYear: particularFin.currentFinYear,
+          startDate: particularFin.startDate,
+          endDate: particularFin.endDate,
+          active: particularFin.active === 'Active' ? true : false,
+          orgId: particularFin.orgId,
+          updatedBy: localStorage.getItem('userName'),
+          id: row.original.id
+        });
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
   };
 
@@ -181,48 +274,67 @@ const FinYear = () => {
         </div>
         {showFields ? (
           <div className="row d-flex">
-            <div className="col-md-3 mb-3">
+            {/* <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
-                  id="finYr"
+                  id="finYear"
                   label="Fin Year"
                   size="small"
                   required
-                  name="finYr"
-                  value={formData.finYr}
+                  name="finYear"
+                  value={formData.finYear}
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 30 }}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYr ? 'This field is required' : ''}</span>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYear ? 'This field is required' : ''}</span>}
                 />
+              </FormControl>
+            </div> */}
+            <div className="col-md-3 mb-3">
+              <FormControl fullWidth variant="filled" size="small" sx={{ minWidth: '120px' }}>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    label="Fin Year"
+                    value={formData.finYear ? dayjs(formData.finYear) : null}
+                    views={['year']}
+                    onChange={(date) => handleDateChange('finYear', date)}
+                    slotProps={{
+                      textField: { size: 'small', clearable: true }
+                    }}
+                    format="YYYY"
+                    error={fieldErrors.finYear}
+                    helperText={fieldErrors.finYear ? 'This field is required' : ''}
+                  />
+                </LocalizationProvider>
               </FormControl>
             </div>
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
-                  id="finYrId"
+                  id="finYearId"
                   label="FinYear ID"
                   size="small"
                   required
-                  value={formData.finYrId}
-                  name="finYrId"
+                  value={formData.finYearId}
+                  name="finYearId"
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 30 }}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYrId ? 'This field is required' : ''}</span>}
+                  error={fieldErrors.finYearId}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYearId ? 'Fin Year Id required' : ''}</span>}
                 />
               </FormControl>
             </div>
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
-                  id="finYrIdentifier"
+                  id="finYearIdentifier"
                   label="FinYear Identifier"
                   size="small"
                   required
-                  value={formData.finYrIdentifier}
-                  name="finYrIdentifier"
+                  value={formData.finYearIdentifier}
+                  name="finYearIdentifier"
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 30 }}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYrIdentifier ? 'This field is required' : ''}</span>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYearIdentifier ? 'This field is required' : ''}</span>}
                 />
               </FormControl>
             </div>
@@ -236,6 +348,7 @@ const FinYear = () => {
                     slotProps={{
                       textField: { size: 'small', clearable: true }
                     }}
+                    format="DD-MM-YYYY"
                     error={fieldErrors.startDate}
                     helperText={fieldErrors.startDate ? 'This field is required' : ''}
                   />
@@ -252,35 +365,22 @@ const FinYear = () => {
                     slotProps={{
                       textField: { size: 'small', clearable: true }
                     }}
+                    format="DD-MM-YYYY"
                     error={fieldErrors.endDate}
                     helperText={fieldErrors.endDate ? 'This field is required' : ''}
                   />
                 </LocalizationProvider>
               </FormControl>
             </div>
-            <div className="col-md-3 mb-3">
-              <FormControl fullWidth variant="filled">
-                <TextField
-                  id="sno"
-                  label="Sequence No"
-                  size="small"
-                  required
-                  value={formData.sno}
-                  name="sno"
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 30 }}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.sno ? 'This field is required' : ''}</span>}
-                />
-              </FormControl>
-            </div>
+
             <div className="col-md-3 mb-3 ml-4">
               <FormGroup>
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={formData.currentFinYr}
+                      checked={formData.currentFinYear}
                       onChange={handleInputChange}
-                      name="currentFinYr"
+                      name="currentFinYear"
                       sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
                     />
                   }
@@ -305,7 +405,7 @@ const FinYear = () => {
             </div>
           </div>
         ) : (
-          <CommonTable data={Array.isArray(data) ? data : []} columns={columns} />
+          <CommonListViewTable data={Array.isArray(data) ? data : []} columns={columns} toEdit={getFinYearById} blockEdit={true} />
         )}
       </div>
     </div>
