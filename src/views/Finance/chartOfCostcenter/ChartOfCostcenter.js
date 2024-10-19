@@ -297,7 +297,7 @@ export const ChartOfCostcenter = () => {
     if (Object.keys(errors).length === 0 && detailsTableDataValid) {
       setIsLoading(true);
       const saveFormData = detailsTableData.map((row) => ({
-        // ...(editId && { id: row.id }),
+        ...(editId && { id: editId }),
         active: true,
         costCenterCode: row.costCenterCode,
         costCenterName: row.costCenterName,
