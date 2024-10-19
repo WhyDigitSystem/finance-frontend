@@ -1,262 +1,232 @@
-import { Edit } from '@mui/icons-material';
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField, Tooltip } from '@mui/material';
-import { MaterialReactTable } from 'material-react-table';
-import React, { useCallback, useMemo, useState } from 'react';
-import { data } from './makeData';
+import React, { useState, useEffect } from 'react';
+import ActionButton from 'utils/ActionButton';
+import FormControl from '@mui/material/FormControl';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import dayjs from 'dayjs';
+import ClearIcon from '@mui/icons-material/Clear';
+import SaveIcon from '@mui/icons-material/Save';
+import SearchIcon from '@mui/icons-material/Search';
+import apiCalls from 'apicall';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import { getAllActiveBranches } from 'utils/CommonFunctions';
 
 const ReceiptRegister = () => {
-  const [createModalOpen, setCreateModalOpen] = useState(false);
-  const [tableData, setTableData] = useState(() => data);
-  const [validationErrors, setValidationErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [allCustomerName, setAllCustomerName] = useState([]);
+  const [branchList, setBranchList] = useState([]);
+  const [branch, setBranch] = useState('Chennai');
+  const [branchCode, setBranchCode] = useState('MAAW');
+  const [finYear, setFinYear] = useState('2024');
+  const [fromDate, setFromDate] = useState(null);
+  const [toDate, setToDate] = useState(null);
+  const [subLedgerName, setSubLedgerName] = useState('');
+  const [data, setData] = useState([]);
+  const [noData, setNoData] = useState(false); // New state for "No data found" condition
 
-  const handleCreateNewRow = (values) => {
-    tableData.push(values);
-    setTableData([...tableData]);
-  };
+  useEffect(() => {
+    getAllCustomerName();
+    getAllBranches();
+  }, []);
 
-  const handleSaveRowEdits = async ({ exitEditingMode, row, values }) => {
-    if (!Object.keys(validationErrors).length) {
-      tableData[row.index] = values;
-      //send/receive api updates here, then refetch or update local table data for re-render
-      setTableData([...tableData]);
-      exitEditingMode(); //required to exit editing mode and close modal
+  const getAllCustomerName = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `arreceivable/getCustomerNameAndCodeForReceipt?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
+      );
+      if (response.status === true) {
+        setAllCustomerName(response.paramObjectsMap.PartyMasterVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
   };
 
-  const handleCancelRowEdits = () => {
-    setValidationErrors({});
+  const getAllBranches = async () => {
+    try {
+      const branchData = await getAllActiveBranches(orgId);
+      setBranchList(branchData);
+    } catch (error) {
+      console.error('Error fetching branch data:', error);
+    }
   };
 
-  // const handleDeleteRow = useCallback(
-  //   (row) => {
-  //     if (
-  //       // eslint-disable-next-line no-restricted-globals
-  //       !confirm(`Are you sure you want to delete ${row.getValue('firstName')}`)
-  //     ) {
-  //       return;
-  //     }
-  //     //send api delete request here, then refetch or update local table data for re-render
-  //     tableData.splice(row.index, 1);
-  //     setTableData([...tableData]);
-  //   },
-  //   [tableData]
-  // );
-
-  const getCommonEditTextFieldProps = useCallback(
-    (cell) => {
-      return {
-        error: !!validationErrors[cell.id],
-        helperText: validationErrors[cell.id],
-        onBlur: (event) => {
-          const isValid =
-            cell.column.id === 'email'
-              ? validateEmail(event.target.value)
-              : cell.column.id === 'age'
-                ? validateAge(+event.target.value)
-                : validateRequired(event.target.value);
-          if (!isValid) {
-            //set validation error for cell if invalid
-            setValidationErrors({
-              ...validationErrors,
-              [cell.id]: `${cell.column.columnDef.header} is required`
-            });
-          } else {
-            //remove validation error for cell if valid
-            delete validationErrors[cell.id];
-            setValidationErrors({
-              ...validationErrors
-            });
-          }
-        }
-      };
-    },
-    [validationErrors]
-  );
-
-  const columns = useMemo(
-    () => [
-      {
-        accessorKey: 'SNo',
-        header: 'S No',
-        size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell)
-        })
-      },
-      {
-        accessorKey: 'voucherNo',
-        header: 'VoucherNo',
-        size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell)
-        })
-      },
-      {
-        accessorKey: 'voucherDate',
-        header: 'Voucher Date',
-        size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell)
-        })
-      },
-      {
-        accessorKey: 'rcvdFrom',
-        header: 'Received From',
-        size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell)
-        })
-      },
-      {
-        accessorKey: 'currency',
-        header: 'Currency',
-        size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell)
-        })
-      },
-
-      {
-        accessorKey: 'exRate',
-        header: 'Ex.Rate',
-        size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell)
-        })
-      },
-      {
-        accessorKey: 'amt',
-        header: 'Amount',
-        size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell)
-        })
-      },
-      {
-        accessorKey: 'amt_lc',
-        header: 'Amount(LC)',
-        size: 140,
-        muiTableBodyCellEditTextFieldProps: ({ cell }) => ({
-          ...getCommonEditTextFieldProps(cell)
-        })
+  const handleSearch = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `arreceivable/getAllReceiptRegister?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&fromDate=${dayjs(fromDate).format(
+          'YYYY-MM-DD'
+        )}&toDate=${dayjs(toDate).format('YYYY-MM-DD')}&subLedgerName=${subLedgerName}&orgId=${orgId}`
+      );
+      if (response.status === true && response.paramObjectsMap.PartyMasterVO.length > 0) {
+        setData(response.paramObjectsMap.PartyMasterVO);
+        setNoData(false); // Data found
+      } else {
+        setData([]); // Clear the table if no data is found
+        setNoData(true); // Show "No data found"
       }
-    ],
-    [getCommonEditTextFieldProps]
-  );
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setData([]); // Clear the table in case of error
+      setNoData(true); // Show "No data found" in case of error
+    }
+  };
+
+  const handleClear = () => {
+    setFromDate(null);
+    setToDate(null);
+    setSubLedgerName('');
+    setBranch(''); // Clear the branch field
+    setBranchCode(''); // Clear the branchCode field
+    setFinYear('2024'); // Reset finYear or set to empty if needed
+    setData([]); // Clear table data
+    setNoData(false); // Reset the "No data found" state
+  };
 
   return (
     <>
-      <MaterialReactTable
-        displayColumnDefOptions={{
-          'mrt-row-actions': {
-            muiTableHeadCellProps: {
-              align: 'center'
-            },
-            size: 120
-          }
-        }}
-        columns={columns}
-        data={tableData}
-        editingMode="modal"
-        enableColumnOrdering
-        enableEditing
-        onEditingRowSave={handleSaveRowEdits}
-        onEditingRowCancel={handleCancelRowEdits}
-        renderRowActions={({ row, table }) => (
-          <Box sx={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
-            {/* <Tooltip arrow placement="left" title="Delete">
-              <IconButton color="error" onClick={() => handleDeleteRow(row)}>
-                <Delete />
-              </IconButton>
-            </Tooltip> */}
-            <Tooltip arrow placement="right" title="Edit">
-              <IconButton onClick={() => table.setEditingRow(row)}>
-                <Edit />
-              </IconButton>
-            </Tooltip>
-          </Box>
-        )}
-        renderTopToolbarCustomActions={() => (
-          <Stack direction="row" spacing={2} className="ml-5 ">
-            {/* <Tooltip title="Add">
-              <div>
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={() => setCreateModalOpen(true)}
-                >
-                  Add
-                </button>
-              </div>
-            </Tooltip> */}
-          </Stack>
-        )}
-      />
-      <CreateNewAccountModal
-        columns={columns}
-        open={createModalOpen}
-        onClose={() => setCreateModalOpen(false)}
-        onSubmit={handleCreateNewRow}
-      />
+      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
+        <div className="row d-flex ml">
+          <div className="d-flex flex-wrap justify-content-start mb-2" style={{ marginBottom: '20px' }}>
+            <ActionButton title="Search" icon={SearchIcon} onClick={handleSearch} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} /> {/* Clear button */}
+            {/* <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} /> */}
+          </div>
+        </div>
+
+        <div className="row d-flex mt-3">
+          <div className="col-md-3 mb-3">
+            <FormControl fullWidth>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  label="From Date"
+                  value={fromDate}
+                  slotProps={{
+                    textField: { size: 'small', clearable: true }
+                  }}
+                  onChange={(newValue) => setFromDate(newValue)}
+                  format="DD-MM-YYYY"
+                />
+              </LocalizationProvider>
+            </FormControl>
+          </div>
+          <div className="col-md-3 mb-3">
+            <FormControl fullWidth>
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  label="To Date"
+                  value={toDate}
+                  slotProps={{
+                    textField: { size: 'small', clearable: true }
+                  }}
+                  onChange={(newValue) => setToDate(newValue)}
+                  format="DD-MM-YYYY"
+                />
+              </LocalizationProvider>
+            </FormControl>
+          </div>
+          <div className="col-md-3 mb-3">
+            <FormControl fullWidth size="small">
+              <InputLabel required>SubLedger Name</InputLabel>
+              <Select label="SubLedger Name" value={subLedgerName} onChange={(e) => setSubLedgerName(e.target.value)}>
+                {allCustomerName.map((customer) => (
+                  <MenuItem key={customer.id} value={customer.customerName}>
+                    {customer.customerName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+          <div className="col-md-3 mb-3">
+            <FormControl fullWidth size="small">
+              <InputLabel required>Branch Code</InputLabel>
+              <Select label="Branch Code" onChange={(e) => setBranchCode(e.target.value)}>
+                {branchList.map((branch) => (
+                  <MenuItem key={branch.id} value={branch.branchCode}>
+                    {branch.branchCode}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+        </div>
+
+        <div className="row mt-2">
+          <div className="col-lg-12">
+            <div className="table-responsive">
+              <table className="table table-bordered">
+                <thead>
+                  <tr style={{ backgroundColor: '#673AB7' }}>
+                    <th className="px-2 py-2 text-white text-center">Doc Id</th>
+                    <th className="px-2 py-2 text-white text-center">Doc Date</th>
+                    <th className="px-2 py-2 text-white text-center">SubLedger Name</th>
+                    <th className="px-2 py-2 text-white text-center">Bank / Cash A/C</th>
+                    <th className="px-2 py-2 text-white text-center">Receipt Amount</th>
+                    <th className="px-2 py-2 text-white text-center">Bank Charges</th>
+                    <th className="px-2 py-2 text-white text-center">S. Tax Amount</th>
+                    <th className="px-2 py-2 text-white text-center">TDS Amount</th>
+                    <th className="px-2 py-2 text-white text-center">Invoice No</th>
+                    <th className="px-2 py-2 text-white text-center">Invoice Date</th>
+                    <th className="px-2 py-2 text-white text-center">Ref No</th>
+                    <th className="px-2 py-2 text-white text-center">Ref Date</th>
+                    <th className="px-2 py-2 text-white text-center">Cheque Bank</th>
+                    <th className="px-2 py-2 text-white text-center">Cheque No</th>
+                    <th className="px-2 py-2 text-white text-center">Amount</th>
+                    <th className="px-2 py-2 text-white text-center">Outstanding</th>
+                    <th className="px-2 py-2 text-white text-center">Settled</th>
+                    <th className="px-2 py-2 text-white text-center">Created On</th>
+                    <th className="px-2 py-2 text-white text-center">Created By</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {noData ? (
+                    <tr>
+                      <td colSpan="19" className="text-center py-3">
+                        No data found
+                      </td>
+                    </tr>
+                  ) : (
+                    data.map((record, index) => (
+                      <tr key={index}>
+                        <td className="px-2 py-2 text-center">{record.docId}</td>
+                        <td className="px-2 py-2 text-center">{record.docDate}</td>
+                        <td className="px-2 py-2 text-center">{record.subLedgerName}</td>
+                        <td className="px-2 py-2 text-center">{record.bankCash}</td>
+                        <td className="px-2 py-2 text-center">{record.receiptAmount}</td>
+                        <td className="px-2 py-2 text-center">{record.bankCharges}</td>
+                        <td className="px-2 py-2 text-center">{record.taxAmount}</td>
+                        <td className="px-2 py-2 text-center">{record.tdsAmount}</td>
+                        <td className="px-2 py-2 text-center">{record.invoiceNo}</td>
+                        <td className="px-2 py-2 text-center">{record.invoiceDate}</td>
+                        <td className="px-2 py-2 text-center">{record.refNo}</td>
+                        <td className="px-2 py-2 text-center">{record.refDate}</td>
+                        <td className="px-2 py-2 text-center">{record.chequeBank}</td>
+                        <td className="px-2 py-2 text-center">{record.chequeNo}</td>
+                        <td className="px-2 py-2 text-center">{record.amount}</td>
+                        <td className="px-2 py-2 text-center">{record.outstanding}</td>
+                        <td className="px-2 py-2 text-center">{record.setteled}</td>
+                        <td className="px-2 py-2 text-center">{record.createdOn}</td>
+                        <td className="px-2 py-2 text-center">{record.createdBy}</td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };
-
-//example of creating a mui dialog modal for creating new rows
-export const CreateNewAccountModal = ({ open, columns, onClose, onSubmit }) => {
-  const [values, setValues] = useState(() =>
-    columns.reduce((acc, column) => {
-      acc[column.accessorKey ?? ''] = '';
-      return acc;
-    }, {})
-  );
-
-  const handleSubmit = () => {
-    //put your validation logic here
-    onSubmit(values);
-    onClose();
-  };
-
-  return (
-    <Dialog open={open}>
-      <DialogTitle textAlign="center">Add</DialogTitle>
-      <DialogContent>
-        <form onSubmit={(e) => e.preventDefault()}>
-          <Stack
-            sx={{
-              width: '100%',
-              minWidth: { xs: '300px', sm: '360px', md: '400px' },
-              gap: '1.5rem'
-            }}
-          >
-            {columns.map((column) => (
-              <TextField
-                key={column.accessorKey}
-                label={column.header}
-                name={column.accessorKey}
-                onChange={(e) => setValues({ ...values, [e.target.name]: e.target.value })}
-              />
-            ))}
-          </Stack>
-        </form>
-      </DialogContent>
-      <DialogActions sx={{ p: '1.25rem' }}>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button color="secondary" onClick={handleSubmit} variant="contained">
-          Add
-        </Button>
-      </DialogActions>
-    </Dialog>
-  );
-};
-
-const validateRequired = (value) => !!value.length;
-const validateEmail = (email) =>
-  !!email.length &&
-  email
-    .toLowerCase()
-    .match(
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    );
-const validateAge = (age) => age >= 18 && age <= 50;
 
 export default ReceiptRegister;

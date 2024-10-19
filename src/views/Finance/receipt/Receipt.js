@@ -60,8 +60,8 @@ const Receipt = () => {
     active: true,
     receiptType1: '',
     bankChargeAcc: '',
-    docId: '',
-    docDate: null,
+    // docId: '',
+    // docDate: null,
     bankCharges: '',
     inCurrencyBnkChargs: '',
     type: '',
@@ -86,8 +86,8 @@ const Receipt = () => {
     active: true,
     receiptType1: '',
     bankChargeAcc: '',
-    docId: '',
-    docDate: null,
+    // docId: '',
+    // docDate: null,
     bankCharges: '',
     inCurrencyBnkChargs: '',
     type: '',
@@ -225,8 +225,8 @@ const Receipt = () => {
     setFormData({
       active: true,
       bankChargeAcc: '',
-      docId: '',
-      docDate: null,
+      // docId: '',
+      // docDate: null,
       bankCharges: '',
       inCurrencyBnkChargs: '',
       type: '',
@@ -248,8 +248,8 @@ const Receipt = () => {
     });
     setFieldErrors({
       bankChargeAcc: '',
-      docId: '',
-      docDate: null,
+      // docId: '',
+      // docDate: null,
       bankCharges: '',
       inCurrencyBnkChargs: '',
       type: '',
@@ -503,8 +503,8 @@ const Receipt = () => {
         setFormData({
           receiptType: receiptVO.receiptType,
           bankChargeAcc: receiptVO.bankChargeAcc,
-          docId: receiptVO.docId,
-          docDate: dayjs(receiptVO.docDate, 'DD-MM-YYYY').format('YYYY-MM-DD'), // Convert to correct format
+          // docId: receiptVO.docId,
+          // docDate: dayjs(receiptVO.docDate, 'DD-MM-YYYY').format('YYYY-MM-DD'), // Convert to correct format
           bankCharges: receiptVO.bankCharges,
           inCurrencyBnkChargs: receiptVO.inCurrencyBnkChargs,
           type: receiptVO.type,
@@ -551,6 +551,15 @@ const Receipt = () => {
     }
   };
 
+  const formatDate = (date) => {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const currentDate = new Date();
+
   const handleSave = async () => {
     const errors = {};
     const tableErrors = inVoiceDetailsData.map((row) => ({
@@ -586,12 +595,12 @@ const Receipt = () => {
     if (!formData.bankChargeAcc) {
       errors.bankChargeAcc = 'Bank Charge Acc is required';
     }
-    if (!formData.docId) {
-      errors.docId = 'Document ID is required';
-    }
-    if (!formData.docDate) {
-      errors.docDate = 'Document Date is required';
-    }
+    // if (!formData.docId) {
+    //   errors.docId = 'Document ID is required';
+    // }
+    // if (!formData.docDate) {
+    //   errors.docDate = 'Document Date is required';
+    // }
     if (!formData.bankCharges) {
       errors.bankCharges = 'Bank Charges is required';
     }
@@ -650,11 +659,12 @@ const Receipt = () => {
 
       const receiptInvDetailVo = inVoiceDetailsData.map((row) => ({
         // id: item.id || 0, // If id exists, otherwise 0
+
         ...(editId && { id: row.id }),
         invNo: row.invNo,
-        invDate: row.invDate,
+        invDate: formatDate(new Date(row.invDate)),
         refNo: row.refNo,
-        refDate: row.refDate,
+        refDate: formatDate(new Date(row.refDate)),
         masterRef: row.masterRef,
         houseRef: row.houseRef,
         currency: row.currency,
@@ -665,10 +675,10 @@ const Receipt = () => {
         settled: parseInt(row.settled),
         recExRate: parseInt(row.recExRate),
         txnSettled: parseInt(row.txnSettled),
-        gainAmt: parseInt(row.gainAmt),
+        gainAmt: parseInt(row.gainAmt)
         // remarks: row.remarks,
-        fromDate: '2024-10-17',
-        toDate: '2024-10-17'
+        // fromDate: formatDate(currentDate), // Passing current date
+        // toDate: formatDate(currentDate)
       }));
 
       const saveFormData = {
@@ -676,8 +686,8 @@ const Receipt = () => {
         active: formData.active,
         receiptType: formData.receiptType,
         bankChargeAcc: formData.bankChargeAcc,
-        docId: formData.docId,
-        docDate: formData.docDate,
+        // docId: formData.docId,
+        // docDate: formatDate(new Date(formData.docDate)), // Formatting with date and time
         bankCharges: parseInt(formData.bankCharges),
         inCurrencyBnkChargs: formData.inCurrencyBnkChargs,
         type: formData.type,
@@ -689,7 +699,7 @@ const Receipt = () => {
         receiptType1: formData.receiptType1,
         bankCashAcc: formData.bankCashAcc,
         chequeUtiNo: formData.chequeUtiNo,
-        chequeUtiDt: formData.chequeUtiDt,
+        chequeUtiDt: formatDate(new Date(formData.chequeUtiDt)), // Formatting with date and time
         receiptAmt: parseInt(formData.receiptAmt),
         currency: formData.currency,
         currencyAmount: formData.currencyAmount,
@@ -732,7 +742,7 @@ const Receipt = () => {
   const listViewColumns = [
     { accessorKey: 'receiptType', header: 'Receipt Type', size: 140 },
     { accessorKey: 'bankChargeAcc', header: 'Bank Charges Account', size: 140 },
-    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
+    // { accessorKey: 'docId', header: 'Doc Id', size: 140 },
     { accessorKey: 'type', header: 'Type', size: 140 },
     { accessorKey: 'tdsAmt', header: 'TDS Amount', size: 140 },
     { accessorKey: 'customerName', header: 'Customer Name', size: 140 },
@@ -793,7 +803,7 @@ const Receipt = () => {
                   />
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="docId"
@@ -807,8 +817,8 @@ const Receipt = () => {
                     helperText={fieldErrors.docId}
                   />
                 </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
+              </div> */}
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
@@ -824,7 +834,7 @@ const Receipt = () => {
                     />
                   </LocalizationProvider>
                 </FormControl>
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -1141,7 +1151,7 @@ const Receipt = () => {
                               <th className="px-2 py-2 text-white text-center">Rec. Ex. Rate</th>
                               <th className="px-2 py-2 text-white text-center">Txn Settled</th>
                               <th className="px-2 py-2 text-white text-center">Gain or Loss</th>
-                              <th className="px-2 py-2 text-white text-center">Remarks</th>
+                              {/* <th className="px-2 py-2 text-white text-center">Remarks</th> */}
                             </tr>
                           </thead>
                           <tbody>
