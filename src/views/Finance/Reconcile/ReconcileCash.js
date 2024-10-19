@@ -16,6 +16,7 @@ import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
 import PhysicalCountComponent from './PhysicalCount';
+import { ToastContainer } from 'react-toastify';
 
 const ReconcileCash = () => {
   const [tabIndex, setTabIndex] = useState(0);
@@ -51,7 +52,7 @@ const ReconcileCash = () => {
     dn7Amt: 0,
     dn8: 0,
     dn8Amt: 0,
-    docDate: dayjs().format('YYYY-MM-DD'),
+    docDate: dayjs().format('DD-MM-YYYY'),
     docId: 'string',
     orgId: orgId,
     remarks: '',
@@ -126,6 +127,15 @@ const ReconcileCash = () => {
         const listValueVO = result.paramObjectsMap.reconcileCashVO[0];
         setEditId(row.original.id);
 
+        console.log('Raw docDate:', listValueVO.docDate);
+
+        // Parse docDate if available and valid
+        let parsedDocDate = null;
+        if (listValueVO.docDate) {
+          parsedDocDate = dayjs(listValueVO.docDate, 'DD-MM-YYYY');
+          console.log('Parsed Doc Date:', parsedDocDate); // Debugging log
+          console.log('Is Doc Date Valid:', parsedDocDate.isValid());
+        }
         // Map the returned values to formData, ensuring all fields are updated
         setFormData({
           active: listValueVO.active !== undefined ? listValueVO.active : true, // Default to true if not provided
@@ -133,7 +143,6 @@ const ReconcileCash = () => {
           cashAccount: listValueVO.cashAccount || '',
           createdBy: listValueVO.createdBy || 'string',
           differenceAmount: listValueVO.differenceAmount || 0,
-
           dn1: listValueVO.dn1 || 0,
           dn1Amt: listValueVO.dn1Amt || 0,
           dn2: listValueVO.dn2 || 0,
@@ -150,14 +159,12 @@ const ReconcileCash = () => {
           dn7Amt: listValueVO.dn7Amt || 0,
           dn8: listValueVO.dn8 || 0,
           dn8Amt: listValueVO.dn8Amt || 0,
-          docDate: listValueVO.docDate ? dayjs(listValueVO.docDate).format('YYYY-MM-DD') : dayjs().format('YYYY-MM-DD'),
-          docId: listValueVO.docId || 'string',
+          docDate: parsedDocDate,
+          docDate: parsedDocDate && parsedDocDate.isValid() ? parsedDocDate : null,
           id: listValueVO.id || 0,
           orgId: listValueVO.orgId || 0,
           remarks: listValueVO.remarks || '',
-          totalPhyAmount: listValueVO.totalPhyAmount || 0,
-
-          reconcileDate: listValueVO.reconcileDate ? dayjs(listValueVO.reconcileDate) : null // Handle invalid or null dates
+          totalPhyAmount: listValueVO.totalPhyAmount || 0
         });
 
         console.log('DataToEdit', listValueVO);
@@ -193,7 +200,7 @@ const ReconcileCash = () => {
       dn7Amt: 0,
       dn8: 0,
       dn8Amt: 0,
-      docDate: dayjs().format('YYYY-MM-DD'),
+      docDate: dayjs().format('DD-MM-YYYY'),
       docId: 'string',
       id: 0,
       orgId: 0,
@@ -242,12 +249,12 @@ const ReconcileCash = () => {
                       textField: { size: 'small', clearable: true }
                     }}
                     format="DD-MM-YYYY"
-                    // Ensure `formData.docDate` is a valid Dayjs object
-                    value={formData.docDate ? dayjs(formData.docDate) : null}
+                    value={formData.docDate && dayjs(formData.docDate).isValid() ? formData.docDate : null}
                     renderInput={(params) => <TextField {...params} size="small" fullWidth />}
                   />
                 </LocalizationProvider>
               </Grid>
+
               <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   label="Cash Account"
@@ -295,6 +302,7 @@ const ReconcileCash = () => {
           <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getReconcileById} />
         )}
       </div>
+      <ToastContainer />
     </>
   );
 };

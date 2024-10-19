@@ -13,6 +13,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
@@ -405,7 +406,7 @@ const Reconcile = () => {
         // active: formData.active,
         docId: '7687',
         docDate: formData.docDate,
-        bankStmtDate: formData.bankStmtDate,
+        bankStmtDate: formData.bankStmtDate ? dayjs(formData.bankStmtDate).format('YYYY-MM-DD') : null,
         bankAccount: formData.bankAccount,
         remarks: formData.remarks,
         particularsReconcileDTO: detailsVo,
@@ -898,6 +899,7 @@ const Reconcile = () => {
           <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getReconcileById} />
         )}
       </div>
+      <ToastContainer />
     </>
   );
 };

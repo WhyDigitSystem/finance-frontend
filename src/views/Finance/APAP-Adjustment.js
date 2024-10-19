@@ -7,187 +7,196 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import axios from 'axios';
-import { useRef, useState } from 'react';
+import apiCalls from 'apicall';
+import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import CommonTable from 'views/basicMaster/CommonTable';
+import { showToast } from 'utils/toast-component';
+import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
 export const ARAPAdjustment = () => {
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
+  const [showForm, setShowForm] = useState(true);
+  const [data, setData] = useState([]);
+  const [docId, setDocId] = useState('');
+  const [editId, setEditId] = useState('');
+
   const [formData, setFormData] = useState({
-    active: true,
-    chargeType: '',
-    chargeCode: '',
-    product: '',
-    chargeDescription: '',
-    localChargeDescripition: '',
-    serviceAccountCode: '',
-    sACDescription: '',
-    salesAccount: '',
-    purchaseAccount: '',
-    taxType: '',
-    ccFeeApplicable: '',
-    taxable: '',
-    taxablePercentage: '',
-    ccJob: '',
-    govtSac: '',
-    excempted: '',
-    orgId: orgId,
-    gstTax: '',
-    gstControl: '',
-    service: '',
-    type: ''
+    accCurrency: '',
+    accountName: '',
+    baseAmnt: '',
+    branch: '',
+    branchCode: 'MAA',
+    chargeableAmt: '',
+    createdBy: '',
+    creditDays: '',
+    currency: '',
+    dueDate: null,
+    exRate: '',
+    finYear: '',
+    nativeAmt: '',
+    offDocId: '',
+    refDate: null,
+    refNo: '',
+    source: '',
+    subLedgerCode: '',
+    tdsAmt: '',
+    transId: '',
+    voucherType: '',
+    orgId: orgId
   });
 
   const [fieldErrors, setFieldErrors] = useState({
-    chargeType: '',
-    chargeCode: '',
-    product: '',
-    chargeDescription: '',
-    localChargeDescripition: '',
-    serviceAccountCode: '',
-    sacDescripition: '',
-    salesAccount: '',
-    purchaseAccount: '',
-    taxable: '',
-    taxType: '',
-    taxablePercentage: '',
-    ccFeeApplicable: '',
-    ccJob: '',
-    govtSac: '',
-    excempted: '',
-    gstTax: '',
-    gstControl: '',
-    service: '',
-    type: ''
+    accCurrency: '',
+    accountName: '',
+    baseAmnt: '',
+    branch: '',
+    branchCode: '',
+    chargeableAmt: '',
+    createdBy: '',
+    creditDays: '',
+    currency: '',
+    docDate: null,
+    dueDate: null,
+    exRate: '',
+    finYear: '',
+    nativeAmt: '',
+    offDocId: '',
+    officeDocId: '',
+    refDate: null,
+    refNo: '',
+    source: '',
+    subLedgerCode: '',
+    tdsAmt: '',
+    transId: '',
+    voucherType: ''
   });
 
   const validateForm = () => {
     let errors = {};
     let hasError = false;
 
-    if (!formData.chargeType) {
-      errors.chargeType = '* Field is required';
+    if (!formData.accCurrency) {
+      errors.accCurrency = '* Field is required';
       hasError = true;
     }
-    if (!formData.chargeCode) {
-      errors.chargeCode = '* Field is required';
+    if (!formData.accountName) {
+      errors.accountName = '* Field is required';
       hasError = true;
     }
-    if (!formData.product) {
-      errors.product = '* Field is required';
+    if (!formData.baseAmnt) {
+      errors.baseAmnt = '* Field is required';
       hasError = true;
     }
-    if (!formData.chargeDescription) {
-      errors.chargeDescription = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.localChargeDescripition) {
-      errors.localChargeDescripition = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.serviceAccountCode) {
-      errors.serviceAccountCode = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.sacDescripition) {
-      errors.sacDescripition = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.salesAccount) {
-      errors.salesAccount = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.purchaseAccount) {
-      errors.purchaseAccount = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.taxable) {
-      errors.taxable = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.taxablePercentage) {
-      errors.taxablePercentage = '* Field is required';
+    if (!formData.branch) {
+      errors.branch = '* Field is required';
       hasError = true;
     }
 
-    if (!formData.taxType) {
-      errors.taxType = '* Field is required';
+    if (!formData.chargeableAmt) {
+      errors.chargeableAmt = '* Field is required';
       hasError = true;
     }
-    if (!formData.ccFeeApplicable) {
-      errors.ccFeeApplicable = '* Field is required';
+    if (!formData.creditDays) {
+      errors.creditDays = '* Field is required';
       hasError = true;
     }
-    if (!formData.ccJob) {
-      errors.ccJob = '* Field is required';
+    if (!formData.currency) {
+      errors.currency = '* Field is required';
       hasError = true;
     }
-    if (!formData.govtSac) {
-      errors.govtSac = '* Field is required';
+    if (!formData.docDate) {
+      errors.docDate = '* Date is required';
       hasError = true;
     }
-    if (!formData.excempted) {
-      errors.excempted = '* Field is required';
+    if (!formData.dueDate) {
+      errors.dueDate = '* Date is required';
       hasError = true;
     }
-    if (!formData.gstTax) {
-      errors.gstTax = '* Field is required';
+    if (!formData.exRate) {
+      errors.exRate = '* Field is required';
       hasError = true;
     }
-    if (!formData.gstControl) {
-      errors.gstControl = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.service) {
-      errors.service = '* Field is required';
-      hasError = true;
-    }
-    if (!formData.type) {
-      errors.type = '* Field is required';
+    if (!formData.finYear) {
+      errors.finYear = '* Field is required';
       hasError = true;
     }
 
+    if (!formData.nativeAmt) {
+      errors.nativeAmt = '* Field is required';
+      hasError = true;
+    }
+    if (!formData.offDocId) {
+      errors.offDocId = '* Field is required';
+      hasError = true;
+    }
+    if (!formData.refDate) {
+      errors.refDate = '* Date is required';
+      hasError = true;
+    }
+    if (!formData.refNo) {
+      errors.refNo = '* Field is required';
+      hasError = true;
+    }
+    if (!formData.source) {
+      errors.source = '* Field is required';
+      hasError = true;
+    }
+    if (!formData.subLedgerCode) {
+      errors.subLedgerCode = '* Field is required';
+      hasError = true;
+    }
+    // if (!formData.subLedgerName) {
+    //   errors.subLedgerName = '* Field is required';
+    //   hasError = true;
+    // }
+    if (!formData.tdsAmt) {
+      errors.tdsAmt = '* Field is required';
+      hasError = true;
+    }
+    if (!formData.transId) {
+      errors.transId = '* Field is required';
+      hasError = true;
+    }
+    if (!formData.voucherType) {
+      errors.voucherType = '* Field is required';
+      hasError = true;
+    }
+
+    // Set errors in state
     setFieldErrors(errors);
+
+    // Return whether the form is valid or not
     return !hasError;
   };
 
   const handleInputChange = (event) => {
     const { name, value, type, checked } = event.target;
     const newValue = type === 'checkbox' ? checked : value;
+
+    if (name === 'gstFlag') {
+      newValue = value === 'true'; // Convert "true"/"false" strings to boolean
+    }
+    // Update other form fields
     setFormData({ ...formData, [name]: newValue });
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    // Handle form submission with formData
-    console.log(formData);
-    // Example: Submit formData to backend or perform further actions
-  };
+  useEffect(() => {
+    getAllARAP();
+  }, []);
 
-  const [showForm, setShowForm] = useState(true);
-  const [data, setData] = useState([]);
-
-  const theme = useTheme();
-  const anchorRef = useRef(null);
-
-  // useEffect(() => {
-  //   getSetTaxRate();
-  // }, []);
-
-  const getSetTaxRate = async () => {
+  const getAllARAP = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllChargeTypeRequestByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `/arapAdjustments/getAllArapAdjustmentsByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
-      if (response.status === 200) {
-        setData(response.data.paramObjectsMap.chargeTypeRequestVO);
+      if (response.status === true) {
+        setData(response.paramObjectsMap.arapAdjustmentsVO);
 
-        console.log('Test', response.data.paramObjectsMap.chargeTypeRequestVO);
+        console.log('Test===>', response.paramObjectsMap.arapAdjustmentsVO);
       } else {
         // Handle error
         console.error('API Error:', response.data);
@@ -197,38 +206,51 @@ export const ARAPAdjustment = () => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     const formDataToSend = {
       ...formData,
-      taxablePercentage: formData.taxablePercentage ? parseInt(formData.taxablePercentage, 10) : 0
+      ...(editId && { id: editId }),
+      baseAmnt: formData.baseAmnt ? parseInt(formData.baseAmnt, 10) : 0,
+      chargeableAmt: formData.chargeableAmt ? parseInt(formData.chargeableAmt, 10) : 0,
+      exRate: formData.exRate ? parseInt(formData.exRate, 10) : 0,
+      nativeAmt: formData.nativeAmt ? parseInt(formData.nativeAmt, 10) : 0,
+      tdsAmt: formData.tdsAmt ? parseInt(formData.tdsAmt, 10) : 0,
+      docDate: formData.docDate
+        ? dayjs(formData.docDate, 'DD-MM-YYYY').isValid()
+          ? dayjs(formData.docDate).format('DD-MM-YYYY')
+          : ''
+        : '',
+      dueDate: formData.dueDate
+        ? dayjs(formData.dueDate, 'DD-MM-YYYY').isValid()
+          ? dayjs(formData.dueDate).format('DD-MM-YYYY')
+          : ''
+        : '',
+      refDate: formData.refDate ? (dayjs(formData.refDate, 'DD-MM-YYYY').isValid() ? dayjs(formData.refDate).format('DD-MM-YYYY') : '') : ''
     };
 
     if (validateForm()) {
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateChargeTypeRequest`, formDataToSend)
-        .then((response) => {
-          if (response.data.status) {
-            console.log('Response:', response.data);
-            handleClear();
-            toast.success('Set Tax Rate Created Successfully', {
-              autoClose: 2000,
-              theme: 'colored'
-            });
-          } else {
-            console.error('API Error:', response.data);
-            toast.error('Error in creating/updating charge type request', {
-              autoClose: 2000,
-              theme: 'colored'
-            });
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          toast.error('An error occurred while saving', {
+      try {
+        // Using async/await for API call
+        const response = await apiCalls('put', `/arapAdjustments/updateCreateArapAdjustments`, formDataToSend);
+
+        if (response.status) {
+          console.log('Response:', response.data);
+          handleClear();
+          showToast('success', editId ? 'ARAP adjustment Updated Successfully' : 'ARAP adjustment created successfully');
+        } else {
+          console.error('API Error:', response.data);
+          toast.error('Error in creating/updating AR AP Adjustment', {
             autoClose: 2000,
             theme: 'colored'
           });
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        toast.error('An error occurred while saving', {
+          autoClose: 2000,
+          theme: 'colored'
         });
+      }
     } else {
       toast.error('Please fill in all required fields', {
         autoClose: 2000,
@@ -237,70 +259,48 @@ export const ARAPAdjustment = () => {
     }
   };
 
-  const handleRowEdit = (rowId, newData) => {
-    console.log('Edit', rowId, newData);
-    // Send PUT request to update the row
-    axios
-      .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateChargeTypeRequest/${rowId}`, newData)
-      .then((response) => {
-        console.log('Edit successful:', response.data);
-        // Handle any further actions after successful edit
-        toast.success('Set Tax Rate Updated Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-      })
-      .catch((error) => {
-        console.error('Error editing row:', error);
-        // Handle error scenarios
-        toast.error('Failed to Update Set Tax Rate', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-      });
-  };
-
-  const getAllChargeTypeById = async (emitterId) => {
-    console.log('first', emitterId);
-
+  const getAllARAPById = async (id) => {
+    console.log('Fetching ARAP by ID:', id);
+    setEditId(id.original.id);
     try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/master/getAllChargeTypeRequestById?id=${emitterId.original.id}`
-      );
+      const response = await apiCalls('get', `/arapAdjustments/getAllArapAdjustmentsById?id=${id.original.id}`);
       console.log('API Response:', response);
 
-      if (response.status === 200) {
-        const chargeTypeRequestVO = response.data.paramObjectsMap.chargeTypeRequestVO[0];
+      if (response.status === true) {
+        const arApVO = response.paramObjectsMap.arapAdjustmentsVO[0];
         setShowForm(true);
 
         setFormData({
-          active: chargeTypeRequestVO.active,
-          chargeType: chargeTypeRequestVO.chargeType || '',
-          chargeCode: chargeTypeRequestVO.chargeCode || '',
-          product: chargeTypeRequestVO.product || '',
-          chargeDescription: chargeTypeRequestVO.chargeDescripition || '',
-          localChargeDescripition: chargeTypeRequestVO.localChargeDescripition || '',
-          serviceAccountCode: chargeTypeRequestVO.serviceAccountCode || '',
-          sACDescription: chargeTypeRequestVO.sacDescripition || '',
-          salesAccount: chargeTypeRequestVO.salesAccount || '',
-          purchaseAccount: chargeTypeRequestVO.purchaseAccount || '',
-          taxType: chargeTypeRequestVO.taxType || '',
-          ccFeeApplicable: chargeTypeRequestVO.ccFeeApplicable || '',
-          taxable: chargeTypeRequestVO.taxable || '',
-          taxablePercentage: chargeTypeRequestVO.taxablePercentage || '',
-          ccJob: chargeTypeRequestVO.ccJob || '',
-          govtSac: chargeTypeRequestVO.govtSac || '',
-          excempted: chargeTypeRequestVO.excempted || '',
-          orgId: chargeTypeRequestVO.orgId || orgId,
-          gstTax: chargeTypeRequestVO.gstTax || '',
-          gstControl: chargeTypeRequestVO.gstControl || '',
-          service: chargeTypeRequestVO.service || '',
-          type: chargeTypeRequestVO.type || ''
+          accCurrency: arApVO.accCurrency || '',
+          accountName: arApVO.accountName || '',
+          baseAmnt: arApVO.baseAmnt || 0,
+          branch: arApVO.branch || '',
+          branchCode: arApVO.branchCode || '',
+          chargeableAmt: arApVO.chargeableAmt || 0,
+          createdBy: arApVO.createdBy || '',
+          creditDays: arApVO.creditDays || '',
+          currency: arApVO.currency || '',
+          docDate: arApVO.docDate || '',
+          dueDate: arApVO.dueDate || '',
+          exRate: arApVO.exRate || 0,
+          finYear: arApVO.finYear || '',
+          id: arApVO.id || 0,
+          nativeAmt: arApVO.nativeAmt || 0,
+          offDocId: arApVO.offDocId || '',
+          orgId: arApVO.orgId || orgId,
+          refDate: arApVO.refDate || '',
+          refNo: arApVO.refNo || '',
+          source: arApVO.source || '',
+          subLedgerCode: arApVO.subLedgerCode || '',
+          subLedgerName: arApVO.subLedgerName || '',
+          tdsAmt: arApVO.tdsAmt || 0,
+          transId: arApVO.transId || '',
+          voucherType: arApVO.voucherType || ''
         });
 
-        console.log('DataToEdit', chargeTypeRequestVO);
+        console.log('Data to Edit:', arApVO);
       } else {
-        // Handle error
+        // Handle error case
         console.error('API Error:', response.data);
       }
     } catch (error) {
@@ -319,80 +319,89 @@ export const ARAPAdjustment = () => {
     //   excepmted: false
     // });
 
-    getSetTaxRate();
+    getAllARAP();
   };
   const handleClear = () => {
     setFormData({
-      active: true,
-      chargeType: '',
-      chargeCode: '',
-      product: '',
-      chargeDescription: '',
-      localChargeDescripition: '',
-      serviceAccountCode: '',
-      sACDescription: '',
-      salesAccount: '',
-      purchaseAccount: '',
-      taxType: '',
-      ccFeeApplicable: '',
-      taxable: '',
-      taxablePercentage: '',
-      ccJob: '',
-      govtSac: '',
-      excempted: '',
-      orgId: orgId,
-      gstTax: '',
-      gstControl: '',
-      service: '',
-      type: ''
+      accCurrency: '',
+      accountName: '',
+      baseAmnt: '',
+      branch: '',
+      branchCode: '',
+      chargeableAmt: '',
+      createdBy: '',
+      creditDays: '',
+      currency: '',
+      docDate: null,
+      dueDate: null,
+      exRate: '',
+      finYear: '',
+      ipNo: '',
+      latitude: '',
+      nativeAmt: '',
+      offDocId: '',
+      officeDocId: '',
+      refDate: null,
+      refNo: '',
+      source: '',
+      subLedgerCode: '',
+      subLedgerName: '',
+      tdsAmt: '',
+      transId: '',
+      voucherType: ''
     });
 
     setFieldErrors({
-      chargeType: '',
-      chargeCode: '',
-      product: '',
-      chargeDescription: '',
-      localChargeDescripition: '',
-      serviceAccountCode: '',
-      sacDescripition: '',
-      salesAccount: '',
-      purchaseAccount: '',
-      taxable: '',
-      taxType: '',
-      taxablePercentage: '',
-      ccFeeApplicable: '',
-      ccJob: '',
-      govtSac: '',
-      excempted: '',
-      gstTax: '',
-      gstControl: '',
-      service: '',
-      type: ''
+      accCurrency: '',
+      accountName: '',
+      baseAmnt: '',
+      branch: '',
+      branchCode: '',
+      chargeableAmt: '',
+      createdBy: '',
+      creditDays: '',
+      currency: '',
+      docDate: null,
+      dueDate: null,
+      exRate: '',
+      finYear: '',
+      ipNo: '',
+      latitude: '',
+      nativeAmt: '',
+      offDocId: '',
+      officeDocId: '',
+      refDate: null,
+      refNo: '',
+      source: '',
+      subLedgerCode: '',
+      subLedgerName: '',
+      tdsAmt: '',
+      transId: '',
+      voucherType: ''
     });
+    setEditId('');
   };
 
   const columns = [
-    { accessorKey: 'chargeType', header: 'Charge Type', size: 140 },
-    { accessorKey: 'chargeCode', header: 'Charge Code', size: 140 },
-    { accessorKey: 'product', header: 'Product', size: 140 },
-    { accessorKey: 'chargeDescription', header: 'Charge Description', size: 140 },
-    // { accessorKey: 'localChargeDescripition', header: 'Local Charge Description', size: 140 },
-    // { accessorKey: 'serviceAccountCode', header: 'Service Account Code', size: 140 },
-    // { accessorKey: 'sACDescription', header: 'SAC Description', size: 140 },
-    // { accessorKey: 'salesAccount', header: 'Sales Account', size: 140 },
-    // { accessorKey: 'purchaseAccount', header: 'Purchase Account', size: 140 },
-    // { accessorKey: 'taxType', header: 'Tax Type', size: 140 },
-    // { accessorKey: 'ccFeeApplicable', header: 'CC Fee Applicable', size: 140 },
-    // { accessorKey: 'taxable', header: 'Taxable', size: 140 },
-    // { accessorKey: 'taxablePercentage', header: 'Taxable Percentage', size: 140 },
-    // { accessorKey: 'ccJob', header: 'CC Job', size: 140 },
-    // { accessorKey: 'govtSac', header: 'Govt SAC', size: 140 },
-    // { accessorKey: 'excempted', header: 'Exempted', size: 140 },
-    { accessorKey: 'gSTTax', header: 'GST Tax', size: 140 },
-    { accessorKey: 'gSTControl', header: 'GST Control', size: 140 },
-    { accessorKey: 'service', header: 'Service', size: 140 },
-    { accessorKey: 'type', header: 'Type', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140 }
+    { accessorKey: 'accountName', header: 'Account Name', size: 140 },
+    { accessorKey: 'chargeableAmt', header: 'Chargeable Amount', size: 140 },
+    { accessorKey: 'currency', header: 'Currency', size: 140 },
+    {
+      accessorKey: 'dueDate',
+      header: 'Due Date',
+      size: 140,
+      Cell: ({ row }) => dayjs(row.original.dueDate).format('DD-MM-YYYY') // Formatting due date
+    },
+    {
+      accessorKey: 'gstFlag',
+      header: 'GST Flag',
+      size: 140,
+      Cell: ({ row }) => (row.original.gstFlag ? 'Yes' : 'No') // Display Yes/No for boolean
+    },
+    { accessorKey: 'branch', header: 'Branch', size: 140 },
+    { accessorKey: 'baseAmnt', header: 'Base Amount', size: 140 },
+    { accessorKey: 'exRate', header: 'Exchange Rate', size: 140 },
+    { accessorKey: 'transId', header: 'Transaction ID', size: 140 }
   ];
 
   return (
@@ -424,8 +433,8 @@ export const ARAPAdjustment = () => {
                     name="branch"
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="branch1">Branch 1</MenuItem>
-                    <MenuItem value="branch2">Branch 2</MenuItem>
+                    <MenuItem value="CHENNAI">CHENNAI</MenuItem>
+                    <MenuItem value="BANGALORE">BANGALORE</MenuItem>
                   </Select>
                   {fieldErrors.branch && (
                     <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
@@ -438,17 +447,17 @@ export const ARAPAdjustment = () => {
               {/* FinYr */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="finyr"
-                  label="FinYr"
+                  id="finYear"
+                  label="FinYear"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="finyr"
-                  value={formData.finyr}
+                  name="finYear"
+                  value={formData.finYear}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.finyr}
-                  helperText={fieldErrors.finyr}
+                  error={!!fieldErrors.finYear}
+                  helperText={fieldErrors.finYear}
                 />
               </div>
 
@@ -489,34 +498,34 @@ export const ARAPAdjustment = () => {
               {/* TransID */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="transid"
+                  id="transId"
                   label="TransID"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="transid"
-                  value={formData.transid}
+                  name="transId"
+                  value={formData.transId}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.transid}
-                  helperText={fieldErrors.transid}
+                  error={!!fieldErrors.transId}
+                  helperText={fieldErrors.transId}
                 />
               </div>
 
               {/* Subtype Code */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="subtypecode"
+                  id="subLedgerCode"
                   label="Subtype Code"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="subtypecode"
-                  value={formData.subtypecode}
+                  name="subLedgerCode"
+                  value={formData.subLedgerCode}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.subtypecode}
-                  helperText={fieldErrors.subtypecode}
+                  error={!!fieldErrors.subLedgerCode}
+                  helperText={fieldErrors.subLedgerCode}
                 />
               </div>
 
@@ -528,9 +537,6 @@ export const ARAPAdjustment = () => {
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="docId"
-                  value={formData.docId}
-                  onChange={handleInputChange}
                   className="w-100"
                   error={!!fieldErrors.docId}
                   helperText={fieldErrors.docId}
@@ -617,17 +623,17 @@ export const ARAPAdjustment = () => {
               {/* Subledger Code */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="subledgerCode"
+                  id="subLedgerCode"
                   label="Subledger Code"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="subledgerCode"
-                  value={formData.subledgerCode}
+                  name="subLedgerCode"
+                  value={formData.subLedgerCode}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.subledgerCode}
-                  helperText={fieldErrors.subledgerCode}
+                  error={!!fieldErrors.subLedgerCode}
+                  helperText={fieldErrors.subLedgerCode}
                 />
               </div>
 
@@ -668,17 +674,17 @@ export const ARAPAdjustment = () => {
               {/* Account Currency */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="accountCurrency"
+                  id="accCurrency"
                   label="Account Currency"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="accountCurrency"
-                  value={formData.accountCurrency}
+                  name="accCurrency"
+                  value={formData.accCurrency}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.accountCurrency}
-                  helperText={fieldErrors.accountCurrency}
+                  error={!!fieldErrors.accCurrency}
+                  helperText={fieldErrors.accCurrency}
                 />
               </div>
 
@@ -720,107 +726,115 @@ export const ARAPAdjustment = () => {
               {/* Base Amount */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="baseAmount"
+                  id="baseAmnt"
                   label="Base Amount"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="baseAmount"
-                  value={formData.baseAmount}
+                  name="baseAmnt"
+                  value={formData.baseAmnt}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.baseAmount}
-                  helperText={fieldErrors.baseAmount}
+                  error={!!fieldErrors.baseAmnt}
+                  helperText={fieldErrors.baseAmnt}
                 />
               </div>
 
               {/* Native Amount */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="nativeAmount"
+                  id="nativeAmt"
                   label="Native Amount"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="nativeAmount"
-                  value={formData.nativeAmount}
+                  name="nativeAmt"
+                  value={formData.nativeAmt}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.nativeAmount}
-                  helperText={fieldErrors.nativeAmount}
+                  error={!!fieldErrors.nativeAmt}
+                  helperText={fieldErrors.nativeAmt}
                 />
               </div>
 
               {/* Chargeable Amount */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="chargeableAmount"
+                  id="chargeableAmt"
                   label="Chargeable Amount"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="chargeableAmount"
-                  value={formData.chargeableAmount}
+                  name="chargeableAmt"
+                  value={formData.chargeableAmt}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.chargeableAmount}
-                  helperText={fieldErrors.chargeableAmount}
+                  error={!!fieldErrors.chargeableAmt}
+                  helperText={fieldErrors.chargeableAmt}
                 />
               </div>
 
               {/* TDS Amount */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="tdsAmount"
+                  id="tdsAmt"
                   label="TDS Amount"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="tdsAmount"
-                  value={formData.tdsAmount}
+                  name="tdsAmt"
+                  value={formData.tdsAmt}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.tdsAmount}
-                  helperText={fieldErrors.tdsAmount}
+                  error={!!fieldErrors.tdsAmt}
+                  helperText={fieldErrors.tdsAmt}
                 />
               </div>
 
               {/* GST Flag */}
+
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="gstFlag"
-                  label="GST Flag"
-                  placeholder="Placeholder"
-                  variant="outlined"
-                  size="small"
-                  name="gstFlag"
-                  value={formData.gstFlag}
-                  onChange={handleInputChange}
-                  className="w-100"
-                  error={!!fieldErrors.gstFlag}
-                  helperText={fieldErrors.gstFlag}
-                />
+                <FormControl fullWidth size="small" error={!!fieldErrors.gstFlag}>
+                  <InputLabel id="gstFlag-select-label">GST Flag</InputLabel>
+                  <Select
+                    labelId="gstFlag-select-label"
+                    id="gstFlag-select"
+                    label="GST Flag"
+                    required
+                    value={formData.gstFlag}
+                    name="gstFlag"
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value={true}>Yes</MenuItem>
+                    <MenuItem value={false}>No</MenuItem>
+                  </Select>
+                  {fieldErrors.gstFlag && (
+                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
+                      {fieldErrors.gstFlag}
+                    </p>
+                  )}
+                </FormControl>
               </div>
 
               {/* HNO */}
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="hno"
+                  id="offDocId"
                   label="Off. Doc Id"
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
-                  name="hno"
-                  value={formData.hno}
+                  name="offDocId"
+                  value={formData.offDocId}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.hno}
-                  helperText={fieldErrors.hno}
+                  error={!!fieldErrors.offDocId}
+                  helperText={fieldErrors.offDocId}
                 />
               </div>
             </div>
           ) : (
-            <CommonTable data={data} columns={columns} onRowEditTable={handleRowEdit} blockEdit={true} toEdit={getAllChargeTypeById} />
+            <CommonListViewTable data={data} columns={columns} blockEdit={true} toEdit={getAllARAPById} />
           )}
         </div>
       </div>

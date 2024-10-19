@@ -13,6 +13,7 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
@@ -866,6 +867,7 @@ const ReconcileCorp = () => {
           <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getReconcileById} />
         )}
       </div>
+      <ToastContainer />
     </>
   );
 };

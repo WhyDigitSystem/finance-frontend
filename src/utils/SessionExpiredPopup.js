@@ -25,7 +25,7 @@ const SessionExpiredPopup = ({ open, onClose }) => {
       </DialogContent>
       <DialogActions>
         <Box display="flex" justifyContent="center" width="100%">
-          <Button variant="contained" component="label" onClick={handleLoginRedirect} color="primary">
+          <Button variant="contained" component="label" onClick={handleLoginRedirect} color="secondary">
             Login
           </Button>
         </Box>
