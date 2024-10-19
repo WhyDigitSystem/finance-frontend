@@ -26,13 +26,14 @@ const CostCentre = Loadable(lazy(() => import('views/Finance/costcenter/CostCent
 const Daily = Loadable(lazy(() => import('views/Finance/daily/DailyRate')));
 const ChartOfCostcenter = Loadable(lazy(() => import('views/Finance/chartOfCostcenter/ChartOfCostcenter')));
 const BRSOpening = Loadable(lazy(() => import('views/Finance/BRSOpening')));
-const ArApBill = Loadable(lazy(() => import('views/Finance/ArApBill')));
+const ArBillBalance = Loadable(lazy(() => import('views/Finance/receiptAr/ArBillBalance')));
 const ChequeBookMaster = Loadable(lazy(() => import('views/Finance/chequeBookMaster/ChequeBookMaster')));
 const GLOpeningBalance = Loadable(lazy(() => import('views/Finance/glOpening/GlOpening')));
 const FundTransfer = Loadable(lazy(() => import('views/Finance/FundTransfer')));
 const GeneralJournal = Loadable(lazy(() => import('views/Finance/GeneralJournal/GeneralJournal')));
 const Receipt = Loadable(lazy(() => import('views/Finance/receipt/Receipt')));
 const Payment = Loadable(lazy(() => import('views/Finance/payment/Payment')));
+const ApBillBalance = Loadable(lazy(() => import('views/Finance/paymentAp/ApBillBalance')));
 const Reconcile = Loadable(lazy(() => import('views/Finance/Reconcile/Reconcile')));
 const ReceiptRegister = Loadable(lazy(() => import('views/Finance/receiptRegister/ReceiptRegister')));
 const PaymentRegister = Loadable(lazy(() => import('views/Finance/paymentRegister/PaymentRegister')));
@@ -155,8 +156,8 @@ const FinanceRoute = {
       element: <BRSOpening />
     },
     {
-      path: '/Finance/ArApBill',
-      element: <ArApBill />
+      path: '/Finance/receipt/ArBillBalance',
+      element: <ArBillBalance />
     },
     {
       path: '/Finance/chequeBookMaster/ChequeBookMaster',
@@ -181,6 +182,10 @@ const FinanceRoute = {
     {
       path: '/Finance/payment/Payment',
       element: <Payment />
+    },
+    {
+      path: '/Finance/payment/ApBillBalance',
+      element: <ApBillBalance />
     },
     {
       path: '/Finance/Reconcile/Reconcile',

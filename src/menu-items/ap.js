@@ -22,10 +22,10 @@ const ap = {
 
       children: [
         {
-          id: 'arApBill',
-          title: 'AR/AP Bill Balance',
+          id: 'apBill',
+          title: 'AP Bill Balance',
           type: 'item',
-          url: '/finance/ArApBill'
+          url: '/finance/payment/ApBillBalance'
         },
         {
           id: 'payment',

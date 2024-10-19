@@ -19,13 +19,13 @@ import { Avatar, ButtonBase, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React, { useState, useRef, useEffect } from 'react';
 import ActionButton from 'utils/ActionButton';
-import CommonListViewTable from '../basicMaster/CommonListViewTable';
+import CommonListViewTable from '../../basicMaster/CommonListViewTable';
 import { showToast } from 'utils/toast-component';
 import { ToastContainer, toast } from 'react-toastify';
 import apiCalls from 'apicall';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 
-const ArApBill = () => {
+const ApBillBalance = () => {
   const theme = useTheme();
   const anchorRef = useRef(null);
   const [editId, setEditId] = useState('');
@@ -38,7 +38,7 @@ const ArApBill = () => {
 
   const [formData, setFormData] = useState({
     active: true,
-    docNo: '',
+    // docNo: '',
     accName: '',
     partyName: '',
     partyCode: '',
@@ -61,7 +61,7 @@ const ArApBill = () => {
 
   const [fieldErrors, setFieldErrors] = useState({
     active: true,
-    docNo: '',
+    // docNo: '',
     accName: '',
     partyName: '',
     partyCode: '',
@@ -83,7 +83,7 @@ const ArApBill = () => {
   });
 
   const listViewColumns = [
-    { accessorKey: 'docNo', header: 'Doc ID', size: 140 },
+    // { accessorKey: 'docNo', header: 'Doc ID', size: 140 },
     { accessorKey: 'accName', header: 'Account Name', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 },
     { accessorKey: 'creditDays', header: 'Credit Days', size: 140 },
@@ -140,7 +140,7 @@ const ArApBill = () => {
   const handleClear = () => {
     setFormData({
       active: true,
-      docNo: '',
+      // docNo: '',
       accName: '',
       partyName: '',
       partyCode: '',
@@ -161,7 +161,7 @@ const ArApBill = () => {
       adjustmentDone: true
     });
     setFieldErrors({
-      docNo: '',
+      // docNo: '',
       accName: '',
       partyName: '',
       partyCode: '',
@@ -206,7 +206,7 @@ const ArApBill = () => {
 
   const getAllArApBillBalance = async () => {
     try {
-      const response = await apiCalls('get', `arreceivable/getAllArApBillBalanceReceivableByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `arreceivable/getAllArBillBalanceByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -223,7 +223,7 @@ const ArApBill = () => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `arreceivable/getAllArApBillBalanceReceivableById?id=${row.original.id}`);
+      const response = await apiCalls('get', `arreceivable/getAllArBillBalanceById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -231,7 +231,7 @@ const ArApBill = () => {
         const particularEmp = response.paramObjectsMap.arApBillBalanceReceivableVO[0];
 
         setFormData({
-          docNo: particularEmp.docNo,
+          // docNo: particularEmp.docNo,
           accName: particularEmp.accName,
           partyName: particularEmp.partyName,
           partyCode: particularEmp.partyCode,
@@ -259,13 +259,20 @@ const ArApBill = () => {
     }
   };
 
+  const formatDate = (date) => {
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
   const handleSave = async () => {
     const errors = {};
 
     // Check for empty fields and set error messages
-    if (!formData.docNo) {
-      errors.docNo = 'Doc Id is required';
-    }
+    // if (!formData.docNo) {
+    //   errors.docNo = 'Doc Id is required';
+    // }
 
     if (!formData.accName) {
       errors.accName = 'Account name is required';
@@ -345,7 +352,7 @@ const ArApBill = () => {
       active: formData.active,
       postBillExRate: formData.postBillExRate,
       adjustmentDone: formData.adjustmentDone,
-      docNo: formData.docNo,
+      // docNo: formData.docNo,
       accName: formData.accName,
       partyName: formData.partyName,
       partyCode: formData.partyCode,
@@ -356,9 +363,9 @@ const ArApBill = () => {
       billExRate: parseInt(formData.billExRate),
       billNo: parseInt(formData.billNo),
       suppRefNo: formData.suppRefNo,
-      dueDate: formData.dueDate,
-      billDate: formData.billDate,
-      suppRefDate: formData.suppRefDate,
+      dueDate: formatDate(new Date(formData.dueDate)),
+      billDate: formatDate(new Date(formData.billDate)),
+      suppRefDate: formatDate(new Date(formData.suppRefDate)),
       debitAmt: parseInt(formData.debitAmt),
       creditAmt: parseInt(formData.creditAmt),
       voucherNo: formData.voucherNo,
@@ -367,7 +374,7 @@ const ArApBill = () => {
     };
 
     try {
-      const response = await apiCalls('put', `arreceivable/updateCreateArApBillBalanceReceivable`, saveFormData);
+      const response = await apiCalls('put', `arreceivable/updateCreateArBillBalance`, saveFormData);
       if (response.status === true) {
         showToast('success', editId ? 'AR/AP Bill Balance Updated Successfully' : 'AR/AP Bill Balance created successfully');
         handleClear();
@@ -402,7 +409,7 @@ const ArApBill = () => {
         ) : (
           <>
             <div className="row">
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   id="docNo"
                   label="Doc ID"
@@ -416,7 +423,7 @@ const ArApBill = () => {
                   error={!!fieldErrors.docNo}
                   helperText={fieldErrors.docNo ? fieldErrors.docNo : ''}
                 />
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.accName}>
                   <InputLabel id="accName" required>
@@ -717,4 +724,4 @@ const ArApBill = () => {
   );
 };
 
-export default ArApBill;
+export default ApBillBalance;
