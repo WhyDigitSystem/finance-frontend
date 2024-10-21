@@ -21,7 +21,7 @@ import { Tabs, Tab } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import ActionButton from 'utils/ActionButton';
-import { getAllActiveCountries, getAllActiveCurrency } from 'utils/CommonFunctions';
+import { getAllActiveCitiesByState, getAllActiveCountries, getAllActiveCurrency, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import apiCalls from 'apicall';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
@@ -31,6 +31,8 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const PartyMaster = () => {
   const [currencies, setCurrencies] = useState([]);
   const [countryList, setCountryList] = useState([]);
+  const [stateList, setStateList] = useState([]);
+  const [cityList, setCityList] = useState([]);
   const [editId, setEditId] = useState('');
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
@@ -42,15 +44,15 @@ export const PartyMaster = () => {
     active: true,
     addressOfBranch: '',
     agentName: '',
-    airWayBillCode: '',
+    airwayBillNo: '',
     airLineCode: '',
     addressBank: '',
     bussinessCate: '',
-    businessType: '',
+    bussinessType: '',
     caf: '',
     carrierCode: '',
     company: '',
-    compoundingScheme: '',
+    compoundScheme: '',
     controllingOff: '',
     country: '',
     createdBy: loginUserName,
@@ -60,8 +62,9 @@ export const PartyMaster = () => {
     customerCategory: '',
     customerCoord: '',
     customerType: '',
+    gstIn: '',
     gstPartyName: '',
-    gstRegistration: '',
+    gstRegistered: 'YES',
     ifscCode: '',
     nameOfBank: '',
     orgId: orgId,
@@ -86,6 +89,7 @@ export const PartyMaster = () => {
   });
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
+  const [partyTypeData, setPartyTypeData] = useState([]);
   const [tabValue, setTabValue] = useState(0);
   const handleChangeTab = (event, newValue) => {
     setTabValue(newValue);
@@ -110,15 +114,15 @@ export const PartyMaster = () => {
     active: true,
     addressOfBranch: '',
     agentName: '',
-    airWayBillCode: '',
+    airwayBillNo: '',
     airLineCode: '',
     addressBank: '',
     bussinessCate: '',
-    businessType: '',
+    bussinessType: '',
     caf: '',
     carrierCode: '',
     company: '',
-    compoundingScheme: '',
+    compoundScheme: '',
     controllingOff: '',
     country: '',
     createdBy: '',
@@ -128,8 +132,9 @@ export const PartyMaster = () => {
     customerCategory: '',
     customerCoord: '',
     customerType: '',
+    gstIn: '',
     gstPartyName: '',
-    gstRegistration: '',
+    gstRegistered: '',
     ifscCode: '',
     nameOfBank: '',
     panName: '',
@@ -167,13 +172,41 @@ export const PartyMaster = () => {
 
     fetchData();
     getAllCountries();
+    getAllStates();
     getPartyMasterByOrgId();
+    getAllPartyTypeByOrgId();
   }, []);
+
+  useEffect(() => {
+    if (formData.partyType) {
+      getPartyCodeByOrgIdAndPartyType();
+      console.log('getPartyCodeByOrgIdAndPartyType');
+    }
+  }, [formData.partyType]);
 
   const getAllCountries = async () => {
     try {
       const countryData = await getAllActiveCountries(orgId);
       setCountryList(countryData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+
+  const getAllStates = async () => {
+    try {
+      const stateData = await getAllActiveStatesByCountry('INDIA', orgId); //For now it's INDIA
+      setStateList(stateData);
+      console.log('state', stateData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+
+  const getAllCities = async (selectedCity) => {
+    try {
+      const cityData = await getAllActiveCitiesByState(selectedCity, orgId);
+      setCityList(cityData);
     } catch (error) {
       console.error('Error fetching country data:', error);
     }
@@ -186,6 +219,41 @@ export const PartyMaster = () => {
 
       if (response.status === true) {
         setListViewData(response.paramObjectsMap.partyMasterVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getAllPartyTypeByOrgId = async () => {
+    try {
+      const response = await apiCalls('get', `master/getAllPartyTypeByOrgId?orgid=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setPartyTypeData(response.paramObjectsMap.partyTypeVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getPartyCodeByOrgIdAndPartyType = async () => {
+    try {
+      const response = await apiCalls('get', `master/getPartyCodeByOrgIdAndPartyType?orgid=${orgId}&partytype=${formData.partyType}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        // setPartyCode(response.paramObjectsMap.partyTypeVO[0]);
+        setFormData((prevData) => ({
+          ...prevData,
+          partyCode: response.paramObjectsMap.partyTypeVO[0].partCode
+        }));
+        console.log('code', response.paramObjectsMap.partyTypeVO[0].partCode);
       } else {
         console.error('API Error:', response);
       }
@@ -212,15 +280,15 @@ export const PartyMaster = () => {
           active: particularMaster.active === true,
           addressOfBranch: particularMaster.addressOfBranch,
           agentName: particularMaster.agentName,
-          airWayBillCode: particularMaster.airWayBillCode,
+          airwayBillNo: particularMaster.airwayBillNo,
           airLineCode: particularMaster.airLineCode,
           addressBank: particularMaster.addressBank,
           bussinessCate: particularMaster.bussinessCate,
-          businessType: particularMaster.businessType,
+          bussinessType: particularMaster.bussinessType,
           caf: particularMaster.caf,
           carrierCode: particularMaster.carrierCode,
           company: particularMaster.company,
-          compoundingScheme: particularMaster.compoundingScheme,
+          compoundScheme: particularMaster.compoundScheme,
           controllingOff: particularMaster.controllingOff,
           country: particularMaster.country,
           creditDays: particularMaster.creditDays,
@@ -230,7 +298,7 @@ export const PartyMaster = () => {
           customerCoord: particularMaster.customerCoord,
           customerType: particularMaster.customerType,
           gstPartyName: particularMaster.gstPartyName,
-          gstRegistration: particularMaster.gstRegistration,
+          gstRegistered: particularMaster.gstRegistered,
           ifscCode: particularMaster.ifscCode,
           nameOfBank: particularMaster.nameOfBank,
           panName: particularMaster.panName,
@@ -252,7 +320,7 @@ export const PartyMaster = () => {
             stateNo: detail.stateNo || '',
             contactPerson: detail.contactPerson || '',
             contactPhoneNo: detail.contactPhoneNo || '',
-            contactEmail: detail.contactEmail || '',
+            email: detail.email || '',
             stateCode: detail.stateCode || ''
           }))
         );
@@ -265,9 +333,7 @@ export const PartyMaster = () => {
             addressLine3: detail.addressLine3 || '',
             businessPlace: detail.businessPlace || '',
             city: detail.city || '',
-            contactEmail: detail.contactEmail || '',
-            contactPerson: detail.contactPerson || '',
-            contactPhoneNo: detail.contactPhoneNo || '',
+            contact: detail.contact || '',
             pincode: detail.pincode || '',
             state: detail.state || '',
             stateGstIn: detail.stateGstIn || ''
@@ -313,8 +379,10 @@ export const PartyMaster = () => {
             salesPerson: detail.salesPerson || '',
             empCode: detail.empCode || '',
             salesBranch: detail.salesBranch || '',
-            effectiveFrom: detail.effectiveFrom ? dayjs(detail.effectiveFrom, 'DD-MM-YYYY') : dayjs(),
-            effectiveTill: detail.effectiveTill ? dayjs(detail.effectiveTill, 'DD-MM-YYYY') : dayjs()
+            // effectiveFrom: detail.effectiveFrom ? dayjs(detail.effectiveFrom, 'DD-MM-YYYY') : dayjs(),
+            // effectiveTill: detail.effectiveTill ? dayjs(detail.effectiveTill, 'DD-MM-YYYY') : dayjs()
+            effectiveFrom: detail.effectiveFrom,
+            effectiveTill: detail.effectiveTill
           }))
         );
         setPartyTdsExempted(
@@ -354,27 +422,66 @@ export const PartyMaster = () => {
   //   setFormData({ ...formData, [name]: value });
   //   setFieldErrors({ ...fieldErrors, [name]: '' });
   // };
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
+    let updatedFormData;
+
     // Check if the name belongs to the nested partyVendorEvaluationDTO
     if (name in formData.partyVendorEvaluationDTO) {
-      setFormData({
+      updatedFormData = {
         ...formData,
         partyVendorEvaluationDTO: {
           ...formData.partyVendorEvaluationDTO,
           [name]: value
         }
-      });
+      };
     } else {
       // For other top-level form fields
-      setFormData({ ...formData, [name]: value });
+      updatedFormData = { ...formData, [name]: value };
     }
+
+    // Conditionally set the accountType based on the selected partyType
+    if (name === 'partyType') {
+      if (value === 'CUSTOMER') {
+        updatedFormData = { ...updatedFormData, accountType: 'RECEIVABLE' };
+        updatedFormData = { ...updatedFormData, accountName: 'RECEIVABLE' };
+      } else if (value === 'VENDOR') {
+        updatedFormData = { ...updatedFormData, accountType: 'PAYABLE' };
+        updatedFormData = { ...updatedFormData, accountName: 'PAYABLE' };
+      } else {
+        updatedFormData = { ...updatedFormData, accountType: '' }; // Clear accountType if other partyType
+        updatedFormData = { ...updatedFormData, accountName: '' }; // Clear accountType if other partyType
+      }
+    }
+
+    // Update form data
+    setFormData(updatedFormData);
 
     // Clear field errors for the respective field
     setFieldErrors({ ...fieldErrors, [name]: '' });
   };
+
+  // const handleInputChange = (e) => {
+  //   const { name, value } = e.target;
+
+  //   // Check if the name belongs to the nested partyVendorEvaluationDTO
+  // if (name in formData.partyVendorEvaluationDTO) {
+  //   setFormData({
+  //     ...formData,
+  //     partyVendorEvaluationDTO: {
+  //       ...formData.partyVendorEvaluationDTO,
+  //       [name]: value
+  //     }
+  //   });
+  // } else {
+  //   // For other top-level form fields
+  //   setFormData({ ...formData, [name]: value });
+  // }
+
+  //   // Clear field errors for the respective field
+  //   setFieldErrors({ ...fieldErrors, [name]: '' });
+  // };
 
   const handleClear = () => {
     setEditId('');
@@ -386,15 +493,15 @@ export const PartyMaster = () => {
       active: true,
       addressOfBranch: '',
       agentName: '',
-      airWayBillCode: '',
+      airwayBillNo: '',
       airLineCode: '',
       addressBank: '',
       bussinessCate: '',
-      businessType: '',
+      bussinessType: '',
       caf: '',
       carrierCode: '',
       company: '',
-      compoundingScheme: '',
+      compoundScheme: '',
       controllingOff: '',
       country: '',
       createdBy: '',
@@ -404,8 +511,9 @@ export const PartyMaster = () => {
       customerCategory: '',
       customerCoord: '',
       customerType: '',
+      gstIn: '',
       gstPartyName: '',
-      gstRegistration: '',
+      gstRegistered: 'YES',
       // id: 0,
       ifscCode: '',
       nameOfBank: '',
@@ -438,15 +546,15 @@ export const PartyMaster = () => {
       active: true,
       addressOfBranch: '',
       agentName: '',
-      airWayBillCode: '',
+      airwayBillNo: '',
       airLineCode: '',
       addressBank: '',
       bussinessCate: '',
-      businessType: '',
+      bussinessType: '',
       caf: '',
       carrierCode: '',
       company: '',
-      compoundingScheme: '',
+      compoundScheme: '',
       controllingOff: '',
       country: '',
       createdBy: '',
@@ -457,7 +565,7 @@ export const PartyMaster = () => {
       customerCoord: '',
       customerType: '',
       gstPartyName: '',
-      gstRegistration: '',
+      gstRegistered: '',
       ifscCode: '',
       nameOfBank: '',
       panName: '',
@@ -479,7 +587,7 @@ export const PartyMaster = () => {
         stateNo: '',
         contactPerson: '',
         contactPhoneNo: '',
-        contactEmail: '',
+        email: '',
         stateCode: ''
       }
     ]);
@@ -492,9 +600,7 @@ export const PartyMaster = () => {
         addressLine3: '',
         businessPlace: '',
         city: '',
-        contactEmail: '',
-        contactPerson: '',
-        contactPhoneNo: '',
+        contact: '',
         pincode: '',
         state: '',
         stateGstIn: ''
@@ -569,7 +675,7 @@ export const PartyMaster = () => {
       stateNo: '',
       contactPerson: '',
       contactPhoneNo: '',
-      contactEmail: '',
+      email: '',
       stateCode: ''
     }
   ]);
@@ -581,7 +687,7 @@ export const PartyMaster = () => {
       stateNo: '',
       contactPerson: '',
       contactPhoneNo: '',
-      contactEmail: '',
+      email: '',
       stateCode: ''
     }
   ]);
@@ -594,7 +700,7 @@ export const PartyMaster = () => {
       stateNo: '',
       contactPerson: '',
       contactPhoneNo: '',
-      contactEmail: '',
+      email: '',
       stateCode: ''
     };
     setPartyStateData([...partyStateData, newRow]);
@@ -606,7 +712,7 @@ export const PartyMaster = () => {
         stateNo: '',
         contactPerson: '',
         contactPhoneNo: '',
-        contactEmail: '',
+        email: '',
         stateCode: ''
       }
     ]);
@@ -992,6 +1098,10 @@ export const PartyMaster = () => {
     }
   ]);
 
+  // useEffect(() => {
+  //   getAllCities();
+  // }, [partyAddressData.state]);
+
   const handleSave = async () => {
     const errors = {};
     if (!formData.partyType) {
@@ -1021,8 +1131,8 @@ export const PartyMaster = () => {
     if (!formData.accountType) {
       errors.accountType = 'Accounts Type is required';
     }
-    if (!formData.businessType) {
-      errors.businessType = 'Business Type is required';
+    if (!formData.bussinessType) {
+      errors.bussinessType = 'Business Type is required';
     }
     if (!formData.carrierCode) {
       errors.carrierCode = 'Carrier Code is required';
@@ -1039,8 +1149,10 @@ export const PartyMaster = () => {
     if (!formData.accountName) {
       errors.accountName = 'Account Name is required';
     }
-    if (!formData.gstRegistration) {
-      errors.gstRegistration = 'Gst Registration is required';
+    if (formData.gstRegistered === 'YES' && !formData.gstIn) {
+      errors.gstIn = 'GST is Required';
+    } else if (formData.gstRegistered === 'YES' && formData.gstIn.length < 15) {
+      errors.gstIn = 'Invalid GST Format';
     }
     if (!formData.creditLimit) {
       errors.creditLimit = 'Credit Limit is required';
@@ -1060,8 +1172,8 @@ export const PartyMaster = () => {
     if (!formData.panName) {
       errors.panName = 'Pan Name is required';
     }
-    if (!formData.airWayBillCode) {
-      errors.airWayBillCode = 'AirWay Bill Code is required';
+    if (!formData.airwayBillNo) {
+      errors.airwayBillNo = 'AirWay Bill Code is required';
     }
     if (!formData.airLineCode) {
       errors.airLineCode = 'AirLine Code is required';
@@ -1081,8 +1193,8 @@ export const PartyMaster = () => {
     // if (!formData.remarks) {
     //   errors.remarks = 'Remarks is required';
     // }
-    if (!formData.compoundingScheme) {
-      errors.compoundingScheme = 'Compounding Scheme is required';
+    if (!formData.compoundScheme) {
+      errors.compoundScheme = 'Compounding Scheme is required';
     }
     if (!formData.psuGovOrg) {
       errors.psuGovOrg = 'Psu is required';
@@ -1151,8 +1263,8 @@ export const PartyMaster = () => {
         rowErrors.contactPhoneNo = 'Contact Phone No is required';
         partyStateDataValid = false;
       }
-      if (!row.contactEmail) {
-        rowErrors.contactEmail = 'Contact Email is required';
+      if (!row.email) {
+        rowErrors.email = 'Contact Email is required';
         partyStateDataValid = false;
       }
       if (!row.stateCode) {
@@ -1388,7 +1500,7 @@ export const PartyMaster = () => {
       }));
 
       const partyStateDTO = partyStateData.map((row) => ({
-        contactEmail: row.contactEmail,
+        email: row.email,
         contactPerson: row.contactPerson,
         contactPhoneNo: row.contactPhoneNo,
         gstIn: row.gstIn,
@@ -1497,8 +1609,11 @@ export const PartyMaster = () => {
                 <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.partyType}>
                   <InputLabel id="partyType">Party Type</InputLabel>
                   <Select labelId="partyType" label="Party Type" name="partyType" value={formData.partyType} onChange={handleInputChange}>
-                    <MenuItem value="1">1</MenuItem>
-                    <MenuItem value="2">2</MenuItem>
+                    {partyTypeData?.map((row) => (
+                      <MenuItem key={row.id} value={row.partyType}>
+                        {row.partyType}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.partyType && <FormHelperText>{fieldErrors.partyType}</FormHelperText>}
                 </FormControl>
@@ -1510,6 +1625,7 @@ export const PartyMaster = () => {
                   name="partyCode"
                   label="Party Code"
                   size="small"
+                  disabled
                   value={formData.partyCode}
                   onChange={handleInputChange}
                   error={fieldErrors.partyCode}
@@ -1595,40 +1711,38 @@ export const PartyMaster = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.accountType}>
-                  <InputLabel id="accountType">Accounts Type</InputLabel>
-                  <Select
-                    labelId="accountType"
-                    label="Accounts Type"
-                    name="accountType"
-                    value={formData.accountType}
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="PAYABLE">PAYABLE</MenuItem>
-                    <MenuItem value="RECEIVABLE">RECEIVABLE</MenuItem>
-                  </Select>
-                  {fieldErrors.accountType && <FormHelperText>{fieldErrors.accountType}</FormHelperText>}
-                </FormControl>
+                <TextField
+                  id="accountType"
+                  fullWidth
+                  name="accountType"
+                  label="Accounts Type"
+                  size="small"
+                  disabled
+                  value={formData.accountType}
+                  onChange={handleInputChange}
+                  error={fieldErrors.accountType}
+                  helperText={fieldErrors.accountType}
+                />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.businessType}>
-                  <InputLabel id="businessType">Business Type</InputLabel>
+                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.bussinessType}>
+                  <InputLabel id="bussinessType">Business Type</InputLabel>
                   <Select
-                    labelId="businessType"
+                    labelId="bussinessType"
                     label="Business Type"
-                    name="businessType"
-                    value={formData.businessType}
+                    name="bussinessType"
+                    value={formData.bussinessType}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="PROPRIETORSHOP">PROPRIETOR SHOP</MenuItem>
-                    <MenuItem value="PARTNERSHIP">PARTNER SHIP</MenuItem>
-                    <MenuItem value="PRIVATELIMITED">PRIVATE LIMITED</MenuItem>
+                    <MenuItem value="PROPRIETOR SHOP">PROPRIETOR SHOP</MenuItem>
+                    <MenuItem value="PARTNER SHIP">PARTNER SHIP</MenuItem>
+                    <MenuItem value="PRIVATE LIMITED">PRIVATE LIMITED</MenuItem>
                     <MenuItem value="LLP">LLP</MenuItem>
                     <MenuItem value="GOVTFIRM">GOVT.FIRM</MenuItem>
                     <MenuItem value="LIMITED">LIMITED</MenuItem>
                     <MenuItem value="NGO">NGO</MenuItem>
                   </Select>
-                  {fieldErrors.businessType && <FormHelperText>{fieldErrors.businessType}</FormHelperText>}
+                  {fieldErrors.bussinessType && <FormHelperText>{fieldErrors.bussinessType}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -1654,8 +1768,8 @@ export const PartyMaster = () => {
                     value={formData.supplierType}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="1">1</MenuItem>
-                    <MenuItem value="2">2</MenuItem>
+                    <MenuItem value="SHIP TO">SHIP TO</MenuItem>
+                    <MenuItem value="BILL TO">BILL TO</MenuItem>
                   </Select>
                   {fieldErrors.supplierType && <FormHelperText>{fieldErrors.supplierType}</FormHelperText>}
                 </FormControl>
@@ -1673,19 +1787,6 @@ export const PartyMaster = () => {
                   helperText={fieldErrors.salesPerson}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <TextField
-                  id="salesPerson1"
-                  fullWidth
-                  name="salesPerson1"
-                  // label="salesPerson1"
-                  size="small"
-                  value={formData.salesPerson1}
-                  onChange={handleInputChange}
-                  error={fieldErrors.salesPerson1}
-                  helperText={fieldErrors.salesPerson1}
-                />
-              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   id="customerCoord"
@@ -1699,50 +1800,52 @@ export const PartyMaster = () => {
                   helperText={fieldErrors.customerCoord}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <TextField
-                  id="customerCoordinator1"
-                  fullWidth
-                  name="customerCoordinator1"
-                  size="small"
-                  value={formData.customerCoordinator1}
-                  onChange={handleInputChange}
-                  error={fieldErrors.customerCoordinator1}
-                  helperText={fieldErrors.customerCoordinator1}
-                />
-              </div> */}
               <div className="col-md-3 mb-3">
-                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.accountName}>
-                  <InputLabel id="accountName">Account Name</InputLabel>
-                  <Select
-                    labelId="accountName"
-                    label="Account Name"
-                    name="accountName"
-                    value={formData.accountName}
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="1">1</MenuItem>
-                    <MenuItem value="2">2</MenuItem>
-                  </Select>
-                  {fieldErrors.accountName && <FormHelperText>{fieldErrors.accountName}</FormHelperText>}
-                </FormControl>
+                <TextField
+                  id="accountName"
+                  fullWidth
+                  name="accountName"
+                  label="Account Name"
+                  size="small"
+                  disabled
+                  value={formData.accountName}
+                  onChange={handleInputChange}
+                  error={fieldErrors.accountName}
+                  helperText={fieldErrors.accountName}
+                />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.gstRegistration}>
-                  <InputLabel id="gstRegistration">GST Registered</InputLabel>
+                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.gstRegistered}>
+                  <InputLabel id="gstRegistered">GST Registered</InputLabel>
                   <Select
-                    labelId="gstRegistration"
+                    labelId="gstRegistered"
                     label="GST Registered"
-                    name="gstRegistration"
-                    value={formData.gstRegistration}
+                    name="gstRegistered"
+                    value={formData.gstRegistered}
                     onChange={handleInputChange}
                   >
                     <MenuItem value="YES">YES</MenuItem>
                     <MenuItem value="NO">NO</MenuItem>
                   </Select>
-                  {fieldErrors.gstRegistration && <FormHelperText>{fieldErrors.gstRegistration}</FormHelperText>}
+                  {fieldErrors.gstRegistered && <FormHelperText>{fieldErrors.gstRegistered}</FormHelperText>}
                 </FormControl>
               </div>
+              {formData.gstRegistered === 'YES' && (
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="gstIn"
+                    fullWidth
+                    name="gstIn"
+                    label="GST IN"
+                    size="small"
+                    value={formData.gstIn}
+                    onChange={handleInputChange}
+                    error={fieldErrors.gstIn}
+                    helperText={fieldErrors.gstIn}
+                    inputProps={{ maxLength: 15 }}
+                  />
+                </div>
+              )}
               <div className="col-md-3 mb-3">
                 <TextField
                   id="creditLimit"
@@ -1813,11 +1916,13 @@ export const PartyMaster = () => {
                     name="currency"
                     value={formData.currency}
                   >
-                    {currencies.map((item) => (
-                      <MenuItem key={item.id} value={item.currency}>
-                        {item.currency}
-                      </MenuItem>
-                    ))}
+                    {currencies
+                      .filter((row) => row.currency === 'INR')
+                      .map((item) => (
+                        <MenuItem key={item.id} value={item.currency}>
+                          {item.currency}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.currency && <FormHelperText style={{ color: 'red' }}>Currency is required</FormHelperText>}
                 </FormControl>
@@ -1838,15 +1943,15 @@ export const PartyMaster = () => {
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="airWayBillCode"
+                  id="airwayBillNo"
                   fullWidth
-                  name="airWayBillCode"
+                  name="airwayBillNo"
                   label="Air Way Bill Code"
                   size="small"
-                  value={formData.airWayBillCode}
+                  value={formData.airwayBillNo}
                   onChange={handleInputChange}
-                  error={fieldErrors.airWayBillCode}
-                  helperText={fieldErrors.airWayBillCode}
+                  error={fieldErrors.airwayBillNo}
+                  helperText={fieldErrors.airwayBillNo}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -1885,8 +1990,12 @@ export const PartyMaster = () => {
                     value={formData.bussinessCate}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="1">1</MenuItem>
-                    <MenuItem value="2">2</MenuItem>
+                    <MenuItem value="MANUFACTURER">MANUFACTURER</MenuItem>
+                    <MenuItem value="TRADER">TRADER</MenuItem>
+                    <MenuItem value="SERVICE PROVIDER">SERVICE PROVIDER</MenuItem>
+                    <MenuItem value="WORKS CONTRACTOR">WORKS CONTRACTOR</MenuItem>
+                    <MenuItem value="TRANSPORTER">TRANSPORTER</MenuItem>
+                    <MenuItem value="OTHERS">OTHERS</MenuItem>
                   </Select>
                   {fieldErrors.bussinessCate && <FormHelperText>{fieldErrors.bussinessCate}</FormHelperText>}
                 </FormControl>
@@ -1929,32 +2038,19 @@ export const PartyMaster = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="remarks"
-                  fullWidth
-                  name="remarks"
-                  label="Remarks"
-                  size="small"
-                  value={formData.remarks}
-                  onChange={handleInputChange}
-                  error={fieldErrors.remarks}
-                  helperText={fieldErrors.remarks}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.compoundingScheme}>
-                  <InputLabel id="compoundingScheme">Compounding Scheme</InputLabel>
+                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.compoundScheme}>
+                  <InputLabel id="compoundScheme">Compounding Scheme</InputLabel>
                   <Select
-                    labelId="compoundingScheme"
+                    labelId="compoundScheme"
                     label="Compounding Scheme"
-                    name="compoundingScheme"
-                    value={formData.compoundingScheme}
+                    name="compoundScheme"
+                    value={formData.compoundScheme}
                     onChange={handleInputChange}
                   >
                     <MenuItem value="YES">YES</MenuItem>
                     <MenuItem value="NO">NO</MenuItem>
                   </Select>
-                  {fieldErrors.compoundingScheme && <FormHelperText>{fieldErrors.compoundingScheme}</FormHelperText>}
+                  {fieldErrors.compoundScheme && <FormHelperText>{fieldErrors.compoundScheme}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -1972,6 +2068,19 @@ export const PartyMaster = () => {
                   </Select>
                   {fieldErrors.psuGovOrg && <FormHelperText>{fieldErrors.gender}</FormHelperText>}
                 </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="remarks"
+                  fullWidth
+                  name="remarks"
+                  label="Remarks"
+                  size="small"
+                  value={formData.remarks}
+                  onChange={handleInputChange}
+                  error={fieldErrors.remarks}
+                  helperText={fieldErrors.remarks}
+                />
               </div>
               <div className="col-md-3 mb-3">
                 <FormControlLabel
@@ -2137,9 +2246,12 @@ export const PartyMaster = () => {
                                       }}
                                       className={partyStateDataErrors[index]?.state ? 'error form-control' : 'form-control'}
                                     >
-                                      <option value="">-- Select --</option>
-                                      <option value="STATE1">STATE1</option>
-                                      <option value="STATE2">STATE2</option>
+                                      <option value="">--Select--</option>
+                                      {stateList?.map((row) => (
+                                        <option key={row.id} value={row.stateName}>
+                                          {row.stateName}
+                                        </option>
+                                      ))}
                                     </select>
                                     {partyStateDataErrors[index]?.state && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2153,6 +2265,7 @@ export const PartyMaster = () => {
                                       type="text"
                                       value={row.gstIn}
                                       style={{ width: '150px' }}
+                                      maxLength={15}
                                       onChange={(e) => {
                                         const value = e.target.value;
                                         setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstIn: value } : r)));
@@ -2252,31 +2365,27 @@ export const PartyMaster = () => {
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
-                                      value={row.contactEmail}
+                                      value={row.email}
                                       style={{ width: '150px' }}
                                       onChange={(e) => {
                                         const value = e.target.value;
                                         const isValidEmail = emailRegex.test(value);
 
-                                        setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, contactEmail: value } : r)));
+                                        setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, email: value } : r)));
 
                                         setPartyStateDataErrors((prev) => {
                                           const newErrors = [...prev];
                                           newErrors[index] = {
                                             ...newErrors[index],
-                                            contactEmail: !value
-                                              ? 'Contact Email is required'
-                                              : !isValidEmail
-                                                ? 'Invalid Email Address'
-                                                : ''
+                                            email: !value ? 'Email is required' : !isValidEmail ? 'Invalid Email Address' : ''
                                           };
                                           return newErrors;
                                         });
                                       }}
-                                      className={partyStateDataErrors[index]?.contactEmail ? 'error form-control' : 'form-control'}
+                                      className={partyStateDataErrors[index]?.email ? 'error form-control' : 'form-control'}
                                     />
-                                    {partyStateDataErrors[index]?.contactEmail && (
-                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].contactEmail}</div>
+                                    {partyStateDataErrors[index]?.email && (
+                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].email}</div>
                                     )}
                                   </td>
                                   <td className="border px-2 py-2">
@@ -2284,6 +2393,7 @@ export const PartyMaster = () => {
                                       type="text"
                                       value={row.stateCode}
                                       style={{ width: '150px' }}
+                                      maxLength={3}
                                       onChange={(e) => {
                                         const value = e.target.value;
                                         setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, stateCode: value } : r)));
@@ -2353,13 +2463,17 @@ export const PartyMaster = () => {
                                       onChange={(e) => {
                                         const updatedPartyAddressData = [...partyAddressData];
                                         updatedPartyAddressData[index].state = e.target.value;
-                                        setPartyStateData(updatedPartyAddressData);
+                                        setPartyAddressData(updatedPartyAddressData);
+                                        getAllCities(e.target.value);
                                       }}
                                       className={partyAddressDataErrors[index]?.state ? 'error form-control' : 'form-control'}
                                     >
-                                      <option value="">-- Select --</option>
-                                      <option value="STATE1">STATE1</option>
-                                      <option value="STATE2">STATE2</option>
+                                      <option value="">--Select--</option>
+                                      {stateList?.map((row) => (
+                                        <option key={row.id} value={row.stateName}>
+                                          {row.stateName}
+                                        </option>
+                                      ))}
                                     </select>
                                     {partyAddressDataErrors[index]?.state && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2369,20 +2483,27 @@ export const PartyMaster = () => {
                                   </td>
 
                                   <td className="border px-2 py-2">
-                                    <select
+                                    <input
+                                      type="text"
                                       value={row.businessPlace}
-                                      style={{ width: '150px' }}
+                                      maxLength={15}
                                       onChange={(e) => {
-                                        const updatedPartyAddressData = [...partyAddressData];
-                                        updatedPartyAddressData[index].businessPlace = e.target.value;
-                                        setPartyStateData(updatedPartyAddressData);
+                                        const value = e.target.value;
+                                        setPartyAddressData((prev) =>
+                                          prev.map((r) => (r.id === row.id ? { ...r, businessPlace: value } : r))
+                                        );
+                                        setPartyAddressDataErrors((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = {
+                                            ...newErrors[index],
+                                            businessPlace: !value ? 'State Gst In is required' : ''
+                                          };
+                                          return newErrors;
+                                        });
                                       }}
                                       className={partyAddressDataErrors[index]?.businessPlace ? 'error form-control' : 'form-control'}
-                                    >
-                                      <option value="">-- Select --</option>
-                                      <option value="STATE1">STATE1</option>
-                                      <option value="STATE2">STATE2</option>
-                                    </select>
+                                      style={{ width: '150px' }}
+                                    />
                                     {partyAddressDataErrors[index]?.businessPlace && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                         {partyAddressDataErrors[index].businessPlace}
@@ -2394,6 +2515,7 @@ export const PartyMaster = () => {
                                     <input
                                       type="text"
                                       value={row.stateGstIn}
+                                      maxLength={15}
                                       onChange={(e) => {
                                         const value = e.target.value;
                                         setPartyAddressData((prev) => prev.map((r) => (r.id === row.id ? { ...r, stateGstIn: value } : r)));
@@ -2412,24 +2534,23 @@ export const PartyMaster = () => {
                                   </td>
 
                                   <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
+                                    <select
                                       value={row.city}
+                                      style={{ width: '150px' }}
                                       onChange={(e) => {
-                                        const value = e.target.value;
-                                        setPartyAddressData((prev) => prev.map((r) => (r.id === row.id ? { ...r, city: value } : r)));
-                                        setPartyAddressDataErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = {
-                                            ...newErrors[index],
-                                            city: !value ? 'City is required' : ''
-                                          };
-                                          return newErrors;
-                                        });
+                                        const updatedPartyAddressData = [...partyAddressData];
+                                        updatedPartyAddressData[index].city = e.target.value;
+                                        setPartyAddressData(updatedPartyAddressData);
                                       }}
                                       className={partyAddressDataErrors[index]?.city ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
-                                    />
+                                    >
+                                      <option value="">--Select--</option>
+                                      {cityList?.map((row) => (
+                                        <option key={row.id} value={row.cityName}>
+                                          {row.cityName}
+                                        </option>
+                                      ))}
+                                    </select>
                                     {partyAddressDataErrors[index]?.city && (
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].city}</div>
                                     )}
@@ -2538,22 +2659,31 @@ export const PartyMaster = () => {
                                   </td>
                                   <td className="border px-2 py-2">
                                     <input
-                                      type="number"
+                                      type="text"
                                       value={row.pincode}
+                                      style={{ width: '150px' }}
                                       onChange={(e) => {
                                         const value = e.target.value;
-                                        setPartyAddressData((prev) => prev.map((r) => (r.id === row.id ? { ...r, pincode: value } : r)));
-                                        setPartyAddressDataErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = {
-                                            ...newErrors[index],
-                                            pincode: !value ? 'Pin Code is required' : ''
-                                          };
-                                          return newErrors;
-                                        });
+
+                                        if (/^\d{0,6}$/.test(value)) {
+                                          setPartyAddressData((prev) => prev.map((r) => (r.id === row.id ? { ...r, pincode: value } : r)));
+
+                                          setPartyAddressDataErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              pincode: !value
+                                                ? 'Pin Code is required'
+                                                : value.length !== 6
+                                                  ? 'Pin Code must be exactly 6 digits'
+                                                  : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }
                                       }}
-                                      className={partyAddressDataErrors[index]?.pincode ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
+                                      maxLength="6"
+                                      className={partyDetailsErrors[index]?.pincode ? 'error form-control' : 'form-control'}
                                     />
                                     {partyAddressDataErrors[index]?.pincode && (
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].pincode}</div>
@@ -3068,8 +3198,11 @@ export const PartyMaster = () => {
                                       }
                                     >
                                       <option value="">-- Select --</option>
-                                      <option value="Yes">Yes</option>
-                                      <option value="No">No</option>
+                                      {currencies.map((item) => (
+                                        <option key={item.id} value={item.currency}>
+                                          {item.currency}
+                                        </option>
+                                      ))}
                                     </select>
                                     {partyCurrencyMappingErrors[index]?.transCurrency && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3195,7 +3328,14 @@ export const PartyMaster = () => {
                                   <td className="border px-2 py-2">
                                     <div className="w-100">
                                       <DatePicker
-                                        selected={row.effectiveFrom}
+                                        // selected={row.effectiveFrom}
+                                        selected={
+                                          row.effectiveFrom
+                                            ? dayjs(row.effectiveFrom, 'DD-MM-YYYY').isValid()
+                                              ? dayjs(row.effectiveFrom, 'DD-MM-YYYY').toDate()
+                                              : null
+                                            : null
+                                        }
                                         className={partySalesPersonErrors[index]?.effectiveFrom ? 'error form-control' : 'form-control'}
                                         onChange={(date) => {
                                           setPartySalesPersonTagging((prev) =>
@@ -3233,7 +3373,14 @@ export const PartyMaster = () => {
 
                                   <td className="border px-2 py-2">
                                     <DatePicker
-                                      selected={row.effectiveTill}
+                                      // selected={row.effectiveTill}
+                                      selected={
+                                        row.effectiveTill
+                                          ? dayjs(row.effectiveTill, 'DD-MM-YYYY').isValid()
+                                            ? dayjs(row.effectiveTill, 'DD-MM-YYYY').toDate()
+                                            : null
+                                          : null
+                                      }
                                       className={partySalesPersonErrors[index]?.effectiveTill ? 'error form-control' : 'form-control'}
                                       onChange={(date) => {
                                         setPartySalesPersonTagging((prev) =>
@@ -3347,20 +3494,29 @@ export const PartyMaster = () => {
                                     <input
                                       type="text"
                                       value={row.finYear}
+                                      style={{ width: '150px' }}
                                       onChange={(e) => {
                                         const value = e.target.value;
-                                        setPartyTdsExempted((prev) => prev.map((r) => (r.id === row.id ? { ...r, finYear: value } : r)));
-                                        setPartyTdsErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = {
-                                            ...newErrors[index],
-                                            finYear: !value ? 'Fin Year is required' : ''
-                                          };
-                                          return newErrors;
-                                        });
+
+                                        if (/^\d{0,4}$/.test(value)) {
+                                          setPartyTdsExempted((prev) => prev.map((r) => (r.id === row.id ? { ...r, finYear: value } : r)));
+
+                                          setPartyTdsErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              finYear: !value
+                                                ? 'Fin Year is required'
+                                                : value.length !== 4
+                                                  ? 'Fin Year must be exactly 4 digits'
+                                                  : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }
                                       }}
-                                      className={partyTdsErrors[index]?.finYear ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
+                                      maxLength="4"
+                                      className={partyDetailsErrors[index]?.finYear ? 'error form-control' : 'form-control'}
                                     />
                                     {partyTdsErrors[index]?.finYear && (
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyTdsErrors[index].finYear}</div>
