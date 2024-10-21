@@ -1,34 +1,27 @@
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import Visibility from '@mui/icons-material/Visibility';
-import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { FormControl, FormHelperText, InputLabel, MenuItem, Select } from '@mui/material';
+import Box from '@mui/material/Box';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import axios from 'axios';
+import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
-import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import ToastComponent, { showToast } from 'utils/toast-component';
-import CommonTable from 'views/basicMaster/CommonTable';
-import { encryptPassword } from 'views/utilities/passwordEnc';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import apiCalls from 'apicall';
 import { getAllActiveBranches, getAllActiveRoles } from 'utils/CommonFunctions';
+import ToastComponent, { showToast } from 'utils/toast-component';
+import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import { encryptPassword } from 'views/utilities/passwordEnc';
 
 const UserCreation = () => {
   const [showForm, setShowForm] = useState(true);
@@ -41,33 +34,14 @@ const UserCreation = () => {
   const [roleList, setRoleList] = useState([]);
   const [branchList, setBranchList] = useState([]);
   const [dataToEdit, setDataToEdit] = useState([]);
-  const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
+  const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId')));
   const [roleDataSelect, setRoleDataSelect] = useState([]);
   const [value, setValue] = useState(0);
   const [editMode, setEditMode] = useState(false);
   const [editId, setEditId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
-  const [empList, setEmpList] = useState([
-    {
-      id: 1,
-      empCode: 'WDS010',
-      empName: 'RAMBABU',
-      email: 'ram@whydigit.com'
-    },
-    {
-      id: 2,
-      empCode: 'WDS012',
-      empName: 'KARUPU',
-      email: 'karupu@whydigit.com'
-    },
-    {
-      id: 3,
-      empCode: 'WDS016',
-      empName: 'RICHARD',
-      email: 'richard@whydigit.com'
-    }
-  ]);
+  const [empList, setEmpList] = useState([]);
 
   const [formData, setFormData] = useState({
     docId: '',
@@ -135,18 +109,19 @@ const UserCreation = () => {
     getAllUsers();
     getAllBranches();
     getAllRoles();
+    getAllUserCreation();
   }, []);
 
   const handleInputChange = (e) => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+
+    // Regex validation rules
     const nameRegex = /^[A-Za-z ]*$/;
-    const alphaNumericRegex = /^[A-Za-z0-9]*$/;
     const numericRegex = /^[0-9]*$/;
-    const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
-    const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
 
     let errorMessage = '';
 
+    // Validation based on input name
     switch (name) {
       case 'employeeName':
         if (!nameRegex.test(value)) {
@@ -165,24 +140,23 @@ const UserCreation = () => {
         break;
     }
 
+    // Set error message if any
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
-      if (name === 'active') {
-        setFormData({ ...formData, [name]: checked });
-      } else if (name === 'allIndiaAccess') {
+      // Special cases for checkboxes and other inputs
+      if (name === 'active' || name === 'allIndiaAccess') {
         setFormData({ ...formData, [name]: checked });
       } else if (name === 'email') {
         setFormData({ ...formData, [name]: value.toLowerCase() });
-      } else if (name === 'userName') {
-        setFormData({ ...formData, [name]: value });
       } else if (name === 'employeeCode') {
-        const selectedEmp = empList.find((emp) => emp.empCode === value);
+        // Find the selected employee from empList based on employeeCode
+        const selectedEmp = empList.find((emp) => emp.employeeCode === value);
         if (selectedEmp) {
           setFormData((prevData) => ({
             ...prevData,
-            employeeCode: selectedEmp.empCode,
-            employeeName: selectedEmp.empName,
+            employeeCode: selectedEmp.employeeCode,
+            employeeName: selectedEmp.employeeName,
             email: selectedEmp.email
           }));
         }
@@ -190,6 +164,7 @@ const UserCreation = () => {
         setFormData({ ...formData, [name]: value.toUpperCase() });
       }
 
+      // Clear error message for valid input
       setFieldErrors({ ...fieldErrors, [name]: '' });
 
       // Preserve the cursor position for text-based inputs
@@ -204,10 +179,32 @@ const UserCreation = () => {
     }
   };
 
+  // Handling Select's onChange
   const handleSelectChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    setFieldErrors({ ...fieldErrors, [name]: false });
+    const value = e.target.value; // Get the selected value (employeeCode)
+    console.log('Selected employeeCode value:', value);
+    console.log('Full empList:', empList); // Log the entire list to verify the structure
+
+    // Log each item in the empList to confirm the field names
+    empList.forEach((emp, index) => {
+      console.log(`Employee ${index}:`, emp);
+    });
+
+    // Find the selected employee from empList based on employeeCode
+    const selectedEmp = empList.find((emp) => emp.employeeCode === value); // Check if 'empCode' is correct
+
+    if (selectedEmp) {
+      console.log('Selected Employee:', selectedEmp);
+      setFormData((prevData) => ({
+        ...prevData,
+        userName: selectedEmp.employeeCode,
+        employeeCode: selectedEmp.employeeCode,
+        employeeName: selectedEmp.employeeName,
+        email: selectedEmp.email
+      }));
+    } else {
+      console.log('No employee found with the given code:', value); // Log if no employee is found
+    }
   };
 
   const getAllRoles = async () => {
@@ -229,7 +226,22 @@ const UserCreation = () => {
 
   const getAllUsers = async () => {
     try {
-      const response = await apiCalls('get', `auth/allUsersByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `/master/getAllEmployeeByOrgId?orgId=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setEmpList(response.paramObjectsMap.employeeVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getAllUserCreation = async () => {
+    try {
+      const response = await apiCalls('get', `/auth/allUsersByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -263,7 +275,7 @@ const UserCreation = () => {
           employeeName: particularUser.employeeName,
           email: particularUser.email,
           allIndiaAccess: particularUser.allIndiaAcces,
-          active: particularUser.active
+          active: particularUser.active === 'Active' ? true : false
         });
         setRoleTableData(
           particularUser.roleAccessVO.map((role) => ({
@@ -352,7 +364,7 @@ const UserCreation = () => {
       const roleVo = roleTableData.map((row) => ({
         // ...(editId && { id: row.id }),
         role: row.role,
-        // roleId: row.roleId,
+        roleId: row.roleId,
         startDate: dayjs(row.startDate).format('YYYY-MM-DD'),
         endDate: row.endDate ? dayjs(row.endDate).format('YYYY-MM-DD') : null
       }));
@@ -365,13 +377,13 @@ const UserCreation = () => {
       const saveFormData = {
         ...(editId && { id: formData.docId }),
         userName: formData.userName,
-        password: encryptedPassword,
+        ...(!editId && { password: encryptedPassword }),
         userType: formData.userType,
         employeeCode: formData.employeeCode,
         employeeName: formData.employeeName,
         email: formData.email,
         allIndiaAcces: formData.allIndiaAccess,
-        active: formData.active,
+        active: formData.active === 'Active' ? true : false,
         orgId: orgId,
         roleAccessDTO: roleVo,
         branchAccessDTOList: branchVo
@@ -591,59 +603,19 @@ const UserCreation = () => {
             <>
               <div className="row d-flex ml">
                 <div className="col-md-3 mb-3">
-                  <TextField
-                    id="outlined-textarea"
-                    label="UserName"
-                    variant="outlined"
-                    size="small"
-                    name="userName"
-                    fullWidth
-                    disabled={editMode}
-                    required
-                    value={formData.userName}
-                    onChange={handleInputChange}
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.userName ? 'This field is required' : ''}</span>}
-                    inputProps={{ maxLength: 15 }}
-                  />
-                </div>
-
-                <div className="col-md-3 mb-3">
-                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.userType}>
-                    <InputLabel id="userType-label">User Type</InputLabel>
-                    <Select
-                      labelId="userType-label"
-                      label="userType"
-                      value={formData.userType}
-                      onChange={handleInputChange}
-                      name="userType"
-                    >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      <MenuItem value="ADMIN">ADMIN</MenuItem>
-                      <MenuItem value="USER">USER</MenuItem>
-                      <MenuItem value="EMPLOYEE">EMPLOYEE</MenuItem>
-                    </Select>
-                    {fieldErrors.userType && <FormHelperText>{fieldErrors.userType}</FormHelperText>}
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.employeeCode}>
                     <InputLabel id="employeeCode-label">Employee Code</InputLabel>
                     <Select
                       labelId="employeeCode-label"
-                      label="employeeCode"
+                      label="Employee Code"
                       value={formData.employeeCode}
-                      onChange={handleInputChange}
+                      onChange={handleSelectChange} // Using the updated function for Select
                       name="employeeCode"
                     >
-                      <MenuItem value="">
-                        <em>None</em>
-                      </MenuItem>
-                      {listViewData.length > 0 &&
-                        listViewData.map((emp, index) => (
-                          <MenuItem key={index} value={emp.empCode}>
-                            {emp.empCode} {/* Corrected the way to display employee code */}
+                      {empList.length > 0 &&
+                        empList.map((emp, index) => (
+                          <MenuItem key={index} value={emp.employeeCode}>
+                            {emp.employeeCode} {/* Display employee code */}
                           </MenuItem>
                         ))}
                     </Select>
@@ -681,6 +653,42 @@ const UserCreation = () => {
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.email ? 'This field is required' : ''}</span>}
                     inputProps={{ maxLength: 40 }}
                   />
+                </div>
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="outlined-textarea"
+                    label="UserName"
+                    variant="outlined"
+                    size="small"
+                    name="userName"
+                    fullWidth
+                    disabled
+                    required
+                    value={formData.userName}
+                    onChange={handleInputChange}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.userName ? 'This field is required' : ''}</span>}
+                    inputProps={{ maxLength: 15 }}
+                  />
+                </div>
+
+                <div className="col-md-3 mb-3">
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.userType}>
+                    <InputLabel id="userType-label">User Type</InputLabel>
+                    <Select
+                      labelId="userType-label"
+                      label="userType"
+                      value={formData.userType}
+                      onChange={handleInputChange}
+                      name="userType"
+                    >
+                      <MenuItem value="">
+                        <em>None</em>
+                      </MenuItem>
+                      <MenuItem value="ADMIN">ADMIN</MenuItem>
+                      <MenuItem value="USER">USER</MenuItem>
+                    </Select>
+                    {fieldErrors.userType && <FormHelperText>{fieldErrors.userType}</FormHelperText>}
+                  </FormControl>
                 </div>
                 {/* <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.reportingTO}>
@@ -974,7 +982,7 @@ const UserCreation = () => {
               </div>
             </>
           ) : (
-            <CommonTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getUserById} />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getUserById} />
           )}
         </div>
       </div>

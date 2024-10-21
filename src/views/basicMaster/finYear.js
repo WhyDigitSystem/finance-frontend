@@ -32,7 +32,7 @@ const FinYear = () => {
     finYearId: '',
     startDate: dayjs(),
     endDate: dayjs(),
-    currentFinYear: false,
+    closed: false,
     // sno: '',
     active: true,
     createdBy: localStorage.getItem('userName'),
@@ -45,7 +45,7 @@ const FinYear = () => {
     finYearId: false,
     startDate: false,
     endDate: false,
-    currentFinYear: false
+    closed: false
     // sno: false
   });
 
@@ -56,7 +56,7 @@ const FinYear = () => {
       finYearIdentifier: '',
       startDate: dayjs(),
       endDate: dayjs(),
-      currentFinYear: false
+      closed: false
       // sno: ''
     });
 
@@ -66,7 +66,7 @@ const FinYear = () => {
       finYearId: false,
       startDate: false,
       endDate: false,
-      currentFinYear: false
+      closed: false
       // sno: false
     });
   };
@@ -77,7 +77,7 @@ const FinYear = () => {
     { accessorKey: 'finYearIdentifier', header: 'FinYearIdentifier', size: 140 },
     { accessorKey: 'startDate', header: 'Start Date', size: 140 },
     { accessorKey: 'endDate', header: 'End Date', size: 140 },
-    { accessorKey: 'currentFinYear', header: 'Current FinYear', size: 140 },
+    { accessorKey: 'closed', header: 'Closed', size: 140 },
     { accessorKey: 'active', header: 'active', size: 140 }
   ];
 
@@ -91,7 +91,7 @@ const FinYear = () => {
 
     if (name === 'sno') {
       newValue = parseInt(value, 10) || 0; // fallback to 0 if value is not a valid number
-    } else if (name === 'active' || name === 'currentFinYear') {
+    } else if (name === 'active' || name === 'closed') {
       newValue = checked;
     } else {
       newValue = value.toUpperCase();
@@ -112,7 +112,7 @@ const FinYear = () => {
     } else {
       setFormData({
         ...formData,
-        [name]: name === 'active' || name === 'currentFinYear' ? checked : value.toUpperCase()
+        [name]: name === 'active' || name === 'closed' ? checked : value.toUpperCase()
       });
       setFieldErrors({ ...fieldErrors, [name]: '' });
 
@@ -172,8 +172,8 @@ const FinYear = () => {
       // Check if any field is empty
       console.log('formData', formData);
       const errors = Object.keys(formData).reduce((acc, key) => {
-        // Skip validation for 'active' and 'currentFinYear'
-        if (key !== 'active' && key !== 'currentFinYear' && !formData[key]) {
+        // Skip validation for 'active' and 'closed'
+        if (key !== 'active' && key !== 'closed' && !formData[key]) {
           acc[key] = true;
         }
         return acc;
@@ -202,7 +202,7 @@ const FinYear = () => {
         finYear: parseInt(formatedFinYear),
         finYearId: parseInt(formData.finYearId),
         finYearIdentifier: formData.finYearIdentifier,
-        currentFinYear: false,
+        closed: formData.closed,
         active: formData.active,
         createdBy: localStorage.getItem('userName'),
         id: editId ? formData.id : undefined,
@@ -244,7 +244,7 @@ const FinYear = () => {
           finYear: particularFin.finYear ? dayjs().year(particularFin.finYear).format('YYYY') : null,
           finYearId: particularFin.finYearId,
           finYearIdentifier: particularFin.finYearIdentifier,
-          currentFinYear: particularFin.currentFinYear,
+          closed: particularFin.closed === 'Yes' ? true : false,
           startDate: particularFin.startDate,
           endDate: particularFin.endDate,
           active: particularFin.active === 'Active' ? true : false,
@@ -378,13 +378,13 @@ const FinYear = () => {
                 <FormControlLabel
                   control={
                     <Checkbox
-                      checked={formData.currentFinYear}
+                      checked={formData.closed}
                       onChange={handleInputChange}
-                      name="currentFinYear"
+                      name="closed"
                       sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
                     />
                   }
-                  label="Current Fin Year"
+                  label="Closed"
                 />
               </FormGroup>
             </div>

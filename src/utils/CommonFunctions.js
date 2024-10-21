@@ -132,7 +132,7 @@ export const getAllActiveRegions = async (orgId) => {
 
 export const getAllActiveScreens = async () => {
   try {
-    const response = await apiCalls('get', `commonmaster/allScreenNames`);
+    const response = await apiCalls('get', `/commonmaster/getAllScreenNames`);
     console.log('API Response:', response);
 
     if (response.status === true) {
@@ -152,8 +152,7 @@ export const getAllActiveScreens = async () => {
 };
 export const getAllActiveRoles = async (orgId) => {
   try {
-    // const response = await apiCalls('get', `auth/allRolesByOrgId?orgId=${orgId}`);
-    const response = await apiCalls('get', `auth/allRolesByOrgId?orgId=1000000001`);
+    const response = await apiCalls('get', `auth/allRolesByOrgId?orgId=${orgId}`);
     console.log('API Response:', response);
 
     if (response.status === true) {

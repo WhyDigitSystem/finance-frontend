@@ -2,17 +2,21 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Box, Checkbox, FormControl, FormControlLabel, FormGroup, InputLabel, MenuItem, Select } from '@mui/material';
+import { Box, Checkbox, FormControl, FormControlLabel, FormGroup, FormHelperText, InputLabel, MenuItem, Select } from '@mui/material';
 import Chip from '@mui/material/Chip';
 import OutlinedInput from '@mui/material/OutlinedInput';
 import { useTheme } from '@mui/material/styles';
-import apiCalls from 'apicall';
-import { useEffect, useRef, useState } from 'react';
+import TextField from '@mui/material/TextField';
+import { useEffect, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+
+import apiCalls from 'apicall';
 import ActionButton from 'utils/ActionButton';
-import CommonTable from './CommonTable';
+import { getAllActiveScreens } from 'utils/CommonFunctions';
+import { showToast } from 'utils/toast-component';
+import CommonListViewTable from './CommonListViewTable';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -25,51 +29,37 @@ const MenuProps = {
   }
 };
 
-const names = ['Dashboard', 'BasicMaster', 'Master', 'Transaction', 'AR-Receivable', 'AP-Payable'];
-
-function getStyles(name, personName, theme) {
+function getStyles(name, selectedScreens, theme) {
   return {
-    fontWeight: personName.indexOf(name) === -1 ? theme.typography.fontWeightRegular : theme.typography.fontWeightMedium
+    fontWeight: selectedScreens.indexOf(name) === -1 ? theme.typography.fontWeightRegular : theme.typography.fontWeightMedium
   };
 }
 
 const Responsibilities = () => {
   const theme = useTheme();
-  const anchorRef = useRef(null);
-  const [showFields, setShowFields] = useState(true);
+  const [listView, setListView] = useState(false);
+  const [listViewData, setListViewData] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [data, setData] = useState([]);
-  const [roleData, setRoleData] = useState([]);
-  const [roleDataSelect, setRoleDataSelect] = useState([]);
-  const [value, setValue] = useState('1');
+  const [isLoading, setIsLoading] = useState(false);
+  const [editId, setEditId] = useState('');
+  const [screenList, setScreenList] = useState([]);
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [selectedScreens, setSelectedScreens] = useState([]);
 
   const [formData, setFormData] = useState({
-    role: '',
+    name: '',
     orgId: orgId,
-    active: true,
-    screenDTO: []
+    active: true
   });
 
   const [fieldErrors, setFieldErrors] = useState({
-    role: false
+    name: false
   });
 
-  const chipSX = {
-    height: 24,
-    padding: '0 6px'
-  };
-
-  const chipSuccessSX = {
-    ...chipSX,
-    color: theme.palette.secondary.main,
-    backgroundColor: theme.palette.secondary.light,
-    height: 28
-  };
-
   const columns = [
-    { accessorKey: 'role', header: 'Role', size: 140 },
+    { accessorKey: 'responsibility', header: 'Responsibility', size: 140 },
     {
-      accessorKey: 'screenVO',
+      accessorKey: 'screensVO',
       header: 'Screens',
       Cell: ({ cell }) => {
         const screens = cell
@@ -83,23 +73,20 @@ const Responsibilities = () => {
   ];
 
   useEffect(() => {
-    getRole();
-    getRoleData();
-  }, [showFields]);
+    getAllResponsibilities();
+    getAllScreens();
+  }, [listView]);
 
   const handleClear = () => {
     setFormData({
-      role: '',
-      active: true,
-      screenDTO: []
+      name: '',
+      active: true
     });
-    setPersonName([]);
+    setSelectedScreens([]);
     setFieldErrors({
-      role: false
+      name: false
     });
   };
-
-  const [personName, setPersonName] = useState([]);
 
   const handleChange = (event) => {
     const {
@@ -113,7 +100,7 @@ const Responsibilities = () => {
       screenName
     }));
 
-    setPersonName(selectedScreens);
+    setSelectedScreens(selectedScreens);
 
     // Update the formData with the new screenDTO
     setFormData((prevFormData) => ({
@@ -123,20 +110,29 @@ const Responsibilities = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value, checked } = e.target;
-    let newValue = value;
+    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const nameRegex = /^[A-Za-z ]*$/;
 
-    // Transform value to uppercase
-    newValue = newValue.toUpperCase();
+    if (name === 'name' && !nameRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+    } else {
+      setFormData({
+        ...formData,
+        [name]: name === 'active' ? checked : value.toUpperCase()
+      });
+      setFieldErrors({ ...fieldErrors, [name]: '' });
 
-    // Validate value to allow only alphabetic characters
-    newValue = newValue.replace(/[^A-Z]/g, '');
-
-    // Update the value of newValue instead of redeclaring it
-    newValue = name === 'active' ? checked : newValue;
-
-    setFormData({ ...formData, [name]: newValue });
-    setFieldErrors({ ...fieldErrors, [name]: false });
+      // Update the cursor position after the input change
+      if (type === 'text' || type === 'textarea') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
+      }
+    }
   };
 
   const handleSelectChange = (e) => {
@@ -145,102 +141,104 @@ const Responsibilities = () => {
     setFieldErrors({ ...fieldErrors, [name]: false });
   };
 
-  const handleList = () => {
-    setShowFields(!showFields);
+  const handleView = () => {
+    setListView(!listView);
   };
 
-  const getRole = async () => {
+  const getAllScreens = async () => {
     try {
-      const result = await apiCalls('get', `/basicMaster/getResponsibilitiesByOrgId?orgId=${orgId}`);
+      const screensData = await getAllActiveScreens(orgId);
+      setScreenList(screensData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
 
-      if (result) {
-        const responsibilities = result.paramObjectsMap.responsibilitiesVO;
-        setData(responsibilities);
+  const getAllResponsibilities = async () => {
+    try {
+      const response = await apiCalls('get', `auth/allResponsibilityByOrgId?orgId=${orgId}`);
 
-        const screenNames = responsibilities.flatMap((item) => item.screenVO.map((screen) => screen.screenName));
-        setRoleData(screenNames);
+      setListViewData(response.paramObjectsMap.responsibilityVO);
+      console.log('Test', response);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
 
-        console.log('Test', screenNames);
+  const getResponsibilityById = async (row) => {
+    setEditId(row.original.id);
+    try {
+      const response = await apiCalls('get', `auth/responsibilityById?id=${row.original.id}`);
+      console.log('API Response:', response);
+
+      if (response) {
+        console.log('after success then data is:', response);
+
+        const particularResponsibility = response.paramObjectsMap.responsibilityVO;
+        const particularResScreens = particularResponsibility.screensVO.map((k) => k.screenName);
+        setFormData({
+          name: particularResponsibility.responsibility,
+          active: particularResponsibility.active === 'Active' ? true : false
+        });
+        console.log('THE SCREEN VO DATA IS:', particularResScreens);
+        setSelectedScreens(particularResScreens);
+
+        setListView(false);
       } else {
+        console.error('API Error:', response.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const getRoleData = async () => {
-    try {
-      const result = await apiCalls('get', `/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
-
-      if (result) {
-        // setData(response.data.paramObjectsMap.roleMasterVO);
-        setRoleDataSelect(result.paramObjectsMap.roleVO.map((list) => list.role));
-      } else {
-        // Handle error
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
+  const handleSave = async () => {
+    const errors = {};
+    if (!formData.name) {
+      errors.name = 'Name is required';
     }
-  };
+    if (selectedScreens.length <= 0) {
+      errors.selectedScreens = 'Screens is required';
+    }
 
-  const handleSubmit = async () => {
-    try {
-      // Check if any field is empty
-      const errors = Object.keys(formData).reduce((acc, key) => {
-        if (!formData[key]) {
-          acc[key] = true;
+    if (Object.keys(errors).length === 0) {
+      setIsLoading(false);
+
+      const screenVo = selectedScreens.map((row) => ({
+        screenName: row.toLowerCase()
+      }));
+
+      const saveFormData = {
+        ...(editId && { id: editId }),
+        active: formData.active,
+        responsibility: formData.name,
+        orgId: orgId,
+        createdby: loginUserName,
+        screensDTO: screenVo
+      };
+      console.log('PERSON NAMES:', selectedScreens);
+
+      console.log('THE SAVE FORM DATA IS:', saveFormData);
+
+      try {
+        const response = await apiCalls('put', `auth/createUpdateResponsibility`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? ' Responsibility Updated Successfully' : 'Responsibility created successfully');
+          handleClear();
+          getAllResponsibilities();
+          setIsLoading(false);
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Responsibility creation failed');
+          setIsLoading(false);
         }
-        return acc;
-      }, {});
-
-      // If there are errors, set the corresponding fieldErrors state to true
-      if (Object.keys(errors).length > 0) {
-        setFieldErrors(errors);
-        return; // Prevent API call if there are errors
+      } catch (err) {
+        console.log('error', err);
+        showToast('error', 'Responsibility creation failed');
+        setIsLoading(false);
       }
-
-      // Make the API call using the apiCalls method
-      const response = await apiCalls('put', 'basicMaster/updateCreateResponsibilities', formData);
-
-      // Handle successful response
-      console.log('Response:', response.data);
-      handleClear();
-      toast.success('Role Created Successfully', {
-        autoClose: 2000,
-        theme: 'colored'
-      });
-      getRole();
-    } catch (error) {
-      // Error handling is already managed by the apiCalls method
-      console.error('Error:', error);
-      toast.error(error.message, {
-        autoClose: 2000,
-        theme: 'colored'
-      });
-    }
-  };
-
-  const editRole = async (updatedCountry) => {
-    try {
-      const result = await apiCalls('get', `/basicMaster/updateCreateRoleMaster`, updatedCountry);
-
-      if (result) {
-        toast.success('Role Updated Successfully', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-        getRole();
-      } else {
-        toast.error('Failed to Update Role', {
-          autoClose: 2000,
-          theme: 'colored'
-        });
-      }
-    } catch (error) {
-      toast.error('Error Updating Role', {
-        autoClose: 2000,
-        theme: 'colored'
-      });
+    } else {
+      setFieldErrors(errors);
     }
   };
 
@@ -255,35 +253,34 @@ const Responsibilities = () => {
             <div className="d-flex flex-wrap justify-content-start mb-4">
               <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
               <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
-              <ActionButton title="Save" icon={SaveIcon} onClick={handleSubmit} margin="0 10px 0 10px" />
+              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+              <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
             </div>
-            {showFields ? (
+            {!listView ? (
               <div className="row d-flex">
                 <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="role-label">Role</InputLabel>
-                    <Select labelId="role-label" id="role" name="role" value={formData.role} onChange={handleSelectChange} required>
-                      {roleDataSelect &&
-                        roleDataSelect.map((role, index) => (
-                          <MenuItem key={index} value={role}>
-                            {role}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                    <span style={{ color: 'red' }}>{fieldErrors.role ? 'This field is required' : ''}</span>
-                  </FormControl>
+                  <TextField
+                    label="Name"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="name"
+                    value={formData.name}
+                    onChange={handleInputChange}
+                    error={!!fieldErrors.name}
+                    helperText={fieldErrors.name}
+                  />
                 </div>
                 <div className="col-md-3 mb-3">
-                  <FormControl sx={{ width: 215 }} size="small">
+                  <FormControl sx={{ width: 215 }} size="small" error={!!fieldErrors.selectedScreens}>
                     <InputLabel id="demo-multiple-chip-label">Screens</InputLabel>
                     <Select
                       labelId="demo-multiple-chip-label"
                       id="demo-multiple-chip"
                       multiple
-                      value={personName}
+                      value={selectedScreens}
                       onChange={handleChange}
-                      input={<OutlinedInput id="select-multiple-chip" label="Chip" />}
+                      input={<OutlinedInput id="select-multiple-chip" label="Screens" />}
                       renderValue={(selected) => (
                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                           {selected.map((value) => (
@@ -293,12 +290,13 @@ const Responsibilities = () => {
                       )}
                       MenuProps={MenuProps}
                     >
-                      {names.map((name) => (
-                        <MenuItem key={name} value={name} style={getStyles(name, personName, theme)}>
-                          {name}
+                      {screenList.map((name, index) => (
+                        <MenuItem key={index} value={name.screenName} style={getStyles(name, selectedScreens, theme)}>
+                          {name.screenName}
                         </MenuItem>
                       ))}
                     </Select>
+                    {fieldErrors.selectedScreens && <FormHelperText>{fieldErrors.selectedScreens}</FormHelperText>}
                   </FormControl>
                 </div>
 
@@ -317,23 +315,14 @@ const Responsibilities = () => {
                     />
                   </FormGroup>
                 </div>
-                {/* 
-                <div>
-                  <Typography variant="subtitle1">Available Roles</Typography>
-
-                  <Grid item xs={12} sx={{ marginTop: '10px', gap: '5px' }}>
-                    <Grid container>
-                      {roleData.map((role, index) => (
-                        <Grid item key={index} sx={{ marginLeft: index > 0 ? '5px' : '0' }}>
-                          <Chip label={role} sx={chipSuccessSX} />
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </Grid>
-                </div> */}
               </div>
             ) : (
-              <CommonTable data={data} columns={columns} editCallback={editRole} roleData={roleData} />
+              <CommonListViewTable
+                data={listViewData}
+                columns={columns}
+                toEdit={getResponsibilityById}
+                blockEdit={true} // DISAPLE THE MODAL IF TRUE
+              />
             )}
           </Box>
         </div>

@@ -67,7 +67,7 @@ const GlobalSection = () => {
   useEffect(() => {
     getGlobalParameter();
     getAccessBranch();
-    // getFinYear();
+    getFinYear();
   }, []);
 
   const handleToggle = () => {
@@ -185,8 +185,6 @@ const GlobalSection = () => {
     const formData = {
       branch: branchName,
       branchcode: branchValue,
-      customer: customerValue,
-      client: clientValue,
       finYear: finYearValue,
       // warehouse: warehouseValue,
       userid: userId,
@@ -304,7 +302,7 @@ const GlobalSection = () => {
 
                     <Grid item xs={12}>
                       <Grid container direction="column" spacing={2}>
-                        {/* <Grid item xs={12}>
+                        <Grid item xs={12}>
                           <Box sx={{ px: 2, pt: 0.25 }}>
                             <TextField
                               id="outlined-select-currency-native"
@@ -319,7 +317,7 @@ const GlobalSection = () => {
                               size="small"
                             >
                               <option value="" disabled>
-                                {/* Select FinYear 
+                                {/* Select FinYear */}
                               </option>
                               {finVO?.map((option) => (
                                 <option key={option.id} value={option.finYear}>
@@ -328,7 +326,7 @@ const GlobalSection = () => {
                               ))}
                             </TextField>
                           </Box>
-                        </Grid> */}
+                        </Grid>
 
                         <Grid item xs={12}>
                           <Box sx={{ px: 2, pt: 0.25 }}>
@@ -356,7 +354,7 @@ const GlobalSection = () => {
                             </TextField>
                           </Box>
                         </Grid>
-
+                        {/* 
                         <Grid item xs={12}>
                           <Box sx={{ px: 2, pt: 0.25 }}>
                             <TextField
@@ -403,7 +401,7 @@ const GlobalSection = () => {
                               ))}
                             </TextField>
                           </Box>
-                        </Grid>
+                        </Grid> */}
 
                         {/* <Grid item xs={12}>
                           <Box sx={{ px: 2, pt: 0.25 }}>

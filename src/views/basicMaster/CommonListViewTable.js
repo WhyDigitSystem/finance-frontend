@@ -54,13 +54,13 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
       };
     }
 
-    if (column.accessorKey === 'currentFinYear') {
+    if (column.accessorKey === 'closed') {
       console.log('the columns are:', column);
 
       return {
         ...column,
         Cell: ({ cell }) => (
-          <Chip label={cell.getValue() === true ? 'true' : 'false'} sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX} />
+          <Chip label={cell.getValue() === 'Yes' ? 'Yes' : 'No'} sx={cell.getValue() === 'Yes' ? chipSuccessSX : chipErrorSX} />
         )
       };
     }

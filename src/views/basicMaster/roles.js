@@ -1,27 +1,16 @@
-import ClearIcon from '@mui/icons-material/Clear';
-import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
-import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import { Chip, Grid, Typography } from '@mui/material';
 import Box from '@mui/material/Box';
-import Checkbox from '@mui/material/Checkbox';
-import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormGroup from '@mui/material/FormGroup';
 import Tab from '@mui/material/Tab';
-import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import apiCalls from 'apicall';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import ActionButton from 'utils/ActionButton';
-import CommonTable from './CommonTable';
 import Responsibilities from './responsibilities';
+import RolesNew from './rolesNew';
 
 const Roles = () => {
   const theme = useTheme();
@@ -101,11 +90,12 @@ const Roles = () => {
 
   const getRole = async () => {
     try {
-      const result = await apiCalls('get', `/basicMaster/getRoleMasterByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `/auth/allRolesByOrgId?orgId=${orgId}`);
 
-      if (result) {
-        setData(result.paramObjectsMap.roleVO);
-        setRoleData(result.paramObjectsMap.roleVO.map((list) => list.role));
+      if (response.status === true) {
+        console.log('Role=>', response.paramObjectsMap.rolesVO);
+        setData(response.paramObjectsMap.rolesVO);
+        setRoleData(response.paramObjectsMap.rolesVO.map((list) => list.role));
       } else {
         // Handle error
       }
@@ -131,7 +121,7 @@ const Roles = () => {
       }
 
       // Make the API call using the apiCalls method
-      const response = await apiCalls('put', 'basicMaster/updateCreateRoleMaster', formData);
+      const response = await apiCalls('put', '/auth/createUpdateRoles', formData);
 
       // Handle successful response
       console.log('Response:', response.data);
@@ -192,62 +182,7 @@ const Roles = () => {
                 </TabList>
               </Box>
               <TabPanel value="1">
-                <div className="d-flex flex-wrap justify-content-start mb-4">
-                  <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-                  <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                  <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
-                  <ActionButton title="Save" icon={SaveIcon} onClick={handleSubmit} margin="0 10px 0 10px" />
-                </div>
-                {showFields ? (
-                  <div className="row d-flex">
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth variant="filled">
-                        <TextField
-                          id="account"
-                          label="Role"
-                          size="small"
-                          required
-                          name="role"
-                          value={formData.role}
-                          onChange={handleInputChange}
-                          inputProps={{ maxLength: 30 }}
-                          helperText={<span style={{ color: 'red' }}>{fieldErrors.role ? 'This field is required' : ''}</span>}
-                        />
-                      </FormControl>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <FormGroup>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              checked={formData.active}
-                              onChange={handleInputChange}
-                              name="active"
-                              sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
-                            />
-                          }
-                          label="Active"
-                        />
-                      </FormGroup>
-                    </div>
-
-                    <div>
-                      <Typography variant="subtitle1">Available Roles</Typography>
-
-                      <Grid item xs={12} sx={{ marginTop: '10px', gap: '5px' }}>
-                        <Grid container>
-                          {roleData.map((role, index) => (
-                            <Grid item key={index} sx={{ marginLeft: index > 0 ? '5px' : '0' }}>
-                              <Chip label={role} sx={chipSuccessSX} />
-                            </Grid>
-                          ))}
-                        </Grid>
-                      </Grid>
-                    </div>
-                  </div>
-                ) : (
-                  <CommonTable data={data} columns={columns} editCallback={editRole} />
-                )}
+                <RolesNew />
               </TabPanel>
               <TabPanel value="2">
                 <Responsibilities />
