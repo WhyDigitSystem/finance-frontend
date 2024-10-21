@@ -44,6 +44,7 @@ const BRSOpening = () => {
 
   const [formData, setFormData] = useState({
     active: true,
+    branch: '',
     billNo: '',
     billDate: null,
     chqNo: '',
@@ -58,6 +59,7 @@ const BRSOpening = () => {
 
   const [fieldErrors, setFieldErrors] = useState({
     active: true,
+    branch: '',
     billNo: '',
     billDate: null,
     chqNo: '',
@@ -111,6 +113,7 @@ const BRSOpening = () => {
   const handleClear = () => {
     setFormData({
       active: true,
+      branch: '',
       billNo: '',
       billDate: null,
       chqNo: '',
@@ -123,6 +126,7 @@ const BRSOpening = () => {
       reconcile: true
     });
     setFieldErrors({
+      branch: '',
       billNo: '',
       billDate: null,
       chqNo: '',
@@ -170,6 +174,7 @@ const BRSOpening = () => {
         const particularEmp = response.paramObjectsMap.brsOpeningVO[0];
 
         setFormData({
+          branch: particularEmp.branch,
           billNo: particularEmp.billNo,
           billDate: particularEmp.billDate,
           chqNo: particularEmp.chqNo,
@@ -195,6 +200,10 @@ const BRSOpening = () => {
     // Check for empty fields and set error messages
     if (!formData.billNo) {
       errors.billNo = 'Bill No is required';
+    }
+
+    if (!formData.branch) {
+      errors.branch = 'Branch is required';
     }
 
     if (!formData.billDate) {
@@ -241,6 +250,7 @@ const BRSOpening = () => {
     const saveFormData = {
       ...(editId && { id: editId }),
       active: formData.active,
+      branch: formData.branch,
       billNo: formData.billNo,
       billDate: formData.billDate,
       chqNo: formData.chqNo,
@@ -325,20 +335,20 @@ const BRSOpening = () => {
           <>
             <div className="row d-flex mt-3">
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Branch/Location
-                  </InputLabel>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
+                  <InputLabel id="branch">Branch/Location</InputLabel>
                   <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select-label"
-                    // value={age}
+                    labelId="branch"
+                    id="branch"
                     label="Branch/Location"
-                    // onChange={handleChange}
+                    onChange={handleInputChange}
+                    name="branch"
+                    value={formData.branch}
                   >
-                    <MenuItem value={20}>Head Office</MenuItem>
-                    <MenuItem value={10}>Branch</MenuItem>
+                    <MenuItem value="Head Office">Head Office</MenuItem>
+                    <MenuItem value="Branch">Branch</MenuItem>
                   </Select>
+                  {fieldErrors.branch && <FormHelperText>{fieldErrors.branch}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">

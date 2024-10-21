@@ -179,6 +179,43 @@ const Receipt = () => {
   //   setFieldErrors({ ...fieldErrors, [name]: false });
   // };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, type, checked } = e.target;
+  //   const inputValue = type === 'checkbox' ? checked : value;
+
+  //   // Define regex for numeric fields
+  //   const isNumeric = /^[0-9]*$/;
+
+  //   // Validation logic for numeric fields
+  //   const numericFields = ['bankCharges', 'receiptAmt', 'tdsAmt']; // Add other numeric fields if needed
+  //   if (numericFields.includes(name)) {
+  //     if (!isNumeric.test(value)) {
+  //       setFieldErrors({
+  //         ...fieldErrors,
+  //         [name]: 'Only numbers are allowed'
+  //       });
+  //       return; // Prevent further form updates if invalid input
+  //     }
+  //   }
+
+  //   // If customerName is selected, find and set customerCode
+  //   if (name === 'customerName') {
+  //     const selectedCustomer = allCustomerName.find((customer) => customer.customerName === value);
+  //     if (selectedCustomer) {
+  //       setFormData({
+  //         ...formData,
+  //         customerName: value,
+  //         customerCode: selectedCustomer.customerCode // Set the corresponding customerCode
+  //       });
+  //     }
+  //   } else {
+  //     setFormData({ ...formData, [name]: inputValue });
+  //   }
+
+  //   // Clear error when input is valid
+  //   setFieldErrors({ ...fieldErrors, [name]: false });
+  // };
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const inputValue = type === 'checkbox' ? checked : value;
@@ -198,7 +235,7 @@ const Receipt = () => {
       }
     }
 
-    // If customerName is selected, find and set customerCode
+    // Handle customerName selection and customerCode mapping
     if (name === 'customerName') {
       const selectedCustomer = allCustomerName.find((customer) => customer.customerName === value);
       if (selectedCustomer) {
@@ -207,13 +244,21 @@ const Receipt = () => {
           customerName: value,
           customerCode: selectedCustomer.customerCode // Set the corresponding customerCode
         });
+
+        // Clear any errors related to customerName if input is valid
+        setFieldErrors({
+          ...fieldErrors,
+          customerName: false,
+          customerCode: false
+        });
       }
     } else {
+      // Handle other fields
       setFormData({ ...formData, [name]: inputValue });
-    }
 
-    // Clear error when input is valid
-    setFieldErrors({ ...fieldErrors, [name]: false });
+      // Clear error when input is valid
+      setFieldErrors({ ...fieldErrors, [name]: false });
+    }
   };
 
   const handleDateChange = (name, date) => {
