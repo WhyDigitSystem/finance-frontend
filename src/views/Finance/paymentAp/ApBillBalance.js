@@ -206,7 +206,7 @@ const ApBillBalance = () => {
 
   const getAllArApBillBalance = async () => {
     try {
-      const response = await apiCalls('get', `arreceivable/getAllArBillBalanceByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `payable/getAllApBillBalanceByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -223,7 +223,7 @@ const ApBillBalance = () => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `arreceivable/getAllArBillBalanceById?id=${row.original.id}`);
+      const response = await apiCalls('get', `payable/getAllApBillBalanceById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -374,19 +374,19 @@ const ApBillBalance = () => {
     };
 
     try {
-      const response = await apiCalls('put', `arreceivable/updateCreateArBillBalance`, saveFormData);
+      const response = await apiCalls('put', `payable/updateCreateApBillBalance`, saveFormData);
       if (response.status === true) {
-        showToast('success', editId ? 'AR/AP Bill Balance Updated Successfully' : 'AR/AP Bill Balance created successfully');
+        showToast('success', editId ? 'AP Bill Balance Updated Successfully' : 'AP Bill Balance created successfully');
         handleClear();
         getAllArApBillBalance();
         setIsLoading(false);
       } else {
-        showToast('error', response.paramObjectsMap.errorMessage || 'AR/AP Bill Balance creation failed');
+        showToast('error', response.paramObjectsMap.errorMessage || 'AP Bill Balance creation failed');
         setIsLoading(false);
       }
     } catch (error) {
       console.error('Error:', error);
-      showToast('error', 'AR/AP Bill Balance creation failed');
+      showToast('error', 'AP Bill Balance creation failed');
       setIsLoading(false);
     }
   };

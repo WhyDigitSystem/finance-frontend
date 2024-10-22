@@ -376,17 +376,17 @@ const ArBillBalance = () => {
     try {
       const response = await apiCalls('put', `arreceivable/updateCreateArBillBalance`, saveFormData);
       if (response.status === true) {
-        showToast('success', editId ? 'AR/AP Bill Balance Updated Successfully' : 'AR/AP Bill Balance created successfully');
+        showToast('success', editId ? 'AR Bill Balance Updated Successfully' : 'AR Bill Balance created successfully');
         handleClear();
         getAllArApBillBalance();
         setIsLoading(false);
       } else {
-        showToast('error', response.paramObjectsMap.errorMessage || 'AR/AP Bill Balance creation failed');
+        showToast('error', response.paramObjectsMap.errorMessage || 'AR Bill Balance creation failed');
         setIsLoading(false);
       }
     } catch (error) {
       console.error('Error:', error);
-      showToast('error', 'AR/AP Bill Balance creation failed');
+      showToast('error', 'AR Bill Balance creation failed');
       setIsLoading(false);
     }
   };
