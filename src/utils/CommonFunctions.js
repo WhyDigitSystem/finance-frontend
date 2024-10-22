@@ -63,7 +63,7 @@ export const getAllActiveCurrency = async (orgId) => {
     if (response.status === true) {
       const currencyData = response.paramObjectsMap.currencyVO
         .filter((row) => row.active === 'Active')
-        .map(({ id, currency, currencySymbol, subCurrency, country }) => ({ id, currency, currencySymbol, subCurrency, country }));
+        .map(({ id, currency, currencyDescription, subCurrency, country }) => ({ id, currency, currencyDescription, subCurrency, country }));
 
       return currencyData;
     } else {
