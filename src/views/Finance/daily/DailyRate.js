@@ -3,28 +3,43 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormHelperText } from '@mui/material';
 import apiCalls from 'apicall';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Draggable from 'react-draggable';
 import ActionButton from 'utils/ActionButton';
 import CommonTable from 'views/basicMaster/CommonTable';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import AddIcon from '@mui/icons-material/Add';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import DeleteIcon from '@mui/icons-material/Delete';
+import Paper from '@mui/material/Paper';
 import { showToast } from 'utils/toast-component';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 
-const DailyRate = () => {
+function PaperComponent(props) {
+  return (
+    <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
+      <Paper {...props} />
+    </Draggable>
+  );
+}
+
+export const DailyRate = () => {
   const [showForm, setShowForm] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
   const [data, setData] = useState([]);
   const [currencies, setCurrencies] = useState([]);
-  const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [selectAll, setSelectAll] = useState(false);
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [value, setValue] = useState(0);
   const [editId, setEditId] = useState();
@@ -43,15 +58,22 @@ const DailyRate = () => {
     // {
     //   id: 1,
     //   currency: '',
-    //   currencyDescripition: '',
+    //   currencyDescription: '',
     //   sellingExrate: '',
     //   buyingExrate: ''
     // }
   ]);
+  const [skuDetails, setSkuDetails] = useState([
+    {
+      id: 1,
+      currency: '',
+      currencyDescription: ''
+    }
+  ]);
   const [detailsTableErrors, setDetailsTableErrors] = useState([
     // {
     //   currency: '',
-    //   currencyDescripition: '',
+    //   currencyDescription: '',
     //   sellingExrate: '',
     //   buyingExrate: ''
     // }
@@ -62,27 +84,27 @@ const DailyRate = () => {
   ];
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const currencyData = await getAllActiveCurrency(orgId);
-        setCurrencies(currencyData);
-        console.log('currencyData', currencyData);
+    // const fetchData = async () => {
+    //   try {
+    //     const currencyData = await getAllActiveCurrency(orgId);
+    //     setCurrencies(currencyData);
+    //     console.log('currencyData', currencyData);
 
-        const updatedTableData = currencyData.map((currency, index) => ({
-          id: index + 1,
-          currency: currency.currency,
-          currencyDescripition: currency.currencySymbol,
-          sellingExRate: currency.sellingExrate,
-          buyingExrate: currency.buyingExrate
-        }));
+    //     const updatedTableData = currencyData.map((currency, index) => ({
+    //       id: index + 1,
+    //       currency: currency.currency,
+    //       currencyDescription: currency.currencyDescription,
+    //       sellingExRate: currency.sellingExrate,
+    //       buyingExrate: currency.buyingExrate
+    //     }));
 
-        setDetailsTableData(updatedTableData);
-      } catch (error) {
-        console.error('Error fetching currency data:', error);
-      }
-    };
+    //     setDetailsTableData(updatedTableData);
+    //   } catch (error) {
+    //     console.error('Error fetching currency data:', error);
+    //   }
+    // };
 
-    fetchData();
+    // fetchData();
     getAllDailyMonthlyExRatesByOrgId();
   }, []);
 
@@ -153,30 +175,97 @@ const DailyRate = () => {
   //   }
   // };
 
-  // const handleAddRow = () => {
-  //   if (isLastRowEmpty(detailsTableData)) {
-  //     displayRowError(detailsTableData);
-  //     return;
-  //   }
-  //   const newRow = {
-  //     id: Date.now(),
-  //     currency: '',
-  //     currencyDescripition: '',
-  //     sellingExRate: '',
-  //     buyingExrate: ''
-  //   };
-  //   setDetailsTableData([...detailsTableData, newRow]);
-  //   setDetailsTableErrors([...detailsTableErrors, { currency: '', currencyDescripition: '', sellingExRate: '', buyingExrate: '' }]);
-  // };
-  // const isLastRowEmpty = (table) => {
-  //   const lastRow = table[table.length - 1];
-  //   if (!lastRow) return false;
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedRows([]);
+    } else {
+      setSelectedRows(skuDetails.map((_, index) => index));
+    }
+    setSelectAll(!selectAll);
+  };
 
-  //   if (table === detailsTableData) {
-  //     return !lastRow.currency || !lastRow.currencyDescripition || !lastRow.sellingExRate || !lastRow.buyingExrate;
-  //   }
-  //   return false;
-  // };
+  const handleFullGrid = () => {
+    setModalOpen(true);
+    handleFullGridFunction();
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const handleFullGridFunction = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/getAllCurrencyForExRate?&orgId=${orgId}`);
+      console.log('THE WAREHOUSE IS:', response);
+      if (response.status === true) {
+        const sku = response.paramObjectsMap.currencyVO;
+        console.log('THE SKU DETAILS ARE:', sku);
+
+        setSkuDetails(
+          sku.map((row) => ({
+            id: row.id,
+            currency: row.currency,
+            currencyDescription: row.currencyDescription
+          }))
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+
+  const handleSaveSelectedRows = async () => {
+    const selectedData = selectedRows.map((index) => skuDetails[index]);
+
+    setDetailsTableData((prev) => [...selectedData]);
+
+    console.log('Data selected:', selectedData);
+
+    setSelectedRows([]);
+    setSelectAll(false);
+    handleCloseModal();
+
+    // try {
+    //   await Promise.all(
+    //     selectedData.map(async (data, idx) => {
+    //       const simulatedEvent = {
+    //         target: {
+    //           value: data.batchNo
+    //         }
+    //       };
+
+    //       await getBatchNo(data.partNo, data);
+    //     })
+    //   );
+    // } catch (error) {
+    //   console.error('Error processing selected data:', error);
+    // }
+  };
+
+  const handleAddRow = () => {
+    if (isLastRowEmpty(detailsTableData)) {
+      displayRowError(detailsTableData);
+      return;
+    }
+    const newRow = {
+      id: Date.now(),
+      currency: '',
+      currencyDescription: '',
+      sellingExRate: '',
+      buyingExrate: ''
+    };
+    setDetailsTableData([...detailsTableData, newRow]);
+    setDetailsTableErrors([...detailsTableErrors, { currency: '', currencyDescription: '', sellingExRate: '', buyingExrate: '' }]);
+  };
+  const isLastRowEmpty = (table) => {
+    const lastRow = table[table.length - 1];
+    if (!lastRow) return false;
+
+    if (table === detailsTableData) {
+      return !lastRow.currency || !lastRow.currencyDescription || !lastRow.sellingExRate || !lastRow.buyingExrate;
+    }
+    return false;
+  };
 
   const displayRowError = (table) => {
     if (table === detailsTableData) {
@@ -185,7 +274,7 @@ const DailyRate = () => {
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
           currency: !table[table.length - 1].currency ? 'Currency is required' : '',
-          currencyDescripition: !table[table.length - 1].currencyDescripition ? 'Currency Desc is required' : '',
+          currencyDescription: !table[table.length - 1].currencyDescription ? 'Currency Desc is required' : '',
           sellingExRate: !table[table.length - 1].sellingExRate ? 'Selling Exrate is required' : '',
           buyingExrate: !table[table.length - 1].buyingExrate ? 'Buying Exrate is required' : ''
         };
@@ -243,7 +332,7 @@ const DailyRate = () => {
       {
         id: 1,
         currency: '',
-        currencyDescripition: '',
+        currencyDescription: '',
         sellingExrate: '',
         buyingExrate: ''
       }
@@ -271,8 +360,8 @@ const DailyRate = () => {
           dailyRateVO.dailyMonthlyExRatesDtlVO.map((cl) => ({
             id: cl.id,
             currency: cl.currency,
-            currencyDescripition: cl.currencyDescripition,
-            sellingExRate: cl.sellingExRate,
+            currencyDescription: cl.currencyDescripition,
+            sellingExrate: cl.sellingExRate,
             buyingExrate: cl.buyingExrate
           }))
         );
@@ -304,8 +393,8 @@ const DailyRate = () => {
           rowErrors.currency = 'Currency is required';
           detailsTableDataValid = false;
         }
-        if (!row.currencyDescripition) {
-          rowErrors.currencyDescripition = 'Currency Descripition is required';
+        if (!row.currencyDescription) {
+          rowErrors.currencyDescription = 'Currency Descripition is required';
           detailsTableDataValid = false;
         }
         if (!row.sellingExrate) {
@@ -329,7 +418,7 @@ const DailyRate = () => {
       const detailsVo = detailsTableData.map((row) => ({
         ...(editId && { id: row.id }),
         currency: row.currency,
-        currencyDescripition: row.currencyDescripition,
+        currencyDescripition: row.currencyDescription,
         sellingExRate: row.sellingExrate,
         buyingExrate: row.buyingExrate
       }));
@@ -436,9 +525,10 @@ const DailyRate = () => {
                 {value === 0 && (
                   <>
                     <div className="row d-flex ml">
-                      {/* <div className="mb-1">
+                      <div className="mb-1">
                         <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                      </div> */}
+                        <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
+                      </div>
                       <div className="row mt-2">
                         <div className="col-lg-12">
                           <div className="table-responsive">
@@ -514,27 +604,27 @@ const DailyRate = () => {
                                       <input
                                         // style={{ width: '150px' }}
                                         type="text"
-                                        value={row.currencyDescripition}
+                                        value={row.currencyDescription}
                                         disabled
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, currencyDescripition: value } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, currencyDescription: value } : r))
                                           );
                                           setDetailsTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              currencyDescripition: !value ? 'Currency Desc is required' : ''
+                                              currencyDescription: !value ? 'Currency Desc is required' : ''
                                             };
                                             return newErrors;
                                           });
                                         }}
-                                        className={detailsTableErrors[index]?.currencyDescripition ? 'error form-control' : 'form-control'}
+                                        className={detailsTableErrors[index]?.currencyDescription ? 'error form-control' : 'form-control'}
                                       />
-                                      {detailsTableErrors[index]?.currencyDescripition && (
+                                      {detailsTableErrors[index]?.currencyDescription && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {detailsTableErrors[index].currencyDescripition}
+                                          {detailsTableErrors[index].currencyDescription}
                                         </div>
                                       )}
                                     </td>
@@ -603,6 +693,79 @@ const DailyRate = () => {
                   </>
                 )}
               </Box>
+              <Dialog
+                open={modalOpen}
+                maxWidth={'md'}
+                fullWidth={true}
+                onClose={handleCloseModal}
+                PaperComponent={PaperComponent}
+                aria-labelledby="draggable-dialog-title"
+              >
+                <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
+                  <h6>Grid Details</h6>
+                </DialogTitle>
+                <DialogContent className="pb-0">
+                  <div className="row">
+                    <div className="col-lg-12">
+                      <div className="table-responsive">
+                        <table className="table table-bordered">
+                          <thead>
+                            <tr style={{ backgroundColor: '#673AB7' }}>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                <Checkbox
+                                  checked={selectAll}
+                                  onChange={handleSelectAll}
+                                  sx={{
+                                    color: 'white', // Unchecked color
+                                    '&.Mui-checked': {
+                                      color: 'white' // Checked color
+                                    }
+                                  }}
+                                />
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                S.No
+                              </th>
+                              <th className="px-2 py-2 text-white text-center">Currency</th>
+                              <th className="px-2 py-2 text-white text-center">Currency Description</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {skuDetails.map((row, index) => (
+                              <tr key={index}>
+                                <td className="border p-0 text-center">
+                                  <Checkbox
+                                    checked={selectedRows.includes(index)}
+                                    onChange={(e) => {
+                                      const isChecked = e.target.checked;
+                                      setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
+                                    }}
+                                  />
+                                </td>
+                                <td className="text-center p-0">
+                                  <div style={{ paddingTop: 12 }}>{index + 1}</div>
+                                </td>
+                                <td className="border text-center pb-0 ps-0 pe-0" style={{ paddingTop: 12 }}>
+                                  {row.currency}
+                                </td>
+                                <td className="border text-center pb-0 ps-0 pe-0" style={{ paddingTop: 12 }}>
+                                  {row.currencyDescription}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </DialogContent>
+                <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
+                  <Button onClick={handleCloseModal}>Cancel</Button>
+                  <Button color="secondary" onClick={handleSaveSelectedRows} variant="contained">
+                    Proceed
+                  </Button>
+                </DialogActions>
+              </Dialog>
             </div>
           </>
         ) : (
