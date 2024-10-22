@@ -24,7 +24,7 @@ export const Currency = () => {
 
   const [formData, setFormData] = useState({
     currency: '',
-    currencySymbol: '',
+    currencyDescription: '',
     subCurrency: '',
     country: '',
     active: true
@@ -32,7 +32,7 @@ export const Currency = () => {
 
   const [fieldErrors, setFieldErrors] = useState({
     currency: '',
-    currencySymbol: '',
+    currencyDescription: '',
     subCurrency: '',
     country: ''
   });
@@ -52,42 +52,6 @@ export const Currency = () => {
     }
   };
 
-  // const handleInputChange = (e) => {
-  //   const { name, value, checked } = e.target;
-  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-  //   const symbolRegex = /^[a-zA-Z₹$€]*$/;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-  //   let errorMessage = '';
-
-  //   switch (name) {
-  //     case 'currency':
-  //     case 'subCurrency':
-  //       if (!nameRegex.test(value)) {
-  //         errorMessage = 'Only alphabetic characters are allowed';
-  //       }
-  //       break;
-  //     case 'currencySymbol':
-  //       if (value.length > 1) {
-  //         errorMessage = 'Invalid Format';
-  //       }
-  //       break;
-  //     default:
-  //       break;
-  //   }
-
-  //   if (errorMessage) {
-  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-  //   } else {
-  //     if (name === 'active') {
-  //       setFormData({ ...formData, [name]: checked });
-  //     } else {
-  //       setFormData({ ...formData, [name]: value.toUpperCase() });
-  //     }
-
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-  // };
-
   const handleInputChange = (e) => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
     const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
@@ -102,11 +66,11 @@ export const Currency = () => {
           errorMessage = 'Only alphabetic characters are allowed';
         }
         break;
-      case 'currencySymbol':
-        if (!symbolRegex.test(value) || value.length > 1) {
-          errorMessage = 'Invalid Format';
-        }
-        break;
+      // case 'currencyDescription':
+      //   if (!symbolRegex.test(value) || value.length > 1) {
+      //     errorMessage = 'Invalid Format';
+      //   }
+      //   break;
       default:
         break;
     }
@@ -136,14 +100,14 @@ export const Currency = () => {
   const handleClear = () => {
     setFormData({
       currency: '',
-      currencySymbol: '',
+      currencyDescription: '',
       subCurrency: '',
       country: '',
       active: true
     });
     setFieldErrors({
       currency: '',
-      currencySymbol: '',
+      currencyDescription: '',
       subCurrency: '',
       country: ''
     });
@@ -178,7 +142,7 @@ export const Currency = () => {
 
         setFormData({
           currency: particularCurrency.currency,
-          currencySymbol: particularCurrency.currencySymbol,
+          currencyDescription: particularCurrency.currencyDescription,
           country: particularCurrency.country,
           subCurrency: particularCurrency.subCurrency,
           active: particularCurrency.active === 'Active' ? true : false
@@ -196,8 +160,8 @@ export const Currency = () => {
     if (!formData.currency) {
       errors.currency = 'Currency is required';
     }
-    if (!formData.currencySymbol) {
-      errors.currencySymbol = 'Currency Symbol is required';
+    if (!formData.currencyDescription) {
+      errors.currencyDescription = 'Currency Description is required';
     }
     if (!formData.country) {
       errors.country = 'Country is required';
@@ -209,7 +173,7 @@ export const Currency = () => {
         ...(editId && { id: editId }),
         active: formData.active,
         currency: formData.currency,
-        currencySymbol: formData.currencySymbol,
+        currencyDescription: formData.currencyDescription,
         subCurrency: formData.subCurrency,
         country: formData.country,
         orgId: orgId,
@@ -246,7 +210,7 @@ export const Currency = () => {
 
   const listViewColumns = [
     { accessorKey: 'currency', header: 'Currency', size: 140 },
-    { accessorKey: 'currencySymbol', header: 'Currency Symbol', size: 140 },
+    { accessorKey: 'currencyDescription', header: 'Currency Description', size: 250 },
     { accessorKey: 'country', header: 'Country', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
@@ -284,15 +248,15 @@ export const Currency = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Currency Symbol"
+                  label="Currency Description"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="currencySymbol"
-                  value={formData.currencySymbol}
+                  name="currencyDescription"
+                  value={formData.currencyDescription}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.currencySymbol}
-                  helperText={fieldErrors.currencySymbol}
+                  error={!!fieldErrors.currencyDescription}
+                  helperText={fieldErrors.currencyDescription}
                 />
               </div>
               <div className="col-md-3 mb-3">
