@@ -11,9 +11,9 @@ import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import apiCalls from 'apicall';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
@@ -26,6 +26,9 @@ export const ChargeTypeRequest = () => {
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
   const [listValues, setListValues] = useState([]);
+  const [serviceCode, setServiceCode] = useState([]);
+  const [salesCode, setSalesCode] = useState([]);
+  const [purchaseCode, setPurchaseCode] = useState([]);
   const [formData, setFormData] = useState({
     active: true,
     chargeType: '',
@@ -77,7 +80,6 @@ export const ChargeTypeRequest = () => {
   const columns = [
     { accessorKey: 'chargeType', header: 'Charge Type', size: 140 },
     { accessorKey: 'chargeCode', header: 'Charge Code', size: 140 },
-    { accessorKey: 'product', header: 'Product', size: 140 },
     { accessorKey: 'chargeDescription', header: 'Charge Description', size: 140 },
     // { accessorKey: 'localChargeDescripition', header: 'Local Charge Description', size: 140 },
     // { accessorKey: 'serviceAccountCode', header: 'Service Account Code', size: 140 },
@@ -101,19 +103,37 @@ export const ChargeTypeRequest = () => {
   const handleInputChange = (event) => {
     const { name, value, type, checked } = event.target;
     const newValue = type === 'checkbox' ? checked : value;
-    setFormData({ ...formData, [name]: newValue });
+
+    if (name === 'serviceAccountCode') {
+      // Find the selected serviceAccountCode's description
+      const selectedService = serviceCode.find((item) => item.serviceAccountCode === value);
+      const sacDescription = selectedService ? selectedService.sacDescription : '';
+
+      // Update both serviceAccountCode and sacDescripition in formData
+      setFormData({
+        ...formData,
+        [name]: newValue,
+        sacDescripition: sacDescription
+      });
+    } else {
+      // For other fields, just update the value as usual
+      setFormData({ ...formData, [name]: newValue });
+    }
   };
 
   useEffect(() => {
     getAllChargeTypeRequestByOrgId();
     getChargeType();
+    getAllServiceAccountCode();
+    getAllSalesAccount();
+    getAllPurchaseAccount();
   }, []);
 
   const getAllChargeTypeRequestByOrgId = async () => {
     try {
       const response = await apiCalls('get', `master/getAllChargeTypeRequestByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
-      setData(response.paramObjectsMap.chargeTypeRequestVO);
+      setData(response.paramObjectsMap.chargeTypeRequestVO.reverse());
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -129,20 +149,35 @@ export const ChargeTypeRequest = () => {
     }
   };
 
-  // const handleRowEdit = (rowId, newData) => {
-  //   console.log('Edit', rowId, newData);
-  // axios
-  //   .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateChargeTypeRequest/${rowId}`, newData)
-  //   .then((response) => {
-  //     console.log('Edit successful:', response.data);
-  //     getAllChargeTypeRequestByOrgId();
-  //     showToast('success', rowId && 'Charge Type Request Updated Successfully');
-  //   })
-  //   .catch((error) => {
-  //     console.error('Error editing row:', error);
-  //     showToast('error', 'Failed to Update Charge Type Request');
-  //   });
-  // };
+  const getAllServiceAccountCode = async () => {
+    try {
+      const result = await apiCalls('get', `/master/getAllActiveSacCodeByOrgId?orgId=${orgId}`);
+      setServiceCode(result.paramObjectsMap.sacCodeVO || []);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
+
+  const getAllSalesAccount = async () => {
+    try {
+      const result = await apiCalls('get', `/master/getSalesAccountFromGroup?orgId=${orgId}`);
+      setSalesCode(result.paramObjectsMap.salesAccount || []);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
+
+  const getAllPurchaseAccount = async () => {
+    try {
+      const result = await apiCalls('get', `/master/getPurchaseAccountFromGroup?orgId=${orgId}`);
+      setPurchaseCode(result.paramObjectsMap.purchaseAccount || []);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
 
   const getAllChargeTypeById = async (row) => {
     handleClear();
@@ -228,6 +263,8 @@ export const ChargeTypeRequest = () => {
       service: '',
       type: ''
     });
+
+    setEditId('');
 
     setFieldErrors({
       chargeType: '',
@@ -373,18 +410,20 @@ export const ChargeTypeRequest = () => {
 
       try {
         const result = await apiCalls('put', `master/updateCreateChargeTypeRequest`, formDataToSend);
+        console.log('API Response:', result); // Log the complete result object
 
         if (result.status === true) {
           console.log('Response:', result.data);
           showToast('success', editId ? 'Charge Type Updated Successfully' : 'Charge Type created successfully');
           handleClear();
           getAllChargeTypeRequestByOrgId();
-        } else {
-          showToast('error', result.data.paramObjectsMap.errorMessage || 'Charge Type creation failed');
+        } else if (result.status === false) {
+          // Check for error message within result object
+          console.log('Error Response:', result);
+          showToast('error', result.paramObjectsMap?.errorMessage || 'Charge Type creation failed');
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'An error occurred while saving');
       }
     } else {
       showToast('error', 'Please fill in all required fields');
@@ -524,23 +563,35 @@ export const ChargeTypeRequest = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea"
-                  label={
-                    <span>
-                      Service Account Code <span className="asterisk">*</span>
-                    </span>
-                  }
-                  placeholder="Placeholder"
-                  variant="outlined"
-                  size="small"
-                  name="serviceAccountCode"
-                  value={formData.serviceAccountCode}
-                  onChange={handleInputChange}
-                  className="w-100"
-                  error={!!fieldErrors.serviceAccountCode}
-                  helperText={fieldErrors.serviceAccountCode}
-                />
+                <FormControl fullWidth size="small" error={!!fieldErrors.chargeType}>
+                  <InputLabel id="demo-simple-select-label">
+                    {
+                      <span>
+                        Service Account Code <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    label="Service Account Code"
+                    required
+                    value={formData.serviceAccountCode}
+                    name="serviceAccountCode"
+                    onChange={handleInputChange}
+                  >
+                    {serviceCode.map((item) => (
+                      <MenuItem key={item.id} value={item.serviceAccountCode}>
+                        {item.serviceAccountCode}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.chargeType && (
+                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
+                      {fieldErrors.chargeType}
+                    </p>
+                  )}
+                </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
@@ -553,6 +604,7 @@ export const ChargeTypeRequest = () => {
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
+                  disabled
                   name="sacDescripition"
                   value={formData.sacDescripition}
                   onChange={handleInputChange}
@@ -579,7 +631,11 @@ export const ChargeTypeRequest = () => {
                     name="salesAccount"
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="string">String</MenuItem>
+                    {salesCode.map((item) => (
+                      <MenuItem key={item.index} value={item.salesAccount}>
+                        {item.salesAccount}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.salesAccount && (
                     <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
@@ -606,7 +662,11 @@ export const ChargeTypeRequest = () => {
                     name="purchaseAccount"
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="string">String</MenuItem>
+                    {purchaseCode.map((item) => (
+                      <MenuItem key={item.index} value={item.purchaseAccount}>
+                        {item.purchaseAccount}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.purchaseAccount && (
                     <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
@@ -616,61 +676,61 @@ export const ChargeTypeRequest = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea"
-                  label={
-                    <span>
-                      Taxable <span className="asterisk">*</span>
-                    </span>
-                  }
-                  placeholder="Placeholder"
-                  variant="outlined"
-                  size="small"
-                  name="taxable"
-                  value={formData.taxable}
-                  onChange={handleInputChange}
-                  className="w-100"
-                  error={!!fieldErrors.taxable}
-                  helperText={fieldErrors.taxable}
-                />
+                <FormControl fullWidth size="small" error={!!fieldErrors.taxable}>
+                  <InputLabel id="demo-simple-select-labeltax">
+                    {
+                      <span>
+                        Taxable <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-labeltax"
+                    id="demo-simple-selecttax"
+                    label="Taxable"
+                    required
+                    value={formData.taxable}
+                    name="taxable"
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="YES">Yes</MenuItem>
+                    <MenuItem value="NO">No</MenuItem>
+                  </Select>
+                  {fieldErrors.taxable && (
+                    <p className="error-text ml-2 " style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
+                      {fieldErrors.taxable}
+                    </p>
+                  )}
+                </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea"
-                  label={
-                    <span>
-                      Tax Type <span className="asterisk">*</span>
-                    </span>
-                  }
-                  placeholder="Placeholder"
-                  variant="outlined"
-                  size="small"
-                  name="taxType"
-                  value={formData.taxType}
-                  onChange={handleInputChange}
-                  className="w-100"
-                  error={!!fieldErrors.taxType}
-                  helperText={fieldErrors.taxType}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea"
-                  label={
-                    <span>
-                      CC Fee Applicable <span className="asterisk">*</span>
-                    </span>
-                  }
-                  placeholder="Placeholder"
-                  variant="outlined"
-                  size="small"
-                  name="ccFeeApplicable"
-                  value={formData.ccFeeApplicable}
-                  onChange={handleInputChange}
-                  className="w-100"
-                  error={!!fieldErrors.ccFeeApplicable}
-                  helperText={fieldErrors.ccFeeApplicable}
-                />
+                <FormControl fullWidth size="small" error={!!fieldErrors.taxType}>
+                  <InputLabel id="demo-simple-select-labeltaxtype">
+                    {
+                      <span>
+                        Tax Type <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-labeltaxtype"
+                    id="demo-simple-selecttaxtype"
+                    label="Tax Type"
+                    required
+                    value={formData.taxType}
+                    name="taxType"
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="BAS">BAS</MenuItem>
+                    <MenuItem value="BSS">BSS</MenuItem>
+                    <MenuItem value="CHA">CHA</MenuItem>
+                  </Select>
+                  {fieldErrors.taxType && (
+                    <p className="error-text ml-2 " style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
+                      {fieldErrors.taxType}
+                    </p>
+                  )}
+                </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
@@ -692,23 +752,89 @@ export const ChargeTypeRequest = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="outlined-textarea"
-                  label={
-                    <span>
-                      CC Job <span className="asterisk">*</span>
-                    </span>
-                  }
-                  placeholder="Placeholder"
-                  variant="outlined"
-                  size="small"
-                  name="ccJob"
-                  value={formData.ccJob}
-                  onChange={handleInputChange}
-                  className="w-100"
-                  error={!!fieldErrors.ccJob}
-                  helperText={fieldErrors.ccJob}
-                />
+                <FormControl fullWidth size="small" error={!!fieldErrors.excempted}>
+                  <InputLabel id="demo-simple-select-label">
+                    {
+                      <span>
+                        Exempted <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-label"
+                    id="demo-simple-select"
+                    label="Exempted"
+                    required
+                    value={formData.excempted}
+                    name="excempted"
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="YES">Yes</MenuItem>
+                    <MenuItem value="NO">No</MenuItem>
+                  </Select>
+                  {fieldErrors.excempted && (
+                    <p className="error-text ml-2 " style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
+                      {fieldErrors.excempted}
+                    </p>
+                  )}
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small" error={!!fieldErrors.taxable}>
+                  <InputLabel id="demo-simple-select-labelcc">
+                    {
+                      <span>
+                        CC Job <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-labelcc"
+                    id="demo-simple-selectcc"
+                    label="CC Job"
+                    required
+                    value={formData.ccJob}
+                    name="ccJob"
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="YES">Yes</MenuItem>
+                    <MenuItem value="NO">No</MenuItem>
+                  </Select>
+                  {fieldErrors.ccJob && (
+                    <p className="error-text ml-2 " style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
+                      {fieldErrors.ccJob}
+                    </p>
+                  )}
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small" error={!!fieldErrors.taxable}>
+                  <InputLabel id="demo-simple-select-labelfee">
+                    {
+                      <span>
+                        CC Fee Applicable <span className="asterisk">*</span>
+                      </span>
+                    }
+                  </InputLabel>
+                  <Select
+                    labelId="demo-simple-select-labelfee"
+                    id="demo-simple-selectfee"
+                    label="CC Fee Applicable"
+                    required
+                    value={formData.ccFeeApplicable}
+                    name="ccFeeApplicable"
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="YES">Yes</MenuItem>
+                    <MenuItem value="NO">No</MenuItem>
+                  </Select>
+                  {fieldErrors.ccFeeApplicable && (
+                    <p className="error-text ml-2 " style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
+                      {fieldErrors.ccFeeApplicable}
+                    </p>
+                  )}
+                </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
@@ -729,34 +855,7 @@ export const ChargeTypeRequest = () => {
                   helperText={fieldErrors.govtSac}
                 />
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.excempted}>
-                  <InputLabel id="demo-simple-select-label">
-                    {
-                      <span>
-                        Exempted <span className="asterisk">*</span>
-                      </span>
-                    }
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Exempted"
-                    required
-                    value={formData.excempted}
-                    name="excempted"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="yes">Yes</MenuItem>
-                    <MenuItem value="no">No</MenuItem>
-                  </Select>
-                  {fieldErrors.excempted && (
-                    <p className="error-text ml-2 " style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.excempted}
-                    </p>
-                  )}
-                </FormControl>
-              </div>
+
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"

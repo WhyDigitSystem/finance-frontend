@@ -13,15 +13,14 @@ import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import apiCalls from 'apicall';
-import { showToast } from 'utils/toast-component';
-import axios from 'axios';
 import { useEffect, useRef, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import CommonTable from 'views/basicMaster/CommonTable';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
+import { showToast } from 'utils/toast-component';
+import CommonTable from 'views/basicMaster/CommonTable';
 
 const Group = () => {
   const theme = useTheme();
@@ -34,9 +33,10 @@ const Group = () => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [currencies, setCurrencies] = useState([]);
   const [editId, setEditId] = useState('');
+  const [groupList, setGroupList] = useState([]);
   const [formData, setFormData] = useState({
     groupName: '',
-    gstTaxflag: '',
+    gstTaxFlag: '',
     accountCode: '',
     coaList: '',
     accountGroupName: '',
@@ -44,14 +44,13 @@ const Group = () => {
     interBranchAc: false,
     controllAc: false,
     category: '',
-    branch: '',
-    currency: '',
+    currency: 'INR',
     active: false
   });
 
   const [fieldErrors, setFieldErrors] = useState({
     groupName: false,
-    gstTaxflag: false,
+    gstTaxFlag: false,
     accountCode: false,
     coaList: false,
     accountGroupName: false,
@@ -59,7 +58,7 @@ const Group = () => {
     interBranchAc: false,
     controllAc: false,
     category: false,
-    branch: false,
+
     currency: false,
     active: false
   });
@@ -79,6 +78,7 @@ const Group = () => {
 
     fetchData();
     getGroup();
+    getAllGroupName();
   }, []);
 
   // const handleInputChange = (e) => {
@@ -106,14 +106,6 @@ const Group = () => {
     }
 
     // Validation for accountGroupName (alphabets only)
-    if (name === 'accountGroupName') {
-      const alphabetPattern = /^[a-zA-Z]*$/; // Pattern for alphabets
-      if (!alphabetPattern.test(inputValue)) {
-        errorMessage = 'Only alphabets are allowed.';
-        // Set validInputValue to prevent invalid character input
-        validInputValue = inputValue.replace(/[^a-zA-Z]/g, '');
-      }
-    }
 
     // Update the form data with the valid input value
     setFormData({ ...formData, [name]: validInputValue });
@@ -126,7 +118,7 @@ const Group = () => {
     try {
       const result = await apiCalls('get', `/master/getAllGroupLedgerByOrgId?orgId=${orgId}`);
       if (result) {
-        setData(result.paramObjectsMap.groupLedgerVO);
+        setData(result.paramObjectsMap.groupLedgerVO.reverse());
       } else {
         // Handle error
       }
@@ -135,102 +127,52 @@ const Group = () => {
     }
   };
 
-  // const handleSave = async () => {
-  //   // Check if any field is empty
-  //   const fieldsToExclude = ['interBranchAc', 'controllAc', 'active'];
-  //   // setIsLoading(true);e
-  //   // Check if any field is empty, excluding certain fields
-  //   const errors = Object.keys(formData).reduce((acc, key) => {
-  //     if (!fieldsToExclude.includes(key) && !formData[key]) {
-  //       acc[key] = true;
-  //     }
-  //     return acc;
-  //   }, {});
+  const validateForm = (formData) => {
+    let errors = {};
 
-  //   // If there are errors, set the corresponding fieldErrors state to true
-  //   // if (Object.keys(errors).length > 0) {
-  //   //   setFieldErrors(errors);
-  //   //   return; // Prevent API call if there are errors
-  //   // }
-  //   // axios
-  //   //   .put(`${process.env.REACT_APP_API_URL}/api/master/updateCreateGroupLedger`, formData)
-  //   //   .then((response) => {
-  //   //     console.log('Response:', response.data);
-  //   //     handleClear();
-  //   //     toast.success('Group Created Successfully', {
-  //   //       autoClose: 2000,
-  //   //       theme: 'colored'
-  //   //     });
-  //   //     setIsLoading(false);
-  //   //     getGroup();
-  //   //   })
-  //   //   .catch((error) => {
-  //   //     console.error('Error:', error);
-  //   //   });
-  //   if (Object.keys(errors).length === 0) {
-  //     setIsLoading(true);
-  //     const saveData = {
-  //       ...(editId && { id: editId }),
-  //       active: formData.active,
-  //       groupName: formData.groupName,
-  //       gstTaxflag: formData.gstTaxflag,
-  //       accountCode: formData.accountCode,
-  //       coaList: formData.coaList,
-  //       accountGroupName: formData.accountGroupName,
-  //       type: formData.type,
-  //       interBranchAc: formData.interBranchAc,
-  //       controllAc: formData.controllAc,
-  //       category: formData.category,
-  //       branch: formData.branch,
-  //       currency: formData.currency,
-  //       orgId: orgId,
-  //       createdBy: loginUserName
-  //     };
+    if (formData.type === 'ACCOUNT' ? !formData.groupName : '') {
+      errors.groupName = 'Group Name is required';
+    }
 
-  //     console.log('DATA TO SAVE', saveData);
+    if (!formData.gstTaxFlag) {
+      errors.gstTaxFlag = 'GST Tax Flag is required';
+    }
 
-  //     try {
-  //       const response = await apiCalls('put', `master/updateCreateGroupLedger`, saveData);
-  //       if (response.status === true) {
-  //         console.log('Response:', response);
-  //         showToast('success', editId ? ' Group Updated Successfully' : 'Group created successfully');
-  //         handleClear();
-  //         // getAllRegions();
-  //         getGroup();
-  //         setIsLoading(false);
-  //       } else {
-  //         showToast('error', response.paramObjectsMap.errorMessage || 'Group creation failed');
-  //         setIsLoading(false);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error:', error);
-  //       showToast('error', 'Group creation failed');
-  //       setIsLoading(false);
-  //     }
-  //   } else {
-  //     setFieldErrors(errors);
-  //   }
-  // };
+    if (!formData.coaList || formData.coaList.length === 0) {
+      errors.coaList = 'COA List is required';
+    }
+
+    if (!formData.accountGroupName) {
+      errors.accountGroupName = 'Account Group Name is required';
+    }
+
+    if (!formData.type) {
+      errors.type = 'Type is required';
+    }
+
+    if (!formData.category) {
+      errors.category = 'Category is required';
+    }
+
+    // if (!formData.currency) {
+    //   errors.currency = 'Currency is required';
+    // }
+
+    return errors;
+  };
 
   const handleSave = async () => {
-    // Check if any field is empty
-    const fieldsToExclude = ['interBranchAc', 'controllAc', 'active'];
-
-    const errors = Object.keys(formData).reduce((acc, key) => {
-      if (!fieldsToExclude.includes(key) && !formData[key]) {
-        acc[key] = 'This field is required'; // Show 'This field is required' message
-      }
-      return acc;
-    }, {});
+    const errors = validateForm(formData); // Validate the form data
 
     if (Object.keys(errors).length === 0) {
+      // No errors, proceed with the save
       setIsLoading(true);
+
       const saveData = {
-        ...(editId && { id: editId }),
+        ...(editId && { id: editId }), // Include id if editing
         active: formData.active,
         groupName: formData.groupName,
-        gstTaxflag: formData.gstTaxflag,
-        accountCode: formData.accountCode,
+        gstTaxFlag: formData.gstTaxFlag,
         coaList: formData.coaList,
         accountGroupName: formData.accountGroupName,
         type: formData.type,
@@ -238,38 +180,39 @@ const Group = () => {
         controllAc: formData.controllAc,
         category: formData.category,
         branch: formData.branch,
-        currency: formData.currency,
+        currency: 'INR',
         orgId: orgId,
         createdBy: loginUserName
       };
 
-      console.log('DATA TO SAVE', saveData);
+      console.log('DATA TO SAVE', saveData); // Add this line to log the save data
 
       try {
         const response = await apiCalls('put', `master/updateCreateGroupLedger`, saveData);
         if (response.status === true) {
-          showToast('success', editId ? 'Group Updated Successfully' : 'Group created successfully');
-          handleClear();
+          showToast('success', editId ? 'Group updated successfully' : 'Group created successfully');
           getGroup();
-          setIsLoading(false);
+          handleClear();
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Group creation failed');
-          setIsLoading(false);
+          showToast('error', editId ? 'Group updation failed' : 'Group creation failed');
         }
+        // Handle response (success, errors, etc.)
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'Group creation failed');
-        setIsLoading(false);
+      } finally {
+        setIsLoading(false); // Stop the loader after the operation
       }
     } else {
-      setFieldErrors(errors); // Set the error messages for required fields
+      // Handle validation errors (e.g., show error messages)
+      console.log('Validation Errors:', errors);
+      setFieldErrors(errors); // Set errors to display in the UI if needed
     }
   };
 
   const handleClear = () => {
     setFormData({
       groupName: '',
-      gstTaxflag: '',
+      gstTaxFlag: '',
       accountCode: '',
       coaList: '',
       accountGroupName: '',
@@ -278,12 +221,12 @@ const Group = () => {
       controllAc: false,
       category: '',
       branch: '',
-      currency: '',
+      // currency: '',
       active: false
     });
     setFieldErrors({
       groupName: false,
-      gstTaxflag: false,
+      gstTaxFlag: false,
       accountCode: false,
       coaList: false,
       accountGroupName: false,
@@ -292,7 +235,7 @@ const Group = () => {
       controllAc: false,
       category: false,
       branch: false,
-      currency: false,
+      // currency: false,
       active: false
     });
     setEditId('');
@@ -302,7 +245,7 @@ const Group = () => {
     setShowForm(!showForm);
     setFieldErrors({
       groupName: false,
-      gstTaxflag: false,
+      gstTaxFlag: false,
       accountCode: false,
       coaList: false,
       accountGroupName: false,
@@ -311,18 +254,16 @@ const Group = () => {
       controllAc: false,
       category: false,
       branch: false,
-      currency: false,
       active: false
     });
   };
 
   const columns = [
     { accessorKey: 'groupName', header: 'Group Name', size: 140 },
-    { accessorKey: 'accountCode', header: 'Account Code', size: 140 },
+    { accessorKey: 'id', header: 'Account Code', size: 140 },
     { accessorKey: 'coaList', header: 'COA List', size: 100 },
     { accessorKey: 'accountGroupName', header: 'Account/Groupname', size: 100 },
     { accessorKey: 'type', header: 'type', size: 100 },
-    { accessorKey: 'branch', header: 'Branch', size: 100 },
     { accessorKey: 'currency', header: 'Currency', size: 100 },
     { accessorKey: 'active', header: 'Active', size: 100 }
   ];
@@ -342,7 +283,7 @@ const Group = () => {
           orgId: orgId,
           groupName: exRate.groupName,
           gstTaxFlag: exRate.gstTaxFlag,
-          accountCode: exRate.accountCode,
+          accountCode: exRate.id,
           coaList: exRate.coaList,
           accountGroupName: exRate.accountGroupName,
           type: exRate.type,
@@ -351,12 +292,27 @@ const Group = () => {
           category: exRate.category,
           branch: exRate.branch,
           id: exRate.id,
-          currency: exRate.currency,
+          currency: 'INR',
           active: exRate.active
         });
 
         console.log('DataToEdit', exRate);
       } else {
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getAllGroupName = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getGroupNameByOrgId?orgId=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setGroupList(response.paramObjectsMap.groupNameDetails);
+      } else {
+        console.error('API Error:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -382,6 +338,23 @@ const Group = () => {
           <div className="row d-flex ">
             <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
+                <InputLabel id="demo-simple-select-label">Type</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  label="Type"
+                  onChange={handleInputChange}
+                  name="type"
+                  value={formData.type}
+                >
+                  <MenuItem value="ACCOUNT">Account</MenuItem>
+                  <MenuItem value="GROUP">Group</MenuItem>
+                </Select>
+                {fieldErrors.type && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
+              </FormControl>
+            </div>
+            <div className="col-md-3 mb-3">
+              <FormControl fullWidth size="small">
                 <InputLabel id="demo-simple-select-label">Group Name</InputLabel>
                 <Select
                   labelId="groupName"
@@ -391,29 +364,32 @@ const Group = () => {
                   name="groupName"
                   value={formData.groupName}
                 >
-                  <MenuItem value="Administrative Charges">Administrative Charges</MenuItem>
-                  <MenuItem value="Twenty">Twenty</MenuItem>
-                  <MenuItem value="Thirty">Thirty</MenuItem>
+                  {groupList.length > 0 &&
+                    groupList.map((gro, index) => (
+                      <MenuItem key={index} value={gro.groupName}>
+                        {gro.groupName} {/* Display employee code */}
+                      </MenuItem>
+                    ))}
                 </Select>
                 {fieldErrors.groupName && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
             </div>
             <div className="col-md-3 mb-2">
               <FormControl fullWidth size="small">
-                <InputLabel id="gstTaxflag">GST Tax Flag</InputLabel>
+                <InputLabel id="gstTaxFlag">GST Tax Flag</InputLabel>
                 <Select
-                  labelId="gstTaxflag"
-                  id="gstTaxflag"
+                  labelId="gstTaxFlag"
+                  id="gstTaxFlag"
                   label="GST Tax Flag"
                   onChange={handleInputChange}
-                  name="gstTaxflag"
-                  value={formData.gstTaxflag}
+                  name="gstTaxFlag"
+                  value={formData.gstTaxFlag}
                 >
-                  <MenuItem value="Input Tax">Input Tax</MenuItem>
-                  <MenuItem value="Output Tax">Output Tax</MenuItem>
+                  <MenuItem value="INPUT TAX">Input Tax</MenuItem>
+                  <MenuItem value="OUTPUT TAX">Output Tax</MenuItem>
                   <MenuItem value="NA">NA</MenuItem>
                 </Select>
-                {fieldErrors.gstTaxflag && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
+                {fieldErrors.gstTaxFlag && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
             </div>
             <div className="col-md-3 mb-3">
@@ -423,12 +399,12 @@ const Group = () => {
                   label="Account Code"
                   size="small"
                   required
+                  disabled
                   placeholder="40003600104"
                   inputProps={{ maxLength: 30 }}
                   onChange={handleInputChange}
                   name="accountCode"
                   value={formData.accountCode}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.accountCode || ''}</span>}
                 />
               </FormControl>
             </div>
@@ -444,12 +420,11 @@ const Group = () => {
                   name="coaList"
                   value={formData.coaList}
                 >
-                  <MenuItem value="Asset">Asset</MenuItem>
-                  <MenuItem value="Liability">Liability</MenuItem>
-                  <MenuItem value="Income">Income</MenuItem>
-                  <MenuItem value="Expense">Expense</MenuItem>
+                  <MenuItem value="ASSET">Asset</MenuItem>
+                  <MenuItem value="LIABILITY">Liability</MenuItem>
+                  <MenuItem value="INCOME">Income</MenuItem>
+                  <MenuItem value="EXPENCE">Expense</MenuItem>
                 </Select>
-                {fieldErrors.coaList && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
             </div>
 
@@ -467,25 +442,6 @@ const Group = () => {
                   value={formData.accountGroupName}
                   helperText={<span style={{ color: 'red' }}>{fieldErrors.accountGroupName ? fieldErrors.accountGroupName : ''}</span>}
                 />
-              </FormControl>
-            </div>
-
-            <div className="col-md-3 mb-3">
-              <FormControl fullWidth size="small">
-                <InputLabel id="demo-simple-select-label">Type</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  label="Type"
-                  onChange={handleInputChange}
-                  name="type"
-                  value={formData.type}
-                >
-                  <MenuItem value="Account">Account</MenuItem>
-                  <MenuItem value="Twenty">Twenty</MenuItem>
-                  <MenuItem value="Thirty">Thirty</MenuItem>
-                </Select>
-                {fieldErrors.type && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
             </div>
 
@@ -530,9 +486,9 @@ const Group = () => {
                   name="category"
                   value={formData.category}
                 >
-                  <MenuItem value="Others">Others</MenuItem>
-                  <MenuItem value="Twenty">Twenty</MenuItem>
-                  <MenuItem value="Thirty">Thirty</MenuItem>
+                  <MenuItem value="RECEIVABLE A/C">RECEIVABLE A/C</MenuItem>
+                  <MenuItem value="PAYABLE A/C">PAYABLE A/C</MenuItem>
+                  <MenuItem value="OTHERS">OTHERS</MenuItem>
                 </Select>
                 {fieldErrors.category && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
@@ -540,40 +496,17 @@ const Group = () => {
 
             <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
-                <InputLabel id="demo-simple-select-label">Branch</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  onChange={handleInputChange}
-                  name="branch"
-                  value={formData.branch}
-                  label="Branch"
-                >
-                  <MenuItem value="Others">Others</MenuItem>
-                  <MenuItem value="Twenty">Twenty</MenuItem>
-                  <MenuItem value="Thirty">Thirty</MenuItem>
-                </Select>
-                {fieldErrors.branch && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
-              </FormControl>
-            </div>
-            <div className="col-md-3 mb-3">
-              <FormControl fullWidth size="small">
-                <InputLabel id="demo-simple-select-label">Currency</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
+                <TextField
+                  id="currency"
                   label="Currency"
+                  size="small"
+                  disabled
+                  inputProps={{ maxLength: 30 }}
                   onChange={handleInputChange}
                   name="currency"
                   value={formData.currency}
-                >
-                  {currencies.map((currency) => (
-                    <MenuItem key={currency.id} value={currency.currency}>
-                      {currency.currency}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {fieldErrors.currency && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.currency ? fieldErrors.currency : ''}</span>}
+                />
               </FormControl>
             </div>
 

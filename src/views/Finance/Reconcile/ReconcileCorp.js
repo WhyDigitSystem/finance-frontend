@@ -30,6 +30,9 @@ const ReconcileCorp = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState();
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
 
   const handleTabSelect = (index) => {
     setTabIndex(index);
@@ -37,11 +40,12 @@ const ReconcileCorp = () => {
 
   useEffect(() => {
     getAllReconsileCorp();
+    getNewCorpDocId();
   }, []);
 
   const [formData, setFormData] = useState({
     docId: '',
-    docDate: null,
+    docDate: dayjs(),
     bankStmtDate: null,
     bankAccount: '',
     remarks: ''
@@ -73,6 +77,22 @@ const ReconcileCorp = () => {
       console.log('Test', result);
     } catch (err) {
       console.log('error', err);
+    }
+  };
+
+  const getNewCorpDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/transaction/getReconcileCorpBankDocId?branchCode=${loginBranchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
+      );
+      setFormData((prevData) => ({
+        ...prevData,
+        docId: response.paramObjectsMap.reconcileCorpBankDocId,
+        docDate: dayjs()
+      }));
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
     }
   };
 
@@ -207,12 +227,12 @@ const ReconcileCorp = () => {
 
   const handleClear = () => {
     setFormData({
-      docId: '',
-      docDate: null,
       bankStmtDate: null,
       bankAccount: '',
       remarks: ''
     });
+
+    getNewCorpDocId();
 
     // Set the table to only have one empty row
     setWithdrawalsTableData([
@@ -316,7 +336,7 @@ const ReconcileCorp = () => {
   };
 
   const columns = [
-    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
+    { accessorKey: 'docId', header: 'Doc No', size: 140 },
     { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
     { accessorKey: 'bankStmtDate', header: 'Bank Stmt Date', size: 140 },
     { accessorKey: 'bankAccount', header: 'bankAccount', size: 140 }
@@ -385,8 +405,8 @@ const ReconcileCorp = () => {
         ...(editId && { id: row.id }),
         voucherNo: row.voucherNo,
         voucherDate: row.voucherDate,
-        chequeNo: row.voucherDate,
-        chequeDate: row.voucherDate,
+        chequeNo: row.chequeNo,
+        chequeDate: row.chequeDate,
         deposit: parseInt(row.deposit),
         withdrawal: parseInt(row.withdrawal),
         bankRef: row.bankRef
@@ -396,16 +416,17 @@ const ReconcileCorp = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         // active: formData.active,
-        docId: '7687',
-        docDate: formData.docDate,
-        bankStmtDate: formData.bankStmtDate,
+        docId: formData.docId,
+        docDate: formData.docDate ? dayjs(formData.docDate).format('YYYY-MM-DD') : null,
+        bankStmtDate: formData.bankStmtDate ? dayjs(formData.bankStmtDate).format('YYYY-MM-DD') : null,
         bankAccount: formData.bankAccount,
         remarks: formData.remarks,
         particularsReconcileCorpBankDTO: detailsVo,
         createdBy: loginUserName,
-        totalDeposit: 7,
-        totalWithdrawal: 4,
-        orgId: orgId
+        orgId: orgId,
+        branch: branch,
+        branchCode: loginBranchCode,
+        finYear: finYear
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -478,7 +499,7 @@ const ReconcileCorp = () => {
         <Grid container spacing={2} alignItems="center">
           <div className="d-flex flex-wrap justify-content-start p-2">
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={''} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
             <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
           </div>
@@ -491,7 +512,7 @@ const ReconcileCorp = () => {
             <Grid container spacing={2} mt={2}>
               <Grid item xs={12} sm={6} md={3}>
                 <TextField
-                  label="Doc ID"
+                  label="Doc No"
                   size="small"
                   value={formData.docId}
                   disabled
@@ -620,29 +641,18 @@ const ReconcileCorp = () => {
                                           style={{ width: '100px' }}
                                           onChange={(e) => {
                                             const value = e.target.value;
-                                            const numericRegex = /^[0-9]*$/;
-                                            if (numericRegex.test(value)) {
-                                              setWithdrawalsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, voucherNo: value } : r))
-                                              );
-                                              setWithdrawalsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  voucherNo: !value ? 'voucherNo is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setWithdrawalsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  voucherNo: 'Only numeric characters are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
+
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, voucherNo: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                voucherNo: !value ? 'voucherNo is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
                                           }}
                                           className={withdrawalsTableErrors[index]?.voucherNo ? 'error form-control' : 'form-control'}
                                         />
@@ -752,24 +762,32 @@ const ReconcileCorp = () => {
                                             const value = e.target.value;
                                             const numericRegex = /^[0-9]*$/;
                                             if (numericRegex.test(value)) {
-                                              setWithdrawalsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, deposit: value } : r))
-                                              );
+                                              setWithdrawalsTableData((prev) => {
+                                                const updatedData = prev.map((r) => (r.id === row.id ? { ...r, deposit: value } : r));
+
+                                                return updatedData;
+                                              });
+
                                               setWithdrawalsTableErrors((prev) => {
                                                 const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], deposit: !value ? 'Eds is required' : '' };
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  deposit: !value ? 'Deposit is required' : ''
+                                                };
                                                 return newErrors;
                                               });
                                             } else {
                                               setWithdrawalsTableErrors((prev) => {
                                                 const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], deposit: 'Only numeric characters are allowed' };
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  deposit: 'Only numeric characters are allowed'
+                                                };
                                                 return newErrors;
                                               });
                                             }
                                           }}
                                           className={withdrawalsTableErrors[index]?.deposit ? 'error form-control' : 'form-control'}
-                                          // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                         />
                                         {withdrawalsTableErrors[index]?.deposit && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -778,6 +796,7 @@ const ReconcileCorp = () => {
                                         )}
                                       </td>
 
+                                      {/* Withdrawal Input Field */}
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
@@ -787,12 +806,18 @@ const ReconcileCorp = () => {
                                             const value = e.target.value;
                                             const numericRegex = /^[0-9]*$/;
                                             if (numericRegex.test(value)) {
-                                              setWithdrawalsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, withdrawal: value } : r))
-                                              );
+                                              setWithdrawalsTableData((prev) => {
+                                                const updatedData = prev.map((r) => (r.id === row.id ? { ...r, withdrawal: value } : r));
+                                                // calculateTotals(updatedData); // Recalculate totals
+                                                return updatedData;
+                                              });
+
                                               setWithdrawalsTableErrors((prev) => {
                                                 const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], withdrawal: !value ? 'Eds is required' : '' };
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  withdrawal: !value ? 'Withdrawal is required' : ''
+                                                };
                                                 return newErrors;
                                               });
                                             } else {
@@ -807,7 +832,6 @@ const ReconcileCorp = () => {
                                             }
                                           }}
                                           className={withdrawalsTableErrors[index]?.withdrawal ? 'error form-control' : 'form-control'}
-                                          // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                         />
                                         {withdrawalsTableErrors[index]?.withdrawal && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -823,23 +847,15 @@ const ReconcileCorp = () => {
                                           style={{ width: '100px' }}
                                           onChange={(e) => {
                                             const value = e.target.value;
-                                            const numericRegex = /^[0-9]*$/;
-                                            if (numericRegex.test(value)) {
-                                              setWithdrawalsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, bankRef: value } : r))
-                                              );
-                                              setWithdrawalsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], bankRef: !value ? 'Eds is required' : '' };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setWithdrawalsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], bankRef: 'Only numeric characters are allowed' };
-                                                return newErrors;
-                                              });
-                                            }
+
+                                            setWithdrawalsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, bankRef: value } : r))
+                                            );
+                                            setWithdrawalsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], bankRef: !value ? 'Eds is required' : '' };
+                                              return newErrors;
+                                            });
                                           }}
                                           className={withdrawalsTableErrors[index]?.bankRef ? 'error form-control' : 'form-control'}
                                           // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}

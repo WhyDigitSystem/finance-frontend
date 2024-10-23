@@ -2,18 +2,18 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { FormHelperText, TextField, Checkbox, FormControlLabel } from '@mui/material';
+import { Checkbox, FormControlLabel, FormHelperText, TextField } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import CommonListViewTable from '../basicMaster/CommonListViewTable';
-import { useState, useEffect } from 'react';
+import apiCalls from 'apicall';
+import { useEffect, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
+import { getAllActiveCountries } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
-import { getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
+import CommonListViewTable from '../basicMaster/CommonListViewTable';
 
 export const Currency = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -174,7 +174,7 @@ export const Currency = () => {
         active: formData.active,
         currency: formData.currency,
         currencyDescription: formData.currencyDescription,
-        subCurrency: formData.subCurrency,
+        subCurrency: formData.subCurrency ? formData.subCurrency : null,
         country: formData.country,
         orgId: orgId,
         createdBy: loginUserName

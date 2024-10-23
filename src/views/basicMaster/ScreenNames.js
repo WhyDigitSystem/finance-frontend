@@ -2,15 +2,15 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import TextField from '@mui/material/TextField';
-import { useState, useEffect } from 'react';
+import apiCalls from 'apicall';
+import { useEffect, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import 'react-toastify/dist/ReactToastify.css';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
 
 export const ScreenNames = () => {
@@ -47,8 +47,8 @@ export const ScreenNames = () => {
 
   const getAllScreens = async () => {
     try {
-      const result = await apiCalls('get', `/commonmaster/getFinScreenByOrgId?id=${orgId}`);
-      setListViewData(result.paramObjectsMap.finScreenVO);
+      const result = await apiCalls('get', `/commonmaster/getAllScreenNames`);
+      setListViewData(result.paramObjectsMap.screenNamesVO);
       console.log('Test', result);
     } catch (err) {
       console.log('error', err);
@@ -66,7 +66,7 @@ export const ScreenNames = () => {
         setFormData({
           screenCode: particularScreen.screenCode,
           screenName: particularScreen.screenName,
-          active: particularScreen.active === 'Active' ? true : false,
+          active: particularScreen.active === 'Active' ? true : false
         });
         setListView(false);
       } else {
@@ -104,6 +104,7 @@ export const ScreenNames = () => {
       screenName: '',
       screenCode: ''
     });
+    setEditId('');
   };
 
   const handleSave = async () => {

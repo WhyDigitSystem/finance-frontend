@@ -12,11 +12,11 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
 import PhysicalCountComponent from './PhysicalCount';
-import { ToastContainer } from 'react-toastify';
 
 const ReconcileCash = () => {
   const [tabIndex, setTabIndex] = useState(0);
@@ -30,6 +30,9 @@ const ReconcileCash = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [formData, setFormData] = useState({
     active: true,
     balanceAsPerBooks: 0,
@@ -52,17 +55,21 @@ const ReconcileCash = () => {
     dn7Amt: 0,
     dn8: 0,
     dn8Amt: 0,
-    docDate: dayjs().format('DD-MM-YYYY'),
-    docId: 'string',
+    docDate: dayjs(),
+    docId: '',
     orgId: orgId,
     remarks: '',
-    totalPhyAmount: 0
+    totalPhyAmount: 0,
+    branch: branch,
+    branchCode: loginBranchCode,
+    finYear: finYear
   });
 
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     getAllReconsileCash();
+    getNewCashpDocId();
   }, []);
 
   // Handle tab changes
@@ -82,7 +89,7 @@ const ReconcileCash = () => {
   const getAllReconsileCash = async () => {
     try {
       const result = await apiCalls('get', `/transaction/getAllReconcileCashByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.reconcileCashVO || []);
+      setData(result.paramObjectsMap.reconcileCashVO.reverse() || []);
       showForm(true);
       console.log('Test', result);
     } catch (err) {
@@ -97,12 +104,46 @@ const ReconcileCash = () => {
 
   const handleSave = async () => {
     console.log('FormData=>', formData);
+
+    const newFormdata = {
+      docId: formData.docId,
+      docDate: formData.docDate ? dayjs(formData.docDate).format('YYYY-MM-DD') : null,
+      ...(editId && { id: editId }),
+      active: true,
+      balanceAsPerBooks: formData.balanceAsPerBooks,
+      cashAccount: formData.cashAccount,
+      createdBy: loginUserName,
+      differenceAmount: formData.differenceAmount,
+      dn1: formData.dn1,
+      dn1Amt: formData.dn1Amt,
+      dn2: formData.dn2,
+      dn2Amt: formData.dn2Amt,
+      dn3: formData.dn3,
+      dn3Amt: formData.dn3Amt,
+      dn4: formData.dn4,
+      dn4Amt: formData.dn4Amt,
+      dn5: formData.dn5,
+      dn5Amt: formData.dn5Amt,
+      dn6: formData.dn6,
+      dn6Amt: formData.dn6Amt,
+      dn7: formData.dn7,
+      dn7Amt: formData.dn7Amt,
+      dn8: formData.dn8,
+      dn8Amt: formData.dn8Amt,
+      orgId: orgId,
+      remarks: formData.remarks,
+      totalPhyAmount: formData.totalPhyAmount,
+      branch: branch,
+      branchCode: loginBranchCode,
+      finYear: finYear
+    };
     try {
-      const response = await apiCalls('put', '/transaction/updateCreateReconcileCash', formData);
+      const response = await apiCalls('put', '/transaction/updateCreateReconcileCash', newFormdata);
       if (response.status === true) {
         console.log('Response:', response);
         showToast('success', editId ? 'Reconcile Cash updated successfully' : 'Reconcile Cash created successfully');
         getAllReconsileCash();
+        getNewCashpDocId();
         handleClear();
         setLoading(false);
       } else {
@@ -159,7 +200,7 @@ const ReconcileCash = () => {
           dn7Amt: listValueVO.dn7Amt || 0,
           dn8: listValueVO.dn8 || 0,
           dn8Amt: listValueVO.dn8Amt || 0,
-          docDate: parsedDocDate,
+          docId: listValueVO.docId,
           docDate: parsedDocDate && parsedDocDate.isValid() ? parsedDocDate : null,
           id: listValueVO.id || 0,
           orgId: listValueVO.orgId || 0,
@@ -182,7 +223,7 @@ const ReconcileCash = () => {
       active: true,
       balanceAsPerBooks: 0,
       cashAccount: '',
-      createdBy: 'string',
+      createdBy: '',
       differenceAmount: 0,
       dn1: 0,
       dn1Amt: 0,
@@ -200,17 +241,19 @@ const ReconcileCash = () => {
       dn7Amt: 0,
       dn8: 0,
       dn8Amt: 0,
-      docDate: dayjs().format('DD-MM-YYYY'),
-      docId: 'string',
+      docDate: dayjs(),
+      docId: '',
       id: 0,
       orgId: 0,
       remarks: '',
       totalPhyAmount: 0
     });
+    setEditId('');
+    getNewCashpDocId();
   };
 
   const columns = [
-    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
+    { accessorKey: 'docId', header: 'Doc No', size: 140 },
     { accessorKey: 'docDate', header: 'reconcileDate', size: 140 },
     { accessorKey: 'cashAccount', header: 'Cash Account', size: 140 },
     { accessorKey: 'balanceAsPerBooks', header: 'Balance As Per Books', size: 140 }
@@ -220,6 +263,22 @@ const ReconcileCash = () => {
 
   const handleList = () => {
     setShowForm(!showForm);
+  };
+
+  const getNewCashpDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/transaction/getReconcileCashDocId?branchCode=${loginBranchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
+      );
+      setFormData((prevData) => ({
+        ...prevData,
+        docId: response.paramObjectsMap.reconcileCashDocId,
+        docDate: dayjs()
+      }));
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
   };
 
   return (
@@ -238,7 +297,16 @@ const ReconcileCash = () => {
             {/* Form Section */}
             <Grid container spacing={2} mt={2}>
               <Grid item xs={12} sm={6} md={3}>
-                <TextField label="Doc ID" size="small" disabled fullWidth required placeholder="Auto" />
+                <TextField
+                  label="Doc No"
+                  size="small"
+                  value={formData.docId}
+                  disabled
+                  fullWidth
+                  required
+                  placeholder="Auto"
+                  onChange={(e) => setFormData({ ...formData, docId: e.target.value })}
+                />
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -249,7 +317,7 @@ const ReconcileCash = () => {
                       textField: { size: 'small', clearable: true }
                     }}
                     format="DD-MM-YYYY"
-                    value={formData.docDate && dayjs(formData.docDate).isValid() ? formData.docDate : null}
+                    value={formData.docDate || null}
                     renderInput={(params) => <TextField {...params} size="small" fullWidth />}
                   />
                 </LocalizationProvider>

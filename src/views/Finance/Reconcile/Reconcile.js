@@ -30,23 +30,22 @@ const Reconcile = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState();
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
 
   const handleTabSelect = (index) => {
     setTabIndex(index);
   };
 
-  useEffect(() => {
-    getAllReconsileBank();
-  }, []);
-
   const [formData, setFormData] = useState({
     docId: '',
-    docDate: null,
+    docDate: dayjs(),
     bankStmtDate: null,
     bankAccount: '',
     remarks: '',
-    totalDeposit: '',
-    totalWithdrawal: ''
+    totalDeposit: 0,
+    totalWithdrawal: 0
   });
 
   const [formDataErrors, setFormDataErrors] = useState({
@@ -64,19 +63,35 @@ const Reconcile = () => {
     setValue(newValue);
   };
 
-  // Placeholder action handlers
-  const handleSearch = () => {
-    console.log('Search action');
-  };
+  useEffect(() => {
+    getAllReconsileBank();
+    getNewBankDocId();
+  }, []);
 
   const getAllReconsileBank = async () => {
     try {
       const result = await apiCalls('get', `/transaction/getAllReconcileBankByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.reconcileBankVO || []);
+      setData(result.paramObjectsMap.reconcileBankVO.reverse() || []);
       showForm(true);
       console.log('Test', result);
     } catch (err) {
       console.log('error', err);
+    }
+  };
+
+  const getNewBankDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/transaction/getReconcileBankDocId?branchCode=${loginBranchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
+      );
+      setFormData((prevData) => ({
+        ...prevData,
+        docId: response.paramObjectsMap.reconcileBankDocId,
+        docDate: dayjs()
+      }));
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
     }
   };
 
@@ -211,8 +226,6 @@ const Reconcile = () => {
 
   const handleClear = () => {
     setFormData({
-      docId: '',
-      docDate: null,
       bankStmtDate: null,
       bankAccount: '',
       remarks: '',
@@ -253,6 +266,7 @@ const Reconcile = () => {
 
     // setValidationErrors({});
     setEditId('');
+    getNewBankDocId();
   };
 
   const handleInputChange = (e) => {
@@ -322,7 +336,7 @@ const Reconcile = () => {
   };
 
   const columns = [
-    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
+    { accessorKey: 'docId', header: 'Doc No', size: 140 },
     { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
     { accessorKey: 'bankStmtDate', header: 'Bank Stmt Date', size: 140 },
     { accessorKey: 'bankAccount', header: 'bankAccount', size: 140 },
@@ -393,7 +407,7 @@ const Reconcile = () => {
         ...(editId && { id: row.id }),
         voucherNo: row.voucherNo,
         voucherDate: row.voucherDate,
-        chequeNo: row.voucherDate,
+        chequeNo: row.chequeNo,
         chequeDate: row.voucherDate,
         deposit: parseInt(row.deposit),
         withdrawal: parseInt(row.withdrawal),
@@ -404,8 +418,8 @@ const Reconcile = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         // active: formData.active,
-        docId: '7687',
-        docDate: formData.docDate,
+        // docId: formData.docId,
+        // docDate: formData.docDate,
         bankStmtDate: formData.bankStmtDate ? dayjs(formData.bankStmtDate).format('YYYY-MM-DD') : null,
         bankAccount: formData.bankAccount,
         remarks: formData.remarks,
@@ -413,7 +427,10 @@ const Reconcile = () => {
         createdBy: loginUserName,
         totalDeposit: parseInt(formData.totalDeposit),
         totalWithdrawal: parseInt(formData.totalWithdrawal),
-        orgId: orgId
+        orgId: orgId,
+        branch: branch,
+        branchCode: loginBranchCode,
+        finYear: finYear
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -424,6 +441,7 @@ const Reconcile = () => {
           console.log('Response:', response);
           showToast('success', editId ? 'Reconcile Bank updated successfully' : 'Reconcile Bank created successfully');
           getAllReconsileBank();
+          getNewBankDocId();
           handleClear();
           setIsLoading(false);
         } else {
@@ -452,8 +470,8 @@ const Reconcile = () => {
 
         setFormData({
           docId: listValueVO.docId,
-          docDate: listValueVO.docDate ? dayjs(listValueVO.docDate) : null, // handle invalid or null dates
-          bankStmtDate: listValueVO.bankStmtDate ? dayjs(listValueVO.bankStmtDate).format('DD-MM-YYYY') : null, //
+          docDate: listValueVO.docDate, // handle invalid or null dates
+          bankStmtDate: listValueVO.bankStmtDate, //
           bankAccount: listValueVO.bankAccount,
           remarks: listValueVO.remarks,
           totalDeposit: listValueVO.totalDeposit,
@@ -482,13 +500,31 @@ const Reconcile = () => {
     }
   };
 
+  const calculateTotals = (tableData) => {
+    let totalDeposit = 0;
+    let totalWithdrawal = 0;
+
+    tableData.forEach((row) => {
+      // Parse the deposit and withdrawal values as numbers, defaulting to 0 if not valid
+      totalDeposit += parseFloat(row.deposit) || 0;
+      totalWithdrawal += parseFloat(row.withdrawal) || 0;
+    });
+
+    // Update the formData with the totals
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      totalDeposit: totalDeposit,
+      totalWithdrawal: totalWithdrawal
+    }));
+  };
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <Grid container spacing={2} alignItems="center">
           <div className="d-flex flex-wrap justify-content-start p-2">
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={''} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
             <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
           </div>
@@ -501,7 +537,7 @@ const Reconcile = () => {
             <Grid container spacing={2} mt={2}>
               <Grid item xs={12} sm={6} md={3}>
                 <TextField
-                  label="Doc ID"
+                  label="Doc No"
                   size="small"
                   value={formData.docId}
                   disabled
@@ -520,7 +556,7 @@ const Reconcile = () => {
                       textField: { size: 'small', clearable: true }
                     }}
                     format="DD-MM-YYYY"
-                    value={formData.docDate || null}
+                    value={formData.docDate ? dayjs(formData.docDate) : null}
                     onChange={(newValue) => setFormData({ ...formData, docDate: newValue })}
                   />
                 </LocalizationProvider>
@@ -533,7 +569,7 @@ const Reconcile = () => {
                       textField: { size: 'small', clearable: true }
                     }}
                     format="DD-MM-YYYY"
-                    value={formData.bankStmtDate || null}
+                    value={formData.bankStmtDate ? dayjs(formData.docDate) : null}
                     onChange={(newValue) => setFormData({ ...formData, bankStmtDate: newValue })}
                   />
                 </LocalizationProvider>
@@ -567,6 +603,7 @@ const Reconcile = () => {
                   size="small"
                   fullWidth
                   required
+                  disabled
                   placeholder="Auto"
                   onChange={(e) => setFormData({ ...formData, totalDeposit: e.target.value })}
                 />
@@ -577,6 +614,7 @@ const Reconcile = () => {
                   value={formData.totalWithdrawal}
                   size="small"
                   fullWidth
+                  disabled
                   required
                   placeholder="Auto"
                   onChange={(e) => setFormData({ ...formData, totalWithdrawal: e.target.value })}
@@ -773,24 +811,32 @@ const Reconcile = () => {
                                             const value = e.target.value;
                                             const numericRegex = /^[0-9]*$/;
                                             if (numericRegex.test(value)) {
-                                              setWithdrawalsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, deposit: value } : r))
-                                              );
+                                              setWithdrawalsTableData((prev) => {
+                                                const updatedData = prev.map((r) => (r.id === row.id ? { ...r, deposit: value } : r));
+                                                calculateTotals(updatedData); // Recalculate totals
+                                                return updatedData;
+                                              });
+
                                               setWithdrawalsTableErrors((prev) => {
                                                 const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], deposit: !value ? 'Eds is required' : '' };
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  deposit: !value ? 'Deposit is required' : ''
+                                                };
                                                 return newErrors;
                                               });
                                             } else {
                                               setWithdrawalsTableErrors((prev) => {
                                                 const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], deposit: 'Only numeric characters are allowed' };
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  deposit: 'Only numeric characters are allowed'
+                                                };
                                                 return newErrors;
                                               });
                                             }
                                           }}
                                           className={withdrawalsTableErrors[index]?.deposit ? 'error form-control' : 'form-control'}
-                                          // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                         />
                                         {withdrawalsTableErrors[index]?.deposit && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -799,6 +845,7 @@ const Reconcile = () => {
                                         )}
                                       </td>
 
+                                      {/* Withdrawal Input Field */}
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
@@ -808,12 +855,18 @@ const Reconcile = () => {
                                             const value = e.target.value;
                                             const numericRegex = /^[0-9]*$/;
                                             if (numericRegex.test(value)) {
-                                              setWithdrawalsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, withdrawal: value } : r))
-                                              );
+                                              setWithdrawalsTableData((prev) => {
+                                                const updatedData = prev.map((r) => (r.id === row.id ? { ...r, withdrawal: value } : r));
+                                                calculateTotals(updatedData); // Recalculate totals
+                                                return updatedData;
+                                              });
+
                                               setWithdrawalsTableErrors((prev) => {
                                                 const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], withdrawal: !value ? 'Eds is required' : '' };
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  withdrawal: !value ? 'Withdrawal is required' : ''
+                                                };
                                                 return newErrors;
                                               });
                                             } else {
@@ -828,7 +881,6 @@ const Reconcile = () => {
                                             }
                                           }}
                                           className={withdrawalsTableErrors[index]?.withdrawal ? 'error form-control' : 'form-control'}
-                                          // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                         />
                                         {withdrawalsTableErrors[index]?.withdrawal && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>

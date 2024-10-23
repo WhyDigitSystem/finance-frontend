@@ -87,12 +87,12 @@ const finance = {
         //   type: 'item',
         //   url: '/finance/account/Account'
         // },
-        {
-          id: 'exRates',
-          title: 'ExRates',
-          type: 'item',
-          url: '/finance/ExRates'
-        },
+        // {
+        //   id: 'exRates',
+        //   title: 'ExRates',
+        //   type: 'item',
+        //   url: '/finance/ExRates'
+        // },
         // {
         //   id: 'subLedgerAccount',
         //   title: 'Sub Ledger Account',

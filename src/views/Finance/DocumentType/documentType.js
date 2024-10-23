@@ -69,7 +69,7 @@ export const DocumentTypeMaster = () => {
 
   const getAllScreens = async () => {
     try {
-      const response = await apiCalls('get', `/commonmaster/getAllScreenCode`);
+      const response = await apiCalls('get', `/commonmaster/getAllScreenCode?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -288,7 +288,6 @@ export const DocumentTypeMaster = () => {
       errors.docCode = 'Doc Code is required';
     }
 
-   
     setFieldErrors(errors);
 
     if (Object.keys(errors).length === 0) {
@@ -313,6 +312,7 @@ export const DocumentTypeMaster = () => {
           showToast('success', editId ? 'Document Type Updated Successfully' : 'Document Type created successfully');
           handleClear();
           getAllDocumentType();
+          getAllScreens();
           setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Document Type creation failed');

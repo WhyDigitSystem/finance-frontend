@@ -5,19 +5,22 @@ import SearchIcon from '@mui/icons-material/Search';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField } from '@mui/material';
 import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
 
 const HsnSacCode = () => {
+
   const [formData, setFormData] = useState({
     active: true,
     serviceAccountCode: '',
     sacDescription: '',
     product: ''
   });
+
+
   const [fieldErrors, setFieldErrors] = useState({});
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
@@ -85,6 +88,7 @@ const HsnSacCode = () => {
       sacDescription: '',
       product: ''
     });
+    setEditId('');
     setFieldErrors({});
   };
 
@@ -193,7 +197,7 @@ const HsnSacCode = () => {
                   size="small"
                   value={formData.sacDescription}
                   onChange={handleInputChange}
-                  inputProps={{ maxLength: 30 }}
+                  inputProps={{ maxLength: 50 }}
                   error={!!fieldErrors.sacDescription}
                   helperText={fieldErrors.sacDescription}
                 />
