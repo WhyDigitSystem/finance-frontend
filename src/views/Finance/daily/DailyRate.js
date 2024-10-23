@@ -59,7 +59,7 @@ export const DailyRate = () => {
     //   id: 1,
     //   currency: '',
     //   currencyDescription: '',
-    //   sellingExrate: '',
+    //   sellingExRate: '',
     //   buyingExrate: ''
     // }
   ]);
@@ -74,7 +74,7 @@ export const DailyRate = () => {
     // {
     //   currency: '',
     //   currencyDescription: '',
-    //   sellingExrate: '',
+    //   sellingExRate: '',
     //   buyingExrate: ''
     // }
   ]);
@@ -89,16 +89,6 @@ export const DailyRate = () => {
     //     const currencyData = await getAllActiveCurrency(orgId);
     //     setCurrencies(currencyData);
     //     console.log('currencyData', currencyData);
-
-    //     const updatedTableData = currencyData.map((currency, index) => ({
-    //       id: index + 1,
-    //       currency: currency.currency,
-    //       currencyDescription: currency.currencyDescription,
-    //       sellingExRate: currency.sellingExrate,
-    //       buyingExrate: currency.buyingExrate
-    //     }));
-
-    //     setDetailsTableData(updatedTableData);
     //   } catch (error) {
     //     console.error('Error fetching currency data:', error);
     //   }
@@ -106,6 +96,7 @@ export const DailyRate = () => {
 
     // fetchData();
     getAllDailyMonthlyExRatesByOrgId();
+    handleFullGridFunction();
   }, []);
 
   const getAllDailyMonthlyExRatesByOrgId = async () => {
@@ -333,7 +324,7 @@ export const DailyRate = () => {
         id: 1,
         currency: '',
         currencyDescription: '',
-        sellingExrate: '',
+        sellingExRate: '',
         buyingExrate: ''
       }
     ]);
@@ -361,7 +352,7 @@ export const DailyRate = () => {
             id: cl.id,
             currency: cl.currency,
             currencyDescription: cl.currencyDescripition,
-            sellingExrate: cl.sellingExRate,
+            sellingExRate: cl.sellingExRate,
             buyingExrate: cl.buyingExrate
           }))
         );
@@ -397,8 +388,8 @@ export const DailyRate = () => {
           rowErrors.currencyDescription = 'Currency Descripition is required';
           detailsTableDataValid = false;
         }
-        if (!row.sellingExrate) {
-          rowErrors.sellingExrate = 'Selling Exrate is required';
+        if (!row.sellingExRate) {
+          rowErrors.sellingExRate = 'Selling Exrate is required';
           detailsTableDataValid = false;
         }
         if (!row.buyingExrate) {
@@ -419,7 +410,7 @@ export const DailyRate = () => {
         ...(editId && { id: row.id }),
         currency: row.currency,
         currencyDescripition: row.currencyDescription,
-        sellingExRate: row.sellingExrate,
+        sellingExRate: row.sellingExRate,
         buyingExrate: row.buyingExrate
       }));
 
@@ -535,24 +526,12 @@ export const DailyRate = () => {
                             <table className="table table-bordered ">
                               <thead>
                                 <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                    Action
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                    S.No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                    Currency
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
-                                    Currency Description
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '120px' }}>
-                                    Selling Ex. Rate
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '120px' }}>
-                                    Buying Ex. Rate
-                                  </th>
+                                  <th className="table-header">Action</th>
+                                  <th className="table-header">S.No</th>
+                                  <th className="table-header">Currency</th>
+                                  <th className="table-header">Currency Description</th>
+                                  <th className="table-header">Selling Ex. Rate</th>
+                                  <th className="table-header">Buying Ex. Rate</th>
                                 </tr>
                               </thead>
                               <tbody>
@@ -577,23 +556,35 @@ export const DailyRate = () => {
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
                                     <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
+                                      <select
                                         value={row.currency}
+                                        style={{ width: '150px' }}
                                         onChange={(e) => {
-                                          const value = e.target.value;
-                                          setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, currency: value } : r)));
-                                          setDetailsTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              currency: !value ? 'Currency is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
+                                          const selectedCurrency = e.target.value;
+                                          const selectedCurrencyData = skuDetails.find(
+                                            (currency) => currency.currency === selectedCurrency
+                                          );
+
+                                          // Update the selected currency and currencyDescription
+                                          const updatedCurrencyData = [...detailsTableData];
+                                          updatedCurrencyData[index] = {
+                                            ...updatedCurrencyData[index],
+                                            currency: selectedCurrency,
+                                            currencyDescription: selectedCurrencyData ? selectedCurrencyData.currencyDescription : ''
+                                          };
+
+                                          setDetailsTableData(updatedCurrencyData);
                                         }}
                                         className={detailsTableErrors[index]?.currency ? 'error form-control' : 'form-control'}
-                                      />
+                                      >
+                                        <option value="">--Select--</option>
+                                        {skuDetails?.map((currency) => (
+                                          <option key={currency.id} value={currency.currency}>
+                                            {currency.currency}
+                                          </option>
+                                        ))}
+                                      </select>
+
                                       {detailsTableErrors[index]?.currency && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                           {detailsTableErrors[index].currency}
@@ -631,34 +622,34 @@ export const DailyRate = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         // style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.sellingExrate}
+                                        type="number"
+                                        value={row.sellingExRate}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, sellingExrate: value } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, sellingExRate: value } : r))
                                           );
                                           setDetailsTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              sellingExrate: !value ? 'Selling Ex. Rate is required' : ''
+                                              sellingExRate: !value ? 'Selling Ex. Rate is required' : ''
                                             };
                                             return newErrors;
                                           });
                                         }}
-                                        className={detailsTableErrors[index]?.sellingExrate ? 'error form-control' : 'form-control'}
+                                        className={detailsTableErrors[index]?.sellingExRate ? 'error form-control' : 'form-control'}
                                       />
-                                      {detailsTableErrors[index]?.sellingExrate && (
+                                      {detailsTableErrors[index]?.sellingExRate && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {detailsTableErrors[index].sellingExrate}
+                                          {detailsTableErrors[index].sellingExRate}
                                         </div>
                                       )}
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
                                         // style={{ width: '150px' }}
-                                        type="text"
+                                        type="number"
                                         value={row.buyingExrate}
                                         onChange={(e) => {
                                           const value = e.target.value;
