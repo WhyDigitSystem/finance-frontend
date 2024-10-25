@@ -24,6 +24,9 @@ import { getAllActiveCurrency } from 'utils/CommonFunctions';
 const GeneralJournal = () => {
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState(true);
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [value, setValue] = useState(0);
@@ -103,6 +106,17 @@ const GeneralJournal = () => {
     getAllGeneralJournalByOrgId();
   }, []);
 
+  useEffect(() => {
+    const totalDebit = detailsTableData.reduce((sum, row) => sum + Number(row.debitAmount || 0), 0);
+    const totalCredit = detailsTableData.reduce((sum, row) => sum + Number(row.creditAmount || 0), 0);
+
+    setFormData((prev) => ({
+      ...prev,
+      totalDebitAmount: totalDebit,
+      totalCreditAmount: totalCredit
+    }));
+  }, [detailsTableData]);
+
   const getAllGeneralJournalByOrgId = async () => {
     try {
       const result = await apiCalls('get', `/transaction/getAllGeneralJournalByOrgId?orgId=${orgId}`);
@@ -127,12 +141,12 @@ const GeneralJournal = () => {
         setFormData({
           voucherSubType: glVO.voucherSubType || '',
           id: glVO.id || '',
-          docDate: glVO.docDate ? dayjs(glVO.docDate, 'DD-MM-YYYY') : dayjs(),
+          docDate: glVO.docDate ? dayjs(glVO.docDate, 'YYYY-MM-DD') : dayjs(),
           docId: glVO.docId || '',
           currency: glVO.currency || '',
           exRate: glVO.exRate || '',
           refNo: glVO.refNo || '',
-          refDate: glVO.refDate ? dayjs(glVO.refDate, 'DD-MM-YYYY') : dayjs(),
+          refDate: glVO.refDate ? dayjs(glVO.refDate, 'YYYY-MM-DD') : dayjs(),
           remarks: glVO.remarks || '',
           orgId: glVO.orgId || '',
           totalDebitAmount: glVO.totalDebitAmount || '',
@@ -157,6 +171,40 @@ const GeneralJournal = () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleDebitChange = (e, row, index) => {
+    const value = e.target.value;
+
+    if (/^\d{0,20}$/.test(value)) {
+      setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, debitAmount: value, creditAmount: value ? '0' : '' } : r)));
+
+      setDetailsTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = {
+          ...newErrors[index],
+          debitAmount: !value ? 'Debit Amount is required' : ''
+        };
+        return newErrors;
+      });
+    }
+  };
+
+  const handleCreditChange = (e, row, index) => {
+    const value = e.target.value;
+
+    if (/^\d{0,20}$/.test(value)) {
+      setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, creditAmount: value, debitAmount: value ? '0' : '' } : r)));
+
+      setDetailsTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = {
+          ...newErrors[index],
+          creditAmount: !value ? 'Credit Amount is required' : ''
+        };
+        return newErrors;
+      });
     }
   };
 
@@ -250,10 +298,7 @@ const GeneralJournal = () => {
       subledgerName: ''
     };
     setDetailsTableData([...detailsTableData, newRow]);
-    setDetailsTableErrors([
-      ...detailsTableErrors,
-      { accountsName: '', subLedgerCode: '', debitAmount: '', creditAmount: '', narration: '', subledgerName: '' }
-    ]);
+    setDetailsTableErrors([...detailsTableErrors, { accountsName: '', subLedgerCode: '', narration: '', subledgerName: '' }]);
   };
 
   const isLastRowEmpty = (table) => {
@@ -263,8 +308,8 @@ const GeneralJournal = () => {
     if (table === detailsTableData) {
       return (
         !lastRow.accountsName ||
-        !lastRow.creditAmount ||
-        !lastRow.debitAmount ||
+        // !lastRow.creditAmount ||
+        // !lastRow.debitAmount ||
         !lastRow.narration ||
         !lastRow.subLedgerCode ||
         !lastRow.subledgerName
@@ -280,8 +325,8 @@ const GeneralJournal = () => {
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
           accountsName: !table[table.length - 1].accountsName ? 'Account Name is required' : '',
-          creditAmount: !table[table.length - 1].creditAmount ? 'Credit is required' : '',
-          debitAmount: !table[table.length - 1].debitAmount ? 'Debit is required' : '',
+          // creditAmount: !table[table.length - 1].creditAmount ? 'Credit is required' : '',
+          // debitAmount: !table[table.length - 1].debitAmount ? 'Debit is required' : '',
           narration: !table[table.length - 1].narration ? 'Narration is required' : '',
           subLedgerCode: !table[table.length - 1].subLedgerCode ? 'Sub Ledger Code is required' : '',
           subledgerName: !table[table.length - 1].subledgerName ? 'Sub Ledger Name is required' : ''
@@ -374,14 +419,15 @@ const GeneralJournal = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
+        branch: branch,
+        branchCode: branchCode,
         createdBy: loginUserName,
         currency: formData.currency,
-        docDate: dayjs(formData.docDate).format('DD-MM-YYYY'),
-        docId: formData.docId,
         exRate: formData.exRate,
+        finYear: finYear,
         orgId: orgId,
         particularsJournalDTO: GeneralJournalVO,
-        refDate: dayjs(formData.refDate).format('DD-MM-YYYY'),
+        refDate: dayjs(formData.refDate).format('YYYY-MM-DD'),
         refNo: formData.refNo,
         remarks: formData.remarks,
         totalCreditAmount: formData.totalCreditAmount,
@@ -444,7 +490,8 @@ const GeneralJournal = () => {
                       onChange={handleInputChange}
                       name="voucherSubType"
                     >
-                      <MenuItem value="EXPENSEJOURNAL">EXPENSE JOURNAL</MenuItem>
+                      <MenuItem value="GENERAL">GENERAL</MenuItem>
+                      <MenuItem value="EXPENSE">EXPENSE</MenuItem>
                     </Select>
                     {fieldErrors.voucherSubType && <FormHelperText>{fieldErrors.voucherSubType}</FormHelperText>}
                   </FormControl>
@@ -518,6 +565,7 @@ const GeneralJournal = () => {
                     size="small"
                     fullWidth
                     name="exRate"
+                    type="number"
                     value={formData.exRate}
                     onChange={handleInputChange}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.exRate ? 'Ex. Rate is required' : ''}</span>}
@@ -687,7 +735,7 @@ const GeneralJournal = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="text"
+                                          type="number"
                                           value={row.subLedgerCode}
                                           onChange={(e) => {
                                             const value = e.target.value;
@@ -711,24 +759,29 @@ const GeneralJournal = () => {
                                           </div>
                                         )}
                                       </td>
-                                      <td className="border px-2 py-2">
+                                      {/* <td className="border px-2 py-2">
                                         <input
                                           type="text"
                                           value={row.debitAmount}
                                           onChange={(e) => {
                                             const value = e.target.value;
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, debitAmount: value } : r))
-                                            );
-                                            setDetailsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                debitAmount: !value ? 'Debit is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
+
+                                            if (/^\d{0,20}$/.test(value)) {
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, debitAmount: value } : r))
+                                              );
+
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  debitAmount: !value ? 'Debit Amount is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }
                                           }}
+                                          maxLength="20"
                                           className={detailsTableErrors[index]?.debitAmount ? 'error form-control' : 'form-control'}
                                         />
                                         {detailsTableErrors[index]?.debitAmount && (
@@ -743,18 +796,51 @@ const GeneralJournal = () => {
                                           value={row.creditAmount}
                                           onChange={(e) => {
                                             const value = e.target.value;
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, creditAmount: value } : r))
-                                            );
-                                            setDetailsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                creditAmount: !value ? 'Credit is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
+
+                                            if (/^\d{0,20}$/.test(value)) {
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, creditAmount: value } : r))
+                                              );
+
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  creditAmount: !value ? 'Credit Amount is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }
                                           }}
+                                          maxLength="20"
+                                          className={detailsTableErrors[index]?.creditAmount ? 'error form-control' : 'form-control'}
+                                        />
+                                        {detailsTableErrors[index]?.creditAmount && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].creditAmount}
+                                          </div>
+                                        )}
+                                      </td> */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.debitAmount}
+                                          onChange={(e) => handleDebitChange(e, row, index)}
+                                          maxLength="20"
+                                          className={detailsTableErrors[index]?.debitAmount ? 'error form-control' : 'form-control'}
+                                        />
+                                        {detailsTableErrors[index]?.debitAmount && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].debitAmount}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.creditAmount}
+                                          onChange={(e) => handleCreditChange(e, row, index)}
+                                          maxLength="20"
                                           className={detailsTableErrors[index]?.creditAmount ? 'error form-control' : 'form-control'}
                                         />
                                         {detailsTableErrors[index]?.creditAmount && (
@@ -763,6 +849,7 @@ const GeneralJournal = () => {
                                           </div>
                                         )}
                                       </td>
+
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
@@ -812,6 +899,7 @@ const GeneralJournal = () => {
                             name="totalDebitAmount"
                             value={formData.totalDebitAmount}
                             onChange={handleInputChange}
+                            disabled
                             helperText={
                               <span style={{ color: 'red' }}>{fieldErrors.totalDebitAmount ? 'Total Debit Amount is required' : ''}</span>
                             }
@@ -828,6 +916,7 @@ const GeneralJournal = () => {
                             name="totalCreditAmount"
                             value={formData.totalCreditAmount}
                             onChange={handleInputChange}
+                            disabled
                             helperText={
                               <span style={{ color: 'red' }}>{fieldErrors.totalCreditAmount ? 'Total Credit Amount is required' : ''}</span>
                             }

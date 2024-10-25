@@ -1,1214 +1,2003 @@
+import { useEffect, useRef, useState } from 'react';
+import apiCalls from 'apicall';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import dayjs from 'dayjs';
+import 'react-tabs/style/react-tabs.css';
+import 'react-toastify/dist/ReactToastify.css';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { TabContext } from '@mui/lab';
-import TabList from '@mui/lab/TabList';
-import TabPanel from '@mui/lab/TabPanel';
-import { Avatar, ButtonBase, Tooltip } from '@mui/material';
-import Box from '@mui/material/Box';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import Tab from '@mui/material/Tab';
+import { FormControl, FormHelperText, Checkbox, FormControlLabel, FormLabel, InputLabel, MenuItem, Select } from '@mui/material';
 import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import axios from 'axios';
-import { useRef, useState } from 'react';
-import 'react-tabs/style/react-tabs.css';
+import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonTable from 'views/basicMaster/CommonTable';
-// import GstTable from './GstTable';
-// import TableComponent from './TableComponent';
 
 const CostInvoice = () => {
-  const [tabIndex, setTabIndex] = useState(0);
-  const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
-  const [listView, setlistView] = useState(false);
-  const [data, setData] = useState(false);
-
-  //   const [formData, setFormData] = useState({
-  //     mode: '',
-  //     product: '',
-
-  //     active: true,
-  //     address: '',
-  //     addressType: '',
-  //     billCurr: '',
-  //     chargerTaxInvoiceDTO: [],
-  //     createdBy: '',
-  //     docDate: new Date(),
-  //     dueDate: null,
-  //     gstTaxInvoiceDTO: [],
-  //     gsttype: '',
-  //     headerColumns: '',
-  //     invoiceDate: new Date(),
-  //     orgId: orgId,
-  //     partyCode: '',
-  //     partyName: '',
-  //     partyType: '',
-  //     pincode: '',
-  //     placeOfSupply: '',
-  //     recipientGSTIN: '',
-  //     salesType: '',
-  //     status: '',
-  //     updatedBy: '',
-  //     summaryTaxInvoiceDTO: []
-  //   });
-
-  const [formData, setFormData] = useState({
-    active: true,
-    mode: '',
-    product: '',
-    purchaseVoucherNO: '',
-    purchaseVoucherDate: null,
-    costInvNo: '',
-    docDate: null,
-    supplierBillNo: '',
-    docDate1: null,
-    supplierType: '',
-    supplierCode: '',
-    creditDays: '',
-    dueDate: null,
-    supplierName: '',
-    supplierLoc: '',
-    currency: '',
-    exRates: '',
-    gstStateCode: '',
-    supplierGstIn: '',
-    remarks: '',
-    address: '',
-    shipperRefNo: '',
-    otherInfo: '',
-    gstType: '',
-    payment: '',
-    accrualId: '',
-    utrRef: '',
-    costType: '',
-    orgId: orgId,
-    updatedBy: ''
-  });
-
-  const [errors, setErrors] = useState({
-    mode: '',
-    product: '',
-    purchaseVoucherNO: '',
-    purchaseVoucherDate: new Date(),
-    costInvNo: '',
-    docDate: new Date(),
-    supplierBillNo: '',
-    docDate1: new Date(),
-    supplierType: '',
-    supplierCode: '',
-    creditDays: '',
-    dueDate: null,
-    supplierName: '',
-    supplierLoc: '',
-    currency: '',
-    exRates: '',
-    gstStateCode: '',
-    supplierGstIn: '',
-    remarks: '',
-    address: '',
-    shipperRefNo: '',
-    otherInfo: '',
-    gstType: '',
-    payment: '',
-    accrualId: '',
-    utrRef: '',
-    costType: ''
-  });
-
-  const theme = useTheme();
-  const anchorRef = useRef(null);
-  const [value, setValue] = useState('1');
+  const [showForm, setShowForm] = useState(true);
+  const [data, setData] = useState(true);
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [value, setValue] = useState(0);
+  const [editId, setEditId] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
+  const [currencies, setCurrencies] = useState([]);
+  const [formData, setFormData] = useState({
+    accuralid: '',
+    address: '',
+    branch: '',
+    branchCode: '',
+    client: '',
+    costInvoiceDate: null,
+    costInvoiceNo: '',
+    costType: '',
+    creditDays: '',
+    currency: '',
+    customer: '',
+    dueDate: null,
+    exRate: '',
+    finYear: '',
+    gstType: '',
+    ipNo: '',
+    latitude: '',
+    mode: '',
+    otherInfo: '',
+    payment: '',
+    product: '',
+    purVoucherDate: null,
+    purVoucherNo: '',
+    remarks: '',
+    shipperRefNo: '',
+    supplierBillNo: '',
+    supplierCode: '',
+    supplierGstIn: '',
+    supplierGstInCode: '',
+    supplierName: '',
+    supplierPlace: '',
+    supplierType: '',
+    utrRef: ''
+  });
 
-  const [tableData, setTableData] = useState([]);
-  const [tableData1, setTableData1] = useState([]);
+  const [chargerCostInvoice, setChargerCostInvoice] = useState([
+    //   {
+    //   billAmt: '',
+    //   chargeCode: '',
+    //   chargeLedger: '',
+    //   chargeName: '',
+    //   contType: '',
+    //   currency: '',
+    //   exRate: '',
+    //   fcAmt: '',
+    //   gsac: '',
+    //   gst: '',
+    //   houseNo: '',
+    //   jobNo: '',
+    //   lcAmt: '',
+    //   subJobNo: ''
+    // }
+  ]);
+  const [costInvoiceErrors, setCostInvoiceErrors] = useState([
+    {
+      billAmt: '',
+      chargeCode: '',
+      chargeLedger: '',
+      chargeName: '',
+      contType: '',
+      currency: '',
+      exRate: '',
+      fcAmt: '',
+      gsac: '',
+      gst: '',
+      houseNo: '',
+      jobNo: '',
+      lcAmt: '',
+      subJobNo: ''
+    }
+  ]);
 
-  //   const handleCreateNewRow = (values) => {
-  //     // Ensure that relevant fields in gstTaxInvoiceDTO are integers
-  //     const updatedValues = {
-  //       ...values,
-  //       gstBdBillAmount: parseInt(values.gstBdBillAmount, 10),
-  //       gstCrBillAmount: parseInt(values.gstCrBillAmount, 10),
-  //       gstCrLcAmount: parseInt(values.gstCrLcAmount, 10),
-  //       gstDbLcAmount: parseInt(values.gstDbLcAmount, 10)
-  //     };
+  const [tdsCostInvoiceDTO, setTdsCostInvoiceDTO] = useState([
+    {
+      section: '',
+      tdsWithHolding: '',
+      tdsWithHoldingPer: '',
+      totTdsWhAmnt: ''
+    }
+  ]);
 
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       gstTaxInvoiceDTO: [...prevData.gstTaxInvoiceDTO, updatedValues]
-  //     }));
-  //   };
-  const handleListView = () => {
-    setlistView(!listView);
-    // getAllTaxInvoice();
+  const [tdsCostErrors, setTdsCostErrors] = useState([
+    {
+      section: '',
+      tdsWithHolding: '',
+      tdsWithHoldingPer: '',
+      totTdsWhAmnt: ''
+    }
+  ]);
+
+  const [costInvSummaryDTO, setCostInvSummaryDTO] = useState([
+    {
+      actBillCurrAmt: '',
+      actBillLcAmt: '',
+      gstInputLcAmt: '',
+      netBillCurrAmt: '',
+      netBillLcAmt: '',
+      roundOff: '',
+      totChargesBillCurrAmt: '',
+      totChargesLcAmt: ''
+    }
+  ]);
+
+  const [costInvErrors, setCostInvErrors] = useState([
+    {
+      actBillCurrAmt: '',
+      actBillLcAmt: '',
+      gstInputLcAmt: '',
+      netBillCurrAmt: '',
+      netBillLcAmt: '',
+      roundOff: '',
+      totChargesBillCurrAmt: '',
+      totChargesLcAmt: ''
+    }
+  ]);
+
+  const listViewColumns = [
+    { accessorKey: 'mode', header: 'Mode', size: 140 },
+    { accessorKey: 'product', header: 'Product', size: 140 },
+    { accessorKey: 'costInvoiceNo', header: 'Cost Invoice No', size: 140 },
+    { accessorKey: 'purVoucherNo', header: 'Pur Voucher No', size: 140 },
+    { accessorKey: 'supplierType', header: 'Supplier Type', size: 140 }
+  ];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const currencyData = await getAllActiveCurrency(orgId);
+        setCurrencies(currencyData);
+        console.log('currency', currencyData);
+      } catch (error) {
+        console.error('Error fetching country data:', error);
+      }
+    };
+
+    fetchData();
+    getAllCostInvoiceByOrgId();
+  }, []);
+
+  const getAllCostInvoiceByOrgId = async () => {
+    try {
+      const result = await apiCalls('get', `/costInvoice/getAllCostInvoiceByOrgId?orgId=${orgId}`);
+      setData(result.paramObjectsMap.costInvoiceVO || []);
+      // showForm(true);
+      console.log('costInvoiceVO', result);
+    } catch (err) {
+      console.log('error', err);
+    }
   };
 
-  //   const getAllTaxInvoice = async () => {
-  //     try {
-  //       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/transaction/getTaxInvoiceByActive`);
-  //       console.log('API Response:', response);
+  const getAllCostInvoiceById = async (row) => {
+    console.log('first', row);
+    setShowForm(true);
+    try {
+      const result = await apiCalls('get', `/costInvoice/getAllCostInvoiceById?id=${row.original.id}`);
 
-  //       if (response.status === 200) {
-  //         setData(response.data.paramObjectsMap.taxInvoiceVO);
-  //       } else {
-  //         // Handle error
-  //         console.error('API Error:', response.data);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error fetching data:', error);
+      if (result) {
+        const costVO = result.paramObjectsMap.costInvoiceVO[0];
+        setEditId(row.original.id);
+
+        setFormData({
+          accuralid: costVO.accuralid,
+          address: costVO.address,
+          branch: costVO.branch,
+          branchCode: costVO.branchCode,
+          client: costVO.client,
+          costInvoiceDate: costVO.costInvoiceDate ? dayjs(costVO.costInvoiceDate) : dayjs(),
+          costInvoiceNo: costVO.costInvoiceNo,
+          costType: costVO.costType,
+          createdBy: loginUserName,
+          creditDays: costVO.creditDays,
+          currency: costVO.currency,
+          customer: costVO.customer,
+          dueDate: costVO.dueDate ? dayjs(costVO.dueDate) : dayjs(),
+          exRate: costVO.exRate,
+          finYear: finYear,
+          gstType: costVO.gstType,
+          mode: costVO.mode,
+          orgId: orgId,
+          otherInfo: costVO.otherInfo,
+          payment: costVO.payment,
+          product: costVO.product,
+          purVoucherDate: costVO.purVoucherDate ? dayjs(costVO.purVoucherDate) : dayjs(),
+          purVoucherNo: costVO.purVoucherNo,
+          remarks: costVO.remarks,
+          shipperRefNo: costVO.shipperRefNo,
+          supplierBillNo: costVO.supplierBillNo,
+          supplierCode: costVO.supplierCode,
+          supplierGstIn: costVO.supplierGstIn,
+          supplierGstInCode: costVO.supplierGstInCode,
+          supplierName: costVO.supplierName,
+          supplierPlace: costVO.supplierPlace,
+          supplierType: costVO.supplierType,
+          // tdsCostInvoiceDTO: costVO.tdsCostInvoiceVO,
+          utrRef: costVO.utrRef
+        });
+        setChargerCostInvoice(
+          costVO.chargerCostInvoiceVO.map((row) => ({
+            id: row.id,
+            billAmt: row.billAmt,
+            chargeCode: row.chargeCode,
+            chargeLedger: row.chargeLedger,
+            chargeName: row.chargeName,
+            contType: row.contType,
+            currency: row.currency,
+            exRate: row.exRate,
+            fcAmt: row.fcAmt,
+            gsac: row.gsac,
+            gst: row.gst,
+            houseNo: row.houseNo,
+            jobNo: row.jobNo,
+            lcAmt: row.lcAmt,
+            subJobNo: row.subJobNo
+          }))
+        );
+        setCostInvSummaryDTO(
+          costVO.costInvSummaryVO.map((row) => ({
+            id: row.id,
+            actBillCurrAmt: row.actBillCurrAmt,
+            actBillLcAmt: row.actBillLcAmt,
+            gstInputLcAmt: row.gstInputLcAmt,
+            netBillCurrAmt: row.netBillCurrAmt,
+            netBillLcAmt: row.netBillLcAmt,
+            roundOff: row.roundOff,
+            totChargesBillCurrAmt: row.totChargesBillCurrAmt,
+            totChargesLcAmt: row.totChargesLcAmt
+          }))
+        );
+        setTdsCostInvoiceDTO(
+          costVO.tdsCostInvoiceVO.map((row) => ({
+            id: row.id,
+            section: row.section,
+            tdsWithHolding: row.tdsWithHolding,
+            tdsWithHoldingPer: row.tdsWithHoldingPer,
+            totTdsWhAmnt: row.totTdsWhAmnt
+          }))
+        );
+
+        console.log('DataToEdit', costVO);
+      } else {
+        // Handle erro
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+
+  //   let errorMessage = '';
+
+  //   if (errorMessage) {
+  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+  //   } else {
+  //     setFormData({ ...formData, [name]: value.toUpperCase() });
+
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+
+  //     // Preserve the cursor position for text-based inputs
+  //     if (type === 'text' || type === 'textarea') {
+  //       setTimeout(() => {
+  //         const inputElement = document.getElementsByName(name)[0];
+  //         if (inputElement && inputElement.setSelectionRange) {
+  //           inputElement.setSelectionRange(selectionStart, selectionEnd);
+  //         }
+  //       }, 0);
   //     }
-  //   };
+  //   }
+  // };
 
-  //   const handleCreateNewRow1 = (values) => {
-  //     // Ensure that 'qty' is an integer
-  //     const updatedValues = {
-  //       ...values,
-  //       qty: parseInt(values.qty, 10)
-  //     };
+  const handleInputChange = (e, fieldType, index) => {
+    const { name, value } = e.target;
 
-  //     setTableData1((prevData) => {
-  //       const updatedData = [...prevData, updatedValues];
+    if (fieldType === 'tdsCostInvoiceDTO') {
+      setTdsCostInvoiceDTO((prevData) => prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item)));
+    } else if (fieldType === 'costInvSummaryDTO') {
+      setCostInvSummaryDTO((prevData) => prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item)));
+    } else {
+      // Directly update formData here
+      setFormData({
+        ...formData,
+        [name]: value.toUpperCase() // Example: converting text to uppercase
+      });
 
-  //       // Update formData with the new tableData1
-  //       setFormData((prevData) => ({
-  //         ...prevData,
-  //         chargerTaxInvoiceDTO: updatedData
-  //       }));
+      setFieldErrors({
+        ...fieldErrors,
+        [name]: '' // Clear any field errors
+      });
+    }
+  };
 
-  //       console.log('Updated GSTTableData1', updatedData);
-  //       return updatedData;
-  //     });
-  //   };
-  const columns = [
-    { accessorKey: 'partyName', header: 'Party Name', size: 140 },
-    { accessorKey: 'partyCode', header: 'Code', size: 140 },
-    { accessorKey: 'partyType', header: 'Type', size: 140 },
-    { accessorKey: 'address', header: 'Address Type', size: 140 },
-    { accessorKey: 'active', header: 'active', size: 140 }
-    // { accessorKey: 'active', header: 'Recipient', size: 140 }
-  ];
+  const handleCostTypeChange = (type) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      costType: type
+    }));
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      costType: '' // Clear any errors for costType
+    }));
+  };
+
+  const handleDateChange = (field, date) => {
+    const formattedDate = dayjs(date);
+    console.log('formattedDate', formattedDate);
+    // const formattedDate = dayjs(date).format('YYYY-MM-DD');
+    setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+  };
 
   const handleClear = () => {
     setFormData({
-      active: true,
+      accuralid: '',
       address: '',
-      addressType: '',
-      billCurr: '',
-      chargerTaxInvoiceDTO: [],
-      createdBy: '',
-      docDate: new Date(),
+      branch: '',
+      branchCode: '',
+      client: '',
+      costInvoiceDate: null,
+      costInvoiceNo: '',
+      creditDays: '',
+      currency: '',
+      customer: '',
       dueDate: null,
-      gstTaxInvoiceDTO: [],
-      gsttype: '',
-      headerColumns: '',
-      id: 0,
-      invoiceDate: new Date(),
-      orgId: 0,
-      partyCode: '',
-      partyName: '',
-      partyType: '',
-      pincode: '',
-      placeOfSupply: '',
-      recipientGSTIN: '',
-      salesType: '',
-      status: '',
-      summaryTaxInvoiceDTO: [],
-      updatedBy: ''
+      exRate: '',
+      finYear: '',
+      gstType: '',
+      ipNo: '',
+      latitude: '',
+      mode: '',
+      otherInfo: '',
+      product: '',
+      purVoucherDate: null,
+      purVoucherNo: '',
+      remarks: '',
+      shipperRefNo: '',
+      supplierBillNo: '',
+      supplierCode: '',
+      supplierGstIn: '',
+      supplierGstInCode: '',
+      supplierName: '',
+      supplierPlace: '',
+      supplierType: '',
+      utrRef: ''
     });
+    getAllActiveCurrency(orgId);
+    setFieldErrors({
+      accuralid: '',
+      address: '',
+      branch: '',
+      branchCode: '',
+      client: '',
+      costInvoiceDate: null,
+      costInvoiceNo: '',
+      creditDays: '',
+      currency: '',
+      customer: '',
+      dueDate: null,
+      exRate: '',
+      finYear: '',
+      gstType: '',
+      ipNo: '',
+      latitude: '',
+      mode: '',
+      otherInfo: '',
+      product: '',
+      purVoucherDate: null,
+      purVoucherNo: '',
+      remarks: '',
+      shipperRefNo: '',
+      supplierBillNo: '',
+      supplierCode: '',
+      supplierGstIn: '',
+      supplierGstInCode: '',
+      supplierName: '',
+      supplierPlace: '',
+      supplierType: '',
+      utrRef: ''
+    });
+    setChargerCostInvoice([
+      {
+        billAmt: '',
+        chargeCode: '',
+        chargeLedger: '',
+        chargeName: '',
+        contType: '',
+        currency: '',
+        exRate: '',
+        fcAmt: '',
+        gsac: '',
+        gst: '',
+        houseNo: '',
+        jobNo: '',
+        lcAmt: '',
+        subJobNo: ''
+      }
+    ]);
+    setTdsCostInvoiceDTO([
+      {
+        section: '',
+        tdsWithHolding: '',
+        tdsWithHoldingPer: '',
+        totTdsWhAmnt: ''
+      }
+    ]);
+    setCostInvSummaryDTO([
+      {
+        actBillCurrAmt: '',
+        actBillLcAmt: '',
+        gstInputLcAmt: '',
+        netBillCurrAmt: '',
+        netBillLcAmt: '',
+        roundOff: '',
+        totChargesBillCurrAmt: '',
+        totChargesLcAmt: ''
+      }
+    ]);
+    setCostInvoiceErrors({});
+    setCostInvErrors({});
+    setTdsCostErrors({});
+    setEditId({});
   };
 
-  const handleTabSelect = (index) => {
-    setTabIndex(index);
+  // const handleKeyDown = (e, row, table) => {
+  //   if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
+  //     e.preventDefault();
+  //     if (isLastRowEmpty(table)) {
+  //       displayRowError(table);
+  //     } else {
+  //       if (table === roleTableData) handleAddRow();
+  //       // else handleAddRow1();
+  //     }
+  //   }
+  // };
+
+  const handleAddRow = () => {
+    if (isLastRowEmpty(chargerCostInvoice)) {
+      displayRowError(chargerCostInvoice);
+      return;
+    }
+    const newRow = {
+      id: Date.now(),
+      billAmt: '',
+      chargeCode: '',
+      chargeLedger: '',
+      chargeName: '',
+      contType: '',
+      currency: '',
+      exRate: '',
+      fcAmt: '',
+      gsac: '',
+      gst: '',
+      houseNo: '',
+      jobNo: '',
+      lcAmt: '',
+      subJobNo: ''
+    };
+    setChargerCostInvoice([...chargerCostInvoice, newRow]);
+    setCostInvoiceErrors([
+      ...costInvoiceErrors,
+      {
+        billAmt: '',
+        chargeCode: '',
+        chargeLedger: '',
+        chargeName: '',
+        contType: '',
+        currency: '',
+        exRate: '',
+        fcAmt: '',
+        gsac: '',
+        gst: '',
+        houseNo: '',
+        jobNo: '',
+        lcAmt: '',
+        subJobNo: ''
+      }
+    ]);
+  };
+
+  const isLastRowEmpty = (table) => {
+    const lastRow = table[table.length - 1];
+    if (!lastRow) return false;
+
+    if (table === chargerCostInvoice) {
+      return (
+        !lastRow.billAmt ||
+        !lastRow.chargeCode ||
+        !lastRow.chargeLedger ||
+        !lastRow.chargeName ||
+        !lastRow.contType ||
+        !lastRow.currency ||
+        !lastRow.exRate ||
+        !lastRow.fcAmt ||
+        !lastRow.gsac ||
+        !lastRow.gst ||
+        !lastRow.houseNo ||
+        !lastRow.jobNo ||
+        !lastRow.lcAmt ||
+        !lastRow.subJobNo
+      );
+    }
+    return false;
+  };
+
+  const displayRowError = (table) => {
+    if (table === chargerCostInvoice) {
+      setCostInvoiceErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          billAmt: !table[table.length - 1].billAmt ? 'Bill Amt is required' : '',
+          chargeCode: !table[table.length - 1].chargeCode ? 'Charge Code is required' : '',
+          chargeLedger: !table[table.length - 1].chargeLedger ? 'Charge Ledger is required' : '',
+          chargeName: !table[table.length - 1].chargeName ? 'Charge Name is required' : '',
+          contType: !table[table.length - 1].contType ? 'Cont Type is required' : '',
+          currency: !table[table.length - 1].currency ? 'Currency is required' : '',
+          exRate: !table[table.length - 1].exRate ? 'EX Rate is required' : '',
+          fcAmt: !table[table.length - 1].fcAmt ? 'FC Amt is required' : '',
+          gsac: !table[table.length - 1].gsac ? 'GSAC is required' : '',
+          gst: !table[table.length - 1].gst ? 'GST is required' : '',
+          houseNo: !table[table.length - 1].houseNo ? 'House No is required' : '',
+          jobNo: !table[table.length - 1].jobNo ? 'Job No is required' : '',
+          lcAmt: !table[table.length - 1].lcAmt ? 'LC Amt is required' : '',
+          subJobNo: !table[table.length - 1].subJobNo ? 'Sub Job No is required' : ''
+        };
+        return newErrors;
+      });
+    }
+  };
+
+  const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
+    const rowIndex = table.findIndex((row) => row.id === id);
+    if (rowIndex !== -1) {
+      const updatedData = table.filter((row) => row.id !== id);
+      const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
+      setTable(updatedData);
+      setErrorTable(updatedErrors);
+    }
+  };
+
+  const handleView = () => {
+    setShowForm(!showForm);
   };
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
 
-  // const handleChangeField = (e) => {
-  //   const { name, value } = e.target;
-  //   if (name.startsWith('summaryTaxInvoiceDTO.')) {
-  //     const summaryField = name.split('.')[1];
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       summaryTaxInvoiceDTO: {
-  //         ...prevData.summaryTaxInvoiceDTO,
-  //         [summaryField]: summaryField === 'amountInWords' || summaryField === 'billingRemarks' ? value : parseInt(value, 10)
-  //       }
-  //     }));
-  //   } else {
-  //     setFormData({
-  //       ...formData,
-  //       [name]: value
-  //     });
-  //   }
-  // };
+  const handleSave = async () => {
+    console.log('save clicked');
 
-  //   const handleChangeField = (e) => {
-  //     const { name, value } = e.target;
-  //     const gstTaxInvoiceFields = ['gstdbBillAmount', 'gstcrBillAmount', 'gstDbLcAmount', 'gstCrLcAmount'];
-  //     if (name.startsWith('summaryTaxInvoiceDTO.')) {
-  //       const summaryField = name.split('.')[1];
-  //       setFormData((prevData) => ({
-  //         ...prevData,
-  //         summaryTaxInvoiceDTO: {
-  //           ...prevData.summaryTaxInvoiceDTO,
-  //           [summaryField]: ['amountInWords', 'billingRemarks'].includes(summaryField) ? value : parseInt(value, 10)
-  //         }
-  //       }));
-  //     } else if (name.startsWith('gstTaxInvoiceDTO.')) {
-  //       const gstField = name.split('.')[1];
-  //       setFormData((prevData) => ({
-  //         ...prevData,
-  //         gstTaxInvoiceDTO: {
-  //           ...prevData.gstTaxInvoiceDTO,
-  //           [gstField]: gstTaxInvoiceFields.includes(gstField) ? parseInt(value, 10) : value
-  //         }
-  //       }));
-  //     } else {
-  //       setFormData({
-  //         ...formData,
-  //         [name]: value
-  //       });
-  //     }
-  //   };
-  //   const validateForm = () => {
-  //     let formValid = true;
-  //     const newErrors = { ...errors };
+    const errors = {};
+    if (!formData.accuralid) {
+      errors.accuralid = 'Accural ID is required';
+    }
+    if (!formData.address) {
+      errors.address = 'Address is required';
+    }
+    if (!formData.costInvoiceDate) {
+      errors.costInvoiceDate = 'Cost Invoice Date is required';
+    }
+    if (!formData.costInvoiceNo) {
+      errors.costInvoiceNo = 'Cost Invoice No is required';
+    }
+    if (!formData.creditDays) {
+      errors.creditDays = 'Credit Days is required';
+    }
+    if (!formData.currency) {
+      errors.currency = 'currency is required';
+    }
+    if (!formData.dueDate) {
+      errors.dueDate = 'Due Date is required';
+    }
+    if (!formData.exRate) {
+      errors.exRate = 'Ex Rate is required';
+    }
+    if (!formData.gstType) {
+      errors.gstType = 'GST Type is required';
+    }
+    if (!formData.mode) {
+      errors.mode = 'Mode is required';
+    }
+    if (!formData.payment) {
+      errors.payment = 'Payment is required';
+    }
+    if (!formData.product) {
+      errors.product = 'Product is required';
+    }
+    if (!formData.purVoucherDate) {
+      errors.purVoucherDate = 'Pur Voucher Date is required';
+    }
+    if (!formData.purVoucherNo) {
+      errors.purVoucherNo = 'Pur Voucher No is required';
+    }
+    if (!formData.shipperRefNo) {
+      errors.shipperRefNo = 'Shipper Ref No is required';
+    }
+    if (!formData.supplierBillNo) {
+      errors.supplierBillNo = 'Supplier Bill No is required';
+    }
+    if (!formData.supplierCode) {
+      errors.supplierCode = 'Supplier Code is required';
+    }
+    if (!formData.supplierGstIn) {
+      errors.supplierGstIn = 'Supplier Gst In is required';
+    }
+    if (!formData.supplierGstInCode) {
+      errors.supplierGstInCode = 'Supplier GstInCode is required';
+    }
+    if (!formData.supplierName) {
+      errors.supplierName = 'Supplier Name is required';
+    }
+    if (!formData.supplierPlace) {
+      errors.supplierPlace = 'Supplier Place is required';
+    }
+    if (!formData.supplierType) {
+      errors.supplierType = 'Supplier Type is required';
+    }
+    if (!formData.utrRef) {
+      errors.utrRef = 'UTR Ref is required';
+    }
 
-  //     // Validation logic for each field
+    let CostInvoiceValid = true;
+    const newTableErrors = chargerCostInvoice.map((row) => {
+      const rowErrors = {};
+      if (!row.billAmt) {
+        rowErrors.billAmt = 'Account Name is required';
+        CostInvoiceValid = false;
+      }
+      if (!row.chargeCode) {
+        rowErrors.chargeCode = 'Charge Code is required';
+        CostInvoiceValid = false;
+      }
+      if (!row.chargeLedger) {
+        rowErrors.chargeLedger = 'Charge Ledger is required';
+        CostInvoiceValid = false;
+      }
+      if (!row.chargeName) {
+        rowErrors.chargeName = 'Charge Name is required';
+        CostInvoiceValid = false;
+      }
+      if (!row.contType) {
+        rowErrors.contType = 'Cont Type is required';
+        CostInvoiceValid = false;
+      }
+      if (!row.currency) {
+        rowErrors.currency = 'Currency is required';
+        CostInvoiceValid = false;
+      }
+      if (!row.exRate) {
+        rowErrors.exRate = 'EX Rate is required';
+        CostInvoiceValid = false;
+      }
+      if (!row.fcAmt) {
+        rowErrors.fcAmt = 'FC Amt is required';
+        CostInvoiceValid = false;
+      }
+      if (!row.gsac) {
+        rowErrors.gsac = 'GSAC is required';
+        CostInvoiceValid = false;
+      }
+      if (!row.gst) {
+        rowErrors.gst = 'GST is required';
+        CostInvoiceValid = false;
+      }
+      if (!row.houseNo) {
+        rowErrors.houseNo = 'House No is required';
+        CostInvoiceValid = false;
+      }
+      if (!row.jobNo) {
+        rowErrors.jobNo = 'Job No is required';
+        CostInvoiceValid = false;
+      }
+      if (!row.lcAmt) {
+        rowErrors.lcAmt = 'LC Amt is required';
+        CostInvoiceValid = false;
+      }
+      if (!row.subJobNo) {
+        rowErrors.subJobNo = 'Sub Job No is required';
+        CostInvoiceValid = false;
+      }
 
-  //     // Party Name
-  //     if (!formData.partyName) {
-  //       newErrors.partyName = 'Party Name is required';
-  //       formValid = false;
-  //     } else {
-  //       newErrors.partyName = '';
-  //     }
+      return rowErrors;
+    });
+    setFieldErrors(errors);
 
-  //     // Party Code
-  //     if (!formData.partyCode) {
-  //       newErrors.partyCode = 'Party Code is required';
-  //       formValid = false;
-  //     } else {
-  //       newErrors.partyCode = '';
-  //     }
+    setCostInvoiceErrors(newTableErrors);
 
-  //     // Party Type
-  //     if (!formData.partyType) {
-  //       newErrors.partyType = 'Party Type is required';
-  //       formValid = false;
-  //     } else {
-  //       newErrors.partyType = '';
-  //     }
+    // let tdsValid = true;
+    // const tdsTableErrors = tdsCostInvoiceDTO.map((row) => {
+    //   const rowErrors = {};
+    //   if (!row.section) {
+    //     rowErrors.section = 'Section is required';
+    //     tdsValid = false;
+    //   }
+    //   if (!row.tdsWithHolding) {
+    //     rowErrors.tdsWithHolding = 'TdsWithHolding is required';
+    //     tdsValid = false;
+    //   }
+    //   if (!row.tdsWithHoldingPer) {
+    //     rowErrors.tdsWithHoldingPer = 'TdsWithHolding% is required';
+    //     tdsValid = false;
+    //   }
+    //   if (!row.totTdsWhAmnt) {
+    //     rowErrors.totTdsWhAmnt = 'Tot Tds Amount is required';
+    //     tdsValid = false;
+    //   }
 
-  //     // Address Type
-  //     if (!formData.addressType) {
-  //       newErrors.addressType = 'Address Type is required';
-  //       formValid = false;
-  //     } else {
-  //       newErrors.addressType = '';
-  //     }
+    //   return rowErrors;
+    // });
+    // setFieldErrors(errors);
 
-  //     // Recipient GSTIN
-  //     if (!formData.recipientGSTIN) {
-  //       newErrors.recipientGSTIN = 'Recipient GSTIN is required';
-  //       formValid = false;
-  //     } else {
-  //       newErrors.recipientGSTIN = '';
-  //     }
+    // setTdsCostInvoiceDTO(tdsTableErrors);
 
-  //     // Place of Supply
-  //     if (!formData.placeOfSupply) {
-  //       newErrors.placeOfSupply = 'Place of Supply is required';
-  //       formValid = false;
-  //     } else {
-  //       newErrors.placeOfSupply = '';
-  //     }
+    // let summaryValid = true;
+    // const summaryTableErrors = costInvSummaryDTO.map((row) => {
+    //   const rowErrors = {};
+    //   if (!row.actBillCurrAmt) {
+    //     rowErrors.actBillCurrAmt = 'Act Bill Amt.(Bill Curr) is required';
+    //     summaryValid = false;
+    //   }
+    //   if (!row.actBillLcAmt) {
+    //     rowErrors.actBillLcAmt = 'Act Bill Amt.(LC) is required';
+    //     summaryValid = false;
+    //   }
+    //   if (!row.gstInputLcAmt) {
+    //     rowErrors.gstInputLcAmt = 'GST Input Amt(LC) is required';
+    //     summaryValid = false;
+    //   }
+    //   if (!row.netBillCurrAmt) {
+    //     rowErrors.netBillCurrAmt = 'Net Amt.(Bill Curr) is required';
+    //     summaryValid = false;
+    //   }
+    //   if (!row.netBillLcAmt) {
+    //     rowErrors.netBillLcAmt = 'Net Amt.(LC) is required';
+    //     summaryValid = false;
+    //   }
+    //   if (!row.roundOff) {
+    //     rowErrors.roundOff = 'Round Off is required';
+    //     summaryValid = false;
+    //   }
+    //   if (!row.totChargesBillCurrAmt) {
+    //     rowErrors.totChargesBillCurrAmt = 'Tot. Charge Amt.(Bill Curr) is required';
+    //     summaryValid = false;
+    //   }
+    //   if (!row.totChargesLcAmt) {
+    //     rowErrors.totChargesLcAmt = 'Tot. Charge Amt.(LC) is required';
+    //     summaryValid = false;
+    //   }
 
-  //     // Address
-  //     if (!formData.address) {
-  //       newErrors.address = 'Address is required';
-  //       formValid = false;
-  //     } else {
-  //       newErrors.address = '';
-  //     }
+    //   return rowErrors;
+    // });
+    // setFieldErrors(errors);
 
-  //     // Pincode
-  //     if (!formData.pincode) {
-  //       newErrors.pincode = 'Pincode is required';
-  //       formValid = false;
-  //     } else {
-  //       newErrors.pincode = '';
-  //     }
+    // setCostInvSummaryDTO(summaryTableErrors);
 
-  //     // Status
-  //     if (!formData.status) {
-  //       newErrors.status = 'Status is required';
-  //       formValid = false;
-  //     } else {
-  //       newErrors.status = '';
-  //     }
-
-  //     // GST Type
-  //     if (!formData.gsttype) {
-  //       newErrors.gsttype = 'GST Type is required';
-  //       formValid = false;
-  //     } else {
-  //       newErrors.gsttype = '';
-  //     }
-
-  //     // Due Date
-  //     if (!formData.dueDate) {
-  //       newErrors.dueDate = 'Due Date is required';
-  //       formValid = false;
-  //     } else {
-  //       newErrors.dueDate = '';
-  //     }
-
-  //     // Bill Curr
-  //     if (!formData.billCurr) {
-  //       newErrors.billCurr = 'Bill Curr is required';
-  //       formValid = false;
-  //     } else {
-  //       newErrors.billCurr = '';
-  //     }
-
-  //     // Sales Type
-  //     if (!formData.salesType) {
-  //       newErrors.salesType = 'Sales Type is required';
-  //       formValid = false;
-  //     } else {
-  //       newErrors.salesType = '';
-  //     }
-
-  //     setErrors(newErrors);
-  //     return formValid;
-  //   };
-
-  //   const handleSave = () => {
-  //     console.log('handleSave', formData);
-
-  //     if (validateForm()) {
-  //       axios
-  //         .put(`${process.env.REACT_APP_API_URL}/api/transaction/updateCreateTaxInvoice`, formData)
-  //         .then((response) => {
-  //           console.log('Response:', response.data);
-  //           showToast('success', 'Tax Invoice Created Successfully');
-  //           handleClear();
-  //         })
-  //         .catch((error) => {
-  //           console.error('Error:', error);
-  //         });
-  //     }
-  //   };
+    if (Object.keys(errors).length === 0 && CostInvoiceValid) {
+      console.log('try called');
+      const costVO = chargerCostInvoice.map((row) => ({
+        ...(editId && { id: row.id }),
+        billAmt: row.billAmt,
+        chargeCode: row.chargeCode,
+        chargeLedger: row.chargeLedger,
+        chargeName: row.chargeName,
+        contType: row.contType,
+        currency: row.currency,
+        exRate: row.exRate,
+        fcAmt: row.fcAmt,
+        gsac: row.gsac,
+        gst: row.gst,
+        houseNo: row.houseNo,
+        jobNo: row.jobNo,
+        lcAmt: row.lcAmt,
+        subJobNo: row.subJobNo
+      }));
+      const costSummaryVO = costInvSummaryDTO.map((row) => ({
+        ...(editId && { id: row.id }),
+        actBillCurrAmt: row.actBillCurrAmt,
+        actBillLcAmt: row.actBillLcAmt,
+        gstInputLcAmt: row.gstInputLcAmt,
+        netBillCurrAmt: row.netBillCurrAmt,
+        netBillLcAmt: row.netBillLcAmt,
+        roundOff: row.roundOff,
+        totChargesBillCurrAmt: row.totChargesBillCurrAmt,
+        totChargesLcAmt: row.totChargesLcAmt
+      }));
+      const tdsVO = tdsCostInvoiceDTO.map((row) => ({
+        ...(editId && { id: row.id }),
+        section: row.section,
+        tdsWithHolding: row.tdsWithHolding,
+        tdsWithHoldingPer: row.tdsWithHoldingPer,
+        totTdsWhAmnt: row.totTdsWhAmnt
+      }));
+      const saveFormData = {
+        ...(editId && { id: editId }),
+        accuralid: formData.accuralid,
+        address: formData.address,
+        branch: branch,
+        branchCode: branchCode,
+        client: formData.client,
+        chargerCostInvoiceDTO: costVO,
+        costInvSummaryDTO: costSummaryVO,
+        costInvoiceDate: dayjs(formData.costInvoiceDate).format('YYYY-MM-DD'),
+        costInvoiceNo: formData.costInvoiceNo,
+        costType: formData.costType,
+        createdBy: loginUserName,
+        creditDays: formData.creditDays,
+        currency: formData.currency,
+        customer: formData.customer,
+        dueDate: dayjs(formData.dueDate).format('YYYY-MM-DD'),
+        exRate: formData.exRate,
+        finYear: finYear,
+        gstType: formData.gstType,
+        mode: formData.mode,
+        orgId: orgId,
+        otherInfo: formData.otherInfo,
+        payment: formData.payment,
+        product: formData.product,
+        purVoucherDate: dayjs(formData.purVoucherDate).format('YYYY-MM-DD'),
+        purVoucherNo: formData.purVoucherNo,
+        remarks: formData.remarks,
+        shipperRefNo: formData.shipperRefNo,
+        supplierBillNo: formData.supplierBillNo,
+        supplierCode: formData.supplierCode,
+        supplierGstIn: formData.supplierGstIn,
+        supplierGstInCode: formData.supplierGstInCode,
+        supplierName: formData.supplierName,
+        supplierPlace: formData.supplierPlace,
+        supplierType: formData.supplierType,
+        tdsCostInvoiceDTO: tdsVO,
+        utrRef: formData.utrRef
+      };
+      console.log('DATA TO SAVE IS:', saveFormData);
+      try {
+        const response = await apiCalls('put', `/costInvoice/updateCreateCostInvoice`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? 'Cost Invoice Updated Successfully' : 'Cost Invoice Created successfully');
+          getAllCostInvoiceByOrgId();
+          handleClear();
+        } else {
+          showToast('error', response.paramObjectsMap.errorMessage || 'Cost Invoice Creation failed');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Cost Invoice creation failed');
+      }
+    } else {
+      setFieldErrors(errors);
+    }
+  };
 
   return (
     <>
-      <ToastComponent />
+      <div>
+        <ToastComponent />
+      </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
-        <div className="row">
+        <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <Tooltip title="Search" placement="top">
-              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <SearchIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-
-            <Tooltip title="Clear" placement="top">
-              {' '}
-              <ButtonBase sx={{ borderRadius: '12px', marginRight: '10px' }} onClick={handleClear}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <ClearIcon size="1.3rem" stroke={1.5} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-
-            <Tooltip title="List View" placement="top">
-              {' '}
-              <ButtonBase sx={{ borderRadius: '12px' }}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <FormatListBulletedTwoToneIcon size="1.3rem" stroke={1.5} onClick={handleListView} />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
-            <Tooltip title="Save" placement="top">
-              {' '}
-              <ButtonBase sx={{ borderRadius: '12px', marginLeft: '10px' }}>
-                <Avatar
-                  variant="rounded"
-                  sx={{
-                    ...theme.typography.commonAvatar,
-                    ...theme.typography.mediumAvatar,
-                    transition: 'all .2s ease-in-out',
-                    background: theme.palette.secondary.light,
-                    color: theme.palette.secondary.dark,
-                    '&[aria-controls="menu-list-grow"],&:hover': {
-                      background: theme.palette.secondary.dark,
-                      color: theme.palette.secondary.light
-                    }
-                  }}
-                  ref={anchorRef}
-                  aria-haspopup="true"
-                  color="inherit"
-                >
-                  <SaveIcon
-                    size="1.3rem"
-                    stroke={1.5}
-                    //   onClick={handleSave}
-                  />
-                </Avatar>
-              </ButtonBase>
-            </Tooltip>
+            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
           </div>
-          {!listView && (
-            <div className="d-flex flex-wrap justify-content-start row">
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Mode
-                  </InputLabel>
-                  <Select
-                    labelId="mode"
-                    value={formData.mode}
-                    onChange={(e) => setFormData({ ...formData, mode: e.target.value })}
-                    label="Select Mode"
-                    required
-                    error={!!errors.mode}
-                    helperText={errors.mode}
-                  >
-                    <MenuItem value="Customer">Submit</MenuItem>
-                    <MenuItem value="Vendor">Edit</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Product
-                  </InputLabel>
-                  <Select
-                    labelId="product"
-                    value={formData.product}
-                    onChange={(e) => setFormData({ ...formData, product: e.target.value })}
-                    label="Select product"
-                    required
-                    error={!!errors.product}
-                    helperText={errors.product}
-                  >
-                    <MenuItem value="Customer">SO</MenuItem>
-                    <MenuItem value="Vendor">---</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
 
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Pur Voucher No"
-                    size="small"
-                    required
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.partyName}
-                    onChange={(e) => setFormData({ ...formData, purchaseVoucherNO: e.target.value })}
-                    error={!!errors.purchaseVoucherNO}
-                  />
-                </FormControl>
-              </div>
+          {showForm ? (
+            <>
+              <div className="row d-flex ml">
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small" variant="outlined" error={!!fieldErrors.mode}>
+                    <InputLabel id="mode-label">Mode</InputLabel>
+                    <Select labelId="mode-label" label="Select Mode" name="mode" value={formData.mode} onChange={handleInputChange}>
+                      <MenuItem value="SUBMIT">Submit</MenuItem>
+                      <MenuItem value="EDIT">Edit</MenuItem>
+                    </Select>
+                    {fieldErrors.mode && <FormHelperText style={{ color: 'red' }}>{fieldErrors.mode}</FormHelperText>}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small" variant="outlined" error={!!fieldErrors.product}>
+                    <InputLabel id="product">Product</InputLabel>
+                    <Select labelId="product" label="Select product" name="product" value={formData.product} onChange={handleInputChange}>
+                      <MenuItem value="SO">SO</MenuItem>
+                      <MenuItem value="AO">AO</MenuItem>
+                    </Select>
+                    {fieldErrors.product && <FormHelperText style={{ color: 'red' }}>{fieldErrors.product}</FormHelperText>}
+                  </FormControl>
+                </div>
 
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          height: '40px'
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          padding: '10px 14px'
-                        },
-                        '& .MuiInputLabel-root': {
-                          transform: 'translate(15px, 9px) scale(1)' // Adjust label position
-                        },
-                        '& .MuiInputLabel-shrink': {
-                          transform: 'translate(14px, -6px) scale(0.75)' // Adjust label position when focused
-                        }
-                      }}
-                      label="Purchase Voucher Date"
-                      value={formData.purchaseVoucherDate}
-                      onChange={(newValue) => setFormData({ ...formData, purchaseVoucherDate: newValue })}
-                      renderInput={(params) => <TextField {...params} size="small" />}
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Pur Voucher No"
+                      size="small"
+                      name="purVoucherNo"
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.purVoucherNo}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.purVoucherNo}
+                      helperText={fieldErrors.purVoucherNo}
                     />
-                  </LocalizationProvider>
-                </FormControl>
-              </div>
+                  </FormControl>
+                </div>
 
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Cost Invoice No"
-                    size="small"
-                    required
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.costInvNo}
-                    onChange={(e) => setFormData({ ...formData, costInvNo: e.target.value })}
-                    error={!!errors.costInvNo}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          height: '40px'
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          padding: '10px 14px'
-                        },
-                        '& .MuiInputLabel-root': {
-                          transform: 'translate(15px, 9px) scale(1)' // Adjust label position
-                        },
-                        '& .MuiInputLabel-shrink': {
-                          transform: 'translate(14px, -6px) scale(0.75)' // Adjust label position when focused
-                        }
-                      }}
-                      label="Date"
-                      value={formData.docDate}
-                      onChange={(newValue) => setFormData({ ...formData, docDate: newValue })}
-                      renderInput={(params) => <TextField {...params} size="small" />}
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="Purchase Voucher Date"
+                        value={formData.purVoucherDate}
+                        onChange={(date) => handleDateChange('purVoucherDate', date)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true }
+                        }}
+                        format="YYYY-MM-DD"
+                      />
+                    </LocalizationProvider>
+                    {fieldErrors.purVoucherDate && <p className="dateErrMsg">Pur Voucher Date is required</p>}
+                  </FormControl>
+                </div>
+
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Cost Invoice No"
+                      size="small"
+                      name="costInvoiceNo"
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.costInvoiceNo}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.costInvoiceNo}
+                      helperText={fieldErrors.costInvoiceNo}
                     />
-                  </LocalizationProvider>
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Supplier Bill No"
-                    size="small"
-                    required
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.supplierBillNo}
-                    onChange={(e) => setFormData({ ...formData, supplierBillNo: e.target.value })}
-                    error={!!errors.supplierBillNo}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          height: '40px'
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          padding: '10px 14px'
-                        },
-                        '& .MuiInputLabel-root': {
-                          transform: 'translate(15px, 9px) scale(1)' // Adjust label position
-                        },
-                        '& .MuiInputLabel-shrink': {
-                          transform: 'translate(14px, -6px) scale(0.75)' // Adjust label position when focused
-                        }
-                      }}
-                      label="Date"
-                      value={formData.docDate1}
-                      onChange={(newValue) => setFormData({ ...formData, docDate1: newValue })}
-                      renderInput={(params) => <TextField {...params} size="small" />}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="Cost Invoice Date"
+                        value={formData.costInvoiceDate}
+                        onChange={(date) => handleDateChange('costInvoiceDate', date)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true }
+                        }}
+                        format="YYYY-MM-DD"
+                      />
+                    </LocalizationProvider>
+                    {fieldErrors.costInvoiceDate && <p className="dateErrMsg">Cost Invoice Date is required</p>}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Supplier Bill No"
+                      size="small"
+                      name="supplierBillNo"
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.supplierBillNo}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.supplierBillNo}
+                      helperText={fieldErrors.supplierBillNo}
                     />
-                  </LocalizationProvider>
-                </FormControl>
-              </div>
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="Date"
+                        value={formData.docDate}
+                        disabled
+                        onChange={(date) => handleDateChange('docDate', date)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true }
+                        }}
+                        format="YYYY-MM-DD"
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
 
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Supplier Type
-                  </InputLabel>
-                  <Select
-                    labelId="supplierTypeLabel"
-                    value={formData.supplierType}
-                    onChange={(e) => setFormData({ ...formData, supplierType: e.target.value })}
-                    label="Supplier Type"
-                    required
-                    error={!!errors.supplierType}
-                    helperText={errors.supplierType}
-                  >
-                    <MenuItem value="Customer">Customer</MenuItem>
-                    <MenuItem value="Vendor">Vendor</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="demo-simple-select-label">Supplier Type</InputLabel>
+                    <Select
+                      labelId="supplierTypeLabel"
+                      value={formData.supplierType}
+                      name="supplierType"
+                      onChange={handleInputChange}
+                      label="Supplier Type"
+                      error={!!fieldErrors.supplierType}
+                      helperText={fieldErrors.supplierType}
+                    >
+                      <MenuItem value="CUSTOMER">Customer</MenuItem>
+                      <MenuItem value="VENDOR">Vendor</MenuItem>
+                    </Select>
+                    {fieldErrors.supplierType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierType}</FormHelperText>}
+                  </FormControl>
+                </div>
 
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Supplier Code"
-                    size="small"
-                    required
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.supplierCode}
-                    onChange={(e) => setFormData({ ...formData, supplierCode: e.target.value })}
-                    error={!!errors.supplierCode}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Credit Days"
-                    size="small"
-                    required
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.creditDays}
-                    onChange={(e) => setFormData({ ...formData, creditDays: e.target.value })}
-                    error={!!errors.creditDays}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      sx={{
-                        '& .MuiInputBase-root': {
-                          height: '40px'
-                        },
-                        '& .MuiOutlinedInput-input': {
-                          padding: '10px 14px'
-                        },
-                        '& .MuiInputLabel-root': {
-                          transform: 'translate(15px, 9px) scale(1)' // Adjust label position
-                        },
-                        '& .MuiInputLabel-shrink': {
-                          transform: 'translate(14px, -6px) scale(0.75)' // Adjust label position when focused
-                        }
-                      }}
-                      label="DueDate"
-                      value={formData.dueDate}
-                      onChange={(newValue) => setFormData({ ...formData, dueDate: newValue })}
-                      renderInput={(params) => <TextField {...params} />}
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Supplier Code"
+                      size="small"
+                      name="supplierCode"
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.supplierCode}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.supplierCode}
+                      helperText={fieldErrors.supplierCode}
                     />
-                  </LocalizationProvider>
-                </FormControl>
-              </div>
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Credit Days"
+                      size="small"
+                      type="number"
+                      name="creditDays"
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.creditDays}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.creditDays}
+                      helperText={fieldErrors.creditDays}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="Due Date"
+                        value={formData.dueDate}
+                        onChange={(date) => handleDateChange('dueDate', date)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true }
+                        }}
+                        format="YYYY-MM-DD"
+                      />
+                    </LocalizationProvider>
+                    {fieldErrors.dueDate && <p className="dateErrMsg">Due Date is required</p>}
+                  </FormControl>
+                </div>
 
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Supplier Name"
-                    size="small"
-                    required
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.supplierName}
-                    onChange={(e) => setFormData({ ...formData, supplierName: e.target.value })}
-                    error={!!errors.supplierName}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required></InputLabel>
-                  <Select
-                    labelId="supplierLoc"
-                    value={formData.supplierLoc}
-                    onChange={(e) => setFormData({ ...formData, supplierLoc: e.target.value })}
-                    // label="Place of Supply"
-                    required
-                    error={!!errors.supplierLoc}
-                    helperText={errors.supplierLoc}
-                  >
-                    <MenuItem value="Customer">Ahmedabad</MenuItem>
-                    <MenuItem value="Vendor">Chennai</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Currency
-                  </InputLabel>
-                  <Select
-                    labelId="Currency"
-                    value={formData.currency}
-                    onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                    label="Currency"
-                    required
-                    error={!!errors.currency}
-                    helperText={errors.currency}
-                  >
-                    <MenuItem value="Customer">INR</MenuItem>
-                    <MenuItem value="Vendor">USD</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="ExRates"
-                    size="small"
-                    required
-                    multiline
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.exRates}
-                    onChange={(e) => setFormData({ ...formData, exRates: e.target.value })}
-                    error={!!errors.exRates}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Supplier GST State Code
-                  </InputLabel>
-                  <Select
-                    labelId="supplierGSTState"
-                    value={formData.supplierGstCode}
-                    onChange={(e) => setFormData({ ...formData, supplierGstCode: e.target.value })}
-                    label="Supplier GSTIN"
-                    required
-                    error={!!errors.supplierGstCode}
-                    helperText={errors.supplierGstCode}
-                  >
-                    <MenuItem value="Customer">TN</MenuItem>
-                    <MenuItem value="Vendor">KA</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Supplier Name"
+                      size="small"
+                      name="supplierName"
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.supplierName}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.supplierName}
+                      helperText={fieldErrors.supplierName}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="demo-simple-select-label">Supplier Place</InputLabel>
+                    <Select
+                      labelId="supplierPlace"
+                      label="supplierPlace"
+                      value={formData.supplierPlace}
+                      name="supplierPlace"
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.supplierPlace}
+                      helperText={fieldErrors.supplierPlace}
+                    >
+                      <MenuItem value="PUNE">PUNE</MenuItem>
+                      <MenuItem value="CHENNAI">CHENNAI</MenuItem>
+                    </Select>
+                    {fieldErrors.supplierPlace && <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierPlace}</FormHelperText>}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
+                    <InputLabel id="demo-simple-select-label">
+                      {
+                        <span>
+                          Currency <span className="asterisk">*</span>
+                        </span>
+                      }
+                    </InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      label="Currency"
+                      onChange={handleInputChange}
+                      name="currency"
+                      value={formData.currency}
+                    >
+                      {currencies.map((item) => (
+                        <MenuItem key={item.id} value={item.currency}>
+                          {item.currency}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {fieldErrors.currency && <FormHelperText style={{ color: 'red' }}>Currency is required</FormHelperText>}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="ExRate"
+                      name="exRate"
+                      size="small"
+                      type="number"
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.exRate}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.exRate}
+                      helperText={fieldErrors.exRate}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="demo-simple-select-label">Supplier GST State Code</InputLabel>
+                    <Select
+                      labelId="supplierGSTCode"
+                      name="supplierGstInCode"
+                      value={formData.supplierGstInCode}
+                      onChange={handleInputChange}
+                      label="Supplier GST Code"
+                      error={!!fieldErrors.supplierGstInCode}
+                      helperText={fieldErrors.supplierGstInCode}
+                    >
+                      <MenuItem value="TN">TN</MenuItem>
+                      <MenuItem value="GJ">GJ</MenuItem>
+                    </Select>
+                    {fieldErrors.supplierGstInCode && (
+                      <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierGstInCode}</FormHelperText>
+                    )}
+                  </FormControl>
+                </div>
 
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Supplier GSTIN"
-                    size="small"
-                    required
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.supplierGstIn}
-                    onChange={(e) => setFormData({ ...formData, supplierGstIn: e.target.value })}
-                    error={!!errors.supplierGstIn}
-                  />
-                </FormControl>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Supplier GSTIN"
+                      size="small"
+                      name="supplierGstIn"
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.supplierGstIn}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.supplierGstIn}
+                      helperText={fieldErrors.supplierGstIn}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Address"
+                      name="address"
+                      size="small"
+                      multiline
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.address}
+                      helperText={fieldErrors.address}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Shipper RefNo"
+                      size="small"
+                      name="shipperRefNo"
+                      multiline
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.shipperRefNo}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.shipperRefNo}
+                      helperText={fieldErrors.shipperRefNo}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Other Info"
+                      size="small"
+                      name="otherInfo"
+                      multiline
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.otherInfo}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.otherInfo}
+                      helperText={fieldErrors.otherInfo}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="demo-simple-select-label">GST Type</InputLabel>
+                    <Select
+                      labelId="gstType"
+                      name="gstType"
+                      value={formData.gstType}
+                      onChange={handleInputChange}
+                      label="GST Type"
+                      error={!!fieldErrors.gstType}
+                      helperText={fieldErrors.gstType}
+                    >
+                      <MenuItem value="INTER">INTER</MenuItem>
+                      <MenuItem value="INTRA">INTRA</MenuItem>
+                    </Select>
+                    {fieldErrors.gstType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.gstType}</FormHelperText>}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="demo-simple-select-label">Payment</InputLabel>
+                    <Select
+                      labelId="payment"
+                      value={formData.payment}
+                      onChange={handleInputChange}
+                      label="Payment"
+                      name="payment"
+                      error={!!fieldErrors.payment}
+                      helperText={fieldErrors.payment}
+                    >
+                      <MenuItem value="YETTOPAY">Yet to Pay</MenuItem>
+                      <MenuItem value="PAID">Paid</MenuItem>
+                      <MenuItem value="PENDING">Pending</MenuItem>
+                    </Select>
+                    {fieldErrors.payment && <FormHelperText style={{ color: 'red' }}>{fieldErrors.payment}</FormHelperText>}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Accrual ID"
+                      size="small"
+                      name="accuralid"
+                      multiline
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.accuralid}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.accuralid}
+                      helperText={fieldErrors.accuralid}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="UTR Reference"
+                      size="small"
+                      name="utrRef"
+                      multiline
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.utrRef}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.utrRef}
+                      helperText={fieldErrors.utrRef}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Remarks"
+                      size="small"
+                      name="remarks"
+                      multiline
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.remarks}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.remarks}
+                      helperText={fieldErrors.remarks}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-5 mb-3">
+                  <div className="d-flex flex-row">
+                    <FormLabel className="me-3" style={{ marginTop: 10 }}>
+                      Cost Type
+                    </FormLabel>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={formData.costType === 'Regular'}
+                          onChange={(e) => handleCostTypeChange('Regular')}
+                          name="Regular"
+                          color="primary"
+                        />
+                      }
+                      label="Regular"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={formData.costType === 'Accrual'}
+                          onChange={(e) => handleCostTypeChange('Accrual')}
+                          name="Accrual"
+                          color="primary"
+                        />
+                      }
+                      label="Accrual"
+                    />
+                  </div>
+                </div>
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Remarks"
-                    size="small"
-                    required
-                    multiline
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.remarks}
-                    onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
-                    error={!!errors.remarks}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Address"
-                    size="small"
-                    required
-                    multiline
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    error={!!errors.address}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Shipper RefNo"
-                    size="small"
-                    required
-                    multiline
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.shipperRefNo}
-                    onChange={(e) => setFormData({ ...formData, shipperRefNo: e.target.value })}
-                    error={!!errors.shipperRefNo}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Other Info"
-                    size="small"
-                    required
-                    multiline
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.otherInfo}
-                    onChange={(e) => setFormData({ ...formData, otherInfo: e.target.value })}
-                    error={!!errors.otherInfo}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    GST Type
-                  </InputLabel>
-                  <Select
-                    labelId="gstType"
-                    value={formData.gsttype}
-                    onChange={(e) => setFormData({ ...formData, gsttype: e.target.value })}
-                    label="GST Type"
-                    required
-                    error={!!errors.gsttype}
-                    helperText={errors.gsttype}
+              <div className="row mt-2">
+                <Box sx={{ width: '100%' }}>
+                  <Tabs
+                    value={value}
+                    onChange={handleChange}
+                    textColor="secondary"
+                    indicatorColor="secondary"
+                    aria-label="secondary tabs example"
                   >
-                    <MenuItem value="Inter">Inter</MenuItem>
-                    <MenuItem value="Intra">Intra</MenuItem>
-                  </Select>
-                </FormControl>
+                    <Tab value={0} label="Master/House Charges" />
+                    <Tab value={1} label="TDS" />
+                    <Tab value={2} label="Summary" />
+                  </Tabs>
+                </Box>
+                <Box sx={{ padding: 2 }}>
+                  {value === 0 && (
+                    <>
+                      <div className="row d-flex ml">
+                        <div className="mb-1">
+                          <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                        </div>
+                        <div className="row mt-2">
+                          <div className="col-lg-12">
+                            <div className="table-responsive">
+                              <table className="table table-bordered ">
+                                <thead>
+                                  <tr style={{ backgroundColor: '#673AB7' }}>
+                                    <th className="table-header">Action</th>
+                                    <th className="table-header">S.No</th>
+                                    <th className="table-header">Bill Amount</th>
+                                    <th className="table-header">Charge Code</th>
+                                    <th className="table-header">Charge Ledger</th>
+                                    <th className="table-header">Charge Name</th>
+                                    <th className="table-header">Cont Type</th>
+                                    <th className="table-header">Currency</th>
+                                    <th className="table-header">EX Rate</th>
+                                    <th className="table-header">FC Amount</th>
+                                    <th className="table-header">GSAC</th>
+                                    <th className="table-header">GST</th>
+                                    <th className="table-header">House No</th>
+                                    <th className="table-header">Job No</th>
+                                    <th className="table-header">LC Amount</th>
+                                    <th className="table-header">Sub Job No</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {chargerCostInvoice.map((row, index) => (
+                                    <tr key={row.id}>
+                                      <td className="border px-2 py-2 text-center">
+                                        <ActionButton
+                                          title="Delete"
+                                          icon={DeleteIcon}
+                                          onClick={() =>
+                                            handleDeleteRow(
+                                              row.id,
+                                              chargerCostInvoice,
+                                              setChargerCostInvoice,
+                                              costInvoiceErrors,
+                                              setCostInvoiceErrors
+                                            )
+                                          }
+                                        />
+                                      </td>
+                                      <td className="text-center">
+                                        <div className="pt-2">{index + 1}</div>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.billAmt}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setChargerCostInvoice((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, billAmt: value } : r))
+                                            );
+                                            setCostInvoiceErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                billAmt: !value ? 'Bill Amt is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={costInvoiceErrors[index]?.billAmt ? 'error form-control' : 'form-control'}
+                                        />
+                                        {costInvoiceErrors[index]?.billAmt && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {costInvoiceErrors[index].billAmt}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.chargeCode}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setChargerCostInvoice((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, chargeCode: value } : r))
+                                            );
+                                            setCostInvoiceErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                chargeCode: !value ? 'Charge Code is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={costInvoiceErrors[index]?.chargeCode ? 'error form-control' : 'form-control'}
+                                        />
+                                        {costInvoiceErrors[index]?.chargeCode && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {costInvoiceErrors[index].chargeCode}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.chargeLedger}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setChargerCostInvoice((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, chargeLedger: value } : r))
+                                            );
+                                            setCostInvoiceErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                chargeLedger: !value ? 'Charge Ledger is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={costInvoiceErrors[index]?.chargeLedger ? 'error form-control' : 'form-control'}
+                                        />
+                                        {costInvoiceErrors[index]?.chargeLedger && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {costInvoiceErrors[index].chargeLedger}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.chargeName}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setChargerCostInvoice((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, chargeName: value } : r))
+                                            );
+                                            setCostInvoiceErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                chargeName: !value ? 'Charge Name is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={costInvoiceErrors[index]?.chargeName ? 'error form-control' : 'form-control'}
+                                        />
+                                        {costInvoiceErrors[index]?.chargeName && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {costInvoiceErrors[index].chargeName}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.contType}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setChargerCostInvoice((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, contType: value } : r))
+                                            );
+                                            setCostInvoiceErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                contType: !value ? 'Cont Type is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={costInvoiceErrors[index]?.contType ? 'error form-control' : 'form-control'}
+                                        />
+                                        {costInvoiceErrors[index]?.contType && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {costInvoiceErrors[index].contType}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <select
+                                          value={row.currency}
+                                          style={{ width: '150px' }}
+                                          className={costInvoiceErrors[index]?.currency ? 'error form-control' : 'form-control'}
+                                          onChange={(e) =>
+                                            setChargerCostInvoice((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, currency: e.target.value } : r))
+                                            )
+                                          }
+                                        >
+                                          <option value="">-- Select --</option>
+                                          {currencies.map((item) => (
+                                            <option key={item.id} value={item.currency}>
+                                              {item.currency}
+                                            </option>
+                                          ))}
+                                        </select>
+                                        {costInvoiceErrors[index]?.currency && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {costInvoiceErrors[index].currency}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.exRate}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setChargerCostInvoice((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r))
+                                            );
+                                            setCostInvoiceErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                exRate: !value ? 'EX Rate is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
+                                        />
+                                        {costInvoiceErrors[index]?.exRate && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {costInvoiceErrors[index].exRate}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.fcAmt}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setChargerCostInvoice((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, fcAmt: value } : r))
+                                            );
+                                            setCostInvoiceErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                fcAmt: !value ? 'FC Amt is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={costInvoiceErrors[index]?.fcAmt ? 'error form-control' : 'form-control'}
+                                        />
+                                        {costInvoiceErrors[index]?.fcAmt && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {costInvoiceErrors[index].fcAmt}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.gsac}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setChargerCostInvoice((prev) => prev.map((r) => (r.id === row.id ? { ...r, gsac: value } : r)));
+                                            setCostInvoiceErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                gsac: !value ? 'GSAC is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={costInvoiceErrors[index]?.gsac ? 'error form-control' : 'form-control'}
+                                        />
+                                        {costInvoiceErrors[index]?.gsac && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {costInvoiceErrors[index].gsac}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.gst}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setChargerCostInvoice((prev) => prev.map((r) => (r.id === row.id ? { ...r, gst: value } : r)));
+                                            setCostInvoiceErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                gst: !value ? 'GST is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={costInvoiceErrors[index]?.gst ? 'error form-control' : 'form-control'}
+                                        />
+                                        {costInvoiceErrors[index]?.gst && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {costInvoiceErrors[index].gst}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.houseNo}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setChargerCostInvoice((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, houseNo: value } : r))
+                                            );
+                                            setCostInvoiceErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                houseNo: !value ? 'House No is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={costInvoiceErrors[index]?.houseNo ? 'error form-control' : 'form-control'}
+                                        />
+                                        {costInvoiceErrors[index]?.houseNo && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {costInvoiceErrors[index].houseNo}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.jobNo}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setChargerCostInvoice((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, jobNo: value } : r))
+                                            );
+                                            setCostInvoiceErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                jobNo: !value ? 'Job No is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={costInvoiceErrors[index]?.jobNo ? 'error form-control' : 'form-control'}
+                                        />
+                                        {costInvoiceErrors[index]?.jobNo && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {costInvoiceErrors[index].jobNo}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.lcAmt}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setChargerCostInvoice((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, lcAmt: value } : r))
+                                            );
+                                            setCostInvoiceErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                lcAmt: !value ? 'LC Amt is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={costInvoiceErrors[index]?.lcAmt ? 'error form-control' : 'form-control'}
+                                        />
+                                        {costInvoiceErrors[index]?.lcAmt && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {costInvoiceErrors[index].lcAmt}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.subJobNo}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            setChargerCostInvoice((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, subJobNo: value } : r))
+                                            );
+                                            setCostInvoiceErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                subJobNo: !value ? 'Sub Job No is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          className={costInvoiceErrors[index]?.subJobNo ? 'error form-control' : 'form-control'}
+                                        />
+                                        {costInvoiceErrors[index]?.subJobNo && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {costInvoiceErrors[index].subJobNo}
+                                          </div>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {value === 1 && (
+                    <>
+                      {tdsCostInvoiceDTO.map((row, index) => (
+                        <div className="row mt-3">
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth size="small">
+                              <InputLabel id="demo-simple-select-label">TDS / WH</InputLabel>
+                              <Select
+                                labelId="tds/wh"
+                                name="tdsWithHolding"
+                                value={tdsCostInvoiceDTO[index]?.tdsWithHolding || ''}
+                                onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
+                                label="TDS / WH"
+                                required
+                                error={!!tdsCostErrors[index]?.tdsWithHolding}
+                              >
+                                <MenuItem value="Inter">YES</MenuItem>
+                                <MenuItem value="Intra">NO</MenuItem>
+                              </Select>
+                              <FormHelperText error>{tdsCostErrors[index]?.tdsWithHolding}</FormHelperText>
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth size="small">
+                              <TextField
+                                label="TDS / WH %"
+                                size="small"
+                                name="tdsWithHoldingPer"
+                                inputProps={{ maxLength: 30 }}
+                                value={tdsCostInvoiceDTO[index]?.tdsWithHoldingPer || ''}
+                                onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
+                                error={!!tdsCostErrors[index]?.tdsWithHoldingPer}
+                                helperText={tdsCostErrors[index]?.tdsWithHoldingPer || ''}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth size="small">
+                              <TextField
+                                label="Section"
+                                size="small"
+                                name="section"
+                                inputProps={{ maxLength: 30 }}
+                                value={tdsCostInvoiceDTO[index]?.section || ''}
+                                onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
+                                error={!!tdsCostErrors[index]?.section}
+                                helperText={tdsCostErrors[index]?.section}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth size="small">
+                              <TextField
+                                label="Tot TDS/WH Amt"
+                                size="small"
+                                name="totTdsWhAmnt"
+                                inputProps={{ maxLength: 30 }}
+                                value={tdsCostInvoiceDTO[index]?.totTdsWhAmnt || ''}
+                                onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
+                                error={!!tdsCostErrors[index]?.totTdsWhAmnt}
+                                helperText={tdsCostErrors[index]?.totTdsWhAmnt}
+                              />
+                            </FormControl>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                  {value === 2 && (
+                    <>
+                      {costInvSummaryDTO.map((row, index) => (
+                        <div className="row mt-2">
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                label="Tot. Charge Amt.(Bill Curr)"
+                                name="totChargesBillCurrAmt"
+                                value={costInvSummaryDTO[index]?.totChargesBillCurrAmt || ''}
+                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
+                                size="small"
+                                placeholder="0.00"
+                                inputProps={{ maxLength: 30 }}
+                                error={!!costInvErrors[index]?.totChargesBillCurrAmt}
+                                helperText={costInvErrors[index]?.totChargesBillCurrAmt}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                label="Tot. Charge Amt.(LC)"
+                                name="totChargesLcAmt"
+                                value={costInvSummaryDTO[index]?.totChargesLcAmt || ''}
+                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
+                                size="small"
+                                placeholder="0.00"
+                                inputProps={{ maxLength: 30 }}
+                                error={!!costInvErrors[index]?.totChargesLcAmt}
+                                helperText={costInvErrors[index]?.totChargesLcAmt}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                label="Act Bill Amt.(Bill Curr)"
+                                name="actBillCurrAmt"
+                                value={costInvSummaryDTO[index]?.actBillCurrAmt || ''}
+                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
+                                size="small"
+                                placeholder="0.00"
+                                inputProps={{ maxLength: 30 }}
+                                error={!!costInvErrors[index]?.actBillCurrAmt}
+                                helperText={costInvErrors[index]?.actBillCurrAmt}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                label="Act Bill Amt.(LC)"
+                                name="actBillLcAmt"
+                                value={costInvSummaryDTO[index]?.actBillLcAmt || ''}
+                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
+                                size="small"
+                                placeholder="0.00"
+                                inputProps={{ maxLength: 30 }}
+                                error={!!costInvErrors[index]?.actBillLcAmt}
+                                helperText={costInvErrors[index]?.actBillLcAmt}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                label="Net Amt.(LC)"
+                                name="netBillLcAmt"
+                                value={costInvSummaryDTO[index]?.netBillLcAmt || ''}
+                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
+                                size="small"
+                                placeholder="0.00"
+                                inputProps={{ maxLength: 30 }}
+                                error={!!costInvErrors[index]?.netBillLcAmt}
+                                helperText={costInvErrors[index]?.netBillLcAmt}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                label="Net Amt.(Bill Curr)"
+                                name="netBillCurrAmt"
+                                value={costInvSummaryDTO[index]?.netBillCurrAmt || ''}
+                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
+                                size="small"
+                                placeholder="0.00"
+                                inputProps={{ maxLength: 30 }}
+                                error={!!costInvErrors[index]?.netBillCurrAmt}
+                                helperText={costInvErrors[index]?.netBillCurrAmt}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                label="Round Off"
+                                name="roundOff"
+                                value={costInvSummaryDTO[index]?.roundOff || ''}
+                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
+                                size="small"
+                                placeholder="0.00"
+                                inputProps={{ maxLength: 30 }}
+                                error={!!costInvErrors[index]?.roundOff}
+                                helperText={costInvErrors[index]?.roundOff}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                label="GST Input Amt(LC)"
+                                name="gstInputLcAmt"
+                                value={costInvSummaryDTO[index]?.gstInputLcAmt || ''}
+                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
+                                size="small"
+                                placeholder="0.00"
+                                inputProps={{ maxLength: 30 }}
+                                error={!!costInvErrors[index]?.gstInputLcAmt}
+                                helperText={costInvErrors[index]?.gstInputLcAmt}
+                              />
+                            </FormControl>
+                          </div>
+                        </div>
+                      ))}
+                    </>
+                  )}
+                </Box>
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Payment
-                  </InputLabel>
-                  <Select
-                    labelId="payment"
-                    value={formData.payment}
-                    onChange={(e) => setFormData({ ...formData, payment: e.target.value })}
-                    label="Payment"
-                    required
-                    error={!!errors.payment}
-                    helperText={errors.payment}
-                  >
-                    <MenuItem value="USD">Yet to Pay</MenuItem>
-                    <MenuItem value="EUR">Paid</MenuItem>
-                    <MenuItem value="INR">Pending</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Accrual ID"
-                    size="small"
-                    required
-                    multiline
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.accrualId}
-                    onChange={(e) => setFormData({ ...formData, accrualId: e.target.value })}
-                    error={!!errors.accrualId}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="UTR Reference"
-                    size="small"
-                    required
-                    multiline
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.utrRef}
-                    onChange={(e) => setFormData({ ...formData, utrRef: e.target.value })}
-                    error={!!errors.utrRef}
-                  />
-                </FormControl>
-              </div>
-            </div>
+            </>
+          ) : (
+            <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getAllCostInvoiceById} />
           )}
         </div>
-
-        <br></br>
-        {!listView && (
-          <div className="card w-full p-6 bg-base-100 shadow-xl mb-3">
-            <Box sx={{ width: '100%', typography: 'body1' }}>
-              <TabContext value={value}>
-                <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                  <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
-                    <Tab label="Masters / House Charges" value="1" />
-                    <Tab label="TDS" value="2" />
-                    <Tab label="Summary" value="3">
-                      {' '}
-                    </Tab>
-                  </TabList>
-                </Box>
-                <TabPanel value="1">
-                  {/* <TableComponent tableData={formData.chargerTaxInvoiceDTO} onCreateNewRow={handleCreateNewRow1} /> */}
-                </TabPanel>
-
-                <TabPanel value="3">
-                  <div className="row d-flex mt-3">
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth variant="filled">
-                        <TextField
-                          label="Tot. Charge Amt.(Bill Curr)"
-                          name="lcChargeAmount"
-                          value={formData.billCurrChargeAmt}
-                          onChange={(e) => setFormData({ ...formData, billCurrChargeAmt: e.target.value })}
-                          size="small"
-                          placeholder="0.00"
-                          inputProps={{ maxLength: 30 }}
-                          error={fieldErrors['summaryTaxInvoiceDTO.billCurrChargeAmt']}
-                        />
-                      </FormControl>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth variant="filled">
-                        <TextField
-                          label="Tot. Charge Amt.(LC)"
-                          name="lcChargeAmount"
-                          value={formData.lcChargeAmount}
-                          onChange={(e) => setFormData({ ...formData, lcChargeAmount: e.target.value })}
-                          size="small"
-                          placeholder="0.00"
-                          inputProps={{ maxLength: 30 }}
-                          error={fieldErrors['summaryTaxInvoiceDTO.lcChargeAmount']}
-                        />
-                      </FormControl>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth variant="filled">
-                        <TextField
-                          label="Act Bill Amt.(Bill Curr)"
-                          name="summaryTaxInvoiceDTO.accBillAmtBillCurr"
-                          value={formData.accBillAmtBillCurr}
-                          onChange={(e) => setFormData({ ...formData, accBillAmtBillCurr: e.target.value })}
-                          size="small"
-                          placeholder="0.00"
-                          inputProps={{ maxLength: 30 }}
-                          error={fieldErrors['accBillAmtBillCurr']}
-                        />
-                      </FormControl>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth variant="filled">
-                        <TextField
-                          label="Act Bill Amt.(LC)"
-                          name="summaryTaxInvoiceDTO.accBillAmtLC"
-                          value={formData.accBillAmtLC}
-                          onChange={(e) => setFormData({ ...formData, accBillAmtLC: e.target.value })}
-                          size="small"
-                          placeholder="0.00"
-                          inputProps={{ maxLength: 30 }}
-                          error={fieldErrors['accBillAmtLC']}
-                        />
-                      </FormControl>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth variant="filled">
-                        <TextField
-                          label="Net Amt.(LC)"
-                          name="netAmtLC"
-                          value={formData.netAmtLC}
-                          onChange={(e) => setFormData({ ...formData, netAmtLC: e.target.value })}
-                          size="small"
-                          placeholder="0.00"
-                          inputProps={{ maxLength: 30 }}
-                          error={fieldErrors['netAmtLC']}
-                        />
-                      </FormControl>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth variant="filled">
-                        <TextField
-                          label="Net Amt.(Bill Curr)"
-                          name="netAmtBillCurr"
-                          value={formData.netAmtBillCurr}
-                          onChange={(e) => setFormData({ ...formData, netAmtBillCurr: e.target.value })}
-                          size="small"
-                          placeholder="0.00"
-                          inputProps={{ maxLength: 30 }}
-                          error={fieldErrors['netAmtBillCurr']}
-                        />
-                      </FormControl>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth variant="filled">
-                        <TextField
-                          label="Round Off"
-                          name="roundOff"
-                          value={formData.roundOff}
-                          onChange={(e) => setFormData({ ...formData, roundOff: e.target.value })}
-                          size="small"
-                          placeholder="0.00"
-                          inputProps={{ maxLength: 30 }}
-                          error={fieldErrors['roundOff']}
-                        />
-                      </FormControl>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth variant="filled">
-                        <TextField
-                          label="GST Input Amt(LC)"
-                          name="gstInputAmt"
-                          value={formData.gstInputAmt}
-                          onChange={(e) => setFormData({ ...formData, gstInputAmt: e.target.value })}
-                          size="small"
-                          placeholder="0.00"
-                          inputProps={{ maxLength: 30 }}
-                          error={fieldErrors['gstInputAmt']}
-                        />
-                      </FormControl>
-                    </div>
-                  </div>
-                </TabPanel>
-
-                <TabPanel value="2">
-                  <div className="row d-flex mt-3">
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth size="small">
-                        <InputLabel id="demo-simple-select-label" required>
-                          TDS / WH
-                        </InputLabel>
-                        <Select
-                          labelId="tds/wh"
-                          value={formData.tdsWh}
-                          onChange={(e) => setFormData({ ...formData, tdsWh: e.target.value })}
-                          label="TDS / WH"
-                          required
-                          error={!!errors.tdsWh}
-                          helperText={errors.tdsWh}
-                        >
-                          <MenuItem value="Inter">YES</MenuItem>
-                          <MenuItem value="Intra">NO</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth size="small">
-                        <TextField
-                          label="TDS / WH %"
-                          size="small"
-                          required
-                          multiline
-                          inputProps={{ maxLength: 30 }}
-                          value={formData.tdsWhPecentage}
-                          onChange={(e) => setFormData({ ...formData, tdsWhPecentage: e.target.value })}
-                          error={!!errors.tdsWhPecentage}
-                        />
-                      </FormControl>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth size="small">
-                        <TextField
-                          label=""
-                          size="small"
-                          required
-                          multiline
-                          inputProps={{ maxLength: 30 }}
-                          value={formData.tdsWhPecentageAmt}
-                          onChange={(e) => setFormData({ ...formData, tdsWhPecentageAmt: e.target.value })}
-                          error={!!errors.tdsWhPecentageAmt}
-                        />
-                      </FormControl>
-                    </div>
-
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth size="small">
-                        <InputLabel id="demo-simple-select-label" required>
-                          TDS / WH %
-                        </InputLabel>
-                        <Select
-                          labelId="tds/wh1"
-                          value={formData.tdsWhPecentage}
-                          onChange={(e) => setFormData({ ...formData, tdsWhPecentage: e.target.value })}
-                          label="TDS / WH1"
-                          required
-                          error={!!errors.tdsWhPecentage}
-                          helperText={errors.tdsWhPecentage}
-                        >
-                          <MenuItem value="Inter">YES</MenuItem>
-                          <MenuItem value="Intra">NO</MenuItem>
-                        </Select>
-                      </FormControl>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth size="small">
-                        <TextField
-                          label="Tot TDS/WH Amt"
-                          size="small"
-                          required
-                          multiline
-                          inputProps={{ maxLength: 30 }}
-                          value={formData.totTdsWhAmt}
-                          onChange={(e) => setFormData({ ...formData, totTdsWhAmt: e.target.value })}
-                          error={!!errors.totTdsWhAmt}
-                        />
-                      </FormControl>
-                    </div>
-                  </div>
-                </TabPanel>
-              </TabContext>
-            </Box>
-          </div>
-        )}
-        {listView && (
-          <div>
-            {/* <CommonTable data={data} columns={columns} editCallback={editCity} countryVO={countryVO} stateVO={stateVO} /> */}
-            {data && <CommonTable data={data} columns={columns} />}
-          </div>
-        )}
       </div>
     </>
   );
 };
-
 export default CostInvoice;

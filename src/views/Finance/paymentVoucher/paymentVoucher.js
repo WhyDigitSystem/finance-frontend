@@ -24,6 +24,9 @@ import { getAllActiveCurrency } from 'utils/CommonFunctions';
 const PaymentVoucher = () => {
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState(true);
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [value, setValue] = useState(0);
@@ -36,7 +39,7 @@ const PaymentVoucher = () => {
     chequeDate: null,
     chequeNo: '',
     docDate: dayjs(),
-    docId: '24GJ0001', //Iat's hard coded
+    docId: '24GJ0001', //It's hard coded
     exRate: '',
     orgId: orgId,
     referenceDate: null,
@@ -109,6 +112,17 @@ const PaymentVoucher = () => {
     getAllPaymentVoucherByOrgId();
   }, []);
 
+  useEffect(() => {
+    const totalDebit = detailsTableData.reduce((sum, row) => sum + Number(row.debit || 0), 0);
+    const totalCredit = detailsTableData.reduce((sum, row) => sum + Number(row.credit || 0), 0);
+
+    setFormData((prev) => ({
+      ...prev,
+      totalDebitAmount: totalDebit,
+      totalCreditAmount: totalCredit
+    }));
+  }, [detailsTableData]);
+
   const getAllPaymentVoucherByOrgId = async () => {
     try {
       const result = await apiCalls('get', `/transaction/getAllPaymentVoucherByOrgId?orgId=${orgId}`);
@@ -133,15 +147,15 @@ const PaymentVoucher = () => {
         setFormData({
           vehicleSubType: paymentVO.vehicleSubType || '',
           id: paymentVO.id || '',
-          docDate: paymentVO.docDate ? dayjs(paymentVO.docDate, 'DD-MM-YYYY') : dayjs(),
+          docDate: paymentVO.docDate ? dayjs(paymentVO.docDate, 'YYYY-MM-DD') : dayjs(),
           docId: paymentVO.docId || '',
           chequeBank: paymentVO.chequeBank || '',
-          chequeDate: paymentVO.chequeDate ? dayjs(paymentVO.chequeDate, 'DD-MM-YYYY') : dayjs(),
+          chequeDate: paymentVO.chequeDate ? dayjs(paymentVO.chequeDate, 'YYYY-MM-DD') : dayjs(),
           chequeNo: paymentVO.chequeNo || '',
           currency: paymentVO.currency || '',
           exRate: paymentVO.exRate || '',
           referenceNo: paymentVO.referenceNo || '',
-          referenceDate: paymentVO.referenceDate ? dayjs(paymentVO.referenceDate, 'DD-MM-YYYY') : dayjs(),
+          referenceDate: paymentVO.referenceDate ? dayjs(paymentVO.referenceDate, 'YYYY-MM-DD') : dayjs(),
           remarks: paymentVO.remarks || '',
           orgId: paymentVO.orgId || '',
           totalDebitAmount: paymentVO.totalDebitAmount || '',
@@ -166,6 +180,40 @@ const PaymentVoucher = () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleDebitChange = (e, row, index) => {
+    const value = e.target.value;
+
+    if (/^\d{0,20}$/.test(value)) {
+      setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, debit: value, credit: value ? '0' : '' } : r)));
+
+      setDetailsTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = {
+          ...newErrors[index],
+          debit: !value ? 'Debit Amount is required' : ''
+        };
+        return newErrors;
+      });
+    }
+  };
+
+  const handleCreditChange = (e, row, index) => {
+    const value = e.target.value;
+
+    if (/^\d{0,20}$/.test(value)) {
+      setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, credit: value, debit: value ? '0' : '' } : r)));
+
+      setDetailsTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = {
+          ...newErrors[index],
+          credit: !value ? 'Credit Amount is required' : ''
+        };
+        return newErrors;
+      });
     }
   };
 
@@ -231,7 +279,7 @@ const PaymentVoucher = () => {
       remarks: '',
       vehicleSubType: ''
     });
-    setDetailsTableData([{ id: 1, accountName: '', subLedgerCode: '', debit: '', credit: '', narration: '', subLedgerName: '' }]);
+    setDetailsTableData([{ id: 1, accountName: '', subLedgerCode: '', narration: '', subLedgerName: '' }]);
     setDetailsTableErrors('');
     setEditId('');
   };
@@ -257,8 +305,8 @@ const PaymentVoucher = () => {
       id: Date.now(),
       accountName: '',
       subLedgerCode: '',
-      debit: '',
-      credit: '',
+      // debit: '',
+      // credit: '',
       narration: '',
       subLedgerName: ''
     };
@@ -275,7 +323,7 @@ const PaymentVoucher = () => {
 
     if (table === detailsTableData) {
       return (
-        !lastRow.accountName || !lastRow.credit || !lastRow.debit || !lastRow.narration || !lastRow.subLedgerCode || !lastRow.subLedgerName
+        !lastRow.accountName || !lastRow.narration || !lastRow.subLedgerCode || !lastRow.subLedgerName
       );
     }
     return false;
@@ -288,8 +336,8 @@ const PaymentVoucher = () => {
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
           accountName: !table[table.length - 1].accountName ? 'Account Name is required' : '',
-          credit: !table[table.length - 1].credit ? 'Credit is required' : '',
-          debit: !table[table.length - 1].debit ? 'Debit is required' : '',
+          // credit: !table[table.length - 1].credit ? 'Credit is required' : '',
+          // debit: !table[table.length - 1].debit ? 'Debit is required' : '',
           narration: !table[table.length - 1].narration ? 'Narration is required' : '',
           subLedgerCode: !table[table.length - 1].subLedgerCode ? 'Sub Ledger Code is required' : '',
           subLedgerName: !table[table.length - 1].subLedgerName ? 'Sub Ledger Name is required' : ''
@@ -391,14 +439,15 @@ const PaymentVoucher = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
+        branch: branch,
+        branchCode: branchCode,
         chequeBank: formData.chequeBank,
         chequeDate: dayjs(formData.chequeDate).format('YYYY-MM-DD'),
         chequeNo: formData.chequeNo,
         createdBy: loginUserName,
         currency: formData.currency,
-        docDate: dayjs(formData.docDate).format('YYYY-MM-DD'),
-        docId: formData.docId,
         exRate: formData.exRate,
+        finyear: finYear,
         orgId: orgId,
         particularsPaymentVoucherDTO: paymentVoucherVO,
         referenceDate: dayjs(formData.referenceDate).format('YYYY-MM-DD'),
@@ -414,15 +463,6 @@ const PaymentVoucher = () => {
         if (response.status === true) {
           console.log('Response:', response);
           showToast('success', editId ? 'Payment Voucher Updated Successfully' : 'Payment Voucher Created successfully');
-          // Increment docId sequence here
-          const currentDocId = formData.docId;
-          const numericPart = parseInt(currentDocId.match(/\d+$/), 10); // Extract the numeric part of docId
-          const incrementedDocId = `${currentDocId.slice(0, -String(numericPart).length)}${String(numericPart + 1).padStart(String(numericPart).length, '0')}`;
-
-          setFormData((prev) => ({
-            ...prev,
-            docId: incrementedDocId // Set new incremented docId
-          }));
           getAllPaymentVoucherByOrgId();
           handleClear();
         } else {
@@ -537,6 +577,7 @@ const PaymentVoucher = () => {
                     }
                     variant="outlined"
                     size="small"
+                    type="number"
                     fullWidth
                     name="exRate"
                     value={formData.exRate}
@@ -784,9 +825,9 @@ const PaymentVoucher = () => {
                                           </div>
                                         )}
                                       </td>
-                                      <td className="border px-2 py-2">
+                                      {/* <td className="border px-2 py-2">
                                         <input
-                                          type="text"
+                                          type="number"
                                           value={row.debit}
                                           onChange={(e) => {
                                             const value = e.target.value;
@@ -810,7 +851,7 @@ const PaymentVoucher = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="text"
+                                          type="number"
                                           value={row.credit}
                                           onChange={(e) => {
                                             const value = e.target.value;
@@ -824,6 +865,34 @@ const PaymentVoucher = () => {
                                               return newErrors;
                                             });
                                           }}
+                                          className={detailsTableErrors[index]?.credit ? 'error form-control' : 'form-control'}
+                                        />
+                                        {detailsTableErrors[index]?.credit && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].credit}
+                                          </div>
+                                        )}
+                                      </td> */}
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.debit}
+                                          onChange={(e) => handleDebitChange(e, row, index)}
+                                          maxLength="20"
+                                          className={detailsTableErrors[index]?.debit ? 'error form-control' : 'form-control'}
+                                        />
+                                        {detailsTableErrors[index]?.debit && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].debit}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.credit}
+                                          onChange={(e) => handleCreditChange(e, row, index)}
+                                          maxLength="20"
                                           className={detailsTableErrors[index]?.credit ? 'error form-control' : 'form-control'}
                                         />
                                         {detailsTableErrors[index]?.credit && (
@@ -881,6 +950,7 @@ const PaymentVoucher = () => {
                             name="totalDebitAmount"
                             value={formData.totalDebitAmount}
                             onChange={handleInputChange}
+                            disabled
                             helperText={
                               <span style={{ color: 'red' }}>{fieldErrors.totalDebitAmount ? 'Total Debit Amount is required' : ''}</span>
                             }
@@ -897,6 +967,7 @@ const PaymentVoucher = () => {
                             name="totalCreditAmount"
                             value={formData.totalCreditAmount}
                             onChange={handleInputChange}
+                            disabled
                             helperText={
                               <span style={{ color: 'red' }}>{fieldErrors.totalCreditAmount ? 'Total Credit Amount is required' : ''}</span>
                             }

@@ -743,6 +743,7 @@ export const ChargeTypeRequest = () => {
                   placeholder="Placeholder"
                   variant="outlined"
                   size="small"
+                  type='number'
                   name="taxablePercentage"
                   value={formData.taxablePercentage}
                   onChange={handleInputChange}
@@ -868,6 +869,7 @@ export const ChargeTypeRequest = () => {
                   variant="outlined"
                   size="small"
                   name="gstTax"
+                  type='number'
                   value={formData.gstTax}
                   onChange={handleInputChange}
                   className="w-100"
