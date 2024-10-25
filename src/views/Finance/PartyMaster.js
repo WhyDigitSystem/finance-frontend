@@ -34,6 +34,9 @@ export const PartyMaster = () => {
   const [stateList, setStateList] = useState([]);
   const [cityList, setCityList] = useState([]);
   const [editId, setEditId] = useState('');
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [formData, setFormData] = useState({
@@ -47,6 +50,8 @@ export const PartyMaster = () => {
     airwayBillNo: '',
     airLineCode: '',
     addressBank: '',
+    branch: branch,
+    branchCode: branchCode,
     bussinessCate: '',
     bussinessType: '',
     caf: '',
@@ -62,6 +67,7 @@ export const PartyMaster = () => {
     customerCategory: '',
     customerCoord: '',
     customerType: '',
+    finYear: finYear,
     gstIn: '',
     gstPartyName: '',
     gstRegistered: 'YES',
@@ -1536,8 +1542,8 @@ export const PartyMaster = () => {
       }));
 
       const partySalesPersonTaggingDTO = partySalesPersonTagging.map((row) => ({
-        effectiveFrom: dayjs(row.effectiveFrom).format('DD-MM-YYYY'),
-        effectiveTill: dayjs(row.effectiveTill).format('DD-MM-YYYY'),
+        effectiveFrom: dayjs(row.effectiveFrom).format('YYYY-MM-DD'),
+        effectiveTill: dayjs(row.effectiveTill).format('YYYY-MM-DD'),
         empCode: row.empCode,
         salesBranch: row.salesBranch,
         salesPerson: row.salesPerson
@@ -1853,6 +1859,7 @@ export const PartyMaster = () => {
                   name="creditLimit"
                   label="Credit Limit"
                   size="small"
+                  type="number"
                   value={formData.creditLimit}
                   onChange={handleInputChange}
                   error={fieldErrors.creditLimit}
@@ -1866,6 +1873,7 @@ export const PartyMaster = () => {
                   name="creditDays"
                   label="Credit Days"
                   size="small"
+                  type="number"
                   value={formData.creditDays}
                   onChange={handleInputChange}
                   error={fieldErrors.creditDays}
