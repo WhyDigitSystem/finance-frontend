@@ -20,6 +20,7 @@ import { showToast } from 'utils/toast-component';
 import { FormHelperText } from '@mui/material';
 import dayjs from 'dayjs';
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
+import { getAllActiveCurrency } from 'utils/CommonFunctions';
 
 const FundTransfer = () => {
   // const buttonStyle = {
@@ -33,74 +34,81 @@ const FundTransfer = () => {
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [loginUserName, setBranch] = useState(localStorage.getItem('userName'));
+  const [branch, setLoginUserName] = useState(localStorage.getItem('branch'));
+  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [currencies, setCurrencies] = useState([]);
+  const [docId, setDocId] = useState('');
 
   const [formData, setFormData] = useState({
-    active: true,
-    branch: '',
-    docId: '',
-    paymentType: '',
-    docDate: null,
-    referenceNo: '',
-    referenceDate: null,
-    fromAccount: '',
-    balance: '',
+    mode: '',
+    docNo: '',
+    corpAccount: '',
     currency: '',
     exRate: '',
-    toBranch: '',
-    toBank: '',
-    chequeBook: '',
-    chequeNo: '',
-    chequeDate: null,
-    paymentAmount: '',
-    conversionRate: '',
-    receiptAmount: '',
-    gainLoss: '',
-    remarks: ''
+    transferTo: '',
+    branchAcc: '',
+    amount: '',
+    amtBase: '',
+    narration: ''
   });
 
   const [fieldErrors, setFieldErrors] = useState({
-    active: true,
-    branch: '',
-    docId: '',
-    paymentType: '',
-    docDate: null,
-    referenceNo: '',
-    referenceDate: null,
-    fromAccount: '',
-    balance: '',
+    mode: '',
+    docNo: '',
+    corpAccount: '',
     currency: '',
     exRate: '',
-    toBranch: '',
-    toBank: '',
-    chequeBook: '',
-    chequeNo: '',
-    chequeDate: null,
-    paymentAmount: '',
-    conversionRate: '',
-    receiptAmount: '',
-    gainLoss: '',
-    remarks: ''
+    transferTo: '',
+    branchAcc: '',
+    amount: '',
+    amtBase: '',
+    narration: ''
   });
 
   const listViewColumns = [
-    { accessorKey: 'branch', header: 'Branch/Location', size: 140 },
-    { accessorKey: 'docId', header: 'Doc ID', size: 140 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
-    { accessorKey: 'fromAccount', header: 'From Account', size: 140 },
-    { accessorKey: 'toBranch', header: 'To Branch/Location', size: 140 },
-    { accessorKey: 'toBank', header: 'To Bank', size: 140 },
-    { accessorKey: 'chequeNo', header: 'Cheque No', size: 140 },
-    { accessorKey: 'paymentAmount', header: 'Payment Amt', size: 140 },
-    { accessorKey: 'receiptAmount', header: 'Receipt Amt', size: 140 }
+    { accessorKey: 'mode', header: 'Mode', size: 140 },
+    { accessorKey: 'docNo', header: 'Doc No', size: 140 },
+    { accessorKey: 'branchAcc', header: 'Branch A/C', size: 140 },
+    { accessorKey: 'exRate', header: 'Ex Rate', size: 140 },
+    { accessorKey: 'corpAccount', header: 'Corporate A/C', size: 140 },
+    { accessorKey: 'transferTo', header: 'Transfer To', size: 140 },
+    { accessorKey: 'amount', header: 'Amount', size: 140 }
   ];
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, type, checked } = e.target;
+  //   const inputValue = type === 'checkbox' ? checked : value;
+  //   setFormData({ ...formData, [name]: inputValue });
+  //   setFieldErrors({ ...fieldErrors, [name]: false });
+  // };
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const inputValue = type === 'checkbox' ? checked : value;
-    setFormData({ ...formData, [name]: inputValue });
-    setFieldErrors({ ...fieldErrors, [name]: false });
-  };
+
+    // Validation for "amount" and "amtBase" fields to allow only numbers
+    if ((name === 'amount' || name === 'amtBase') && !/^\d*$/.test(value)) {
+        setFieldErrors({
+            ...fieldErrors,
+            [name]: 'Only numbers are allowed for this field',
+        });
+        return; // Exit the function without setting the value
+    }
+
+    // Prevent selecting the same bank in "Transfer To" and "Corporate A/C"
+    if (name === 'transferTo' && value === formData.corpAccount) {
+        setFieldErrors({ ...fieldErrors, [name]: 'Cannot select the same bank as Corporate A/C' });
+        setFormData({ ...formData, [name]: '' });
+    } else if (name === 'corpAccount' && value === formData.transferTo) {
+        setFieldErrors({ ...fieldErrors, [name]: 'Cannot select the same bank as Transfer To' });
+        setFormData({ ...formData, [name]: '' });
+    } else {
+        // Clear any existing error and set the field value normally
+        setFormData({ ...formData, [name]: inputValue });
+        setFieldErrors({ ...fieldErrors, [name]: false });
+    }
+};
 
   const handleDateChange = (name, date) => {
     setFormData({ ...formData, [name]: date });
@@ -109,49 +117,28 @@ const FundTransfer = () => {
 
   const handleClear = () => {
     setFormData({
-      active: true,
-      branch: '',
-      docId: '',
-      paymentType: '',
-      docDate: null,
-      referenceNo: '',
-      referenceDate: null,
-      fromAccount: '',
-      balance: '',
+      mode: '',
+      docNo: '',
+      corpAccount: '',
       currency: '',
       exRate: '',
-      toBranch: '',
-      toBank: '',
-      chequeBook: '',
-      chequeNo: '',
-      chequeDate: null,
-      paymentAmount: '',
-      conversionRate: '',
-      receiptAmount: '',
-      gainLoss: '',
-      remarks: ''
+      transferTo: '',
+      branchAcc: '',
+      amount: '',
+      amtBase: '',
+      narration: ''
     });
     setFieldErrors({
-      branch: '',
-      docId: '',
-      paymentType: '',
-      docDate: null,
-      referenceNo: '',
-      referenceDate: null,
-      fromAccount: '',
-      balance: '',
+      mode: '',
+      docNo: '',
+      corpAccount: '',
       currency: '',
       exRate: '',
-      toBranch: '',
-      toBank: '',
-      chequeBook: '',
-      chequeNo: '',
-      chequeDate: null,
-      paymentAmount: '',
-      conversionRate: '',
-      receiptAmount: '',
-      gainLoss: '',
-      remarks: ''
+      transferTo: '',
+      branchAcc: '',
+      amount: '',
+      amtBase: '',
+      narration: ''
     });
   };
 
@@ -160,7 +147,25 @@ const FundTransfer = () => {
   };
 
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Replace with your orgId or fetch it from somewhere
+        const currencyData = await getAllActiveCurrency(orgId);
+        setCurrencies(currencyData);
+
+        console.log('currency', currencyData);
+      } catch (error) {
+        console.error('Error fetching country data:', error);
+      }
+    };
+
+    fetchData();
+    // getGroup();
+  }, []);
+
+  useEffect(() => {
     getAllFundTransfer();
+    getFundTransferDocId();
   }, []);
 
   const getAllFundTransfer = async () => {
@@ -170,6 +175,25 @@ const FundTransfer = () => {
 
       if (response.status === true) {
         setListViewData(response.paramObjectsMap.fundTransferVO);
+        setDocId(response.paramObjectsMap.fundTransferVO[0].docId);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getFundTransferDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `transaction/getFundTranferDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
+      );
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setDocId(response.paramObjectsMap.fundTransferDocId);
       } else {
         console.error('API Error:', response);
       }
@@ -190,26 +214,16 @@ const FundTransfer = () => {
         const particularEmp = response.paramObjectsMap.fundTransferVO[0];
 
         setFormData({
-          branch: particularEmp.branch,
-          docId: particularEmp.docId,
-          paymentType: particularEmp.paymentType,
-          docDate: particularEmp.docDate,
-          referenceNo: particularEmp.referenceNo,
-          referenceDate: particularEmp.referenceDate,
-          fromAccount: particularEmp.fromAccount,
-          balance: particularEmp.balance,
+          mode: particularEmp.mode,
+          docNo: particularEmp.docNo,
+          branchAcc: particularEmp.branchAcc,
           currency: particularEmp.currency,
           exRate: particularEmp.exRate,
-          toBranch: particularEmp.toBranch,
-          toBank: particularEmp.toBank,
-          chequeBook: particularEmp.chequeBook,
-          chequeNo: particularEmp.chequeNo,
-          chequeDate: particularEmp.chequeDate,
-          paymentAmount: particularEmp.paymentAmount,
-          conversionRate: particularEmp.conversionRate,
-          receiptAmount: particularEmp.receiptAmount,
-          gainLoss: particularEmp.gainLoss,
-          remarks: particularEmp.remarks
+          corpAccount: particularEmp.corpAccount,
+          transferTo: particularEmp.transferTo,
+          amount: particularEmp.amount,
+          amtBase: particularEmp.amtBase,
+          narration: particularEmp.exRate
         });
       } else {
         console.error('API Error:', response);
@@ -223,62 +237,35 @@ const FundTransfer = () => {
     const errors = {};
 
     // Check for empty fields and set error messages
-    if (!formData.branch) {
-      errors.branch = 'Branch / Location is required';
+    if (!formData.mode) {
+      errors.mode = 'Mode is required';
     }
-    if (!formData.docId) {
-      errors.docId = 'Document ID is required';
+    if (!formData.docNo) {
+      errors.docNo = 'Doc No is required';
     }
-    if (!formData.paymentType) {
-      errors.paymentType = 'Payment Type is required';
-    }
-    if (!formData.docDate) {
-      errors.docDate = 'Document Date is required';
-    }
-    if (!formData.referenceNo) {
-      errors.referenceNo = 'Reference No is required';
-    }
-    if (!formData.chequeNo) {
-      errors.chequeNo = 'Cheque Number is required';
-    }
-    if (!formData.chequeBook) {
-      errors.chequeBook = 'Cheque Book is required';
-    }
-    if (!formData.chequeNo) {
-      errors.chequeNo = 'Cheque Number is required';
-    }
-    if (!formData.chequeDate) {
-      errors.chequeDate = 'Cheque Date is required';
-    }
-    if (!formData.fromAccount) {
-      errors.fromAccount = 'From Account is required';
-    }
-    if (!formData.balance) {
-      errors.balance = 'Balance is required';
-    }
-    if (!formData.toBranch) {
-      errors.toBranch = 'To Bank / Location is required';
-    }
-    if (!formData.toBank) {
-      errors.toBank = 'To Bank is required';
+    if (!formData.corpAccount) {
+      errors.corpAccount = 'Corporate A/C is required';
     }
     if (!formData.currency) {
       errors.currency = 'Currency is required';
     }
     if (!formData.exRate) {
-      errors.exRate = 'Exchange Rate is required';
+      errors.exRate = 'Ex Rate is required';
     }
-    if (!formData.paymentAmount) {
-      errors.paymentAmount = 'Payment Amount is required';
+    if (!formData.transferTo) {
+      errors.transferTo = 'Transfer To is required';
     }
-    if (!formData.receiptAmount) {
-      errors.receiptAmount = 'Receipt Amount is required';
+    if (!formData.branchAcc) {
+      errors.branchAcc = 'Branch A/C is required';
     }
-    if (!formData.conversionRate) {
-      errors.conversionRate = 'Conversion Rate is required';
+    if (!formData.amount) {
+      errors.amount = 'Amount is required';
     }
-    if (!formData.gainLoss) {
-      errors.gainLoss = 'Gain Loss is required';
+    if (!formData.amtBase) {
+      errors.amtBase = 'Amount (Base) is required';
+    }
+    if (!formData.narration) {
+      errors.narration = 'Narration is required';
     }
 
     // If errors exist, update fieldErrors state and don't proceed with save
@@ -292,29 +279,24 @@ const FundTransfer = () => {
     // Prepare the API payload with the necessary fields
     const saveFormData = {
       ...(editId && { id: editId }),
-      active: formData.active,
-      branch: formData.branch || '',
-      docId: formData.docId,
-      paymentType: formData.paymentType || '',
-      docDate: formData.docDate,
-      referenceNo: formData.referenceNo || '',
-      referenceDate: formData.referenceDate || '',
-      fromAccount: formData.fromAccount,
-      balance: formData.balance || '', // Ensure fields are mapped correctly
+      mode: formData.mode,
+      docNo: formData.docNo,
+      corpAccount: formData.corpAccount,
       currency: formData.currency,
       exRate: formData.exRate,
-      toBranch: formData.toBranch || '',
-      toBank: formData.toBank,
-      chequeBook: formData.chequeBook || '',
-      chequeNo: formData.chequeNo,
-      chequeDate: formData.chequeDate,
-      paymentAmount: formData.paymentAmount,
-      conversionRate: formData.conversionRate || '',
-      receiptAmount: formData.receiptAmount,
-      gainLoss: formData.gainLoss || '',
-      remarks: formData.remarks || '',
+      transferTo: formData.transferTo,
+      branchAcc: formData.branchAcc,
+      amount: parseInt(formData.amount),
+      amtBase: parseInt(formData.amtBase),
+      narration: formData.narration,
       createdBy: loginUserName,
-      orgId: orgId
+      orgId: parseInt(orgId),
+      branch: branch,
+      branchCode: branchCode,
+      finYear: finYear,
+      cancelRemarks: '',
+      ipNo: '',
+      latitude: ''
     };
 
     try {
@@ -348,170 +330,102 @@ const FundTransfer = () => {
         </div>
         {listView ? (
           <div className="">
-            <CommonListViewTable
-              data={listViewData}
-              columns={listViewColumns}
-              blockEdit={true}
-              toEdit={getFundTransferById}
-            />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getFundTransferById} />
           </div>
         ) : (
           <>
             <div className="row">
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
-                  <InputLabel id="branch" required>
-                    Branch/Location
+                <TextField id="docId" label="Doc Id" name="docId" variant="outlined" size="small" value={docId} disabled />
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.mode}>
+                  <InputLabel id="mode" required>
+                    Mode
                   </InputLabel>
-                  <Select
-                    labelId="branch"
-                    id="branch"
-                    name="branch"
-                    required
-                    value={formData.branch}
-                    label="Branch/Location"
-                    onChange={handleInputChange}
-                  >
+                  <Select labelId="mode" id="mode" name="mode" required value={formData.mode} label="Mode" onChange={handleInputChange}>
                     <MenuItem value="HEAD OFFICE">HEAD OFFICE</MenuItem>
                     <MenuItem value="Branch">Branch</MenuItem>
                   </Select>
-                  {fieldErrors.branch && <FormHelperText>{fieldErrors.branch}</FormHelperText>}
+                  {fieldErrors.mode && <FormHelperText>{fieldErrors.mode}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="docId"
-                  label="Doc ID"
-                  name="docId"
+                  id="docNo"
+                  label="Doc No"
+                  name="docNo"
                   variant="outlined"
                   size="small"
-                  value={formData.docId}
+                  value={formData.docNo}
                   onChange={handleInputChange}
                   required
                   fullWidth
-                  error={!!fieldErrors.docId}
-                  helperText={fieldErrors.docId ? fieldErrors.docId : ''}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.paymentType}>
-                  <InputLabel id="paymentType" required>
-                    Payment Type
-                  </InputLabel>
-                  <Select
-                    labelId="paymentType"
-                    id="paymentType"
-                    name="paymentType"
-                    required
-                    value={formData.paymentType}
-                    label="Payment Type"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="HEAD OFFICE">HEAD OFFICE</MenuItem>
-                    <MenuItem value="Branch">Branch</MenuItem>
-                  </Select>
-                  {fieldErrors.paymentType && <FormHelperText>{fieldErrors.paymentType}</FormHelperText>}
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Doc Date"
-                      value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
-                      onChange={(date) => handleDateChange('docDate', date)}
-                      slotProps={{
-                        textField: { size: 'small', clearable: true }
-                      }}
-                      format="DD-MM-YYYY"
-                      error={!!fieldErrors.docDate}
-                      helperText={fieldErrors.docDate ? fieldErrors.docDate : ''}
-                    />
-                  </LocalizationProvider>
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="referenceNo"
-                  label="Reference No."
-                  name="referenceNo"
-                  variant="outlined"
-                  size="small"
-                  value={formData.referenceNo}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
-                  error={!!fieldErrors.referenceNo}
-                  helperText={fieldErrors.referenceNo ? fieldErrors.referenceNo : ''}
+                  error={!!fieldErrors.docNo}
+                  helperText={fieldErrors.docNo ? fieldErrors.docNo : ''}
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Reference Date"
-                      value={formData.referenceDate ? dayjs(formData.referenceDate, 'YYYY-MM-DD') : null}
-                      onChange={(date) => handleDateChange('referenceDate', date)}
+                      label="Date"
+                      value={dayjs()}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
                       format="DD-MM-YYYY"
-                      error={!!fieldErrors.referenceDate}
-                      helperText={fieldErrors.referenceDate ? fieldErrors.referenceDate : ''}
+                      readOnly
                     />
                   </LocalizationProvider>
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="fromAccount"
-                  label="From Account"
-                  name="fromAccount"
-                  variant="outlined"
-                  size="small"
-                  value={formData.fromAccount}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
-                  error={!!fieldErrors.fromAccount}
-                  helperText={fieldErrors.fromAccount ? fieldErrors.fromAccount : ''}
-                />
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchAcc}>
+                  <InputLabel id="branchAcc" required>
+                    Branch A/C
+                  </InputLabel>
+                  <Select
+                    labelId="branchAcc"
+                    id="branchAcc"
+                    name="branchAcc"
+                    required
+                    value={formData.branchAcc}
+                    label="Branch A/C"
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="HEAD OFFICE">HEAD OFFICE</MenuItem>
+                    <MenuItem value="Branch">Branch</MenuItem>
+                  </Select>
+                  {fieldErrors.branchAcc && <FormHelperText>{fieldErrors.branchAcc}</FormHelperText>}
+                </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="balance"
-                  label="Balance"
-                  name="balance"
-                  variant="outlined"
-                  size="small"
-                  value={formData.balance}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
-                  error={!!fieldErrors.balance}
-                  helperText={fieldErrors.balance ? fieldErrors.balance : ''}
-                />
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
+                  <InputLabel id="currency">Currency</InputLabel>
+                  <Select
+                    labelId="currency"
+                    id="currency"
+                    label="Currency"
+                    onChange={handleInputChange}
+                    name="currency"
+                    value={formData.currency}
+                  >
+                    {currencies.map((currency) => (
+                      <MenuItem key={currency.id} value={currency.currency}>
+                        {currency.currency}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.currency && <FormHelperText>{fieldErrors.currency}</FormHelperText>}
+                </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="currency"
-                  label="Currency"
-                  name="currency"
-                  variant="outlined"
-                  size="small"
-                  value={formData.currency}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
-                  error={!!fieldErrors.currency}
-                  helperText={fieldErrors.currency ? fieldErrors.currency : ''}
-                />
-              </div>
-
               <div className="col-md-3 mb-3">
                 <TextField
                   id="exRate"
-                  label="Ex. Rate"
+                  label="Ex Rate"
                   name="exRate"
                   variant="outlined"
                   size="small"
@@ -524,156 +438,94 @@ const FundTransfer = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.corpAccount}>
+                  <InputLabel id="corpAccount" required>
+                    Corporate A/C
+                  </InputLabel>
+                  <Select
+                    labelId="corpAccount"
+                    id="corpAccount"
+                    name="corpAccount"
+                    required
+                    value={formData.corpAccount}
+                    label="Corporate A/C"
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="Indian Bank">Indian Bank</MenuItem>
+                    <MenuItem value="SBI">SBI</MenuItem>
+                    <MenuItem value="Union">Union</MenuItem>
+                    <MenuItem value="ICICI">ICICI</MenuItem>
+                  </Select>
+                  {fieldErrors.corpAccount && <FormHelperText>{fieldErrors.corpAccount}</FormHelperText>}
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.transferTo}>
+                  <InputLabel id="transferTo" required>
+                    Transfer To
+                  </InputLabel>
+                  <Select
+                    labelId="transferTo"
+                    id="transferTo"
+                    name="transferTo"
+                    required
+                    value={formData.transferTo}
+                    label="Transfer To"
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="Indian Bank">Indian Bank</MenuItem>
+                    <MenuItem value="SBI">SBI</MenuItem>
+                    <MenuItem value="Union">Union</MenuItem>
+                    <MenuItem value="ICICI">ICICI</MenuItem>
+                  </Select>
+                  {fieldErrors.transferTo && <FormHelperText>{fieldErrors.transferTo}</FormHelperText>}
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
                 <TextField
-                  id="toBranch"
-                  label="To Branch/Location"
-                  name="toBranch"
+                  id="amount"
+                  label="Amount"
+                  name="amount"
                   variant="outlined"
                   size="small"
-                  value={formData.toBranch}
+                  value={formData.amount}
                   onChange={handleInputChange}
                   required
                   fullWidth
-                  error={!!fieldErrors.toBranch}
-                  helperText={fieldErrors.toBranch ? fieldErrors.toBranch : ''}
+                  error={!!fieldErrors.amount}
+                  helperText={fieldErrors.amount ? fieldErrors.amount : ''}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="amtBase"
+                  label="Amount (Base)"
+                  name="amtBase"
+                  variant="outlined"
+                  size="small"
+                  value={formData.amtBase}
+                  onChange={handleInputChange}
+                  required
+                  fullWidth
+                  error={!!fieldErrors.amtBase}
+                  helperText={fieldErrors.amtBase ? fieldErrors.amtBase : ''}
                 />
               </div>
 
               <div className="col-md-3 mb-3">
                 <TextField
-                  id="toBank"
-                  label="To Bank"
-                  name="toBank"
+                  id="narration"
+                  label="Narration"
+                  name="narration"
                   variant="outlined"
                   size="small"
-                  value={formData.toBank}
+                  value={formData.narration}
                   onChange={handleInputChange}
                   required
                   fullWidth
-                  error={!!fieldErrors.toBank}
-                  helperText={fieldErrors.toBank ? fieldErrors.toBank : ''}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="chequeBook"
-                  label="Cheque Book"
-                  name="chequeBook"
-                  variant="outlined"
-                  size="small"
-                  value={formData.chequeBook}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
-                  error={!!fieldErrors.chequeBook}
-                  helperText={fieldErrors.chequeBook ? fieldErrors.chequeBook : ''}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="chequeNo"
-                  label="Cheque No"
-                  name="chequeNo"
-                  variant="outlined"
-                  size="small"
-                  value={formData.chequeNo}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
-                  error={!!fieldErrors.chequeNo}
-                  helperText={fieldErrors.chequeNo ? fieldErrors.chequeNo : ''}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Cheque Date"
-                      value={formData.chequeDate ? dayjs(formData.chequeDate, 'YYYY-MM-DD') : null}
-                      onChange={(date) => handleDateChange('chequeDate', date)}
-                      slotProps={{
-                        textField: { size: 'small', clearable: true }
-                      }}
-                      format="DD-MM-YYYY"
-                      error={!!fieldErrors.chequeDate}
-                      helperText={fieldErrors.chequeDate ? fieldErrors.chequeDate : ''}
-                    />
-                  </LocalizationProvider>
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="paymentAmount"
-                  label="Payment Amt."
-                  name="paymentAmount"
-                  variant="outlined"
-                  size="small"
-                  value={formData.paymentAmount}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
-                  error={!!fieldErrors.paymentAmount}
-                  helperText={fieldErrors.paymentAmount ? fieldErrors.paymentAmount : ''}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="conversionRate"
-                  label="Conversion Rate"
-                  name="conversionRate"
-                  variant="outlined"
-                  size="small"
-                  value={formData.conversionRate}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
-                  error={!!fieldErrors.conversionRate}
-                  helperText={fieldErrors.conversionRate ? fieldErrors.conversionRate : ''}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="receiptAmount"
-                  label="Receipt Amt."
-                  name="receiptAmount"
-                  variant="outlined"
-                  size="small"
-                  value={formData.receiptAmount}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
-                  error={!!fieldErrors.receiptAmount}
-                  helperText={fieldErrors.receiptAmount ? fieldErrors.receiptAmount : ''}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="gainLoss"
-                  label="Gain/Loss"
-                  name="gainLoss"
-                  variant="outlined"
-                  size="small"
-                  value={formData.gainLoss}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
-                  error={!!fieldErrors.gainLoss}
-                  helperText={fieldErrors.gainLoss ? fieldErrors.gainLoss : ''}
-                />
-              </div>
-              <div className="col-md-8 mb-3">
-                <TextField
-                  id="remarks"
-                  label="Remarks"
-                  name="remarks"
-                  variant="outlined"
-                  size="small"
-                  multiline
-                  minRows={2}
-                  value={formData.remarks}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
+                  error={!!fieldErrors.narration}
+                  helperText={fieldErrors.narration ? fieldErrors.narration : ''}
                 />
               </div>
             </div>
