@@ -51,7 +51,7 @@ const Receipt = () => {
   const [currencies, setCurrencies] = useState([]);
   const [allCustomerName, setAllCustomerName] = useState([]);
   const [branch, setBranch] = useState('Chennai');
-  const [branchCode, setBranchCode] = useState('MAAW');
+  const [branchCode, setBranchCode] = useState('MAA');
   const [finYear, setFinYear] = useState('2024');
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
@@ -561,7 +561,7 @@ const Receipt = () => {
           receiptType1: receiptVO.receiptType1,
           bankCashAcc: receiptVO.bankCashAcc,
           chequeUtiNo: receiptVO.chequeUtiNo,
-          chequeUtiDt: dayjs(receiptVO.chequeUtiDt, 'DD-MM-YYYY').format('YYYY-MM-DD'), // Convert to correct format
+          chequeUtiDt: dayjs(receiptVO.chequeUtiDt, 'YYYY-MM-DD').format('YYYY-MM-DD'), // Convert to correct format
           receiptAmt: receiptVO.receiptAmt,
           currency: receiptVO.currency,
           currencyAmount: receiptVO.currencyAmount,
@@ -571,9 +571,9 @@ const Receipt = () => {
           receiptVO.receiptInvDetailsVO.map((invoiceData) => ({
             id: invoiceData.id,
             invNo: invoiceData.invNo,
-            invDate: dayjs(invoiceData.invDate, 'DD-MM-YYYY').format('YYYY-MM-DD'), // Convert to correct format
+            invDate: dayjs(invoiceData.invDate, 'YYYY-MM-DD').format('YYYY-MM-DD'), // Convert to correct format
             refNo: invoiceData.refNo,
-            refDate: dayjs(invoiceData.refDate, 'DD-MM-YYYY').format('YYYY-MM-DD'), // Convert to correct format
+            refDate: dayjs(invoiceData.refDate, 'YYYY-MM-DD').format('YYYY-MM-DD'), // Convert to correct format
             masterRef: invoiceData.masterRef,
             houseRef: invoiceData.houseRef,
             currency: invoiceData.currency,
@@ -600,7 +600,7 @@ const Receipt = () => {
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed
     const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
+    return `${year}-${month}-${day}`;
   };
 
   const currentDate = new Date();
@@ -706,21 +706,21 @@ const Receipt = () => {
         // id: item.id || 0, // If id exists, otherwise 0
 
         ...(editId && { id: row.id }),
-        invNo: row.invNo,
-        invDate: formatDate(new Date(row.invDate)),
-        refNo: row.refNo,
-        refDate: formatDate(new Date(row.refDate)),
-        masterRef: row.masterRef,
-        houseRef: row.houseRef,
-        currency: row.currency,
-        exRate: parseInt(row.exRate),
         amount: parseInt(row.amount),
         chargeAmt: parseInt(row.chargeAmt),
+        currency: row.currency,
+        exRate: parseInt(row.exRate),
+        gainAmt: parseInt(row.gainAmt),
+        houseRef: row.houseRef,
+        invNo: row.invNo,
+        invDate: formatDate(new Date(row.invDate)),
+        masterRef: row.masterRef,
         outstanding: parseInt(row.outstanding),
-        settled: parseInt(row.settled),
         recExRate: parseInt(row.recExRate),
+        refDate: formatDate(new Date(row.refDate)),
+        refNo: row.refNo,
+        settled: parseInt(row.settled),
         txnSettled: parseInt(row.txnSettled),
-        gainAmt: parseInt(row.gainAmt)
         // remarks: row.remarks,
         // fromDate: formatDate(currentDate), // Passing current date
         // toDate: formatDate(currentDate)
@@ -729,41 +729,41 @@ const Receipt = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        receiptType: formData.receiptType,
-        bankChargeAcc: formData.bankChargeAcc,
-        // docId: formData.docId,
-        // docDate: formatDate(new Date(formData.docDate)), // Formatting with date and time
-        bankCharges: parseInt(formData.bankCharges),
-        inCurrencyBnkChargs: formData.inCurrencyBnkChargs,
-        type: formData.type,
-        tdsAmt: parseInt(formData.tdsAmt),
-        inCurrencyTdsAmt: formData.inCurrencyTdsAmt,
-        chequeBank: formData.chequeBank,
-        customerName: formData.customerName,
-        customerCode: formData.customerCode,
-        receiptType1: formData.receiptType1,
         bankCashAcc: formData.bankCashAcc,
-        chequeUtiNo: formData.chequeUtiNo,
-        chequeUtiDt: formatDate(new Date(formData.chequeUtiDt)), // Formatting with date and time
-        receiptAmt: parseInt(formData.receiptAmt),
-        currency: formData.currency,
-        currencyAmount: formData.currencyAmount,
-        receivedFrom: formData.receivedFrom,
-        netAmount: formData.netAmount,
-        remarks: formData.remarks,
-        createdBy: loginUserName,
-        orgId: orgId,
-        receiptInvDetailaDTO: receiptInvDetailVo,
+        bankChargeAcc: formData.bankChargeAcc,
+        bankCharges: parseInt(formData.bankCharges),
         branch: branch,
         branchCode: branchCode,
-        Cancel: true,
+        cancel: true,
         cancelRemarks: '',
+        chequeBank: formData.chequeBank,
+        chequeUtiNo: formData.chequeUtiNo,
+        chequeUtiDt: formatDate(new Date(formData.chequeUtiDt)), // Formatting with date and time
         client: '',
+        createdBy: loginUserName,
+        currency: formData.currency,
+        currencyAmount: formData.currencyAmount,
         customer: '',
+        customerCode: formData.customerCode,
+        customerName: formData.customerName,
         finYear: finYear,
-        ipNo: '',
-        latitude: '',
-        taxAmt: 0
+        inCurrencyBnkChargs: formData.inCurrencyBnkChargs,
+        inCurrencyTdsAmt: formData.inCurrencyTdsAmt,
+        netAmount: formData.netAmount,
+        receiptAmt: parseInt(formData.receiptAmt),
+        receiptInvDetailaDTO: receiptInvDetailVo,
+        receiptType: formData.receiptType,
+        receiptType1: formData.receiptType1,
+        receivedFrom: formData.receivedFrom,
+        remarks: formData.remarks,
+        taxAmt: 0,
+        tdsAmt: parseInt(formData.tdsAmt),
+        type: formData.type,
+        orgId: parseInt(orgId),
+        // docId: formData.docId,
+        // docDate: formatDate(new Date(formData.docDate)), // Formatting with date and time
+        // ipNo: '',
+        // latitude: '',
       };
 
       try {

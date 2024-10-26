@@ -35,6 +35,9 @@ const ArBillBalance = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [currencies, setCurrencies] = useState([]);
+  const [branch, setBranch] = useState('Chennai');
+  const [branchCode, setBranchCode] = useState('MAA');
+  const [finYear, setFinYear] = useState('2024');
 
   const [formData, setFormData] = useState({
     active: true,
@@ -243,9 +246,9 @@ const ArBillBalance = () => {
           postBillExRate: particularEmp.postBillExRate,
           billNo: particularEmp.billNo,
           suppRefNo: particularEmp.suppRefNo,
-          dueDate: dayjs(particularEmp.dueDate, 'DD-MM-YYYY').format('YYYY-MM-DD'), // Convert to correct format
-          billDate: dayjs(particularEmp.billDate, 'DD-MM-YYYY').format('YYYY-MM-DD'), // Convert to correct format
-          suppRefDate: dayjs(particularEmp.suppRefDate, 'DD-MM-YYYY').format('YYYY-MM-DD'), // Convert to correct format
+          dueDate: dayjs(particularEmp.dueDate, 'YYYY-MM-DD').format('YYYY-MM-DD'), // Convert to correct format
+          billDate: dayjs(particularEmp.billDate, 'YYYY-MM-DD').format('YYYY-MM-DD'), // Convert to correct format
+          suppRefDate: dayjs(particularEmp.suppRefDate, 'YYYY-MM-DD').format('YYYY-MM-DD'), // Convert to correct format
           debitAmt: particularEmp.debitAmt,
           creditAmt: particularEmp.creditAmt,
           voucherNo: particularEmp.voucherNo,
@@ -263,7 +266,7 @@ const ArBillBalance = () => {
     const day = date.getDate().toString().padStart(2, '0');
     const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed
     const year = date.getFullYear();
-    return `${day}-${month}-${year}`;
+    return `${year}-${month}-${day}`;
   };
 
   const handleSave = async () => {
@@ -369,8 +372,14 @@ const ArBillBalance = () => {
       debitAmt: parseInt(formData.debitAmt),
       creditAmt: parseInt(formData.creditAmt),
       voucherNo: formData.voucherNo,
-      orgId: orgId,
-      createdBy: loginUserName
+      orgId: parseInt(orgId),
+      createdBy: loginUserName,
+      branch: branch,
+      branchCode: branchCode,
+      finYear: finYear,
+      cancel: true,
+      cancelRemarks: '',
+      
     };
 
     try {
