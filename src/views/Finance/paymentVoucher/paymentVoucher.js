@@ -39,7 +39,7 @@ const PaymentVoucher = () => {
     chequeDate: null,
     chequeNo: '',
     docDate: dayjs(),
-    docId: '24GJ0001', //It's hard coded
+    docId: '',
     exRate: '',
     orgId: orgId,
     referenceDate: null,
@@ -68,11 +68,11 @@ const PaymentVoucher = () => {
   });
 
   const listViewColumns = [
+    { accessorKey: 'docId', header: 'Document Id', size: 140 },
     { accessorKey: 'vehicleSubType', header: 'Vehicle Sub Type', size: 140 },
     { accessorKey: 'currency', header: 'Currency', size: 140 },
     { accessorKey: 'exRate', header: 'Ex.Rate', size: 140 },
-    { accessorKey: 'referenceNo', header: 'Ref No', size: 140 },
-    { accessorKey: 'docId', header: 'Document Id', size: 140 }
+    { accessorKey: 'referenceNo', header: 'Ref No', size: 140 }
   ];
 
   const [detailsTableData, setDetailsTableData] = useState([
@@ -110,6 +110,7 @@ const PaymentVoucher = () => {
 
     fetchData();
     getAllPaymentVoucherByOrgId();
+    getPaymentVoucherDocId();
   }, []);
 
   useEffect(() => {
@@ -131,6 +132,22 @@ const PaymentVoucher = () => {
       console.log('paymentVoucherVO', result);
     } catch (err) {
       console.log('error', err);
+    }
+  };
+
+  const getPaymentVoucherDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/transaction/getpaymentVoucherDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
+      );
+      setFormData((prevData) => ({
+        ...prevData,
+        docId: response.paramObjectsMap.paymentVoucherDocId,
+        docDate: dayjs()
+      }));
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
     }
   };
 
@@ -254,7 +271,6 @@ const PaymentVoucher = () => {
       chequeDate: null,
       chequeNo: '',
       docDate: dayjs(),
-      docId: '24GJ0001', //It's hard coded
       exRate: '',
       orgId: orgId,
       referenceDate: null,
@@ -282,6 +298,7 @@ const PaymentVoucher = () => {
     setDetailsTableData([{ id: 1, accountName: '', subLedgerCode: '', narration: '', subLedgerName: '' }]);
     setDetailsTableErrors('');
     setEditId('');
+    getPaymentVoucherDocId();
   };
 
   // const handleKeyDown = (e, row, table) => {
@@ -322,9 +339,7 @@ const PaymentVoucher = () => {
     if (!lastRow) return false;
 
     if (table === detailsTableData) {
-      return (
-        !lastRow.accountName || !lastRow.narration || !lastRow.subLedgerCode || !lastRow.subLedgerName
-      );
+      return !lastRow.accountName || !lastRow.narration || !lastRow.subLedgerCode || !lastRow.subLedgerName;
     }
     return false;
   };

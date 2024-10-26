@@ -36,7 +36,7 @@ const GeneralJournal = () => {
     active: true,
     currency: '',
     docDate: dayjs(),
-    docId: '24GJ0001', //It's hard coded
+    docId: '',
     exRate: '',
     orgId: orgId,
     refDate: null,
@@ -50,7 +50,6 @@ const GeneralJournal = () => {
   const [fieldErrors, setFieldErrors] = useState({
     currency: '',
     docDate: new Date(),
-    // docId: '24GJ0001',
     exRate: '',
     orgId: orgId,
     refDate: null,
@@ -103,6 +102,7 @@ const GeneralJournal = () => {
     };
 
     fetchData();
+    getGeneralJournalDocId();
     getAllGeneralJournalByOrgId();
   }, []);
 
@@ -116,6 +116,22 @@ const GeneralJournal = () => {
       totalCreditAmount: totalCredit
     }));
   }, [detailsTableData]);
+
+  const getGeneralJournalDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/transaction/getGeneralJournalDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
+      );
+      setFormData((prevData) => ({
+        ...prevData,
+        docId: response.paramObjectsMap.generalJournalDocId,
+        docDate: dayjs()
+      }));
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
 
   const getAllGeneralJournalByOrgId = async () => {
     try {
@@ -269,6 +285,7 @@ const GeneralJournal = () => {
     ]);
     setDetailsTableErrors('');
     setEditId('');
+    getGeneralJournalDocId();
   };
 
   // const handleKeyDown = (e, row, table) => {
@@ -439,24 +456,15 @@ const GeneralJournal = () => {
         const response = await apiCalls('put', `/transaction/updateCreateGeneralJournal`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
-          showToast('success', editId ? 'GeneralJournal Updated Successfully' : 'GeneralJournal Created successfully');
-          // Increment docId sequence here
-          const currentDocId = formData.docId;
-          const numericPart = parseInt(currentDocId.match(/\d+$/), 10); // Extract the numeric part of docId
-          const incrementedDocId = `${currentDocId.slice(0, -String(numericPart).length)}${String(numericPart + 1).padStart(String(numericPart).length, '0')}`;
-
-          setFormData((prev) => ({
-            ...prev,
-            docId: incrementedDocId // Set new incremented docId
-          }));
+          showToast('success', editId ? 'General Journal Updated Successfully' : 'General Journal Created successfully');
           getAllGeneralJournalByOrgId();
           handleClear();
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'GeneralJournal creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'General Journal creation failed');
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'GeneralJournal creation failed');
+        showToast('error', 'General Journal creation failed');
       }
     } else {
       setFieldErrors(errors);
