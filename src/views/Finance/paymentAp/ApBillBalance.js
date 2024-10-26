@@ -213,7 +213,7 @@ const ApBillBalance = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.arApBillBalanceReceivableVO[0]);
+        setListViewData(response.paramObjectsMap.apBillBalanceVO);
       } else {
         console.error('API Error:', response);
       }
@@ -231,7 +231,7 @@ const ApBillBalance = () => {
 
       if (response.status === true) {
         setListView(false);
-        const particularEmp = response.paramObjectsMap.arApBillBalanceReceivableVO[0];
+        const particularEmp = response.paramObjectsMap.apBillBalanceVO[0];
 
         setFormData({
           // docNo: particularEmp.docNo,
