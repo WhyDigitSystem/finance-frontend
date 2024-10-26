@@ -11,7 +11,7 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Box, Grid, Tab } from '@mui/material';
+import { Box, FormHelperText, Grid, Tab } from '@mui/material';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
@@ -37,6 +37,12 @@ const Payment = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState();
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [partyName, setPartyName] = useState([]);
+  const [gstState, setGSTState] = useState([]);
+  const [currencyList, setCurrencyList] = useState([]);
 
   const handleChangeTab = (event, newValue) => {
     setValue(newValue);
@@ -48,7 +54,7 @@ const Payment = () => {
     bankInCurrency: '',
     staxInCurrency: '',
     docId: '',
-    docDate: null,
+    docDate: dayjs(),
     type: '',
     partyCode: '',
     partyName: '',
@@ -66,13 +72,24 @@ const Payment = () => {
   });
 
   const [formDataErrors, setFormDataErrors] = useState({
-    docId: '',
-    docDate: null,
-    bankStmtDate: null,
-    bankAccount: '',
-    remarks: '',
-    totalsupplierRefNo: '',
-    totalWithdrawal: ''
+    paymentType: '',
+    bankCharges: '',
+    bankInCurrency: '',
+    staxInCurrency: '',
+    type: '',
+    partyCode: '',
+    partyName: '',
+    gstState: '',
+    gstIn: '',
+    bankCashAcc: '',
+    paymentAmt: '',
+    tdsAcc: '',
+    tdsAmt: '',
+    bankChargeAcc: '',
+    payTo: '',
+    currency: '',
+    currencyAmt: '',
+    serviceTaxAmt: ''
   });
 
   const [withdrawalsTableData, setWithdrawalsTableData] = useState([
@@ -121,6 +138,9 @@ const Payment = () => {
 
   useEffect(() => {
     getAllPayment();
+    getPaymentDocId();
+    getPartName();
+    getGSTState();
   }, []);
 
   const getAllPayment = async () => {
@@ -131,6 +151,55 @@ const Payment = () => {
       console.log('Test', result);
     } catch (err) {
       console.log('error', err);
+    }
+  };
+
+  const getPaymentDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/payable/getPaymentDocId?branchCode=${loginBranchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
+      );
+      setFormData((prevData) => ({
+        ...prevData,
+        docId: response.paramObjectsMap.paymentDocId,
+        docDate: dayjs()
+      }));
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+
+  const getPartName = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/payable/getPartyNameAndCodeForPayment?branchCode=${loginBranchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
+      );
+      setPartyName(response.paramObjectsMap.PartyMasterVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+
+  const getGSTState = async () => {
+    try {
+      const response = await apiCalls('get', `/payable/getStateCodeByOrgIdForPayment?orgId=${orgId}`);
+      setGSTState(response.paramObjectsMap.PaymentVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+
+  const getCurrency = async (partyName) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/payable/getCurrencyAndTransCurrencyForPayment?orgId=${orgId}&branchCode=${loginBranchCode}&branch=${branch}&finYear=${finYear}&partyName=${partyName}`
+      );
+      setCurrencyList(response.paramObjectsMap.PaymentVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
     }
   };
 
@@ -333,64 +402,314 @@ const Payment = () => {
       }
     ]);
 
+    setFormDataErrors([
+      {
+        paymentType: '',
+        bankCharges: '',
+        bankInCurrency: '',
+        staxInCurrency: '',
+        type: '',
+        partyCode: '',
+        partyName: '',
+        gstState: '',
+        gstIn: '',
+        bankCashAcc: '',
+        paymentAmt: '',
+        tdsAcc: '',
+        tdsAmt: '',
+        bankChargeAcc: '',
+        payTo: '',
+        currency: '',
+        currencyAmt: '',
+        serviceTaxAmt: ''
+      }
+    ]);
+
     // setValidationErrors({});
     setEditId('');
+    getPaymentDocId();
   };
 
   const handleList = () => {
     setShowForm(!showForm);
   };
 
+  const validateFormData = (formData) => {
+    let errors = {};
+
+    // Payment Type - Required
+    if (!formData.paymentType) {
+      errors.paymentType = 'Payment Type is required';
+    }
+
+    // Bank Charges - Numeric Validation
+    if (!formData.bankCharges) {
+      errors.bankCharges = 'Bank Charges is required';
+    }
+
+    // Bank In Currency - Required
+    if (!formData.bankInCurrency) {
+      errors.bankInCurrency = 'Bank In Currency is required';
+    }
+
+    // Service Tax in Currency - Numeric Validation
+    if (formData.staxInCurrency) {
+      errors.staxInCurrency = 'Service Tax in Currency is required';
+    }
+
+    // Type - Required
+    if (!formData.type) {
+      errors.type = 'Type is required';
+    }
+
+    // Party Code - Required and Minimum Length Validation
+    if (!formData.partyCode) {
+      errors.partyCode = 'Party Code is required';
+    }
+
+    // Party Name - Required
+    if (!formData.partyName) {
+      errors.partyName = 'Party Name is required';
+    }
+
+    // GST State - Required
+    if (!formData.gstState) {
+      errors.gstState = 'GST State is required';
+    }
+
+    // GSTIN - Required, Exact Length Validation, and Format Validation
+    if (!formData.gstIn) {
+      errors.gstIn = 'GSTIN is required';
+    } else if (formData.gstIn.length !== 15) {
+      errors.gstIn = 'GSTIN must be exactly 15 characters';
+    }
+
+    // Bank Cash Account - Required
+    if (!formData.bankCashAcc) {
+      errors.bankCashAcc = 'Bank Cash Account is required';
+    }
+
+    // Payment Amount - Required and Numeric Validation
+    if (!formData.paymentAmt) {
+      errors.paymentAmt = 'Payment Amount is required';
+    } else if (isNaN(formData.paymentAmt)) {
+      errors.paymentAmt = 'Payment Amount must be a valid number';
+    }
+
+    // TDS Account - Required
+    if (!formData.tdsAcc) {
+      errors.tdsAcc = 'TDS Account is required';
+    }
+
+    // TDS Amount - Numeric Validation
+    if (formData.tdsAmt && isNaN(formData.tdsAmt)) {
+      errors.tdsAmt = 'TDS Amount must be a valid number';
+    }
+
+    // Bank Charge Account - Required
+    if (!formData.bankChargeAcc) {
+      errors.bankChargeAcc = 'Bank Charge Account is required';
+    }
+
+    // Pay To - Required
+    if (!formData.payTo) {
+      errors.payTo = 'Pay To field is required';
+    }
+
+    // Currency - Required
+    if (!formData.currency) {
+      errors.currency = 'Currency is required';
+    }
+
+    // Currency Amount - Required and Numeric Validation
+    if (!formData.currencyAmt) {
+      errors.currencyAmt = 'Currency Amount is required';
+    } else if (isNaN(formData.currencyAmt)) {
+      errors.currencyAmt = 'Currency Amount must be a valid number';
+    }
+
+    // Service Tax Amount - Numeric Validation
+    if (formData.serviceTaxAmt && isNaN(formData.serviceTaxAmt)) {
+      errors.serviceTaxAmt = 'Service Tax Amount must be a valid number';
+    }
+
+    return errors;
+  };
+
   const handleSave = async () => {
     console.log('THE HANDLE SAVE IS WORKING');
 
-    const errors = {};
-    if (!formData.paymentType) errors.paymentType = 'Payment Type is required';
-    if (!formData.partyName) errors.partyName = 'Party Name is required';
+    // const errors = validateFormData(formData);
+
+    let errors = {};
+
+    // Payment Type - Required
+    if (!formData.paymentType) {
+      errors.paymentType = 'Payment Type is required';
+    }
+
+    // Bank Charges - Numeric Validation
+    if (!formData.bankCharges) {
+      errors.bankCharges = 'Bank Charges is required';
+    }
+
+    // Bank In Currency - Required
+    if (!formData.bankInCurrency) {
+      errors.bankInCurrency = 'Bank In Currency is required';
+    }
+
+    // Service Tax in Currency - Numeric Validation
+    if (formData.staxInCurrency) {
+      errors.staxInCurrency = 'Service Tax in Currency is required';
+    }
+
+    // Type - Required
+    if (!formData.type) {
+      errors.type = 'Type is required';
+    }
+
+    // Party Code - Required and Minimum Length Validation
+    if (!formData.partyCode) {
+      errors.partyCode = 'Party Code is required';
+    }
+
+    // Party Name - Required
+    if (!formData.partyName) {
+      errors.partyName = 'Party Name is required';
+    }
+
+    // GST State - Required
+    if (!formData.gstState) {
+      errors.gstState = 'GST State is required';
+    }
+
+    // GSTIN - Required, Exact Length Validation, and Format Validation
+    if (!formData.gstIn) {
+      errors.gstIn = 'GSTIN is required';
+    } else if (formData.gstIn.length !== 15) {
+      errors.gstIn = 'GSTIN must be exactly 15 characters';
+    }
+
+    // Bank Cash Account - Required
+    if (!formData.bankCashAcc) {
+      errors.bankCashAcc = 'Bank Cash Account is required';
+    }
+
+    // Payment Amount - Required and Numeric Validation
+    if (!formData.paymentAmt) {
+      errors.paymentAmt = 'Payment Amount is required';
+    } else if (isNaN(formData.paymentAmt)) {
+      errors.paymentAmt = 'Payment Amount must be a valid number';
+    }
+
+    // TDS Account - Required
+    if (!formData.tdsAcc) {
+      errors.tdsAcc = 'TDS Account is required';
+    }
+
+    // TDS Amount - Numeric Validation
+    if (formData.tdsAmt && isNaN(formData.tdsAmt)) {
+      errors.tdsAmt = 'TDS Amount must be a valid number';
+    }
+
+    // Bank Charge Account - Required
+    if (!formData.bankChargeAcc) {
+      errors.bankChargeAcc = 'Bank Charge Account is required';
+    }
+
+    // Pay To - Required
+    if (!formData.payTo) {
+      errors.payTo = 'Pay To field is required';
+    }
+
+    // Currency - Required
+    if (!formData.currency) {
+      errors.currency = 'Currency is required';
+    }
+
+    // Currency Amount - Required and Numeric Validation
+    if (!formData.currencyAmt) {
+      errors.currencyAmt = 'Currency Amount is required';
+    } else if (isNaN(formData.currencyAmt)) {
+      errors.currencyAmt = 'Currency Amount must be a valid number';
+    }
+
+    // Service Tax Amount - Numeric Validation
+    if (formData.serviceTaxAmt && isNaN(formData.serviceTaxAmt)) {
+      errors.serviceTaxAmt = 'Service Tax Amount must be a valid number';
+    }
+
+    setFormDataErrors(errors);
 
     let detailsTableDataValid = true;
-    // if (!withdrawalsTableData || withdrawalsTableData.length === 0) {
-    //   detailsTableDataValid = false;
-    //   setWithdrawalsTableErrors([{ general: 'detail Table Data is required' }]);
-    // }
-    // else {
-    //   const newTableErrors = withdrawalsTableData.map((row, index) => {
-    //     const rowErrors = {};
-    //     if (!row.voucherNo) {
-    //       rowErrors.voucherNo = 'VoucherNo is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.voucherDate) {
-    //       rowErrors.voucherDate = 'voucherDate is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.chequeNo) {
-    //       rowErrors.chequeNo = 'cheque No is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.chequeDate) {
-    //       rowErrors.chequeDate = 'cheque Date is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.deposit) {
-    //       rowErrors.deposit = 'deposit is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.withdrawal) {
-    //       rowErrors.withdrawal = 'withdrawal is required';
-    //       detailsTableDataValid = false;
-    //     }
+    if (!withdrawalsTableData || withdrawalsTableData.length === 0) {
+      detailsTableDataValid = false;
+      setWithdrawalsTableErrors([{ general: 'detail Table Data is required' }]);
+    } else {
+      const newTableErrors = withdrawalsTableData.map((row, index) => {
+        const rowErrors = {};
+        if (!row.invNo) {
+          rowErrors.invNo = 'Invoice No is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.invDate) {
+          rowErrors.invDate = 'Invoice Date is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.refNo) {
+          rowErrors.refNo = 'Ref No is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.refDate) {
+          rowErrors.refDate = 'ref Date is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.supplierRefNo) {
+          rowErrors.supplierRefNo = 'Supplier RefNo is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.supplierRefDate) {
+          rowErrors.supplierRefDate = 'Supplier RefDate is required';
+          detailsTableDataValid = false;
+        }
 
-    //     if (row.active === undefined || row.active === null) {
-    //       rowErrors.active = 'Active is required';
-    //       detailsTableDataValid = false;
-    //     }
+        if (!row.currency) {
+          rowErrors.currency = 'Currency RefDate is required';
+          detailsTableDataValid = false;
+        }
 
-    //     return rowErrors;
-    //   });
-    //   setWithdrawalsTableErrors(newTableErrors);
-    // }
-    // setFormDataErrors(errors);
+        if (!row.exRate) {
+          rowErrors.exRate = 'ExRate is required';
+          detailsTableDataValid = false;
+        }
+
+        if (!row.amount) {
+          rowErrors.amount = 'Amount is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.outstanding) {
+          rowErrors.outstanding = 'Outstanding is required';
+          detailsTableDataValid = false;
+        }
+
+        if (!row.settled) {
+          rowErrors.settled = 'Settled is required';
+          detailsTableDataValid = false;
+        }
+
+        if (!row.payExRate) {
+          rowErrors.payExRate = 'Pay ExRate is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.gainOrLossAmt) {
+          rowErrors.gainOrLossAmt = 'GainOrLossAmt is required';
+          detailsTableDataValid = false;
+        }
+
+        return rowErrors;
+      });
+      setWithdrawalsTableErrors(newTableErrors);
+    }
 
     // if (Object.keys(errors).length === 0 && detailsTableDataValid) {
     if (detailsTableDataValid) {
@@ -420,7 +739,7 @@ const Payment = () => {
         // active: formData.active,
         paymentType: formData.paymentType,
         docId: formData.docId,
-        docDate: formData.docDate,
+        docDate: formData.docDate ? dayjs(formData.docDate).format('YYYY-MM-DD') : null,
         type: formData.type,
         partyCode: formData.partyCode,
         partyName: formData.partyName,
@@ -437,13 +756,16 @@ const Payment = () => {
         currency: formData.currency,
         chequeBank: formData.chequeBank,
         chequeNo: formData.chequeNo,
-        chequeDate: formData.chequeDate,
+        chequeDate: formData.chequeDate ? dayjs(formData.chequeDate).format('YYYY-MM-DD') : null,
         bankInCurrency: formData.bankInCurrency,
         staxInCurrency: formData.staxInCurrency,
         paymentInvDtlsDTO: detailsVo,
         createdBy: loginUserName,
         orgId: orgId,
-        serviceTaxAmt: parseInt(formData.serviceTaxAmt)
+        serviceTaxAmt: parseInt(formData.serviceTaxAmt),
+        finYear: finYear,
+        branch: branch,
+        branchCode: loginBranchCode
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -466,7 +788,7 @@ const Payment = () => {
         setIsLoading(false);
       }
     } else {
-      // setFieldErrors(errors);
+      setFormDataErrors(errors);
     }
   };
 
@@ -526,6 +848,8 @@ const Payment = () => {
           }))
         );
 
+        getCurrency(listValueVO.partyName);
+
         console.log('DataToEdit', listValueVO);
       } else {
         // Handle erro
@@ -545,6 +869,32 @@ const Payment = () => {
     { accessorKey: 'gstState', header: 'GST State', size: 140 },
     { accessorKey: 'gstIn', header: 'GST In', size: 140 }
   ];
+
+  const handleSelectChange = (e) => {
+    const value = e.target.value; // Get the selected value (employeeCode)
+    console.log('Selected employeeCode value:', value);
+
+    // Log each item in the empList to confirm the field names
+    partyName.forEach((emp, index) => {
+      console.log(`Employee ${index}:`, emp);
+    });
+
+    // Find the selected employee from empList based on employeeCode
+    const selectedEmp = partyName.find((emp) => emp.partyName === value); // Check if 'empCode' is correct
+
+    if (selectedEmp) {
+      console.log('Selected Employee:', selectedEmp);
+      setFormData((prevData) => ({
+        ...prevData,
+        partyName: selectedEmp.partyName,
+        partyCode: selectedEmp.partyCode
+      }));
+
+      getCurrency(selectedEmp.partyName);
+    } else {
+      console.log('No employee found with the given code:', value); // Log if no employee is found
+    }
+  };
 
   return (
     <div>
@@ -574,23 +924,22 @@ const Payment = () => {
                       required
                       value={formData.paymentType}
                       onChange={(e) => setFormData({ ...formData, paymentType: e.target.value })}
+                      error={!!formDataErrors.paymentType}
                     >
                       <MenuItem value={'BANK'}>BANK PAYMENT</MenuItem>
                       <MenuItem value={'CASH'}>CASH PAYMENT</MenuItem>
                     </Select>
+                    {formDataErrors.paymentType && (
+                      <FormHelperText error style={{ color: 'red' }}>
+                        {formDataErrors.paymentType}
+                      </FormHelperText>
+                    )}
                   </FormControl>
                 </div>
 
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
-                    <TextField
-                      id="docId"
-                      label="Doc ID"
-                      size="small"
-                      onChange={(e) => setFormData({ ...formData, docId: e.target.value })}
-                      value={formData.docId}
-                      inputProps={{ maxLength: 30 }}
-                    />
+                    <TextField id="docId" label="Doc No" disabled size="small" value={formData.docId} inputProps={{ maxLength: 30 }} />
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
@@ -599,10 +948,11 @@ const Payment = () => {
                       <DatePicker
                         label="Doc Date"
                         format="DD-MM-YYYY"
+                        disabled
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
-                        value={formData.docDate ? dayjs(formData.docDate, 'DD-MM-YYYY') : null}
+                        value={formData.docDate ? dayjs(formData.docDate) : null}
                         onChange={(newValue) => setFormData({ ...formData, docDate: newValue })}
                       />
                     </LocalizationProvider>
@@ -616,28 +966,22 @@ const Payment = () => {
                       id="demo-simple-select"
                       label="type"
                       value={formData.type}
+                      error={!!formDataErrors.type}
                       onChange={(e) => setFormData({ ...formData, type: e.target.value })}
                     >
                       <MenuItem value={'AIR_CARRIER'}>AIR CARRIER</MenuItem>
                       <MenuItem value={'SEA_CARRIER'}>SEA CARRIER</MenuItem>
                     </Select>
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled">
-                    <TextField
-                      id="partyCode"
-                      label="Party Code"
-                      value={formData.partyCode}
-                      onChange={(e) => setFormData({ ...formData, partyCode: e.target.value })}
-                      size="small"
-                      inputProps={{ maxLength: 30 }}
-                    />
+                    {formDataErrors.type && (
+                      <FormHelperText error style={{ color: 'red' }}>
+                        {formDataErrors.type}
+                      </FormHelperText>
+                    )}
                   </FormControl>
                 </div>
 
                 <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled">
+                  {/* <FormControl fullWidth variant="filled">
                     <TextField
                       id="partName"
                       label="party Name"
@@ -645,6 +989,46 @@ const Payment = () => {
                       value={formData.partyName}
                       onChange={(e) => setFormData({ ...formData, partyName: e.target.value })}
                       inputProps={{ maxLength: 30 }}
+                    />
+                  </FormControl> */}
+
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="demo-simple-select-label-party">Party Name</InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label-party"
+                      id="demo-simple-select-party"
+                      label="Party Name"
+                      required
+                      value={formData.partyName}
+                      onChange={handleSelectChange}
+                      error={!!formDataErrors.partyName}
+                    >
+                      {partyName.length > 0 &&
+                        partyName.map((par, index) => (
+                          <MenuItem key={index} value={par.partyName}>
+                            {par.partyName} {/* Display employee code */}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                    {formDataErrors.partyName && (
+                      <FormHelperText error style={{ color: 'red' }}>
+                        {formDataErrors.partyName}
+                      </FormHelperText>
+                    )}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled">
+                    <TextField
+                      id="partyCode"
+                      label="Party Code"
+                      disabled
+                      value={formData.partyCode}
+                      onChange={(e) => setFormData({ ...formData, partyCode: e.target.value })}
+                      size="small"
+                      inputProps={{ maxLength: 30 }}
+                      // error={!!formDataErrors.partyCode}
+                      // helperText={formDataErrors.partyCode}
                     />
                   </FormControl>
                 </div>
@@ -654,15 +1038,23 @@ const Payment = () => {
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
-                      // value={age}
                       label="GST State"
-                      // onChange={handleChange}
                       value={formData.gstState}
                       onChange={(e) => setFormData({ ...formData, gstState: e.target.value })}
+                      error={!!formDataErrors.gstState}
                     >
-                      <MenuItem value={'SGST'}>SGST</MenuItem>
-                      <MenuItem value={'CGST'}>CGST</MenuItem>
+                      {gstState.length > 0 &&
+                        gstState.map((par, index) => (
+                          <MenuItem key={index} value={par.stateCode}>
+                            {par.stateCode} {/* Display employee code */}
+                          </MenuItem>
+                        ))}
                     </Select>
+                    {formDataErrors.gstState && (
+                      <FormHelperText error style={{ color: 'red' }}>
+                        {formDataErrors.gstState}
+                      </FormHelperText>
+                    )}
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
@@ -674,6 +1066,8 @@ const Payment = () => {
                       value={formData.gstIn}
                       onChange={(e) => setFormData({ ...formData, gstIn: e.target.value })}
                       inputProps={{ maxLength: 30 }}
+                      error={!!formDataErrors.gstIn}
+                      helperText={formDataErrors.gstIn}
                     />
                   </FormControl>
                 </div>
@@ -683,10 +1077,10 @@ const Payment = () => {
                       id="bank/cash Acc"
                       label="Bank/Cash Acc"
                       size="small"
-                      //placeholder="accountcode"
-
                       value={formData.bankCashAcc}
                       onChange={(e) => setFormData({ ...formData, bankCashAcc: e.target.value })}
+                      error={!!formDataErrors.bankCashAcc}
+                      helperText={formDataErrors.bankCashAcc}
                     />
                   </FormControl>
                 </div>
@@ -699,6 +1093,8 @@ const Payment = () => {
                       value={formData.paymentAmt}
                       onChange={(e) => setFormData({ ...formData, paymentAmt: e.target.value })}
                       inputProps={{ maxLength: 30 }}
+                      error={!!formDataErrors.paymentAmt}
+                      helperText={formDataErrors.paymentAmt}
                     />
                   </FormControl>
                 </div>
@@ -711,6 +1107,8 @@ const Payment = () => {
                       value={formData.tdsAcc}
                       onChange={(e) => setFormData({ ...formData, tdsAcc: e.target.value })}
                       inputProps={{ maxLength: 30 }}
+                      error={!!formDataErrors.tdsAcc}
+                      helperText={formDataErrors.tdsAcc}
                     />
                   </FormControl>
                 </div>
@@ -723,6 +1121,8 @@ const Payment = () => {
                       value={formData.tdsAmt}
                       onChange={(e) => setFormData({ ...formData, tdsAmt: e.target.value })}
                       inputProps={{ maxLength: 30 }}
+                      error={!!formDataErrors.tdsAmt}
+                      helperText={formDataErrors.tdsAmt}
                     />
                   </FormControl>
                 </div>
@@ -736,6 +1136,8 @@ const Payment = () => {
                       value={formData.bankChargeAcc}
                       onChange={(e) => setFormData({ ...formData, bankChargeAcc: e.target.value })}
                       inputProps={{ maxLength: 30 }}
+                      error={!!formDataErrors.bankChargeAcc}
+                      helperText={formDataErrors.bankChargeAcc}
                     />
                   </FormControl>
                 </div>
@@ -749,6 +1151,8 @@ const Payment = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.bankCharges}
                       onChange={(e) => setFormData({ ...formData, bankCharges: e.target.value })}
+                      error={!!formDataErrors.bankCharges}
+                      helperText={formDataErrors.bankCharges}
                     />
                   </FormControl>
                 </div>
@@ -758,14 +1162,16 @@ const Payment = () => {
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
-                      // value={age}
                       label="In Currency"
                       value={formData.bankInCurrency}
                       onChange={(e) => setFormData({ ...formData, bankInCurrency: e.target.value })}
-                      // onChange={handleChange}
                     >
-                      <MenuItem value={'INR'}>INR</MenuItem>
-                      <MenuItem value={'DOLLAR'}>DOLLAR</MenuItem>
+                      {currencyList.length > 0 &&
+                        currencyList.map((par, index) => (
+                          <MenuItem key={index} value={par.inCurrency}>
+                            {par.inCurrency} {/* Display employee code */}
+                          </MenuItem>
+                        ))}
                     </Select>
                   </FormControl>
                 </div>
@@ -793,8 +1199,12 @@ const Payment = () => {
                       value={formData.staxInCurrency}
                       onChange={(e) => setFormData({ ...formData, staxInCurrency: e.target.value })}
                     >
-                      <MenuItem value={20}>INR</MenuItem>
-                      <MenuItem value={10}>DOLLAR</MenuItem>
+                      {currencyList.length > 0 &&
+                        currencyList.map((par, index) => (
+                          <MenuItem key={index} value={par.inCurrency}>
+                            {par.inCurrency} {/* Display employee code */}
+                          </MenuItem>
+                        ))}
                     </Select>
                   </FormControl>
                 </div>
@@ -840,7 +1250,7 @@ const Payment = () => {
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
-                        value={formData.chequeDate}
+                        value={formData.chequeDate ? dayjs(formData.chequeDate) : null}
                         onChange={(newValue) => setFormData({ ...formData, chequeDate: newValue })}
                       />
                     </LocalizationProvider>
@@ -871,8 +1281,12 @@ const Payment = () => {
                       value={formData.currency}
                       onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
                     >
-                      <MenuItem value={20}>INR</MenuItem>
-                      <MenuItem value={10}>DOLLAR</MenuItem>
+                      {currencyList.length > 0 &&
+                        currencyList.map((par, index) => (
+                          <MenuItem key={index} value={par.inCurrency}>
+                            {par.inCurrency} {/* Display employee code */}
+                          </MenuItem>
+                        ))}
                     </Select>
                   </FormControl>
                 </div>
@@ -963,28 +1377,18 @@ const Payment = () => {
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const numericRegex = /^[0-9]*$/;
-                                              if (numericRegex.test(value)) {
-                                                setWithdrawalsTableData((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, invNo: value } : r))
-                                                );
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    invNo: !value ? 'invNo is required' : ''
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    invNo: 'Only numeric characters are allowed'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              }
+
+                                              setWithdrawalsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, invNo: value } : r))
+                                              );
+                                              setWithdrawalsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  invNo: !value ? 'invNo is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
                                             }}
                                             className={withdrawalsTableErrors[index]?.invNo ? 'error form-control' : 'form-control'}
                                           />
@@ -1031,23 +1435,15 @@ const Payment = () => {
                                             style={{ width: '100px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
-                                              const numericRegex = /^[0-9]*$/;
-                                              if (numericRegex.test(value)) {
-                                                setWithdrawalsTableData((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, refNo: value } : r))
-                                                );
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], refNo: !value ? 'refNo is required' : '' };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], refNo: 'Only numeric characters are allowed' };
-                                                  return newErrors;
-                                                });
-                                              }
+
+                                              setWithdrawalsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, refNo: value } : r))
+                                              );
+                                              setWithdrawalsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], refNo: !value ? 'refNo is required' : '' };
+                                                return newErrors;
+                                              });
                                             }}
                                             className={withdrawalsTableErrors[index]?.refNo ? 'error form-control' : 'form-control'}
                                           />
@@ -1093,29 +1489,17 @@ const Payment = () => {
                                             style={{ width: '100px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
-                                              const numericRegex = /^[0-9]*$/;
-                                              if (numericRegex.test(value)) {
-                                                setWithdrawalsTableData((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, supplierRefNo: value } : r))
-                                                );
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    supplierRefNo: !value ? 'Eds is required' : ''
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    supplierRefNo: 'Only numeric characters are allowed'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              }
+                                              setWithdrawalsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, supplierRefNo: value } : r))
+                                              );
+                                              setWithdrawalsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  supplierRefNo: !value ? 'Eds is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
                                             }}
                                             className={withdrawalsTableErrors[index]?.supplierRefNo ? 'error form-control' : 'form-control'}
                                             // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}

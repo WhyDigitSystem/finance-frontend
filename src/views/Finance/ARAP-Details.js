@@ -162,6 +162,8 @@ export const ARAPDetail = () => {
     setFormData({ ...formData, [name]: newValue });
   };
 
+
+  
   const handleSubmit = (event) => {
     event.preventDefault();
     // Handle form submission with formData

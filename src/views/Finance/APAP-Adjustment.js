@@ -2,6 +2,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
+import { FormHelperText } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -14,6 +15,7 @@ import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
+import { getAllActiveBranches } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
@@ -23,6 +25,11 @@ export const ARAPAdjustment = () => {
   const [data, setData] = useState([]);
   const [docId, setDocId] = useState('');
   const [editId, setEditId] = useState('');
+  const [branchList, setBranchList] = useState([]);
+  const [finYearList, setFinYearList] = useState([]);
+  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
 
   const [formData, setFormData] = useState({
     accCurrency: '',
@@ -31,6 +38,8 @@ export const ARAPAdjustment = () => {
     branch: '',
     branchCode: 'MAA',
     chargeableAmt: '',
+    docId: '',
+    docDate: dayjs(),
     createdBy: '',
     creditDays: '',
     currency: '',
@@ -186,7 +195,26 @@ export const ARAPAdjustment = () => {
 
   useEffect(() => {
     getAllARAP();
+    getAllBranches();
+    getAllFinYear();
+    getARAPDocId();
   }, []);
+
+  const getAllFinYear = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/getAllAciveFInYear?orgId=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setFinYearList(response.paramObjectsMap.financialYearVOs);
+        console.log('fin', response.paramObjectsMap.financialYearVOs);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const getAllARAP = async () => {
     try {
@@ -203,6 +231,31 @@ export const ARAPAdjustment = () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+
+  const getAllBranches = async () => {
+    try {
+      const branchData = await getAllActiveBranches(orgId);
+      setBranchList(branchData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
+
+  const getARAPDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/payable/getPaymentDocId?branchCode=${loginBranchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
+      );
+      setFormData((prevData) => ({
+        ...prevData,
+        docId: response.paramObjectsMap.paymentDocId,
+        docDate: dayjs()
+      }));
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
     }
   };
 
@@ -433,8 +486,12 @@ export const ARAPAdjustment = () => {
                     name="branch"
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="CHENNAI">CHENNAI</MenuItem>
-                    <MenuItem value="BANGALORE">BANGALORE</MenuItem>
+                    {branchList.length > 0 &&
+                      branchList?.map((row) => (
+                        <MenuItem key={row.id} value={row.branch}>
+                          {row.branch}
+                        </MenuItem>
+                      ))}
                   </Select>
                   {fieldErrors.branch && (
                     <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
@@ -446,19 +503,17 @@ export const ARAPAdjustment = () => {
 
               {/* FinYr */}
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="finYear"
-                  label="FinYear"
-                  placeholder="Placeholder"
-                  variant="outlined"
-                  size="small"
-                  name="finYear"
-                  value={formData.finYear}
-                  onChange={handleInputChange}
-                  className="w-100"
-                  error={!!fieldErrors.finYear}
-                  helperText={fieldErrors.finYear}
-                />
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.finYear}>
+                  <InputLabel id="finYr-label">Fin Year</InputLabel>
+                  <Select labelId="finYr-label" label="finYear" value={formData.finYear} onChange={handleInputChange} name="finYear">
+                    {finYearList?.map((row) => (
+                      <MenuItem key={row.id} value={row.finYear}>
+                        {row.finYear}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.finYear && <FormHelperText>{fieldErrors.finYear}</FormHelperText>}
+                </FormControl>
               </div>
 
               {/* Voucher Type */}
@@ -805,8 +860,8 @@ export const ARAPAdjustment = () => {
                     name="gstFlag"
                     onChange={handleInputChange}
                   >
-                    <MenuItem value={true}>Yes</MenuItem>
-                    <MenuItem value={false}>No</MenuItem>
+                    <MenuItem value={'true'}>Yes</MenuItem>
+                    <MenuItem value={'false'}>No</MenuItem>
                   </Select>
                   {fieldErrors.gstFlag && (
                     <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
