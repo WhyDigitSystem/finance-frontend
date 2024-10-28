@@ -117,7 +117,7 @@ export const ReceiptRegister = () => {
       try {
         const response = await apiCalls(
           'get',
-          `/arreceivable/getAllReceiptRegister?branchCode=${branchCode}&toDate=${saveFormData.toDate}&orgId=${orgId}&finYear=${finYear}&subLedgerName=${saveFormData.subLedgerName}&fromDate=${saveFormData.fromDate}&branch=${branch}`
+          `/arreceivable/getAllReceiptRegister?orgId=${orgId}&fromDate=${saveFormData.fromDate}&toDate=${saveFormData.toDate}&subLedgerName=${saveFormData.subLedgerName}`
         );
         if (response.status === true) {
           console.log('Response:', response);
@@ -170,7 +170,7 @@ export const ReceiptRegister = () => {
     try {
       const response = await apiCalls(
         'get',
-        `/arreceivable/getCustomerNameAndCodeForReceipt?orgId=${orgId}&branch=${branch}&branchCode=${branchCode}&finYear=${finYear}`
+        `/arreceivable/getCustomerNameAndCodeForReceipt?orgId=${orgId}`
       );
       console.log('API Response:', response);
 

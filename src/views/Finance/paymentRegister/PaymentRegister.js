@@ -128,7 +128,7 @@ export const PaymentRegister = () => {
       try {
         const response = await apiCalls(
           'get',
-          `/payable/getAllPaymentRegister?branchCode=${loginBranchCode}&toDate=${saveFormData.toDate}&orgId=${orgId}&finYear=${finYear}&subLedgerName=${saveFormData.subLedgerName}&fromDate=${saveFormData.fromDate}&branch=${branch}`
+          `/payable/getAllPaymentRegister?orgId=${orgId}&fromDate=${saveFormData.fromDate}&toDate=${saveFormData.toDate}&subLedgerName=${saveFormData.subLedgerName}`
         );
         if (response.status === true) {
           console.log('Response:', response);
@@ -181,7 +181,7 @@ export const PaymentRegister = () => {
     try {
       const response = await apiCalls(
         'get',
-        `/payable/getPartyNameAndCodeForPayment?orgId=${orgId}&branch=${branch}&branchCode=${loginBranchCode}&finYear=${finYear}`
+        `/payable/getPartyNameAndCodeForPayment?orgId=${orgId}`
       );
       console.log('API Response:', response);
 

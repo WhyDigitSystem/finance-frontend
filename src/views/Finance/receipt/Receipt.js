@@ -496,7 +496,7 @@ const Receipt = () => {
     try {
       const response = await apiCalls(
         'get',
-        `arreceivable/getCustomerNameAndCodeForReceipt?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
+        `arreceivable/getCustomerNameAndCodeForReceipt?orgId=${orgId}`
       );
       console.log('API Response:', response);
 
