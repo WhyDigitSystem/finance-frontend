@@ -1,7 +1,7 @@
-import Checkbox from '@mui/material/Checkbox';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { FormHelperText } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormGroup from '@mui/material/FormGroup';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
@@ -9,29 +9,24 @@ import TextField from '@mui/material/TextField';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import apiCalls from 'apicall';
+import dayjs from 'dayjs';
+import { useEffect, useRef, useState } from 'react';
 import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
 import 'react-tabs/style/react-tabs.css';
-import React, { useState, useRef, useEffect } from 'react';
+import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
-import apiCalls from 'apicall';
 import { showToast } from 'utils/toast-component';
-import { FormHelperText } from '@mui/material';
-import dayjs from 'dayjs';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { ToastContainer, toast } from 'react-toastify';
 
 // import CommonListViewTable from '../basicMaster/CommonListViewTable';
 
 // import { AiOutlineSearch, AiOutlineWallet } from "react-icons/ai";
 // import { BsListTask } from "react-icons/bs";
-import TableComponent from './TableComponent';
 
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonListViewTable from '../../basicMaster/CommonListViewTable';
@@ -50,9 +45,9 @@ const Receipt = () => {
   const [listViewData, setListViewData] = useState([]);
   const [currencies, setCurrencies] = useState([]);
   const [allCustomerName, setAllCustomerName] = useState([]);
-  const [branch, setBranch] = useState('Chennai');
-  const [branchCode, setBranchCode] = useState('MAA');
-  const [finYear, setFinYear] = useState('2024');
+  const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [branch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
 
@@ -720,7 +715,7 @@ const Receipt = () => {
         refDate: formatDate(new Date(row.refDate)),
         refNo: row.refNo,
         settled: parseInt(row.settled),
-        txnSettled: parseInt(row.txnSettled),
+        txnSettled: parseInt(row.txnSettled)
         // remarks: row.remarks,
         // fromDate: formatDate(currentDate), // Passing current date
         // toDate: formatDate(currentDate)
@@ -759,7 +754,7 @@ const Receipt = () => {
         taxAmt: 0,
         tdsAmt: parseInt(formData.tdsAmt),
         type: formData.type,
-        orgId: parseInt(orgId),
+        orgId: parseInt(orgId)
         // docId: formData.docId,
         // docDate: formatDate(new Date(formData.docDate)), // Formatting with date and time
         // ipNo: '',

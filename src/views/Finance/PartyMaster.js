@@ -1,29 +1,28 @@
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { FormHelperText } from '@mui/material';
+import { FormHelperText, Tab, Tabs } from '@mui/material';
+import Box from '@mui/material/Box';
+import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import Box from '@mui/material/Box';
+import apiCalls from 'apicall';
 import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
 import DatePicker from 'react-datepicker';
-import { useRef, useState, useMemo, useEffect } from 'react';
 import 'react-tabs/style/react-tabs.css';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Checkbox from '@mui/material/Checkbox';
-import { ToastContainer, toast } from 'react-toastify';
+import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { Tabs, Tab } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
 import ActionButton from 'utils/ActionButton';
 import { getAllActiveCitiesByState, getAllActiveCountries, getAllActiveCurrency, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -385,8 +384,8 @@ export const PartyMaster = () => {
             salesPerson: detail.salesPerson || '',
             empCode: detail.empCode || '',
             salesBranch: detail.salesBranch || '',
-            // effectiveFrom: detail.effectiveFrom ? dayjs(detail.effectiveFrom, 'DD-MM-YYYY') : dayjs(),
-            // effectiveTill: detail.effectiveTill ? dayjs(detail.effectiveTill, 'DD-MM-YYYY') : dayjs()
+            // effectiveFrom: detail.effectiveFrom ? dayjs(detail.effectiveFrom, 'YYYY-MM-DD') : dayjs(),
+            // effectiveTill: detail.effectiveTill ? dayjs(detail.effectiveTill, 'YYYY-MM-DD') : dayjs()
             effectiveFrom: detail.effectiveFrom,
             effectiveTill: detail.effectiveTill
           }))
@@ -3339,8 +3338,8 @@ export const PartyMaster = () => {
                                         // selected={row.effectiveFrom}
                                         selected={
                                           row.effectiveFrom
-                                            ? dayjs(row.effectiveFrom, 'DD-MM-YYYY').isValid()
-                                              ? dayjs(row.effectiveFrom, 'DD-MM-YYYY').toDate()
+                                            ? dayjs(row.effectiveFrom, 'YYYY-MM-DD').isValid()
+                                              ? dayjs(row.effectiveFrom, 'YYYY-MM-DD').toDate()
                                               : null
                                             : null
                                         }
@@ -3384,8 +3383,8 @@ export const PartyMaster = () => {
                                       // selected={row.effectiveTill}
                                       selected={
                                         row.effectiveTill
-                                          ? dayjs(row.effectiveTill, 'DD-MM-YYYY').isValid()
-                                            ? dayjs(row.effectiveTill, 'DD-MM-YYYY').toDate()
+                                          ? dayjs(row.effectiveTill, 'YYYY-MM-DD').isValid()
+                                            ? dayjs(row.effectiveTill, 'YYYY-MM-DD').toDate()
                                             : null
                                           : null
                                       }

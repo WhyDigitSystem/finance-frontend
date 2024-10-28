@@ -76,12 +76,12 @@ const transaction = {
           type: 'item',
           url: '/finance/Reconcile/ReconcileCash'
         },
-        {
-          id: 'reconciliationSummary',
-          title: 'Reconciliation Summary',
-          type: 'item',
-          url: '/finance/ReconciliationSummaryReport/ReconciliationSummary'
-        },
+        // {
+        //   id: 'reconciliationSummary',
+        //   title: 'Reconciliation Summary',
+        //   type: 'item',
+        //   url: '/finance/ReconciliationSummaryReport/ReconciliationSummary'
+        // },
         {
           id: 'taxInvoiceDetail',
           title: 'Tax Invoice',

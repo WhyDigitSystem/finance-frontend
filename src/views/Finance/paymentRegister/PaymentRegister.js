@@ -22,7 +22,8 @@ export const PaymentRegister = () => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
   const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
-  const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [branch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
   const [partList, setPartList] = useState([]);
@@ -127,7 +128,7 @@ export const PaymentRegister = () => {
       try {
         const response = await apiCalls(
           'get',
-          `/payable/getAllPaymentRegister?branchCode=${'MAAW'}&toDate=${saveFormData.toDate}&orgId=${orgId}&finYear=${'2024'}&subLedgerName=${saveFormData.subLedgerName}&fromDate=${saveFormData.fromDate}&branch=${'CHENNAI'}`
+          `/payable/getAllPaymentRegister?branchCode=${loginBranchCode}&toDate=${saveFormData.toDate}&orgId=${orgId}&finYear=${finYear}&subLedgerName=${saveFormData.subLedgerName}&fromDate=${saveFormData.fromDate}&branch=${branch}`
         );
         if (response.status === true) {
           console.log('Response:', response);
@@ -180,7 +181,7 @@ export const PaymentRegister = () => {
     try {
       const response = await apiCalls(
         'get',
-        `/payable/getPartyNameAndCodeForPayment?orgId=${orgId}&branch=${'CHENNAI'}&branchCode=${'MAAW'}&finYear=${'2024'}`
+        `/payable/getPartyNameAndCodeForPayment?orgId=${orgId}&branch=${branch}&branchCode=${loginBranchCode}&finYear=${finYear}`
       );
       console.log('API Response:', response);
 

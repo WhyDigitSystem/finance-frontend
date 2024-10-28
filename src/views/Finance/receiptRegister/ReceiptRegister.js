@@ -21,15 +21,14 @@ export const ReceiptRegister = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [loginClient, setLoginClient] = useState(localStorage.getItem('client'));
-  const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
-  const [loginBranch, setLoginBranch] = useState(localStorage.getItem('branch'));
+
   const [loginCustomer, setLoginCustomer] = useState(localStorage.getItem('customer'));
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
   const [branchList, setBranchList] = useState([]);
   const [customerList, setCustomerList] = useState([]);
-  const [branch, setBranch] = useState('CHENNAI');
-  const [branchCode, setBranchCode] = useState('MAA');
-  const [finYear, setFinYear] = useState('2024');
+  const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [branch, setLoginBranch] = useState(localStorage.getItem('branch'));
 
   const [formData, setFormData] = useState({
     startDate: dayjs(),

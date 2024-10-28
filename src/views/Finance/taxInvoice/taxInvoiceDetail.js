@@ -23,7 +23,6 @@ import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import ActionButton from 'utils/ActionButton';
-import { numToWords } from 'utils/CommonFunctions';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
 import GstTable from './GstTable';
@@ -173,13 +172,13 @@ const TaxInvoiceDetails = () => {
     getAllCurrency();
   }, []);
 
-  useEffect(() => {
-    if (formData.totalInvAmountLc) {
-      const amount = parseFloat(formData.totalInvAmountLc);
-      const amountInWords = numToWords(Math.floor(amount)); // Convert only the integer part
-      setFormData((prev) => ({ ...prev, amountInWords }));
-    }
-  }, [formData.totalInvAmountLc]);
+  // useEffect(() => {
+  //   if (formData.totalInvAmountLc) {
+  //     const amount = parseFloat(formData.totalInvAmountLc);
+  //     const amountInWords = numToWords(Math.floor(amount)); // Convert only the integer part
+  //     setFormData((prev) => ({ ...prev, amountInWords }));
+  //   }
+  // }, [formData.totalInvAmountLc]);
 
   const getAllTaxInvoice = async () => {
     try {
@@ -484,9 +483,9 @@ const TaxInvoiceDetails = () => {
     getStateName(1000000007);
   }, [formData.id]);
 
-  useEffect(() => {
-    getPlaceOfSupply('MH');
-  }, [formData.stateCode]);
+  // useEffect(() => {
+  //   getPlaceOfSupply('MH');
+  // }, [formData.stateCode]);
 
   const getPartyName = async (partType) => {
     try {
@@ -960,7 +959,8 @@ const TaxInvoiceDetails = () => {
           totalInvAmountBc: listValueVO.totalInvAmountBc,
           totalTaxableAmountLc: listValueVO.totalTaxableAmountLc,
           amountInWords: listValueVO.amountInWords,
-          billingRemarks: listValueVO.billingRemarks
+          billingRemarks: listValueVO.billingRemarks,
+          amountInWords: listValueVO.amountInWords
         });
         setWithdrawalsTableData(
           listValueVO.taxInvoiceDetailsVO.map((cl) => ({
@@ -1909,7 +1909,23 @@ const TaxInvoiceDetails = () => {
                                           updatedCurrencyData[index] = {
                                             ...updatedCurrencyData[index],
                                             currency: selectedCurrency,
-                                            exRate: selectedCurrencyData.sellingExRate
+                                            exRate: selectedCurrencyData.sellingExRate,
+                                            fcAmount: selectedCurrency === 'INR' ? 0 : row.qty * row.rate,
+                                            lcAmount:
+                                              (Number(row.qty) || 0) *
+                                              (Number(row.rate) || 0) *
+                                              (Number(selectedCurrencyData.sellingExRate) || 0),
+                                            billAmount:
+                                              ((Number(row.qty) || 0) *
+                                                (Number(row.rate) || 0) *
+                                                (Number(selectedCurrencyData.sellingExRate) || 0)) /
+                                              selectedCurrencyData.sellingExRate,
+                                            gst:
+                                              ((Number(row.qty) || 0) *
+                                                (Number(row.rate) || 0) *
+                                                (Number(selectedCurrencyData.sellingExRate) || 0) *
+                                                row.GSTPercent) /
+                                              100
                                           };
 
                                           setWithdrawalsTableData(updatedCurrencyData);
@@ -1972,7 +1988,7 @@ const TaxInvoiceDetails = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.fcAmount}
+                                        value={row.fcAmount ? row.fcAmount.toFixed(2) : '0'}
                                         disabled
                                         style={{ width: '100px' }}
                                         onChange={(e) => {
@@ -2011,7 +2027,7 @@ const TaxInvoiceDetails = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.lcAmount}
+                                        value={row.lcAmount ? row.lcAmount.toFixed(2) : '0'}
                                         disabled
                                         style={{ width: '100px' }}
                                         onChange={(e) => {
@@ -2052,7 +2068,7 @@ const TaxInvoiceDetails = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.billAmount}
+                                        value={row.billAmount ? row.billAmount.toFixed(2) : '0.00'}
                                         disabled
                                         style={{ width: '100px' }}
                                         onChange={(e) => {
@@ -2172,7 +2188,7 @@ const TaxInvoiceDetails = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.gst}
+                                        value={row.gst ? row.gst.toFixed(2) : '0.00'}
                                         disabled
                                         style={{ width: '100px' }}
                                         onChange={(e) => {

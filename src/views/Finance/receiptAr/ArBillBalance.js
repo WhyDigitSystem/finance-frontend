@@ -1,3 +1,8 @@
+import ClearIcon from '@mui/icons-material/Clear';
+import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import SaveIcon from '@mui/icons-material/Save';
+import SearchIcon from '@mui/icons-material/Search';
+import { FormHelperText } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -5,25 +10,19 @@ import FormGroup from '@mui/material/FormGroup';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import { useTheme } from '@mui/material/styles';
 import TextField from '@mui/material/TextField';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { FormHelperText } from '@mui/material';
-import dayjs from 'dayjs';
-import ClearIcon from '@mui/icons-material/Clear';
-import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
-import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, Tooltip } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
-import React, { useState, useRef, useEffect } from 'react';
-import ActionButton from 'utils/ActionButton';
-import CommonListViewTable from '../../basicMaster/CommonListViewTable';
-import { showToast } from 'utils/toast-component';
-import { ToastContainer, toast } from 'react-toastify';
 import apiCalls from 'apicall';
+import dayjs from 'dayjs';
+import { useEffect, useRef, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
+import ActionButton from 'utils/ActionButton';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
+import { showToast } from 'utils/toast-component';
+import CommonListViewTable from '../../basicMaster/CommonListViewTable';
 
 const ArBillBalance = () => {
   const theme = useTheme();
@@ -35,9 +34,10 @@ const ArBillBalance = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [currencies, setCurrencies] = useState([]);
-  const [branch, setBranch] = useState('Chennai');
-  const [branchCode, setBranchCode] = useState('MAA');
-  const [finYear, setFinYear] = useState('2024');
+
+  const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [branch, setLoginBranch] = useState(localStorage.getItem('branch'));
 
   const [formData, setFormData] = useState({
     active: true,
@@ -378,8 +378,7 @@ const ArBillBalance = () => {
       branchCode: branchCode,
       finYear: finYear,
       cancel: true,
-      cancelRemarks: '',
-      
+      cancelRemarks: ''
     };
 
     try {
