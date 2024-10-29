@@ -2,7 +2,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { FormHelperText } from '@mui/material';
+import { Autocomplete, FormHelperText } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -37,6 +37,7 @@ const ApBillBalance = () => {
   const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [branch, setLoginBranch] = useState(localStorage.getItem('branch'));
+  const [partyList, setPartyList] = useState([]);
 
   const [formData, setFormData] = useState({
     active: true,
@@ -128,6 +129,32 @@ const ApBillBalance = () => {
     // Update form data and clear error for the field
     setFormData({ ...formData, [name]: inputValue });
     setFieldErrors({ ...fieldErrors, [name]: false });
+
+    // Handle partyName selection and partyCode mapping
+    if (name === 'partyName') {
+      const selectedParty = partyList.find((party) => party.partyName === value);
+      if (selectedParty) {
+        setFormData({
+          ...formData,
+          partyName: value,
+          partyCode: selectedParty.partyCode // Set the corresponding partyCode
+          // partyType: selectedParty.partyType // Set the corresponding party Type
+        });
+
+        // Clear any errors related to partyName if input is valid
+        setFieldErrors({
+          ...fieldErrors,
+          partyName: false,
+          partyCode: false,
+        });
+      }
+    } else {
+      // Handle other fields
+      setFormData({ ...formData, [name]: inputValue });
+
+      // Clear error when input is valid
+      setFieldErrors({ ...fieldErrors, [name]: false });
+    }
   };
 
   const handleDateChange = (name, date) => {
@@ -203,16 +230,35 @@ const ApBillBalance = () => {
   }, []);
 
   useEffect(() => {
-    getAllArApBillBalance();
+    getAllPartyName();
   }, []);
 
-  const getAllArApBillBalance = async () => {
+  const getAllPartyName = async () => {
+    try {
+      const response = await apiCalls('get', `payable/getPartyNameAndCodeForApBillBalance?orgId=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setPartyList(response.paramObjectsMap.PartyMasterVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  useEffect(() => {
+    getAllApBillBalance();
+  }, []);
+
+  const getAllApBillBalance = async () => {
     try {
       const response = await apiCalls('get', `payable/getAllApBillBalanceByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.apBillBalanceVO);
+        setListViewData(response.paramObjectsMap.PartyMasterVO);
       } else {
         console.error('API Error:', response);
       }
@@ -385,7 +431,7 @@ const ApBillBalance = () => {
       if (response.status === true) {
         showToast('success', editId ? 'AP Bill Balance Updated Successfully' : 'AP Bill Balance created successfully');
         handleClear();
-        getAllArApBillBalance();
+        getAllApBillBalance();
         setIsLoading(false);
       } else {
         showToast('error', response.paramObjectsMap.errorMessage || 'AP Bill Balance creation failed');
@@ -452,34 +498,51 @@ const ApBillBalance = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="partyName"
-                  label="Party Name"
-                  name="partyName"
-                  variant="outlined"
+                <Autocomplete
+                  disablePortal
+                  options={partyList}
+                  getOptionLabel={(option) => option.partyName}
+                  sx={{ width: '100%' }}
                   size="small"
-                  value={formData.partyName}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
-                  error={!!fieldErrors.partyName}
-                  helperText={fieldErrors.partyName ? fieldErrors.partyName : ''}
+                  value={formData.partyName ? partyList.find((c) => c.partyName === formData.partyName) : null}
+                  onChange={(event, newValue) => {
+                    // Wrapped in an arrow function
+                    handleInputChange({
+                      target: {
+                        name: 'partyName',
+                        value: newValue ? newValue.partyName : '' // Passes 'partyName' value or empty string
+                      }
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Party Name"
+                      name="partyName"
+                      error={!!fieldErrors.partyName}
+                      helperText={fieldErrors.partyName}
+                      InputProps={{
+                        ...params.InputProps,
+                        style: { height: 40 }
+                      }}
+                    />
+                  )}
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="partyCode"
-                  label="Party Code"
-                  name="partyCode"
-                  variant="outlined"
-                  size="small"
-                  value={formData.partyCode}
-                  onChange={handleInputChange}
-                  required
-                  fullWidth
-                  error={!!fieldErrors.partyCode}
-                  helperText={fieldErrors.partyCode ? fieldErrors.partyCode : ''}
-                />
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="partyCode"
+                    name="partyCode"
+                    label="Party Code"
+                    size="small"
+                    value={formData.partyCode}
+                    onChange={handleInputChange}
+                    error={!!fieldErrors.partyCode}
+                    helperText={fieldErrors.partyCode}
+                    disabled
+                  />
+                </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
