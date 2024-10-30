@@ -45,6 +45,8 @@ const CostInvoice = () => {
     creditDays: '',
     currency: '',
     customer: '',
+    docDate: dayjs(),
+    docId: '',
     dueDate: null,
     exRate: '',
     finYear: '',
@@ -70,22 +72,22 @@ const CostInvoice = () => {
   });
 
   const [chargerCostInvoice, setChargerCostInvoice] = useState([
-    //   {
-    //   billAmt: '',
-    //   chargeCode: '',
-    //   chargeLedger: '',
-    //   chargeName: '',
-    //   contType: '',
-    //   currency: '',
-    //   exRate: '',
-    //   fcAmt: '',
-    //   gsac: '',
-    //   gst: '',
-    //   houseNo: '',
-    //   jobNo: '',
-    //   lcAmt: '',
-    //   subJobNo: ''
-    // }
+    {
+      billAmt: '',
+      chargeCode: '',
+      chargeLedger: '',
+      chargeName: '',
+      contType: '',
+      currency: '',
+      exRate: '',
+      fcAmt: '',
+      gsac: '',
+      gst: '',
+      houseNo: '',
+      jobNo: '',
+      lcAmt: '',
+      subJobNo: ''
+    }
   ]);
   const [costInvoiceErrors, setCostInvoiceErrors] = useState([
     {
@@ -171,6 +173,7 @@ const CostInvoice = () => {
 
     fetchData();
     getAllCostInvoiceByOrgId();
+    getCostInvoiceDocId();
   }, []);
 
   const getAllCostInvoiceByOrgId = async () => {
@@ -181,6 +184,22 @@ const CostInvoice = () => {
       console.log('costInvoiceVO', result);
     } catch (err) {
       console.log('error', err);
+    }
+  };
+
+  const getCostInvoiceDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/costInvoice/getCostInvoiceDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
+      );
+      setFormData((prevData) => ({
+        ...prevData,
+        docId: response.paramObjectsMap.taxInvoiceDocId,
+        docDate: dayjs()
+      }));
+    } catch (error) {
+      console.error('Error fetching invoice:', error);
     }
   };
 
@@ -208,6 +227,8 @@ const CostInvoice = () => {
           currency: costVO.currency,
           customer: costVO.customer,
           dueDate: costVO.dueDate ? dayjs(costVO.dueDate) : dayjs(),
+          docDate: costVO.docDate ? dayjs(costVO.docDate) : dayjs(),
+          docId: costVO.docId,
           exRate: costVO.exRate,
           finYear: finYear,
           gstType: costVO.gstType,
@@ -281,30 +302,6 @@ const CostInvoice = () => {
     }
   };
 
-  // const handleInputChange = (e) => {
-  //   const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
-
-  //   let errorMessage = '';
-
-  //   if (errorMessage) {
-  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-  //   } else {
-  //     setFormData({ ...formData, [name]: value.toUpperCase() });
-
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-
-  //     // Preserve the cursor position for text-based inputs
-  //     if (type === 'text' || type === 'textarea') {
-  //       setTimeout(() => {
-  //         const inputElement = document.getElementsByName(name)[0];
-  //         if (inputElement && inputElement.setSelectionRange) {
-  //           inputElement.setSelectionRange(selectionStart, selectionEnd);
-  //         }
-  //       }, 0);
-  //     }
-  //   }
-  // };
-
   const handleInputChange = (e, fieldType, index) => {
     const { name, value } = e.target;
 
@@ -357,6 +354,7 @@ const CostInvoice = () => {
       currency: '',
       customer: '',
       dueDate: null,
+      docDate: dayjs(),
       exRate: '',
       finYear: '',
       gstType: '',
@@ -454,6 +452,7 @@ const CostInvoice = () => {
     setCostInvErrors({});
     setTdsCostErrors({});
     setEditId({});
+    getCostInvoiceDocId();
   };
 
   // const handleKeyDown = (e, row, table) => {
@@ -721,73 +720,73 @@ const CostInvoice = () => {
 
     setCostInvoiceErrors(newTableErrors);
 
-    // let tdsValid = true;
-    // const tdsTableErrors = tdsCostInvoiceDTO.map((row) => {
-    //   const rowErrors = {};
-    //   if (!row.section) {
-    //     rowErrors.section = 'Section is required';
-    //     tdsValid = false;
-    //   }
-    //   if (!row.tdsWithHolding) {
-    //     rowErrors.tdsWithHolding = 'TdsWithHolding is required';
-    //     tdsValid = false;
-    //   }
-    //   if (!row.tdsWithHoldingPer) {
-    //     rowErrors.tdsWithHoldingPer = 'TdsWithHolding% is required';
-    //     tdsValid = false;
-    //   }
-    //   if (!row.totTdsWhAmnt) {
-    //     rowErrors.totTdsWhAmnt = 'Tot Tds Amount is required';
-    //     tdsValid = false;
-    //   }
+    let tdsValid = true;
+    const tdsTableErrors = tdsCostInvoiceDTO.map((row) => {
+      const rowErrors = {};
+      if (!row.section) {
+        rowErrors.section = 'Section is required';
+        tdsValid = false;
+      }
+      if (!row.tdsWithHolding) {
+        rowErrors.tdsWithHolding = 'TdsWithHolding is required';
+        tdsValid = false;
+      }
+      if (!row.tdsWithHoldingPer) {
+        rowErrors.tdsWithHoldingPer = 'TdsWithHolding% is required';
+        tdsValid = false;
+      }
+      if (!row.totTdsWhAmnt) {
+        rowErrors.totTdsWhAmnt = 'Tot Tds Amount is required';
+        tdsValid = false;
+      }
 
-    //   return rowErrors;
-    // });
-    // setFieldErrors(errors);
+      return rowErrors;
+    });
+    setFieldErrors(errors);
 
-    // setTdsCostInvoiceDTO(tdsTableErrors);
+    setTdsCostErrors(tdsTableErrors);
 
-    // let summaryValid = true;
-    // const summaryTableErrors = costInvSummaryDTO.map((row) => {
-    //   const rowErrors = {};
-    //   if (!row.actBillCurrAmt) {
-    //     rowErrors.actBillCurrAmt = 'Act Bill Amt.(Bill Curr) is required';
-    //     summaryValid = false;
-    //   }
-    //   if (!row.actBillLcAmt) {
-    //     rowErrors.actBillLcAmt = 'Act Bill Amt.(LC) is required';
-    //     summaryValid = false;
-    //   }
-    //   if (!row.gstInputLcAmt) {
-    //     rowErrors.gstInputLcAmt = 'GST Input Amt(LC) is required';
-    //     summaryValid = false;
-    //   }
-    //   if (!row.netBillCurrAmt) {
-    //     rowErrors.netBillCurrAmt = 'Net Amt.(Bill Curr) is required';
-    //     summaryValid = false;
-    //   }
-    //   if (!row.netBillLcAmt) {
-    //     rowErrors.netBillLcAmt = 'Net Amt.(LC) is required';
-    //     summaryValid = false;
-    //   }
-    //   if (!row.roundOff) {
-    //     rowErrors.roundOff = 'Round Off is required';
-    //     summaryValid = false;
-    //   }
-    //   if (!row.totChargesBillCurrAmt) {
-    //     rowErrors.totChargesBillCurrAmt = 'Tot. Charge Amt.(Bill Curr) is required';
-    //     summaryValid = false;
-    //   }
-    //   if (!row.totChargesLcAmt) {
-    //     rowErrors.totChargesLcAmt = 'Tot. Charge Amt.(LC) is required';
-    //     summaryValid = false;
-    //   }
+    let summaryValid = true;
+    const summaryTableErrors = costInvSummaryDTO.map((row) => {
+      const rowErrors = {};
+      if (!row.actBillCurrAmt) {
+        rowErrors.actBillCurrAmt = 'Act Bill Amt.(Bill Curr) is required';
+        summaryValid = false;
+      }
+      if (!row.actBillLcAmt) {
+        rowErrors.actBillLcAmt = 'Act Bill Amt.(LC) is required';
+        summaryValid = false;
+      }
+      if (!row.gstInputLcAmt) {
+        rowErrors.gstInputLcAmt = 'GST Input Amt(LC) is required';
+        summaryValid = false;
+      }
+      if (!row.netBillCurrAmt) {
+        rowErrors.netBillCurrAmt = 'Net Amt.(Bill Curr) is required';
+        summaryValid = false;
+      }
+      if (!row.netBillLcAmt) {
+        rowErrors.netBillLcAmt = 'Net Amt.(LC) is required';
+        summaryValid = false;
+      }
+      if (!row.roundOff) {
+        rowErrors.roundOff = 'Round Off is required';
+        summaryValid = false;
+      }
+      if (!row.totChargesBillCurrAmt) {
+        rowErrors.totChargesBillCurrAmt = 'Tot. Charge Amt.(Bill Curr) is required';
+        summaryValid = false;
+      }
+      if (!row.totChargesLcAmt) {
+        rowErrors.totChargesLcAmt = 'Tot. Charge Amt.(LC) is required';
+        summaryValid = false;
+      }
 
-    //   return rowErrors;
-    // });
-    // setFieldErrors(errors);
+      return rowErrors;
+    });
+    setFieldErrors(errors);
 
-    // setCostInvSummaryDTO(summaryTableErrors);
+    setCostInvErrors(summaryTableErrors);
 
     if (Object.keys(errors).length === 0 && CostInvoiceValid) {
       console.log('try called');
@@ -903,6 +902,37 @@ const CostInvoice = () => {
             <>
               <div className="row d-flex ml">
                 <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled" size="small">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="Document Date"
+                        value={formData.docDate}
+                        onChange={(date) => handleDateChange('docDate', date)}
+                        disabled
+                        slotProps={{
+                          textField: { size: 'small', clearable: true }
+                        }}
+                        format="DD-MM-YYYY"
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
+
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="outlined-textarea-zip"
+                    label="Document Id"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="docId"
+                    value={formData.docId}
+                    onChange={handleInputChange}
+                    disabled
+                    inputProps={{ maxLength: 10 }}
+                  />
+                </div>
+                <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small" variant="outlined" error={!!fieldErrors.mode}>
                     <InputLabel id="mode-label">Mode</InputLabel>
                     <Select labelId="mode-label" label="Select Mode" name="mode" value={formData.mode} onChange={handleInputChange}>
@@ -948,7 +978,7 @@ const CostInvoice = () => {
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
-                        format="YYYY-MM-DD"
+                        format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
                     {fieldErrors.purVoucherDate && <p className="dateErrMsg">Pur Voucher Date is required</p>}
@@ -979,7 +1009,7 @@ const CostInvoice = () => {
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
-                        format="YYYY-MM-DD"
+                        format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
                     {fieldErrors.costInvoiceDate && <p className="dateErrMsg">Cost Invoice Date is required</p>}
@@ -997,22 +1027,6 @@ const CostInvoice = () => {
                       error={!!fieldErrors.supplierBillNo}
                       helperText={fieldErrors.supplierBillNo}
                     />
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        label="Date"
-                        value={formData.docDate}
-                        disabled
-                        onChange={(date) => handleDateChange('docDate', date)}
-                        slotProps={{
-                          textField: { size: 'small', clearable: true }
-                        }}
-                        format="YYYY-MM-DD"
-                      />
-                    </LocalizationProvider>
                   </FormControl>
                 </div>
 
@@ -1074,7 +1088,7 @@ const CostInvoice = () => {
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
-                        format="YYYY-MM-DD"
+                        format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
                     {fieldErrors.dueDate && <p className="dateErrMsg">Due Date is required</p>}
@@ -1414,7 +1428,7 @@ const CostInvoice = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="text"
+                                          type="number"
                                           value={row.billAmt}
                                           style={{ width: '150px' }}
                                           onChange={(e) => {
@@ -1573,7 +1587,7 @@ const CostInvoice = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="text"
+                                          type="number"
                                           value={row.exRate}
                                           style={{ width: '150px' }}
                                           onChange={(e) => {
@@ -1600,7 +1614,7 @@ const CostInvoice = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="text"
+                                          type="number"
                                           value={row.fcAmt}
                                           style={{ width: '150px' }}
                                           onChange={(e) => {
@@ -1652,7 +1666,7 @@ const CostInvoice = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="text"
+                                          type="number"
                                           value={row.gst}
                                           style={{ width: '150px' }}
                                           onChange={(e) => {
@@ -1731,7 +1745,7 @@ const CostInvoice = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="text"
+                                          type="number"
                                           value={row.lcAmt}
                                           style={{ width: '150px' }}
                                           onChange={(e) => {
@@ -1821,6 +1835,7 @@ const CostInvoice = () => {
                                 label="TDS / WH %"
                                 size="small"
                                 name="tdsWithHoldingPer"
+                                type="number"
                                 inputProps={{ maxLength: 30 }}
                                 value={tdsCostInvoiceDTO[index]?.tdsWithHoldingPer || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
@@ -1849,6 +1864,7 @@ const CostInvoice = () => {
                                 label="Tot TDS/WH Amt"
                                 size="small"
                                 name="totTdsWhAmnt"
+                                type="number"
                                 inputProps={{ maxLength: 30 }}
                                 value={tdsCostInvoiceDTO[index]?.totTdsWhAmnt || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}

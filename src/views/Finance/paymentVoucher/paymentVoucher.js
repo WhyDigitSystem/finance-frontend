@@ -56,7 +56,6 @@ const PaymentVoucher = () => {
     chequeDate: null,
     chequeNo: '',
     docDate: new Date(),
-    // docId: '24GJ0001',
     exRate: '',
     orgId: orgId,
     referenceDate: null,
@@ -287,7 +286,6 @@ const PaymentVoucher = () => {
       chequeNo: '',
       currency: '',
       docDate: null,
-      // docId: '24GJ0001',
       exRate: '',
       orgId: orgId,
       referenceDate: '',
@@ -536,7 +534,7 @@ const PaymentVoucher = () => {
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
-                        format="YYYY-MM-DD"
+                        format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
                   </FormControl>
@@ -629,7 +627,7 @@ const PaymentVoucher = () => {
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
-                        format="YYYY-MM-DD"
+                        format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
                     {fieldErrors.referenceDate && <p className="dateErrMsg">Ref Date is required</p>}
@@ -663,7 +661,7 @@ const PaymentVoucher = () => {
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
-                        format="YYYY-MM-DD"
+                        format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
                     {fieldErrors.chequeDate && <p className="dateErrMsg">Cheque Date is required</p>}

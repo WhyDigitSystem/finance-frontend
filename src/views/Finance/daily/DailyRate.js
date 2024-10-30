@@ -45,8 +45,8 @@ export const DailyRate = () => {
   const [editId, setEditId] = useState();
 
   const [formData, setFormData] = useState({
-    date: '',
-    month: '',
+    date: dayjs(),
+    month: dayjs(),
     active: true
   });
   const [fieldErrors, setFieldErrors] = useState({
@@ -187,10 +187,9 @@ export const DailyRate = () => {
   const handleFullGridFunction = async () => {
     try {
       const response = await apiCalls('get', `commonmaster/getAllCurrencyForExRate?&orgId=${orgId}`);
-      console.log('THE WAREHOUSE IS:', response);
       if (response.status === true) {
         const sku = response.paramObjectsMap.currencyVO;
-        console.log('THE SKU DETAILS ARE:', sku);
+        console.log('THE getAllCurrencyForExRate DETAILS ARE:', sku);
 
         setSkuDetails(
           sku.map((row) => ({
@@ -201,7 +200,7 @@ export const DailyRate = () => {
         );
       }
     } catch (error) {
-      console.error('Error fetching employee data:', error);
+      console.error('Error fetching data:', error);
     }
   };
 
@@ -370,8 +369,8 @@ export const DailyRate = () => {
     console.log('THE HANDLE SAVE IS WORKING');
 
     const errors = {};
-    if (!formData.date) errors.date = 'Date is required';
-    if (!formData.month) errors.month = 'Month is required';
+    // if (!formData.date) errors.date = 'Date is required';
+    // if (!formData.month) errors.month = 'Month is required';
 
     let detailsTableDataValid = true;
     if (!detailsTableData || !Array.isArray(detailsTableData) || detailsTableData.length === 0) {
@@ -417,8 +416,9 @@ export const DailyRate = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        date: formData.date,
-        month: formData.month,
+        date: dayjs(formData.date).format('YYYY-MM-DD'),
+        // month: formData.month,
+        month: dayjs(formData.month).format('YYYY-MM-DD'),
         dailyMonthlyExRatesDtlDTO: detailsVo,
         createdBy: loginUserName,
         orgId: orgId
@@ -471,6 +471,7 @@ export const DailyRate = () => {
                       label="Date"
                       value={formData.date ? dayjs(formData.date, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('date', date)}
+                      disabled
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
@@ -480,24 +481,40 @@ export const DailyRate = () => {
                   {fieldErrors.date && <p className="dateErrMsg">Date is required</p>}
                 </FormControl>
               </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Month"
-                      openTo="month"
-                      views={['year', 'month']}
-                      value={formData.month ? dayjs(formData.month, 'YYYY-MM-DD') : null}
-                      onChange={(newValue) => handleDateChange('month', newValue)}
-                      slotProps={{
-                        textField: { size: 'small', clearable: true }
-                      }}
-                    />
-                  </LocalizationProvider>
-                  {fieldErrors.month && <p className="dateErrMsg">Month is required</p>}
-                </FormControl>
-              </div>
+              {editId ? (
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    label="Month"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="month"
+                    disabled
+                    value={formData.month}
+                    error={!!fieldErrors.month}
+                    helperText={fieldErrors.month}
+                  />
+                </div>
+              ) : (
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="Month"
+                        openTo="month"
+                        views={['year', 'month']}
+                        disabled
+                        value={formData.month ? dayjs(formData.month, 'YYYY-MM-DD') : null}
+                        onChange={(newValue) => handleDateChange('month', newValue)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true }
+                        }}
+                      />
+                    </LocalizationProvider>
+                    {fieldErrors.month && <p className="dateErrMsg">Month is required</p>}
+                  </FormControl>
+                </div>
+              )}
             </div>
             {/* <TableComponent formData={formData} setFormData={setFormData} /> */}
             <div className="row mt-2">

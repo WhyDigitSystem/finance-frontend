@@ -95,6 +95,10 @@ export const PartyMaster = () => {
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   const [partyTypeData, setPartyTypeData] = useState([]);
+  const [currencyExRates, setCurrencyExRates] = useState([]);
+  const [empData, setEmpData] = useState([]);
+  const [branchData, setBranchData] = useState([]);
+  const [finYearList, setFinYearList] = useState([]);
   const [tabValue, setTabValue] = useState(0);
   const handleChangeTab = (event, newValue) => {
     setTabValue(newValue);
@@ -104,7 +108,7 @@ export const PartyMaster = () => {
     { accessorKey: 'partyType', header: 'Party Type', size: 140 },
     { accessorKey: 'partyCode', header: 'Party Code', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 },
-    { accessorKey: 'company', header: 'Company', size: 140 }
+    { accessorKey: 'accountType', header: 'Account Type', size: 140 }
   ];
 
   const handleView = () => {
@@ -149,7 +153,6 @@ export const PartyMaster = () => {
     partyType: '',
     partyVendorEvaluationDTO: {
       commAgreedTerm: '',
-      // id: 0,
       justification: '',
       slaPoints: '',
       basicVenSelected: '',
@@ -180,12 +183,15 @@ export const PartyMaster = () => {
     getAllStates();
     getPartyMasterByOrgId();
     getAllPartyTypeByOrgId();
+    getAllCurrencyForExRate();
+    getAllEmployees();
+    getAllBranches();
+    getAllFinYear();
   }, []);
 
   useEffect(() => {
     if (formData.partyType) {
       getPartyCodeByOrgIdAndPartyType();
-      console.log('getPartyCodeByOrgIdAndPartyType');
     }
   }, [formData.partyType]);
 
@@ -214,6 +220,74 @@ export const PartyMaster = () => {
       setCityList(cityData);
     } catch (error) {
       console.error('Error fetching country data:', error);
+    }
+  };
+
+  const getAllCurrencyForExRate = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/getAllCurrencyForExRate?&orgId=${orgId}`);
+      console.log('getAllCurrencyForExRate:', response);
+      if (response.status === true) {
+        const exRates = response.paramObjectsMap.currencyVO;
+
+        setCurrencyExRates(
+          exRates.map((row) => ({
+            id: row.id,
+            currency: row.currency,
+            currencyDescription: row.currencyDescription
+          }))
+        );
+      }
+    } catch (error) {
+      console.error('Error fetching employee data:', error);
+    }
+  };
+
+  const getAllEmployees = async () => {
+    try {
+      const response = await apiCalls('get', `master/getAllEmployeeByOrgId?orgId=${orgId}`);
+      console.log('API Response for getAllEmployeeByOrgId:', response);
+
+      if (response.status === true) {
+        const empData = response.paramObjectsMap.employeeVO.filter((row) => row.active === 'Active');
+        setEmpData(empData);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getAllBranches = async () => {
+    try {
+      const response = await apiCalls('get', `master/branch?orgid=${orgId}`);
+      console.log('API Response for branch:', response);
+
+      if (response.status === true) {
+        const branchData = response.paramObjectsMap.branchVO.filter((row) => row.active === 'Active');
+        setBranchData(branchData);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const getAllFinYear = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/getAllAciveFInYear?orgId=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setFinYearList(response.paramObjectsMap.financialYearVOs);
+        console.log('fin', response.paramObjectsMap.financialYearVOs);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
   };
 
@@ -253,7 +327,6 @@ export const PartyMaster = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        // setPartyCode(response.paramObjectsMap.partyTypeVO[0]);
         setFormData((prevData) => ({
           ...prevData,
           partyCode: response.paramObjectsMap.partyTypeVO[0].partCode
@@ -277,12 +350,14 @@ export const PartyMaster = () => {
         setListView(false);
         const particularMaster = response.paramObjectsMap.partyMasterVO[0];
         console.log('THE PARTICULAR CUSTOMER IS:', particularMaster);
+
         setFormData({
+          ...formData,
           accountName: particularMaster.accountName,
           accountNo: particularMaster.accountNo || '',
           accType: particularMaster.accType,
           accountType: particularMaster.accountType,
-          active: particularMaster.active === true,
+          active: particularMaster.active === 'Active',
           addressOfBranch: particularMaster.addressOfBranch,
           agentName: particularMaster.agentName,
           airwayBillNo: particularMaster.airwayBillNo,
@@ -302,6 +377,7 @@ export const PartyMaster = () => {
           customerCategory: particularMaster.customerCategory,
           customerCoord: particularMaster.customerCoord,
           customerType: particularMaster.customerType,
+          gstIn: particularMaster.gstIn,
           gstPartyName: particularMaster.gstPartyName,
           gstRegistered: particularMaster.gstRegistered,
           ifscCode: particularMaster.ifscCode,
@@ -315,8 +391,16 @@ export const PartyMaster = () => {
           salesPerson: particularMaster.salesPerson,
           supplierType: particularMaster.supplierType,
           swift: particularMaster.swift,
-          tanNo: particularMaster.tanNo
+          tanNo: particularMaster.tanNo,
+          partyVendorEvaluationDTO: {
+            commAgreedTerm: particularMaster.partyVendorEvaluationVO.commAgreedTerm || '',
+            justification: particularMaster.partyVendorEvaluationVO.justification || '',
+            slaPoints: particularMaster.partyVendorEvaluationVO.slaPoints || '',
+            basicVenSelected: particularMaster.partyVendorEvaluationVO.basicVenSelected || '',
+            boughVendor: particularMaster.partyVendorEvaluationVO.boughVendor || ''
+          }
         });
+
         setPartyStateData(
           particularMaster.partyStateVO.map((detail) => ({
             id: detail.id,
@@ -329,6 +413,7 @@ export const PartyMaster = () => {
             stateCode: detail.stateCode || ''
           }))
         );
+
         setPartyAddressData(
           particularMaster.partyAddressVO.map((detail) => ({
             id: detail.id,
@@ -344,6 +429,7 @@ export const PartyMaster = () => {
             stateGstIn: detail.stateGstIn || ''
           }))
         );
+
         setPartyDetailsOfDirectors(
           particularMaster.partyDetailsOfDirectorsVO.map((detail) => ({
             id: detail.id,
@@ -353,18 +439,20 @@ export const PartyMaster = () => {
             email: detail.email || ''
           }))
         );
+
         setPartySpecialTDS(
           particularMaster.partySpecialTDSVO.map((detail) => ({
             id: detail.id,
-            edPercentage: detail.edPercentage || '',
+            tdsWithSec: detail.tdsWithSec || '',
             rateFrom: detail.rateFrom || '',
             rateTo: detail.rateTo || '',
-            surchargePer: detail.surchargePer || '',
-            tdsCertifiNo: detail.tdsCertifiNo || '',
             tdsWithPer: detail.tdsWithPer || '',
-            tdsWithSec: detail.tdsWithSec || ''
+            surchargePer: detail.surchargePer || '',
+            edPercentage: detail.edPercentage || '',
+            tdsCertifiNo: detail.tdsCertifiNo || ''
           }))
         );
+
         setPartyChargesExemption(
           particularMaster.partyChargesExemptionVO.map((detail) => ({
             id: detail.id,
@@ -372,24 +460,25 @@ export const PartyMaster = () => {
             charges: detail.charges || ''
           }))
         );
+
         setPartyCurrencyMapping(
           particularMaster.partyCurrencyMappingVO.map((detail) => ({
             id: detail.id,
             transCurrency: detail.transCurrency || ''
           }))
         );
+
         setPartySalesPersonTagging(
           particularMaster.partySalesPersonTaggingVO.map((detail) => ({
             id: detail.id,
             salesPerson: detail.salesPerson || '',
             empCode: detail.empCode || '',
             salesBranch: detail.salesBranch || '',
-            // effectiveFrom: detail.effectiveFrom ? dayjs(detail.effectiveFrom, 'YYYY-MM-DD') : dayjs(),
-            // effectiveTill: detail.effectiveTill ? dayjs(detail.effectiveTill, 'YYYY-MM-DD') : dayjs()
-            effectiveFrom: detail.effectiveFrom,
-            effectiveTill: detail.effectiveTill
+            effectiveFrom: detail.effectiveFrom || '',
+            effectiveTill: detail.effectiveTill || ''
           }))
         );
+
         setPartyTdsExempted(
           particularMaster.partyTdsExemptedVO.map((detail) => ({
             id: detail.id,
@@ -398,41 +487,24 @@ export const PartyMaster = () => {
             finYear: detail.finYear || ''
           }))
         );
+
         setPartyPartnerTagging(
           particularMaster.partyPartnerTaggingVO.map((detail) => ({
             id: detail.id,
             partnerName: detail.partnerName || ''
           }))
         );
-        // setFormData(
-        //   particularMaster.partyVendorEvaluationVO.map((detail) => ({
-        //     id: detail.id,
-        //     commAgreedTerm: detail.commAgreedTerm || '',
-        //     justification: detail.justification || '',
-        //     slaPoints: detail.slaPoints || '',
-        //     basicVenSelected: detail.basicVenSelected || '',
-        //     boughVendor: detail.boughVendor || '',
-        //   }))
-        // );
-      } else {
-        console.error('API Error:', response);
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching PartyMaster:', error);
     }
   };
 
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setFormData({ ...formData, [name]: value });
-  //   setFieldErrors({ ...fieldErrors, [name]: '' });
-  // };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
     let updatedFormData;
 
-    // Check if the name belongs to the nested partyVendorEvaluationDTO
     if (name in formData.partyVendorEvaluationDTO) {
       updatedFormData = {
         ...formData,
@@ -442,11 +514,9 @@ export const PartyMaster = () => {
         }
       };
     } else {
-      // For other top-level form fields
       updatedFormData = { ...formData, [name]: value };
     }
 
-    // Conditionally set the accountType based on the selected partyType
     if (name === 'partyType') {
       if (value === 'CUSTOMER') {
         updatedFormData = { ...updatedFormData, accountType: 'RECEIVABLE' };
@@ -455,38 +525,15 @@ export const PartyMaster = () => {
         updatedFormData = { ...updatedFormData, accountType: 'PAYABLE' };
         updatedFormData = { ...updatedFormData, accountName: 'PAYABLE' };
       } else {
-        updatedFormData = { ...updatedFormData, accountType: '' }; // Clear accountType if other partyType
-        updatedFormData = { ...updatedFormData, accountName: '' }; // Clear accountType if other partyType
+        updatedFormData = { ...updatedFormData, accountType: '' };
+        updatedFormData = { ...updatedFormData, accountName: '' };
       }
     }
 
-    // Update form data
     setFormData(updatedFormData);
 
-    // Clear field errors for the respective field
     setFieldErrors({ ...fieldErrors, [name]: '' });
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-
-  //   // Check if the name belongs to the nested partyVendorEvaluationDTO
-  // if (name in formData.partyVendorEvaluationDTO) {
-  //   setFormData({
-  //     ...formData,
-  //     partyVendorEvaluationDTO: {
-  //       ...formData.partyVendorEvaluationDTO,
-  //       [name]: value
-  //     }
-  //   });
-  // } else {
-  //   // For other top-level form fields
-  //   setFormData({ ...formData, [name]: value });
-  // }
-
-  //   // Clear field errors for the respective field
-  //   setFieldErrors({ ...fieldErrors, [name]: '' });
-  // };
 
   const handleClear = () => {
     setEditId('');
@@ -519,7 +566,6 @@ export const PartyMaster = () => {
       gstIn: '',
       gstPartyName: '',
       gstRegistered: 'YES',
-      // id: 0,
       ifscCode: '',
       nameOfBank: '',
       orgId: orgId,
@@ -1082,17 +1128,6 @@ export const PartyMaster = () => {
     setPartyPartnerErrors(partyPartnerErrors.filter((_, index) => index !== id - 1));
   };
 
-  const [partyVendorEvaluation, setPartyVendorEvaluation] = useState([
-    {
-      sNo: Date.now(),
-      commAgreedTerm: '',
-      justification: '',
-      slaPoints: '',
-      basicVenSelected: '',
-      boughVendor: ''
-    }
-  ]);
-
   const [partyVendorErrors, setPartyVendorErrors] = useState([
     {
       commAgreedTerm: '',
@@ -1102,10 +1137,6 @@ export const PartyMaster = () => {
       boughVendor: ''
     }
   ]);
-
-  // useEffect(() => {
-  //   getAllCities();
-  // }, [partyAddressData.state]);
 
   const handleSave = async () => {
     const errors = {};
@@ -1124,12 +1155,6 @@ export const PartyMaster = () => {
     if (!formData.customerType) {
       errors.customerType = 'Customer Type is required';
     }
-    // if (!formData.company) {
-    //   errors.company = 'Company is required';
-    // }
-    // if (!formData.customerCategory) {
-    //   errors.customerCategory = 'Customer Category is required';
-    // }
     if (!formData.agentName) {
       errors.agentName = 'Agent Name is required';
     }
@@ -1195,9 +1220,6 @@ export const PartyMaster = () => {
     if (!formData.caf) {
       errors.caf = 'Caf is required';
     }
-    // if (!formData.remarks) {
-    //   errors.remarks = 'Remarks is required';
-    // }
     if (!formData.compoundScheme) {
       errors.compoundScheme = 'Compounding Scheme is required';
     }
@@ -2007,19 +2029,6 @@ export const PartyMaster = () => {
                   {fieldErrors.bussinessCate && <FormHelperText>{fieldErrors.bussinessCate}</FormHelperText>}
                 </FormControl>
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <TextField
-                  id="businessCategory1"
-                  fullWidth
-                  name="businessCategory1"
-                  size="small"
-                  value={formData.businessCategory1}
-                  onChange={handleInputChange}
-                  error={fieldErrors.businessCategory1}
-                  helperText={fieldErrors.businessCategory1}
-                />
-              </div> */}
-
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.country}>
                   <InputLabel id="country-label">Country</InputLabel>
@@ -3205,7 +3214,7 @@ export const PartyMaster = () => {
                                       }
                                     >
                                       <option value="">-- Select --</option>
-                                      {currencies.map((item) => (
+                                      {currencyExRates.map((item) => (
                                         <option key={item.id} value={item.currency}>
                                           {item.currency}
                                         </option>
@@ -3257,26 +3266,33 @@ export const PartyMaster = () => {
                                   </td>
 
                                   <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
+                                    <select
+                                      className={partySalesPersonErrors[index]?.salesPerson ? 'error form-control' : 'form-control'}
                                       value={row.salesPerson}
                                       onChange={(e) => {
-                                        const value = e.target.value;
+                                        const selectedName = e.target.value;
+                                        const selectedEmployee = empData.find((item) => item.employeeName === selectedName);
+
                                         setPartySalesPersonTagging((prev) =>
-                                          prev.map((r) => (r.id === row.id ? { ...r, salesPerson: value } : r))
+                                          prev.map((r) =>
+                                            r.id === row.id
+                                              ? {
+                                                  ...r,
+                                                  salesPerson: selectedName,
+                                                  empCode: selectedEmployee ? selectedEmployee.employeeCode : ''
+                                                }
+                                              : r
+                                          )
                                         );
-                                        setPartySalesPersonErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = {
-                                            ...newErrors[index],
-                                            salesPerson: !value ? 'Sales Person is required' : ''
-                                          };
-                                          return newErrors;
-                                        });
                                       }}
-                                      className={partySalesPersonErrors[index]?.salesPerson ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
-                                    />
+                                    >
+                                      <option value="">-- Select --</option>
+                                      {empData.map((item) => (
+                                        <option key={item.id} value={item.employeeName}>
+                                          {item.employeeName}
+                                        </option>
+                                      ))}
+                                    </select>
                                     {partySalesPersonErrors[index]?.salesPerson && (
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partySalesPersonErrors[index].salesPerson}</div>
                                     )}
@@ -3285,6 +3301,7 @@ export const PartyMaster = () => {
                                     <input
                                       type="text"
                                       value={row.empCode}
+                                      disabled
                                       onChange={(e) => {
                                         const value = e.target.value;
                                         setPartySalesPersonTagging((prev) =>
@@ -3306,27 +3323,24 @@ export const PartyMaster = () => {
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partySalesPersonErrors[index].empCode}</div>
                                     )}
                                   </td>
+
                                   <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.salesBranch}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        setPartySalesPersonTagging((prev) =>
-                                          prev.map((r) => (r.id === row.id ? { ...r, salesBranch: value } : r))
-                                        );
-                                        setPartySalesPersonErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = {
-                                            ...newErrors[index],
-                                            salesBranch: !value ? 'Sales Branch is required' : ''
-                                          };
-                                          return newErrors;
-                                        });
-                                      }}
+                                    <select
                                       className={partySalesPersonErrors[index]?.salesBranch ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
-                                    />
+                                      value={row.salesBranch}
+                                      onChange={(e) =>
+                                        setPartySalesPersonTagging((prev) =>
+                                          prev.map((r) => (r.id === row.id ? { ...r, salesBranch: e.target.value } : r))
+                                        )
+                                      }
+                                    >
+                                      <option value="">-- Select --</option>
+                                      {branchData.map((item) => (
+                                        <option key={item.id} value={item.branch}>
+                                          {item.branch}
+                                        </option>
+                                      ))}
+                                    </select>
                                     {partySalesPersonErrors[index]?.salesBranch && (
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partySalesPersonErrors[index].salesBranch}</div>
                                     )}
@@ -3498,7 +3512,23 @@ export const PartyMaster = () => {
                                     )}
                                   </td>
                                   <td className="border px-2 py-2">
-                                    <input
+                                    <select
+                                      className={partyDetailsErrors[index]?.finYear ? 'error form-control' : 'form-control'}
+                                      value={row.finYear}
+                                      onChange={(e) =>
+                                        setPartyTdsExempted((prev) =>
+                                          prev.map((r) => (r.id === row.id ? { ...r, finYear: e.target.value } : r))
+                                        )
+                                      }
+                                    >
+                                      <option value="">-- Select --</option>
+                                      {finYearList.map((item) => (
+                                        <option key={item.id} value={item.finYear}>
+                                          {item.finYear}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    {/* <input
                                       type="text"
                                       value={row.finYear}
                                       style={{ width: '150px' }}
@@ -3524,7 +3554,7 @@ export const PartyMaster = () => {
                                       }}
                                       maxLength="4"
                                       className={partyDetailsErrors[index]?.finYear ? 'error form-control' : 'form-control'}
-                                    />
+                                    /> */}
                                     {partyTdsErrors[index]?.finYear && (
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyTdsErrors[index].finYear}</div>
                                     )}
