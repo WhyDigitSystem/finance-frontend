@@ -1,34 +1,33 @@
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormGroup from '@mui/material/FormGroup';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import 'react-tabs/style/react-tabs.css';
-import dayjs from 'dayjs';
 import ClearIcon from '@mui/icons-material/Clear';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, Tooltip } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox';
+import FormControl from '@mui/material/FormControl';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import FormGroup from '@mui/material/FormGroup';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
-import React, { useState, useRef, useEffect } from 'react';
-import { showToast } from 'utils/toast-component';
-import { ToastContainer, toast } from 'react-toastify';
+import TextField from '@mui/material/TextField';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
+import dayjs from 'dayjs';
+import { useEffect, useRef, useState } from 'react';
+import 'react-tabs/style/react-tabs.css';
+import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
-import CommonListViewTable from '../basicMaster/CommonListViewTable';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import CommonBulkUpload from 'utils/CommonBulkUpload';
+import { showToast } from 'utils/toast-component';
+import CommonListViewTable from '../basicMaster/CommonListViewTable';
 // import sampleFile from '../../assets/sample-files/BrsOpeningExcel';
-import BrsOpeningExcel from '../../assets/sample-files/BrsOpeningExcel.xlsx';
-import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import { FormHelperText } from '@mui/material';
+import { getAllActiveCurrency } from 'utils/CommonFunctions';
+import BrsOpeningExcel from '../../assets/sample-files/BrsOpeningExcel.xlsx';
 
 const BRSOpening = () => {
   const theme = useTheme();
@@ -41,6 +40,9 @@ const BRSOpening = () => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [uploadOpen, setUploadOpen] = useState(false);
   const [currencies, setCurrencies] = useState([]);
+  const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
 
   const [formData, setFormData] = useState({
     active: true,
@@ -323,7 +325,7 @@ const BRSOpening = () => {
             sampleFileDownload={BrsOpeningExcel}
             handleFileUpload={handleFileUpload}
             // apiUrl={`transaction/excelUploadForBrs?branch="CHENNAI"&branchCode="MAAW"&client="CASIO"&createdBy=${loginUserName}&customer="UNI"&finYear="2024"&orgId=${orgId}`}
-            apiUrl={`transaction/excelUploadForBrs?branch=CHENNAI&branchCode=MAAW&client=CASIO&createdBy=${loginUserName}&customer=UNI&finYear=2024&orgId=${orgId}`}
+            apiUrl={`transaction/excelUploadForBrs?branch=${branch}&branchCode=${branchCode}&createdBy=${loginUserName}&orgId=${orgId}`}
             screen="PutAway"
           ></CommonBulkUpload>
         )}
@@ -470,6 +472,7 @@ const BRSOpening = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
+                  type="number"
                   id="exRate"
                   name="exRate"
                   value={formData.exRate}

@@ -23,6 +23,7 @@ import dayjs from 'dayjs';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
+import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
 
@@ -43,6 +44,7 @@ const Payment = () => {
   const [partyName, setPartyName] = useState([]);
   const [gstState, setGSTState] = useState([]);
   const [currencyList, setCurrencyList] = useState([]);
+  const [currencies, setCurrencies] = useState([]);
 
   const handleChangeTab = (event, newValue) => {
     setValue(newValue);
@@ -202,6 +204,21 @@ const Payment = () => {
       console.error('Error fetching gate passes:', error);
     }
   };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const currencyData = await getAllActiveCurrency(orgId);
+        setCurrencies(currencyData);
+
+        console.log('currency', currencyData);
+      } catch (error) {
+        console.error('Error fetching country data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleAddRow = () => {
     if (isLastRowEmpty(withdrawalsTableData)) {
@@ -1542,36 +1559,33 @@ const Payment = () => {
                                           )}
                                         </td>
                                         <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
+                                          <select
                                             value={row.currency}
-                                            style={{ width: '100px' }}
+                                            style={{ width: '150px' }}
                                             onChange={(e) => {
-                                              const value = e.target.value;
-                                              const numericRegex = /^[0-9]*$/;
-                                              if (numericRegex.test(value)) {
-                                                setWithdrawalsTableData((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, currency: value } : r))
-                                                );
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], currency: !value ? 'Eds is required' : '' };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    currency: 'Only numeric characters are allowed'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              }
+                                              const selectedCurrency = e.target.value;
+                                              const selectedCurrencyData = currencyList.find(
+                                                (currency) => currency.currency === selectedCurrency
+                                              );
+
+                                              // Update the selected currency and currencyDescription
+                                              const updatedCurrencyData = [...withdrawalsTableData];
+                                              updatedCurrencyData[index] = {
+                                                ...updatedCurrencyData[index],
+                                                currency: selectedCurrency
+                                              };
+
+                                              setWithdrawalsTableData(updatedCurrencyData);
                                             }}
                                             className={withdrawalsTableErrors[index]?.currency ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
-                                          />
+                                          >
+                                            <option value="">--Select--</option>
+                                            {currencies?.map((currency, index) => (
+                                              <option key={index} value={currency.currency}>
+                                                {currency.currency}
+                                              </option>
+                                            ))}
+                                          </select>
                                           {withdrawalsTableErrors[index]?.currency && (
                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                               {withdrawalsTableErrors[index].currency}

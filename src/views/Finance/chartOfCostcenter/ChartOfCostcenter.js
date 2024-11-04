@@ -146,6 +146,10 @@ export const ChartOfCostcenter = () => {
       console.error('Error fetching data:', error);
     }
   };
+
+
+  
+
   const getChartofCostCenterById = async (row) => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);

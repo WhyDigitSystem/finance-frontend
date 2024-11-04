@@ -1,26 +1,25 @@
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { ToastContainer, toast } from 'react-toastify';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, Tooltip } from '@mui/material';
-import { recomposeColor, useTheme } from '@mui/material/styles';
-import React, { useState, useRef, useEffect } from 'react';
-import ActionButton from 'utils/ActionButton';
-import apiCalls from 'apicall';
-import { showToast } from 'utils/toast-component';
 import { FormHelperText } from '@mui/material';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
+import { useTheme } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import CommonListViewTable from '../basicMaster/CommonListViewTable';
+import { useEffect, useRef, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
+import ActionButton from 'utils/ActionButton';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
+import { showToast } from 'utils/toast-component';
+import CommonListViewTable from '../basicMaster/CommonListViewTable';
 
 const FundTransfer = () => {
   // const buttonStyle = {
@@ -69,7 +68,7 @@ const FundTransfer = () => {
 
   const listViewColumns = [
     { accessorKey: 'mode', header: 'Mode', size: 140 },
-    { accessorKey: 'docNo', header: 'Doc No', size: 140 },
+    { accessorKey: 'docId', header: 'Doc No', size: 140 },
     { accessorKey: 'branchAcc', header: 'Branch A/C', size: 140 },
     { accessorKey: 'exRate', header: 'Ex Rate', size: 140 },
     { accessorKey: 'corpAccount', header: 'Corporate A/C', size: 140 },
@@ -89,26 +88,26 @@ const FundTransfer = () => {
 
     // Validation for "amount" and "amtBase" fields to allow only numbers
     if ((name === 'amount' || name === 'amtBase') && !/^\d*$/.test(value)) {
-        setFieldErrors({
-            ...fieldErrors,
-            [name]: 'Only numbers are allowed for this field',
-        });
-        return; // Exit the function without setting the value
+      setFieldErrors({
+        ...fieldErrors,
+        [name]: 'Only numbers are allowed for this field'
+      });
+      return; // Exit the function without setting the value
     }
 
     // Prevent selecting the same bank in "Transfer To" and "Corporate A/C"
     if (name === 'transferTo' && value === formData.corpAccount) {
-        setFieldErrors({ ...fieldErrors, [name]: 'Cannot select the same bank as Corporate A/C' });
-        setFormData({ ...formData, [name]: '' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Cannot select the same bank as Corporate A/C' });
+      setFormData({ ...formData, [name]: '' });
     } else if (name === 'corpAccount' && value === formData.transferTo) {
-        setFieldErrors({ ...fieldErrors, [name]: 'Cannot select the same bank as Transfer To' });
-        setFormData({ ...formData, [name]: '' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Cannot select the same bank as Transfer To' });
+      setFormData({ ...formData, [name]: '' });
     } else {
-        // Clear any existing error and set the field value normally
-        setFormData({ ...formData, [name]: inputValue });
-        setFieldErrors({ ...fieldErrors, [name]: false });
+      // Clear any existing error and set the field value normally
+      setFormData({ ...formData, [name]: inputValue });
+      setFieldErrors({ ...fieldErrors, [name]: false });
     }
-};
+  };
 
   const handleDateChange = (name, date) => {
     setFormData({ ...formData, [name]: date });
@@ -175,7 +174,7 @@ const FundTransfer = () => {
 
       if (response.status === true) {
         setListViewData(response.paramObjectsMap.fundTransferVO);
-        setDocId(response.paramObjectsMap.fundTransferVO[0].docId);
+     
       } else {
         console.error('API Error:', response);
       }
@@ -240,9 +239,7 @@ const FundTransfer = () => {
     if (!formData.mode) {
       errors.mode = 'Mode is required';
     }
-    if (!formData.docNo) {
-      errors.docNo = 'Doc No is required';
-    }
+
     if (!formData.corpAccount) {
       errors.corpAccount = 'Corporate A/C is required';
     }
@@ -305,6 +302,7 @@ const FundTransfer = () => {
         showToast('success', editId ? 'Fund Transfer Updated Successfully' : 'Fund Transfer created successfully');
         handleClear();
         getAllFundTransfer();
+        getFundTransferDocId();
         setIsLoading(false);
       } else {
         showToast('error', response.paramObjectsMap.errorMessage || 'Fund Transfer creation failed');
@@ -334,11 +332,7 @@ const FundTransfer = () => {
           </div>
         ) : (
           <>
-            <div className="row">
-              <div className="col-md-3 mb-3">
-                <TextField id="docId" label="Doc Id" name="docId" variant="outlined" size="small" value={docId} disabled />
-              </div>
-            </div>
+            <div className="row"></div>
             <div className="row">
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.mode}>
@@ -359,12 +353,10 @@ const FundTransfer = () => {
                   name="docNo"
                   variant="outlined"
                   size="small"
-                  value={formData.docNo}
-                  onChange={handleInputChange}
+                  value={docId}
+                  disabled
                   required
                   fullWidth
-                  error={!!fieldErrors.docNo}
-                  helperText={fieldErrors.docNo ? fieldErrors.docNo : ''}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -424,6 +416,7 @@ const FundTransfer = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
+                  type="number"
                   id="exRate"
                   label="Ex Rate"
                   name="exRate"

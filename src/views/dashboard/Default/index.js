@@ -32,9 +32,9 @@ const Dashboard = () => {
         localStorage.setItem('LoginMessage', false);
       }, 2000);
 
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      // setTimeout(() => {
+      //   window.location.reload();
+      // }, 2000);
 
       // Clear the timeout on component unmount to prevent memory leaks
       return () => clearTimeout(timeoutId);

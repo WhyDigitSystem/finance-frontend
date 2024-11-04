@@ -12,11 +12,13 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
-import { Tab, TabList, TabPanel, Tabs } from 'react-tabs';
-import 'react-tabs/style/react-tabs.css';
 import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
+
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import 'react-tabs/style/react-tabs.css';
 
 // import CommonListViewTable from '../basicMaster/CommonListViewTable';
 
@@ -28,6 +30,7 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { useTheme } from '@mui/material/styles';
+import { Box } from '@mui/system';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonListViewTable from '../../basicMaster/CommonListViewTable';
 
@@ -35,7 +38,7 @@ const Receipt = () => {
   // const buttonStyle = {
   //   fontSize: '20px' // Adjust the font size as needed
   // };
-  const [tabIndex, setTabIndex] = useState(0);
+  const [value, setValue] = useState(0);
 
   const theme = useTheme();
   const anchorRef = useRef(null);
@@ -349,12 +352,12 @@ const Receipt = () => {
     });
   };
 
-  const handleView = () => {
-    setListView(!listView);
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
   };
 
-  const handleTabSelect = (index) => {
-    setTabIndex(index);
+  const handleView = () => {
+    setListView(!listView);
   };
 
   const handleAddRow = () => {
@@ -496,7 +499,7 @@ const Receipt = () => {
     try {
       const response = await apiCalls(
         'get',
-        `arreceivable/getCustomerNameAndCodeForReceipt?orgId=${orgId}`
+        `arreceivable/getCustomerNameAndCodeForReceipt?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
       console.log('API Response:', response);
 
@@ -1152,15 +1155,20 @@ const Receipt = () => {
             {/* </div> */}
 
             {/* <div className="card w-full p-6 bg-base-100 shadow-xl mt-2" style={{ padding: '20px' }}> */}
-            <Tabs selectedIndex={tabIndex} onSelect={handleTabSelect}>
-              <TabList style={{ marginBottom: 0 }}>
-                <Tab>Invoice Details </Tab>
-                <Tab>Summary</Tab>
-              </TabList>
+            <Tabs
+              value={value}
+              onChange={handleChange}
+              textColor="secondary"
+              indicatorColor="secondary"
+              aria-label="secondary tabs example"
+            >
+              <Tab value={0} label="Invoice Details" />
+              <Tab value={1} label="Summary" />
+            </Tabs>
 
-              <TabPanel>
-                {/* <TableComponent /> */}
-                <div className="row d-flex ml" style={{ marginTop: '20px' }}>
+            <Box sx={{ padding: 2 }}>
+              {value === 0 && (
+                <div className="row d-flex ml" style={{ marginTop: '5px' }}>
                   <div className="mb-1">
                     <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
                   </div>
@@ -1754,8 +1762,10 @@ const Receipt = () => {
                     </div>
                   </div>
                 </div>
-              </TabPanel>
-              <TabPanel>
+              )}
+            </Box>
+            <Box>
+              {value === 1 && (
                 <div>
                   <div className="row d-flex mt-4">
                     <div className="col-md-3 mb-3">
@@ -1791,8 +1801,8 @@ const Receipt = () => {
                     </div>
                   </div>
                 </div>
-              </TabPanel>
-            </Tabs>
+              )}
+            </Box>
           </>
         )}
       </div>

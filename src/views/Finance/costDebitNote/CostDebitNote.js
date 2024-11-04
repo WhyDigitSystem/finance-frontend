@@ -1,11 +1,13 @@
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { TabContext } from '@mui/lab';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import { Avatar, ButtonBase, Tooltip } from '@mui/material';
+import { Checkbox, FormControl, FormControlLabel, FormGroup, FormHelperText } from '@mui/material';
 import Box from '@mui/material/Box';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -16,19 +18,13 @@ import { useTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import axios from 'axios';
-import { useRef, useState, useEffect } from 'react';
-import 'react-tabs/style/react-tabs.css';
-import ToastComponent, { showToast } from 'utils/toast-component';
-import CommonTable from 'views/basicMaster/CommonTable';
-import ActionButton from 'utils/ActionButton';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { Checkbox, FormControl, FormControlLabel, FormGroup } from '@mui/material';
-import { FormHelperText } from '@mui/material';
+import { useEffect, useRef, useState } from 'react';
+import 'react-tabs/style/react-tabs.css';
+import ActionButton from 'utils/ActionButton';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
+import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../../basicMaster/CommonListViewTable';
 
 const CostDebitNote = () => {
@@ -341,6 +337,22 @@ const CostDebitNote = () => {
       const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
       setTable(updatedData);
       setErrorTable(updatedErrors);
+    }
+  };
+
+  const getDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/costdebitnote/getCostDebitNoteDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
+      );
+      setFormData((prevData) => ({
+        ...prevData,
+        docNo: response.paramObjectsMap.costDebitNoteDocId,
+        docDate: dayjs()
+      }));
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
     }
   };
 
@@ -702,7 +714,7 @@ const CostDebitNote = () => {
     };
 
     fetchData();
-    // getGroup();
+    getDocId();
   }, []);
 
   const getAllChargeCode = async () => {
@@ -967,9 +979,6 @@ const CostDebitNote = () => {
       }
     });
 
-    if (!formData.docNo) {
-      errors.docNo = 'Doc No is required';
-    }
     if (!formData.subType) {
       errors.subType = 'Sub Type is required';
     }
@@ -1231,6 +1240,7 @@ const CostDebitNote = () => {
                     name="docNo"
                     variant="outlined"
                     size="small"
+                    disabled
                     value={formData.docNo}
                     onChange={handleInputChange}
                     required
@@ -1283,6 +1293,7 @@ const CostDebitNote = () => {
                       }}
                       format="DD-MM-YYYY"
                       readOnly
+                      disabled
                     />
                   </LocalizationProvider>
                 </FormControl>
