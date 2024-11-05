@@ -22,10 +22,6 @@ import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
 
 const FundTransfer = () => {
-  // const buttonStyle = {
-  //   fontSize: '20px' // Adjust the font size as needed
-  // };
-
   const theme = useTheme();
   const anchorRef = useRef(null);
   const [editId, setEditId] = useState('');
@@ -139,6 +135,7 @@ const FundTransfer = () => {
       amtBase: '',
       narration: ''
     });
+    getFundTransferDocId();
   };
 
   const handleView = () => {
@@ -211,6 +208,8 @@ const FundTransfer = () => {
       if (response.status === true) {
         setListView(false);
         const particularEmp = response.paramObjectsMap.fundTransferVO[0];
+
+        setDocId(particularEmp.docId);
 
         setFormData({
           mode: particularEmp.mode,
