@@ -1,28 +1,26 @@
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField } from '@mui/material';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, FormHelperText } from '@mui/material';
-import apiCalls from 'apicall';
+import { Button, Checkbox, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, TextField } from '@mui/material';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import React, { useEffect, useRef, useState } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { useEffect, useState } from 'react';
 import Draggable from 'react-draggable';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
-import CommonTable from 'views/basicMaster/CommonTable';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
-import AddIcon from '@mui/icons-material/Add';
-import GridOnIcon from '@mui/icons-material/GridOn';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Paper from '@mui/material/Paper';
 import { showToast } from 'utils/toast-component';
-import { getAllActiveCurrency } from 'utils/CommonFunctions';
+import CommonTable from 'views/basicMaster/CommonTable';
 
 function PaperComponent(props) {
   return (
@@ -313,10 +311,6 @@ export const DailyRate = () => {
   };
 
   const handleClear = () => {
-    setFormData({
-      date: '',
-      month: ''
-    });
     setFieldErrors({});
     setDetailsTableData([
       {
