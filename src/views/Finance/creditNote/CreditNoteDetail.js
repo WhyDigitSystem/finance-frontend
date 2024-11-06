@@ -43,11 +43,11 @@ const IrnCreditNote = () => {
   const [listViewData, setListViewData] = useState([]);
   const [currencies, setCurrencies] = useState([]);
   const [allPartyName, setAllPartyName] = useState([]);
-  const [branch, setBranch] = useState('Chennai');
-  const [branchCode, setBranchCode] = useState('MAA');
-  const [finYear, setFinYear] = useState('2024');
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [docId, setDocId] = useState('');
   const [value, setValue] = useState('1');
 
