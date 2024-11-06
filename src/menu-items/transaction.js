@@ -123,6 +123,12 @@ const transaction = {
           title: 'ARAP Adjustment',
           type: 'item',
           url: '/finance/ARAP-Adjustment'
+        },
+        {
+          id: 'adjustmentJournal',
+          title: 'Adjustment Journal',
+          type: 'item',
+          url: '/finance/AdjustmentJournal'
         }
       ]
     }

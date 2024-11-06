@@ -11,6 +11,7 @@ const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')))
 
 // login option 3 routing
 // const Fin1 = Loadable(lazy(() => import('views/Finance')));
+const AdjustmentJournal = Loadable(lazy(() => import('views/Finance/AdjustmentJournal')));
 const SetTaxRate = Loadable(lazy(() => import('views/Finance/SetTaxRate')));
 const TaxMaster = Loadable(lazy(() => import('views/Finance/taxMaster/taxMaster')));
 const Taxes = Loadable(lazy(() => import('views/Finance/Taxes')));
@@ -290,6 +291,10 @@ const FinanceRoute = {
     {
       path: 'Finance/DocumentType/documentTypeMapping',
       element: <DocumentTypeMappingMaster />
+    },
+    {
+      path: '/Finance/AdjustmentJournal',
+      element: <AdjustmentJournal />
     }
   ]
 };
