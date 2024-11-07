@@ -718,9 +718,241 @@ export const PartyMaster = () => {
     ]);
   };
 
+  const isLastRowEmpty = (table) => {
+    const lastRow = table[table.length - 1];
+    if (!lastRow) return false;
+
+    if (table === partyStateData) {
+      return !lastRow.state;
+    }
+    if (table === partyAddressData) {
+      return !lastRow.state;
+    }
+    if (table === partyDetailsOfDirectors) {
+      return !lastRow.email;
+    }
+    if (table === partySpecialTDS) {
+      return !lastRow.tdsWithSec;
+    }
+    if (table === partyChargesExemption) {
+      return !lastRow.tdsWithSec;
+    }
+    if (table === partyCurrencyMapping) {
+      return !lastRow.transCurrency;
+    }
+    if (table === partySalesPersonTagging) {
+      return !lastRow.salesPerson;
+    }
+    if (table === partyTdsExempted) {
+      return !lastRow.tdsExempCerti;
+    }
+    if (table === partyPartnerTagging) {
+      return !lastRow.partnerName;
+    }
+    return false;
+  };
+
+  const displayRowError = (table) => {
+    if (table === partyStateData) {
+      setPartyStateDataErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          state: !table[table.length - 1].state ? 'State is required' : ''
+        };
+        return newErrors;
+      });
+    }
+    if (table === partyAddressData) {
+      setPartyAddressDataErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          state: !table[table.length - 1].state ? 'State is required' : ''
+        };
+        return newErrors;
+      });
+    }
+    if (table === partyDetailsOfDirectors) {
+      setPartyDetailsErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          email: !table[table.length - 1].email ? 'Email is required' : ''
+        };
+        return newErrors;
+      });
+    }
+    if (table === partySpecialTDS) {
+      setPartySpecialTDSErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          tdsWithSec: !table[table.length - 1].tdsWithSec ? 'TDS Section is required' : ''
+        };
+        return newErrors;
+      });
+    }
+    if (table === partyChargesExemption) {
+      setPartyChargesExemptionErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          tdsWithSec: !table[table.length - 1].tdsWithSec ? 'TDS Section is required' : ''
+        };
+        return newErrors;
+      });
+    }
+    if (table === partyCurrencyMapping) {
+      setPartyCurrencyMappingErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          transCurrency: !table[table.length - 1].transCurrency ? 'Transaction Currency is required' : ''
+        };
+        return newErrors;
+      });
+    }
+    if (table === partySalesPersonTagging) {
+      setPartySalesPersonErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          salesPerson: !table[table.length - 1].salesPerson ? 'Sales Person is required' : ''
+        };
+        return newErrors;
+      });
+    }
+    if (table === partyTdsExempted) {
+      setPartyTdsErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          tdsExempCerti: !table[table.length - 1].tdsExempCerti ? 'TDS Exempted Certificate is required' : ''
+        };
+        return newErrors;
+      });
+    }
+    if (table === partyPartnerTagging) {
+      setPartyPartnerErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          partnerName: !table[table.length - 1].partnerName ? 'Partner Name is required' : ''
+        };
+        return newErrors;
+      });
+    }
+  };
+
+  const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
+    const rowIndex = table.findIndex((row) => row.id === id);
+    if (rowIndex !== -1) {
+      const updatedData = table.filter((row) => row.id !== id);
+      const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
+      setTable(updatedData);
+      setErrorTable(updatedErrors);
+    }
+  };
+
+  const handleStateChange = (row, index, event) => {
+    const value = event.target.value;
+    const selectedState = stateList.find((state) => state.stateName === value);
+
+    setPartyStateData((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              state: value,
+              stateCode: selectedState ? selectedState.stateCode : '',
+              stateNo: selectedState ? selectedState.stateNumber : ''
+            }
+          : r
+      )
+    );
+
+    setPartyStateDataErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        state: !value ? 'State is required' : ''
+      };
+      return newErrors;
+    });
+  };
+
+  const getAvailableStates = (currentRowId) => {
+    const selectedStates = partyStateData.filter((row) => row.id !== currentRowId).map((row) => row.state);
+
+    return stateList.filter((state) => !selectedStates.includes(state.stateName));
+  };
+
+  const handleCurrencyChange = (row, index, event) => {
+    const value = event.target.value;
+
+    setPartyCurrencyMapping((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              transCurrency: value
+            }
+          : r
+      )
+    );
+
+    setPartyCurrencyMappingErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        transCurrency: !value ? 'Transaction Currency is required' : ''
+      };
+      return newErrors;
+    });
+  };
+
+  const getAvailableCurrencies = (currentRowId) => {
+    const selectedCurrencies = partyCurrencyMapping.filter((row) => row.id !== currentRowId).map((row) => row.transCurrency);
+
+    return currencyExRates.filter((currency) => !selectedCurrencies.includes(currency.currency));
+  };
+
+  const handleEmployeeChange = (row, index, event) => {
+    const selectedName = event.target.value;
+    const selectedEmployee = empData.find((item) => item.employeeName === selectedName);
+
+    setPartySalesPersonTagging((prev) =>
+      prev.map((r) =>
+        r.id === row.id
+          ? {
+              ...r,
+              salesPerson: selectedName,
+              empCode: selectedEmployee ? selectedEmployee.employeeCode : ''
+            }
+          : r
+      )
+    );
+
+    setPartySalesPersonErrors((prev) => {
+      const newErrors = [...prev];
+      newErrors[index] = {
+        ...newErrors[index],
+        salesPerson: !selectedName ? 'Sales Person is required' : ''
+      };
+      return newErrors;
+    });
+  };
+
+  const getAvailableEmp = (currentRowId) => {
+    const selectedEmployees = partySalesPersonTagging.filter((row) => row.id !== currentRowId).map((row) => row.salesPerson);
+
+    return empData.filter((item) => !selectedEmployees.includes(item.employeeName));
+  };
+
   const [partyStateData, setPartyStateData] = useState([
     {
-      sNo: 1,
+      id: 1,
       state: '',
       gstIn: '',
       stateNo: '',
@@ -744,8 +976,12 @@ export const PartyMaster = () => {
   ]);
 
   const handleAddRowPartyState = () => {
+    if (isLastRowEmpty(partyStateData)) {
+      displayRowError(partyStateData);
+      return;
+    }
     const newRow = {
-      sNo: Date.now(),
+      id: Date.now(),
       state: '',
       gstIn: '',
       stateNo: '',
@@ -769,10 +1005,6 @@ export const PartyMaster = () => {
     ]);
   };
 
-  const handleDeleteRowPartyState = (id) => {
-    setPartyStateData(partyStateData.filter((row) => row.id !== id));
-    setPartyStateDataErrors(partyStateDataErrors.filter((_, index) => index !== id - 1));
-  };
   const [partyAddressData, setPartyAddressData] = useState([
     {
       addressType: '',
@@ -804,8 +1036,12 @@ export const PartyMaster = () => {
   ]);
 
   const handleAddRowPartyAddress = () => {
+    if (isLastRowEmpty(partyAddressData)) {
+      displayRowError(partyAddressData);
+      return;
+    }
     const newRow = {
-      sNo: Date.now(),
+      id: Date.now(),
       addressType: '',
       addressLine1: '',
       addressLine2: '',
@@ -835,14 +1071,9 @@ export const PartyMaster = () => {
     ]);
   };
 
-  const handleDeleteRowPartyAddress = (id) => {
-    setPartyAddressData(partyAddressData.filter((row) => row.id !== id));
-    setPartyAddressDataErrors(partyAddressDataErrors.filter((_, index) => index !== id - 1));
-  };
-
   const [partyDetailsOfDirectors, setPartyDetailsOfDirectors] = useState([
     {
-      sNo: 1,
+      id: 1,
       name: '',
       designation: '',
       phone: '',
@@ -860,8 +1091,12 @@ export const PartyMaster = () => {
   ]);
 
   const handleAddRowDetailsOfDPO = () => {
+    if (isLastRowEmpty(partyDetailsOfDirectors)) {
+      displayRowError(partyDetailsOfDirectors);
+      return;
+    }
     const newRow = {
-      sNo: Date.now(),
+      id: Date.now(),
       name: '',
       designation: '',
       phone: '',
@@ -879,14 +1114,9 @@ export const PartyMaster = () => {
     ]);
   };
 
-  const handleDeleteRowDetailsOfDPO = (id) => {
-    setPartyDetailsOfDirectors(partyDetailsOfDirectors.filter((row) => row.id !== id));
-    setPartyDetailsErrors(partyDetailsErrors.filter((_, index) => index !== id - 1));
-  };
-
   const [partySpecialTDS, setPartySpecialTDS] = useState([
     {
-      sNo: 1,
+      id: 1,
       edPercentage: '',
       rateFrom: '',
       rateTo: '',
@@ -910,8 +1140,12 @@ export const PartyMaster = () => {
   ]);
 
   const handleAddRowSpecialTdsWhTaxDetail = () => {
+    if (isLastRowEmpty(partySpecialTDS)) {
+      displayRowError(partySpecialTDS);
+      return;
+    }
     const newRow = {
-      sNo: Date.now(),
+      id: Date.now(),
       edPercentage: '',
       rateFrom: '',
       rateTo: '',
@@ -935,14 +1169,9 @@ export const PartyMaster = () => {
     ]);
   };
 
-  const handleDeleteRowSpecialTdsWhTaxDetail = (id) => {
-    setPartySpecialTDS(partySpecialTDS.filter((row) => row.id !== id));
-    setPartySpecialTDSErrors(partySpecialTDSErrors.filter((_, index) => index !== id - 1));
-  };
-
   const [partyChargesExemption, setPartyChargesExemption] = useState([
     {
-      sNo: Date.now(),
+      id: Date.now(),
       tdsWithSec: '',
       charges: ''
     }
@@ -956,8 +1185,12 @@ export const PartyMaster = () => {
   ]);
 
   const handleAddRowChargesExemption = () => {
+    if (isLastRowEmpty(partyChargesExemption)) {
+      displayRowError(partyChargesExemption);
+      return;
+    }
     const newRow = {
-      sNo: Date.now(),
+      id: Date.now(),
       tdsWithSec: '',
       charges: ''
     };
@@ -971,14 +1204,9 @@ export const PartyMaster = () => {
     ]);
   };
 
-  const handleDeleteRowChargesExemption = (id) => {
-    setPartyChargesExemption(partyChargesExemption.filter((row) => row.id !== id));
-    setPartyChargesExemptionErrors(partyChargesExemptionErrors.filter((_, index) => index !== id - 1));
-  };
-
   const [partyCurrencyMapping, setPartyCurrencyMapping] = useState([
     {
-      sNo: Date.now(),
+      id: Date.now(),
       transCurrency: ''
     }
   ]);
@@ -990,8 +1218,12 @@ export const PartyMaster = () => {
   ]);
 
   const handleAddRowCurrencyMapping = () => {
+    if (isLastRowEmpty(partyCurrencyMapping)) {
+      displayRowError(partyCurrencyMapping);
+      return;
+    }
     const newRow = {
-      sNo: Date.now(),
+      id: Date.now(),
       transCurrency: ''
     };
     setPartyCurrencyMapping([...partyCurrencyMapping, newRow]);
@@ -1003,14 +1235,9 @@ export const PartyMaster = () => {
     ]);
   };
 
-  const handleDeleteRowCurrencyMapping = (id) => {
-    setPartyCurrencyMapping(partyCurrencyMapping.filter((row) => row.id !== id));
-    setPartyCurrencyMappingErrors(partyCurrencyMappingErrors.filter((_, index) => index !== id - 1));
-  };
-
   const [partySalesPersonTagging, setPartySalesPersonTagging] = useState([
     {
-      sNo: Date.now(),
+      id: Date.now(),
       effectiveFrom: null,
       effectiveTill: null,
       empCode: '',
@@ -1030,8 +1257,12 @@ export const PartyMaster = () => {
   ]);
 
   const handleAddRowSalesPerson = () => {
+    if (isLastRowEmpty(partySalesPersonTagging)) {
+      displayRowError(partySalesPersonTagging);
+      return;
+    }
     const newRow = {
-      sNo: Date.now(),
+      id: Date.now(),
       effectiveFrom: null,
       effectiveTill: null,
       empCode: '',
@@ -1051,14 +1282,9 @@ export const PartyMaster = () => {
     ]);
   };
 
-  const handleDeleteRowSalesPerson = (id) => {
-    setPartySalesPersonTagging(partySalesPersonTagging.filter((row) => row.id !== id));
-    setPartySalesPersonErrors(partySalesPersonErrors.filter((_, index) => index !== id - 1));
-  };
-
   const [partyTdsExempted, setPartyTdsExempted] = useState([
     {
-      sNo: Date.now(),
+      id: Date.now(),
       finYear: '',
       tdsExempCerti: '',
       value: ''
@@ -1074,8 +1300,12 @@ export const PartyMaster = () => {
   ]);
 
   const handleAddRowTdsExempted = () => {
+    if (isLastRowEmpty(partyTdsExempted)) {
+      displayRowError(partyTdsExempted);
+      return;
+    }
     const newRow = {
-      sNo: Date.now(),
+      id: Date.now(),
       finYear: '',
       tdsExempCerti: '',
       value: ''
@@ -1091,14 +1321,9 @@ export const PartyMaster = () => {
     ]);
   };
 
-  const handleDeleteRowTdsExempted = (id) => {
-    setPartyTdsExempted(partyTdsExempted.filter((row) => row.id !== id));
-    setPartyTdsErrors(partyTdsErrors.filter((_, index) => index !== id - 1));
-  };
-
   const [partyPartnerTagging, setPartyPartnerTagging] = useState([
     {
-      sNo: Date.now(),
+      id: Date.now(),
       partnerName: ''
     }
   ]);
@@ -1110,8 +1335,12 @@ export const PartyMaster = () => {
   ]);
 
   const handleAddRowPartnerTagging = () => {
+    if (isLastRowEmpty(partyPartnerTagging)) {
+      displayRowError(partyPartnerTagging);
+      return;
+    }
     const newRow = {
-      sNo: Date.now(),
+      id: Date.now(),
       partnerName: ''
     };
     setPartyPartnerTagging([...partyPartnerTagging, newRow]);
@@ -1121,11 +1350,6 @@ export const PartyMaster = () => {
         partnerName: ''
       }
     ]);
-  };
-
-  const handleDeleteRowPartnerTagging = (id) => {
-    setPartyPartnerTagging(partyPartnerTagging.filter((row) => row.id !== id));
-    setPartyPartnerErrors(partyPartnerErrors.filter((_, index) => index !== id - 1));
   };
 
   const [partyVendorErrors, setPartyVendorErrors] = useState([
@@ -1232,9 +1456,9 @@ export const PartyMaster = () => {
     if (!formData.addressBank) {
       errors.addressBank = 'Branch is required';
     }
-    if (!formData.addressOfBranch) {
-      errors.addressOfBranch = 'Address of Branch is required';
-    }
+    // if (!formData.addressOfBranch) {
+    //   errors.addressOfBranch = 'Address of Branch is required';
+    // }
     if (!formData.accountNo) {
       errors.accountNo = 'Account No is required';
     }
@@ -2233,19 +2457,31 @@ export const PartyMaster = () => {
                                 <th className="table-header">Action</th>
                                 <th className="table-header">SNo</th>
                                 <th className="table-header">State</th>
-                                <th className="table-header">GSTIN</th>
+                                <th className="table-header">State Code</th>
                                 <th className="table-header">State No</th>
+                                <th className="table-header">GSTIN</th>
                                 <th className="table-header">Contact Person</th>
                                 <th className="table-header">Contact Phone No</th>
                                 <th className="table-header">Contact Email</th>
-                                <th className="table-header">State Code</th>
                               </tr>
                             </thead>
                             <tbody>
                               {partyStateData.map((row, index) => (
                                 <tr key={row.id}>
                                   <td className="border px-2 py-2 text-center">
-                                    <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRowPartyState(row.id)} />
+                                    <ActionButton
+                                      title="Delete"
+                                      icon={DeleteIcon}
+                                      onClick={() =>
+                                        handleDeleteRow(
+                                          row.id,
+                                          partyStateData,
+                                          setPartyStateData,
+                                          partyStateDataErrors,
+                                          setPartyStateDataErrors
+                                        )
+                                      }
+                                    />
                                   </td>
                                   <td className="text-center">
                                     <div className="pt-2">{index + 1}</div>
@@ -2255,17 +2491,13 @@ export const PartyMaster = () => {
                                     <select
                                       value={row.state}
                                       style={{ width: '150px' }}
-                                      onChange={(e) => {
-                                        const updatedPartyStateData = [...partyStateData];
-                                        updatedPartyStateData[index].state = e.target.value;
-                                        setPartyStateData(updatedPartyStateData);
-                                      }}
+                                      onChange={(e) => handleStateChange(row, index, e)}
                                       className={partyStateDataErrors[index]?.state ? 'error form-control' : 'form-control'}
                                     >
-                                      <option value="">--Select--</option>
-                                      {stateList?.map((row) => (
-                                        <option key={row.id} value={row.stateName}>
-                                          {row.stateName}
+                                      <option value="">Select State</option>
+                                      {getAvailableStates(row.id).map((state) => (
+                                        <option key={state.id} value={state.stateName}>
+                                          {state.stateName}
                                         </option>
                                       ))}
                                     </select>
@@ -2273,6 +2505,57 @@ export const PartyMaster = () => {
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                         {partyStateDataErrors[index].state}
                                       </div>
+                                    )}
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.stateCode}
+                                      style={{ width: '150px' }}
+                                      maxLength={3}
+                                      disabled
+                                      onChange={(e) => {
+                                        const value = e.target.value;
+                                        setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, stateCode: value } : r)));
+                                        setPartyStateDataErrors((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = {
+                                            ...newErrors[index],
+                                            stateCode: !value ? 'State Code is required' : ''
+                                          };
+                                          return newErrors;
+                                        });
+                                      }}
+                                      className={partyStateDataErrors[index]?.stateCode ? 'error form-control' : 'form-control'}
+                                    />
+                                    {partyStateDataErrors[index]?.stateCode && (
+                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].stateCode}</div>
+                                    )}
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="number"
+                                      value={row.stateNo}
+                                      style={{ width: '150px' }}
+                                      disabled
+                                      onChange={(e) => {
+                                        const value = e.target.value;
+                                        setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, stateNo: value } : r)));
+                                        setPartyStateDataErrors((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = {
+                                            ...newErrors[index],
+                                            stateNo: !value ? 'State No is required' : ''
+                                          };
+                                          return newErrors;
+                                        });
+                                      }}
+                                      className={partyStateDataErrors[index]?.stateNo ? 'error form-control' : 'form-control'}
+                                    />
+                                    {partyStateDataErrors[index]?.stateNo && (
+                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].stateNo}</div>
                                     )}
                                   </td>
 
@@ -2297,29 +2580,7 @@ export const PartyMaster = () => {
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].gstIn}</div>
                                     )}
                                   </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="number"
-                                      value={row.stateNo}
-                                      style={{ width: '150px' }}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, stateNo: value } : r)));
-                                        setPartyStateDataErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = {
-                                            ...newErrors[index],
-                                            stateNo: !value ? 'State No is required' : ''
-                                          };
-                                          return newErrors;
-                                        });
-                                      }}
-                                      className={partyStateDataErrors[index]?.stateNo ? 'error form-control' : 'form-control'}
-                                    />
-                                    {partyStateDataErrors[index]?.stateNo && (
-                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].stateNo}</div>
-                                    )}
-                                  </td>
+
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
@@ -2404,30 +2665,6 @@ export const PartyMaster = () => {
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].email}</div>
                                     )}
                                   </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.stateCode}
-                                      style={{ width: '150px' }}
-                                      maxLength={3}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, stateCode: value } : r)));
-                                        setPartyStateDataErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = {
-                                            ...newErrors[index],
-                                            stateCode: !value ? 'State Code is required' : ''
-                                          };
-                                          return newErrors;
-                                        });
-                                      }}
-                                      className={partyStateDataErrors[index]?.stateCode ? 'error form-control' : 'form-control'}
-                                    />
-                                    {partyStateDataErrors[index]?.stateCode && (
-                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].stateCode}</div>
-                                    )}
-                                  </td>
                                 </tr>
                               ))}
                             </tbody>
@@ -2451,9 +2688,9 @@ export const PartyMaster = () => {
                                 <th className="table-header">Action</th>
                                 <th className="table-header">SNo</th>
                                 <th className="table-header">State</th>
+                                <th className="table-header">City</th>
                                 <th className="table-header">Business Place</th>
                                 <th className="table-header">State GST IN</th>
-                                <th className="table-header">City</th>
                                 <th className="table-header">Address Type</th>
                                 <th className="table-header">Address Line1</th>
                                 <th className="table-header">Address Line2</th>
@@ -2466,7 +2703,19 @@ export const PartyMaster = () => {
                               {partyAddressData.map((row, index) => (
                                 <tr key={row.id}>
                                   <td className="border px-2 py-2 text-center">
-                                    <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRowPartyAddress(row.id)} />
+                                    <ActionButton
+                                      title="Delete"
+                                      icon={DeleteIcon}
+                                      onClick={() =>
+                                        handleDeleteRow(
+                                          row.id,
+                                          partyAddressData,
+                                          setPartyAddressData,
+                                          partyAddressDataErrors,
+                                          setPartyAddressDataErrors
+                                        )
+                                      }
+                                    />
                                   </td>
                                   <td className="text-center">
                                     <div className="pt-2">{index + 1}</div>
@@ -2499,6 +2748,29 @@ export const PartyMaster = () => {
                                   </td>
 
                                   <td className="border px-2 py-2">
+                                    <select
+                                      value={row.city}
+                                      style={{ width: '150px' }}
+                                      onChange={(e) => {
+                                        const updatedPartyAddressData = [...partyAddressData];
+                                        updatedPartyAddressData[index].city = e.target.value;
+                                        setPartyAddressData(updatedPartyAddressData);
+                                      }}
+                                      className={partyAddressDataErrors[index]?.city ? 'error form-control' : 'form-control'}
+                                    >
+                                      <option value="">--Select--</option>
+                                      {cityList?.map((row) => (
+                                        <option key={row.id} value={row.cityName}>
+                                          {row.cityName}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    {partyAddressDataErrors[index]?.city && (
+                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].city}</div>
+                                    )}
+                                  </td>
+
+                                  <td className="border px-2 py-2">
                                     <input
                                       type="text"
                                       value={row.businessPlace}
@@ -2512,7 +2784,7 @@ export const PartyMaster = () => {
                                           const newErrors = [...prev];
                                           newErrors[index] = {
                                             ...newErrors[index],
-                                            businessPlace: !value ? 'State Gst In is required' : ''
+                                            businessPlace: !value ? 'Business Place In is required' : ''
                                           };
                                           return newErrors;
                                         });
@@ -2546,29 +2818,6 @@ export const PartyMaster = () => {
                                     />
                                     {partyAddressDataErrors[index]?.stateGstIn && (
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].stateGstIn}</div>
-                                    )}
-                                  </td>
-
-                                  <td className="border px-2 py-2">
-                                    <select
-                                      value={row.city}
-                                      style={{ width: '150px' }}
-                                      onChange={(e) => {
-                                        const updatedPartyAddressData = [...partyAddressData];
-                                        updatedPartyAddressData[index].city = e.target.value;
-                                        setPartyAddressData(updatedPartyAddressData);
-                                      }}
-                                      className={partyAddressDataErrors[index]?.city ? 'error form-control' : 'form-control'}
-                                    >
-                                      <option value="">--Select--</option>
-                                      {cityList?.map((row) => (
-                                        <option key={row.id} value={row.cityName}>
-                                          {row.cityName}
-                                        </option>
-                                      ))}
-                                    </select>
-                                    {partyAddressDataErrors[index]?.city && (
-                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].city}</div>
                                     )}
                                   </td>
 
@@ -2760,7 +3009,19 @@ export const PartyMaster = () => {
                               {partyDetailsOfDirectors.map((row, index) => (
                                 <tr key={row.id}>
                                   <td className="border px-2 py-2 text-center">
-                                    <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRowDetailsOfDPO(row.id)} />
+                                    <ActionButton
+                                      title="Delete"
+                                      icon={DeleteIcon}
+                                      onClick={() =>
+                                        handleDeleteRow(
+                                          row.id,
+                                          partyDetailsOfDirectors,
+                                          setPartyDetailsOfDirectors,
+                                          partyDetailsErrors,
+                                          setPartyDetailsErrors
+                                        )
+                                      }
+                                    />
                                   </td>
                                   <td className="text-center">
                                     <div className="pt-2">{index + 1}</div>
@@ -2868,7 +3129,7 @@ export const PartyMaster = () => {
                                           return newErrors;
                                         });
                                       }}
-                                      className={partyStateDataErrors[index]?.email ? 'error form-control' : 'form-control'}
+                                      className={partyDetailsErrors[index]?.email ? 'error form-control' : 'form-control'}
                                     />
                                     {partyDetailsErrors[index]?.email && (
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyDetailsErrors[index].email}</div>
@@ -2913,7 +3174,15 @@ export const PartyMaster = () => {
                                     <ActionButton
                                       title="Delete"
                                       icon={DeleteIcon}
-                                      onClick={() => handleDeleteRowSpecialTdsWhTaxDetail(row.id)}
+                                      onClick={() =>
+                                        handleDeleteRow(
+                                          row.id,
+                                          partySpecialTDS,
+                                          setPartySpecialTDS,
+                                          partySpecialTDSErrors,
+                                          setPartySpecialTDSErrors
+                                        )
+                                      }
                                     />
                                   </td>
                                   <td className="text-center">
@@ -3120,7 +3389,15 @@ export const PartyMaster = () => {
                                     <ActionButton
                                       title="Delete"
                                       icon={DeleteIcon}
-                                      onClick={() => handleDeleteRowChargesExemption(row.id)}
+                                      onClick={() =>
+                                        handleDeleteRow(
+                                          row.id,
+                                          partyChargesExemption,
+                                          setPartyChargesExemption,
+                                          partyChargesExemptionErrors,
+                                          setPartyChargesExemptionErrors
+                                        )
+                                      }
                                     />
                                   </td>
                                   <td className="text-center">
@@ -3197,7 +3474,19 @@ export const PartyMaster = () => {
                               {partyCurrencyMapping.map((row, index) => (
                                 <tr key={row.id}>
                                   <td className="border px-2 py-2 text-center">
-                                    <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRowCurrencyMapping(row.id)} />
+                                    <ActionButton
+                                      title="Delete"
+                                      icon={DeleteIcon}
+                                      onClick={() =>
+                                        handleDeleteRow(
+                                          row.id,
+                                          partyCurrencyMapping,
+                                          setPartyCurrencyMapping,
+                                          partyCurrencyMappingErrors,
+                                          setPartyCurrencyMappingErrors
+                                        )
+                                      }
+                                    />
                                   </td>
                                   <td className="text-center">
                                     <div className="pt-2">{index + 1}</div>
@@ -3207,14 +3496,10 @@ export const PartyMaster = () => {
                                     <select
                                       className={partyCurrencyMappingErrors[index]?.transCurrency ? 'error form-control' : 'form-control'}
                                       value={row.transCurrency}
-                                      onChange={(e) =>
-                                        setPartyCurrencyMapping((prev) =>
-                                          prev.map((r) => (r.id === row.id ? { ...r, transCurrency: e.target.value } : r))
-                                        )
-                                      }
+                                      onChange={(e) => handleCurrencyChange(row, index, e)}
                                     >
                                       <option value="">-- Select --</option>
-                                      {currencyExRates.map((item) => (
+                                      {getAvailableCurrencies(row.id).map((item) => (
                                         <option key={item.id} value={item.currency}>
                                           {item.currency}
                                         </option>
@@ -3259,7 +3544,19 @@ export const PartyMaster = () => {
                               {partySalesPersonTagging.map((row, index) => (
                                 <tr key={row.id}>
                                   <td className="border px-2 py-2 text-center">
-                                    <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRowSalesPerson(row.id)} />
+                                    <ActionButton
+                                      title="Delete"
+                                      icon={DeleteIcon}
+                                      onClick={() =>
+                                        handleDeleteRow(
+                                          row.id,
+                                          partySalesPersonTagging,
+                                          setPartySalesPersonTagging,
+                                          partySalesPersonErrors,
+                                          setPartySalesPersonErrors
+                                        )
+                                      }
+                                    />
                                   </td>
                                   <td className="text-center">
                                     <div className="pt-2">{index + 1}</div>
@@ -3269,25 +3566,10 @@ export const PartyMaster = () => {
                                     <select
                                       className={partySalesPersonErrors[index]?.salesPerson ? 'error form-control' : 'form-control'}
                                       value={row.salesPerson}
-                                      onChange={(e) => {
-                                        const selectedName = e.target.value;
-                                        const selectedEmployee = empData.find((item) => item.employeeName === selectedName);
-
-                                        setPartySalesPersonTagging((prev) =>
-                                          prev.map((r) =>
-                                            r.id === row.id
-                                              ? {
-                                                  ...r,
-                                                  salesPerson: selectedName,
-                                                  empCode: selectedEmployee ? selectedEmployee.employeeCode : ''
-                                                }
-                                              : r
-                                          )
-                                        );
-                                      }}
+                                      onChange={(e) => handleEmployeeChange(row, index, e)}
                                     >
                                       <option value="">-- Select --</option>
-                                      {empData.map((item) => (
+                                      {getAvailableEmp(row.id).map((item) => (
                                         <option key={item.id} value={item.employeeName}>
                                           {item.employeeName}
                                         </option>
@@ -3457,7 +3739,13 @@ export const PartyMaster = () => {
                               {partyTdsExempted.map((row, index) => (
                                 <tr key={row.id}>
                                   <td className="border px-2 py-2 text-center">
-                                    <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRowTdsExempted(row.id)} />
+                                    <ActionButton
+                                      title="Delete"
+                                      icon={DeleteIcon}
+                                      onClick={() =>
+                                        handleDeleteRow(row.id, partyTdsExempted, setPartyTdsExempted, partyTdsErrors, setPartyTdsErrors)
+                                      }
+                                    />
                                   </td>
                                   <td className="text-center">
                                     <div className="pt-2">{index + 1}</div>
@@ -3528,33 +3816,6 @@ export const PartyMaster = () => {
                                         </option>
                                       ))}
                                     </select>
-                                    {/* <input
-                                      type="text"
-                                      value={row.finYear}
-                                      style={{ width: '150px' }}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-
-                                        if (/^\d{0,4}$/.test(value)) {
-                                          setPartyTdsExempted((prev) => prev.map((r) => (r.id === row.id ? { ...r, finYear: value } : r)));
-
-                                          setPartyTdsErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              finYear: !value
-                                                ? 'Fin Year is required'
-                                                : value.length !== 4
-                                                  ? 'Fin Year must be exactly 4 digits'
-                                                  : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }
-                                      }}
-                                      maxLength="4"
-                                      className={partyDetailsErrors[index]?.finYear ? 'error form-control' : 'form-control'}
-                                    /> */}
                                     {partyTdsErrors[index]?.finYear && (
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyTdsErrors[index].finYear}</div>
                                     )}
@@ -3588,7 +3849,19 @@ export const PartyMaster = () => {
                               {partyPartnerTagging.map((row, index) => (
                                 <tr key={row.id}>
                                   <td className="border px-2 py-2 text-center">
-                                    <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRowPartnerTagging(row.id)} />
+                                    <ActionButton
+                                      title="Delete"
+                                      icon={DeleteIcon}
+                                      onClick={() =>
+                                        handleDeleteRow(
+                                          row.id,
+                                          partyPartnerTagging,
+                                          setPartyPartnerTagging,
+                                          partyPartnerErrors,
+                                          setPartyPartnerErrors
+                                        )
+                                      }
+                                    />
                                   </td>
                                   <td className="text-center">
                                     <div className="pt-2">{index + 1}</div>
