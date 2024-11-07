@@ -25,7 +25,7 @@ export const getAllActiveStatesByCountry = async (country, orgId) => {
     if (response.status === true) {
       const countryData = response.paramObjectsMap.stateVO
         .filter((row) => row.active === 'Active')
-        .map(({ id, country, stateCode, stateName }) => ({ id, country, stateCode, stateName }));
+        .map(({ id, country, stateCode, stateName, stateNumber }) => ({ id, country, stateCode, stateName, stateNumber }));
 
       return countryData;
     } else {
@@ -63,7 +63,13 @@ export const getAllActiveCurrency = async (orgId) => {
     if (response.status === true) {
       const currencyData = response.paramObjectsMap.currencyVO
         .filter((row) => row.active === 'Active')
-        .map(({ id, currency, currencyDescription, subCurrency, country }) => ({ id, currency, currencyDescription, subCurrency, country }));
+        .map(({ id, currency, currencyDescription, subCurrency, country }) => ({
+          id,
+          currency,
+          currencyDescription,
+          subCurrency,
+          country
+        }));
 
       return currencyData;
     } else {
@@ -199,13 +205,29 @@ export const initCaps = (str) => {
 
 export const numToWords = (num) => {
   const a = [
-    '', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten',
-    'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen',
+    '',
+    'one',
+    'two',
+    'three',
+    'four',
+    'five',
+    'six',
+    'seven',
+    'eight',
+    'nine',
+    'ten',
+    'eleven',
+    'twelve',
+    'thirteen',
+    'fourteen',
+    'fifteen',
+    'sixteen',
+    'seventeen',
+    'eighteen',
+    'nineteen'
   ];
-  const b = [
-    '', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety',
-  ];
-  
+  const b = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
   const numberToWords = (n) => {
     if (n < 20) return a[n];
     if (n < 100) return b[Math.floor(n / 10)] + (n % 10 ? ' ' + a[n % 10] : '');
@@ -215,5 +237,4 @@ export const numToWords = (num) => {
   };
 
   return numberToWords(num);
-}
-
+};
