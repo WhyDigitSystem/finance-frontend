@@ -32,11 +32,12 @@ const AdjustmentJournal = () => {
   const [value, setValue] = useState(0);
   const [editId, setEditId] = useState('');
   const [currencies, setCurrencies] = useState([]);
+  const [docId, setDocId] = useState('');
   const [formData, setFormData] = useState({
-    active: true,
+    // active: true,
     currency: '',
     docDate: dayjs(),
-    docId: '',
+    // docId: '',
     exRate: '',
     orgId: orgId,
     refDate: null,
@@ -51,6 +52,7 @@ const AdjustmentJournal = () => {
 
   const [fieldErrors, setFieldErrors] = useState({
     currency: '',
+    adjustmentType:'',
     docDate: new Date(),
     exRate: '',
     orgId: orgId,
@@ -125,7 +127,7 @@ const AdjustmentJournal = () => {
   const handleClear = () => {
     setFormData({
       docDate: dayjs(),
-      docId: '',
+      // docId: '',
       exRate: '',
       orgId: orgId,
       refDate: null,
@@ -156,19 +158,48 @@ const AdjustmentJournal = () => {
     setEditId('');
     getAdjustmentJournalDocId();
   };
+
   const handleInputChange = (e) => {
-    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
-
+    const { name, value, selectionStart, selectionEnd, type } = e.target;
     let errorMessage = '';
-
-    if (errorMessage) {
-      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-    } else {
-      setFormData({ ...formData, [name]: value.toUpperCase() });
-
-      setFieldErrors({ ...fieldErrors, [name]: '' });
-
-      // Preserve the cursor position for text-based inputs
+  
+    // Handle specific field validations
+    switch (name) {
+      case 'exRate':
+        if (isNaN(value)) errorMessage = 'Invalid format';
+        break;
+      
+      case 'refNo':
+      case 'suppRefNo':
+        if (value && !/^[A-Za-z0-9\s]+$/.test(value)) {
+          errorMessage = 'Invalid format';
+        }
+        break;
+      case 'totalCreditAmount':
+      case 'totalDebitAmount':
+        if (isNaN(value)) {
+          errorMessage = 'Invalid format';
+        }
+        break;
+      
+      default:
+        break;
+    }
+  
+    // Update field errors
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: errorMessage
+    }));
+  
+    // If no error, update the form data
+    if (!errorMessage) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: type === 'text' || type === 'textarea' ? value.toUpperCase() : value
+      }));
+  
+      // Preserve cursor position for text inputs
       if (type === 'text' || type === 'textarea') {
         setTimeout(() => {
           const inputElement = document.getElementsByName(name)[0];
@@ -179,7 +210,7 @@ const AdjustmentJournal = () => {
       }
     }
   };
-
+  
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date);
     console.log('formattedDate', formattedDate);
@@ -311,20 +342,14 @@ const AdjustmentJournal = () => {
         rowErrors.accountsName = 'Account Name is required';
         detailTableDataValid = false;
       }
-      if (!row.creditAmount) {
-        rowErrors.creditAmount = 'Credit is required';
+      if (!row.creditAmount && !row.debitAmount) {
+        rowErrors.creditAmount = 'Credit or Debit Amount is required';
+        rowErrors.debitAmount = 'Credit or Debit Amount is required';
         detailTableDataValid = false;
       }
-      if (!row.debitAmount) {
-        rowErrors.debitAmount = 'Debit is required';
-        detailTableDataValid = false;
-      }
-      if (!row.creditBase) {
-        rowErrors.creditBase = 'creditBase is required';
-        detailTableDataValid = false;
-      }
-      if (!row.debitBase) {
-        rowErrors.debitBase = 'debitBase is required';
+      if (!row.creditBase && !row.debitBase) {
+        rowErrors.creditBase = 'Credit or Debit Base is required';
+        rowErrors.debitBase = 'Credit or Debit Base is required';
         detailTableDataValid = false;
       }
       if (!row.subLedgerCode) {
@@ -346,16 +371,15 @@ const AdjustmentJournal = () => {
       const AdjustmentJournalVO = detailsTableData.map((row) => ({
         ...(editId && { id: row.id }),
         accountsName: row.accountsName,
-        creditAmount: row.creditAmount,
-        debitAmount: row.debitAmount,
-        debitBase: row.debitBase,
-        creditBase: row.creditBase,
+        creditAmount: parseInt(row.creditAmount),
+        debitAmount: parseInt(row.debitAmount),
+        debitBase: parseInt(row.debitBase),
+        creditBase: parseInt(row.creditBase),
         subLedgerCode: row.subLedgerCode,
         subledgerName: row.subledgerName
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
-        active: formData.active,
         branch: branch,
         branchCode: branchCode,
         createdBy: loginUserName,
@@ -363,17 +387,13 @@ const AdjustmentJournal = () => {
         orgId: orgId,
         accountParticularsDTO: AdjustmentJournalVO,
         adjustmentType: formData.adjustmentType,
-        // docId: formData.docId,
-        // docDate: formData.docDate,
         currency: formData.currency,
-        exRate: formData.exRate,
+        exRate: parseInt(formData.exRate),
         refDate: dayjs(formData.refDate).format('YYYY-MM-DD'),
         refNo: formData.refNo,
         suppRefDate: dayjs(formData.suppRefDate).format('YYYY-MM-DD'),
         suppRefNo: formData.suppRefNo,
         remarks: formData.remarks,
-        // totalCreditAmount: formData.totalCreditAmount,
-        // totalDebitAmount: formData.totalDebitAmount
       };
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
@@ -401,13 +421,7 @@ const AdjustmentJournal = () => {
         'get',
         `/transaction/getAdjustmentJournalDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
-      console.log('docid working');
-
-      setFormData((prevData) => ({
-        ...prevData,
-        docId: response.paramObjectsMap.adjustmentJournalDocId,
-        docDate: dayjs()
-      }));
+      setDocId(response.paramObjectsMap.adjustmentJournalDocId);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -428,28 +442,25 @@ const AdjustmentJournal = () => {
     console.log('first', row);
     setShowForm(true);
     try {
-      const result = await apiCalls('get', `/transaction/getAllAdjustmentJournalById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/transaction/getAdjustmentJournalById?id=${row.original.id}`);
 
       if (result) {
         const adVO = result.paramObjectsMap.adjustmentJournalVO[0];
         setEditId(row.original.id);
-
+        setDocId(adVO.docId);
         setFormData({
-          // voucherSubType: adVO.voucherSubType || '',
-          id: adVO.id || '',
           docDate: adVO.docDate ? dayjs(adVO.docDate, 'YYYY-MM-DD') : dayjs(),
-          docId: adVO.docId || '',
-          currency: adVO.currency || '',
-          exRate: adVO.exRate || '',
-          refNo: adVO.refNo || '',
+          adjustmentType:adVO.adjustmentType,
+          currency: adVO.currency,
+          exRate: adVO.exRate,
+          refNo: adVO.refNo,
           refDate: adVO.refDate ? dayjs(adVO.refDate, 'YYYY-MM-DD') : dayjs(),
-          suppRefNo: adVO.suppRefNo || '',
+          suppRefNo: adVO.suppRefNo,
           suppRefDate: adVO.suppRefDate ? dayjs(adVO.refDate, 'YYYY-MM-DD') : dayjs(),
-          remarks: adVO.remarks || '',
-          orgId: adVO.orgId || '',
-          totalDebitAmount: adVO.totalDebitAmount || '',
-          totalCreditAmount: adVO.totalCreditAmount || ''
-          // active: adVO.active || false,
+          remarks: adVO.remarks,
+          orgId: adVO.orgId,
+          totalDebitAmount: adVO.totalDebitAmount,
+          totalCreditAmount: adVO.totalCreditAmount
         });
         setDetailsTableData(
           adVO.accountParticularsVO.map((row) => ({
@@ -492,11 +503,10 @@ const AdjustmentJournal = () => {
               <div className="row d-flex ml">
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.adjustmentType}>
-                    <InputLabel id="AdjustmentType-label">Adjustment Type</InputLabel>
+                    <InputLabel id="adjustmentType">Adjustment Type</InputLabel>
                     <Select
-                      labelId="AdjustmentType-label"
+                      labelId="adjustmentType"
                       label="Adjustment Type"
-                      // type='string'
                       value={formData.adjustmentType}
                       onChange={handleInputChange}
                       name="adjustmentType"
@@ -526,13 +536,13 @@ const AdjustmentJournal = () => {
 
                 <div className="col-md-3 mb-3">
                   <TextField
-                    id="outlined-textarea-zip"
+                    id="docId"
                     label="Document Id"
                     variant="outlined"
                     size="small"
                     fullWidth
                     name="docId"
-                    value={formData.docId}
+                    value={docId}
                     onChange={handleInputChange}
                     disabled
                     inputProps={{ maxLength: 10 }}
@@ -540,7 +550,7 @@ const AdjustmentJournal = () => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
-                    <InputLabel id="demo-simple-select-label">
+                    <InputLabel id="Currency">
                       {
                         <span>
                           Currency <span className="asterisk">*</span>
@@ -548,10 +558,9 @@ const AdjustmentJournal = () => {
                       }
                     </InputLabel>
                     <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
+                      labelId="currency"
+                      id="currency"
                       label="Currency"
-                      // type='string'
                       onChange={handleInputChange}
                       name="currency"
                       value={formData.currency}
@@ -567,7 +576,7 @@ const AdjustmentJournal = () => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    id="outlined-textarea-zip"
+                    id="exRate"
                     label={
                       <span>
                         Ex. Rate <span className="asterisk">*</span>
@@ -577,16 +586,16 @@ const AdjustmentJournal = () => {
                     size="small"
                     fullWidth
                     name="exRate"
-                    // type="number"
                     value={formData.exRate}
                     onChange={handleInputChange}
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.exRate ? 'Ex. Rate is required' : ''}</span>}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.exRate ? fieldErrors.exRate : ''}</span>}
                     inputProps={{ maxLength: 40 }}
+                    error={!!fieldErrors.exRate}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    id="outlined-textarea-zip"
+                    id="refNo"
                     label={
                       <span>
                         Reference No <span className="asterisk">*</span>
@@ -594,13 +603,13 @@ const AdjustmentJournal = () => {
                     }
                     variant="outlined"
                     size="small"
-                    // type='string'
                     fullWidth
                     name="refNo"
                     value={formData.refNo}
                     onChange={handleInputChange}
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.refNo ? 'Ref No is required' : ''}</span>}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.refNo ? fieldErrors.refNo : ''}</span>}
                     inputProps={{ maxLength: 40 }}
+                    error={!!fieldErrors.refNo}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
@@ -608,6 +617,7 @@ const AdjustmentJournal = () => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         label="Reference Date"
+                        error={!!fieldErrors.refDate}
                         value={formData.refDate}
                         onChange={(date) => handleDateChange('refDate', date)}
                         slotProps={{
@@ -621,7 +631,7 @@ const AdjustmentJournal = () => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    id="outlined-textarea-zip"
+                    id="suppRefNo"
                     label={
                       <span>
                         Supp. Reference No. <span className="asterisk">*</span>
@@ -629,13 +639,13 @@ const AdjustmentJournal = () => {
                     }
                     variant="outlined"
                     size="small"
-                    // type='string'
                     fullWidth
                     name="suppRefNo"
                     value={formData.suppRefNo}
                     onChange={handleInputChange}
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.suppRefNo ? 'suppRef No is required' : ''}</span>}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.suppRefNo ? fieldErrors.suppRefNo : ''}</span>}
                     inputProps={{ maxLength: 40 }}
+                    error={!!fieldErrors.suppRefNo}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
@@ -648,6 +658,7 @@ const AdjustmentJournal = () => {
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
+                        error={!!fieldErrors.suppRefDate}
                         format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
@@ -663,7 +674,6 @@ const AdjustmentJournal = () => {
                       label="Remarks"
                       size="small"
                       name="remarks"
-                      // type='string'
                       value={formData.remarks}
                       multiline
                       minRows={2}
@@ -758,7 +768,6 @@ const AdjustmentJournal = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                        // type='string'
                                           value={row.subledgerName}
                                           onChange={(e) => {
                                             const value = e.target.value;
@@ -784,7 +793,6 @@ const AdjustmentJournal = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                        // type='string'
                                           value={row.subLedgerCode}
                                           onChange={(e) => {
                                             const value = e.target.value;
@@ -810,7 +818,6 @@ const AdjustmentJournal = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          // type="number"
                                           value={row.debitAmount}
                                           onChange={(e) => handleDebitChange(e, row, index)}
                                           maxLength="20"
@@ -824,7 +831,6 @@ const AdjustmentJournal = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          // type='number'
                                           value={row.creditAmount}
                                           onChange={(e) => handleCreditChange(e, row, index)}
                                           maxLength="20"
@@ -839,7 +845,6 @@ const AdjustmentJournal = () => {
 
                                       <td className="border px-2 py-2">
                                         <input
-                                          // type="number"
                                           value={row.creditBase}
                                           onChange={(e) => {
                                             const value = e.target.value;
@@ -863,7 +868,6 @@ const AdjustmentJournal = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          // type="number"
                                           value={row.debitBase}
                                           onChange={(e) => {
                                             const value = e.target.value;
@@ -900,7 +904,7 @@ const AdjustmentJournal = () => {
                       <div className="row mt-2">
                         <div className="col-md-3 mb-3">
                           <TextField
-                            id="outlined-textarea-zip"
+                            id="totalDebitAmount"
                             label="Total Debit Amount"
                             variant="outlined"
                             size="small"
@@ -911,14 +915,14 @@ const AdjustmentJournal = () => {
                             onChange={handleInputChange}
                             disabled
                             helperText={
-                              <span style={{ color: 'red' }}>{fieldErrors.totalDebitAmount ? 'Total Debit Amount is required' : ''}</span>
+                              <span style={{ color: 'red' }}>{fieldErrors.totalDebitAmount ? fieldErrors.totalDebitAmount : ''}</span>
                             }
                             inputProps={{ maxLength: 40 }}
                           />
                         </div>
                         <div className="col-md-3 mb-3">
                           <TextField
-                            id="outlined-textarea-zip"
+                            id="totalCreditAmount"
                             label="Total Credit Amount"
                             variant="outlined"
                             size="small"
@@ -928,7 +932,7 @@ const AdjustmentJournal = () => {
                             onChange={handleInputChange}
                             disabled
                             helperText={
-                              <span style={{ color: 'red' }}>{fieldErrors.totalCreditAmount ? 'Total Credit Amount is required' : ''}</span>
+                              <span style={{ color: 'red' }}>{fieldErrors.totalCreditAmount ? fieldErrors.totalCreditAmount : ''}</span>
                             }
                             inputProps={{ maxLength: 40 }}
                           />

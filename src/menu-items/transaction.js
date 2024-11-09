@@ -129,6 +129,18 @@ const transaction = {
           title: 'Adjustment Journal',
           type: 'item',
           url: '/finance/AdjustmentJournal'
+        },
+        {
+          id: 'deposit',
+          title: 'Deposit',
+          type: 'item',
+          url: '/finance/Deposit'
+        },
+        {
+          id: 'withdrawal',
+          title: 'Withdrawal',
+          type: 'item',
+          url: '/finance/Withdrawal'
         }
       ]
     }
