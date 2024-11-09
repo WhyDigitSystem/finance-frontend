@@ -84,28 +84,69 @@ const BRSOpening = () => {
   ];
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Replace with your orgId or fetch it from somewhere
-        const currencyData = await getAllActiveCurrency(orgId);
-        setCurrencies(currencyData);
+    // const fetchData = async () => {
+    //   try {
+    //     // Replace with your orgId or fetch it from somewhere
+    //     const currencyData = await getAllActiveCurrency(orgId);
+    //     setCurrencies(currencyData);
 
-        console.log('currency', currencyData);
-      } catch (error) {
-        console.error('Error fetching country data:', error);
-      }
-    };
+    //     console.log('currency', currencyData);
+    //   } catch (error) {
+    //     console.error('Error fetching country data:', error);
+    //   }
+    // };
 
-    fetchData();
+    // fetchData();
     // getGroup();
+    getAllCurrency();
   }, []);
+
+  const getAllCurrency = async () => {
+    try {
+      const response = await apiCalls('get', `/taxInvoice/getCurrencyAndExrateDetails?orgId=${orgId}`);
+      setCurrencies(response.paramObjectsMap.currencyVO);
+
+      console.log('Test===>', response.paramObjectsMap.currencyVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+
+  // const handleInputChange = (e) => {
+  //   const { name, value, type, checked } = e.target;
+  //   const inputValue = type === 'checkbox' ? checked : value;
+  //   setFormData({ ...formData, [name]: inputValue });
+  //   setFieldErrors({ ...fieldErrors, [name]: false });
+  // };
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const inputValue = type === 'checkbox' ? checked : value;
-    setFormData({ ...formData, [name]: inputValue });
-    setFieldErrors({ ...fieldErrors, [name]: false });
+  
+    // Update the formData with the new value
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: inputValue,
+    }));
+  
+    // Reset the field error for the current field
+    setFieldErrors((prevFieldErrors) => ({
+      ...prevFieldErrors,
+      [name]: false,
+    }));
+  
+    // If the currency field is being changed, update exRate based on the selected currency's sellingExRate
+    if (name === 'currency') {
+      const selectedCurrency = currencies.find((currency) => currency.currency === value);
+      if (selectedCurrency) {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          exRate: selectedCurrency.sellingExRate,
+        }));
+      }
+    }
   };
+  
 
   const handleDateChange = (name, date) => {
     setFormData({ ...formData, [name]: date });
@@ -482,7 +523,7 @@ const BRSOpening = () => {
                   size="small"
                   onChange={handleInputChange}
                   fullWidth
-                  required
+                  disabled
                   error={!!fieldErrors.exRate}
                   helperText={fieldErrors.exRate ? fieldErrors.exRate : ''}
                 />

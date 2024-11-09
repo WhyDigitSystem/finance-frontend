@@ -78,32 +78,97 @@ const FundTransfer = () => {
   //   setFormData({ ...formData, [name]: inputValue });
   //   setFieldErrors({ ...fieldErrors, [name]: false });
   // };
+  // const handleInputChange = (e) => {
+  //   const { name, value, type, checked } = e.target;
+  //   const inputValue = type === 'checkbox' ? checked : value;
+
+  //   // Validation for "amount" and "amtBase" fields to allow only numbers
+  //   if ((name === 'amount' || name === 'amtBase') && !/^\d*$/.test(value)) {
+  //     setFieldErrors({
+  //       ...fieldErrors,
+  //       [name]: 'Only numbers are allowed for this field'
+  //     });
+  //     return; // Exit the function without setting the value
+  //   }
+
+  //   // Prevent selecting the same bank in "Transfer To" and "Corporate A/C"
+  //   if (name === 'transferTo' && value === formData.corpAccount) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Cannot select the same bank as Corporate A/C' });
+  //     setFormData({ ...formData, [name]: '' });
+  //   } else if (name === 'corpAccount' && value === formData.transferTo) {
+  //     setFieldErrors({ ...fieldErrors, [name]: 'Cannot select the same bank as Transfer To' });
+  //     setFormData({ ...formData, [name]: '' });
+  //   } else {
+  //     // Clear any existing error and set the field value normally
+  //     setFormData({ ...formData, [name]: inputValue });
+  //     setFieldErrors({ ...fieldErrors, [name]: false });
+  //   }
+  // };
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const inputValue = type === 'checkbox' ? checked : value;
-
+  
     // Validation for "amount" and "amtBase" fields to allow only numbers
     if ((name === 'amount' || name === 'amtBase') && !/^\d*$/.test(value)) {
-      setFieldErrors({
-        ...fieldErrors,
-        [name]: 'Only numbers are allowed for this field'
-      });
+      setFieldErrors((prevFieldErrors) => ({
+        ...prevFieldErrors,
+        [name]: 'Only numbers are allowed for this field',
+      }));
       return; // Exit the function without setting the value
     }
-
+  
     // Prevent selecting the same bank in "Transfer To" and "Corporate A/C"
     if (name === 'transferTo' && value === formData.corpAccount) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Cannot select the same bank as Corporate A/C' });
-      setFormData({ ...formData, [name]: '' });
+      setFieldErrors((prevFieldErrors) => ({
+        ...prevFieldErrors,
+        [name]: 'Cannot select the same bank as Corporate A/C',
+      }));
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: '',
+      }));
+      return;
     } else if (name === 'corpAccount' && value === formData.transferTo) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Cannot select the same bank as Transfer To' });
-      setFormData({ ...formData, [name]: '' });
-    } else {
-      // Clear any existing error and set the field value normally
-      setFormData({ ...formData, [name]: inputValue });
-      setFieldErrors({ ...fieldErrors, [name]: false });
+      setFieldErrors((prevFieldErrors) => ({
+        ...prevFieldErrors,
+        [name]: 'Cannot select the same bank as Transfer To',
+      }));
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: '',
+      }));
+      return;
     }
+  
+    // Set exRate when currency changes
+    if (name === 'currency') {
+      const selectedCurrency = currencies.find((currency) => currency.currency === value);
+      if (selectedCurrency) {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          currency: value,
+          exRate: selectedCurrency.sellingExRate,
+        }));
+        setFieldErrors((prevFieldErrors) => ({
+          ...prevFieldErrors,
+          currency: false,
+        }));
+        return;
+      }
+    }
+  
+    // Clear any existing error and set the field value normally
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: inputValue,
+    }));
+    setFieldErrors((prevFieldErrors) => ({
+      ...prevFieldErrors,
+      [name]: false,
+    }));
   };
+  
 
   const handleDateChange = (name, date) => {
     setFormData({ ...formData, [name]: date });
@@ -143,21 +208,33 @@ const FundTransfer = () => {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Replace with your orgId or fetch it from somewhere
-        const currencyData = await getAllActiveCurrency(orgId);
-        setCurrencies(currencyData);
+    // const fetchData = async () => {
+    //   try {
+    //     // Replace with your orgId or fetch it from somewhere
+    //     const currencyData = await getAllActiveCurrency(orgId);
+    //     setCurrencies(currencyData);
 
-        console.log('currency', currencyData);
-      } catch (error) {
-        console.error('Error fetching country data:', error);
-      }
-    };
+    //     console.log('currency', currencyData);
+    //   } catch (error) {
+    //     console.error('Error fetching country data:', error);
+    //   }
+    // };
 
-    fetchData();
+    // fetchData();
     // getGroup();
+    getAllCurrency();
   }, []);
+
+  const getAllCurrency = async () => {
+    try {
+      const response = await apiCalls('get', `/taxInvoice/getCurrencyAndExrateDetails?orgId=${orgId}`);
+      setCurrencies(response.paramObjectsMap.currencyVO);
+
+      console.log('Test===>', response.paramObjectsMap.currencyVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
 
   useEffect(() => {
     getAllFundTransfer();
@@ -423,7 +500,7 @@ const FundTransfer = () => {
                   size="small"
                   value={formData.exRate}
                   onChange={handleInputChange}
-                  required
+                  disabled
                   fullWidth
                   error={!!fieldErrors.exRate}
                   helperText={fieldErrors.exRate ? fieldErrors.exRate : ''}
