@@ -17,6 +17,10 @@ import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 const ReconcileCorp = () => {
   const [tabIndex, setTabIndex] = useState(0);
@@ -33,6 +37,7 @@ const ReconcileCorp = () => {
   const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [bankName, setBankName] = useState([]);
 
   const handleTabSelect = (index) => {
     setTabIndex(index);
@@ -41,6 +46,7 @@ const ReconcileCorp = () => {
   useEffect(() => {
     getAllReconsileCorp();
     getNewCorpDocId();
+    getAllBankName();
   }, []);
 
   const [formData, setFormData] = useState({
@@ -67,6 +73,17 @@ const ReconcileCorp = () => {
   // Placeholder action handlers
   const handleSearch = () => {
     console.log('Search action');
+  };
+
+  const getAllBankName = async () => {
+    try {
+      const response = await apiCalls('get', `/transaction/getBankNameForGroupLedger?orgId=${orgId}`);
+      setBankName(response.paramObjectsMap.accountName);
+
+      // setStateCode(response.paramObjectsMap.partyMasterVO.partyStateVO)
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
   };
 
   const getAllReconsileCorp = async () => {
@@ -550,7 +567,7 @@ const ReconcileCorp = () => {
                 </LocalizationProvider>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
-                <TextField
+                {/* <TextField
                   label="Bank Account"
                   value={formData.bankAccount}
                   size="small"
@@ -558,7 +575,28 @@ const ReconcileCorp = () => {
                   required
                   placeholder="Auto"
                   onChange={(e) => setFormData({ ...formData, bankAccount: e.target.value })}
-                />
+                /> */}
+                <FormControl fullWidth size="small">
+                  <InputLabel id="demo-simple-select-label" required>
+                    Bank Account
+                  </InputLabel>
+                  <Select
+                    labelId="bankAccount"
+                    value={formData.bankAccount}
+                    onChange={(e) => setFormData({ ...formData, bankAccount: e.target.value })}
+                    label="Bank Account"
+                    required
+                    // error={!!errors.bankAccount}
+                    // helperText={errors.bankAccount}
+                  >
+                    {bankName &&
+                      bankName.map((bank, index) => (
+                        <MenuItem key={index} value={bank.accountgroupname}>
+                          {bank.accountgroupname}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
                 <TextField

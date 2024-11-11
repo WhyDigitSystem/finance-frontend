@@ -17,6 +17,10 @@ import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
 import PhysicalCountComponent from './PhysicalCount';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 const ReconcileCash = () => {
   const [tabIndex, setTabIndex] = useState(0);
@@ -66,10 +70,12 @@ const ReconcileCash = () => {
   });
 
   const [loading, setLoading] = useState(false);
+  const [bankName, setBankName] = useState([]);
 
   useEffect(() => {
     getAllReconsileCash();
     getNewCashpDocId();
+    getAllBankName();
   }, []);
 
   // Handle tab changes
@@ -84,6 +90,17 @@ const ReconcileCash = () => {
       ...prevState,
       [name]: value
     }));
+  };
+
+  const getAllBankName = async () => {
+    try {
+      const response = await apiCalls('get', `/transaction/getBankNameForGroupLedger?orgId=${orgId}`);
+      setBankName(response.paramObjectsMap.accountName);
+
+      // setStateCode(response.paramObjectsMap.partyMasterVO.partyStateVO)
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
   };
 
   const getAllReconsileCash = async () => {
@@ -324,7 +341,7 @@ const ReconcileCash = () => {
               </Grid>
 
               <Grid item xs={12} sm={6} md={3}>
-                <TextField
+                {/* <TextField
                   label="Cash Account"
                   size="small"
                   fullWidth
@@ -332,7 +349,28 @@ const ReconcileCash = () => {
                   name="cashAccount"
                   value={formData.cashAccount}
                   onChange={handleFieldChange}
-                />
+                /> */}
+                <FormControl fullWidth size="small">
+                  <InputLabel id="demo-simple-select-label" required>
+                    Cash Account
+                  </InputLabel>
+                  <Select
+                    labelId="cashAccount"
+                    value={formData.cashAccount}
+                    onChange={(e) => setFormData({ ...formData, cashAccount: e.target.value })}
+                    label="Cash Account"
+                    required
+                    // error={!!errors.cashAccount}
+                    // helperText={errors.cashAccount}
+                  >
+                    {bankName &&
+                      bankName.map((bank, index) => (
+                        <MenuItem key={index} value={bank.accountgroupname}>
+                          {bank.accountgroupname}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid item xs={12} sm={6} md={3}>
                 <TextField
