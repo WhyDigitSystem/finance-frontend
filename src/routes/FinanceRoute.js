@@ -14,6 +14,7 @@ const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')))
 const AdjustmentJournal = Loadable(lazy(() => import('views/Finance/AdjustmentJournal')));
 const Deposit = Loadable(lazy(() => import('views/Finance/Deposit')));
 const Withdrawal = Loadable(lazy(() => import('views/Finance/Withdrawal')));
+const ContraVoucher = Loadable(lazy(() => import('views/Finance/ContraVoucher')));
 const SetTaxRate = Loadable(lazy(() => import('views/Finance/SetTaxRate')));
 const TaxMaster = Loadable(lazy(() => import('views/Finance/taxMaster/taxMaster')));
 const Taxes = Loadable(lazy(() => import('views/Finance/Taxes')));
@@ -305,6 +306,10 @@ const FinanceRoute = {
     {
       path: '/Finance/Withdrawal',
       element: <Withdrawal />
+    },
+    {
+      path: '/Finance/ContraVoucher',
+      element: <ContraVoucher />
     }
   ]
 };

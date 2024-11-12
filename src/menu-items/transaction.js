@@ -76,12 +76,6 @@ const transaction = {
           type: 'item',
           url: '/finance/Reconcile/ReconcileCash'
         },
-        // {
-        //   id: 'reconciliationSummary',
-        //   title: 'Reconciliation Summary',
-        //   type: 'item',
-        //   url: '/finance/ReconciliationSummaryReport/ReconciliationSummary'
-        // },
         {
           id: 'taxInvoiceDetail',
           title: 'Tax Invoice',
@@ -141,6 +135,12 @@ const transaction = {
           title: 'Withdrawal',
           type: 'item',
           url: '/finance/Withdrawal'
+        },
+        {
+          id: 'contraVoucher',
+          title: 'ContraVoucher',
+          type: 'item',
+          url: '/finance/ContraVoucher'
         }
       ]
     }
