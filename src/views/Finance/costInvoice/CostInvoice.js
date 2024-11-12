@@ -34,6 +34,7 @@ const CostInvoice = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [currencies, setCurrencies] = useState([]);
   const [exRates, setExRates] = useState([]);
+  const [tdsPer, setTdsPer] = useState([]);
   const [partyName, setPartyName] = useState([]);
   const [partyId, setPartyId] = useState('');
   const [stateName, setStateName] = useState([]);
@@ -289,7 +290,7 @@ const CostInvoice = () => {
         setChargerCostInvoice(
           costVO.chargerCostInvoiceVO.map((row) => ({
             id: row.id,
-            billAmt: row.billAmt,
+            // billAmt: row.billAmt,
             chargeCode: row.chargeCode,
             chargeLedger: row.chargeLedger,
             chargeName: row.chargeName,
@@ -385,6 +386,7 @@ const CostInvoice = () => {
       }));
       getStateName(selectedEmp.id);
       getCurrencyAndExratesForMatchingParties(selectedEmp.partyCode);
+      getTdsDetailsFromPartyMasterSpecialTDS(selectedEmp.partyCode);
       setPartyId(selectedEmp.id);
     } else {
       console.log('No employee found with the given code:', value);
@@ -406,6 +408,26 @@ const CostInvoice = () => {
       setExRates(response.paramObjectsMap.currencyVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
+    }
+  };
+
+  
+  const getTdsDetailsFromPartyMasterSpecialTDS = async (partyCode) => {
+    try {
+      const response = await apiCalls('get', `/costInvoice/getTdsDetailsFromPartyMasterSpecialTDS?orgId=${orgId}&partyCode=${partyCode}`);
+      
+      const tdsData = response.paramObjectsMap.tds;
+      const tdsWhPercent = tdsData.length > 0 ? tdsData[0].tdsWhPercent : '';
+      
+      console.log('tds', tdsWhPercent);
+      setTdsCostInvoiceDTO((prevData) =>
+        prevData.map((item, index) =>
+          index === 0 ? { ...item, tdsWithHoldingPer: tdsWhPercent } : item
+          // index === 0 ? { ...item, tdsWithHoldingPer: tdsWhPercent, section: tdsData[0]?.section || '' } : item
+        )
+      );
+    } catch (error) {
+      console.error('Error fetching TDS details:', error);
     }
   };
 
@@ -667,19 +689,20 @@ const CostInvoice = () => {
 
     if (table === chargerCostInvoice) {
       return (
-        !lastRow.billAmt ||
         !lastRow.chargeCode ||
-        !lastRow.chargeLedger ||
-        !lastRow.chargeName ||
+        // !lastRow.chargeLedger ||
+        // !lastRow.chargeName ||
         !lastRow.currency ||
-        !lastRow.exRate ||
-        !lastRow.fcAmt ||
-        !lastRow.sac ||
-        !lastRow.gst ||
-        !lastRow.houseNo ||
+        // !lastRow.exRate ||
+        // !lastRow.fcAmt ||
+        // !lastRow.sac ||
+        // !lastRow.gst ||
+        // !lastRow.houseNo ||
         !lastRow.jobNo ||
-        !lastRow.lcAmt ||
-        !lastRow.subJobNo
+        !lastRow.qty ||
+        !lastRow.rate 
+        // !lastRow.lcAmt ||
+        // !lastRow.subJobNo
       );
     }
     return false;
@@ -691,19 +714,17 @@ const CostInvoice = () => {
         const newErrors = [...prevErrors];
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
-          billAmt: !table[table.length - 1].billAmt ? 'Bill Amt is required' : '',
-          chargeCode: !table[table.length - 1].chargeCode ? 'Charge Code is required' : '',
-          chargeLedger: !table[table.length - 1].chargeLedger ? 'Charge Ledger is required' : '',
-          chargeName: !table[table.length - 1].chargeName ? 'Charge Name is required' : '',
-          currency: !table[table.length - 1].currency ? 'Currency is required' : '',
-          exRate: !table[table.length - 1].exRate ? 'EX Rate is required' : '',
-          fcAmt: !table[table.length - 1].fcAmt ? 'FC Amt is required' : '',
-          sac: !table[table.length - 1].sac ? 'SAC is required' : '',
-          gst: !table[table.length - 1].gst ? 'GST is required' : '',
-          // houseNo: !table[table.length - 1].houseNo ? 'House No is required' : '',
           jobNo: !table[table.length - 1].jobNo ? 'Job No is required' : '',
-          lcAmt: !table[table.length - 1].lcAmt ? 'LC Amt is required' : ''
-          // subJobNo: !table[table.length - 1].subJobNo ? 'Sub Job No is required' : ''
+          chargeCode: !table[table.length - 1].chargeCode ? 'Charge Code is required' : '',
+          // chargeLedger: !table[table.length - 1].chargeLedger ? 'Charge Ledger is required' : '',
+          // chargeName: !table[table.length - 1].chargeName ? 'Charge Name is required' : '',
+          currency: !table[table.length - 1].currency ? 'Currency is required' : '',
+          // exRate: !table[table.length - 1].exRate ? 'EX Rate is required' : '',
+          // fcAmt: !table[table.length - 1].fcAmt ? 'FC Amt is required' : '',
+          // sac: !table[table.length - 1].sac ? 'SAC is required' : '',
+          // gst: !table[table.length - 1].gst ? 'GST is required' : '',
+          qty: !table[table.length - 1].qty ? 'Qty is required' : '',
+          rate: !table[table.length - 1].rate ? 'Rate is required' : ''
         };
         return newErrors;
       });
@@ -2343,9 +2364,7 @@ const CostInvoice = () => {
                                           style={{ width: '150px' }}
                                           onChange={(e) => {
                                             const selectedCurrency = e.target.value;
-                                            const selectedCurrencyData = currencies.find(
-                                              (currency) => currency.currency === selectedCurrency
-                                            );
+                                            const selectedCurrencyData = exRates.find((currency) => currency.currency === selectedCurrency);
 
                                             const updatedCurrencyData = [...chargerCostInvoice];
                                             updatedCurrencyData[index] = {
