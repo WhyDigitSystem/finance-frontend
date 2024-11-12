@@ -32,15 +32,16 @@ const PaymentVoucher = () => {
   const [value, setValue] = useState(0);
   const [editId, setEditId] = useState('');
   const [currencies, setCurrencies] = useState([]);
+  const [accountNames, setAccountNames] = useState([]);
   const [formData, setFormData] = useState({
     active: true,
-    currency: '',
+    currency: 'INR',
     chequeBank: '',
     chequeDate: null,
     chequeNo: '',
     docDate: dayjs(),
     docId: '',
-    exRate: '',
+    exRate: 1,
     orgId: orgId,
     referenceDate: null,
     referenceNo: '',
@@ -110,6 +111,7 @@ const PaymentVoucher = () => {
     fetchData();
     getAllPaymentVoucherByOrgId();
     getPaymentVoucherDocId();
+    getAccountNameFromGroup();
   }, []);
 
   useEffect(() => {
@@ -199,6 +201,16 @@ const PaymentVoucher = () => {
     }
   };
 
+  const getAccountNameFromGroup = async () => {
+    try {
+      const response = await apiCalls('get', `/transaction/getAccountNameFromGroup?orgId=${orgId}`);
+      setAccountNames(response.paramObjectsMap.generalJournalVO);
+      console.log('generalJournalVO', response.paramObjectsMap.generalJournalVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+
   const handleDebitChange = (e, row, index) => {
     const value = e.target.value;
 
@@ -284,9 +296,9 @@ const PaymentVoucher = () => {
       chequeBank: '',
       chequeDate: null,
       chequeNo: '',
-      currency: '',
+      currency: 'INR',
       docDate: null,
-      exRate: '',
+      exRate: 1,
       orgId: orgId,
       referenceDate: '',
       referenceNo: '',
@@ -508,20 +520,18 @@ const PaymentVoucher = () => {
             <>
               <div className="row d-flex ml">
                 <div className="col-md-3 mb-3">
-                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.vehicleSubType}>
-                    <InputLabel id="vehicleSubType-label">Vehicle Sub Type</InputLabel>
-                    <Select
-                      labelId="vehicleSubType-label"
-                      label="Vehicle Sub Type"
-                      value={formData.vehicleSubType}
-                      onChange={handleInputChange}
-                      name="vehicleSubType"
-                    >
-                      <MenuItem value="VEHICLESUBTYPE1">VEHICLESUBTYPE1</MenuItem>
-                      <MenuItem value="VEHICLESUBTYPE2">VEHICLESUBTYPE2</MenuItem>
-                    </Select>
-                    {fieldErrors.vehicleSubType && <FormHelperText>{fieldErrors.vehicleSubType}</FormHelperText>}
-                  </FormControl>
+                  <TextField
+                    id="outlined-textarea-zip"
+                    label="Document Id"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="docId"
+                    value={formData.docId}
+                    onChange={handleInputChange}
+                    disabled
+                    inputProps={{ maxLength: 10 }}
+                  />
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled" size="small">
@@ -539,21 +549,23 @@ const PaymentVoucher = () => {
                     </LocalizationProvider>
                   </FormControl>
                 </div>
-
                 <div className="col-md-3 mb-3">
-                  <TextField
-                    id="outlined-textarea-zip"
-                    label="Document Id"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="docId"
-                    value={formData.docId}
-                    onChange={handleInputChange}
-                    disabled
-                    inputProps={{ maxLength: 10 }}
-                  />
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.vehicleSubType}>
+                    <InputLabel id="vehicleSubType-label">Vehicle Sub Type</InputLabel>
+                    <Select
+                      labelId="vehicleSubType-label"
+                      label="Vehicle Sub Type"
+                      value={formData.vehicleSubType}
+                      onChange={handleInputChange}
+                      name="vehicleSubType"
+                    >
+                      <MenuItem value="VEHICLESUBTYPE1">VEHICLESUBTYPE1</MenuItem>
+                      <MenuItem value="VEHICLESUBTYPE2">VEHICLESUBTYPE2</MenuItem>
+                    </Select>
+                    {fieldErrors.vehicleSubType && <FormHelperText>{fieldErrors.vehicleSubType}</FormHelperText>}
+                  </FormControl>
                 </div>
+
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
                     <InputLabel id="demo-simple-select-label">
@@ -569,6 +581,7 @@ const PaymentVoucher = () => {
                       label="Currency"
                       onChange={handleInputChange}
                       name="currency"
+                      disabled
                       value={formData.currency}
                     >
                       {currencies.map((item) => (
@@ -593,6 +606,7 @@ const PaymentVoucher = () => {
                     type="number"
                     fullWidth
                     name="exRate"
+                    disabled
                     value={formData.exRate}
                     onChange={handleInputChange}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.exRate ? 'Ex. Rate is required' : ''}</span>}
@@ -761,25 +775,23 @@ const PaymentVoucher = () => {
                                         <div className="pt-2">{index + 1}</div>
                                       </td>
                                       <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
+                                        <select
                                           value={row.accountName}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
-                                            );
-                                            setDetailsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                accountName: !value ? 'Account Name is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
+                                          style={{ width: '150px' }}
                                           className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
-                                        />
+                                          onChange={(e) =>
+                                            setDetailsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: e.target.value } : r))
+                                            )
+                                          }
+                                        >
+                                          <option value="">-- Select --</option>
+                                          {accountNames.map((item) => (
+                                            <option key={item.id} value={item.accountName}>
+                                              {item.accountName}
+                                            </option>
+                                          ))}
+                                        </select>
                                         {detailsTableErrors[index]?.accountName && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                             {detailsTableErrors[index].accountName}

@@ -39,12 +39,12 @@ const transaction = {
           type: 'item',
           url: '/finance/BRSOpening'
         },
-        {
-          id: 'glOpening',
-          title: 'GL Opening Balance',
-          type: 'item',
-          url: '/finance/glOpening/GlOpening'
-        },
+        // {
+        //   id: 'glOpening',
+        //   title: 'GL Opening Balance',
+        //   type: 'item',
+        //   url: '/finance/glOpening/GlOpening'
+        // },
         {
           id: 'fundTransfer',
           title: 'Fund Transfer',

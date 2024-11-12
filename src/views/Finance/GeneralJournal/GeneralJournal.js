@@ -31,6 +31,7 @@ const GeneralJournal = () => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [value, setValue] = useState(0);
   const [editId, setEditId] = useState('');
+  const [accountNames, setAccountNames] = useState([]);
   const [currencies, setCurrencies] = useState([]);
   const [formData, setFormData] = useState({
     active: true,
@@ -104,6 +105,7 @@ const GeneralJournal = () => {
     fetchData();
     getGeneralJournalDocId();
     getAllGeneralJournalByOrgId();
+    getAccountNameFromGroup();
   }, []);
 
   useEffect(() => {
@@ -137,18 +139,15 @@ const GeneralJournal = () => {
     try {
       const result = await apiCalls('get', `/transaction/getAllGeneralJournalByOrgId?orgId=${orgId}`);
       setData(result.paramObjectsMap.generalJournalVO || []);
-      // showForm(true);
-      console.log('generalJournalVO', result);
     } catch (err) {
       console.log('error', err);
     }
   };
 
-  const getAllGeneralJournalById = async (row) => {
-    console.log('first', row);
+  const getGeneralJournalById = async (row) => {
     setShowForm(true);
     try {
-      const result = await apiCalls('get', `/transaction/getAllGeneralJournalById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/transaction/getGeneralJournalById?id=${row.original.id}`);
 
       if (result) {
         const glVO = result.paramObjectsMap.generalJournalVO[0];
@@ -187,6 +186,16 @@ const GeneralJournal = () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+
+  const getAccountNameFromGroup = async () => {
+    try {
+      const response = await apiCalls('get', `/transaction/getAccountNameFromGroup?orgId=${orgId}`);
+      setAccountNames(response.paramObjectsMap.generalJournalVO);
+      console.log('generalJournalVO', response.paramObjectsMap.generalJournalVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
     }
   };
 
@@ -258,7 +267,6 @@ const GeneralJournal = () => {
   const handleClear = () => {
     setFormData({
       docDate: dayjs(),
-      docId: '24GJ0001', //It's hard coded
       exRate: '',
       orgId: orgId,
       refDate: null,
@@ -272,7 +280,6 @@ const GeneralJournal = () => {
     setFieldErrors({
       currency: '',
       docDate: null,
-      // docId: '24GJ0001',
       exRate: '',
       orgId: orgId,
       refDate: '',
@@ -489,20 +496,18 @@ const GeneralJournal = () => {
             <>
               <div className="row d-flex ml">
                 <div className="col-md-3 mb-3">
-                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.voucherSubType}>
-                    <InputLabel id="voucherSubType-label">Voucher Sub Type</InputLabel>
-                    <Select
-                      labelId="voucherSubType-label"
-                      label="Voucher Sub Type"
-                      value={formData.voucherSubType}
-                      onChange={handleInputChange}
-                      name="voucherSubType"
-                    >
-                      <MenuItem value="GENERAL">GENERAL</MenuItem>
-                      <MenuItem value="EXPENSE">EXPENSE</MenuItem>
-                    </Select>
-                    {fieldErrors.voucherSubType && <FormHelperText>{fieldErrors.voucherSubType}</FormHelperText>}
-                  </FormControl>
+                  <TextField
+                    id="outlined-textarea-zip"
+                    label="Document Id"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="docId"
+                    value={formData.docId}
+                    onChange={handleInputChange}
+                    disabled
+                    inputProps={{ maxLength: 10 }}
+                  />
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled" size="small">
@@ -520,20 +525,21 @@ const GeneralJournal = () => {
                     </LocalizationProvider>
                   </FormControl>
                 </div>
-
                 <div className="col-md-3 mb-3">
-                  <TextField
-                    id="outlined-textarea-zip"
-                    label="Document Id"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="docId"
-                    value={formData.docId}
-                    onChange={handleInputChange}
-                    disabled
-                    inputProps={{ maxLength: 10 }}
-                  />
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.voucherSubType}>
+                    <InputLabel id="voucherSubType-label">Voucher Sub Type</InputLabel>
+                    <Select
+                      labelId="voucherSubType-label"
+                      label="Voucher Sub Type"
+                      value={formData.voucherSubType}
+                      onChange={handleInputChange}
+                      name="voucherSubType"
+                    >
+                      <MenuItem value="GENERAL">GENERAL</MenuItem>
+                      <MenuItem value="EXPENSE">EXPENSE</MenuItem>
+                    </Select>
+                    {fieldErrors.voucherSubType && <FormHelperText>{fieldErrors.voucherSubType}</FormHelperText>}
+                  </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
@@ -690,25 +696,23 @@ const GeneralJournal = () => {
                                         <div className="pt-2">{index + 1}</div>
                                       </td>
                                       <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
+                                        <select
                                           value={row.accountsName}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, accountsName: value } : r))
-                                            );
-                                            setDetailsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                accountsName: !value ? 'Account Name is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
+                                          style={{ width: '150px' }}
                                           className={detailsTableErrors[index]?.accountsName ? 'error form-control' : 'form-control'}
-                                        />
+                                          onChange={(e) =>
+                                            setDetailsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, accountsName: e.target.value } : r))
+                                            )
+                                          }
+                                        >
+                                          <option value="">-- Select --</option>
+                                          {accountNames.map((item) => (
+                                            <option key={item.id} value={item.accountName}>
+                                              {item.accountName}
+                                            </option>
+                                          ))}
+                                        </select>
                                         {detailsTableErrors[index]?.accountsName && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                             {detailsTableErrors[index].accountsName}
@@ -743,7 +747,7 @@ const GeneralJournal = () => {
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
-                                          type="number"
+                                          type="text"
                                           value={row.subLedgerCode}
                                           onChange={(e) => {
                                             const value = e.target.value;
@@ -938,7 +942,7 @@ const GeneralJournal = () => {
               </div>
             </>
           ) : (
-            <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getAllGeneralJournalById} />
+            <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getGeneralJournalById} />
           )}
         </div>
       </div>
