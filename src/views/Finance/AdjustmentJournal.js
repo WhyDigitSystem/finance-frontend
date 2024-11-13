@@ -2,7 +2,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { FormControl, FormHelperText, InputLabel, MenuItem, Select } from '@mui/material';
+import { FormControl, FormHelperText, InputLabel, Autocomplete, MenuItem, Select } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -31,14 +31,13 @@ const AdjustmentJournal = () => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [value, setValue] = useState(0);
   const [editId, setEditId] = useState('');
+  const [allAccountName, setAllAccountName] = useState([]);
   const [currencies, setCurrencies] = useState([]);
   const [docId, setDocId] = useState('');
   const [formData, setFormData] = useState({
-    // active: true,
-    currency: '',
+    currency: 'INR',
     docDate: dayjs(),
-    // docId: '',
-    exRate: '',
+    exRate: 1,
     orgId: orgId,
     refDate: null,
     refNo: '',
@@ -52,7 +51,7 @@ const AdjustmentJournal = () => {
 
   const [fieldErrors, setFieldErrors] = useState({
     currency: '',
-    adjustmentType:'',
+    adjustmentType: '',
     docDate: new Date(),
     exRate: '',
     orgId: orgId,
@@ -111,7 +110,23 @@ const AdjustmentJournal = () => {
     fetchData();
     getAdjustmentJournalDocId();
     getAllAdjustmentJournalByOrgId();
+    getAllAccountName();
   }, []);
+  const getAllAccountName = async () => {
+    try {
+      const response = await apiCalls('get', `/transaction/getAccountNameFromGroup?orgId=${orgId}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setAllAccountName(response.paramObjectsMap.generalJournalVO);
+        console.log('Account Name', response.paramObjectsMap.generalJournalVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   useEffect(() => {
     const totalDebit = detailsTableData.reduce((sum, row) => sum + Number(row.debitAmount || 0), 0);
@@ -127,8 +142,8 @@ const AdjustmentJournal = () => {
   const handleClear = () => {
     setFormData({
       docDate: dayjs(),
-      // docId: '',
-      exRate: '',
+      exRate: 1,
+      currency: 'INR',
       orgId: orgId,
       refDate: null,
       refNo: '',
@@ -143,13 +158,11 @@ const AdjustmentJournal = () => {
     setFieldErrors({
       currency: '',
       docDate: null,
-      // docId: '24GJ0001',
       exRate: '',
       orgId: orgId,
       refDate: '',
       refNo: '',
-      remarks: '',
-      // voucherSubType: ''
+      remarks: ''
     });
     setDetailsTableData([
       { id: 1, accountsName: '', creditAmount: '', debitAmount: '', creditBase: '', debitBase: '', subLedgerCode: '', subledgerName: '' }
@@ -162,16 +175,16 @@ const AdjustmentJournal = () => {
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd, type } = e.target;
     let errorMessage = '';
-  
+
     // Handle specific field validations
     switch (name) {
       case 'exRate':
         if (isNaN(value)) errorMessage = 'Invalid format';
         break;
-      
+
       case 'refNo':
       case 'suppRefNo':
-        if (value && !/^[A-Za-z0-9\s]+$/.test(value)) {
+        if (!/^[A-Za-z0-9\s]*$/.test(value)) {
           errorMessage = 'Invalid format';
         }
         break;
@@ -181,24 +194,24 @@ const AdjustmentJournal = () => {
           errorMessage = 'Invalid format';
         }
         break;
-      
+
       default:
         break;
     }
-  
+
     // Update field errors
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
       [name]: errorMessage
     }));
-  
+
     // If no error, update the form data
     if (!errorMessage) {
       setFormData((prevFormData) => ({
         ...prevFormData,
         [name]: type === 'text' || type === 'textarea' ? value.toUpperCase() : value
       }));
-  
+
       // Preserve cursor position for text inputs
       if (type === 'text' || type === 'textarea') {
         setTimeout(() => {
@@ -210,7 +223,7 @@ const AdjustmentJournal = () => {
       }
     }
   };
-  
+
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date);
     console.log('formattedDate', formattedDate);
@@ -393,7 +406,7 @@ const AdjustmentJournal = () => {
         refNo: formData.refNo,
         suppRefDate: dayjs(formData.suppRefDate).format('YYYY-MM-DD'),
         suppRefNo: formData.suppRefNo,
-        remarks: formData.remarks,
+        remarks: formData.remarks
       };
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
@@ -450,7 +463,7 @@ const AdjustmentJournal = () => {
         setDocId(adVO.docId);
         setFormData({
           docDate: adVO.docDate ? dayjs(adVO.docDate, 'YYYY-MM-DD') : dayjs(),
-          adjustmentType:adVO.adjustmentType,
+          adjustmentType: adVO.adjustmentType,
           currency: adVO.currency,
           exRate: adVO.exRate,
           refNo: adVO.refNo,
@@ -564,6 +577,7 @@ const AdjustmentJournal = () => {
                       onChange={handleInputChange}
                       name="currency"
                       value={formData.currency}
+                      disabled
                     >
                       {currencies.map((item) => (
                         <MenuItem key={item.id} value={item.currency}>
@@ -591,6 +605,7 @@ const AdjustmentJournal = () => {
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.exRate ? fieldErrors.exRate : ''}</span>}
                     inputProps={{ maxLength: 40 }}
                     error={!!fieldErrors.exRate}
+                    disabled
                   />
                 </div>
                 <div className="col-md-3 mb-3">
@@ -617,7 +632,7 @@ const AdjustmentJournal = () => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         label="Reference Date"
-                        error={!!fieldErrors.refDate}
+                        // error={!!fieldErrors.refDate}
                         value={formData.refDate}
                         onChange={(date) => handleDateChange('refDate', date)}
                         slotProps={{
@@ -626,7 +641,7 @@ const AdjustmentJournal = () => {
                         format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
-                    {fieldErrors.refDate && <p className="dateErrMsg">Ref Date is required</p>}
+                    {/* {fieldErrors.refDate && <p className="dateErrMsg">Ref Date is required</p>} */}
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
@@ -658,11 +673,11 @@ const AdjustmentJournal = () => {
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
-                        error={!!fieldErrors.suppRefDate}
+                        // error={!!fieldErrors.suppRefDate}
                         format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
-                    {fieldErrors.suppRefDate && <p className="dateErrMsg">suppRef Date is required</p>}
+                    {/* {fieldErrors.suppRefDate && <p className="dateErrMsg">suppRef Date is required</p>} */}
                   </FormControl>
                 </div>
               </div>
@@ -742,9 +757,30 @@ const AdjustmentJournal = () => {
                                         <div className="pt-2">{index + 1}</div>
                                       </td>
                                       <td className="border px-2 py-2">
-                                        <input
-                                          value={row.accountsName}
+                                        <Autocomplete
+                                          disablePortal
+                                          options={allAccountName}
+                                          getOptionLabel={(option) => option?.accountName || ''}
+                                          fullWidth
+                                          size="small"
+                                          value={
+                                            formData.accountName ? allAccountName.find((c) => c.accountName === formData.accountName) : null
+                                          }
+                                          // onChange={(event, newValue) => {
+                                          //   handleInputChange({
+                                          //     target: {
+                                          //       name: 'accountName',
+                                          //       value: newValue ? newValue.accountName : ''
+                                          //     }
+                                          //   });
+                                          // }}
                                           onChange={(e) => {
+                                            // handleInputChange({
+                                            //   target: {
+                                            //           name: 'accountName',
+                                            //           value: newValue ? newValue.accountName : ''
+                                            //         }
+                                            // })
                                             const value = e.target.value;
                                             setDetailsTableData((prev) =>
                                               prev.map((r) => (r.id === row.id ? { ...r, accountsName: value } : r))
@@ -758,13 +794,21 @@ const AdjustmentJournal = () => {
                                               return newErrors;
                                             });
                                           }}
-                                          className={detailsTableErrors[index]?.accountsName ? 'error form-control' : 'form-control'}
+                                          renderInput={(params) => (
+                                            <TextField
+                                              {...params}
+                                              label={
+                                                <span>
+                                                  Bank Account <span className="asterisk">*</span>
+                                                </span>
+                                              }
+                                              name="accountName"
+                                              error={!!fieldErrors.accountName}
+                                              helperText={fieldErrors.accountName ? fieldErrors.accountName : ''}
+                                              style={{ width: '150px' }}
+                                            />
+                                          )}
                                         />
-                                        {detailsTableErrors[index]?.accountsName && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].accountsName}
-                                          </div>
-                                        )}
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
@@ -783,6 +827,7 @@ const AdjustmentJournal = () => {
                                               return newErrors;
                                             });
                                           }}
+                                          style={{ width: '150px' }}
                                           className={detailsTableErrors[index]?.subledgerName ? 'error form-control' : 'form-control'}
                                         />
                                         {detailsTableErrors[index]?.subledgerName && (
@@ -808,6 +853,7 @@ const AdjustmentJournal = () => {
                                               return newErrors;
                                             });
                                           }}
+                                          style={{ width: '150px' }}
                                           className={detailsTableErrors[index]?.subLedgerCode ? 'error form-control' : 'form-control'}
                                         />
                                         {detailsTableErrors[index]?.subLedgerCode && (
@@ -820,7 +866,8 @@ const AdjustmentJournal = () => {
                                         <input
                                           value={row.debitAmount}
                                           onChange={(e) => handleDebitChange(e, row, index)}
-                                          maxLength="20"
+                                          // maxLength="40"
+                                          style={{ width: '150px' }}
                                           className={detailsTableErrors[index]?.debitAmount ? 'error form-control' : 'form-control'}
                                         />
                                         {detailsTableErrors[index]?.debitAmount && (
@@ -833,8 +880,8 @@ const AdjustmentJournal = () => {
                                         <input
                                           value={row.creditAmount}
                                           onChange={(e) => handleCreditChange(e, row, index)}
-                                          maxLength="20"
                                           className={detailsTableErrors[index]?.creditAmount ? 'error form-control' : 'form-control'}
+                                          style={{ width: '150px' }}
                                         />
                                         {detailsTableErrors[index]?.creditAmount && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -848,17 +895,21 @@ const AdjustmentJournal = () => {
                                           value={row.creditBase}
                                           onChange={(e) => {
                                             const value = e.target.value;
-                                            setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, creditBase: value } : r)));
+                                            setDetailsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, creditBase: value } : r))
+                                            );
                                             setDetailsTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                creditBase: !value ? 'creditBase is required' : ''
+                                                creditBase: !value ? 'Credit Base is required' : ''
                                               };
                                               return newErrors;
                                             });
                                           }}
+                                          style={{ width: '150px' }}
                                           className={detailsTableErrors[index]?.creditBase ? 'error form-control' : 'form-control'}
+                                          
                                         />
                                         {detailsTableErrors[index]?.creditBase && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -871,7 +922,9 @@ const AdjustmentJournal = () => {
                                           value={row.debitBase}
                                           onChange={(e) => {
                                             const value = e.target.value;
-                                            setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, debitBase: value } : r)));
+                                            setDetailsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, debitBase: value } : r))
+                                            );
                                             setDetailsTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
@@ -881,6 +934,7 @@ const AdjustmentJournal = () => {
                                               return newErrors;
                                             });
                                           }}
+                                          style={{ width: '150px' }}
                                           className={detailsTableErrors[index]?.debitBase ? 'error form-control' : 'form-control'}
                                         />
                                         {detailsTableErrors[index]?.debitBase && (
@@ -908,7 +962,6 @@ const AdjustmentJournal = () => {
                             label="Total Debit Amount"
                             variant="outlined"
                             size="small"
-                            
                             fullWidth
                             name="totalDebitAmount"
                             value={formData.totalDebitAmount}

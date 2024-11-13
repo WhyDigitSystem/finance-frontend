@@ -5,7 +5,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { FormControl, FormHelperText, InputLabel, MenuItem, Select, Autocomplete } from '@mui/material';
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select, Autocomplete, OutlinedInput } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -29,7 +29,6 @@ const ContraVoucher = () => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
 
   const [currencies, setCurrencies] = useState([]);
-  const [allbankName, setAllbankName] = useState([]);
   const [allAccountName, setAllAccountName] = useState([]);
   const [showForm, setShowForm] = useState(true);
   const [editId, setEditId] = useState('');
@@ -40,11 +39,11 @@ const ContraVoucher = () => {
     orgId: orgId,
     docDate: dayjs(),
     referenceNo: '',
-    referenceDate: '',
+    referenceDate: null,
     chequeNo: '',
     chequeDate: dayjs(),
-    currency: '',
-    exRate: '',
+    currency: 'INR',
+    exRate: 1,
     totalCreditAmount: 0,
     totalDebitAmount: 0,
     remarks: ''
@@ -52,7 +51,7 @@ const ContraVoucher = () => {
   const [fieldErrors, setFieldErrors] = useState({
     docDate: dayjs(),
     referenceNo: '',
-    referenceDate: '',
+    referenceDate: null,
     chequeNo: '',
     chequeDate: dayjs(),
     currency: '',
@@ -85,7 +84,7 @@ const ContraVoucher = () => {
   ]);
   const listViewColumns = [
     { accessorKey: 'currency', header: 'Currency', size: 140 },
-    { accessorKey: 'exchangeRate', header: 'Ex.Rate', size: 140 },
+    { accessorKey: 'exRate', header: 'Ex.Rate', size: 140 },
     { accessorKey: 'chequeNo', header: 'Ref No', size: 140 },
     { accessorKey: 'docId', header: 'Document Id', size: 140 }
   ];
@@ -94,11 +93,11 @@ const ContraVoucher = () => {
     setFormData({
       docDate: dayjs(),
       referenceNo: '',
-      referenceDate: '',
+      referenceDate: null,
       chequeNo: '',
       chequeDate: dayjs(),
-      currency: '',
-      exRate: '',
+      currency: 'INR',
+      exRate: 1,
       totalCreditAmount: 0,
       totalDebitAmount: 0,
       remarks: ''
@@ -228,9 +227,9 @@ const ContraVoucher = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const currencyData = await getAllActiveCurrency(orgId);
-        // setCurrencies(currencyData);
-        // console.log('currency', currencyData);
+        const currencyData = await getAllActiveCurrency(orgId);
+        setCurrencies(currencyData);
+        console.log('currency', currencyData);
       } catch (error) {
         console.error('Error fetching country data:', error);
       }
@@ -295,16 +294,16 @@ const ContraVoucher = () => {
           chequeNo: CvVO.chequeNo,
           chequeDate: CvVO.chequeDate ? dayjs(CvVO.chequeDate, 'YYYY-MM-DD') : dayjs(),
           referenceNo: CvVO.referenceNo,
-          referenceDate: CvVO.referenceDate,
+          referenceDate: CvVO.referenceDate ? dayjs(CvVO.referenceDate, 'YYYY-MM-DD') : dayjs(),
           currency: CvVO.currency,
-          exRate: CvVO.exchangeRate,
+          exRate: CvVO.exRate,
           remarks: CvVO.remarks,
           orgId: CvVO.orgId,
           totalDebitAmount: CvVO.totalDebitAmount,
           totalCreditAmount: CvVO.totalCreditAmount
         });
         setDetailsTableData(
-          CvVO.depositparticularsVO.map((row) => ({
+          CvVO.contraVoucherParticularsVO.map((row) => ({
             id: row.id,
             accountName: row.accountsName,
             subLedgerCode: row.subLedgerCode,
@@ -377,7 +376,6 @@ const ContraVoucher = () => {
       return rowErrors;
     });
     setFieldErrors(errors);
-
     setDetailsTableErrors(newTableErrors);
 
     if (Object.keys(errors).length === 0 && detailTableDataValid) {
@@ -399,8 +397,8 @@ const ContraVoucher = () => {
         orgId: orgId,
         contraVoucherParticularsDTO: contraVoucherVO,
         currency: formData.currency,
-        exchangeRate: parseInt(formData.exRate),
-        referenceDate: formData.referenceDate,
+        exRate: parseInt(formData.exRate),
+        referenceDate: dayjs(formData.referenceDate).format('YYYY-MM-DD'),
         chequeNo: formData.chequeNo,
         chequeDate: dayjs(formData.chequeDate).format('YYYY-MM-DD'),
         referenceNo: formData.referenceNo,
@@ -408,7 +406,7 @@ const ContraVoucher = () => {
       };
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `/transaction/updateCreateBankingDeposit`, saveFormData);
+        const response = await apiCalls('put', `/transaction/updateCreateContraVoucher`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           showToast('success', editId ? 'ContraVoucher Updated Successfully' : 'ContraVoucher Created successfully');
@@ -562,16 +560,14 @@ const ContraVoucher = () => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         label="Reference Date"
-                        error={!!fieldErrors.refDate}
-                        value={formData.refDate}
-                        onChange={(date) => handleDateChange('refDate', date)}
+                        value={formData.referenceDate}
+                        onChange={(date) => handleDateChange('referenceDate', date)}
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
                         format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
-                    {fieldErrors.refDate && <p className="dateErrMsg">Ref Date is required</p>}
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
@@ -594,22 +590,6 @@ const ContraVoucher = () => {
                   />
                 </div>
                 <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled" size="small">
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        label="Cheque Date"
-                        value={formData.chequeDate}
-                        onChange={(date) => handleDateChange('chequeDate', date)}
-                        slotProps={{
-                          textField: { size: 'small', clearable: true }
-                        }}
-                        format="DD-MM-YYYY"
-                      />
-                    </LocalizationProvider>
-                  </FormControl>
-                </div>
-
-                <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
                     <InputLabel id="currency">
                       {
@@ -625,6 +605,7 @@ const ContraVoucher = () => {
                       onChange={handleInputChange}
                       name="currency"
                       value={formData.currency}
+                      disabled
                     >
                       {currencies.map((item) => (
                         <MenuItem key={item.id} value={item.currency}>
@@ -652,6 +633,7 @@ const ContraVoucher = () => {
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.exRate ? fieldErrors.exRate : ''}</span>}
                     inputProps={{ maxLength: 40 }}
                     error={!!fieldErrors.exRate}
+                    disabled
                   />
                 </div>
                 <div className="row d-flex">
@@ -730,36 +712,46 @@ const ContraVoucher = () => {
                                         <td className="text-center">
                                           <div className="pt-2">{index + 1}</div>
                                         </td>
-
-                                        <Autocomplete
-                                          disablePortal
-                                          options={allAccountName}
-                                          getOptionLabel={(option) => option.accountName}
-                                          size="small"
-                                          value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
-                                          onChange={(event, newValue) => {
-                                            const value = newValue ? newValue.accountName : '';
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
-                                            );
-                                          }}
-                                          renderInput={(params) => (
-                                            <TextField
-                                              {...params}
-                                              label="Account Name"
-                                              variant="outlined"
-                                              error={!!detailsTableErrors[index]?.accountName}
-                                              helperText={detailsTableErrors[index]?.accountName}
-                                              InputProps={{
-                                                ...params.InputProps,
-                                                className: detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'
-                                              }}
-                                            />
-                                          )}
-                                        />
+                                        <td className="border px-2 py-2">
+                                          <Autocomplete
+                                            disablePortal
+                                            options={allAccountName}
+                                            getOptionLabel={(option) => option?.accountName || ''}
+                                            style={{ width: '160px' }}
+                                            size="small"
+                                            value={
+                                              formData.accountName
+                                                ? allAccountName.find((c) => c.accountName === formData.accountName)
+                                                : null
+                                            }
+                                            onChange={(event, newValue) => {
+                                              handleInputChange({
+                                                target: {
+                                                  name: 'accountName',
+                                                  value: newValue ? newValue.accountName : ''
+                                                }
+                                              });
+                                            }}
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                label={
+                                                  <span>
+                                                    Bank Account <span className="asterisk">*</span>
+                                                  </span>
+                                                }
+                                                name="accountName"
+                                                error={!!fieldErrors.accountName}
+                                                helperText={fieldErrors.accountName ? fieldErrors.accountName : ''}
+                                                
+                                              />
+                                            )}
+                                          />
+                                        </td>
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.subledgerName}
+                                            style={{ width: '160px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>
@@ -785,6 +777,7 @@ const ContraVoucher = () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.subLedgerCode}
+                                            style={{ width: '160px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>
@@ -810,8 +803,8 @@ const ContraVoucher = () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.debit}
+                                            style={{ width: '160px' }}
                                             onChange={(e) => handleDebitChange(e, row, index)}
-                                            maxLength="20"
                                             className={detailsTableErrors[index]?.debit ? 'error form-control' : 'form-control'}
                                             helperText={
                                               <span style={{ color: 'red' }}>
@@ -820,17 +813,17 @@ const ContraVoucher = () => {
                                             }
                                             error={!!detailsTableErrors.debit}
                                           />
-                                          {/* {detailsTableErrors[index]?.debit && (
+                                          {detailsTableErrors[index]?.debit && (
                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                               {detailsTableErrors[index].debit}
                                             </div>
-                                          )} */}
+                                          )}
                                         </td>
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.credit}
+                                            style={{ width: '160px' }}
                                             onChange={(e) => handleCreditChange(e, row, index)}
-                                            maxLength="20"
                                             className={detailsTableErrors[index]?.credit ? 'error form-control' : 'form-control'}
                                           />
                                           {detailsTableErrors[index]?.credit && (
@@ -839,11 +832,11 @@ const ContraVoucher = () => {
                                             </div>
                                           )}
                                         </td>
-
                                         <td className="border px-2 py-2">
                                           <input
                                             type="text"
                                             value={row.narration}
+                                            style={{ width: '160px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>
