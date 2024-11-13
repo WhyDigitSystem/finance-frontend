@@ -126,7 +126,7 @@ const transaction = {
         }, 
         {
           id: 'JobCard',
-          title: 'JobCard',
+          title: 'Job Card',
           type: 'item',
           url: '/finance/JobCard'
         },
@@ -144,7 +144,7 @@ const transaction = {
         },
         {
           id: 'contraVoucher',
-          title: 'ContraVoucher',
+          title: 'Contra Voucher',
           type: 'item',
           url: '/finance/ContraVoucher'
         }
