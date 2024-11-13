@@ -38,24 +38,23 @@ const Withdrawal = () => {
   const [value, setValue] = useState(0);
   const [formData, setFormData] = useState({
     orgId: orgId,
-    WithdrawalMode: '',
-    // docId: '',
+    withdrawalMode: '',
     docDate: dayjs(),
     payTo: '',
     chequeNo: '',
     chequeDate: dayjs(),
     chequeBank: '',
     bankName: '',
-    currency: '',
-    exRate: '',
-    WithdrawalAmount: '',
+    currency: 'INR',
+    exRate: 1,
+    withdrawalAmount: '',
     totalCreditAmount: 0,
     totalDebitAmount: 0,
     totalAmount: 0,
     remarks: ''
   });
   const [fieldErrors, setFieldErrors] = useState({
-    WithdrawalMode: '',
+    withdrawalMode: '',
     // docId: '',
     docDate: new Date(),
     payTo: '',
@@ -65,7 +64,7 @@ const Withdrawal = () => {
     bankName: '',
     currency: '',
     exRate: '',
-    WithdrawalAmount: 0,
+    withdrawalAmount: '',
     totalCreditAmount: 0,
     totalDebitAmount: 0,
     totalAmount: 0,
@@ -99,18 +98,16 @@ const Withdrawal = () => {
 
   const handleClear = () => {
     setFormData({
-      // orgId: orgId,
-      WithdrawalMode: '',
-      // docId: '',
+      withdrawalMode: '',
       docDate: dayjs(),
       payTo: '',
       chequeNo: '',
       chequeDate: dayjs(),
       chequeBank: '',
       bankName: '',
-      currency: '',
-      exRate: '',
-      WithdrawalAmount: '',
+      currency: 'INR',
+      exRate: 1,
+      withdrawalAmount: '',
       totalCreditAmount: '',
       totalDebitAmount: '',
       totalAmount: '',
@@ -119,7 +116,7 @@ const Withdrawal = () => {
     getAllActiveCurrency(orgId);
     setFieldErrors({
       // orgId: orgId,
-      WithdrawalMode: '',
+      withdrawalMode: '',
       // docId: '',
       docDate: dayjs(),
       payTo: '',
@@ -129,7 +126,7 @@ const Withdrawal = () => {
       bankName: '',
       currency: '',
       exRate: '',
-      WithdrawalAmount: '',
+      withdrawalAmount: '',
       totalCreditAmount: '',
       totalDebitAmount: '',
       totalAmount: '',
@@ -256,14 +253,14 @@ const Withdrawal = () => {
   useEffect(() => {
     const totalDebit = detailsTableData.reduce((sum, row) => sum + Number(row.debit || 0), 0);
     const totalCredit = detailsTableData.reduce((sum, row) => sum + Number(row.credit || 0), 0);
-    const Withdrawalamount = formData.WithdrawalAmount || 0;
-    console.log(Withdrawalamount);
+    const withdrawalAmount = formData.withdrawalAmount || 0;
+    console.log(withdrawalAmount);
 
     setFormData((prev) => ({
       ...prev,
       totalDebitAmount: totalDebit,
       totalCreditAmount: totalCredit,
-      totalAmount: Withdrawalamount
+      totalAmount: withdrawalAmount
     }));
   }, [detailsTableData]);
 
@@ -299,31 +296,29 @@ const Withdrawal = () => {
       const result = await apiCalls('get', `/transaction/getBankingWithdrawalById?id=${row.original.id}`);
 
       if (result) {
-        const DepVO = result.paramObjectsMap.bankingWithdrawalVO[0];
+        const BwdVO = result.paramObjectsMap.bankingWithdrawalVO[0];
         setEditId(row.original.id);
-        setDocId(DepVO.docId);
+        setDocId(BwdVO.docId);
         setFormData({
-          WithdrawalMode: DepVO.WithdrawalMode,
-          // id: DepVO.id,
-          docDate: DepVO.docDate ? dayjs(DepVO.docDate, 'YYYY-MM-DD') : dayjs(),
-          // docId: DepVO.docId,
-          payTo: DepVO.payTo,
-          chequeNo: DepVO.chequeNo,
-          chequeDate: DepVO.chequeDate ? dayjs(DepVO.chequeDate, 'YYYY-MM-DD') : dayjs(),
-          chequeBank: DepVO.chequeBank,
-          bankName: DepVO.bankAccount,
-          currency: DepVO.currency,
-          exRate: DepVO.exchangeRate,
-          WithdrawalAmount: DepVO.WithdrawalAmount,
-          totalAmount: DepVO.totalAmount,
-          remarks: DepVO.remarks,
-          orgId: DepVO.orgId,
-          totalDebitAmount: DepVO.totalDebitAmount,
-          totalCreditAmount: DepVO.totalCreditAmount
-          // active: DepVO.active || false,
+          withdrawalMode: BwdVO.withdrawalMode,
+          docDate: BwdVO.docDate ? dayjs(BwdVO.docDate, 'YYYY-MM-DD') : dayjs(),
+          payTo: BwdVO.payTo,
+          chequeNo: BwdVO.chequeNo,
+          chequeDate: BwdVO.chequeDate ? dayjs(BwdVO.chequeDate, 'YYYY-MM-DD') : dayjs(),
+          chequeBank: BwdVO.chequeBank,
+          bankName: BwdVO.bankAccount,
+          currency: BwdVO.currency,
+          exRate: BwdVO.exchangeRate,
+          withdrawalAmount: BwdVO.withdrawalAmount,
+          totalAmount: BwdVO.totalAmount,
+          remarks: BwdVO.remarks,
+          orgId: BwdVO.orgId,
+          totalDebitAmount: BwdVO.totalDebitAmount,
+          totalCreditAmount: BwdVO.totalCreditAmount
+          // active: BwdVO.active || false,
         });
         setDetailsTableData(
-          DepVO.WithdrawalparticularsVO.map((row) => ({
+          BwdVO.withdrawalParticularsVO.map((row) => ({
             id: row.id,
             accountName: row.accountsName,
             debit: row.debit,
@@ -332,9 +327,9 @@ const Withdrawal = () => {
           }))
         );
 
-        console.log('DataToEdit', DepVO);
+        console.log('DataToEdit', BwdVO);
       } else {
-        // Handle erro
+
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -355,11 +350,11 @@ const Withdrawal = () => {
     if (!formData.remarks) {
       errors.remarks = 'Remarks is required';
     }
-    if (!formData.WithdrawalMode) {
-      errors.WithdrawalMode = 'Withdrawal Mode is required';
+    if (!formData.withdrawalMode) {
+      errors.withdrawalMode = 'Withdrawal Mode is required';
     }
-    if (!formData.WithdrawalAmount) {
-      errors.WithdrawalAmount = 'Withdrawal Amount is required';
+    if (!formData.withdrawalAmount) {
+      errors.withdrawalAmount = 'Withdrawal Amount is required';
     }
     if (!formData.currency) {
       errors.currency = 'Currency is required';
@@ -378,14 +373,6 @@ const Withdrawal = () => {
         rowErrors.accountName = 'Account Name is required';
         detailTableDataValid = false;
       }
-      // if (!row.credit) {
-      //   rowErrors.credit = 'Credit is required';
-      //   detailTableDataValid = false;
-      // }
-      // if (!row.debit) {
-      //   rowErrors.debit = 'Debit is required';
-      //   detailTableDataValid = false;
-      // }
       if (!row.credit && !row.debit) {
         rowErrors.credit = 'Credit or Debit is required';
         rowErrors.debit = 'Credit or Debit is required';
@@ -398,7 +385,6 @@ const Withdrawal = () => {
       return rowErrors;
     });
     setFieldErrors(errors);
-
     setDetailsTableErrors(newTableErrors);
 
     if (Object.keys(errors).length === 0 && detailTableDataValid) {
@@ -416,12 +402,12 @@ const Withdrawal = () => {
         createdBy: loginUserName,
         finYear: finYear,
         orgId: orgId,
-        WithdrawalParticularsDTO: WithdrawalVO,
+        withdrawalParticularsDTO: WithdrawalVO,
         bankAccount: formData.bankName,
         currency: formData.currency,
         exchangeRate: parseInt(formData.exRate),
-        WithdrawalAmount: parseInt(formData.WithdrawalAmount),
-        WithdrawalMode: formData.WithdrawalMode,
+        withdrawalAmount: parseInt(formData.withdrawalAmount),
+        withdrawalMode: formData.withdrawalMode,
         payTo: formData.payTo,
         chequeNo: formData.chequeNo,
         chequeDate: dayjs(formData.chequeDate).format('YYYY-MM-DD'),
@@ -494,29 +480,32 @@ const Withdrawal = () => {
     let errorMessage = '';
 
     switch (name) {
+      case 'payTo':
+        if (!/^[A-Za-z0-9\s]*$/.test(value)) errorMessage = 'Invalid format';
+        break;
       case 'exRate':
         if (isNaN(value)) errorMessage = 'Invalid format';
         break;
       case 'chequeBank':
-        if (!/^[A-Za-z\s]+$/.test(value)) errorMessage = 'Invalid format';
+        if (!/^[A-Za-z0-9\s]*$/.test(value)) errorMessage = 'Invalid format';
         break;
-      case 'WithdrawalAmount':
+      case 'withdrawalAmount':
         if (isNaN(value)) {
           errorMessage = 'Invalid format';
         }
         break;
       case 'chequeNo':
-        if (!/^\d{6,12}$/.test(value)) {
+        if (!/^[A-Za-z0-9\s]*$/.test(value)) {
           errorMessage = 'Invalid format';
         }
         break;
       case 'credit':
-        if (isNaN(value) || value <= 0) {
+        if (isNaN(value)) {
           errorMessage = 'Invalid format';
         }
         break;
       case 'debit':
-        if (isNaN(value) || value <= 0) {
+        if (isNaN(value) ) {
           errorMessage = 'Invalid format';
         }
         break;
@@ -565,19 +554,19 @@ const Withdrawal = () => {
             <>
               <div className="row d-flex ml">
                 <div className="col-md-3 mb-3">
-                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.WithdrawalMode}>
-                    <InputLabel id="WithdrawalMode">Withdrawale Mode</InputLabel>
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.withdrawalMode}>
+                    <InputLabel id="withdrawalMode">Withdrawale Mode</InputLabel>
                     <Select
-                      labelId="WithdrawalMode"
+                      labelId="withdrawalMode"
                       label="Withdrawale Mode"
-                      value={formData.WithdrawalMode}
+                      value={formData.withdrawalMode}
                       onChange={handleInputChange}
-                      name="WithdrawalMode"
+                      name="withdrawalMode"
                     >
                       <MenuItem value="BANK RECEIPT">BANK RECEIPT</MenuItem>
                       <MenuItem value="CASH RECEIPT">CASH RECEIPT</MenuItem>
                     </Select>
-                    {fieldErrors.WithdrawalMode && <FormHelperText>{fieldErrors.WithdrawalMode}</FormHelperText>}
+                    {fieldErrors.withdrawalMode && <FormHelperText>{fieldErrors.withdrawalMode}</FormHelperText>}
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
@@ -724,6 +713,7 @@ const Withdrawal = () => {
                       onChange={handleInputChange}
                       name="currency"
                       value={formData.currency}
+                      disabled
                     >
                       {currencies.map((item) => (
                         <MenuItem key={item.id} value={item.currency}>
@@ -750,11 +740,13 @@ const Withdrawal = () => {
                     onChange={handleInputChange}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.exRate ? fieldErrors.exRate : ''}</span>}
                     inputProps={{ maxLength: 40 }}
+                    error={!!fieldErrors.exRate}
+                    disabled
                   />
                 </div>
                 <div className="col-md-3 mb-3">
                   <TextField
-                    id="WithdrawalAmount"
+                    id="withdrawalAmount"
                     label={
                       <span>
                         Withdrawal Amount <span className="asterisk">*</span>
@@ -763,11 +755,12 @@ const Withdrawal = () => {
                     variant="outlined"
                     size="small"
                     fullWidth
-                    name="WithdrawalAmount"
-                    value={formData.WithdrawalAmount}
+                    name="withdrawalAmount"
+                    value={formData.withdrawalAmount}
                     onChange={handleInputChange}
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.WithdrawalAmount ? fieldErrors.WithdrawalAmount : ''}</span>}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.withdrawalAmount ? fieldErrors.withdrawalAmount : ''}</span>}
                     inputProps={{ maxLength: 40 }}
+                    error={!!fieldErrors.withdrawalAmount}
                   />
                 </div>
               </div>
@@ -828,81 +821,50 @@ const Withdrawal = () => {
                                           <div className="pt-2">{index + 1}</div>
                                         </td>
 
+                                        <td className="border px-2 py-2">
                                         <Autocomplete
                                           disablePortal
                                           options={allAccountName}
-                                          getOptionLabel={(option) => option.accountName}
+                                          getOptionLabel={(option) => option?.accountName || ''}
+                                          style={{ width: '150px' }}
                                           size="small"
-                                          value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
+                                          value={
+                                            formData.accountName ? allAccountName.find((c) => c.accountName === formData.accountName) : null
+                                          }
                                           onChange={(event, newValue) => {
-                                            const value = newValue ? newValue.accountName : '';
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
-                                            );
+                                            handleInputChange({
+                                              target: {
+                                                name: 'accountName',
+                                                value: newValue ? newValue.accountName : ''
+                                              }
+                                            });
                                           }}
                                           renderInput={(params) => (
                                             <TextField
                                               {...params}
-                                              label="Account Name"
-                                              variant="outlined"
-                                              error={!!detailsTableErrors[index]?.accountName}
-                                              helperText={detailsTableErrors[index]?.accountName}
+                                              label={
+                                                <span>
+                                                  Bank Account <span className="asterisk">*</span>
+                                                </span>
+                                              }
+                                              name="accountName"
+                                              error={!!fieldErrors.accountName}
+                                              helperText={fieldErrors.accountName ? fieldErrors.accountName : ''}
                                               InputProps={{
                                                 ...params.InputProps,
-                                                className: detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'
+                                                style: { height: 40 }
                                               }}
                                             />
                                           )}
                                         />
-
-                                        {/* <td className="border px-2 py-2"> */}
-
-                                        {/* {detailsTableErrors[index]?.accountName && (
-                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailsTableErrors[index].accountName}
-                                              </div> 
-                                          )} */}
-
-                                        {/* <Autocomplete
-                                            disablePortal
-                                            options={allAccountName}
-                                            getOptionLabel={(option) => option.accountName}
-                                            size="small"
-                                            value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
-                                            onChange={(event, newValue) => {
-                                              const value = newValue ? newValue.accountName : '';
-                                              setDetailsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
-                                              );
-                                            }}
-                                            renderInput={(params) => (
-                                              <TextField
-                                                {...params}
-                                                label="Account Name"
-                                                name="accountName"
-                                                error={!!detailsTableErrors[index]?.accountName}
-                                                helperText={detailsTableErrors[index]?.accountName}
-                                                InputProps={{
-                                                  ...params.InputProps,
-                                                  className: detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'
-                                                }}
-                                              />
-                                            )}
-                                          />
-
-                                           {detailsTableErrors[index]?.accountName && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailsTableErrors[index].accountName}
-                                            </div>
-                                          )} */}
-
-                                        {/* </td> */}
+                                      </td>
 
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.debit}
                                             onChange={(e) => handleDebitChange(e, row, index)}
                                             maxLength="20"
+                                            style={{ width: '150px' }}
                                             className={detailsTableErrors[index]?.debit ? 'error form-control' : 'form-control'}
                                           />
                                           {detailsTableErrors[index]?.debit && (
@@ -916,6 +878,7 @@ const Withdrawal = () => {
                                             value={row.credit}
                                             onChange={(e) => handleCreditChange(e, row, index)}
                                             maxLength="20"
+                                            style={{ width: '150px' }}
                                             className={detailsTableErrors[index]?.credit ? 'error form-control' : 'form-control'}
                                           />
                                           {detailsTableErrors[index]?.credit && (
@@ -929,6 +892,7 @@ const Withdrawal = () => {
                                           <input
                                             type="text"
                                             value={row.narration}
+                                            style={{ width: '150px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>

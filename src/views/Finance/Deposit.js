@@ -99,17 +99,15 @@ const Deposit = () => {
 
   const handleClear = () => {
     setFormData({
-      // orgId: orgId,
       depositMode: '',
-      // docId: '',
       docDate: dayjs(),
       receivedFrom: '',
       chequeNo: '',
       chequeDate: dayjs(),
       chequeBank: '',
       bankName: '',
-      currency: '',
-      exRate: '',
+      currency: 'INR',
+      exRate: 1,
       depositAmount: '',
       totalCreditAmount: '',
       totalDebitAmount: '',
@@ -118,9 +116,7 @@ const Deposit = () => {
     });
     getAllActiveCurrency(orgId);
     setFieldErrors({
-      // orgId: orgId,
       depositMode: '',
-      // docId: '',
       docDate: dayjs(),
       receivedFrom: '',
       chequeNo: '',
@@ -520,7 +516,10 @@ const Deposit = () => {
         if (isNaN(value)) errorMessage = 'Invalid format';
         break;
       case 'chequeBank':
-        if (!/^[A-Za-z\s]+$/.test(value)) errorMessage = 'Invalid format';
+        if (!/^[A-Za-z\s]*$/.test(value)) errorMessage = 'Invalid format';
+        break;
+      case 'receivedFrom':
+        if (!/^[A-Za-z\s]*$/.test(value)) errorMessage = 'Invalid format';
         break;
       case 'depositAmount':
         if (isNaN(value)) {
@@ -528,7 +527,7 @@ const Deposit = () => {
         }
         break;
       case 'chequeNo':
-        if (!/^\d{6,12}$/.test(value)) {
+        if (!/^[A-Za-z0-9\s]*$/.test(value)) {
           errorMessage = 'Invalid format';
         }
         break;
@@ -697,7 +696,6 @@ const Deposit = () => {
                   <Autocomplete
                     disablePortal
                     options={allbankName}
-                    // getOptionLabel={(option) => option.bankName}
                     getOptionLabel={(option) => option?.bankName || ''}
                     sx={{ width: '100%' }}
                     size="small"
@@ -746,6 +744,7 @@ const Deposit = () => {
                       onChange={handleInputChange}
                       name="currency"
                       value={formData.currency}
+                      disabled
                     >
                       {currencies.map((item) => (
                         <MenuItem key={item.id} value={item.currency}>
@@ -772,6 +771,8 @@ const Deposit = () => {
                     onChange={handleInputChange}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.exRate ? fieldErrors.exRate : ''}</span>}
                     inputProps={{ maxLength: 40 }}
+                    error={!!fieldErrors.exRate}
+                    disabled
                   />
                 </div>
                 <div className="col-md-3 mb-3">
@@ -790,6 +791,7 @@ const Deposit = () => {
                     onChange={handleInputChange}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.depositAmount ? fieldErrors.depositAmount : ''}</span>}
                     inputProps={{ maxLength: 40 }}
+                    error={!!fieldErrors.depositAmount}
                   />
                 </div>
               </div>
@@ -849,89 +851,58 @@ const Deposit = () => {
                                         <td className="text-center">
                                           <div className="pt-2">{index + 1}</div>
                                         </td>
-
+                                        <td className="border px-2 py-2">
                                         <Autocomplete
                                           disablePortal
                                           options={allAccountName}
-                                          getOptionLabel={(option) => option.accountName}
+                                          getOptionLabel={(option) => option?.accountName || ''}
                                           size="small"
-                                          value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
+                                          value={
+                                            formData.accountName ? allAccountName.find((c) => c.accountName === formData.accountName) : null
+                                          }
                                           onChange={(event, newValue) => {
-                                            const value = newValue ? newValue.accountName : '';
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
-                                            );
+                                            handleInputChange({
+                                              target: {
+                                                name: 'accountName',
+                                                value: newValue ? newValue.accountName : ''
+                                              }
+                                            });
                                           }}
                                           renderInput={(params) => (
                                             <TextField
                                               {...params}
-                                              label="Account Name"
-                                              variant="outlined"
-                                              error={!!detailsTableErrors[index]?.accountName}
-                                              helperText={detailsTableErrors[index]?.accountName}
-                                              InputProps={{
-                                                ...params.InputProps,
-                                                className: detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'
-                                              }}
+                                              label={
+                                                <span>
+                                                  Bank Account <span className="asterisk">*</span>
+                                                </span>
+                                              }
+                                              name="accountName"
+                                              error={!!fieldErrors.accountName}
+                                              helperText={fieldErrors.accountName ? fieldErrors.accountName : ''}
+                                              style={{ width: '150px' }}
                                             />
                                           )}
                                         />
-
-                                        {/* <td className="border px-2 py-2"> */}
-
-                                        {/* {detailsTableErrors[index]?.accountName && (
-                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailsTableErrors[index].accountName}
-                                              </div> 
-                                          )} */}
-
-                                        {/* <Autocomplete
-                                            disablePortal
-                                            options={allAccountName}
-                                            getOptionLabel={(option) => option.accountName}
-                                            size="small"
-                                            value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
-                                            onChange={(event, newValue) => {
-                                              const value = newValue ? newValue.accountName : '';
-                                              setDetailsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
-                                              );
-                                            }}
-                                            renderInput={(params) => (
-                                              <TextField
-                                                {...params}
-                                                label="Account Name"
-                                                name="accountName"
-                                                error={!!detailsTableErrors[index]?.accountName}
-                                                helperText={detailsTableErrors[index]?.accountName}
-                                                InputProps={{
-                                                  ...params.InputProps,
-                                                  className: detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'
-                                                }}
-                                              />
-                                            )}
-                                          />
-
-                                           {detailsTableErrors[index]?.accountName && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailsTableErrors[index].accountName}
-                                            </div>
-                                          )} */}
-
-                                        {/* </td> */}
-
+                                      </td>
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.debit}
                                             onChange={(e) => handleDebitChange(e, row, index)}
                                             maxLength="20"
                                             className={detailsTableErrors[index]?.debit ? 'error form-control' : 'form-control'}
+                                            style={{ width: '150px' }}
+                                            helperText={
+                                              <span style={{ color: 'red' }}>
+                                                {detailsTableErrors.debit ? detailsTableErrors.debit : ''}
+                                              </span>
+                                            }
+                                            error={!!detailsTableErrors.debit}
                                           />
-                                          {detailsTableErrors[index]?.debit && (
+                                          {/* {detailsTableErrors[index]?.debit && (
                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                               {detailsTableErrors[index].debit}
                                             </div>
-                                          )}
+                                          )} */}
                                         </td>
                                         <td className="border px-2 py-2">
                                           <input
@@ -939,6 +910,7 @@ const Deposit = () => {
                                             onChange={(e) => handleCreditChange(e, row, index)}
                                             maxLength="20"
                                             className={detailsTableErrors[index]?.credit ? 'error form-control' : 'form-control'}
+                                            style={{ width: '150px' }}
                                           />
                                           {detailsTableErrors[index]?.credit && (
                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -951,6 +923,7 @@ const Deposit = () => {
                                           <input
                                             type="text"
                                             value={row.narration}
+                                            style={{ width: '150px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>
