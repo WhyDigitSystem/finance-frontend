@@ -123,6 +123,12 @@ const transaction = {
           title: 'Adjustment Journal',
           type: 'item',
           url: '/finance/AdjustmentJournal'
+        }, 
+        {
+          id: 'JobCard',
+          title: 'JobCard',
+          type: 'item',
+          url: '/finance/JobCard'
         },
         {
           id: 'deposit',

@@ -57,7 +57,7 @@ const Roles = Loadable(lazy(() => import('views/basicMaster/roles')));
 const ScreenNames = Loadable(lazy(() => import('views/basicMaster/ScreenNames')));
 const Employee = Loadable(lazy(() => import('views/basicMaster/employee')));
 const ChargeTypeRequest = Loadable(lazy(() => import('views/Finance/ChargeTypeRequest')));
-
+const JobCard = Loadable(lazy(() => import('views/Finance/JobCard')));
 const TaxInvoiceDetail = Loadable(lazy(() => import('views/Finance/taxInvoice/taxInvoiceDetail')));
 const CreditNoteDetail = Loadable(lazy(() => import('views/Finance/creditNote/CreditNoteDetail')));
 const CostInvoice = Loadable(lazy(() => import('views/Finance/costInvoice/CostInvoice')));
@@ -306,6 +306,10 @@ const FinanceRoute = {
     {
       path: '/Finance/Withdrawal',
       element: <Withdrawal />
+    },
+    {
+      path: 'Finance/JobCard',
+      element: <JobCard />
     },
     {
       path: '/Finance/ContraVoucher',
