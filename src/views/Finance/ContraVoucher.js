@@ -63,8 +63,8 @@ const ContraVoucher = () => {
   const [detailsTableData, setDetailsTableData] = useState([
     {
       id: 1,
-      subLedgerCode: '',
-      subledgerName: '',
+      subLedgerCode: 'None',
+      subledgerName: 'None',
       accountName: '',
       debit: '',
       credit: '',
@@ -115,7 +115,7 @@ const ContraVoucher = () => {
       totalDebitAmount: 0,
       remarks: ''
     });
-    setDetailsTableData([{ id: 1, accountName: '', subLedgerCode: '', subledgerName: '', debit: '', credit: '', narration: '' }]);
+    setDetailsTableData([{ id: 1, accountName: '', subLedgerCode: 'None', subledgerName: 'None', debit: '', credit: '', narration: '' }]);
     setDetailsTableErrors('');
     setEditId('');
     getContraVoucherDocId();
@@ -137,8 +137,8 @@ const ContraVoucher = () => {
     const newRow = {
       id: Date.now(),
       accountName: '',
-      subLedgerCode: '',
-      subledgerName: '',
+      subLedgerCode: 'None',
+      subledgerName: 'None',
       debit: '',
       credit: '',
       narration: ''
@@ -227,9 +227,9 @@ const ContraVoucher = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const currencyData = await getAllActiveCurrency(orgId);
-        setCurrencies(currencyData);
-        console.log('currency', currencyData);
+        // const currencyData = await getAllActiveCurrency(orgId);
+        // setCurrencies(currencyData);
+        // console.log('currency', currencyData);
       } catch (error) {
         console.error('Error fetching country data:', error);
       }
@@ -426,12 +426,12 @@ const ContraVoucher = () => {
 
   const getAllAccountName = async () => {
     try {
-      const response = await apiCalls('get', `/transaction/getAccountNameFromGroup?orgId=${orgId}`);
+      const response = await apiCalls('get', `/transaction/getAccountNamefromGroupLedgerforCV?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setAllAccountName(response.paramObjectsMap.generalJournalVO);
-        console.log('Account Name', response.paramObjectsMap.generalJournalVO);
+        setAllAccountName(response.paramObjectsMap.ContraVoucherVO);
+        console.log('Account Name', response.paramObjectsMap.ContraVoucherVO);
       } else {
         console.error('API Error:', response);
       }
@@ -717,7 +717,8 @@ const ContraVoucher = () => {
                                             disablePortal
                                             options={allAccountName}
                                             getOptionLabel={(option) => option?.accountName || ''}
-                                            style={{ width: '160px' }}
+                                            // style={{ width: '160px' }}
+                                            fullWidth
                                             size="small"
                                             value={
                                               formData.accountName
@@ -751,7 +752,8 @@ const ContraVoucher = () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.subledgerName}
-                                            style={{ width: '160px' }}
+                                            disabled
+                                            fullWidth
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>
@@ -777,7 +779,7 @@ const ContraVoucher = () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.subLedgerCode}
-                                            style={{ width: '160px' }}
+                                            disabled
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>
@@ -803,7 +805,6 @@ const ContraVoucher = () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.debit}
-                                            style={{ width: '160px' }}
                                             onChange={(e) => handleDebitChange(e, row, index)}
                                             className={detailsTableErrors[index]?.debit ? 'error form-control' : 'form-control'}
                                             helperText={
@@ -822,7 +823,7 @@ const ContraVoucher = () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.credit}
-                                            style={{ width: '160px' }}
+                                            // style={{ width: '160px' }}
                                             onChange={(e) => handleCreditChange(e, row, index)}
                                             className={detailsTableErrors[index]?.credit ? 'error form-control' : 'form-control'}
                                           />
@@ -836,7 +837,7 @@ const ContraVoucher = () => {
                                           <input
                                             type="text"
                                             value={row.narration}
-                                            style={{ width: '160px' }}
+                                            // style={{ width: '160px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>

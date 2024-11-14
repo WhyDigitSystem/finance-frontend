@@ -99,9 +99,9 @@ const AdjustmentJournal = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const currencyData = await getAllActiveCurrency(orgId);
-        setCurrencies(currencyData);
-        console.log('currency', currencyData);
+        // const currencyData = await getAllActiveCurrency(orgId);
+        // setCurrencies(currencyData);
+        // console.log('currency', currencyData);
       } catch (error) {
         console.error('Error fetching country data:', error);
       }
@@ -270,9 +270,10 @@ const AdjustmentJournal = () => {
         const newErrors = [...prevErrors];
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
-          accountsName: !table[table.length - 1].accountsName ? 'Account Name is required' : '',
-          subLedgerCode: !table[table.length - 1].subLedgerCode ? 'Sub Ledger Code is required' : '',
-          subledgerName: !table[table.length - 1].subledgerName ? 'Sub Ledger Name is required' : ''
+          creditAmount: !table[table.length - 1].creditAmount ? 'Credit Account is required' : '',
+          debitAmount: !table[table.length - 1].debitAmount ? 'Debit Amount Code is required' : '',
+          creditBase: !table[table.length - 1].creditBase ? 'Credit Base Name is required' : '',
+          debitBase: !table[table.length - 1].debitBase ? 'Debit Base Name is required' : ''
         };
         return newErrors;
       });
@@ -293,36 +294,61 @@ const AdjustmentJournal = () => {
     const value = e.target.value;
 
     if (/^\d{0,20}$/.test(value)) {
-      setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, debitAmount: value, creditAmount: value ? '0' : '' } : r)));
+      setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, debitAmount: value, creditAmount: value ? 0 : '', debitBase: value,creditBase:value ? 0 : '' } : r)));
 
       setDetailsTableErrors((prev) => {
         const newErrors = [...prev];
         newErrors[index] = {
           ...newErrors[index],
-          debitAmount: !value ? 'Debit Amount is required' : ''
+          debitAmount: !value ? 'Debit Amount is required' : '',
+          debitBase: !value ? 'Debit Base is required' : ''
         };
         return newErrors;
       });
     }
   };
+
+  // const handleCreditChange = (e, row, index) => {
+  //   const value = e.target.value;
+
+  //   if (/^\d{0,20}$/.test(value)) {
+  //     setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, creditAmount: value, debitAmount: value ? '0' : '' } : r)));
+
+  //     setDetailsTableErrors((prev) => {
+  //       const newErrors = [...prev];
+  //       newErrors[index] = {
+  //         ...newErrors[index],
+  //         creditAmount: !value ? 'Credit Amount is required' : ''
+  //       };
+  //       return newErrors;
+  //     });
+  //   }
+  // };
 
   const handleCreditChange = (e, row, index) => {
     const value = e.target.value;
-
+  
     if (/^\d{0,20}$/.test(value)) {
-      setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, creditAmount: value, debitAmount: value ? '0' : '' } : r)));
-
+      setDetailsTableData((prev) => 
+        prev.map((r) => 
+          r.id === row.id 
+            ? { ...r, creditAmount: value, debitAmount: value ? 0 : '', creditBase: value, debitBase: value ? 0 : '' } 
+            : r
+        )
+      );
+  
       setDetailsTableErrors((prev) => {
         const newErrors = [...prev];
         newErrors[index] = {
           ...newErrors[index],
-          creditAmount: !value ? 'Credit Amount is required' : ''
+          creditAmount: !value ? 'Credit Amount is required' : '',
+          creditBase: !value ? 'Credit Base is required' : ''
         };
         return newErrors;
       });
     }
   };
-
+  
   const handleView = () => {
     setShowForm(!showForm);
   };
@@ -805,7 +831,6 @@ const AdjustmentJournal = () => {
                                               name="accountName"
                                               error={!!fieldErrors.accountName}
                                               helperText={fieldErrors.accountName ? fieldErrors.accountName : ''}
-                                              style={{ width: '150px' }}
                                             />
                                           )}
                                         />
@@ -827,7 +852,6 @@ const AdjustmentJournal = () => {
                                               return newErrors;
                                             });
                                           }}
-                                          style={{ width: '150px' }}
                                           className={detailsTableErrors[index]?.subledgerName ? 'error form-control' : 'form-control'}
                                         />
                                         {detailsTableErrors[index]?.subledgerName && (
@@ -853,7 +877,6 @@ const AdjustmentJournal = () => {
                                               return newErrors;
                                             });
                                           }}
-                                          style={{ width: '150px' }}
                                           className={detailsTableErrors[index]?.subLedgerCode ? 'error form-control' : 'form-control'}
                                         />
                                         {detailsTableErrors[index]?.subLedgerCode && (
@@ -866,8 +889,6 @@ const AdjustmentJournal = () => {
                                         <input
                                           value={row.debitAmount}
                                           onChange={(e) => handleDebitChange(e, row, index)}
-                                          // maxLength="40"
-                                          style={{ width: '150px' }}
                                           className={detailsTableErrors[index]?.debitAmount ? 'error form-control' : 'form-control'}
                                         />
                                         {detailsTableErrors[index]?.debitAmount && (
@@ -881,7 +902,6 @@ const AdjustmentJournal = () => {
                                           value={row.creditAmount}
                                           onChange={(e) => handleCreditChange(e, row, index)}
                                           className={detailsTableErrors[index]?.creditAmount ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
                                         />
                                         {detailsTableErrors[index]?.creditAmount && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -889,57 +909,56 @@ const AdjustmentJournal = () => {
                                           </div>
                                         )}
                                       </td>
-
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          value={row.debitBase}
+                                          onChange={(e) => handleDebitChange(e, row, index)}
+                                          // onChange={(e) => {
+                                          //   const value = e.target.value;
+                                          //   setDetailsTableData((prev) =>
+                                          //     prev.map((r) => (r.id === row.id ? { ...r, debitBase: value } : r))
+                                          //   );
+                                          //   setDetailsTableErrors((prev) => {
+                                          //     const newErrors = [...prev];
+                                          //     newErrors[index] = {
+                                          //       ...newErrors[index],
+                                          //       debitBase: !value ? 'debitBase is required' : ''
+                                          //     };
+                                          //     return newErrors;
+                                          //   });
+                                          // }}
+                                          className={detailsTableErrors[index]?.debitBase ? 'error form-control' : 'form-control'}
+                                        />
+                                        {detailsTableErrors[index]?.debitBase && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].debitBase}
+                                          </div>
+                                        )}
+                                      </td>
                                       <td className="border px-2 py-2">
                                         <input
                                           value={row.creditBase}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, creditBase: value } : r))
-                                            );
-                                            setDetailsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                creditBase: !value ? 'Credit Base is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          style={{ width: '150px' }}
+                                          onChange={(e) => handleCreditChange(e, row, index)}
+                                          // onChange={(e) => {
+                                          //   const value = e.target.value;
+                                          //   setDetailsTableData((prev) =>
+                                          //     prev.map((r) => (r.id === row.id ? { ...r, creditBase: value } : r))
+                                          //   );
+                                          //   setDetailsTableErrors((prev) => {
+                                          //     const newErrors = [...prev];
+                                          //     newErrors[index] = {
+                                          //       ...newErrors[index],
+                                          //       creditBase: !value ? 'Credit Base is required' : ''
+                                          //     };
+                                          //     return newErrors;
+                                          //   });
+                                          // }}
                                           className={detailsTableErrors[index]?.creditBase ? 'error form-control' : 'form-control'}
                                           
                                         />
                                         {detailsTableErrors[index]?.creditBase && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                             {detailsTableErrors[index].creditBase}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          value={row.debitBase}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, debitBase: value } : r))
-                                            );
-                                            setDetailsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                debitBase: !value ? 'debitBase is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          style={{ width: '150px' }}
-                                          className={detailsTableErrors[index]?.debitBase ? 'error form-control' : 'form-control'}
-                                        />
-                                        {detailsTableErrors[index]?.debitBase && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].debitBase}
                                           </div>
                                         )}
                                       </td>

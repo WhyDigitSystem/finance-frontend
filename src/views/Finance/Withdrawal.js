@@ -235,9 +235,9 @@ const Withdrawal = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const currencyData = await getAllActiveCurrency(orgId);
-        setCurrencies(currencyData);
-        console.log('currency', currencyData);
+        // const currencyData = await getAllActiveCurrency(orgId);
+        // setCurrencies(currencyData);
+        // console.log('currency', currencyData);
       } catch (error) {
         console.error('Error fetching country data:', error);
       }
@@ -826,7 +826,6 @@ const Withdrawal = () => {
                                           disablePortal
                                           options={allAccountName}
                                           getOptionLabel={(option) => option?.accountName || ''}
-                                          style={{ width: '150px' }}
                                           size="small"
                                           value={
                                             formData.accountName ? allAccountName.find((c) => c.accountName === formData.accountName) : null
@@ -864,7 +863,6 @@ const Withdrawal = () => {
                                             value={row.debit}
                                             onChange={(e) => handleDebitChange(e, row, index)}
                                             maxLength="20"
-                                            style={{ width: '150px' }}
                                             className={detailsTableErrors[index]?.debit ? 'error form-control' : 'form-control'}
                                           />
                                           {detailsTableErrors[index]?.debit && (
@@ -878,7 +876,6 @@ const Withdrawal = () => {
                                             value={row.credit}
                                             onChange={(e) => handleCreditChange(e, row, index)}
                                             maxLength="20"
-                                            style={{ width: '150px' }}
                                             className={detailsTableErrors[index]?.credit ? 'error form-control' : 'form-control'}
                                           />
                                           {detailsTableErrors[index]?.credit && (
@@ -892,7 +889,6 @@ const Withdrawal = () => {
                                           <input
                                             type="text"
                                             value={row.narration}
-                                            style={{ width: '150px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>

@@ -234,9 +234,9 @@ const Deposit = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const currencyData = await getAllActiveCurrency(orgId);
-        setCurrencies(currencyData);
-        console.log('currency', currencyData);
+        // const currencyData = await getAllActiveCurrency(orgId);
+        // setCurrencies(currencyData);
+        // console.log('currency', currencyData);
       } catch (error) {
         console.error('Error fetching country data:', error);
       }
@@ -663,6 +663,7 @@ const Deposit = () => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         label="Cheque Date"
+                        disabled
                         value={formData.chequeDate}
                         onChange={(date) => handleDateChange('chequeDate', date)}
                         slotProps={{
@@ -688,7 +689,7 @@ const Deposit = () => {
                     value={formData.chequeBank}
                     onChange={handleInputChange}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.chequeBank ? fieldErrors.chequeBank : ''}</span>}
-                    inputProps={{ maxLength: 40 }}
+                    // inputProps={{ maxLength: 40 }}
                     error={!!fieldErrors.chequeBank}
                   />
                 </div>
@@ -696,8 +697,9 @@ const Deposit = () => {
                   <Autocomplete
                     disablePortal
                     options={allbankName}
+                    
                     getOptionLabel={(option) => option?.bankName || ''}
-                    sx={{ width: '100%' }}
+                    // sx={{ width: '100%' }}
                     size="small"
                     value={formData.bankName ? allbankName.find((c) => c.bankName === formData.bankName) : null}
                     onChange={(event, newValue) => {
@@ -879,7 +881,6 @@ const Deposit = () => {
                                               name="accountName"
                                               error={!!fieldErrors.accountName}
                                               helperText={fieldErrors.accountName ? fieldErrors.accountName : ''}
-                                              style={{ width: '150px' }}
                                             />
                                           )}
                                         />
@@ -890,7 +891,6 @@ const Deposit = () => {
                                             onChange={(e) => handleDebitChange(e, row, index)}
                                             maxLength="20"
                                             className={detailsTableErrors[index]?.debit ? 'error form-control' : 'form-control'}
-                                            style={{ width: '150px' }}
                                             helperText={
                                               <span style={{ color: 'red' }}>
                                                 {detailsTableErrors.debit ? detailsTableErrors.debit : ''}
@@ -910,7 +910,6 @@ const Deposit = () => {
                                             onChange={(e) => handleCreditChange(e, row, index)}
                                             maxLength="20"
                                             className={detailsTableErrors[index]?.credit ? 'error form-control' : 'form-control'}
-                                            style={{ width: '150px' }}
                                           />
                                           {detailsTableErrors[index]?.credit && (
                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -923,7 +922,6 @@ const Deposit = () => {
                                           <input
                                             type="text"
                                             value={row.narration}
-                                            style={{ width: '150px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>
