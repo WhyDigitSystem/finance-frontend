@@ -1,21 +1,18 @@
+import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Avatar, ButtonBase, FormHelperText, Tooltip, FormControlLabel, Checkbox } from '@mui/material';
-import TextField from '@mui/material/TextField';
-import { useRef, useState, useMemo, useEffect } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import DeleteIcon from '@mui/icons-material/Delete';
-import AddIcon from '@mui/icons-material/Add';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import apiCalls from 'apicall';
+import { useEffect, useState } from 'react';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
-import apiCalls from 'apicall';
-import { getAllActiveBranches, getAllActiveCitiesByState, getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
 import CommonTable from 'views/basicMaster/CommonTable';
 
 export const ChartOfCostcenter = () => {
@@ -147,14 +144,11 @@ export const ChartOfCostcenter = () => {
     }
   };
 
-
-  
-
   const getChartofCostCenterById = async (row) => {
     console.log('THE SELECTED EMPLOYEE ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `transaction/getAllChartCostCenterById?id=${row.original.id}`);
+      const response = await apiCalls('get', `transaction/getChartCostCenterById?id=${row.original.id}`);
       console.log('API Response:', response);
 
       if (response.status === true) {

@@ -4,6 +4,7 @@
   "private": true,
   "homepage": "",
   "dependencies": {
+    "@ant-design/icons": "^5.5.1",
     "@emotion/cache": "^11.11.0",
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.5",
@@ -22,6 +23,7 @@
     "@tabler/icons-react": "^2.46.0",
     "@tailwindcss/typography": "^0.5.8",
     "@types/material-ui": "^0.21.15",
+    "antd": "^5.22.1",
     "apexcharts": "^3.45.2",
     "axios": "^1.6.8",
     "bootstrap": "^5.3.3",

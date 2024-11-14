@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
 
 // material-ui
 import {
@@ -15,7 +14,6 @@ import {
   Paper,
   Popper,
   Stack,
-  TextField,
   Typography,
   useMediaQuery
 } from '@mui/material';
@@ -33,25 +31,24 @@ import NotificationList from './NotificationList';
 import { IconBell } from '@tabler/icons-react';
 
 // notification status options
-const status = [
+const notifications = [
   {
-    value: 'all',
-    label: 'All Notification'
+    name: 'John Doe',
+    expenceId: 'EXP123',
+    docDate: '2024-11-12',
+    amount: 2500.5,
+    currency: 'USD',
+    heading: 'TAX INVOICE'
   },
   {
-    value: 'new',
-    label: 'New'
-  },
-  {
-    value: 'unread',
-    label: 'Unread'
-  },
-  {
-    value: 'other',
-    label: 'Other'
+    name: 'Jane Smith',
+    expenceId: 'EXP124',
+    docDate: '2024-11-13',
+    amount: 1750.75,
+    currency: 'EUR',
+    heading: 'IRN CREDIT NOTE'
   }
 ];
-
 // ==============================|| NOTIFICATION ||============================== //
 
 const NotificationSection = () => {
@@ -86,6 +83,18 @@ const NotificationSection = () => {
 
   const handleChange = (event) => {
     if (event?.target.value) setValue(event?.target.value);
+  };
+
+  const handleApprove = (item) => {
+    console.log('Approved:', item);
+  };
+
+  const handleReject = (item) => {
+    console.log('Rejected:', item);
+  };
+
+  const handleCardClick = (item) => {
+    console.log('Card Clicked:', item);
   };
 
   return (
@@ -158,7 +167,7 @@ const NotificationSection = () => {
                             <Typography variant="subtitle1">All Notification</Typography>
                             <Chip
                               size="small"
-                              label="01"
+                              label={notifications.length}
                               sx={{
                                 color: theme.palette.background.default,
                                 bgcolor: theme.palette.warning.dark
@@ -166,17 +175,17 @@ const NotificationSection = () => {
                             />
                           </Stack>
                         </Grid>
-                        <Grid item>
+                        {/* <Grid item>
                           <Typography component={Link} to="#" variant="subtitle2" color="primary">
                             Mark as all read
                           </Typography>
-                        </Grid>
+                        </Grid> */}
                       </Grid>
                     </Grid>
                     <Grid item xs={12}>
                       <PerfectScrollbar style={{ height: '100%', maxHeight: 'calc(100vh - 205px)', overflowX: 'hidden' }}>
                         <Grid container direction="column" spacing={2}>
-                          <Grid item xs={12}>
+                          {/* <Grid item xs={12}>
                             <Box sx={{ px: 2, pt: 0.25 }}>
                               <TextField
                                 id="outlined-select-currency-native"
@@ -195,12 +204,17 @@ const NotificationSection = () => {
                                 ))}
                               </TextField>
                             </Box>
-                          </Grid>
+                          </Grid> */}
                           <Grid item xs={12} p={0}>
                             <Divider sx={{ my: 0 }} />
                           </Grid>
                         </Grid>
-                        <NotificationList />
+                        <NotificationList
+                          notifications={notifications}
+                          handleApprove={handleApprove}
+                          handleReject={handleReject}
+                          handleCardClick={handleCardClick}
+                        />
                       </PerfectScrollbar>
                     </Grid>
                   </Grid>

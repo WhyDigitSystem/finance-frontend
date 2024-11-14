@@ -828,13 +828,14 @@ const TaxInvoiceDetails = () => {
       chargeName: row.chargeName,
       chargeType: row.chargeType,
       currency: row.currency,
-      exRate: row.exRate,
+      exRate: parseFloat(row.exRate),
       exempted: row.exempted,
       govChargeCode: row.govChargeCode,
-      gstpercent: row.gstpercent,
+      gstpercent: parseFloat(row.GSTPercent),
+      gst: row.gst,
       ledger: row.ledger,
-      qty: row.qty,
-      rate: row.rate,
+      qty: parseInt(row.qty),
+      rate: parseInt(row.rate),
       sac: row.sac,
       taxable: row.taxable
     }));
@@ -860,16 +861,16 @@ const TaxInvoiceDetails = () => {
       salesType: formData.salesType,
       updatedBy: formData.updatedBy,
       supplierBillNo: formData.supplierBillNo,
-      supplierBillDate: formData.supplierBillDate,
-      billCurrRate: formData.billCurrRate,
-      exAmount: formData.exAmount,
-      creditDays: formData.creditDays,
+      supplierBillDate: dayjs(formData.supplierBillDate).format('YYYY-MM-DD'),
+      billCurrRate: parseInt(formData.billCurrRate),
+      exAmount: parseInt(formData.exAmount),
+      creditDays: parseInt(formData.creditDays),
       contactPerson: formData.contactPerson,
       shipperInvoiceNo: formData.shipperInvoiceNo,
       billOfEntry: formData.billOfEntry,
       billMonth: formData.billMonth,
       invoiceNo: formData.invoiceNo,
-      invoiceDate: formData.invoiceDate,
+      invoiceDate: dayjs(formData.invoiceDate).format('YYYY-MM-DD'),
       taxInvoiceDetailsDTO: detailsVo,
       createdBy: loginUserName,
       orgId: orgId,
@@ -962,8 +963,22 @@ const TaxInvoiceDetails = () => {
           billingRemarks: listValueVO.billingRemarks,
           amountInWords: listValueVO.amountInWords
         });
-        setWithdrawalsTableData(
-          listValueVO.taxInvoiceDetailsVO.map((cl) => ({
+
+        // getPartyName(listValueVO.partType);
+
+        // const selectedEmp = partyName.find((emp) => emp.partyName === value); // Check if 'empCode' is correct
+
+        // setPartyId(selectedEmp.id);
+
+        // getPlaceOfSupply(listValueVO.addressType);
+
+        if (!listValueVO?.taxInvoiceDetailsVO) return;
+
+        const mappedData = listValueVO.taxInvoiceDetailsVO.map((cl) => {
+          // Call getChargeCodeDetail for each chargeType
+          getChargeCodeDetail(cl.chargeType);
+
+          return {
             id: cl.id,
             chargeCode: cl.chargeCode,
             chargeName: cl.chargeName,
@@ -977,9 +992,14 @@ const TaxInvoiceDetails = () => {
             qty: cl.qty,
             rate: cl.rate,
             sac: cl.sac,
-            taxable: cl.taxable
-          }))
-        );
+            taxable: cl.taxable,
+            gst: cl.gstAmount,
+            GSTPercent: cl.gstpercent // Consider this: you already mapped gstpercent.
+          };
+        });
+
+        // Update state with mapped data
+        setWithdrawalsTableData(mappedData);
       } else {
         // Handle erro
       }
@@ -2188,7 +2208,7 @@ const TaxInvoiceDetails = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.gst ? row.gst.toFixed(2) : '0.00'}
+                                        value={row.gst ? row.gst : '0.00'}
                                         disabled
                                         style={{ width: '100px' }}
                                         onChange={(e) => {
