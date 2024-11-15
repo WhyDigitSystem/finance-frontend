@@ -58,8 +58,7 @@ export const JobCard = () => {
     accountName: '',
     amount: ''
   }]);
-  const [formData, setFormData] = useState({
-    // docId: '',
+  const [formData, setFormData] = useState({ 
     customer: '',
     operationClosed: '',
     financeClosed: '',
@@ -73,11 +72,10 @@ export const JobCard = () => {
     profit: '',
     remarks: ''
   })
-  const [fieldErrors, setFieldErrors] = useState({
-    // docId: '',
+  const [fieldErrors, setFieldErrors] = useState({ 
     customer: '',
     operationClosed: '',
-    date:  new Date(),
+    date: new Date(),
     financeClosed: '',
     salesPerson: '',
     closedOn: null,
@@ -90,7 +88,7 @@ export const JobCard = () => {
 
 
   const listViewColumns = [
-    { accessorKey: 'jobNo', header: 'docId', size: 140 },
+    { accessorKey: 'jobNo', header: 'DocId', size: 140 },
     { accessorKey: 'customer', header: 'Customer', size: 140 },
     { accessorKey: 'date', header: 'Data', size: 140 },
     { accessorKey: 'closedOn', header: 'ClosedOn', size: 140 }
@@ -136,13 +134,13 @@ export const JobCard = () => {
     setShowForm(true);
     try {
       const result = await apiCalls('get', `/transaction/getAllTmsJobCardById?id=${row.original.id}`);
-      if (result && result.paramObjectsMap?.jobCardVO?.[0]) {
+      if (result) {
         const jnVo = result.paramObjectsMap.jobCardVO[0];
-        console.log('DataToEdit', jnVo);  // Log the full response object for debugging
-        setDocId(jnVo.docId);
+        console.log('DataToEdit', jnVo);  
+        setEditId(row.original.id);
+        setDocId(jnVo.docId);  
         getSalesPerson(jnVo.customer)
-        setFormData({
-          // jobNo: jnVo.docId || '',
+        setFormData({ 
           customer: jnVo.customer || '',
           salesPerson: jnVo.salesPerson || '',
           date: jnVo.date ? dayjs(jnVo.date, 'YYYY-MM-DD') : dayjs(),
@@ -176,29 +174,29 @@ export const JobCard = () => {
   const handleClear = () => {
     setFormData({
       customer: '',
-    operationClosed: '',
-    financeClosed: '', 
-    salesCategory: '',
-    salesPerson: '', 
-    closed: false,
-    income: '',
-    expense: '',
-    profit: '',
-    remarks: '',
-    date:dayjs()
+      operationClosed: '',
+      financeClosed: '',
+      salesCategory: '',
+      salesPerson: '',
+      closed: false,
+      income: '',
+      expense: '',
+      profit: '',
+      remarks: '',
+      date: dayjs()
     })
-    
+
     setDetailsTableData([
       {
         id: 1, accountsName: '',
         amount: ''
       }
     ]);
-    setFieldErrors({
-      // docId: '',
+
+    setFieldErrors({ 
       customer: '',
       operationClosed: '',
-      financeClosed: '', 
+      financeClosed: '',
       closedOn: null,
       closed: false,
       income: '',
@@ -206,7 +204,8 @@ export const JobCard = () => {
       profit: '',
       remarks: ''
     })
-    setDetailsTableErrors([...detailsTableErrors, { accountName: '', amount: '' }]);
+    setDetailsTableErrors([{ accountName: '', amount: '' }]);
+    setEditId('');
     getTmsJobCardDocId();
     getAllCustomers();
   }
@@ -219,6 +218,21 @@ export const JobCard = () => {
     if (!formData.customer) {
       errors.customer = 'customer is required';
     }
+    if (!formData.income) {
+      errors.income = 'InCome is required';
+    }
+    if (!formData.expense) {
+      errors.expense = 'Expense is required';
+    }
+    if (!formData.profit) {
+      errors.profit = 'Profit is required';
+    }
+    if (!formData.closedOn) {
+      errors.closedOn = 'closedOn is required';
+    }
+    if (!formData.remarks) {
+      errors.remarks = 'Remarks is required';
+    }
 
 
     let detailTableDataValid = true;
@@ -227,7 +241,11 @@ export const JobCard = () => {
       if (!row.accountName) {
         rowErrors.accountName = 'Account Name is required';
         detailTableDataValid = false;
-      } 
+      }
+      if (!row.amount) {
+        rowErrors.amount = 'Amount is required';
+        detailTableDataValid = false;
+      }
 
       return rowErrors;
     });
@@ -245,8 +263,7 @@ export const JobCard = () => {
 
       const saveFormData = {
         ...(editId && { id: editId }),
-        active: formData.active || false,
-        // docId: formData.docId || '',                          
+        active: formData.active || false,                 
         customer: formData.customer || '',
         salesPerson: formData.salesPerson || '',
         salesCategory: formData.salesCategory || '',
@@ -289,12 +306,7 @@ export const JobCard = () => {
       setFieldErrors(errors);
     }
   }
-
-
-  // const incrementDocId = (docId) => {
-  //   const numericPart = parseInt(docId.match(/\d+$/), 10);
-  //   return `${docId.slice(0, -String(numericPart).length)}${String(numericPart + 1).padStart(String(numericPart).length, '0')}`;
-  // };
+ 
 
 
 
@@ -374,23 +386,24 @@ export const JobCard = () => {
       });
     }
   };
+ 
+
   const getTmsJobCardDocId = async () => {
     try {
       const response = await apiCalls(
         'get',
         `transaction/getTmsJobCardDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
-      setFormData((prevData) => ({
-        ...prevData,
-        docId: response.paramObjectsMap.tmsJobCardDocId,
-        docDate: dayjs()
-      }));
+      console.log('docid working');
+
+      setDocId(response.paramObjectsMap.tmsJobCardDocId);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
   };
 
-  
+
+
 
 
   const getAllCustomers = async () => {
@@ -478,19 +491,9 @@ export const JobCard = () => {
         </div>
         {showForm ? (
           <>
-            <div className="row d-flex">
+            <div className="row d-flex"> 
               <div className="col-md-3 mb-3">
-                <TextField
-                  id="docId"
-                  label="DocId"
-                  variant="outlined"
-                  size="small"
-                  name="docId"
-                  value={formData.docId}
-                  // onChange={handleInputChange}
-                  className="w-100"
-                  disabled
-                />
+                <TextField id="docId" label="Doc No" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
               </div>
 
               <div className="col-md-3 mb-3">
@@ -722,6 +725,8 @@ export const JobCard = () => {
                     minRows={2}
                     inputProps={{ maxLength: 30 }}
                     onChange={handleInputChange}
+                    error={!!fieldErrors.remarks}
+                    helperText={fieldErrors.remarks}
                   />
                 </FormControl>
               </div>
@@ -812,39 +817,14 @@ export const JobCard = () => {
                                             helperText={detailsTableErrors[index]?.accountName}
                                             InputProps={{
                                               ...params.InputProps,
-                                              className: detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'
+                                              className: detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control',
+                                              style: { background: 'white' }
                                             }}
                                           />
                                         )}
                                       />
                                     </td>
-                                    {/* <td className="border px-2 py-2">
-                                      <input
-                                        // style={{ width: '150px' }}
-                                        type="text"
-                                        value={row.accountName}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
-                                          );
-                                          setDetailsTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              accountName: !value ? 'Value Code is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
-                                      />
-                                      {detailsTableErrors[index]?.accountName && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {detailsTableErrors[index].accountName}
-                                        </div>
-                                      )}
-                                    </td> */}
+
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
