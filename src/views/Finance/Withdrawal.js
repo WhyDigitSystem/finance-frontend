@@ -167,7 +167,8 @@ const Withdrawal = () => {
     if (!lastRow) return false;
 
     if (table === detailsTableData) {
-      return !lastRow.accountName || !lastRow.credit || !lastRow.debit || !lastRow.narration;
+      return !lastRow.accountName || !lastRow.narration;
+      // !lastRow.credit || !lastRow.debit ||
     }
     return false;
   };
@@ -235,9 +236,9 @@ const Withdrawal = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const currencyData = await getAllActiveCurrency(orgId);
-        // setCurrencies(currencyData);
-        // console.log('currency', currencyData);
+        const currencyData = await getAllActiveCurrency(orgId);
+        setCurrencies(currencyData);
+        console.log('currency', currencyData);
       } catch (error) {
         console.error('Error fetching country data:', error);
       }
@@ -329,7 +330,6 @@ const Withdrawal = () => {
 
         console.log('DataToEdit', BwdVO);
       } else {
-
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -505,7 +505,7 @@ const Withdrawal = () => {
         }
         break;
       case 'debit':
-        if (isNaN(value) ) {
+        if (isNaN(value)) {
           errorMessage = 'Invalid format';
         }
         break;
@@ -820,8 +820,36 @@ const Withdrawal = () => {
                                         <td className="text-center">
                                           <div className="pt-2">{index + 1}</div>
                                         </td>
+                                        <td>
+                                          <Autocomplete
+                                            options={allAccountName}
+                                            getOptionLabel={(option) => option.accountName || ''}
+                                            groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')}
+                                            value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
+                                            onChange={(event, newValue) => {
+                                              const value = newValue ? newValue.accountName : '';
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
+                                              );
 
-                                        <td className="border px-2 py-2">
+                                              setDetailsTableErrors((prevErrors) =>
+                                                prevErrors.map((err, idx) => (idx === index ? { ...err, accountName: '' } : err))
+                                              );
+                                            }}
+                                            size="small"
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                label="Account Name"
+                                                variant="outlined"
+                                                error={!!detailsTableErrors[index]?.accountName}
+                                                helperText={detailsTableErrors[index]?.accountName}
+                                              />
+                                            )}
+                                            sx={{ width: 250 }}
+                                          />
+                                        </td>
+                                        {/* <td className="border px-2 py-2">
                                         <Autocomplete
                                           disablePortal
                                           options={allAccountName}
@@ -856,8 +884,7 @@ const Withdrawal = () => {
                                             />
                                           )}
                                         />
-                                      </td>
-
+                                      </td> */}
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.debit}

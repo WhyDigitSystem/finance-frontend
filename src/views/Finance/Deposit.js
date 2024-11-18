@@ -94,7 +94,7 @@ const Deposit = () => {
     { accessorKey: 'currency', header: 'Currency', size: 140 },
     { accessorKey: 'exchangeRate', header: 'Ex.Rate', size: 140 },
     { accessorKey: 'chequeNo', header: 'Ref No', size: 140 },
-    { accessorKey: 'docId', header: 'Document Id', size: 140 }
+    { accessorKey: 'docId', header: 'document No', size: 140 }
   ];
 
   const handleClear = () => {
@@ -166,7 +166,8 @@ const Deposit = () => {
     if (!lastRow) return false;
 
     if (table === detailsTableData) {
-      return !lastRow.accountName || !lastRow.credit || !lastRow.debit || !lastRow.narration;
+      return !lastRow.accountName || !lastRow.narration;
+      // !lastRow.credit || !lastRow.debit ||
     }
     return false;
   };
@@ -178,8 +179,8 @@ const Deposit = () => {
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
           accountName: !table[table.length - 1].accountName ? 'Account Name is required' : '',
-          credit: !table[table.length - 1].credit ? 'Credit is required' : '',
-          debit: !table[table.length - 1].debit ? 'Debit is required' : '',
+          // credit: !table[table.length - 1].credit ? 'Credit is required' : '',
+          // debit: !table[table.length - 1].debit ? 'Debit is required' : '',
           narration: !table[table.length - 1].narration ? 'Narration is required' : ''
         };
         return newErrors;
@@ -234,9 +235,9 @@ const Deposit = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const currencyData = await getAllActiveCurrency(orgId);
-        // setCurrencies(currencyData);
-        // console.log('currency', currencyData);
+        const currencyData = await getAllActiveCurrency(orgId);
+        setCurrencies(currencyData);
+        console.log('currency', currencyData);
       } catch (error) {
         console.error('Error fetching country data:', error);
       }
@@ -602,7 +603,7 @@ const Deposit = () => {
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
-                  <TextField id="docId" label="Document Id" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
+                  <TextField id="docId" label="document No" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled" size="small">
@@ -697,7 +698,6 @@ const Deposit = () => {
                   <Autocomplete
                     disablePortal
                     options={allbankName}
-                    
                     getOptionLabel={(option) => option?.bankName || ''}
                     // sx={{ width: '100%' }}
                     size="small"
@@ -853,38 +853,36 @@ const Deposit = () => {
                                         <td className="text-center">
                                           <div className="pt-2">{index + 1}</div>
                                         </td>
-                                        <td className="border px-2 py-2">
-                                        <Autocomplete
-                                          disablePortal
-                                          options={allAccountName}
-                                          getOptionLabel={(option) => option?.accountName || ''}
-                                          size="small"
-                                          value={
-                                            formData.accountName ? allAccountName.find((c) => c.accountName === formData.accountName) : null
-                                          }
-                                          onChange={(event, newValue) => {
-                                            handleInputChange({
-                                              target: {
-                                                name: 'accountName',
-                                                value: newValue ? newValue.accountName : ''
-                                              }
-                                            });
-                                          }}
-                                          renderInput={(params) => (
-                                            <TextField
-                                              {...params}
-                                              label={
-                                                <span>
-                                                  Bank Account <span className="asterisk">*</span>
-                                                </span>
-                                              }
-                                              name="accountName"
-                                              error={!!fieldErrors.accountName}
-                                              helperText={fieldErrors.accountName ? fieldErrors.accountName : ''}
-                                            />
-                                          )}
-                                        />
-                                      </td>
+                                        <td>
+                                          <Autocomplete
+                                            options={allAccountName}
+                                            getOptionLabel={(option) => option.accountName || ''}
+                                            groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')}
+                                            value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
+                                            onChange={(event, newValue) => {
+                                              const value = newValue ? newValue.accountName : '';
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
+                                              );
+
+                                              // Clear the error for the current row and field
+                                              setDetailsTableErrors((prevErrors) =>
+                                                prevErrors.map((err, idx) => (idx === index ? { ...err, accountName: '' } : err))
+                                              );
+                                            }}
+                                            size="small"
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                label="Account Name"
+                                                variant="outlined"
+                                                error={!!detailsTableErrors[index]?.accountName}
+                                                helperText={detailsTableErrors[index]?.accountName}
+                                              />
+                                            )}
+                                            sx={{ width: 250 }}
+                                          />
+                                        </td>
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.debit}

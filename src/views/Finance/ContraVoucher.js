@@ -35,6 +35,13 @@ const ContraVoucher = () => {
   const [docId, setDocId] = useState('');
   const [data, setData] = useState(true);
   const [value, setValue] = useState(0);
+  const options = allAccountName.map((option) => {
+    const firstLetter = option.accountName[0].toUpperCase();
+    return {
+      firstLetter: /[0-9]/.test(firstLetter) ? '0-9' : firstLetter,
+      ...option
+    };
+  });
   const [formData, setFormData] = useState({
     orgId: orgId,
     docDate: dayjs(),
@@ -74,9 +81,9 @@ const ContraVoucher = () => {
 
   const [detailsTableErrors, setDetailsTableErrors] = useState([
     {
+      accountName: '',
       subLedgerCode: '',
       subledgerName: '',
-      accountName: '',
       debit: '',
       credit: '',
       narration: ''
@@ -86,7 +93,7 @@ const ContraVoucher = () => {
     { accessorKey: 'currency', header: 'Currency', size: 140 },
     { accessorKey: 'exRate', header: 'Ex.Rate', size: 140 },
     { accessorKey: 'chequeNo', header: 'Ref No', size: 140 },
-    { accessorKey: 'docId', header: 'Document Id', size: 140 }
+    { accessorKey: 'docId', header: 'document No', size: 140 }
   ];
 
   const handleClear = () => {
@@ -156,7 +163,8 @@ const ContraVoucher = () => {
 
     if (table === detailsTableData) {
       return (
-        !lastRow.accountName || !lastRow.subLedgerCode || !lastRow.subledgerName || !lastRow.credit || !lastRow.debit || !lastRow.narration
+        !lastRow.accountName || !lastRow.subLedgerCode || !lastRow.subledgerName || !lastRow.narration
+        // || !lastRow.debit || !lastRow.credit
       );
     }
     return false;
@@ -168,12 +176,14 @@ const ContraVoucher = () => {
         const newErrors = [...prevErrors];
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
-          subledgerName: !table[table.length - 1].subledgerName ? 'Account Name is required' : '',
-          credit: !table[table.length - 1].credit ? 'Credit is required' : '',
-          subLedgerCode: !table[table.length - 1].subLedgerCode ? 'Account Name is required' : '',
-          credit: !table[table.length - 1].credit ? 'Credit is required' : '',
-          debit: !table[table.length - 1].debit ? 'Debit is required' : '',
+          accountName: !table[table.length - 1].accountName ? 'Account Name is required' : '',
+          subledgerName: !table[table.length - 1].subledgerName ? 'Sub Ledger Name is required' : '',
+          subLedgerCode: !table[table.length - 1].subLedgerCode ? 'Sub Ledger Code is required' : '',
+         
+          // debit: !table[table.length - 1].debit ? 'Debit is required' : '',
+          // credit: !table[table.length - 1].credit ? 'Credit is required' : '',
           narration: !table[table.length - 1].narration ? 'Narration is required' : ''
+          
         };
         return newErrors;
       });
@@ -227,9 +237,9 @@ const ContraVoucher = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const currencyData = await getAllActiveCurrency(orgId);
-        // setCurrencies(currencyData);
-        // console.log('currency', currencyData);
+        const currencyData = await getAllActiveCurrency(orgId);
+        setCurrencies(currencyData);
+        console.log('currency', currencyData);
       } catch (error) {
         console.error('Error fetching country data:', error);
       }
@@ -244,14 +254,11 @@ const ContraVoucher = () => {
   useEffect(() => {
     const totalDebit = detailsTableData.reduce((sum, row) => sum + Number(row.debit || 0), 0);
     const totalCredit = detailsTableData.reduce((sum, row) => sum + Number(row.credit || 0), 0);
-    const depositamount = formData.depositAmount || 0;
-    console.log(depositamount);
 
     setFormData((prev) => ({
       ...prev,
       totalDebitAmount: totalDebit,
-      totalCreditAmount: totalCredit,
-      totalAmount: depositamount
+      totalCreditAmount: totalCredit
     }));
   }, [detailsTableData]);
 
@@ -325,20 +332,8 @@ const ContraVoucher = () => {
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.currency) {
-      errors.currency = 'Currency is required';
-    }
-    if (!formData.exRate) {
-      errors.exRate = 'Ex Rate is required';
-    }
     if (!formData.referenceNo) {
       errors.referenceNo = 'Reference No is required';
-    }
-    if (!formData.remarks) {
-      errors.remarks = 'Remarks is required';
-    }
-    if (!formData.referenceDate) {
-      errors.referenceDate = 'Deposit Mode is required';
     }
     if (!formData.chequeNo) {
       errors.chequeNo = 'Cheque No is required';
@@ -384,8 +379,8 @@ const ContraVoucher = () => {
         accountsName: row.accountName,
         subLedgerCode: row.subLedgerCode,
         subledgerName: row.subledgerName,
-        credit: row.credit,
-        debit: row.debit,
+        credit: parseInt(row.credit),
+        debit: parseInt(row.debit),
         narration: row.narration
       }));
       const saveFormData = {
@@ -426,11 +421,11 @@ const ContraVoucher = () => {
 
   const getAllAccountName = async () => {
     try {
-      const response = await apiCalls('get', `/transaction/getAccountNamefromGroupLedgerforCV?orgId=${orgId}`);
+      const response = await apiCalls('get', `/transaction/getAccountNamefromGroupLedgerforCV?OrgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setAllAccountName(response.paramObjectsMap.ContraVoucherVO);
+        setAllAccountName(response.paramObjectsMap.ContraVoucherVO || []);
         console.log('Account Name', response.paramObjectsMap.ContraVoucherVO);
       } else {
         console.error('API Error:', response);
@@ -455,20 +450,12 @@ const ContraVoucher = () => {
         if (isNaN(value)) errorMessage = 'Invalid format';
         break;
       case 'referenceNo':
-        if (!/^[A-Za-z0-9\s]*$/.test(value)) {
-          errorMessage = 'Invalid format';
-        }
-        break;
       case 'chequeNo':
         if (!/^[A-Za-z0-9\s]*$/.test(value)) {
           errorMessage = 'Invalid format';
         }
         break;
       case 'credit':
-        if (isNaN(value)) {
-          errorMessage = 'Invalid format';
-        }
-        break;
       case 'debit':
         if (isNaN(value)) {
           errorMessage = 'Invalid format';
@@ -484,12 +471,13 @@ const ContraVoucher = () => {
     }));
 
     if (!errorMessage) {
+      const upperCaseValue = value.toUpperCase();
       setFormData((prevFormData) => ({
         ...prevFormData,
-        [name]: value.toUpperCase()
+        [name]: upperCaseValue
       }));
 
-      // Preserve the cursor position for text-based inputs
+      // Preserve cursor position for text-based inputs
       if (type === 'text' || type === 'textarea') {
         setTimeout(() => {
           const inputElement = document.getElementsByName(name)[0];
@@ -500,6 +488,7 @@ const ContraVoucher = () => {
       }
     }
   };
+
   return (
     <>
       <div>
@@ -518,7 +507,7 @@ const ContraVoucher = () => {
             <>
               <div className="row d-flex ml">
                 <div className="col-md-3 mb-3">
-                  <TextField id="docId" label="Document Id" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
+                  <TextField id="docId" label="document No" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled" size="small">
@@ -694,7 +683,7 @@ const ContraVoucher = () => {
                                   <tbody>
                                     {detailsTableData.map((row, index) => (
                                       <tr key={row.id}>
-                                        <td className="border px-2 py-2 text-center">
+                                        <td className="border px-2 py-200 text-center">
                                           <ActionButton
                                             title="Delete"
                                             icon={DeleteIcon}
@@ -712,48 +701,64 @@ const ContraVoucher = () => {
                                         <td className="text-center">
                                           <div className="pt-2">{index + 1}</div>
                                         </td>
-                                        <td className="border px-2 py-2">
-                                          <Autocomplete
-                                            disablePortal
-                                            options={allAccountName}
-                                            getOptionLabel={(option) => option?.accountName || ''}
-                                            // style={{ width: '160px' }}
-                                            fullWidth
-                                            size="small"
-                                            value={
-                                              formData.accountName
-                                                ? allAccountName.find((c) => c.accountName === formData.accountName)
-                                                : null
-                                            }
+                                        {/* <Autocomplete
+                                            options={options}
+                                            getOptionLabel={(option) => option.accountName || ''} 
+                                            groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')} 
+                                            // onChange={(event, newValue) => setAllAccountName(newValue)} // Handle selection
+                                            sx={{ width: 250 }}
+                                            value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
                                             onChange={(event, newValue) => {
-                                              handleInputChange({
-                                                target: {
-                                                  name: 'accountName',
-                                                  value: newValue ? newValue.accountName : ''
-                                                }
-                                              });
+                                              const value = newValue ? newValue.accountName : '';
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
+                                              );
                                             }}
+                                            size="small"
                                             renderInput={(params) => (
                                               <TextField
                                                 {...params}
-                                                label={
-                                                  <span>
-                                                    Bank Account <span className="asterisk">*</span>
-                                                  </span>
-                                                }
-                                                name="accountName"
-                                                error={!!fieldErrors.accountName}
-                                                helperText={fieldErrors.accountName ? fieldErrors.accountName : ''}
-                                                
+                                                label="Account Name"
+                                                variant="outlined"
+                                                error={!!detailsTableErrors[index]?.accountName}
+                                                helperText={detailsTableErrors[index]?.accountName}
                                               />
                                             )}
+                                          /> */}
+                                        <td>
+                                          <Autocomplete
+                                            options={options}
+                                            getOptionLabel={(option) => option.accountName || ''}
+                                            groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')}
+                                            value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
+                                            onChange={(event, newValue) => {
+                                              const value = newValue ? newValue.accountName : '';
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
+                                              );
+
+                                              // Clear the error for the current row and field
+                                              setDetailsTableErrors((prevErrors) =>
+                                                prevErrors.map((err, idx) => (idx === index ? { ...err, accountName: '' } : err))
+                                              );
+                                            }}
+                                            size="small"
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                label="Account Name"
+                                                variant="outlined"
+                                                error={!!detailsTableErrors[index]?.accountName}
+                                                helperText={detailsTableErrors[index]?.accountName}
+                                              />
+                                            )}
+                                            sx={{ width: 250 }}
                                           />
                                         </td>
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.subledgerName}
                                             disabled
-                                            fullWidth
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>
@@ -806,13 +811,8 @@ const ContraVoucher = () => {
                                           <input
                                             value={row.debit}
                                             onChange={(e) => handleDebitChange(e, row, index)}
+                                            maxLength="20"
                                             className={detailsTableErrors[index]?.debit ? 'error form-control' : 'form-control'}
-                                            helperText={
-                                              <span style={{ color: 'red' }}>
-                                                {detailsTableErrors.debit ? detailsTableErrors.debit : ''}
-                                              </span>
-                                            }
-                                            error={!!detailsTableErrors.debit}
                                           />
                                           {detailsTableErrors[index]?.debit && (
                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -823,8 +823,8 @@ const ContraVoucher = () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.credit}
-                                            // style={{ width: '160px' }}
                                             onChange={(e) => handleCreditChange(e, row, index)}
+                                            maxLength="20"
                                             className={detailsTableErrors[index]?.credit ? 'error form-control' : 'form-control'}
                                           />
                                           {detailsTableErrors[index]?.credit && (
@@ -833,11 +833,10 @@ const ContraVoucher = () => {
                                             </div>
                                           )}
                                         </td>
+
                                         <td className="border px-2 py-2">
                                           <input
-                                            type="text"
                                             value={row.narration}
-                                            // style={{ width: '160px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>

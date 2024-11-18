@@ -69,13 +69,13 @@ const AdjustmentJournal = () => {
     { accessorKey: 'currency', header: 'Currency', size: 140 },
     { accessorKey: 'exRate', header: 'Ex.Rate', size: 140 },
     { accessorKey: 'refNo', header: 'Ref No', size: 140 },
-    { accessorKey: 'docId', header: 'Document Id', size: 140 }
+    { accessorKey: 'docId', header: 'document No', size: 140 }
   ];
 
   const [detailsTableData, setDetailsTableData] = useState([
     {
       id: 1,
-      accountsName: '',
+      accountName: '',
       creditAmount: '',
       debitAmount: '',
       creditBase: '',
@@ -86,7 +86,7 @@ const AdjustmentJournal = () => {
   ]);
   const [detailsTableErrors, setDetailsTableErrors] = useState([
     {
-      accountsName: '',
+      accountName: '',
       creditAmount: '',
       debitAmount: '',
       creditBase: '',
@@ -99,9 +99,9 @@ const AdjustmentJournal = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const currencyData = await getAllActiveCurrency(orgId);
-        // setCurrencies(currencyData);
-        // console.log('currency', currencyData);
+        const currencyData = await getAllActiveCurrency(orgId);
+        setCurrencies(currencyData);
+        console.log('currency', currencyData);
       } catch (error) {
         console.error('Error fetching country data:', error);
       }
@@ -165,7 +165,7 @@ const AdjustmentJournal = () => {
       remarks: ''
     });
     setDetailsTableData([
-      { id: 1, accountsName: '', creditAmount: '', debitAmount: '', creditBase: '', debitBase: '', subLedgerCode: '', subledgerName: '' }
+      { id: 1, accountName: '', creditAmount: '', debitAmount: '', creditBase: '', debitBase: '', subLedgerCode: '', subledgerName: '' }
     ]);
     setDetailsTableErrors('');
     setEditId('');
@@ -176,7 +176,6 @@ const AdjustmentJournal = () => {
     const { name, value, selectionStart, selectionEnd, type } = e.target;
     let errorMessage = '';
 
-    // Handle specific field validations
     switch (name) {
       case 'exRate':
         if (isNaN(value)) errorMessage = 'Invalid format';
@@ -227,7 +226,6 @@ const AdjustmentJournal = () => {
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date);
     console.log('formattedDate', formattedDate);
-    // const formattedDate = dayjs(date).format('YYYY-MM-DD');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
 
@@ -242,7 +240,7 @@ const AdjustmentJournal = () => {
     }
     const newRow = {
       id: Date.now(),
-      accountsName: '',
+      accountName: '',
       creditAmount: '',
       debitAmount: '',
       creditBase: '',
@@ -251,7 +249,10 @@ const AdjustmentJournal = () => {
       subledgerName: ''
     };
     setDetailsTableData([...detailsTableData, newRow]);
-    setDetailsTableErrors([...detailsTableErrors, { accountsName: '', subLedgerCode: '', subledgerName: '' }]);
+    setDetailsTableErrors([
+      ...detailsTableErrors,
+      { accountName: '', subLedgerCode: '', subledgerName: '', creditAmount: '', debitAmount: '', creditBase: '', debitBase: '' }
+    ]);
   };
 
   const isLastRowEmpty = (table) => {
@@ -259,7 +260,15 @@ const AdjustmentJournal = () => {
     if (!lastRow) return false;
 
     if (table === detailsTableData) {
-      return !lastRow.accountsName || !lastRow.subLedgerCode || !lastRow.subledgerName;
+      return (
+        !lastRow.accountName ||
+        !lastRow.subLedgerCode ||
+        !lastRow.subledgerName 
+        //||  !lastRow.debitAmount ||
+        // !lastRow.creditBase ||
+        // !lastRow.creditAmount ||
+        // !lastRow.debitBase
+      );
     }
     return false;
   };
@@ -270,10 +279,13 @@ const AdjustmentJournal = () => {
         const newErrors = [...prevErrors];
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
-          creditAmount: !table[table.length - 1].creditAmount ? 'Credit Account is required' : '',
-          debitAmount: !table[table.length - 1].debitAmount ? 'Debit Amount Code is required' : '',
-          creditBase: !table[table.length - 1].creditBase ? 'Credit Base Name is required' : '',
-          debitBase: !table[table.length - 1].debitBase ? 'Debit Base Name is required' : ''
+          accountName: !table[table.length - 1].accountName ? 'Account Name is required' : '',
+          subledgerName: !table[table.length - 1].subledgerName ? 'Sub Ledger Name is required' : '',
+          subLedgerCode: !table[table.length - 1].subLedgerCode ? 'Sub Ledger Code is required' : '',
+          // debitAmount: !table[table.length - 1].debitAmount ? 'Debit is required' : '',
+          // creditAmount: !table[table.length - 1].creditAmount ? 'Credit is required' : '',
+          // debitBase: !table[table.length - 1].debitBase ? 'Debit Base is required' : '',
+          // creditBase: !table[table.length - 1].creditBase ? 'Credit Base is required' : ''
         };
         return newErrors;
       });
@@ -292,10 +304,16 @@ const AdjustmentJournal = () => {
 
   const handleDebitChange = (e, row, index) => {
     const value = e.target.value;
-
+  
     if (/^\d{0,20}$/.test(value)) {
-      setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, debitAmount: value, creditAmount: value ? 0 : '', debitBase: value,creditBase:value ? 0 : '' } : r)));
-
+      setDetailsTableData((prev) =>
+        prev.map((r) =>
+          r.id === row.id
+            ? { ...r, debitAmount: value, creditAmount: value ? 0 : '', debitBase: value, creditBase: value ? 0 : '' }
+            : r
+        )
+      );
+  
       setDetailsTableErrors((prev) => {
         const newErrors = [...prev];
         newErrors[index] = {
@@ -307,6 +325,54 @@ const AdjustmentJournal = () => {
       });
     }
   };
+  
+
+  const handleCreditChange = (e, row, index) => {
+    const value = e.target.value;
+  
+    if (/^\d{0,20}$/.test(value)) {
+      setDetailsTableData((prev) =>
+        prev.map((r) =>
+          r.id === row.id
+            ? { ...r, creditAmount: value, debitAmount: value ? 0 : '', creditBase: value, debitBase: value ? 0 : '' }
+            : r
+        )
+      );
+  
+      setDetailsTableErrors((prev) => {
+        const newErrors = [...prev];
+        newErrors[index] = {
+          ...newErrors[index],
+          creditAmount: !value ? 'Credit Amount is required' : '',
+          creditBase: !value ? 'Credit Base is required' : ''
+        };
+        return newErrors;
+      });
+    }
+  };
+  
+
+  // const handleDebitChange = (e, row, index) => {
+  //   const value = e.target.value;
+
+  //   if (/^\d{0,20}$/.test(value)) {
+  //     setDetailsTableData((prev) =>
+  //       prev.map((r) =>
+  //         r.id === row.id ? { ...r, debitAmount: value, creditAmount: value ? 0 : '', debitBase: value, creditBase: value ? 0 : '' } : r
+  //       )
+  //     );
+
+  //     setDetailsTableErrors((prev) => {
+  //       const newErrors = [...prev];
+  //       newErrors[index] = {
+  //         ...newErrors[index],
+  //         debitAmount: !value ? 'Debit Amount is required' : '',
+  //         debitBase: !value ? 'Debit Base is required' : ''
+  //       };
+  //       return newErrors;
+  //     });
+  //   }
+  // };
 
   // const handleCreditChange = (e, row, index) => {
   //   const value = e.target.value;
@@ -325,70 +391,46 @@ const AdjustmentJournal = () => {
   //   }
   // };
 
-  const handleCreditChange = (e, row, index) => {
-    const value = e.target.value;
-  
-    if (/^\d{0,20}$/.test(value)) {
-      setDetailsTableData((prev) => 
-        prev.map((r) => 
-          r.id === row.id 
-            ? { ...r, creditAmount: value, debitAmount: value ? 0 : '', creditBase: value, debitBase: value ? 0 : '' } 
-            : r
-        )
-      );
-  
-      setDetailsTableErrors((prev) => {
-        const newErrors = [...prev];
-        newErrors[index] = {
-          ...newErrors[index],
-          creditAmount: !value ? 'Credit Amount is required' : '',
-          creditBase: !value ? 'Credit Base is required' : ''
-        };
-        return newErrors;
-      });
-    }
-  };
-  
+  // const handleCreditChange = (e, row, index) => {
+  //   const value = e.target.value;
+
+  //   if (/^\d{0,20}$/.test(value)) {
+  //     setDetailsTableData((prev) =>
+  //       prev.map((r) =>
+  //         r.id === row.id ? { ...r, creditAmount: value, debitAmount: value ? 0 : '', creditBase: value, debitBase: value ? 0 : '' } : r
+  //       )
+  //     );
+
+  //     setDetailsTableErrors((prev) => {
+  //       const newErrors = [...prev];
+  //       newErrors[index] = {
+  //         ...newErrors[index],
+  //         creditAmount: !value ? 'Credit Amount is required' : '',
+  //         creditBase: !value ? 'Credit Base is required' : ''
+  //       };
+  //       return newErrors;
+  //     });
+  //   }
+  // };
+
   const handleView = () => {
     setShowForm(!showForm);
   };
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.currency) {
-      errors.currency = 'Currency is required';
-    }
-    if (!formData.exRate) {
-      errors.exRate = 'Ex Rate is required';
-    }
     if (!formData.refNo) {
-      errors.refNo = 'Ref No is required';
-    }
-    if (!formData.refDate) {
-      errors.refDate = 'Ref Date is required';
+      errors.refNo = 'Reference No is required';
     }
     if (!formData.suppRefNo) {
-      errors.suppRefNo = 'Supp Ref No is required';
-    }
-    if (!formData.suppRefDate) {
-      errors.suppRefDate = 'SuppRef Date is required';
+      errors.suppRefNo = 'suppRef Date No is required';
     }
 
     let detailTableDataValid = true;
     const newTableErrors = detailsTableData.map((row) => {
       const rowErrors = {};
-      if (!row.accountsName) {
-        rowErrors.accountsName = 'Account Name is required';
-        detailTableDataValid = false;
-      }
-      if (!row.creditAmount && !row.debitAmount) {
-        rowErrors.creditAmount = 'Credit or Debit Amount is required';
-        rowErrors.debitAmount = 'Credit or Debit Amount is required';
-        detailTableDataValid = false;
-      }
-      if (!row.creditBase && !row.debitBase) {
-        rowErrors.creditBase = 'Credit or Debit Base is required';
-        rowErrors.debitBase = 'Credit or Debit Base is required';
+      if (!row.accountName) {
+        rowErrors.accountName = 'Account Name is required';
         detailTableDataValid = false;
       }
       if (!row.subLedgerCode) {
@@ -396,64 +438,77 @@ const AdjustmentJournal = () => {
         detailTableDataValid = false;
       }
       if (!row.subledgerName) {
-        rowErrors.subledgerName = 'Sub Ledger Name is required';
+        rowErrors.subledgerName = 'Sub ledger Name is required';
         detailTableDataValid = false;
       }
-
+      if (!row.debitAmount) {
+        rowErrors.debitAmount = 'Debit Amount is required';
+        detailTableDataValid = false;
+      }
+      if (!row.creditAmount) {
+        rowErrors.creditAmount = 'Credit Amount is required';
+        detailTableDataValid = false;
+      }
+      if (!row.creditBase) {
+        rowErrors.creditBase = 'Credit Base is required';
+        detailTableDataValid = false;
+      }
+      if (!row.debitBase) {
+        rowErrors.debitBase = 'Debit Base is required';
+        detailTableDataValid = false;
+      }
       return rowErrors;
     });
     setFieldErrors(errors);
-
     setDetailsTableErrors(newTableErrors);
 
     if (Object.keys(errors).length === 0 && detailTableDataValid) {
-      const AdjustmentJournalVO = detailsTableData.map((row) => ({
-        ...(editId && { id: row.id }),
-        accountsName: row.accountsName,
-        creditAmount: parseInt(row.creditAmount),
-        debitAmount: parseInt(row.debitAmount),
-        debitBase: parseInt(row.debitBase),
-        creditBase: parseInt(row.creditBase),
-        subLedgerCode: row.subLedgerCode,
-        subledgerName: row.subledgerName
+          const AdjustmentJournalVO = detailsTableData.map((row) => ({
+            ...(editId && { id: row.id }),
+            accountsName: row.accountName,
+            creditAmount: parseInt(row.creditAmount),
+            debitAmount: parseInt(row.debitAmount),
+            debitBase: parseInt(row.debitBase),
+            creditBase: parseInt(row.creditBase),
+            subLedgerCode: row.subLedgerCode,
+            subledgerName: row.subledgerName
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
         branch: branch,
-        branchCode: branchCode,
-        createdBy: loginUserName,
-        finYear: finYear,
-        orgId: orgId,
-        accountParticularsDTO: AdjustmentJournalVO,
-        adjustmentType: formData.adjustmentType,
-        currency: formData.currency,
-        exRate: parseInt(formData.exRate),
-        refDate: dayjs(formData.refDate).format('YYYY-MM-DD'),
-        refNo: formData.refNo,
-        suppRefDate: dayjs(formData.suppRefDate).format('YYYY-MM-DD'),
-        suppRefNo: formData.suppRefNo,
-        remarks: formData.remarks
+              branchCode: branchCode,
+              createdBy: loginUserName,
+              finYear: finYear,
+              orgId: orgId,
+              accountParticularsDTO: AdjustmentJournalVO,
+              adjustmentType: formData.adjustmentType,
+              currency: formData.currency,
+              exRate: parseInt(formData.exRate),
+              refDate: dayjs(formData.refDate).format('YYYY-MM-DD'),
+              refNo: formData.refNo,
+              suppRefDate: dayjs(formData.suppRefDate).format('YYYY-MM-DD'),
+              suppRefNo: formData.suppRefNo,
+              remarks: formData.remarks
       };
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `transaction/updateCreateAdjustmentJournal`, saveFormData);
-        if (response.status === true) {
-          console.log('Response:', response);
-          showToast('success', editId ? 'Adjustment Journal Updated Successfully' : 'Adjustment Journal Created successfully');
-          getAllAdjustmentJournalByOrgId();
-          handleClear();
-        } else {
-          showToast('error', response.paramObjectsMap.message || 'Adjustment Journal creation failed');
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        showToast('error', 'Adjustment Journal creation failed');
-      }
+              const response = await apiCalls('put', `transaction/updateCreateAdjustmentJournal`, saveFormData);
+              if (response.status === true) {
+                console.log('Response:', response);
+                showToast('success', editId ? 'Adjustment Journal Updated Successfully' : 'Adjustment Journal Created successfully');
+                getAllAdjustmentJournalByOrgId();
+                handleClear();
+              } else {
+                showToast('error', response.paramObjectsMap.message || 'Adjustment Journal creation failed');
+              }
+            } catch (error) {
+              console.error('Error:', error);
+              showToast('error', 'Adjustment Journal creation failed');
+            }
     } else {
       setFieldErrors(errors);
     }
   };
-
   const getAdjustmentJournalDocId = async () => {
     try {
       const response = await apiCalls(
@@ -504,7 +559,7 @@ const AdjustmentJournal = () => {
         setDetailsTableData(
           adVO.accountParticularsVO.map((row) => ({
             id: row.id,
-            accountsName: row.accountsName,
+            accountName: row.accountsName,
             creditAmount: row.creditAmount,
             debitAmount: row.debitAmount,
             debitBase: row.debitBase,
@@ -576,7 +631,7 @@ const AdjustmentJournal = () => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="docId"
-                    label="Document Id"
+                    label="document No"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -658,7 +713,6 @@ const AdjustmentJournal = () => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         label="Reference Date"
-                        // error={!!fieldErrors.refDate}
                         value={formData.refDate}
                         onChange={(date) => handleDateChange('refDate', date)}
                         slotProps={{
@@ -667,7 +721,6 @@ const AdjustmentJournal = () => {
                         format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
-                    {/* {fieldErrors.refDate && <p className="dateErrMsg">Ref Date is required</p>} */}
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
@@ -699,11 +752,9 @@ const AdjustmentJournal = () => {
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
-                        // error={!!fieldErrors.suppRefDate}
                         format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
-                    {/* {fieldErrors.suppRefDate && <p className="dateErrMsg">suppRef Date is required</p>} */}
                   </FormControl>
                 </div>
               </div>
@@ -755,8 +806,8 @@ const AdjustmentJournal = () => {
                                     <th className="table-header">Account Name</th>
                                     <th className="table-header">Sub Ledger Name</th>
                                     <th className="table-header">Sub Ledger Code</th>
-                                    <th className="table-header">Debit</th>
-                                    <th className="table-header">Credit</th>
+                                    <th className="table-header">Debit Amount</th>
+                                    <th className="table-header">Credit Amount</th>
                                     <th className="table-header">Debit (Base)</th>
                                     <th className="table-header">Credit (Base)</th>
                                   </tr>
@@ -782,57 +833,32 @@ const AdjustmentJournal = () => {
                                       <td className="text-center">
                                         <div className="pt-2">{index + 1}</div>
                                       </td>
-                                      <td className="border px-2 py-2">
+                                      <td>
                                         <Autocomplete
-                                          disablePortal
                                           options={allAccountName}
-                                          getOptionLabel={(option) => option?.accountName || ''}
-                                          fullWidth
-                                          size="small"
-                                          value={
-                                            formData.accountName ? allAccountName.find((c) => c.accountName === formData.accountName) : null
-                                          }
-                                          // onChange={(event, newValue) => {
-                                          //   handleInputChange({
-                                          //     target: {
-                                          //       name: 'accountName',
-                                          //       value: newValue ? newValue.accountName : ''
-                                          //     }
-                                          //   });
-                                          // }}
-                                          onChange={(e) => {
-                                            // handleInputChange({
-                                            //   target: {
-                                            //           name: 'accountName',
-                                            //           value: newValue ? newValue.accountName : ''
-                                            //         }
-                                            // })
-                                            const value = e.target.value;
+                                          getOptionLabel={(option) => option.accountName || ''}
+                                          groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')}
+                                          value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
+                                          onChange={(event, newValue) => {
+                                            const value = newValue ? newValue.accountName : '';
                                             setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, accountsName: value } : r))
+                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
                                             );
-                                            setDetailsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                accountsName: !value ? 'Account Name is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
+                                            setDetailsTableErrors((prevErrors) =>
+                                              prevErrors.map((err, idx) => (idx === index ? { ...err, accountName: '' } : err))
+                                            );
                                           }}
+                                          size="small"
                                           renderInput={(params) => (
                                             <TextField
                                               {...params}
-                                              label={
-                                                <span>
-                                                  Bank Account <span className="asterisk">*</span>
-                                                </span>
-                                              }
-                                              name="accountName"
-                                              error={!!fieldErrors.accountName}
-                                              helperText={fieldErrors.accountName ? fieldErrors.accountName : ''}
+                                              label="Account Name"
+                                              variant="outlined"
+                                              error={!!detailsTableErrors[index]?.accountName}
+                                              helperText={detailsTableErrors[index]?.accountName}
                                             />
                                           )}
+                                          sx={{ width: 250 }}
                                         />
                                       </td>
                                       <td className="border px-2 py-2">
@@ -888,6 +914,7 @@ const AdjustmentJournal = () => {
                                       <td className="border px-2 py-2">
                                         <input
                                           value={row.debitAmount}
+                                          maxLength="20"
                                           onChange={(e) => handleDebitChange(e, row, index)}
                                           className={detailsTableErrors[index]?.debitAmount ? 'error form-control' : 'form-control'}
                                         />
@@ -900,6 +927,7 @@ const AdjustmentJournal = () => {
                                       <td className="border px-2 py-2">
                                         <input
                                           value={row.creditAmount}
+                                          maxLength="20"
                                           onChange={(e) => handleCreditChange(e, row, index)}
                                           className={detailsTableErrors[index]?.creditAmount ? 'error form-control' : 'form-control'}
                                         />
@@ -913,20 +941,7 @@ const AdjustmentJournal = () => {
                                         <input
                                           value={row.debitBase}
                                           onChange={(e) => handleDebitChange(e, row, index)}
-                                          // onChange={(e) => {
-                                          //   const value = e.target.value;
-                                          //   setDetailsTableData((prev) =>
-                                          //     prev.map((r) => (r.id === row.id ? { ...r, debitBase: value } : r))
-                                          //   );
-                                          //   setDetailsTableErrors((prev) => {
-                                          //     const newErrors = [...prev];
-                                          //     newErrors[index] = {
-                                          //       ...newErrors[index],
-                                          //       debitBase: !value ? 'debitBase is required' : ''
-                                          //     };
-                                          //     return newErrors;
-                                          //   });
-                                          // }}
+                                          maxLength="20"
                                           className={detailsTableErrors[index]?.debitBase ? 'error form-control' : 'form-control'}
                                         />
                                         {detailsTableErrors[index]?.debitBase && (
@@ -939,22 +954,8 @@ const AdjustmentJournal = () => {
                                         <input
                                           value={row.creditBase}
                                           onChange={(e) => handleCreditChange(e, row, index)}
-                                          // onChange={(e) => {
-                                          //   const value = e.target.value;
-                                          //   setDetailsTableData((prev) =>
-                                          //     prev.map((r) => (r.id === row.id ? { ...r, creditBase: value } : r))
-                                          //   );
-                                          //   setDetailsTableErrors((prev) => {
-                                          //     const newErrors = [...prev];
-                                          //     newErrors[index] = {
-                                          //       ...newErrors[index],
-                                          //       creditBase: !value ? 'Credit Base is required' : ''
-                                          //     };
-                                          //     return newErrors;
-                                          //   });
-                                          // }}
+                                          maxLength="20"
                                           className={detailsTableErrors[index]?.creditBase ? 'error form-control' : 'form-control'}
-                                          
                                         />
                                         {detailsTableErrors[index]?.creditBase && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
