@@ -129,17 +129,18 @@ export const JobCard = () => {
   };
 
 
+ 
   const getAllTmsJobCardById = async (row) => {
-    console.log('Row selected:', row);  // Debugging the selected row
+    console.log('Row selected:', row);  
     setShowForm(true);
     try {
       const result = await apiCalls('get', `/transaction/getAllTmsJobCardById?id=${row.original.id}`);
       if (result) {
         const jnVo = result.paramObjectsMap.jobCardVO[0];
-        console.log('DataToEdit', jnVo);  
+        console.log('DataToEdit', jnVo);
         setEditId(row.original.id);
-        setDocId(jnVo.docId);  
-        getSalesPerson(jnVo.customer)
+        setDocId(jnVo.docId);
+        getSalesPerson(jnVo.customer);
         setFormData({ 
           customer: jnVo.customer || '',
           salesPerson: jnVo.salesPerson || '',
@@ -147,20 +148,18 @@ export const JobCard = () => {
           income: jnVo.income || '',
           expense: jnVo.expense || '',
           profit: jnVo.profit || '',
-          closed: jnVo.closed || false,
-          remarks: jnVo.remarks || '',
-          salesCategory: jnVo.salesCategory || '',
-          closedOn: jnVo.closedOn || '',
-          // count: jnVo.count || 0,                    // Ensure count is set (default to 0 if not present)
-          // Name: jnVo.Name || '',                     // Ensure Name is set (fallback to empty if not present)
-        }); setDetailsTableData(
+          closed: jnVo.closed || 'false',
+          remarks: jnVo.remarks || '', 
+          // closedOn: jnVo.closedOn,
+          closedOn: jnVo.closedOn ? dayjs(jnVo.closedOn, 'YYYY-MM-DDTHH:mm:ss') : null,
+        });
+        setDetailsTableData(
           jnVo.costCenterJobCardVO?.map((row) => ({
             id: row.id,
             accountName: row.accountName,
             amount: row.amount || 0,
           })) || []
         );
-
       } else {
         console.error('No data found for the selected ID');
       }
@@ -168,10 +167,12 @@ export const JobCard = () => {
       console.error('Error fetching data:', error);
     }
   };
-
-
-
-  const handleClear = () => {
+  
+  useEffect(() => {
+    console.log('docId updated:', docId);
+  }, [docId]);
+  
+  const handleClear = async () => {
     setFormData({
       customer: '',
       operationClosed: '',
@@ -183,17 +184,19 @@ export const JobCard = () => {
       expense: '',
       profit: '',
       remarks: '',
-      date: dayjs()
-    })
-
+      date: dayjs(),
+      closedOn: null,
+    });
+  
     setDetailsTableData([
       {
-        id: 1, accountsName: '',
-        amount: ''
-      }
+        id: 1,
+        accountsName: '',
+        amount: '',
+      },
     ]);
-
-    setFieldErrors({ 
+  
+    setFieldErrors({
       customer: '',
       operationClosed: '',
       financeClosed: '',
@@ -202,13 +205,21 @@ export const JobCard = () => {
       income: '',
       expense: '',
       profit: '',
-      remarks: ''
-    })
+      remarks: '',
+    });
     setDetailsTableErrors([{ accountName: '', amount: '' }]);
     setEditId('');
-    getTmsJobCardDocId();
+    
+    // Ensure getTmsJobCardDocId updates docId
+    try {
+      await getTmsJobCardDocId();
+      console.log('DocId updated after clearing form.');
+    } catch (error) {
+      console.error('Error updating docId on clear:', error);
+    }
+  
     getAllCustomers();
-  }
+  };
   const handleList = () => {
     setShowForm(!showForm);
   };
@@ -228,7 +239,7 @@ export const JobCard = () => {
       errors.profit = 'Profit is required';
     }
     if (!formData.closedOn) {
-      errors.closedOn = 'closedOn is required';
+      errors.closedOn = 'Closed On is required';
     }
     if (!formData.remarks) {
       errors.remarks = 'Remarks is required';
@@ -263,7 +274,7 @@ export const JobCard = () => {
 
       const saveFormData = {
         ...(editId && { id: editId }),
-        active: formData.active || false,                 
+        active: formData.active || false,
         customer: formData.customer || '',
         salesPerson: formData.salesPerson || '',
         salesCategory: formData.salesCategory || '',
@@ -272,6 +283,10 @@ export const JobCard = () => {
         profit: formData.profit || 0,
         remarks: formData.remarks || '',
         closed: formData.closed,
+        // closedOn: formData.closedOn,
+        closedOn: formData.closedOn
+        ? dayjs(formData.closedOn).format('YYYY-MM-DDTHH:mm:ss') // Format datetime
+        : null,
         orgId: orgId,
         branch: branch,
         branchCode: branchCode,
@@ -280,7 +295,7 @@ export const JobCard = () => {
         finYear: finYear,
         financeClosed: FormDataEvent.financeClosed || false,
         operationClosed: FormDataEvent.operationClosed || false,
-        costCenterTmsJobCardDTO: glOpeningVO
+        costCenterTmsJobCardDTO: glOpeningVO,
       };
 
 
@@ -292,6 +307,7 @@ export const JobCard = () => {
           showToast('success', editId ? 'Job Card Updated Successfully' : 'Job Card created successfully');
           handleClear();
           setIsLoading(false);
+          getAllJobCard();
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Job Card creation failed');
           setIsLoading(false);
@@ -387,6 +403,8 @@ export const JobCard = () => {
     }
   };
  
+ 
+
 
   const getTmsJobCardDocId = async () => {
     try {
@@ -394,18 +412,18 @@ export const JobCard = () => {
         'get',
         `transaction/getTmsJobCardDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
-      console.log('docid working');
-
-      setDocId(response.paramObjectsMap.tmsJobCardDocId);
+      if (response.paramObjectsMap?.tmsJobCardDocId) {
+        console.log('Fetched docId:', response.paramObjectsMap.tmsJobCardDocId);
+        setDocId(response.paramObjectsMap.tmsJobCardDocId);
+      } else {
+        console.error('No docId found in response');
+      }
     } catch (error) {
-      console.error('Error fetching gate passes:', error);
+      console.error('Error fetching docId:', error);
     }
   };
-
-
-
-
-
+  
+ 
   const getAllCustomers = async () => {
     try {
       const response = await apiCalls(
@@ -493,7 +511,7 @@ export const JobCard = () => {
           <>
             <div className="row d-flex"> 
               <div className="col-md-3 mb-3">
-                <TextField id="docId" label="Doc No" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
+                <TextField id="docId" label="Doc No" variant="outlined" size="small" fullWidth name="docId"  value={docId} disabled />
               </div>
 
               <div className="col-md-3 mb-3">
@@ -795,7 +813,7 @@ export const JobCard = () => {
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
-                                    <td className="border px-2 py-2">
+                                    {/* <td className="border px-2 py-2">
                                       <Autocomplete
                                         disablePortal
                                         options={allAccountName}
@@ -823,7 +841,37 @@ export const JobCard = () => {
                                           />
                                         )}
                                       />
-                                    </td>
+                                    </td> */}
+
+<td>
+                                        <Autocomplete
+                                          options={allAccountName}
+                                          getOptionLabel={(option) => option.accountName || ''}
+                                          groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')}
+                                          value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
+                                          onChange={(event, newValue) => {
+                                            const value = newValue ? newValue.accountName : '';
+                                            setDetailsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
+                                            );
+                                            setDetailsTableErrors((prevErrors) =>
+                                              prevErrors.map((err, idx) => (idx === index ? { ...err, accountName: '' } : err))
+                                            );
+                                          }}
+                                          size="small"
+                                          renderInput={(params) => (
+                                            <TextField
+                                              {...params}
+                                              label="Account Name"
+                                              variant="outlined"
+                                              error={!!detailsTableErrors[index]?.accountName}
+                                              helperText={detailsTableErrors[index]?.accountName}
+                                            />
+                                          )}
+                                          sx={{ width: 250 }}
+                                        />
+                                      </td>
+
 
                                     <td className="border px-2 py-2">
                                       <input
