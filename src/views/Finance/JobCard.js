@@ -58,7 +58,7 @@ export const JobCard = () => {
     accountName: '',
     amount: ''
   }]);
-  const [formData, setFormData] = useState({ 
+  const [formData, setFormData] = useState({
     customer: '',
     operationClosed: '',
     financeClosed: '',
@@ -70,9 +70,10 @@ export const JobCard = () => {
     income: '',
     expense: '',
     profit: '',
-    remarks: ''
+    remarks: '',
+    active: true
   })
-  const [fieldErrors, setFieldErrors] = useState({ 
+  const [fieldErrors, setFieldErrors] = useState({
     customer: '',
     operationClosed: '',
     date: new Date(),
@@ -129,9 +130,9 @@ export const JobCard = () => {
   };
 
 
- 
+
   const getAllTmsJobCardById = async (row) => {
-    console.log('Row selected:', row);  
+    console.log('Row selected:', row);
     setShowForm(true);
     try {
       const result = await apiCalls('get', `/transaction/getAllTmsJobCardById?id=${row.original.id}`);
@@ -139,19 +140,20 @@ export const JobCard = () => {
         const jnVo = result.paramObjectsMap.jobCardVO[0];
         console.log('DataToEdit', jnVo);
         setEditId(row.original.id);
-        setDocId(jnVo.docId);
+        // setDocId(jnVo.docId);
         getSalesPerson(jnVo.customer);
-        setFormData({ 
+        setFormData({
+          docId:jnVo.docId,
           customer: jnVo.customer || '',
           salesPerson: jnVo.salesPerson || '',
           date: jnVo.date ? dayjs(jnVo.date, 'YYYY-MM-DD') : dayjs(),
           income: jnVo.income || '',
           expense: jnVo.expense || '',
           profit: jnVo.profit || '',
-          closed: jnVo.closed || 'false',
+          closed: jnVo.closedOn ? true : false,
           remarks: jnVo.remarks || '', 
-          // closedOn: jnVo.closedOn,
           closedOn: jnVo.closedOn ? dayjs(jnVo.closedOn, 'YYYY-MM-DDTHH:mm:ss') : null,
+          active: jnVo.active 
         });
         setDetailsTableData(
           jnVo.costCenterJobCardVO?.map((row) => ({
@@ -167,11 +169,11 @@ export const JobCard = () => {
       console.error('Error fetching data:', error);
     }
   };
-  
+
   useEffect(() => {
     console.log('docId updated:', docId);
   }, [docId]);
-  
+
   const handleClear = async () => {
     setFormData({
       customer: '',
@@ -187,7 +189,7 @@ export const JobCard = () => {
       date: dayjs(),
       closedOn: null,
     });
-  
+
     setDetailsTableData([
       {
         id: 1,
@@ -195,7 +197,7 @@ export const JobCard = () => {
         amount: '',
       },
     ]);
-  
+
     setFieldErrors({
       customer: '',
       operationClosed: '',
@@ -209,7 +211,7 @@ export const JobCard = () => {
     });
     setDetailsTableErrors([{ accountName: '', amount: '' }]);
     setEditId('');
-    
+
     // Ensure getTmsJobCardDocId updates docId
     try {
       await getTmsJobCardDocId();
@@ -217,7 +219,7 @@ export const JobCard = () => {
     } catch (error) {
       console.error('Error updating docId on clear:', error);
     }
-  
+
     getAllCustomers();
   };
   const handleList = () => {
@@ -285,8 +287,8 @@ export const JobCard = () => {
         closed: formData.closed,
         // closedOn: formData.closedOn,
         closedOn: formData.closedOn
-        ? dayjs(formData.closedOn).format('YYYY-MM-DDTHH:mm:ss') // Format datetime
-        : null,
+          ? dayjs(formData.closedOn).format('YYYY-MM-DDTHH:mm:ss') // Format datetime
+          : null,
         orgId: orgId,
         branch: branch,
         branchCode: branchCode,
@@ -322,7 +324,7 @@ export const JobCard = () => {
       setFieldErrors(errors);
     }
   }
- 
+
 
 
 
@@ -402,8 +404,8 @@ export const JobCard = () => {
       });
     }
   };
- 
- 
+
+
 
 
   const getTmsJobCardDocId = async () => {
@@ -422,8 +424,8 @@ export const JobCard = () => {
       console.error('Error fetching docId:', error);
     }
   };
-  
- 
+
+
   const getAllCustomers = async () => {
     try {
       const response = await apiCalls(
@@ -509,9 +511,9 @@ export const JobCard = () => {
         </div>
         {showForm ? (
           <>
-            <div className="row d-flex"> 
+            <div className="row d-flex">
               <div className="col-md-3 mb-3">
-                <TextField id="docId" label="Doc No" variant="outlined" size="small" fullWidth name="docId"  value={docId} disabled />
+                <TextField id="docId" label="Doc No" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
               </div>
 
               <div className="col-md-3 mb-3">
@@ -713,7 +715,7 @@ export const JobCard = () => {
               </div>
 
               {/* Checkbox to set 'closed' state */}
-              <div className="col-md-3 mb-3 ml-4">
+              <div className="col-md-2 mb-3 ml-4">
                 <FormGroup>
                   <FormControlLabel
                     control={
@@ -727,6 +729,12 @@ export const JobCard = () => {
                     label="Closed"
                   />
                 </FormGroup>
+              </div>
+              <div className="col-md-3 mb-3"   style={{ margin: '0 -50px', }}>
+                <FormControlLabel
+                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
+                  label="Active"
+                />
               </div>
             </div>
 
@@ -843,34 +851,34 @@ export const JobCard = () => {
                                       />
                                     </td> */}
 
-<td>
-                                        <Autocomplete
-                                          options={allAccountName}
-                                          getOptionLabel={(option) => option.accountName || ''}
-                                          groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')}
-                                          value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
-                                          onChange={(event, newValue) => {
-                                            const value = newValue ? newValue.accountName : '';
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
-                                            );
-                                            setDetailsTableErrors((prevErrors) =>
-                                              prevErrors.map((err, idx) => (idx === index ? { ...err, accountName: '' } : err))
-                                            );
-                                          }}
-                                          size="small"
-                                          renderInput={(params) => (
-                                            <TextField
-                                              {...params}
-                                              label="Account Name"
-                                              variant="outlined"
-                                              error={!!detailsTableErrors[index]?.accountName}
-                                              helperText={detailsTableErrors[index]?.accountName}
-                                            />
-                                          )}
-                                          sx={{ width: 250 }}
-                                        />
-                                      </td>
+                                    <td>
+                                      <Autocomplete
+                                        options={allAccountName}
+                                        getOptionLabel={(option) => option.accountName || ''}
+                                        groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')}
+                                        value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
+                                        onChange={(event, newValue) => {
+                                          const value = newValue ? newValue.accountName : '';
+                                          setDetailsTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
+                                          );
+                                          setDetailsTableErrors((prevErrors) =>
+                                            prevErrors.map((err, idx) => (idx === index ? { ...err, accountName: '' } : err))
+                                          );
+                                        }}
+                                        size="small"
+                                        renderInput={(params) => (
+                                          <TextField
+                                            {...params}
+                                            label="Account Name"
+                                            variant="outlined"
+                                            error={!!detailsTableErrors[index]?.accountName}
+                                            helperText={detailsTableErrors[index]?.accountName}
+                                          />
+                                        )}
+                                        sx={{ width: 250 }}
+                                      />
+                                    </td>
 
 
                                     <td className="border px-2 py-2">
