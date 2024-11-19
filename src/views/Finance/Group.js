@@ -490,6 +490,7 @@ const Group = () => {
                   <MenuItem value="PAYABLE A/C">PAYABLE A/C</MenuItem>
                   <MenuItem value="OTHERS">OTHERS</MenuItem>
                   <MenuItem value="BANK">BANK</MenuItem>
+                  <MenuItem value="TAX">TAX</MenuItem>
                 </Select>
                 {fieldErrors.category && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
