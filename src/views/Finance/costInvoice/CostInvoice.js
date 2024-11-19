@@ -12,6 +12,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { FormControl, FormHelperText, Checkbox, FormControlLabel, FormLabel, InputLabel, MenuItem, Select } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import ActionButton from 'utils/ActionButton';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -43,6 +44,19 @@ const CostInvoice = () => {
   const [jobNoList, setJobNoList] = useState([]);
   const [chargeCode, setChargeCode] = useState([]);
   const [addressType, setAddressType] = useState([]);
+  const [showChargeDetails, setShowChargeDetails] = useState(false);
+  const [chargeDetails, setChargeDetails] = useState([
+    {
+      id: 1,
+      chargeDesc: '',
+      chargeCode: '',
+      gChargeCode: '',
+      gstPercent: '',
+      sac: '',
+      taxable: '',
+      lcAmount: ''
+    }
+  ]);
   const [formData, setFormData] = useState({
     accuralid: '',
     address: '',
@@ -97,6 +111,8 @@ const CostInvoice = () => {
       qty: '',
       rate: '',
       sac: '',
+      fcAmount: '',
+      lcAmount: '',
       taxable: ''
     }
   ]);
@@ -116,6 +132,8 @@ const CostInvoice = () => {
       qty: '',
       rate: '',
       sac: '',
+      fcAmount: '',
+      lcAmount: '',
       taxable: ''
     }
   ]);
@@ -171,6 +189,116 @@ const CostInvoice = () => {
     { accessorKey: 'purVoucherNo', header: 'Pur Voucher No', size: 140 },
     { accessorKey: 'supplierType', header: 'Supplier Type', size: 140 }
   ];
+
+  // const handleFullGrid = async () => {
+  //   // Extract unique gstPercent values
+  //   const uniqueGstPercents = [...new Set(chargerCostInvoice.map((row) => row.gstPercent).filter(Boolean))];
+
+  //   if (uniqueGstPercents.length === 0) {
+  //     showToast("error",'No GST details found..!');
+  //     setShowChargeDetails(false);
+  //     return;
+  //   } else {
+  //     try {
+  //       // Call the API with unique GST percentages
+  //       const response = await apiCalls(
+  //         'get',
+  //         `/costInvoice/getChargeNameAndChargeCodeForIgst?orgId=${orgId}&gstTax=${uniqueGstPercents.join('&gstTax=')}`
+  //       );
+
+  //       const fetchedChargeDetails = response.paramObjectsMap.chargeDetails;
+  //       setShowChargeDetails(true);
+
+  //       // Perform calculations and merge with fetched details
+  //       const groupedByGstPercent = chargerCostInvoice.reduce((acc, row) => {
+  //         if (!acc[row.gstPercent]) {
+  //           acc[row.gstPercent] = 0;
+  //         }
+  //         acc[row.gstPercent] += parseFloat(row.gst || 0); // Sum `gst`
+  //         return acc;
+  //       }, {});
+
+  //       const updatedChargeDetails = Object.entries(groupedByGstPercent).map(([gstPercent, gst]) => {
+  //         const fetchedDetail = fetchedChargeDetails.find((detail) => Number(detail.gstPercent) === Number(gstPercent));
+
+  //         return {
+  //           gstPercent: Number(gstPercent),
+  //           lcAmount: gst.toFixed(2), // Format to two decimal places
+  //           ...fetchedDetail // Merge API response fields
+  //         };
+  //       });
+
+  //       // Update state
+  //       setChargeDetails(updatedChargeDetails);
+  //     } catch (error) {
+  //       console.error('Error fetching charge details:', error);
+  //     }
+  //   }
+  // };
+
+  const calculateTotTdsWhAmnt = () => {
+    const totalLcAmount = chargerCostInvoice.reduce((acc, curr) => acc + curr.lcAmount, 0);
+
+    const updatedTdsCostInvoiceDTO = tdsCostInvoiceDTO.map((item) => {
+      const tdsWithHoldingPer = parseFloat(item.tdsWithHoldingPer);
+      const totTdsWhAmnt = tdsWithHoldingPer ? (totalLcAmount * tdsWithHoldingPer) / 100 : 0;
+      return { ...item, totTdsWhAmnt: totTdsWhAmnt.toFixed(2) };
+    });
+
+    setTdsCostInvoiceDTO(updatedTdsCostInvoiceDTO);
+  };
+
+  // Call the calculate function when either chargerCostInvoice or tdsWithHoldingPer changes
+  useEffect(() => {
+    calculateTotTdsWhAmnt();
+  }, [chargerCostInvoice, tdsCostInvoiceDTO.map((item) => item.tdsWithHoldingPer)]);
+
+  // useEffect(() => {
+  //   const isUniformGstPercent = chargerCostInvoice.every((row) => row.gstPercent === chargerCostInvoice[0]?.gstPercent);
+
+  //   if (isUniformGstPercent) {
+  //     const totalGst = chargerCostInvoice.reduce((sum, row) => sum + (Number(row.gst) || 0), 0);
+
+  //     setChargeDetails((prevDetails) =>
+  //       prevDetails.map((detail) => ({
+  //         ...detail,
+  //         lcAmount: totalGst
+  //       }))
+  //     );
+  //   }
+  // }, [chargerCostInvoice, setChargeDetails]);
+
+  // useEffect(() => {
+  //   const calculateChargeDetails = () => {
+  //     const groupedByGstPercent = chargerCostInvoice.reduce((acc, row) => {
+  //       if (!acc[row.gstPercent]) {
+  //         acc[row.gstPercent] = 0;
+  //       }
+  //       acc[row.gstPercent] += parseFloat(row.gst || 0); // Sum `gst`
+  //       return acc;
+  //     }, {});
+
+  //     const updatedChargeDetails = Object.entries(groupedByGstPercent).map(([gstPercent, gst]) => ({
+  //       gstPercent: Number(gstPercent),
+  //       lcAmount: gst.toFixed(2) // Format to two decimal places
+  //     }));
+
+  //     // Update the state while retaining other fields
+  //     setChargeDetails((prevChargeDetails) => {
+  //       const prevDetailsMap = prevChargeDetails.reduce((map, detail) => {
+  //         map[detail.gstPercent] = detail;
+  //         return map;
+  //       }, {});
+
+  //       return updatedChargeDetails.map((detail) => ({
+  //         ...prevDetailsMap[detail.gstPercent], // Retain previous values for the same gstPercent
+  //         ...detail // Overwrite with new lcAmount and gstPercent
+  //       }));
+  //     });
+  //   };
+
+  //   calculateChargeDetails();
+  // }, [chargerCostInvoice]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -354,11 +482,32 @@ const CostInvoice = () => {
       setTdsCostInvoiceDTO((prevData) => prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item)));
     } else if (fieldType === 'costInvSummaryDTO') {
       setCostInvSummaryDTO((prevData) => prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item)));
+      // } else {
+      //   // Directly update formData here
+      //   setFormData({
+      //     ...formData,
+      //     [name]: value.toUpperCase() // Example: converting text to uppercase
+      //   });
+
+      //   setFieldErrors({
+      //     ...fieldErrors,
+      //     [name]: '' // Clear any field errors
+      //   });
+      // }
     } else {
-      // Directly update formData here
-      setFormData({
-        ...formData,
-        [name]: value.toUpperCase() // Example: converting text to uppercase
+      // For formData fields
+      setFormData((prevFormData) => {
+        // Check if the field being updated is `gstType`
+        if (name === 'gstType' && prevFormData.gstType !== value) {
+          // Toggle `showChargeDetails` state
+          // setShowChargeDetails(showChargeDetails === true ? false : true);
+          setShowChargeDetails(!showChargeDetails);
+        }
+
+        return {
+          ...prevFormData,
+          [name]: value.toUpperCase() // Example: converting text to uppercase
+        };
       });
 
       setFieldErrors({
@@ -411,18 +560,17 @@ const CostInvoice = () => {
     }
   };
 
-  
   const getTdsDetailsFromPartyMasterSpecialTDS = async (partyCode) => {
     try {
       const response = await apiCalls('get', `/costInvoice/getTdsDetailsFromPartyMasterSpecialTDS?orgId=${orgId}&partyCode=${partyCode}`);
-      
+
       const tdsData = response.paramObjectsMap.tds;
       const tdsWhPercent = tdsData.length > 0 ? tdsData[0].tdsWhPercent : '';
-      
+
       console.log('tds', tdsWhPercent);
       setTdsCostInvoiceDTO((prevData) =>
-        prevData.map((item, index) =>
-          index === 0 ? { ...item, tdsWithHoldingPer: tdsWhPercent } : item
+        prevData.map(
+          (item, index) => (index === 0 ? { ...item, tdsWithHoldingPer: tdsWhPercent } : item)
           // index === 0 ? { ...item, tdsWithHoldingPer: tdsWhPercent, section: tdsData[0]?.section || '' } : item
         )
       );
@@ -441,14 +589,14 @@ const CostInvoice = () => {
       console.log('Selected Employee:', selectedEmp);
       setFormData((prevData) => ({
         ...prevData,
-        stateCode: selectedEmp.stateCode,
+        supplierGstInCode: selectedEmp.stateCode,
         stateNo: selectedEmp.stateNo,
-        recipientGSTIN: selectedEmp.recipientGSTIN
+        supplierGstIn: selectedEmp.recipientGSTIN
       }));
 
       getPlaceOfSupply(selectedEmp.stateCode);
       setStateCode(selectedEmp.stateCode);
-      // getGSTType(selectedEmp.stateCode);
+      getGSTType(selectedEmp.stateCode);
     } else {
       console.log('No employee found with the given code:', value);
     }
@@ -462,10 +610,10 @@ const CostInvoice = () => {
     if (selectedEmp) {
       setFormData((prevData) => ({
         ...prevData,
-        placeOfSupply: selectedEmp.placeOfSupply
+        supplierPlace: selectedEmp.placeOfSupply
       }));
-
       getAddessType(selectedEmp.placeOfSupply);
+      console.log('selectedEmp.placeOfSupply', selectedEmp.placeOfSupply);
     } else {
       console.log('No employee found with the given code:', value);
     }
@@ -473,8 +621,21 @@ const CostInvoice = () => {
 
   const getPlaceOfSupply = async (stateCode) => {
     try {
-      const response = await apiCalls('get', `/taxInvoice/getPlaceOfSupply?orgId=${orgId}&id=${partyId}&stateCode=${stateCode}`);
+      const response = await apiCalls('get', `/costInvoice/getPlaceOfSupply?orgId=${orgId}&id=${partyId}&stateCode=${stateCode}`);
       setPlaceOfSupply(response.paramObjectsMap.placeOfSupplyDetails);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+
+  const getGSTType = async (stateCode) => {
+    try {
+      const response = await apiCalls('get', `/costInvoice/getGstType?orgId=${orgId}&branchCode=${branchCode}&stateCode=${stateCode}`);
+
+      setFormData((prevData) => ({
+        ...prevData,
+        gstType: response.paramObjectsMap.gstTypeDetails[0].gstType
+      }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -486,7 +647,10 @@ const CostInvoice = () => {
         'get',
         `/costInvoice/getPartyAddress?orgId=${orgId}&id=${partyId}&stateCode=${stateCode}&placeOfSupply=${place}`
       );
-      setAddressType(response.paramObjectsMap.partyAddress);
+      setFormData((prevData) => ({
+        ...prevData,
+        address: response.paramObjectsMap.partyAddress[0].address
+      }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -499,7 +663,7 @@ const CostInvoice = () => {
     }));
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
-      costType: '' // Clear any errors for costType
+      costType: ''
     }));
   };
 
@@ -532,6 +696,7 @@ const CostInvoice = () => {
       mode: '',
       otherInfo: '',
       product: '',
+      payment: '',
       purVoucherDate: null,
       purVoucherNo: '',
       remarks: '',
@@ -566,6 +731,7 @@ const CostInvoice = () => {
       mode: '',
       otherInfo: '',
       product: '',
+      payment: '',
       purVoucherDate: null,
       purVoucherNo: '',
       remarks: '',
@@ -595,6 +761,8 @@ const CostInvoice = () => {
         qty: '',
         rate: '',
         sac: '',
+        fcAmount: '',
+        lcAmount: '',
         taxable: ''
       }
     ]);
@@ -637,6 +805,225 @@ const CostInvoice = () => {
   //   }
   // };
 
+  // const handleChargeCodeChange = async (e, index) => {
+  //   const selectedChargeCode = e.target.value;
+  //   const selectedChargeCodeData = chargeCode.find((item) => item.chargeCode === selectedChargeCode);
+  //   setShowChargeDetails(false);
+  //   // Update chargerCostInvoice with selectedChargeCode details
+  //   const updatedCurrencyData = [...chargerCostInvoice];
+  //   updatedCurrencyData[index] = {
+  //     ...updatedCurrencyData[index],
+  //     chargeCode: selectedChargeCode,
+  //     gstPercent: selectedChargeCodeData ? selectedChargeCodeData.GSTPercent : '',
+  //     ccFeeApplicable: selectedChargeCodeData ? selectedChargeCodeData.ccFeeApplicable : '',
+  //     chargeName: selectedChargeCodeData ? selectedChargeCodeData.chargeName : '',
+  //     exempted: selectedChargeCodeData ? selectedChargeCodeData.exempted : '',
+  //     govChargeCode: selectedChargeCodeData ? selectedChargeCodeData.govChargeCode : '',
+  //     ledger: selectedChargeCodeData ? selectedChargeCodeData.ledger : '',
+  //     sac: selectedChargeCodeData ? selectedChargeCodeData.sac : '',
+  //     taxable: selectedChargeCodeData ? selectedChargeCodeData.taxable : '',
+  //     qty: "",
+  //     rate: "",
+  //     currency: "",
+  //     exRate: "",
+  //     qty: "",
+  //   };
+  //   setChargerCostInvoice(updatedCurrencyData);
+  // };
+
+  const handleChargeCodeChange = async (e, index) => {
+    const selectedChargeCode = e.target.value;
+    const selectedChargeCodeData = chargeCode.find((item) => item.chargeCode === selectedChargeCode);
+
+    // Default state values for fields to be reset
+    const defaultStateValues = {
+      qty: '',
+      rate: '',
+      currency: '',
+      exRate: '',
+      sac: '',
+      gstPercent: ''
+    };
+
+    setShowChargeDetails(false);
+
+    // Update `chargerCostInvoice` with selectedChargeCode details and reset defaults
+    setChargerCostInvoice((prev) => {
+      return prev.map((row, idx) => {
+        if (idx === index) {
+          return {
+            ...row,
+            ...defaultStateValues, // Reset specified fields to their default state
+            chargeCode: selectedChargeCode,
+            gstPercent: selectedChargeCodeData ? selectedChargeCodeData.GSTPercent : defaultStateValues.gstPercent,
+            ccFeeApplicable: selectedChargeCodeData ? selectedChargeCodeData.ccFeeApplicable : '',
+            chargeName: selectedChargeCodeData ? selectedChargeCodeData.chargeName : '',
+            exempted: selectedChargeCodeData ? selectedChargeCodeData.exempted : '',
+            govChargeCode: selectedChargeCodeData ? selectedChargeCodeData.govChargeCode : '',
+            ledger: selectedChargeCodeData ? selectedChargeCodeData.ledger : '',
+            sac: selectedChargeCodeData ? selectedChargeCodeData.sac : defaultStateValues.sac,
+            taxable: selectedChargeCodeData ? selectedChargeCodeData.taxable : ''
+          };
+        }
+        return row;
+      });
+    });
+  };
+
+  const handleRowUpdate = async (index, field, value) => {
+    setShowChargeDetails(false);
+    setChargerCostInvoice((prev) => {
+      return prev.map((row, idx) => {
+        if (idx === index) {
+          // Update the field
+          const updatedRow = { ...row, [field]: value };
+
+          // Perform calculations
+          const qty = Number(updatedRow.qty) || 0;
+          const rate = Number(updatedRow.rate) || 0;
+          const selectedCurrencyData = exRates.find((currency) => currency.currency === updatedRow.currency);
+          const exRate = selectedCurrencyData?.buyingExRate || 1;
+
+          const fcAmount = updatedRow.currency === 'INR' ? 0 : qty * rate;
+          const lcAmount = qty * rate * exRate;
+          const billAmt = lcAmount / exRate;
+          const gst = (lcAmount * (updatedRow.gstPercent || 0)) / 100;
+
+          return {
+            ...updatedRow,
+            exRate,
+            fcAmount,
+            lcAmount,
+            billAmt,
+            gst
+          };
+        }
+        return row;
+      });
+    });
+
+    setCostInvoiceErrors((prev) => {
+      const newErrors = [...prev];
+      const updatedErrors = {
+        ...newErrors[index],
+        [field]: !value ? `${field} is required` : ''
+      };
+      newErrors[index] = updatedErrors;
+      return newErrors;
+    });
+  };
+
+  const handleFullGrid = async () => {
+    // Validate if `gstType` is selected
+    if (!formData.gstType) {
+      showToast('error', 'Please select a GST Type before proceeding!');
+      console.error('Error: gstType is not selected in formData.');
+      return;
+    }
+
+    // Check if `chargerCostInvoice` has any rows
+    if (chargerCostInvoice.length === 0) {
+      showToast('error', 'No GST details found!');
+      console.error('Error: chargerCostInvoice is empty.');
+      setShowChargeDetails(false);
+      return;
+    }
+
+    // Extract unique GST percentages, ensuring they are valid
+    const uniqueGstPercents = [
+      ...new Set(chargerCostInvoice.map((row) => row.gstPercent).filter((gstPercent) => gstPercent && gstPercent.length > 0))
+    ];
+
+    if (uniqueGstPercents.length === 0) {
+      showToast('error', 'No valid GST percentages found!');
+      console.error('Error: uniqueGstPercents is empty.');
+      setShowChargeDetails(false);
+      return;
+    }
+
+    try {
+      // Determine the API endpoint based on `gstType`
+      let apiEndpoint = '';
+      if (formData.gstType === 'INTER') {
+        apiEndpoint = `/costInvoice/getChargeNameAndChargeCodeForIgst?orgId=${orgId}&gstTax=${uniqueGstPercents.join('&gstTax=')}`;
+      } else if (formData.gstType === 'INTRA') {
+        // Split GST percentages into CGST and SGST
+        const cgstAndSgstPercents = uniqueGstPercents.flatMap((gstPercent) => {
+          const half = (parseFloat(gstPercent) / 2).toFixed(1); // Split equally and format to 1 decimal place
+          return [half, half];
+        });
+        apiEndpoint = `/costInvoice/getChargeNameAndChargeCodeForCgstAndSgst?orgId=${orgId}&gstTax=${cgstAndSgstPercents.join('&gstTax=')}`;
+      } else {
+        showToast('error', 'Invalid GST Type selected!');
+        console.error('Error: Invalid gstType in formData.');
+        setShowChargeDetails(false);
+        return;
+      }
+
+      // Call the API
+      const response = await apiCalls('get', apiEndpoint);
+
+      const fetchedChargeDetails = response.paramObjectsMap?.chargeDetails || [];
+      console.log('fetchedChargeDetails', fetchedChargeDetails);
+      setShowChargeDetails(true);
+
+      // Perform calculations and merge with fetched details
+      const groupedByGstPercent = chargerCostInvoice.reduce((acc, row) => {
+        if (!row.gst || isNaN(Number(row.gst))) {
+          showToast('error', 'Invalid or missing GST value.');
+          console.error('Error: Invalid gst value in chargerCostInvoice.');
+          setShowChargeDetails(false);
+          return acc;
+        }
+        if (row.gstPercent && row.gstPercent.length > 0) {
+          acc[row.gstPercent] = (acc[row.gstPercent] || 0) + parseFloat(row.gst || 0); // Sum `gst`
+        }
+        return acc;
+      }, {});
+
+      // const updatedChargeDetails = Object.entries(groupedByGstPercent).map(([gstPercent, gst]) => {
+      //   console.log('groupedByGstPercent', groupedByGstPercent);
+      //   const fetchedDetail = fetchedChargeDetails.find((detail) => Number(detail.gstPercent) === Number(gstPercent));
+      //   console.log('fetchedDetail', fetchedDetail);
+      //   return {
+      //     gstPercent: Number(gstPercent),
+      //     lcAmount: gst.toFixed(2), // Format to two decimal places
+      //     ...fetchedDetail // Merge API response fields
+      //   };
+      // });
+      const updatedChargeDetails = Object.entries(groupedByGstPercent).flatMap(([gstPercent, gst]) => {
+        console.log('Processing gstPercent:', gstPercent, 'with gst:', gst);
+
+        // Fetch both CGST and SGST details for the current GST percent
+        const fetchedDetails = fetchedChargeDetails.filter((detail) => Number(detail.gstPercent) === Number(gstPercent));
+
+        console.log('Fetched Details for gstPercent:', gstPercent, fetchedDetails);
+
+        if (!fetchedDetails.length) {
+          console.error(`No fetched details found for gstPercent: ${gstPercent}`);
+          return []; // Skip this gstPercent if no matching details
+        }
+
+        // Split GST equally between CGST and SGST
+        const halfGst = (gst / 2).toFixed(2); // Ensure two decimal places
+
+        // Map each detail (CGST and SGST) with calculated `lcAmount`
+        return fetchedDetails.map((detail) => ({
+          gstPercent: Number(detail.gstPercent),
+          lcAmount: halfGst,
+          ...detail // Merge API response fields
+        }));
+      });
+
+      console.log('updatedChargeDetails', updatedChargeDetails);
+      // Update state
+      setChargeDetails(updatedChargeDetails);
+    } catch (error) {
+      console.error('Error fetching charge details:', error);
+      showToast('error', 'Failed to fetch charge details. Please try again.');
+    }
+  };
+
   const handleAddRow = () => {
     if (isLastRowEmpty(chargerCostInvoice)) {
       displayRowError(chargerCostInvoice);
@@ -658,6 +1045,8 @@ const CostInvoice = () => {
       qty: '',
       rate: '',
       sac: '',
+      fcAmount: '',
+      lcAmount: '',
       taxable: ''
     };
     setChargerCostInvoice([...chargerCostInvoice, newRow]);
@@ -678,6 +1067,8 @@ const CostInvoice = () => {
         qty: '',
         rate: '',
         sac: '',
+        fcAmount: '',
+        lcAmount: '',
         taxable: ''
       }
     ]);
@@ -700,7 +1091,7 @@ const CostInvoice = () => {
         // !lastRow.houseNo ||
         !lastRow.jobNo ||
         !lastRow.qty ||
-        !lastRow.rate 
+        !lastRow.rate
         // !lastRow.lcAmt ||
         // !lastRow.subJobNo
       );
@@ -1213,7 +1604,7 @@ const CostInvoice = () => {
                       {partyName &&
                         partyName.map((par, index) => (
                           <MenuItem key={index} value={par.partyName}>
-                            {par.partyName} {/* Display employee code */}
+                            {par.partyName}
                           </MenuItem>
                         ))}
                     </Select>
@@ -1238,17 +1629,15 @@ const CostInvoice = () => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label" required>
-                      State Code
-                    </InputLabel>
+                    <InputLabel id="demo-simple-select-label">Supplier GST State Code</InputLabel>
                     <Select
-                      labelId="addressTypeLabel"
-                      value={formData.stateCode}
+                      labelId="supplierGSTCode"
+                      name="supplierGstInCode"
+                      value={formData.supplierGstInCode}
                       onChange={handleSelectStateChange}
-                      label="State Code"
-                      required
-                      // error={!!errors.stateCode}
-                      // helperText={errors.stateCode}
+                      label="Supplier GST Code"
+                      error={!!fieldErrors.supplierGstInCode}
+                      helperText={fieldErrors.supplierGstInCode}
                     >
                       {stateName?.length > 0 ? (
                         stateName.map((par, index) => (
@@ -1260,6 +1649,24 @@ const CostInvoice = () => {
                         <MenuItem disabled>No states available</MenuItem>
                       )}
                     </Select>
+                    {fieldErrors.supplierGstInCode && (
+                      <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierGstInCode}</FormHelperText>
+                    )}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Supplier GSTIN"
+                      size="small"
+                      name="supplierGstIn"
+                      disabled
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.supplierGstIn}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.supplierGstIn}
+                      helperText={fieldErrors.supplierGstIn}
+                    />
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
@@ -1280,8 +1687,6 @@ const CostInvoice = () => {
                             {par.placeOfSupply}
                           </MenuItem>
                         ))}
-                      {/* <MenuItem value="PUNE">PUNE</MenuItem>
-                      <MenuItem value="CHENNAI">CHENNAI</MenuItem> */}
                     </Select>
                     {fieldErrors.supplierPlace && <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierPlace}</FormHelperText>}
                   </FormControl>
@@ -1300,41 +1705,7 @@ const CostInvoice = () => {
                     />
                   </FormControl>
                 </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label">Supplier GST State Code</InputLabel>
-                    <Select
-                      labelId="supplierGSTCode"
-                      name="supplierGstInCode"
-                      value={formData.supplierGstInCode}
-                      onChange={handleInputChange}
-                      label="Supplier GST Code"
-                      error={!!fieldErrors.supplierGstInCode}
-                      helperText={fieldErrors.supplierGstInCode}
-                    >
-                      <MenuItem value="TN">TN</MenuItem>
-                      <MenuItem value="GJ">GJ</MenuItem>
-                    </Select>
-                    {fieldErrors.supplierGstInCode && (
-                      <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierGstInCode}</FormHelperText>
-                    )}
-                  </FormControl>
-                </div>
 
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <TextField
-                      label="Supplier GSTIN"
-                      size="small"
-                      name="supplierGstIn"
-                      inputProps={{ maxLength: 30 }}
-                      value={formData.supplierGstIn}
-                      onChange={handleInputChange}
-                      error={!!fieldErrors.supplierGstIn}
-                      helperText={fieldErrors.supplierGstIn}
-                    />
-                  </FormControl>
-                </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField
@@ -1342,6 +1713,7 @@ const CostInvoice = () => {
                       name="address"
                       size="small"
                       multiline
+                      disabled
                       inputProps={{ maxLength: 30 }}
                       value={formData.address}
                       onChange={handleInputChange}
@@ -1588,10 +1960,11 @@ const CostInvoice = () => {
                       <div className="row d-flex ml">
                         <div className="mb-1">
                           <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                          <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
                         </div>
                         <div className="row mt-2">
                           <div className="col-lg-12">
-                            <div className="table-responsive">
+                            <div className="table-responsive mb-3">
                               <table className="table table-bordered ">
                                 {/* <thead>
                                   <tr style={{ backgroundColor: '#673AB7' }}>
@@ -1623,7 +1996,7 @@ const CostInvoice = () => {
                                     </th>
                                     <th className="table-header">Job No</th>
                                     <th className="table-header">Charge Code</th>
-                                    <th className="table-header">GCharge Code</th>
+                                    <th className="table-header">G-Charge Code</th>
                                     <th className="table-header">Charge Name</th>
                                     <th className="table-header">Taxable</th>
                                     <th className="table-header">Qty</th>
@@ -1640,426 +2013,6 @@ const CostInvoice = () => {
                                 </thead>
                                 <tbody>
                                   {chargerCostInvoice.map((row, index) => (
-                                    // <tr key={row.id}>
-                                    //   <td className="border px-2 py-2 text-center">
-                                    //     <ActionButton
-                                    //       title="Delete"
-                                    //       icon={DeleteIcon}
-                                    //       onClick={() =>
-                                    //         handleDeleteRow(
-                                    //           row.id,
-                                    //           chargerCostInvoice,
-                                    //           setChargerCostInvoice,
-                                    //           costInvoiceErrors,
-                                    //           setCostInvoiceErrors
-                                    //         )
-                                    //       }
-                                    //     />
-                                    //   </td>
-                                    //   <td className="text-center">
-                                    //     <div className="pt-2">{index + 1}</div>
-                                    //   </td>
-                                    //   <td className="border px-2 py-2">
-                                    //     <input
-                                    //       type="number"
-                                    //       value={row.billAmt}
-                                    //       style={{ width: '150px' }}
-                                    //       onChange={(e) => {
-                                    //         const value = e.target.value;
-                                    //         setChargerCostInvoice((prev) =>
-                                    //           prev.map((r) => (r.id === row.id ? { ...r, billAmt: value } : r))
-                                    //         );
-                                    //         setCostInvoiceErrors((prev) => {
-                                    //           const newErrors = [...prev];
-                                    //           newErrors[index] = {
-                                    //             ...newErrors[index],
-                                    //             billAmt: !value ? 'Bill Amt is required' : ''
-                                    //           };
-                                    //           return newErrors;
-                                    //         });
-                                    //       }}
-                                    //       className={costInvoiceErrors[index]?.billAmt ? 'error form-control' : 'form-control'}
-                                    //     />
-                                    //     {costInvoiceErrors[index]?.billAmt && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].billAmt}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-                                    //   <td className="border px-2 py-2">
-                                    //     <input
-                                    //       type="text"
-                                    //       value={row.chargeCode}
-                                    //       style={{ width: '150px' }}
-                                    //       onChange={(e) => {
-                                    //         const value = e.target.value;
-                                    //         setChargerCostInvoice((prev) =>
-                                    //           prev.map((r) => (r.id === row.id ? { ...r, chargeCode: value } : r))
-                                    //         );
-                                    //         setCostInvoiceErrors((prev) => {
-                                    //           const newErrors = [...prev];
-                                    //           newErrors[index] = {
-                                    //             ...newErrors[index],
-                                    //             chargeCode: !value ? 'Charge Code is required' : ''
-                                    //           };
-                                    //           return newErrors;
-                                    //         });
-                                    //       }}
-                                    //       className={costInvoiceErrors[index]?.chargeCode ? 'error form-control' : 'form-control'}
-                                    //     />
-                                    //     {costInvoiceErrors[index]?.chargeCode && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].chargeCode}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-                                    //   <td className="border px-2 py-2">
-                                    //     <input
-                                    //       type="text"
-                                    //       value={row.chargeLedger}
-                                    //       style={{ width: '150px' }}
-                                    //       onChange={(e) => {
-                                    //         const value = e.target.value;
-                                    //         setChargerCostInvoice((prev) =>
-                                    //           prev.map((r) => (r.id === row.id ? { ...r, chargeLedger: value } : r))
-                                    //         );
-                                    //         setCostInvoiceErrors((prev) => {
-                                    //           const newErrors = [...prev];
-                                    //           newErrors[index] = {
-                                    //             ...newErrors[index],
-                                    //             chargeLedger: !value ? 'Charge Ledger is required' : ''
-                                    //           };
-                                    //           return newErrors;
-                                    //         });
-                                    //       }}
-                                    //       className={costInvoiceErrors[index]?.chargeLedger ? 'error form-control' : 'form-control'}
-                                    //     />
-                                    //     {costInvoiceErrors[index]?.chargeLedger && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].chargeLedger}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-                                    //   <td className="border px-2 py-2">
-                                    //     <input
-                                    //       type="text"
-                                    //       value={row.chargeName}
-                                    //       style={{ width: '150px' }}
-                                    //       onChange={(e) => {
-                                    //         const value = e.target.value;
-                                    //         setChargerCostInvoice((prev) =>
-                                    //           prev.map((r) => (r.id === row.id ? { ...r, chargeName: value } : r))
-                                    //         );
-                                    //         setCostInvoiceErrors((prev) => {
-                                    //           const newErrors = [...prev];
-                                    //           newErrors[index] = {
-                                    //             ...newErrors[index],
-                                    //             chargeName: !value ? 'Charge Name is required' : ''
-                                    //           };
-                                    //           return newErrors;
-                                    //         });
-                                    //       }}
-                                    //       className={costInvoiceErrors[index]?.chargeName ? 'error form-control' : 'form-control'}
-                                    //     />
-                                    //     {costInvoiceErrors[index]?.chargeName && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].chargeName}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-                                    //   <td className="border px-2 py-2">
-                                    //     <input
-                                    //       type="text"
-                                    //       value={row.contType}
-                                    //       style={{ width: '150px' }}
-                                    //       onChange={(e) => {
-                                    //         const value = e.target.value;
-                                    //         setChargerCostInvoice((prev) =>
-                                    //           prev.map((r) => (r.id === row.id ? { ...r, contType: value } : r))
-                                    //         );
-                                    //         setCostInvoiceErrors((prev) => {
-                                    //           const newErrors = [...prev];
-                                    //           newErrors[index] = {
-                                    //             ...newErrors[index],
-                                    //             contType: !value ? 'Cont Type is required' : ''
-                                    //           };
-                                    //           return newErrors;
-                                    //         });
-                                    //       }}
-                                    //       className={costInvoiceErrors[index]?.contType ? 'error form-control' : 'form-control'}
-                                    //     />
-                                    //     {costInvoiceErrors[index]?.contType && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].contType}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-
-                                    //   <td className="border px-2 py-2">
-                                    //     <input
-                                    //       type="number"
-                                    //       value={row.exRate}
-                                    //       style={{ width: '150px' }}
-                                    //       onChange={(e) => {
-                                    //         const value = e.target.value;
-                                    //         setChargerCostInvoice((prev) =>
-                                    //           prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r))
-                                    //         );
-                                    //         setCostInvoiceErrors((prev) => {
-                                    //           const newErrors = [...prev];
-                                    //           newErrors[index] = {
-                                    //             ...newErrors[index],
-                                    //             exRate: !value ? 'EX Rate is required' : ''
-                                    //           };
-                                    //           return newErrors;
-                                    //         });
-                                    //       }}
-                                    //       className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                    //     />
-                                    //     {costInvoiceErrors[index]?.exRate && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].exRate}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-                                    //   <td className="border px-2 py-2">
-                                    //     <input
-                                    //       type="number"
-                                    //       value={row.fcAmt}
-                                    //       style={{ width: '150px' }}
-                                    //       onChange={(e) => {
-                                    //         const value = e.target.value;
-                                    //         setChargerCostInvoice((prev) =>
-                                    //           prev.map((r) => (r.id === row.id ? { ...r, fcAmt: value } : r))
-                                    //         );
-                                    //         setCostInvoiceErrors((prev) => {
-                                    //           const newErrors = [...prev];
-                                    //           newErrors[index] = {
-                                    //             ...newErrors[index],
-                                    //             fcAmt: !value ? 'FC Amt is required' : ''
-                                    //           };
-                                    //           return newErrors;
-                                    //         });
-                                    //       }}
-                                    //       className={costInvoiceErrors[index]?.fcAmt ? 'error form-control' : 'form-control'}
-                                    //     />
-                                    //     {costInvoiceErrors[index]?.fcAmt && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].fcAmt}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-                                    //   <td className="border px-2 py-2">
-                                    //     <select
-                                    //       value={row.currency}
-                                    //       style={{ width: '150px' }}
-                                    //       className={costInvoiceErrors[index]?.currency ? 'error form-control' : 'form-control'}
-                                    //       onChange={(e) =>
-                                    //         setChargerCostInvoice((prev) =>
-                                    //           prev.map((r) => (r.id === row.id ? { ...r, currency: e.target.value } : r))
-                                    //         )
-                                    //       }
-                                    //     >
-                                    //       <option value="">-- Select --</option>
-                                    //       {currencies.map((item) => (
-                                    //         <option key={item.id} value={item.currency}>
-                                    //           {item.currency}
-                                    //         </option>
-                                    //       ))}
-                                    //     </select>
-                                    //     {costInvoiceErrors[index]?.currency && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].currency}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-                                    //   <td className="border px-2 py-2">
-                                    //     <input
-                                    //       type="text"
-                                    //       value={row.sac}
-                                    //       style={{ width: '150px' }}
-                                    //       onChange={(e) => {
-                                    //         const value = e.target.value;
-                                    //         setChargerCostInvoice((prev) => prev.map((r) => (r.id === row.id ? { ...r, sac: value } : r)));
-                                    //         setCostInvoiceErrors((prev) => {
-                                    //           const newErrors = [...prev];
-                                    //           newErrors[index] = {
-                                    //             ...newErrors[index],
-                                    //             sac: !value ? 'GSAC is required' : ''
-                                    //           };
-                                    //           return newErrors;
-                                    //         });
-                                    //       }}
-                                    //       className={costInvoiceErrors[index]?.sac ? 'error form-control' : 'form-control'}
-                                    //     />
-                                    //     {costInvoiceErrors[index]?.sac && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].sac}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-                                    //   <td className="border px-2 py-2">
-                                    //     <input
-                                    //       type="number"
-                                    //       value={row.gst}
-                                    //       style={{ width: '150px' }}
-                                    //       onChange={(e) => {
-                                    //         const value = e.target.value;
-                                    //         setChargerCostInvoice((prev) => prev.map((r) => (r.id === row.id ? { ...r, gst: value } : r)));
-                                    //         setCostInvoiceErrors((prev) => {
-                                    //           const newErrors = [...prev];
-                                    //           newErrors[index] = {
-                                    //             ...newErrors[index],
-                                    //             gst: !value ? 'GST is required' : ''
-                                    //           };
-                                    //           return newErrors;
-                                    //         });
-                                    //       }}
-                                    //       className={costInvoiceErrors[index]?.gst ? 'error form-control' : 'form-control'}
-                                    //     />
-                                    //     {costInvoiceErrors[index]?.gst && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].gst}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-                                    //   <td className="border px-2 py-2">
-                                    //     <input
-                                    //       type="text"
-                                    //       value={row.houseNo}
-                                    //       style={{ width: '150px' }}
-                                    //       onChange={(e) => {
-                                    //         const value = e.target.value;
-                                    //         setChargerCostInvoice((prev) =>
-                                    //           prev.map((r) => (r.id === row.id ? { ...r, houseNo: value } : r))
-                                    //         );
-                                    //         setCostInvoiceErrors((prev) => {
-                                    //           const newErrors = [...prev];
-                                    //           newErrors[index] = {
-                                    //             ...newErrors[index],
-                                    //             houseNo: !value ? 'House No is required' : ''
-                                    //           };
-                                    //           return newErrors;
-                                    //         });
-                                    //       }}
-                                    //       className={costInvoiceErrors[index]?.houseNo ? 'error form-control' : 'form-control'}
-                                    //     />
-                                    //     {costInvoiceErrors[index]?.houseNo && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].houseNo}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-                                    //   <td className="border px-2 py-2">
-                                    //     <input
-                                    //       type="text"
-                                    //       value={row.jobNo}
-                                    //       style={{ width: '150px' }}
-                                    //       onChange={(e) => {
-                                    //         const value = e.target.value;
-                                    //         setChargerCostInvoice((prev) =>
-                                    //           prev.map((r) => (r.id === row.id ? { ...r, jobNo: value } : r))
-                                    //         );
-                                    //         setCostInvoiceErrors((prev) => {
-                                    //           const newErrors = [...prev];
-                                    //           newErrors[index] = {
-                                    //             ...newErrors[index],
-                                    //             jobNo: !value ? 'Job No is required' : ''
-                                    //           };
-                                    //           return newErrors;
-                                    //         });
-                                    //       }}
-                                    //       className={costInvoiceErrors[index]?.jobNo ? 'error form-control' : 'form-control'}
-                                    //     />
-                                    //     {costInvoiceErrors[index]?.jobNo && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].jobNo}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-                                    //   <td className="border px-2 py-2">
-                                    //     <input
-                                    //       type="number"
-                                    //       value={row.lcAmt}
-                                    //       style={{ width: '150px' }}
-                                    //       onChange={(e) => {
-                                    //         const value = e.target.value;
-                                    //         setChargerCostInvoice((prev) =>
-                                    //           prev.map((r) => (r.id === row.id ? { ...r, lcAmt: value } : r))
-                                    //         );
-                                    //         setCostInvoiceErrors((prev) => {
-                                    //           const newErrors = [...prev];
-                                    //           newErrors[index] = {
-                                    //             ...newErrors[index],
-                                    //             lcAmt: !value ? 'LC Amt is required' : ''
-                                    //           };
-                                    //           return newErrors;
-                                    //         });
-                                    //       }}
-                                    //       className={costInvoiceErrors[index]?.lcAmt ? 'error form-control' : 'form-control'}
-                                    //     />
-                                    //     {costInvoiceErrors[index]?.lcAmt && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].lcAmt}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-                                    //   <td className="border px-2 py-2">
-                                    //     <input
-                                    //       type="text"
-                                    //       value={row.subJobNo}
-                                    //       style={{ width: '150px' }}
-                                    //       onChange={(e) => {
-                                    //         const value = e.target.value;
-                                    //         setChargerCostInvoice((prev) =>
-                                    //           prev.map((r) => (r.id === row.id ? { ...r, subJobNo: value } : r))
-                                    //         );
-                                    //         setCostInvoiceErrors((prev) => {
-                                    //           const newErrors = [...prev];
-                                    //           newErrors[index] = {
-                                    //             ...newErrors[index],
-                                    //             subJobNo: !value ? 'Sub Job No is required' : ''
-                                    //           };
-                                    //           return newErrors;
-                                    //         });
-                                    //       }}
-                                    //       className={costInvoiceErrors[index]?.subJobNo ? 'error form-control' : 'form-control'}
-                                    //     />
-                                    //     {costInvoiceErrors[index]?.subJobNo && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].subJobNo}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-                                    //   <td className="border px-2 py-2">
-                                    //     <input
-                                    //       type="text"
-                                    //       value={row.subJobNo}
-                                    //       style={{ width: '150px' }}
-                                    //       onChange={(e) => {
-                                    //         const value = e.target.value;
-                                    //         setChargerCostInvoice((prev) =>
-                                    //           prev.map((r) => (r.id === row.id ? { ...r, subJobNo: value } : r))
-                                    //         );
-                                    //         setCostInvoiceErrors((prev) => {
-                                    //           const newErrors = [...prev];
-                                    //           newErrors[index] = {
-                                    //             ...newErrors[index],
-                                    //             subJobNo: !value ? 'Sub Job No is required' : ''
-                                    //           };
-                                    //           return newErrors;
-                                    //         });
-                                    //       }}
-                                    //       className={costInvoiceErrors[index]?.subJobNo ? 'error form-control' : 'form-control'}
-                                    //     />
-                                    //     {costInvoiceErrors[index]?.subJobNo && (
-                                    //       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    //         {costInvoiceErrors[index].subJobNo}
-                                    //       </div>
-                                    //     )}
-                                    //   </td>
-                                    // </tr>
-
                                     <tr key={row.id}>
                                       <td className="border px-2 py-2 text-center">
                                         <ActionButton
@@ -2086,7 +2039,7 @@ const CostInvoice = () => {
                                           style={{ width: '150px' }}
                                           onChange={(e) => {
                                             const selectedJobNo = e.target.value;
-                                            const selectedCurrencyData = jobNoList.find((currency) => currency.jobNo === selectedJobNo);
+                                            const selectedCurrencyData = jobNoList.find((job) => job.jobNo === selectedJobNo);
                                             const updatedJobNoData = [...chargerCostInvoice];
                                             updatedJobNoData[index] = {
                                               ...updatedJobNoData[index],
@@ -2099,9 +2052,9 @@ const CostInvoice = () => {
                                         >
                                           <option value="">--Select--</option>
                                           {jobNoList &&
-                                            jobNoList.map((currency) => (
-                                              <option key={currency.id} value={currency.jobNo}>
-                                                {currency.jobNo}
+                                            jobNoList.map((job) => (
+                                              <option key={job.id} value={job.jobNo}>
+                                                {job.jobNo}
                                               </option>
                                             ))}
                                         </select>
@@ -2117,33 +2070,35 @@ const CostInvoice = () => {
                                         <select
                                           value={row.chargeCode}
                                           style={{ width: '150px' }}
-                                          onChange={(e) => {
-                                            const selectedCurrency = e.target.value;
-                                            const selectedCurrencyData = chargeCode.find(
-                                              (currency) => currency.chargeCode === selectedCurrency
-                                            );
-                                            const updatedCurrencyData = [...chargerCostInvoice];
-                                            updatedCurrencyData[index] = {
-                                              ...updatedCurrencyData[index],
-                                              chargeCode: selectedCurrency,
-                                              gstPercent: selectedCurrencyData ? selectedCurrencyData.GSTPercent : '',
-                                              ccFeeApplicable: selectedCurrencyData ? selectedCurrencyData.ccFeeApplicable : '',
-                                              chargeName: selectedCurrencyData ? selectedCurrencyData.chargeName : '',
-                                              exempted: selectedCurrencyData ? selectedCurrencyData.exempted : '',
-                                              govChargeCode: selectedCurrencyData ? selectedCurrencyData.govChargeCode : '',
-                                              ledger: selectedCurrencyData ? selectedCurrencyData.ledger : '',
-                                              sac: selectedCurrencyData ? selectedCurrencyData.sac : '',
-                                              taxable: selectedCurrencyData ? selectedCurrencyData.taxable : ''
-                                            };
+                                          // onChange={(e) => {
+                                          //   const selectedChargeCode = e.target.value;
+                                          //   const selectedChargeCodeData = chargeCode.find(
+                                          //     (item) => item.chargeCode === selectedChargeCode
+                                          //   );
+                                          //   const updatedCurrencyData = [...chargerCostInvoice];
+                                          //   updatedCurrencyData[index] = {
+                                          //     ...updatedCurrencyData[index],
+                                          //     chargeCode: selectedChargeCode,
+                                          //     gstPercent: selectedChargeCodeData ? selectedChargeCodeData.GSTPercent : '',
+                                          //     ccFeeApplicable: selectedChargeCodeData ? selectedChargeCodeData.ccFeeApplicable : '',
+                                          //     chargeName: selectedChargeCodeData ? selectedChargeCodeData.chargeName : '',
+                                          //     exempted: selectedChargeCodeData ? selectedChargeCodeData.exempted : '',
+                                          //     govChargeCode: selectedChargeCodeData ? selectedChargeCodeData.govChargeCode : '',
+                                          //     ledger: selectedChargeCodeData ? selectedChargeCodeData.ledger : '',
+                                          //     sac: selectedChargeCodeData ? selectedChargeCodeData.sac : '',
+                                          //     taxable: selectedChargeCodeData ? selectedChargeCodeData.taxable : ''
+                                          //   };
 
-                                            setChargerCostInvoice(updatedCurrencyData);
-                                          }}
+                                          //   setChargerCostInvoice(updatedCurrencyData);
+                                          // }}
+                                          onChange={(e) => handleChargeCodeChange(e, index)}
+                                          // onChange={(e) => handleRowUpdate(index, 'chargeCode', e.target.value)}
                                           className={costInvoiceErrors[index]?.chargeCode ? 'error form-control' : 'form-control'}
                                         >
                                           <option value="">--Select--</option>
-                                          {chargeCode?.map((currency, index) => (
-                                            <option key={index} value={currency.chargeCode}>
-                                              {currency.chargeCode}
+                                          {chargeCode?.map((item, index) => (
+                                            <option key={index} value={item.chargeCode}>
+                                              {item.chargeCode}
                                             </option>
                                           ))}
                                         </select>
@@ -2276,7 +2231,6 @@ const CostInvoice = () => {
                                           </div>
                                         )}
                                       </td>
-
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
@@ -2286,17 +2240,7 @@ const CostInvoice = () => {
                                             const value = e.target.value;
                                             const numericRegex = /^[0-9]*$/;
                                             if (numericRegex.test(value)) {
-                                              setChargerCostInvoice((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, qty: value } : r))
-                                              );
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  qty: !value ? 'qty is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
+                                              handleRowUpdate(index, 'qty', value);
                                             } else {
                                               setCostInvoiceErrors((prev) => {
                                                 const newErrors = [...prev];
@@ -2309,13 +2253,7 @@ const CostInvoice = () => {
                                             }
                                           }}
                                           className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
-                                          // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                         />
-                                        {costInvoiceErrors[index]?.qty && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].qty}
-                                          </div>
-                                        )}
                                       </td>
 
                                       <td className="border px-2 py-2">
@@ -2327,17 +2265,7 @@ const CostInvoice = () => {
                                             const value = e.target.value;
                                             const numericRegex = /^[0-9]*$/;
                                             if (numericRegex.test(value)) {
-                                              setChargerCostInvoice((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, rate: value } : r))
-                                              );
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  rate: !value ? 'rate is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
+                                              handleRowUpdate(index, 'rate', value);
                                             } else {
                                               setCostInvoiceErrors((prev) => {
                                                 const newErrors = [...prev];
@@ -2350,46 +2278,15 @@ const CostInvoice = () => {
                                             }
                                           }}
                                           className={costInvoiceErrors[index]?.rate ? 'error form-control' : 'form-control'}
-                                          // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                         />
-                                        {costInvoiceErrors[index]?.rate && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].rate}
-                                          </div>
-                                        )}
                                       </td>
                                       <td className="border px-2 py-2">
                                         <select
                                           value={row.currency}
                                           style={{ width: '150px' }}
                                           onChange={(e) => {
-                                            const selectedCurrency = e.target.value;
-                                            const selectedCurrencyData = exRates.find((currency) => currency.currency === selectedCurrency);
-
-                                            const updatedCurrencyData = [...chargerCostInvoice];
-                                            updatedCurrencyData[index] = {
-                                              ...updatedCurrencyData[index],
-                                              currency: selectedCurrency,
-                                              exRate: selectedCurrencyData.buyingExRate,
-                                              fcAmount: selectedCurrency === 'INR' ? 0 : row.qty * row.rate,
-                                              lcAmount:
-                                                (Number(row.qty) || 0) *
-                                                (Number(row.rate) || 0) *
-                                                (Number(selectedCurrencyData.buyingExRate) || 0),
-                                              billAmt:
-                                                ((Number(row.qty) || 0) *
-                                                  (Number(row.rate) || 0) *
-                                                  (Number(selectedCurrencyData.buyingExRate) || 0)) /
-                                                selectedCurrencyData.buyingExRate,
-                                              gst:
-                                                ((Number(row.qty) || 0) *
-                                                  (Number(row.rate) || 0) *
-                                                  (Number(selectedCurrencyData.buyingExRate) || 0) *
-                                                  row.gstPercent) /
-                                                100
-                                            };
-
-                                            setChargerCostInvoice(updatedCurrencyData);
+                                            const value = e.target.value;
+                                            handleRowUpdate(index, 'currency', value);
                                           }}
                                           className={costInvoiceErrors[index]?.currency ? 'error form-control' : 'form-control'}
                                         >
@@ -2401,11 +2298,6 @@ const CostInvoice = () => {
                                               </option>
                                             ))}
                                         </select>
-                                        {costInvoiceErrors[index]?.currency && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].currency}
-                                          </div>
-                                        )}
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
@@ -2692,6 +2584,40 @@ const CostInvoice = () => {
                                 </tbody>
                               </table>
                             </div>
+                            {showChargeDetails && chargeDetails.length > 0 && (
+                              <tr>
+                                <td className="border px-2 py-2">
+                                  <table className="table table-bordered mb-0">
+                                    <thead>
+                                      <tr>
+                                        <th style={{ textAlign: 'center' }}>S No</th>
+                                        <th style={{ textAlign: 'center' }}>Charge Desc</th>
+                                        <th style={{ textAlign: 'center' }}>Charge Code</th>
+                                        <th style={{ textAlign: 'center' }}>GCharge Code</th>
+                                        <th style={{ textAlign: 'center' }}>GST %</th>
+                                        <th style={{ textAlign: 'center' }}>SAC</th>
+                                        <th style={{ textAlign: 'center' }}>Taxable</th>
+                                        <th style={{ textAlign: 'center' }}>LC Amount</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {chargeDetails.map((detail, idx) => (
+                                        <tr key={idx}>
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{idx + 1}</td>
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.chargeDesc}</td>
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.chargeCode}</td>
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.gChargeCode}</td>
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.gstPercent}</td>
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.sac}</td>
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.taxable}</td>
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.lcAmount}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -2727,6 +2653,7 @@ const CostInvoice = () => {
                                 size="small"
                                 name="tdsWithHoldingPer"
                                 type="number"
+                                disabled
                                 inputProps={{ maxLength: 30 }}
                                 value={tdsCostInvoiceDTO[index]?.tdsWithHoldingPer || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
@@ -2756,6 +2683,7 @@ const CostInvoice = () => {
                                 size="small"
                                 name="totTdsWhAmnt"
                                 type="number"
+                                disabled
                                 inputProps={{ maxLength: 30 }}
                                 value={tdsCostInvoiceDTO[index]?.totTdsWhAmnt || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
