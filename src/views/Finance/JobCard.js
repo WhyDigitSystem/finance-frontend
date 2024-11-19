@@ -238,9 +238,9 @@ export const JobCard = () => {
     if (!formData.profit) {
       errors.profit = 'Profit is required';
     }
-    if (!formData.closedOn) {
-      errors.closedOn = 'Closed On is required';
-    }
+    // if (!formData.closedOn) {
+    //   errors.closedOn = 'Closed On is required';
+    // }
     if (!formData.remarks) {
       errors.remarks = 'Remarks is required';
     }
