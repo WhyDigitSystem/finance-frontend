@@ -913,15 +913,124 @@ const CostInvoice = () => {
     });
   };
 
+  // const handleFullGrid = async () => {
+  //   // Validate if `gstType` is selected
+  //   if (!formData.gstType) {
+  //     showToast('error', 'Please select a GST Type before proceeding!');
+  //     console.error('Error: gstType is not selected in formData.');
+  //     return;
+  //   }
+
+  //   // Check if `chargerCostInvoice` has any rows
+  //   if (chargerCostInvoice.length === 0) {
+  //     showToast('error', 'No GST details found!');
+  //     console.error('Error: chargerCostInvoice is empty.');
+  //     setShowChargeDetails(false);
+  //     return;
+  //   }
+
+  //   // Extract unique GST percentages, ensuring they are valid
+  //   const uniqueGstPercents = [
+  //     ...new Set(chargerCostInvoice.map((row) => row.gstPercent).filter((gstPercent) => gstPercent && gstPercent.length > 0))
+  //   ];
+
+  //   if (uniqueGstPercents.length === 0) {
+  //     showToast('error', 'No valid GST percentages found!');
+  //     console.error('Error: uniqueGstPercents is empty.');
+  //     setShowChargeDetails(false);
+  //     return;
+  //   }
+
+  //   try {
+  //     // Determine the API endpoint based on `gstType`
+  //     let apiEndpoint = '';
+  //     if (formData.gstType === 'INTER') {
+  //       apiEndpoint = `/costInvoice/getChargeNameAndChargeCodeForIgst?orgId=${orgId}&gstTax=${uniqueGstPercents.join('&gstTax=')}`;
+  //     } else if (formData.gstType === 'INTRA') {
+  //       // Split GST percentages into CGST and SGST
+  //       const cgstAndSgstPercents = uniqueGstPercents.flatMap((gstPercent) => {
+  //         const half = (parseFloat(gstPercent) / 2).toFixed(1); // Split equally and format to 1 decimal place
+  //         return [half, half];
+  //       });
+  //       apiEndpoint = `/costInvoice/getChargeNameAndChargeCodeForCgstAndSgst?orgId=${orgId}&gstTax=${cgstAndSgstPercents.join('&gstTax=')}`;
+  //     } else {
+  //       showToast('error', 'Invalid GST Type selected!');
+  //       console.error('Error: Invalid gstType in formData.');
+  //       setShowChargeDetails(false);
+  //       return;
+  //     }
+
+  //     // Call the API
+  //     const response = await apiCalls('get', apiEndpoint);
+
+  //     const fetchedChargeDetails = response.paramObjectsMap?.chargeDetails || [];
+  //     console.log('fetchedChargeDetails', fetchedChargeDetails);
+  //     setShowChargeDetails(true);
+
+  //     // Perform calculations and merge with fetched details
+  //     const groupedByGstPercent = chargerCostInvoice.reduce((acc, row) => {
+  //       if (!row.gst || isNaN(Number(row.gst))) {
+  //         showToast('error', 'Invalid or missing GST value.');
+  //         console.error('Error: Invalid gst value in chargerCostInvoice.');
+  //         setShowChargeDetails(false);
+  //         return acc;
+  //       }
+  //       if (row.gstPercent && row.gstPercent.length > 0) {
+  //         acc[row.gstPercent] = (acc[row.gstPercent] || 0) + parseFloat(row.gst || 0); // Sum `gst`
+  //       }
+  //       return acc;
+  //     }, {});
+
+  //     // const updatedChargeDetails = Object.entries(groupedByGstPercent).map(([gstPercent, gst]) => {
+  //     //   console.log('groupedByGstPercent', groupedByGstPercent);
+  //     //   const fetchedDetail = fetchedChargeDetails.find((detail) => Number(detail.gstPercent) === Number(gstPercent));
+  //     //   console.log('fetchedDetail', fetchedDetail);
+  //     //   return {
+  //     //     gstPercent: Number(gstPercent),
+  //     //     lcAmount: gst.toFixed(2), // Format to two decimal places
+  //     //     ...fetchedDetail // Merge API response fields
+  //     //   };
+  //     // });
+  //     const updatedChargeDetails = Object.entries(groupedByGstPercent).flatMap(([gstPercent, gst]) => {
+  //       console.log('Processing gstPercent:', gstPercent, 'with gst:', gst);
+
+  //       // Fetch both CGST and SGST details for the current GST percent
+  //       const fetchedDetails = fetchedChargeDetails.filter((detail) => Number(detail.gstPercent) === Number(gstPercent));
+
+  //       console.log('Fetched Details for gstPercent:', gstPercent, fetchedDetails);
+
+  //       if (!fetchedDetails.length) {
+  //         console.error(`No fetched details found for gstPercent: ${gstPercent}`);
+  //         return []; // Skip this gstPercent if no matching details
+  //       }
+
+  //       // Split GST equally between CGST and SGST
+  //       const halfGst = (gst / 2).toFixed(2); // Ensure two decimal places
+
+  //       // Map each detail (CGST and SGST) with calculated `lcAmount`
+  //       return fetchedDetails.map((detail) => ({
+  //         gstPercent: Number(detail.gstPercent),
+  //         lcAmount: halfGst,
+  //         ...detail // Merge API response fields
+  //       }));
+  //     });
+
+  //     console.log('updatedChargeDetails', updatedChargeDetails);
+  //     // Update state
+  //     setChargeDetails(updatedChargeDetails);
+  //   } catch (error) {
+  //     console.error('Error fetching charge details:', error);
+  //     showToast('error', 'Failed to fetch charge details. Please try again.');
+  //   }
+  // };
+
   const handleFullGrid = async () => {
-    // Validate if `gstType` is selected
     if (!formData.gstType) {
       showToast('error', 'Please select a GST Type before proceeding!');
       console.error('Error: gstType is not selected in formData.');
       return;
     }
 
-    // Check if `chargerCostInvoice` has any rows
     if (chargerCostInvoice.length === 0) {
       showToast('error', 'No GST details found!');
       console.error('Error: chargerCostInvoice is empty.');
@@ -929,7 +1038,6 @@ const CostInvoice = () => {
       return;
     }
 
-    // Extract unique GST percentages, ensuring they are valid
     const uniqueGstPercents = [
       ...new Set(chargerCostInvoice.map((row) => row.gstPercent).filter((gstPercent) => gstPercent && gstPercent.length > 0))
     ];
@@ -942,14 +1050,12 @@ const CostInvoice = () => {
     }
 
     try {
-      // Determine the API endpoint based on `gstType`
       let apiEndpoint = '';
       if (formData.gstType === 'INTER') {
         apiEndpoint = `/costInvoice/getChargeNameAndChargeCodeForIgst?orgId=${orgId}&gstTax=${uniqueGstPercents.join('&gstTax=')}`;
       } else if (formData.gstType === 'INTRA') {
-        // Split GST percentages into CGST and SGST
         const cgstAndSgstPercents = uniqueGstPercents.flatMap((gstPercent) => {
-          const half = (parseFloat(gstPercent) / 2).toFixed(1); // Split equally and format to 1 decimal place
+          const half = (parseFloat(gstPercent) / 2).toFixed(1);
           return [half, half];
         });
         apiEndpoint = `/costInvoice/getChargeNameAndChargeCodeForCgstAndSgst?orgId=${orgId}&gstTax=${cgstAndSgstPercents.join('&gstTax=')}`;
@@ -960,14 +1066,9 @@ const CostInvoice = () => {
         return;
       }
 
-      // Call the API
       const response = await apiCalls('get', apiEndpoint);
-
       const fetchedChargeDetails = response.paramObjectsMap?.chargeDetails || [];
-      console.log('fetchedChargeDetails', fetchedChargeDetails);
-      setShowChargeDetails(true);
 
-      // Perform calculations and merge with fetched details
       const groupedByGstPercent = chargerCostInvoice.reduce((acc, row) => {
         if (!row.gst || isNaN(Number(row.gst))) {
           showToast('error', 'Invalid or missing GST value.');
@@ -976,48 +1077,56 @@ const CostInvoice = () => {
           return acc;
         }
         if (row.gstPercent && row.gstPercent.length > 0) {
-          acc[row.gstPercent] = (acc[row.gstPercent] || 0) + parseFloat(row.gst || 0); // Sum `gst`
+          acc[row.gstPercent] = (acc[row.gstPercent] || 0) + parseFloat(row.gst || 0);
         }
         return acc;
       }, {});
 
-      // const updatedChargeDetails = Object.entries(groupedByGstPercent).map(([gstPercent, gst]) => {
-      //   console.log('groupedByGstPercent', groupedByGstPercent);
-      //   const fetchedDetail = fetchedChargeDetails.find((detail) => Number(detail.gstPercent) === Number(gstPercent));
-      //   console.log('fetchedDetail', fetchedDetail);
-      //   return {
-      //     gstPercent: Number(gstPercent),
-      //     lcAmount: gst.toFixed(2), // Format to two decimal places
-      //     ...fetchedDetail // Merge API response fields
-      //   };
-      // });
-      const updatedChargeDetails = Object.entries(groupedByGstPercent).flatMap(([gstPercent, gst]) => {
-        console.log('Processing gstPercent:', gstPercent, 'with gst:', gst);
+      let updatedChargeDetails = [];
 
-        // Fetch both CGST and SGST details for the current GST percent
-        const fetchedDetails = fetchedChargeDetails.filter((detail) => Number(detail.gstPercent) === Number(gstPercent));
+      if (formData.gstType === 'INTER') {
+        updatedChargeDetails = Object.entries(groupedByGstPercent)
+          .map(([gstPercent, gst]) => {
+            const fetchedDetail = fetchedChargeDetails.find((detail) => Number(detail.gstPercent) === Number(gstPercent));
 
-        console.log('Fetched Details for gstPercent:', gstPercent, fetchedDetails);
+            if (!fetchedDetail) {
+              console.error(`No fetched detail found for gstPercent: ${gstPercent}`);
+              return null;
+            }
 
-        if (!fetchedDetails.length) {
-          console.error(`No fetched details found for gstPercent: ${gstPercent}`);
-          return []; // Skip this gstPercent if no matching details
-        }
+            return {
+              gstPercent: Number(gstPercent),
+              lcAmount: gst.toFixed(2),
+              ...fetchedDetail,
+              chargeCode: fetchedDetail.chargeCode // Ensure chargeCode is IGST
+            };
+          })
+          .filter(Boolean); // Remove null values
+      } else if (formData.gstType === 'INTRA') {
+        updatedChargeDetails = Object.entries(groupedByGstPercent).flatMap(([gstPercent, gst]) => {
+          console.log('groupedByGstPercent', groupedByGstPercent);
 
-        // Split GST equally between CGST and SGST
-        const halfGst = (gst / 2).toFixed(2); // Ensure two decimal places
+          const halfGst = (gst / 2).toFixed(2);
+          const halfGstPercent = (gstPercent / 2).toFixed(2);
+          const fetchedDetails = fetchedChargeDetails.filter((detail) => Number(detail.gstPercent) === Number(halfGstPercent));
+          console.log('fetchedDetails', fetchedDetails);
+          if (!fetchedDetails.length) {
+            console.error(`No fetched details found for gstPercent: ${gstPercent}`);
+            return [];
+          }
 
-        // Map each detail (CGST and SGST) with calculated `lcAmount`
-        return fetchedDetails.map((detail) => ({
-          gstPercent: Number(detail.gstPercent),
-          lcAmount: halfGst,
-          ...detail // Merge API response fields
-        }));
-      });
+          return fetchedDetails.map((detail) => ({
+            gstPercent: Number(detail.gstPercent),
+            lcAmount: halfGst,
+            ...detail,
+            chargeCode: detail.chargeCode // Ensure chargeCode is CGST or SGST
+          }));
+        });
+      }
 
       console.log('updatedChargeDetails', updatedChargeDetails);
-      // Update state
       setChargeDetails(updatedChargeDetails);
+      setShowChargeDetails(true);
     } catch (error) {
       console.error('Error fetching charge details:', error);
       showToast('error', 'Failed to fetch charge details. Please try again.');
@@ -2709,6 +2818,7 @@ const CostInvoice = () => {
                                 onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
                                 size="small"
                                 placeholder="0.00"
+                                disabled
                                 inputProps={{ maxLength: 30 }}
                                 error={!!costInvErrors[index]?.totChargesBillCurrAmt}
                                 helperText={costInvErrors[index]?.totChargesBillCurrAmt}
@@ -2724,6 +2834,7 @@ const CostInvoice = () => {
                                 onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
                                 size="small"
                                 placeholder="0.00"
+                                disabled
                                 inputProps={{ maxLength: 30 }}
                                 error={!!costInvErrors[index]?.actBillCurrAmt}
                                 helperText={costInvErrors[index]?.actBillCurrAmt}
@@ -2739,6 +2850,7 @@ const CostInvoice = () => {
                                 onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
                                 size="small"
                                 placeholder="0.00"
+                                disabled
                                 inputProps={{ maxLength: 30 }}
                                 error={!!costInvErrors[index]?.netBillCurrAmt}
                                 helperText={costInvErrors[index]?.netBillCurrAmt}
@@ -2754,6 +2866,7 @@ const CostInvoice = () => {
                                 onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
                                 size="small"
                                 placeholder="0.00"
+                                disabled
                                 inputProps={{ maxLength: 30 }}
                                 error={!!costInvErrors[index]?.actBillLcAmt}
                                 helperText={costInvErrors[index]?.actBillLcAmt}
@@ -2769,6 +2882,7 @@ const CostInvoice = () => {
                                 onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
                                 size="small"
                                 placeholder="0.00"
+                                disabled
                                 inputProps={{ maxLength: 30 }}
                                 error={!!costInvErrors[index]?.netBillLcAmt}
                                 helperText={costInvErrors[index]?.netBillLcAmt}
@@ -2784,6 +2898,7 @@ const CostInvoice = () => {
                                 onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
                                 size="small"
                                 placeholder="0.00"
+                                disabled
                                 inputProps={{ maxLength: 30 }}
                                 error={!!costInvErrors[index]?.gstInputLcAmt}
                                 helperText={costInvErrors[index]?.gstInputLcAmt}
@@ -2799,6 +2914,7 @@ const CostInvoice = () => {
                                 onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
                                 size="small"
                                 placeholder="0.00"
+                                disabled
                                 inputProps={{ maxLength: 30 }}
                                 error={!!costInvErrors[index]?.roundOff}
                                 helperText={costInvErrors[index]?.roundOff}
@@ -2814,6 +2930,7 @@ const CostInvoice = () => {
                                 onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
                                 size="small"
                                 placeholder="0.00"
+                                disabled
                                 inputProps={{ maxLength: 30 }}
                                 error={!!costInvErrors[index]?.totChargesLcAmt}
                                 helperText={costInvErrors[index]?.totChargesLcAmt}
