@@ -134,6 +134,12 @@ const finance = {
           title: 'Document Type Mapping',
           type: 'item',
           url: '/finance/DocumentType/documentTypeMapping'
+        },
+        {
+          id: 'multipleDocumentIdGeneration',
+          title: 'Multiple Document Id Generation',
+          type: 'item',
+          url: '/finance/DocumentType/multipleDocumentIdGeneration'
         }
       ]
     }

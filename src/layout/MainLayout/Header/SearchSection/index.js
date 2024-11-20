@@ -63,6 +63,7 @@ const screens = [
   { name: 'Reconciliation Summary', path: '/Finance/ReconciliationSummaryReport/ReconciliationSummary' },
   { name: 'Document Type Master', path: '/Finance/DocumentTypeMaster' },
   { name: 'Document Type Mapping Master', path: '/Finance/DocumentTypeMappingMaster' },
+  { name: 'Multiple Document Id Generation Master', path: '/Finance/MultipleDocumentIdGeneration' },
   { name: 'Reconcile Cash', path: '/Finance/ReconcileCash' },
   { name: 'Reconcile Corp', path: '/Finance/ReconcileCorp' },
   { name: 'Create Company', path: '/companysetup/createcompany' },
@@ -85,7 +86,11 @@ const screens = [
   { name: 'Payment Voucher', path: '/Finance/paymentVoucher/paymentVoucher' },
   { name: 'AR/AP Detail', path: '/Finance/ARAP-Details' },
   { name: 'AR/AP Adjustment', path: '/Finance/APAP-Adjustment' },
-  { name: 'Party Master', path: '/Finance/PartyMaster' }
+  { name: 'Party Master', path: '/Finance/PartyMaster' },
+  { name: 'Adjustment Journal', path: '/Finance/AdjustmentJournal' },
+  { name: 'Deposit', path: '/Finance/Deposit' },
+  { name: 'Withdrawal', path: '/Finance/Withdrawal' },
+  { name: 'Contra Voucher', path: '/Finance/ContraVoucher' }
 ];
 
 // Styled Components
