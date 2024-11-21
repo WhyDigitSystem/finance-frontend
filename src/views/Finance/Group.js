@@ -37,6 +37,8 @@ const Group = () => {
   const [formData, setFormData] = useState({
     groupName: '',
     gstTaxFlag: '',
+    gstType:'',
+    gstPercentage:'',
     accountCode: '',
     coaList: '',
     accountGroupName: '',
@@ -51,6 +53,8 @@ const Group = () => {
   const [fieldErrors, setFieldErrors] = useState({
     groupName: false,
     gstTaxFlag: false,
+    gstType:false,
+    gstPercentage:false,
     accountCode: false,
     coaList: false,
     accountGroupName: false,
@@ -88,13 +92,36 @@ const Group = () => {
   //   setFieldErrors({ ...fieldErrors, [name]: false });
   // };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, type, checked } = e.target;
+  //   const inputValue = type === 'checkbox' ? checked : value;
+
+  //   let errorMessage = '';
+  //   let validInputValue = inputValue; // Initialize valid input value
+
+  //   // Validation for accountCode (alphanumeric only)
+  //   if (name === 'accountCode') {
+  //     const alphanumericPattern = /^[a-zA-Z0-9]*$/; // Pattern for alphanumeric
+  //     if (!alphanumericPattern.test(inputValue)) {
+  //       errorMessage = 'Only alphabets and numbers are allowed.';
+  //       // Set validInputValue to prevent invalid character input
+  //       validInputValue = inputValue.replace(/[^a-zA-Z0-9]/g, '');
+  //     }
+  //   }
+
+  //   // Validation for accountGroupName (alphabets only)
+
+  //   // Update the form data with the valid input value
+  //   setFormData({ ...formData, [name]: validInputValue });
+
+  //   // Update the error messages
+  //   setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+  // };
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const inputValue = type === 'checkbox' ? checked : value;
-
-    let errorMessage = '';
-    let validInputValue = inputValue; // Initialize valid input value
-
+    let validInputValue = inputValue; 
+   
     // Validation for accountCode (alphanumeric only)
     if (name === 'accountCode') {
       const alphanumericPattern = /^[a-zA-Z0-9]*$/; // Pattern for alphanumeric
@@ -104,14 +131,38 @@ const Group = () => {
         validInputValue = inputValue.replace(/[^a-zA-Z0-9]/g, '');
       }
     }
-
-    // Validation for accountGroupName (alphabets only)
-
-    // Update the form data with the valid input value
-    setFormData({ ...formData, [name]: validInputValue });
-
-    // Update the error messages
-    setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+    // Update form data
+    setFormData((prevState) => ({ ...prevState, [name]: validInputValue }));
+  
+    // Handle dynamic validation
+    if (name === 'gstTaxFlag') {
+      if (value === 'NA') {
+        // Reset gstType and gstPercentage if GST Tax Flag is NA
+        setFormData((prevState) => ({
+          ...prevState,
+          gstType: '',
+          gstPercentage: '',
+        }));
+        // Clear field errors
+        setFieldErrors((prevState) => ({
+          ...prevState,
+          gstType: '',
+          gstPercentage: '',
+        }));
+      }
+    }
+  
+    // Validate other fields if required
+    let errorMessage = '';
+    if (name === 'gstPercentage' && !value) {
+      errorMessage = 'GST Percentage is required.';
+    }
+    if (name === 'gstType' && !value) {
+      errorMessage = 'GST Type is required.';
+    }
+  
+    // Set field errors
+    setFieldErrors((prevState) => ({ ...prevState, [name]: errorMessage }));
   };
 
   const getGroup = async () => {
@@ -181,9 +232,18 @@ const Group = () => {
         category: formData.category,
         branch: formData.branch,
         currency: 'INR',
+        ...(formData.gstTaxFlag !== 'NA' && {
+          gstType: formData.gstType,
+          gstPercentage: formData.gstPercentage,
+        }),
+        ...(formData.gstTaxFlag === 'NA' && {
+          gstType: 'NA',
+          gstPercentage: 0,
+        }),
         orgId: orgId,
-        createdBy: loginUserName
+        createdBy: loginUserName,
       };
+      
 
       console.log('DATA TO SAVE', saveData); // Add this line to log the save data
 
@@ -220,6 +280,8 @@ const Group = () => {
       interBranchAc: false,
       controllAc: false,
       category: '',
+      gstType:'',
+      gstPercentage:'',
       branch: '',
       // currency: '',
       active: false
@@ -231,6 +293,8 @@ const Group = () => {
       coaList: false,
       accountGroupName: false,
       type: false,
+      gstType:false,
+      gstPercentage:false,
       interBranchAc: false,
       controllAc: false,
       category: false,
@@ -287,6 +351,8 @@ const Group = () => {
           coaList: exRate.coaList,
           accountGroupName: exRate.accountGroupName,
           type: exRate.type,
+          gstType:exRate.gstType,
+          gstPercentage:exRate.gstPercentage,
           interBranchAc: exRate.interBranchAc,
           controllAc: exRate.controllAc,
           category: exRate.category,
@@ -374,7 +440,7 @@ const Group = () => {
                 {fieldErrors.groupName && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
             </div>
-            <div className="col-md-3 mb-2">
+            {/* <div className="col-md-3 mb-2">
               <FormControl fullWidth size="small">
                 <InputLabel id="gstTaxFlag">GST Tax Flag</InputLabel>
                 <Select
@@ -392,6 +458,99 @@ const Group = () => {
                 {fieldErrors.gstTaxFlag && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
             </div>
+            
+            <div className="col-md-3 mb-3">
+              <FormControl fullWidth size="small">
+                <InputLabel id="demo-simple-select-label">Gst Type</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  label="gstType"
+                  onChange={handleInputChange}
+                  name="gstType"
+                  value={formData.gstType}
+                >
+                  <MenuItem value="INTRA">INTRA</MenuItem>
+                  <MenuItem value="INTER">INTER</MenuItem>
+                </Select>
+                {fieldErrors.gstType && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
+              </FormControl>
+            </div>
+            <div className="col-md-3 mb-3">
+              <FormControl fullWidth variant="filled">
+                <TextField
+                  id="gstPercentage"
+                  label="Gst %"
+                  size="small"
+                  placeholder="Enter Gst %"
+                  inputProps={{ maxLength: 30 }}
+                  onChange={handleInputChange}
+                  name="gstPercentage"
+                  value={formData.gstPercentage}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.gstPercentage ? fieldErrors.gstPercentage : ''}</span>}
+                />
+              </FormControl>
+            </div> */}
+            {/* GST Tax Flag */}
+    <div className="col-md-3 mb-2">
+      <FormControl fullWidth size="small">
+        <InputLabel id="gstTaxFlag">GST Tax Flag</InputLabel>
+        <Select
+          labelId="gstTaxFlag"
+          id="gstTaxFlag"
+          label="GST Tax Flag"
+          onChange={handleInputChange}
+          name="gstTaxFlag"
+          value={formData.gstTaxFlag}
+        >
+          <MenuItem value="INPUT TAX">Input Tax</MenuItem>
+          <MenuItem value="OUTPUT TAX">Output Tax</MenuItem>
+          <MenuItem value="NA">NA</MenuItem>
+        </Select>
+        {fieldErrors.gstTaxFlag && <FormHelperText style={{ color: 'red' }}>{fieldErrors.gstTaxFlag}</FormHelperText>}
+      </FormControl>
+    </div>
+
+    {/* GST Type - Conditional Rendering */}
+    {formData.gstTaxFlag !== 'NA' && (
+      <div className="col-md-3 mb-3">
+        <FormControl fullWidth size="small">
+          <InputLabel id="gstType">GST Type</InputLabel>
+          <Select
+            labelId="gstType"
+            id="gstType"
+            label="GST Type"
+            onChange={handleInputChange}
+            name="gstType"
+            value={formData.gstType}
+          >
+            <MenuItem value="INTRA">INTRA</MenuItem>
+            <MenuItem value="INTER">INTER</MenuItem>
+          </Select>
+          {fieldErrors.gstType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.gstType}</FormHelperText>}
+        </FormControl>
+      </div>
+    )}
+
+    {/* GST Percentage - Conditional Rendering */}
+    {formData.gstTaxFlag !== 'NA' && (
+      <div className="col-md-3 mb-3">
+        <FormControl fullWidth variant="filled">
+          <TextField
+            id="gstPercentage"
+            label="GST %"
+            size="small"
+            placeholder="Enter GST %"
+            onChange={handleInputChange}
+            name="gstPercentage"
+            value={formData.gstPercentage}
+          />
+          {fieldErrors.gstPercentage && (
+            <FormHelperText style={{ color: 'red' }}>{fieldErrors.gstPercentage}</FormHelperText>
+          )}
+        </FormControl>
+      </div>
+    )}
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
