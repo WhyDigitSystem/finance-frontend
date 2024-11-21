@@ -59,6 +59,8 @@ const CostInvoice = () => {
   ]);
   const [formData, setFormData] = useState({
     accuralid: '',
+    actBillCurrAmt: '',
+    actBillLcAmt: '',
     address: '',
     branch: '',
     branchCode: '',
@@ -74,16 +76,20 @@ const CostInvoice = () => {
     dueDate: null,
     exRate: '',
     finYear: '',
+    gstInputLcAmt: '',
     gstType: '',
     ipNo: '',
     latitude: '',
     mode: '',
+    netBillCurrAmt: '',
+    netBillLcAmt: '',
     otherInfo: '',
     payment: '',
     product: '',
     purVoucherDate: null,
     purVoucherNo: '',
     remarks: '',
+    roundOff: '',
     shipperRefNo: '',
     supplierBillNo: '',
     supplierCode: '',
@@ -92,6 +98,8 @@ const CostInvoice = () => {
     supplierName: '',
     supplierPlace: '',
     supplierType: '',
+    totChargesBillCurrAmt: '',
+    totChargesLcAmt: '',
     utrRef: ''
   });
 
@@ -253,6 +261,38 @@ const CostInvoice = () => {
     calculateTotTdsWhAmnt();
   }, [chargerCostInvoice, tdsCostInvoiceDTO.map((item) => item.tdsWithHoldingPer)]);
 
+  useEffect(() => {
+    calculateTotals();
+  }, [chargerCostInvoice, tdsCostInvoiceDTO]);
+
+  const calculateTotals = () => {
+    let totalBillAmt = 0;
+    let totalLcAmount = 0;
+    let totalGst = 0;
+
+    // Calculate sums from chargerCostInvoice
+    chargerCostInvoice.forEach((row) => {
+      totalBillAmt += parseFloat(row.billAmt || 0);
+      totalLcAmount += parseFloat(row.lcAmount || 0);
+      totalGst += parseFloat(row.gst || 0);
+    });
+
+    // Get TDS value
+    const totalTds = tdsCostInvoiceDTO.reduce((acc, row) => acc + parseFloat(row.totTdsWhAmnt || 0), 0);
+
+    // Update formData
+    setFormData((prev) => ({
+      ...prev,
+      totChargesBillCurrAmt: totalBillAmt.toFixed(2),
+      totChargesLcAmt: totalLcAmount.toFixed(2),
+      actBillCurrAmt: (totalBillAmt + totalGst).toFixed(2),
+      actBillLcAmt: (totalBillAmt + totalGst - totalTds).toFixed(2),
+      netBillCurrAmt: (totalBillAmt + totalGst - totalTds).toFixed(2),
+      netBillLcAmt: (totalLcAmount + totalGst - totalTds).toFixed(2),
+      gstInputLcAmt: totalGst.toFixed(2)
+    }));
+  };
+
   // useEffect(() => {
   //   const isUniformGstPercent = chargerCostInvoice.every((row) => row.gstPercent === chargerCostInvoice[0]?.gstPercent);
 
@@ -376,10 +416,12 @@ const CostInvoice = () => {
       if (result) {
         const costVO = result.paramObjectsMap.costInvoiceVO[0];
         setEditId(row.original.id);
-
+        getCurrencyAndExratesForMatchingParties(costVO.supplierCode);
         setFormData({
           accuralid: costVO.accuralid,
           address: costVO.address,
+          actBillCurrAmt: costVO.actBillCurrAmt,
+          actBillLcAmt: costVO.actBillLcAmt,
           branch: costVO.branch,
           branchCode: costVO.branchCode,
           client: costVO.client,
@@ -395,8 +437,11 @@ const CostInvoice = () => {
           docId: costVO.docId,
           exRate: costVO.exRate,
           finYear: finYear,
+          gstInputLcAmt: costVO.gstInputLcAmt,
           gstType: costVO.gstType,
           mode: costVO.mode,
+          netBillCurrAmt: costVO.netBillCurrAmt,
+          netBillLcAmt: costVO.netBillLcAmt,
           orgId: orgId,
           otherInfo: costVO.otherInfo,
           payment: costVO.payment,
@@ -404,6 +449,7 @@ const CostInvoice = () => {
           purVoucherDate: costVO.purVoucherDate ? dayjs(costVO.purVoucherDate) : dayjs(),
           purVoucherNo: costVO.purVoucherNo,
           remarks: costVO.remarks,
+          roundOff: costVO.roundOff,
           shipperRefNo: costVO.shipperRefNo,
           supplierBillNo: costVO.supplierBillNo,
           supplierCode: costVO.supplierCode,
@@ -412,39 +458,29 @@ const CostInvoice = () => {
           supplierName: costVO.supplierName,
           supplierPlace: costVO.supplierPlace,
           supplierType: costVO.supplierType,
-          // tdsCostInvoiceDTO: costVO.tdsCostInvoiceVO,
+          totChargesBillCurrAmt: costVO.totChargesBillCurrAmt,
+          totChargesLcAmt: costVO.totChargesLcAmt,
           utrRef: costVO.utrRef
         });
         setChargerCostInvoice(
-          costVO.chargerCostInvoiceVO.map((row) => ({
+          costVO.normalCharges.map((row) => ({
             id: row.id,
-            // billAmt: row.billAmt,
+            billAmt: row.billAmt,
             chargeCode: row.chargeCode,
             chargeLedger: row.chargeLedger,
             chargeName: row.chargeName,
-            // contType: row.contType,
+            govChargeCode: row.govChargeCode,
             currency: row.currency,
             exRate: row.exRate,
-            fcAmt: row.fcAmt,
-            sac: row.sac,
+            fcAmount: row.fcAmt,
             gst: row.gst,
-            // houseNo: row.houseNo,
+            gstPercent: row.gstpercent,
             jobNo: row.jobNo,
-            lcAmt: row.lcAmt
-            // subJobNo: row.subJobNo
-          }))
-        );
-        setCostInvSummaryDTO(
-          costVO.costInvSummaryVO.map((row) => ({
-            id: row.id,
-            actBillCurrAmt: row.actBillCurrAmt,
-            actBillLcAmt: row.actBillLcAmt,
-            gstInputLcAmt: row.gstInputLcAmt,
-            netBillCurrAmt: row.netBillCurrAmt,
-            netBillLcAmt: row.netBillLcAmt,
-            roundOff: row.roundOff,
-            totChargesBillCurrAmt: row.totChargesBillCurrAmt,
-            totChargesLcAmt: row.totChargesLcAmt
+            lcAmount: row.lcAmt,
+            qty: row.qty,
+            rate: row.rate,
+            sac: row.sac,
+            taxable: row.taxable
           }))
         );
         setTdsCostInvoiceDTO(
@@ -456,7 +492,18 @@ const CostInvoice = () => {
             totTdsWhAmnt: row.totTdsWhAmnt
           }))
         );
-
+        setChargeDetails(
+          costVO.gstLines.map((row) => ({
+            id: row.id,
+            chargeCode: row.chargeCode,
+            chargeDesc: row.chargeName,
+            gChargeCode: row.govChargeCode,
+            gstPercent: row.gstpercent,
+            sac: row.sac,
+            lcAmount: row.lcAmt
+          }))
+        );
+        setShowChargeDetails(true);
         console.log('DataToEdit', costVO);
       } else {
         // Handle erro
@@ -677,6 +724,8 @@ const CostInvoice = () => {
   const handleClear = () => {
     setFormData({
       accuralid: '',
+      actBillCurrAmt: '',
+      actBillLcAmt: '',
       address: '',
       branch: '',
       branchCode: '',
@@ -690,16 +739,20 @@ const CostInvoice = () => {
       docDate: dayjs(),
       exRate: '',
       finYear: '',
+      gstInputLcAmt: '',
       gstType: '',
       ipNo: '',
       latitude: '',
       mode: '',
+      netBillCurrAmt: '',
+      netBillLcAmt: '',
       otherInfo: '',
       product: '',
       payment: '',
       purVoucherDate: null,
       purVoucherNo: '',
       remarks: '',
+      roundOff: '',
       shipperRefNo: '',
       supplierBillNo: '',
       supplierCode: '',
@@ -708,8 +761,12 @@ const CostInvoice = () => {
       supplierName: '',
       supplierPlace: '',
       supplierType: '',
+      totChargesBillCurrAmt: '',
+      totChargesLcAmt: '',
       utrRef: ''
     });
+    setExRates([]);
+    setStateName([]);
     getAllActiveCurrency(orgId);
     setFieldErrors({
       accuralid: '',
@@ -786,11 +843,12 @@ const CostInvoice = () => {
         totChargesLcAmt: ''
       }
     ]);
-    setCostInvoiceErrors({});
-    setCostInvErrors({});
-    setTdsCostErrors({});
-    setEditId({});
+    setCostInvoiceErrors([]);
+    setCostInvErrors([]);
+    setTdsCostErrors([]);
+    setEditId('');
     getCostInvoiceDocId();
+    setShowChargeDetails(false);
   };
 
   // const handleKeyDown = (e, row, table) => {
@@ -1256,9 +1314,9 @@ const CostInvoice = () => {
     if (!formData.accuralid) {
       errors.accuralid = 'Accural ID is required';
     }
-    if (!formData.address) {
-      errors.address = 'Address is required';
-    }
+    // if (!formData.address) {
+    //   errors.address = 'Address is required';
+    // }
     // if (!formData.costInvoiceDate) {
     //   errors.costInvoiceDate = 'Cost Invoice Date is required';
     // }
@@ -1313,9 +1371,9 @@ const CostInvoice = () => {
     if (!formData.supplierName) {
       errors.supplierName = 'Supplier Name is required';
     }
-    if (!formData.supplierPlace) {
-      errors.supplierPlace = 'Supplier Place is required';
-    }
+    // if (!formData.supplierPlace) {
+    //   errors.supplierPlace = 'Supplier Place is required';
+    // }
     if (!formData.supplierType) {
       errors.supplierType = 'Supplier Type is required';
     }
@@ -1334,34 +1392,38 @@ const CostInvoice = () => {
         rowErrors.chargeCode = 'Charge Code is required';
         CostInvoiceValid = false;
       }
-      if (!row.chargeLedger) {
-        rowErrors.chargeLedger = 'Charge Ledger is required';
+      if (!row.rate) {
+        rowErrors.rate = 'Rate is required';
         CostInvoiceValid = false;
       }
-      if (!row.chargeName) {
-        rowErrors.chargeName = 'Charge Name is required';
+      if (!row.qty) {
+        rowErrors.qty = 'Qty is required';
         CostInvoiceValid = false;
       }
+      // if (!row.chargeName) {
+      //   rowErrors.chargeName = 'Charge Name is required';
+      //   CostInvoiceValid = false;
+      // }
       if (!row.currency) {
         rowErrors.currency = 'Currency is required';
         CostInvoiceValid = false;
       }
-      if (!row.exRate) {
-        rowErrors.exRate = 'EX Rate is required';
-        CostInvoiceValid = false;
-      }
-      if (!row.fcAmt) {
-        rowErrors.fcAmt = 'FC Amt is required';
-        CostInvoiceValid = false;
-      }
-      if (!row.sac) {
-        rowErrors.sac = 'SAC is required';
-        CostInvoiceValid = false;
-      }
-      if (!row.gst) {
-        rowErrors.gst = 'GST is required';
-        CostInvoiceValid = false;
-      }
+      // if (!row.exRate) {
+      //   rowErrors.exRate = 'EX Rate is required';
+      //   CostInvoiceValid = false;
+      // }
+      // if (!row.fcAmt) {
+      //   rowErrors.fcAmt = 'FC Amt is required';
+      //   CostInvoiceValid = false;
+      // }
+      // if (!row.sac) {
+      //   rowErrors.sac = 'SAC is required';
+      //   CostInvoiceValid = false;
+      // }
+      // if (!row.gst) {
+      //   rowErrors.gst = 'GST is required';
+      //   CostInvoiceValid = false;
+      // }
       // if (!row.houseNo) {
       //   rowErrors.houseNo = 'House No is required';
       //   CostInvoiceValid = false;
@@ -1370,10 +1432,10 @@ const CostInvoice = () => {
         rowErrors.jobNo = 'Job No is required';
         CostInvoiceValid = false;
       }
-      if (!row.lcAmt) {
-        rowErrors.lcAmt = 'LC Amt is required';
-        CostInvoiceValid = false;
-      }
+      // if (!row.lcAmt) {
+      //   rowErrors.lcAmt = 'LC Amt is required';
+      //   CostInvoiceValid = false;
+      // }
       // if (!row.subJobNo) {
       //   rowErrors.subJobNo = 'Sub Job No is required';
       //   CostInvoiceValid = false;
@@ -1393,17 +1455,17 @@ const CostInvoice = () => {
         tdsValid = false;
       }
       if (!row.tdsWithHolding) {
-        rowErrors.tdsWithHolding = 'TdsWithHolding is required';
+        rowErrors.tdsWithHolding = 'Tds With Holding is required';
         tdsValid = false;
       }
-      if (!row.tdsWithHoldingPer) {
-        rowErrors.tdsWithHoldingPer = 'TdsWithHolding% is required';
-        tdsValid = false;
-      }
-      if (!row.totTdsWhAmnt) {
-        rowErrors.totTdsWhAmnt = 'Tot Tds Amount is required';
-        tdsValid = false;
-      }
+      // if (!row.tdsWithHoldingPer) {
+      //   rowErrors.tdsWithHoldingPer = 'TdsWithHolding% is required';
+      //   tdsValid = false;
+      // }
+      // if (!row.totTdsWhAmnt) {
+      //   rowErrors.totTdsWhAmnt = 'Tot Tds Amount is required';
+      //   tdsValid = false;
+      // }
 
       return rowErrors;
     });
@@ -1414,38 +1476,38 @@ const CostInvoice = () => {
     let summaryValid = true;
     const summaryTableErrors = costInvSummaryDTO.map((row) => {
       const rowErrors = {};
-      if (!row.actBillCurrAmt) {
-        rowErrors.actBillCurrAmt = 'Act Bill Amt.(Bill Curr) is required';
-        summaryValid = false;
-      }
-      if (!row.actBillLcAmt) {
-        rowErrors.actBillLcAmt = 'Act Bill Amt.(LC) is required';
-        summaryValid = false;
-      }
-      if (!row.gstInputLcAmt) {
-        rowErrors.gstInputLcAmt = 'GST Input Amt(LC) is required';
-        summaryValid = false;
-      }
-      if (!row.netBillCurrAmt) {
-        rowErrors.netBillCurrAmt = 'Net Amt.(Bill Curr) is required';
-        summaryValid = false;
-      }
-      if (!row.netBillLcAmt) {
-        rowErrors.netBillLcAmt = 'Net Amt.(LC) is required';
-        summaryValid = false;
-      }
-      if (!row.roundOff) {
-        rowErrors.roundOff = 'Round Off is required';
-        summaryValid = false;
-      }
-      if (!row.totChargesBillCurrAmt) {
-        rowErrors.totChargesBillCurrAmt = 'Tot. Charge Amt.(Bill Curr) is required';
-        summaryValid = false;
-      }
-      if (!row.totChargesLcAmt) {
-        rowErrors.totChargesLcAmt = 'Tot. Charge Amt.(LC) is required';
-        summaryValid = false;
-      }
+      // if (!row.actBillCurrAmt) {
+      //   rowErrors.actBillCurrAmt = 'Act Bill Amt.(Bill Curr) is required';
+      //   summaryValid = false;
+      // }
+      // if (!row.actBillLcAmt) {
+      //   rowErrors.actBillLcAmt = 'Act Bill Amt.(LC) is required';
+      //   summaryValid = false;
+      // }
+      // if (!row.gstInputLcAmt) {
+      //   rowErrors.gstInputLcAmt = 'GST Input Amt(LC) is required';
+      //   summaryValid = false;
+      // }
+      // if (!row.netBillCurrAmt) {
+      //   rowErrors.netBillCurrAmt = 'Net Amt.(Bill Curr) is required';
+      //   summaryValid = false;
+      // }
+      // if (!row.netBillLcAmt) {
+      //   rowErrors.netBillLcAmt = 'Net Amt.(LC) is required';
+      //   summaryValid = false;
+      // }
+      // if (!row.roundOff) {
+      //   rowErrors.roundOff = 'Round Off is required';
+      //   summaryValid = false;
+      // }
+      // if (!row.totChargesBillCurrAmt) {
+      //   rowErrors.totChargesBillCurrAmt = 'Tot. Charge Amt.(Bill Curr) is required';
+      //   summaryValid = false;
+      // }
+      // if (!row.totChargesLcAmt) {
+      //   rowErrors.totChargesLcAmt = 'Tot. Charge Amt.(LC) is required';
+      //   summaryValid = false;
+      // }
 
       return rowErrors;
     });
@@ -1457,17 +1519,21 @@ const CostInvoice = () => {
       console.log('try called');
       const costVO = chargerCostInvoice.map((row) => ({
         ...(editId && { id: row.id }),
-        billAmt: row.billAmt,
         chargeCode: row.chargeCode,
         chargeLedger: row.chargeLedger,
         chargeName: row.chargeName,
         currency: row.currency,
         exRate: row.exRate,
-        fcAmt: row.fcAmt,
-        sac: row.sac,
+        exempted: row.exempted,
+        govChargeCode: row.govChargeCode,
         gst: row.gst,
+        gstPercent: row.gstPercent,
         jobNo: row.jobNo,
-        lcAmt: row.lcAmt
+        ledger: row.ledger,
+        qty: row.qty,
+        rate: row.rate,
+        sac: row.sac,
+        taxable: row.taxable
       }));
       const costSummaryVO = costInvSummaryDTO.map((row) => ({
         ...(editId && { id: row.id }),
@@ -1484,8 +1550,8 @@ const CostInvoice = () => {
         ...(editId && { id: row.id }),
         section: row.section,
         tdsWithHolding: row.tdsWithHolding,
-        tdsWithHoldingPer: row.tdsWithHoldingPer,
-        totTdsWhAmnt: row.totTdsWhAmnt
+        tdsWithHoldingPer: row.tdsWithHoldingPer
+        // totTdsWhAmnt: row.totTdsWhAmnt
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
@@ -1495,15 +1561,16 @@ const CostInvoice = () => {
         branchCode: branchCode,
         client: formData.client,
         chargerCostInvoiceDTO: costVO,
-        costInvSummaryDTO: costSummaryVO,
-        costInvoiceDate: dayjs(formData.costInvoiceDate).format('YYYY-MM-DD'),
-        costInvoiceNo: formData.costInvoiceNo,
+        // costInvSummaryDTO: costSummaryVO,
+        // costInvoiceDate: dayjs(formData.costInvoiceDate).format('YYYY-MM-DD'),
+        // costInvoiceNo: formData.costInvoiceNo,
         costType: formData.costType,
         createdBy: loginUserName,
         creditDays: formData.creditDays,
         currency: formData.currency,
         customer: formData.customer,
-        dueDate: dayjs(formData.dueDate).format('YYYY-MM-DD'),
+        // dueDate: dayjs(formData.dueDate).format('YYYY-MM-DD'),
+        dueDate: formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : dayjs(),
         exRate: formData.exRate,
         finYear: finYear,
         gstType: formData.gstType,
@@ -1557,7 +1624,7 @@ const CostInvoice = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+            {formData.mode === 'SUBMIT' ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
           </div>
 
           {showForm ? (
@@ -1596,11 +1663,11 @@ const CostInvoice = () => {
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small" variant="outlined" error={!!fieldErrors.mode}>
+                  <FormControl fullWidth size="small" variant="outlined" error={!!fieldErrors.mode} disabled={formData.mode === 'SUBMIT'}>
                     <InputLabel id="mode-label">Mode</InputLabel>
                     <Select labelId="mode-label" label="Select Mode" name="mode" value={formData.mode} onChange={handleInputChange}>
-                      <MenuItem value="SUBMIT">Submit</MenuItem>
-                      <MenuItem value="EDIT">Edit</MenuItem>
+                      <MenuItem value="SUBMIT">SUBMIT</MenuItem>
+                      <MenuItem value="EDIT">EDIT</MenuItem>
                     </Select>
                     {fieldErrors.mode && <FormHelperText style={{ color: 'red' }}>{fieldErrors.mode}</FormHelperText>}
                   </FormControl>
@@ -1625,6 +1692,7 @@ const CostInvoice = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.purVoucherNo}
                       onChange={handleInputChange}
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.purVoucherNo}
                       helperText={fieldErrors.purVoucherNo}
                     />
@@ -1638,6 +1706,7 @@ const CostInvoice = () => {
                         label="Purchase Voucher Date"
                         value={formData.purVoucherDate}
                         onChange={(date) => handleDateChange('purVoucherDate', date)}
+                        disabled={formData.mode === 'SUBMIT'}
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
@@ -1688,6 +1757,7 @@ const CostInvoice = () => {
                       name="supplierType"
                       onChange={handleInputChange}
                       label="Supplier Type"
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.supplierType}
                       helperText={fieldErrors.supplierType}
                     >
@@ -1707,6 +1777,7 @@ const CostInvoice = () => {
                       required
                       value={formData.supplierName}
                       onChange={handleSelectPartyChange}
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.supplierName}
                       helperText={fieldErrors.supplierName}
                     >
@@ -1745,6 +1816,7 @@ const CostInvoice = () => {
                       value={formData.supplierGstInCode}
                       onChange={handleSelectStateChange}
                       label="Supplier GST Code"
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.supplierGstInCode}
                       helperText={fieldErrors.supplierGstInCode}
                     >
@@ -1787,6 +1859,7 @@ const CostInvoice = () => {
                       value={formData.supplierPlace}
                       name="supplierPlace"
                       onChange={handleSelectPlaceChange}
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.supplierPlace}
                       helperText={fieldErrors.supplierPlace}
                     >
@@ -1809,6 +1882,7 @@ const CostInvoice = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.supplierBillNo}
                       onChange={handleInputChange}
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.supplierBillNo}
                       helperText={fieldErrors.supplierBillNo}
                     />
@@ -1847,6 +1921,7 @@ const CostInvoice = () => {
                       onChange={handleInputChange}
                       name="currency"
                       value={formData.currency}
+                      disabled={formData.mode === 'SUBMIT'}
                     >
                       {currencies &&
                         currencies.map((item) => (
@@ -1868,6 +1943,7 @@ const CostInvoice = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.exRate}
                       onChange={handleInputChange}
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.exRate}
                       helperText={fieldErrors.exRate}
                     />
@@ -1884,6 +1960,7 @@ const CostInvoice = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.creditDays}
                       onChange={handleInputChange}
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.creditDays}
                       helperText={fieldErrors.creditDays}
                     />
@@ -1917,6 +1994,7 @@ const CostInvoice = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.shipperRefNo}
                       onChange={handleInputChange}
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.shipperRefNo}
                       helperText={fieldErrors.shipperRefNo}
                     />
@@ -1932,6 +2010,7 @@ const CostInvoice = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.otherInfo}
                       onChange={handleInputChange}
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.otherInfo}
                       helperText={fieldErrors.otherInfo}
                     />
@@ -1945,6 +2024,7 @@ const CostInvoice = () => {
                       name="gstType"
                       value={formData.gstType}
                       onChange={handleInputChange}
+                      disabled={formData.mode === 'SUBMIT'}
                       label="GST Type"
                       error={!!fieldErrors.gstType}
                       helperText={fieldErrors.gstType}
@@ -1962,6 +2042,7 @@ const CostInvoice = () => {
                       labelId="payment"
                       value={formData.payment}
                       onChange={handleInputChange}
+                      disabled={formData.mode === 'SUBMIT'}
                       label="Payment"
                       name="payment"
                       error={!!fieldErrors.payment}
@@ -1984,6 +2065,7 @@ const CostInvoice = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.accuralid}
                       onChange={handleInputChange}
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.accuralid}
                       helperText={fieldErrors.accuralid}
                     />
@@ -1999,6 +2081,7 @@ const CostInvoice = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.utrRef}
                       onChange={handleInputChange}
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.utrRef}
                       helperText={fieldErrors.utrRef}
                     />
@@ -2014,6 +2097,7 @@ const CostInvoice = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.remarks}
                       onChange={handleInputChange}
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.remarks}
                       helperText={fieldErrors.remarks}
                     />
@@ -2067,39 +2151,27 @@ const CostInvoice = () => {
                   {value === 0 && (
                     <>
                       <div className="row d-flex ml">
-                        <div className="mb-1">
-                          <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                          <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
-                        </div>
+                        {formData.mode === 'SUBMIT' ? (
+                          ''
+                        ) : (
+                          <div className="mb-1">
+                            <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                            <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
+                          </div>
+                        )}
                         <div className="row mt-2">
                           <div className="col-lg-12">
                             <div className="table-responsive mb-3">
                               <table className="table table-bordered ">
-                                {/* <thead>
-                                  <tr style={{ backgroundColor: '#673AB7' }}>
-                                    <th className="table-header">Action</th>
-                                    <th className="table-header">S.No</th>
-                                    <th className="table-header">Bill Amount</th>
-                                    <th className="table-header">Charge Code</th>
-                                    <th className="table-header">Charge Ledger</th>
-                                    <th className="table-header">Charge Name</th>
-                                    <th className="table-header">Cont Type</th>
-                                    <th className="table-header">Currency</th>
-                                    <th className="table-header">EX Rate</th>
-                                    <th className="table-header">FC Amount</th>
-                                    <th className="table-header">GSAC</th>
-                                    <th className="table-header">GST</th>
-                                    <th className="table-header">House No</th>
-                                    <th className="table-header">Job No</th>
-                                    <th className="table-header">LC Amount</th>
-                                    <th className="table-header">Sub Job No</th>
-                                  </tr>
-                                </thead> */}
                                 <thead>
                                   <tr style={{ backgroundColor: '#673AB7' }}>
-                                    <th className="table-header" style={{ width: '68px' }}>
-                                      Action
-                                    </th>
+                                    {formData.mode === 'SUBMIT' ? (
+                                      ''
+                                    ) : (
+                                      <th className="table-header" style={{ width: '68px' }}>
+                                        Action
+                                      </th>
+                                    )}
                                     <th className="table-header" style={{ width: '50px' }}>
                                       S.No
                                     </th>
@@ -2121,575 +2193,639 @@ const CostInvoice = () => {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {chargerCostInvoice.map((row, index) => (
-                                    <tr key={row.id}>
-                                      <td className="border px-2 py-2 text-center">
-                                        <ActionButton
-                                          title="Delete"
-                                          icon={DeleteIcon}
-                                          onClick={() =>
-                                            handleDeleteRow(
-                                              row.id,
-                                              chargerCostInvoice,
-                                              setChargerCostInvoice,
-                                              costInvoiceErrors,
-                                              setCostInvoiceErrors
-                                            )
-                                          }
-                                        />
-                                      </td>
-                                      <td className="text-center">
-                                        <div className="pt-2">{index + 1}</div>
-                                      </td>
+                                  {formData.mode === 'SUBMIT' ? (
+                                    <>
+                                      {chargerCostInvoice.map((row, index) => (
+                                        <tr key={row.id}>
+                                          <td className="text-center">{index + 1}</td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.jobNo}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.chargeCode}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.govChargeCode}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.chargeName}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.taxable}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.qty}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.rate}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.currency}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.exRate}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.fcAmount}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.lcAmount}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.billAmt}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.sac}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.gstPercent}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.gst}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </>
+                                  ) : (
+                                    <>
+                                      {chargerCostInvoice.map((row, index) => (
+                                        <tr key={row.id}>
+                                          <td className="border px-2 py-2 text-center">
+                                            <ActionButton
+                                              title="Delete"
+                                              icon={DeleteIcon}
+                                              onClick={() =>
+                                                handleDeleteRow(
+                                                  row.id,
+                                                  chargerCostInvoice,
+                                                  setChargerCostInvoice,
+                                                  costInvoiceErrors,
+                                                  setCostInvoiceErrors
+                                                )
+                                              }
+                                            />
+                                          </td>
+                                          <td className="text-center">
+                                            <div className="pt-2">{index + 1}</div>
+                                          </td>
 
-                                      <td className="border px-2 py-2">
-                                        <select
-                                          value={row.jobNo}
-                                          style={{ width: '150px' }}
-                                          onChange={(e) => {
-                                            const selectedJobNo = e.target.value;
-                                            const selectedCurrencyData = jobNoList.find((job) => job.jobNo === selectedJobNo);
-                                            const updatedJobNoData = [...chargerCostInvoice];
-                                            updatedJobNoData[index] = {
-                                              ...updatedJobNoData[index],
-                                              jobNo: selectedJobNo
-                                            };
-                                            setChargerCostInvoice(updatedJobNoData);
-                                            // getChargeDetailsFromChargeType(e.target.value);
-                                          }}
-                                          className={costInvoiceErrors[index]?.jobNo ? 'error form-control' : 'form-control'}
-                                        >
-                                          <option value="">--Select--</option>
-                                          {jobNoList &&
-                                            jobNoList.map((job) => (
-                                              <option key={job.id} value={job.jobNo}>
-                                                {job.jobNo}
-                                              </option>
-                                            ))}
-                                        </select>
+                                          <td className="border px-2 py-2">
+                                            <select
+                                              value={row.jobNo}
+                                              style={{ width: '150px' }}
+                                              onChange={(e) => {
+                                                const selectedJobNo = e.target.value;
+                                                const selectedCurrencyData = jobNoList.find((job) => job.jobNo === selectedJobNo);
+                                                const updatedJobNoData = [...chargerCostInvoice];
+                                                updatedJobNoData[index] = {
+                                                  ...updatedJobNoData[index],
+                                                  jobNo: selectedJobNo
+                                                };
+                                                setChargerCostInvoice(updatedJobNoData);
+                                                // getChargeDetailsFromChargeType(e.target.value);
+                                              }}
+                                              className={costInvoiceErrors[index]?.jobNo ? 'error form-control' : 'form-control'}
+                                            >
+                                              <option value="">--Select--</option>
+                                              {jobNoList &&
+                                                jobNoList.map((job) => (
+                                                  <option key={job.id} value={job.jobNo}>
+                                                    {job.jobNo}
+                                                  </option>
+                                                ))}
+                                            </select>
 
-                                        {costInvoiceErrors[index]?.jobNo && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].jobNo}
-                                          </div>
-                                        )}
-                                      </td>
+                                            {costInvoiceErrors[index]?.jobNo && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {costInvoiceErrors[index].jobNo}
+                                              </div>
+                                            )}
+                                          </td>
 
-                                      <td className="border px-2 py-2">
-                                        <select
-                                          value={row.chargeCode}
-                                          style={{ width: '150px' }}
-                                          // onChange={(e) => {
-                                          //   const selectedChargeCode = e.target.value;
-                                          //   const selectedChargeCodeData = chargeCode.find(
-                                          //     (item) => item.chargeCode === selectedChargeCode
-                                          //   );
-                                          //   const updatedCurrencyData = [...chargerCostInvoice];
-                                          //   updatedCurrencyData[index] = {
-                                          //     ...updatedCurrencyData[index],
-                                          //     chargeCode: selectedChargeCode,
-                                          //     gstPercent: selectedChargeCodeData ? selectedChargeCodeData.GSTPercent : '',
-                                          //     ccFeeApplicable: selectedChargeCodeData ? selectedChargeCodeData.ccFeeApplicable : '',
-                                          //     chargeName: selectedChargeCodeData ? selectedChargeCodeData.chargeName : '',
-                                          //     exempted: selectedChargeCodeData ? selectedChargeCodeData.exempted : '',
-                                          //     govChargeCode: selectedChargeCodeData ? selectedChargeCodeData.govChargeCode : '',
-                                          //     ledger: selectedChargeCodeData ? selectedChargeCodeData.ledger : '',
-                                          //     sac: selectedChargeCodeData ? selectedChargeCodeData.sac : '',
-                                          //     taxable: selectedChargeCodeData ? selectedChargeCodeData.taxable : ''
-                                          //   };
+                                          <td className="border px-2 py-2">
+                                            <select
+                                              value={row.chargeCode}
+                                              style={{ width: '150px' }}
+                                              // onChange={(e) => {
+                                              //   const selectedChargeCode = e.target.value;
+                                              //   const selectedChargeCodeData = chargeCode.find(
+                                              //     (item) => item.chargeCode === selectedChargeCode
+                                              //   );
+                                              //   const updatedCurrencyData = [...chargerCostInvoice];
+                                              //   updatedCurrencyData[index] = {
+                                              //     ...updatedCurrencyData[index],
+                                              //     chargeCode: selectedChargeCode,
+                                              //     gstPercent: selectedChargeCodeData ? selectedChargeCodeData.GSTPercent : '',
+                                              //     ccFeeApplicable: selectedChargeCodeData ? selectedChargeCodeData.ccFeeApplicable : '',
+                                              //     chargeName: selectedChargeCodeData ? selectedChargeCodeData.chargeName : '',
+                                              //     exempted: selectedChargeCodeData ? selectedChargeCodeData.exempted : '',
+                                              //     govChargeCode: selectedChargeCodeData ? selectedChargeCodeData.govChargeCode : '',
+                                              //     ledger: selectedChargeCodeData ? selectedChargeCodeData.ledger : '',
+                                              //     sac: selectedChargeCodeData ? selectedChargeCodeData.sac : '',
+                                              //     taxable: selectedChargeCodeData ? selectedChargeCodeData.taxable : ''
+                                              //   };
 
-                                          //   setChargerCostInvoice(updatedCurrencyData);
-                                          // }}
-                                          onChange={(e) => handleChargeCodeChange(e, index)}
-                                          // onChange={(e) => handleRowUpdate(index, 'chargeCode', e.target.value)}
-                                          className={costInvoiceErrors[index]?.chargeCode ? 'error form-control' : 'form-control'}
-                                        >
-                                          <option value="">--Select--</option>
-                                          {chargeCode?.map((item, index) => (
-                                            <option key={index} value={item.chargeCode}>
-                                              {item.chargeCode}
-                                            </option>
-                                          ))}
-                                        </select>
-                                        {costInvoiceErrors[index]?.chargeCode && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].chargeCode}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.govChargeCode}
-                                          disabled
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const numericRegex = /^[0-9]*$/;
-                                            if (numericRegex.test(value)) {
-                                              setChargerCostInvoice((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, govChargeCode: value } : r))
-                                              );
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  govChargeCode: !value ? 'GOV Charge Code is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  govChargeCode: 'Only numeric characters are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={costInvoiceErrors[index]?.govChargeCode ? 'error form-control' : 'form-control'}
-                                        />
-                                        {costInvoiceErrors[index]?.govChargeCode && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].govChargeCode}
-                                          </div>
-                                        )}
-                                      </td>
+                                              //   setChargerCostInvoice(updatedCurrencyData);
+                                              // }}
+                                              onChange={(e) => handleChargeCodeChange(e, index)}
+                                              // onChange={(e) => handleRowUpdate(index, 'chargeCode', e.target.value)}
+                                              className={costInvoiceErrors[index]?.chargeCode ? 'error form-control' : 'form-control'}
+                                            >
+                                              <option value="">--Select--</option>
+                                              {chargeCode?.map((item, index) => (
+                                                <option key={index} value={item.chargeCode}>
+                                                  {item.chargeCode}
+                                                </option>
+                                              ))}
+                                            </select>
+                                            {costInvoiceErrors[index]?.chargeCode && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {costInvoiceErrors[index].chargeCode}
+                                              </div>
+                                            )}
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.govChargeCode}
+                                              disabled
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  setChargerCostInvoice((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, govChargeCode: value } : r))
+                                                  );
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      govChargeCode: !value ? 'GOV Charge Code is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      govChargeCode: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.govChargeCode ? 'error form-control' : 'form-control'}
+                                            />
+                                            {costInvoiceErrors[index]?.govChargeCode && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {costInvoiceErrors[index].govChargeCode}
+                                              </div>
+                                            )}
+                                          </td>
 
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.chargeName}
-                                          disabled
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const numericRegex = /^[0-9]*$/;
-                                            if (numericRegex.test(value)) {
-                                              setChargerCostInvoice((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, chargeName: value } : r))
-                                              );
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  chargeName: !value ? 'chargeName is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  chargeName: 'Only numeric characters are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={costInvoiceErrors[index]?.chargeName ? 'error form-control' : 'form-control'}
-                                        />
-                                        {costInvoiceErrors[index]?.chargeName && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].chargeName}
-                                          </div>
-                                        )}
-                                      </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.chargeName}
+                                              disabled
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  setChargerCostInvoice((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, chargeName: value } : r))
+                                                  );
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      chargeName: !value ? 'chargeName is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      chargeName: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.chargeName ? 'error form-control' : 'form-control'}
+                                            />
+                                            {costInvoiceErrors[index]?.chargeName && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {costInvoiceErrors[index].chargeName}
+                                              </div>
+                                            )}
+                                          </td>
 
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.taxable}
-                                          disabled
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const numericRegex = /^[0-9]*$/;
-                                            if (numericRegex.test(value)) {
-                                              setChargerCostInvoice((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, taxable: value } : r))
-                                              );
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  taxable: !value ? 'taxable is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  taxable: 'Only numeric characters are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={costInvoiceErrors[index]?.taxable ? 'error form-control' : 'form-control'}
-                                          // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                        />
-                                        {costInvoiceErrors[index]?.taxable && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].taxable}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.qty}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const numericRegex = /^[0-9]*$/;
-                                            if (numericRegex.test(value)) {
-                                              handleRowUpdate(index, 'qty', value);
-                                            } else {
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  qty: 'Only numeric characters are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
-                                        />
-                                      </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.taxable}
+                                              disabled
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  setChargerCostInvoice((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, taxable: value } : r))
+                                                  );
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      taxable: !value ? 'taxable is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      taxable: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.taxable ? 'error form-control' : 'form-control'}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            />
+                                            {costInvoiceErrors[index]?.taxable && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {costInvoiceErrors[index].taxable}
+                                              </div>
+                                            )}
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.qty}
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  handleRowUpdate(index, 'qty', value);
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      qty: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
+                                            />
+                                          </td>
 
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.rate}
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const numericRegex = /^[0-9]*$/;
-                                            if (numericRegex.test(value)) {
-                                              handleRowUpdate(index, 'rate', value);
-                                            } else {
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  rate: 'Only numeric characters are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={costInvoiceErrors[index]?.rate ? 'error form-control' : 'form-control'}
-                                        />
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <select
-                                          value={row.currency}
-                                          style={{ width: '150px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            handleRowUpdate(index, 'currency', value);
-                                          }}
-                                          className={costInvoiceErrors[index]?.currency ? 'error form-control' : 'form-control'}
-                                        >
-                                          <option value="">--Select--</option>
-                                          {exRates &&
-                                            exRates.map((currency) => (
-                                              <option key={currency.id} value={currency.currency}>
-                                                {currency.currency}
-                                              </option>
-                                            ))}
-                                        </select>
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.exRate}
-                                          disabled
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const numericRegex = /^[0-9]*$/;
-                                            if (numericRegex.test(value)) {
-                                              setChargerCostInvoice((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r))
-                                              );
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], exRate: !value ? 'exRate is required' : '' };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  exRate: 'Only numeric characters are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                          // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                        />
-                                        {costInvoiceErrors[index]?.exRate && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].exRate}
-                                          </div>
-                                        )}
-                                      </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.rate}
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  handleRowUpdate(index, 'rate', value);
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      rate: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.rate ? 'error form-control' : 'form-control'}
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <select
+                                              value={row.currency}
+                                              style={{ width: '150px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                handleRowUpdate(index, 'currency', value);
+                                              }}
+                                              className={costInvoiceErrors[index]?.currency ? 'error form-control' : 'form-control'}
+                                            >
+                                              <option value="">--Select--</option>
+                                              {exRates &&
+                                                exRates.map((currency) => (
+                                                  <option key={currency.id} value={currency.currency}>
+                                                    {currency.currency}
+                                                  </option>
+                                                ))}
+                                            </select>
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.exRate}
+                                              disabled
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  setChargerCostInvoice((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r))
+                                                  );
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = { ...newErrors[index], exRate: !value ? 'exRate is required' : '' };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      exRate: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            />
+                                            {costInvoiceErrors[index]?.exRate && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {costInvoiceErrors[index].exRate}
+                                              </div>
+                                            )}
+                                          </td>
 
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.fcAmount ? row.fcAmount.toFixed(2) : '0'}
-                                          disabled
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const numericRegex = /^[0-9]*$/;
-                                            if (numericRegex.test(value)) {
-                                              setChargerCostInvoice((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, fcAmount: value } : r))
-                                              );
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], fcAmount: !value ? 'fcAmount is required' : '' };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  fcAmount: 'Only numeric characters are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={costInvoiceErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                          // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                        />
-                                        {costInvoiceErrors[index]?.fcAmount && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].fcAmount}
-                                          </div>
-                                        )}
-                                      </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.fcAmount ? row.fcAmount.toFixed(2) : '0'}
+                                              disabled
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  setChargerCostInvoice((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, fcAmount: value } : r))
+                                                  );
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      fcAmount: !value ? 'fcAmount is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      fcAmount: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            />
+                                            {costInvoiceErrors[index]?.fcAmount && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {costInvoiceErrors[index].fcAmount}
+                                              </div>
+                                            )}
+                                          </td>
 
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.lcAmount ? row.lcAmount.toFixed(2) : '0'}
-                                          disabled
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const numericRegex = /^[0-9]*$/;
-                                            if (numericRegex.test(value)) {
-                                              setChargerCostInvoice((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, lcAmount: value } : r))
-                                              );
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  lcAmount: !value ? 'lcAmount is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  lcAmount: 'Only numeric characters are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={costInvoiceErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
-                                          // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                        />
-                                        {costInvoiceErrors[index]?.lcAmount && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].lcAmount}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.billAmt ? row.billAmt.toFixed(2) : '0.00'}
-                                          disabled
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const numericRegex = /^[0-9]*$/;
-                                            if (numericRegex.test(value)) {
-                                              setChargerCostInvoice((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, billAmt: value } : r))
-                                              );
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], billAmt: !value ? 'Settled is required' : '' };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  billAmt: 'Only numeric characters are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={costInvoiceErrors[index]?.billAmt ? 'error form-control' : 'form-control'}
-                                          // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                        />
-                                        {costInvoiceErrors[index]?.billAmt && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].billAmt}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.sac}
-                                          disabled
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const numericRegex = /^[0-9]*$/;
-                                            if (numericRegex.test(value)) {
-                                              setChargerCostInvoice((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, sac: value } : r))
-                                              );
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  sac: !value ? 'sac is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  sac: 'Only numeric characters are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={costInvoiceErrors[index]?.sac ? 'error form-control' : 'form-control'}
-                                          // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                        />
-                                        {costInvoiceErrors[index]?.sac && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].sac}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.gstPercent}
-                                          disabled
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const numericRegex = /^[0-9]*$/;
-                                            if (numericRegex.test(value)) {
-                                              setChargerCostInvoice((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, gstPercent: value } : r))
-                                              );
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  gstPercent: !value ? 'GST Percent is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  gstPercent: 'Only numeric characters are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={costInvoiceErrors[index]?.gstPercent ? 'error form-control' : 'form-control'}
-                                          // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                        />
-                                        {costInvoiceErrors[index]?.gstPercent && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].gstPercent}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.gst ? row.gst.toFixed(2) : '0.00'}
-                                          disabled
-                                          style={{ width: '100px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const numericRegex = /^[0-9]*$/;
-                                            if (numericRegex.test(value)) {
-                                              setChargerCostInvoice((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, gst: value } : r))
-                                              );
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  gst: !value ? 'GST is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setCostInvoiceErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  gst: 'Only numeric characters are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={costInvoiceErrors[index]?.gst ? 'error form-control' : 'form-control'}
-                                          // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                        />
-                                        {costInvoiceErrors[index]?.gst && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {costInvoiceErrors[index].gst}
-                                          </div>
-                                        )}
-                                      </td>
-                                    </tr>
-                                  ))}
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.lcAmount ? row.lcAmount.toFixed(2) : '0'}
+                                              disabled
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  setChargerCostInvoice((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, lcAmount: value } : r))
+                                                  );
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      lcAmount: !value ? 'lcAmount is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      lcAmount: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            />
+                                            {costInvoiceErrors[index]?.lcAmount && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {costInvoiceErrors[index].lcAmount}
+                                              </div>
+                                            )}
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.billAmt ? row.billAmt.toFixed(2) : '0.00'}
+                                              disabled
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  setChargerCostInvoice((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, billAmt: value } : r))
+                                                  );
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      billAmt: !value ? 'Settled is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      billAmt: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.billAmt ? 'error form-control' : 'form-control'}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            />
+                                            {costInvoiceErrors[index]?.billAmt && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {costInvoiceErrors[index].billAmt}
+                                              </div>
+                                            )}
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.sac}
+                                              disabled
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  setChargerCostInvoice((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, sac: value } : r))
+                                                  );
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      sac: !value ? 'sac is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      sac: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.sac ? 'error form-control' : 'form-control'}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            />
+                                            {costInvoiceErrors[index]?.sac && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {costInvoiceErrors[index].sac}
+                                              </div>
+                                            )}
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.gstPercent}
+                                              disabled
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  setChargerCostInvoice((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, gstPercent: value } : r))
+                                                  );
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      gstPercent: !value ? 'GST Percent is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      gstPercent: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.gstPercent ? 'error form-control' : 'form-control'}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            />
+                                            {costInvoiceErrors[index]?.gstPercent && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {costInvoiceErrors[index].gstPercent}
+                                              </div>
+                                            )}
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              // value={row.gst ? row.gst.toFixed(2) : '0.00'}
+                                              value={row.gst ? row.gst : '0.00'}
+                                              disabled
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  setChargerCostInvoice((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, gst: value } : r))
+                                                  );
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      gst: !value ? 'GST is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      gst: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.gst ? 'error form-control' : 'form-control'}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            />
+                                            {costInvoiceErrors[index]?.gst && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {costInvoiceErrors[index].gst}
+                                              </div>
+                                            )}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </>
+                                  )}
                                 </tbody>
                               </table>
                             </div>
@@ -2700,12 +2836,12 @@ const CostInvoice = () => {
                                     <thead>
                                       <tr>
                                         <th style={{ textAlign: 'center' }}>S No</th>
-                                        <th style={{ textAlign: 'center' }}>Charge Desc</th>
-                                        <th style={{ textAlign: 'center' }}>Charge Code</th>
-                                        <th style={{ textAlign: 'center' }}>GCharge Code</th>
+                                        <th style={{ textAlign: 'center' }}>Tax Code</th>
+                                        <th style={{ textAlign: 'center' }}>Tax Desc</th>
+                                        <th style={{ textAlign: 'center' }}>G-Tax Code</th>
                                         <th style={{ textAlign: 'center' }}>GST %</th>
                                         <th style={{ textAlign: 'center' }}>SAC</th>
-                                        <th style={{ textAlign: 'center' }}>Taxable</th>
+                                        {/* <th style={{ textAlign: 'center' }}>Taxable</th> */}
                                         <th style={{ textAlign: 'center' }}>LC Amount</th>
                                       </tr>
                                     </thead>
@@ -2713,12 +2849,12 @@ const CostInvoice = () => {
                                       {chargeDetails.map((detail, idx) => (
                                         <tr key={idx}>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{idx + 1}</td>
-                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.chargeDesc}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.chargeCode}</td>
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.chargeDesc}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.gChargeCode}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.gstPercent}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.sac}</td>
-                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.taxable}</td>
+                                          {/* <td style={{ width: '150px', textAlign: 'center' }}>{detail.taxable}</td> */}
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.lcAmount}</td>
                                         </tr>
                                       ))}
@@ -2744,6 +2880,7 @@ const CostInvoice = () => {
                                 name="tdsWithHolding"
                                 value={tdsCostInvoiceDTO[index]?.tdsWithHolding || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
+                                disabled={formData.mode === 'SUBMIT'}
                                 label="TDS / WH"
                                 required
                                 error={!!tdsCostErrors[index]?.tdsWithHolding}
@@ -2780,6 +2917,7 @@ const CostInvoice = () => {
                                 inputProps={{ maxLength: 30 }}
                                 value={tdsCostInvoiceDTO[index]?.section || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
+                                disabled={formData.mode === 'SUBMIT'}
                                 error={!!tdsCostErrors[index]?.section}
                                 helperText={tdsCostErrors[index]?.section}
                               />
@@ -2807,138 +2945,113 @@ const CostInvoice = () => {
                   )}
                   {value === 2 && (
                     <>
-                      {costInvSummaryDTO.map((row, index) => (
-                        <div className="row mt-2">
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                label="Tot. Charge Amt.(Bill Curr)"
-                                name="totChargesBillCurrAmt"
-                                value={costInvSummaryDTO[index]?.totChargesBillCurrAmt || ''}
-                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
-                                size="small"
-                                placeholder="0.00"
-                                disabled
-                                inputProps={{ maxLength: 30 }}
-                                error={!!costInvErrors[index]?.totChargesBillCurrAmt}
-                                helperText={costInvErrors[index]?.totChargesBillCurrAmt}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                label="Act Bill Amt.(Bill Curr)"
-                                name="actBillCurrAmt"
-                                value={costInvSummaryDTO[index]?.actBillCurrAmt || ''}
-                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
-                                size="small"
-                                placeholder="0.00"
-                                disabled
-                                inputProps={{ maxLength: 30 }}
-                                error={!!costInvErrors[index]?.actBillCurrAmt}
-                                helperText={costInvErrors[index]?.actBillCurrAmt}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                label="Net Amt.(Bill Curr)"
-                                name="netBillCurrAmt"
-                                value={costInvSummaryDTO[index]?.netBillCurrAmt || ''}
-                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
-                                size="small"
-                                placeholder="0.00"
-                                disabled
-                                inputProps={{ maxLength: 30 }}
-                                error={!!costInvErrors[index]?.netBillCurrAmt}
-                                helperText={costInvErrors[index]?.netBillCurrAmt}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                label="Act Bill Amt.(LC)"
-                                name="actBillLcAmt"
-                                value={costInvSummaryDTO[index]?.actBillLcAmt || ''}
-                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
-                                size="small"
-                                placeholder="0.00"
-                                disabled
-                                inputProps={{ maxLength: 30 }}
-                                error={!!costInvErrors[index]?.actBillLcAmt}
-                                helperText={costInvErrors[index]?.actBillLcAmt}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                label="Net Amt.(LC)"
-                                name="netBillLcAmt"
-                                value={costInvSummaryDTO[index]?.netBillLcAmt || ''}
-                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
-                                size="small"
-                                placeholder="0.00"
-                                disabled
-                                inputProps={{ maxLength: 30 }}
-                                error={!!costInvErrors[index]?.netBillLcAmt}
-                                helperText={costInvErrors[index]?.netBillLcAmt}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                label="GST Input Amt(LC)"
-                                name="gstInputLcAmt"
-                                value={costInvSummaryDTO[index]?.gstInputLcAmt || ''}
-                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
-                                size="small"
-                                placeholder="0.00"
-                                disabled
-                                inputProps={{ maxLength: 30 }}
-                                error={!!costInvErrors[index]?.gstInputLcAmt}
-                                helperText={costInvErrors[index]?.gstInputLcAmt}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                label="Round Off"
-                                name="roundOff"
-                                value={costInvSummaryDTO[index]?.roundOff || ''}
-                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
-                                size="small"
-                                placeholder="0.00"
-                                disabled
-                                inputProps={{ maxLength: 30 }}
-                                error={!!costInvErrors[index]?.roundOff}
-                                helperText={costInvErrors[index]?.roundOff}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                label="Tot. Charge Amt.(LC)"
-                                name="totChargesLcAmt"
-                                value={costInvSummaryDTO[index]?.totChargesLcAmt || ''}
-                                onChange={(e) => handleInputChange(e, 'costInvSummaryDTO', index)}
-                                size="small"
-                                placeholder="0.00"
-                                disabled
-                                inputProps={{ maxLength: 30 }}
-                                error={!!costInvErrors[index]?.totChargesLcAmt}
-                                helperText={costInvErrors[index]?.totChargesLcAmt}
-                              />
-                            </FormControl>
-                          </div>
+                      <div className="row mt-2">
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              label="Tot. Charge Amt.(Bill Curr)"
+                              name="totChargesBillCurrAmt"
+                              value={formData.totChargesBillCurrAmt}
+                              size="small"
+                              placeholder="0.00"
+                              disabled
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
                         </div>
-                      ))}
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              label="Act Bill Amt.(Bill Curr)"
+                              name="actBillCurrAmt"
+                              value={formData.actBillCurrAmt}
+                              size="small"
+                              placeholder="0.00"
+                              disabled
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              label="Net Amt.(Bill Curr)"
+                              name="netBillCurrAmt"
+                              value={formData.netBillCurrAmt}
+                              size="small"
+                              placeholder="0.00"
+                              disabled
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              label="Act Bill Amt.(LC)"
+                              name="actBillLcAmt"
+                              value={formData.actBillLcAmt}
+                              size="small"
+                              placeholder="0.00"
+                              disabled
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              label="Net Amt.(LC)"
+                              name="netBillLcAmt"
+                              value={formData.netBillLcAmt}
+                              size="small"
+                              placeholder="0.00"
+                              disabled
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              label="GST Input Amt(LC)"
+                              name="gstInputLcAmt"
+                              value={formData.gstInputLcAmt}
+                              size="small"
+                              placeholder="0.00"
+                              disabled
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              label="Round Off"
+                              name="roundOff"
+                              value={formData.roundOff}
+                              size="small"
+                              placeholder="0.00"
+                              disabled
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              label="Tot. Charge Amt.(LC)"
+                              name="totChargesLcAmt"
+                              value={formData.totChargesLcAmt}
+                              size="small"
+                              placeholder="0.00"
+                              disabled
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                      </div>
+                      {/* ))} */}
                     </>
                   )}
                 </Box>
