@@ -131,6 +131,18 @@ const transaction = {
           url: '/finance/JobCard'
         },
         {
+          id: 'AdjustmentOffset',
+          title: 'Adjustment Offset',
+          type: 'item',
+          url: '/finance/AdjustmentOffset'
+        },
+        {
+          id: 'ExcelUpload',
+          title: 'Excel Upload',
+          type: 'item',
+          url: '/finance/ExcelUpload'
+        },
+        {
           id: 'deposit',
           title: 'Deposit',
           type: 'item',
