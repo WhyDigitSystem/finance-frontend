@@ -136,12 +136,12 @@ const transaction = {
           type: 'item',
           url: '/finance/AdjustmentOffset'
         },
-        {
-          id: 'ExcelUpload',
-          title: 'Excel Upload',
-          type: 'item',
-          url: '/finance/ExcelUpload'
-        },
+        // {
+        //   id: 'ExcelUpload',
+        //   title: 'Excel Upload',
+        //   type: 'item',
+        //   url: '/finance/ExcelUpload'
+        // },
         {
           id: 'deposit',
           title: 'Deposit',
