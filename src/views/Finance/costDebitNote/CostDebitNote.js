@@ -7,7 +7,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { TabContext } from '@mui/lab';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
-import { Checkbox, FormControl, FormControlLabel, FormGroup, FormHelperText } from '@mui/material';
+import { Checkbox, FormControl, FormControlLabel, FormGroup, FormHelperText, Autocomplete } from '@mui/material';
 import Box from '@mui/material/Box';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -46,16 +46,18 @@ const CostDebitNote = () => {
   const [allOriginalBill, setAllOriginalBill] = useState([]);
   const [listViewData, setListViewData] = useState([]);
   const [allPartyType, setAllPartyType] = useState([]);
+  const [allPartyName, setAllPartyName] = useState([]);
+  const [docId, setDocId] = useState('');
 
   const [formData, setFormData] = useState({
-    docNo: '',
     subType: 'Debit Note',
-    product: 'Nill',
+    product: '',
     vohNo: '',
     vohDate: null,
     partyType: '',
     partyCode: '',
     suppRefNo: '',
+    suppRefDate: null,
     currentDate: dayjs(),
     currentDateValue: '',
     partyName: '',
@@ -68,14 +70,14 @@ const CostDebitNote = () => {
     exRate: '',
     remarks: '',
     otherInfo: '',
-    shipRefNo: '',
+    // shipRefNo: '',
     status: '',
     orginBill: '',
+    orginBillDate: null,
     gstType: ''
   });
 
   const [fieldErrors, setFieldErrors] = useState({
-    docNo: '',
     subType: '',
     product: '',
     vohNo: '',
@@ -83,6 +85,7 @@ const CostDebitNote = () => {
     partyType: '',
     partyCode: '',
     suppRefNo: '',
+    suppRefDate: null,
     currentDate: null,
     currentDateValue: '',
     partyName: '',
@@ -95,20 +98,21 @@ const CostDebitNote = () => {
     exRate: '',
     remarks: '',
     otherInfo: '',
-    shipRefNo: '',
+    // shipRefNo: '',
     status: '',
     orginBill: '',
+    orginBillDate: null,
     gstType: ''
   });
 
   const listViewColumns = [
-    { accessorKey: 'docNo', header: 'Doc No', size: 140 },
+    { accessorKey: 'docId', header: 'Doc No', size: 140 },
     { accessorKey: 'vohNo', header: 'Voucher No', size: 140 },
     { accessorKey: 'vohDate', header: 'Voucher Date', size: 140 },
     { accessorKey: 'partyType', header: 'Party Type', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 },
     { accessorKey: 'creditDays', header: 'Credit Days', size: 140 },
-    { accessorKey: 'shipRefNo', header: 'Shipper RefNo', size: 140 },
+    // { accessorKey: 'shipRefNo', header: 'Shipper RefNo', size: 140 },
     { accessorKey: 'orginBill', header: 'Original bill', size: 140 },
     { accessorKey: 'gstType', header: 'Gst Type', size: 140 }
   ];
@@ -156,25 +160,19 @@ const CostDebitNote = () => {
   const [houseChargeTableData, setHouseChargeTableData] = useState([
     {
       id: 1,
-      jobType: '',
       jobNo: '',
-      subJobNo: '',
-      houseNo: '',
       chargeCode: '',
       gchargeCode: '',
-      gsac: '',
       chargeName: '',
-      applyOn: '',
-      tax: true,
+      taxable: '',
+      qty: '',
+      rate: '',
       currency: '',
       exRate: '',
-      rate: '',
-      exampted: true,
       fcAmt: '',
       lcAmt: '',
-      taxPercentage: '',
-      tlcAmt: '',
       billAmt: '',
+      sac: '',
       gstPercentage: '',
       gst: ''
     }
@@ -206,128 +204,116 @@ const CostDebitNote = () => {
     }
   ]);
 
-  const handleAddRow = () => {
-    if (isLastRowEmpty(houseChargeTableData)) {
-      displayRowError(houseChargeTableData);
-      return;
-    }
-    const newRow = {
-      id: Date.now(),
-      jobType: '',
-      jobNo: '',
-      subJobNo: '',
-      houseNo: '',
-      chargeCode: '',
-      gchargeCode: '',
-      gsac: '',
-      chargeName: '',
-      applyOn: '',
-      tax: true,
-      currency: '',
-      exRate: '',
-      rate: '',
-      exampted: true,
-      fcAmt: '',
-      lcAmt: '',
-      taxPercentage: '',
-      tlcAmt: '',
-      billAmt: '',
-      gstPercentage: '',
-      gst: ''
-    };
-    setHouseChargeTableData([...houseChargeTableData, newRow]);
-    setHouseChargeTableErrors([
-      ...houseChargeTableErrors,
-      {
-        jobType: '',
-        jobNo: '',
-        subJobNo: '',
-        houseNo: '',
-        chargeCode: '',
-        gchargeCode: '',
-        gsac: '',
-        chargeName: '',
-        applyOn: '',
-        tax: true,
-        currency: '',
-        exRate: '',
-        rate: '',
-        exampted: true,
-        fcAmt: '',
-        lcAmt: '',
-        taxPercentage: '',
-        tlcAmt: '',
-        billAmt: '',
-        gstPercentage: '',
-        gst: ''
-      }
-    ]);
-  };
+  // const handleAddRow = () => {
+  //   if (isLastRowEmpty(houseChargeTableData)) {
+  //     displayRowError(houseChargeTableData);
+  //     return;
+  //   }
+  //   const newRow = {
+  //       id: Date.now(),
+  //       jobNo: '',
+  //       chargeCode: '',
+  //       gchargeCode: '',
+  //       chargeName: '',
+  //       taxable: '',
+  //       qty: '',
+  //       rate: '',
+  //       currency: '',
+  //       exRate: '',
+  //       fcAmt: '',
+  //       lcAmt: '',
+  //       billAmt: '',
+  //       sac: '',
+  //       gstPercentage: '',
+  //       gst: ''
+  //   };
+  //   setHouseChargeTableData([...houseChargeTableData, newRow]);
+  //   setHouseChargeTableErrors([
+  //     ...houseChargeTableErrors,
+  //     {
+  //       jobNo: '',
+  //       chargeCode: '',
+  //       gchargeCode: '',
+  //       chargeName: '',
+  //       taxable: '',
+  //       qty: '',
+  //       rate: '',
+  //       currency: '',
+  //       exRate: '',
+  //       fcAmt: '',
+  //       lcAmt: '',
+  //       billAmt: '',
+  //       sac: '',
+  //       gstPercentage: '',
+  //       gst: ''
+  //     }
+  //   ]);
+  // };
 
-  const isLastRowEmpty = (table) => {
-    const lastRow = table[table.length - 1];
-    if (!lastRow) return false;
+  // const isLastRowEmpty = (table) => {
+  //   const lastRow = table[table.length - 1];
+  //   if (!lastRow) return false;
 
-    if (table === houseChargeTableData) {
-      return (
-        !lastRow.jobType ||
-        !lastRow.jobNo ||
-        !lastRow.subJobNo ||
-        !lastRow.houseNo ||
-        !lastRow.chargeCode ||
-        !lastRow.gchargeCode ||
-        !lastRow.gsac ||
-        !lastRow.chargeName ||
-        !lastRow.applyOn ||
-        // !lastRow.tax ||
-        !lastRow.currency ||
-        !lastRow.exRate ||
-        !lastRow.rate ||
-        // !lastRow.exampted ||
-        !lastRow.fcAmt ||
-        !lastRow.lcAmt ||
-        !lastRow.taxPercentage ||
-        !lastRow.tlcAmt ||
-        !lastRow.billAmt ||
-        !lastRow.gstPercentage ||
-        !lastRow.gst
-      );
-    }
-    return false;
-  };
+  //   if (table === houseChargeTableData) {
+  //     return (
+  //       !lastRow.jobType ||
+  //       !lastRow.jobNo ||
+  //       !lastRow.subJobNo ||
+  //       !lastRow.houseNo ||
+  //       !lastRow.chargeCode ||
+  //       !lastRow.gchargeCode ||
+  //       !lastRow.gsac ||
+  //       !lastRow.chargeName ||
+  //       !lastRow.applyOn ||
+  //       // !lastRow.tax ||
+  //       !lastRow.currency ||
+  //       !lastRow.exRate ||
+  //       !lastRow.rate ||
+  //       // !lastRow.exampted ||
+  //       !lastRow.fcAmt ||
+  //       !lastRow.lcAmt ||
+  //       !lastRow.taxPercentage ||
+  //       !lastRow.tlcAmt ||
+  //       !lastRow.billAmt ||
+  //       !lastRow.gstPercentage ||
+  //       !lastRow.gst
+  //     );
+  //   }
+  //   return false;
+  // };
 
-  const displayRowError = (table) => {
-    if (table === houseChargeTableData) {
-      setHouseChargeTableErrors((prevErrors) => {
-        const newErrors = [...prevErrors];
-        newErrors[table.length - 1] = {
-          ...newErrors[table.length - 1],
-          jobType: !table[table.length - 1].jobType ? 'Job Type is required' : '',
-          jobNo: !table[table.length - 1].jobNo ? 'Job No is required' : '',
-          subJobNo: !table[table.length - 1].subJobNo ? 'Sub Job No is required' : '',
-          houseNo: !table[table.length - 1].houseNo ? 'House No is required' : '',
-          chargeCode: !table[table.length - 1].chargeCode ? 'Charge Code is required' : '',
-          gchargeCode: !table[table.length - 1].gchargeCode ? 'G Charge Code is required' : '',
-          gsac: !table[table.length - 1].gsac ? 'GSAC is required' : '',
-          chargeName: !table[table.length - 1].chargeName ? 'Charge Name is required' : '',
-          applyOn: !table[table.length - 1].applyOn ? 'Apply On is required' : '',
-          // tax: !table[table.length - 1].tax ? 'Tax is required' : '',
-          currency: !table[table.length - 1].currency ? 'Currency is required' : '',
-          exRate: !table[table.length - 1].exRate ? 'Ex Rate is required' : '',
-          rate: !table[table.length - 1].rate ? 'Rate is required' : '',
-          // exampted: !table[table.length - 1].exampted ? 'Exempted is required' : '',
-          fcAmt: !table[table.length - 1].fcAmt ? 'Fc Amt is required' : '',
-          lcAmt: !table[table.length - 1].lcAmt ? 'Lc Amt is required' : '',
-          taxPercentage: !table[table.length - 1].taxPercentage ? 'Tax Percentage is required' : '',
-          tlcAmt: !table[table.length - 1].tlcAmt ? 'Tlc Amt is required' : '',
-          billAmt: !table[table.length - 1].billAmt ? 'Bill Amt is required' : '',
-          gstPercentage: !table[table.length - 1].gstPercentage ? 'Gst% is required' : '',
-          gst: !table[table.length - 1].gst ? 'Gst is required' : ''
-        };
-        return newErrors;
-      });
-    }
-  };
+  // const displayRowError = (table) => {
+  //   if (table === houseChargeTableData) {
+  //     setHouseChargeTableErrors((prevErrors) => {
+  //       const newErrors = [...prevErrors];
+  //       newErrors[table.length - 1] = {
+  //         ...newErrors[table.length - 1],
+  //         jobType: !table[table.length - 1].jobType ? 'Job Type is required' : '',
+  //         jobNo: !table[table.length - 1].jobNo ? 'Job No is required' : '',
+  //         subJobNo: !table[table.length - 1].subJobNo ? 'Sub Job No is required' : '',
+  //         houseNo: !table[table.length - 1].houseNo ? 'House No is required' : '',
+  //         chargeCode: !table[table.length - 1].chargeCode ? 'Charge Code is required' : '',
+  //         gchargeCode: !table[table.length - 1].gchargeCode ? 'G Charge Code is required' : '',
+  //         gsac: !table[table.length - 1].gsac ? 'GSAC is required' : '',
+  //         chargeName: !table[table.length - 1].chargeName ? 'Charge Name is required' : '',
+  //         applyOn: !table[table.length - 1].applyOn ? 'Apply On is required' : '',
+  //         // tax: !table[table.length - 1].tax ? 'Tax is required' : '',
+  //         currency: !table[table.length - 1].currency ? 'Currency is required' : '',
+  //         exRate: !table[table.length - 1].exRate ? 'Ex Rate is required' : '',
+  //         rate: !table[table.length - 1].rate ? 'Rate is required' : '',
+  //         // exampted: !table[table.length - 1].exampted ? 'Exempted is required' : '',
+  //         fcAmt: !table[table.length - 1].fcAmt ? 'Fc Amt is required' : '',
+  //         lcAmt: !table[table.length - 1].lcAmt ? 'Lc Amt is required' : '',
+  //         taxPercentage: !table[table.length - 1].taxPercentage ? 'Tax Percentage is required' : '',
+  //         tlcAmt: !table[table.length - 1].tlcAmt ? 'Tlc Amt is required' : '',
+  //         billAmt: !table[table.length - 1].billAmt ? 'Bill Amt is required' : '',
+  //         gstPercentage: !table[table.length - 1].gstPercentage ? 'Gst% is required' : '',
+  //         gst: !table[table.length - 1].gst ? 'Gst is required' : ''
+  //       };
+  //       return newErrors;
+  //     });
+  //   }
+  // };
 
   const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
     const rowIndex = table.findIndex((row) => row.id === id);
@@ -340,17 +326,13 @@ const CostDebitNote = () => {
     }
   };
 
-  const getDocId = async () => {
+  const getCostDebitNoteDocId = async () => {
     try {
       const response = await apiCalls(
         'get',
         `/costdebitnote/getCostDebitNoteDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
-      setFormData((prevData) => ({
-        ...prevData,
-        docNo: response.paramObjectsMap.costDebitNoteDocId,
-        docDate: dayjs()
-      }));
+      setDocId(response.paramObjectsMap.costDebitNoteDocId);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -447,14 +429,14 @@ const CostDebitNote = () => {
   const handleClear = () => {
     // Reset form data to initial state
     setFormData({
-      docNo: '',
       subType: 'Debit Note',
-      product: 'Nill',
+      product: '',
       vohNo: '',
       vohDate: null,
       partyType: '',
       partyCode: '',
       suppRefNo: '',
+    suppRefDate: null,
       currentDate: dayjs(),
       currentDateValue: '',
       partyName: '',
@@ -467,31 +449,15 @@ const CostDebitNote = () => {
       exRate: '',
       remarks: '',
       otherInfo: '',
-      shipRefNo: '',
+      // shipRefNo: '',
       status: '',
       orginBill: '',
+      orginBillDate: null,
       gstType: ''
-      // costDebitNoteTaxPrtculDTO: {
-      //   tds: '',
-      //   tdsPercentage: '',
-      //   section: '',
-      //   totTDSAmt: ''
-      // },
-      // costDebitNoteSummaryDTO: {
-      //   roundOff: '',
-      //   totChargesBillCurrAmt: '',
-      //   totChargesLCAmt: '',
-      //   totGrossBillAmt: '',
-      //   totGrossLCAmt: '',
-      //   netBillCurrAmt: '',
-      //   netLCAmt: '',
-      //   amtInWords: ''
-      // }
     });
 
     // Reset field errors to initial state
     setFieldErrors({
-      docNo: '',
       subType: '',
       product: '',
       vohNo: '',
@@ -499,6 +465,7 @@ const CostDebitNote = () => {
       partyType: '',
       partyCode: '',
       suppRefNo: '',
+    suppRefDate: null,
       currentDate: null,
       currentDateValue: '',
       partyName: '',
@@ -511,9 +478,10 @@ const CostDebitNote = () => {
       exRate: '',
       remarks: '',
       otherInfo: '',
-      shipRefNo: '',
+      // shipRefNo: '',
       status: '',
       orginBill: '',
+      orginBillDate: null,
       gstType: ''
     });
 
@@ -559,25 +527,19 @@ const CostDebitNote = () => {
     setHouseChargeTableData([
       {
         id: 1,
-        jobType: '',
         jobNo: '',
-        subJobNo: '',
-        houseNo: '',
         chargeCode: '',
         gchargeCode: '',
-        gsac: '',
         chargeName: '',
-        applyOn: '',
-        tax: true,
+        taxable: '',
+        qty: '',
+        rate: '',
         currency: '',
         exRate: '',
-        rate: '',
-        exampted: true,
         fcAmt: '',
         lcAmt: '',
-        taxPercentage: '',
-        tlcAmt: '',
         billAmt: '',
+        sac: '',
         gstPercentage: '',
         gst: ''
       }
@@ -632,6 +594,7 @@ const CostDebitNote = () => {
         crLCAmt: ''
       }
     ]);
+    getCostDebitNoteDocId();
   };
 
   const handleTabSelect = (index) => {
@@ -685,6 +648,58 @@ const CostDebitNote = () => {
       console.log(`Updating formData for ${name}`);
       setFormData((prev) => ({ ...prev, [name]: inputValue }));
     }
+    // If the currency field is being changed, update exRate based on the selected currency's sellingExRate
+    if (name === 'currency') {
+      const selectedCurrency = currencies.find((currency) => currency.currency === value);
+      if (selectedCurrency) {
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          exRate: selectedCurrency.sellingExRate
+        }));
+      }
+    }
+  };
+
+  // const handlePartyNameChange = (event, newValue) => {
+  //   if (newValue) {
+  //     // Update partyName and partyCode in formData based on the selected party
+  //     setFormData((prevFormData) => ({
+  //       ...prevFormData,
+  //       partyName: newValue.partyName,
+  //       partyCode: newValue.partyCode
+  //     }));
+  //   } else {
+  //     // Clear the fields if no selection
+  //     setFormData((prevFormData) => ({
+  //       ...prevFormData,
+  //       partyName: '',
+  //       partyCode: ''
+  //     }));
+  //   }
+  // };
+
+  const handlePartyNameChange = (event, newValue) => {
+    if (newValue) {
+      // Update partyName and partyCode in formData based on the selected party
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        partyName: newValue.partyName,
+        partyCode: newValue.partyCode
+      }));
+
+      // Call the API to get the original bills based on the selected party
+      getAllOriginalBill(newValue.partyName);
+    } else {
+      // Clear the fields if no selection
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        partyName: '',
+        partyCode: ''
+      }));
+
+      // Clear the list of original bills if no party is selected
+      setAllOriginalBill([]);
+    }
   };
 
   const handleChange = (event, newValue) => {
@@ -701,21 +716,20 @@ const CostDebitNote = () => {
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Replace with your orgId or fetch it from somewhere
-        const currencyData = await getAllActiveCurrency(orgId);
-        setCurrencies(currencyData);
-
-        console.log('currency', currencyData);
-      } catch (error) {
-        console.error('Error fetching country data:', error);
-      }
-    };
-
-    fetchData();
-    getDocId();
+    getCostDebitNoteDocId();
+    getAllCurrency();
   }, []);
+
+  const getAllCurrency = async () => {
+    try {
+      const response = await apiCalls('get', `/taxInvoice/getCurrencyAndExrateDetails?orgId=${orgId}`);
+      setCurrencies(response.paramObjectsMap.currencyVO);
+
+      console.log('Test===>', response.paramObjectsMap.currencyVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
 
   const getAllChargeCode = async () => {
     try {
@@ -732,18 +746,92 @@ const CostDebitNote = () => {
     }
   };
 
-  const getAllOriginalBill = async () => {
+  const getAllOriginalBill = async (party) => {
     try {
-      const response = await apiCalls('get', `costdebitnote/getAllDocIdForCostInvoice?orgId=${orgId}`);
+      const response = await apiCalls('get', `costdebitnote/getOrginBillNoByParty?branchCode=${branchCode}&orgId=${orgId}&party=${party}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setAllOriginalBill(response.paramObjectsMap.costInvoiceDocId);
+        setAllOriginalBill(response.paramObjectsMap.costInvoiceVO);
       } else {
         console.error('API Error:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleOrginBillChange = (event) => {
+    const { value } = event.target;
+
+    // Find the selected bill from the list
+    const selectedBill = allOriginalBill.find((doc) => doc.docId === value);
+
+    // If a matching bill is found, update the formData accordingly
+    if (selectedBill) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        orginBill: value,
+        orginBillDate: selectedBill.docDate,
+        product: selectedBill.product,
+        docDate: selectedBill.docDate,
+        // vohNo: selectedBill.purVoucherNo,
+        // vohDate: selectedBill.purVoucherDate,
+        creditDays: selectedBill.creditDays,
+        address: selectedBill.address,
+        currency: selectedBill.currency,
+        exRate: selectedBill.exRate,
+        // remarks: selectedBill.remarks,
+        otherInfo: selectedBill.otherInfo,
+        // shipRefNo: selectedBill.shipperRefNo,
+        suppRefNo: selectedBill.purVoucherNo,
+        suppRefDate: selectedBill.purVoucherDate,
+        gstType: selectedBill.gstType
+      }));
+      if (selectedBill.tdsCostInvoiceVO && selectedBill.tdsCostInvoiceVO.length > 0) {
+        const tdsData = selectedBill.tdsCostInvoiceVO[0]; // Assuming only one entry
+        setTaxParticularData({
+          tds: tdsData.tdsWithHolding,
+          tdsPercentage: tdsData.tdsWithHoldingPer,
+          section: tdsData.section,
+          totTDSAmt: tdsData.totTdsWhAmnt,
+        });
+      }
+      if (selectedBill) {
+        setSummaryData({
+          roundOff: selectedBill.roundOff,
+          totChargesBillCurrAmt: selectedBill.totChargesBillCurrAmt,
+          totChargesLCAmt: selectedBill.totChargesLcAmt,
+          totGrossBillAmt: selectedBill.totTdsWhAmnt,
+          totGrossLCAmt: selectedBill.totTdsWhAmnt,
+          netBillCurrAmt: selectedBill.netBillCurrAmt,
+          netLCAmt: selectedBill.netBillLcAmt,
+          amtInWords: selectedBill.totTdsWhAmnt,
+        });
+      } 
+      if (selectedBill.chargerCostInvoiceVO) {
+        setHouseChargeTableData(
+          selectedBill.chargerCostInvoiceVO.map((item) => ({
+            id: item.id,
+            jobNo: item.jobNo,
+            chargeCode: item.chargeCode,
+            gchargeCode: item.govChargeCode,
+            chargeName: item.chargeName,
+            taxable: item.taxable,
+            qty: item.qty,
+            rate: item.rate,
+            currency: item.currency,
+            exRate: item.exRate,
+            fcAmt: item.fcAmt,
+            lcAmt: item.lcAmt,
+            billAmt: item.billAmt,
+            sac: item.sac,
+            gst: item.gstAmount,
+            gstPercentage: item.gstpercent
+            // Map other fields as needed
+          }))
+        );
+      }
     }
   };
 
@@ -764,10 +852,7 @@ const CostDebitNote = () => {
 
   const getAllPartyType = async () => {
     try {
-      const response = await apiCalls(
-        'get',
-        `costdebitnote/partyDetailsForCostDebitNote?branch=${branch}&finYear=${finYear}&orgId=${orgId}`
-      );
+      const response = await apiCalls('get', `costdebitnote/partyTypeForCostDebitNote?branch=${branch}&finYear=${finYear}&orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -780,20 +865,22 @@ const CostDebitNote = () => {
     }
   };
 
-  const handlePartyTypeChange = (event) => {
-    const selectedPartyType = event.target.value;
+  const getAllPartyName = async (partyType) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `costdebitnote/partyDetailsForCostDebitNote?branch=${branch}&finYear=${finYear}&orgId=${orgId}`
+      );
+      console.log('API Response:', response);
+      // &partyType=${partyType}
 
-    // Find the party details based on the selected type
-    const selectedPartyDetails = allPartyType.find((party) => party.partyType === selectedPartyType);
-
-    if (selectedPartyDetails) {
-      setFormData({
-        ...formData,
-        partyType: selectedPartyType,
-        partyCode: selectedPartyDetails.partyCode,
-        partyName: selectedPartyDetails.partyName,
-        partyAddType: selectedPartyDetails.addressType
-      });
+      if (response.status === true) {
+        setAllPartyName(response.paramObjectsMap.partyMaster);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
   };
 
@@ -802,6 +889,7 @@ const CostDebitNote = () => {
     getAllOriginalBill();
     getAllCostDebitNote();
     getAllPartyType();
+    getAllPartyName();
   }, []);
 
   const handleView = () => {
@@ -834,8 +922,9 @@ const CostDebitNote = () => {
         setListView(false);
         const costVO = response.paramObjectsMap.costDebitNoteVOs[0]; // Accessing first element
 
+        setDocId(costVO.docId);
+
         setFormData({
-          docNo: costVO.docNo,
           subType: costVO.subType,
           product: costVO.product,
           vohNo: costVO.vohNo,
@@ -855,7 +944,7 @@ const CostDebitNote = () => {
           exRate: costVO.exRate,
           remarks: costVO.remarks,
           otherInfo: costVO.otherInfo,
-          shipRefNo: costVO.shipRefNo,
+          // shipRefNo: costVO.shipRefNo,
           status: costVO.status,
           orginBill: costVO.orginBill,
           gstType: costVO.gstType,
@@ -1024,9 +1113,9 @@ const CostDebitNote = () => {
     if (!formData.otherInfo) {
       errors.otherInfo = 'Other Info is required';
     }
-    if (!formData.shipRefNo) {
-      errors.shipRefNo = 'Shipper RefNo is required';
-    }
+    // if (!formData.shipRefNo) {
+    //   errors.shipRefNo = 'Shipper RefNo is required';
+    // }
     if (!formData.status) {
       errors.status = 'Status is required';
     }
@@ -1154,7 +1243,6 @@ const CostDebitNote = () => {
 
       const saveFormData = {
         ...(editId && { id: editId }),
-        docNo: formData.docNo,
         subType: formData.subType,
         product: formData.product,
         vohNo: formData.vohNo,
@@ -1174,7 +1262,7 @@ const CostDebitNote = () => {
         exRate: parseInt(formData.exRate),
         remarks: formData.remarks,
         otherInfo: formData.otherInfo,
-        shipRefNo: formData.shipRefNo,
+        // shipRefNo: formData.shipRefNo,
         status: formData.status,
         orginBill: formData.orginBill,
         gstType: formData.gstType,
@@ -1201,6 +1289,7 @@ const CostDebitNote = () => {
           showToast('success', editId ? 'Cost Debit Note Updated Successfully' : 'Cost Debit Note created successfully');
           handleClear();
           getAllCostDebitNote();
+          getCostDebitNoteDocId();
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Cost Debit Note creation failed');
         }
@@ -1235,18 +1324,15 @@ const CostDebitNote = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="docNo"
+                    id="docId"
                     label="Doc No"
-                    name="docNo"
+                    name="docId"
                     variant="outlined"
                     size="small"
                     disabled
-                    value={formData.docNo}
-                    onChange={handleInputChange}
+                    value={docId}
                     required
                     fullWidth
-                    error={!!fieldErrors.docNo}
-                    helperText={fieldErrors.docNo ? fieldErrors.docNo : ''}
                   />
                 </FormControl>
               </div>
@@ -1269,7 +1355,7 @@ const CostDebitNote = () => {
                   <TextField size="small" inputProps={{ maxLength: 30 }} value="Reducing the Cost" disabled />
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.product}>
                   <InputLabel id="product" required>
                     Product
@@ -1279,6 +1365,24 @@ const CostDebitNote = () => {
                     <MenuItem value="Product 1">Product 1</MenuItem>
                   </Select>
                   {fieldErrors.product && <FormHelperText>{fieldErrors.product}</FormHelperText>}
+                </FormControl>
+              </div> */}
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="product"
+                    label="Product"
+                    name="product"
+                    value={formData.product}
+                    variant="outlined"
+                    size="small"
+                    required
+                    fullWidth
+                    onChange={handleInputChange}
+                    error={!!fieldErrors.product}
+                    helperText={fieldErrors.product ? fieldErrors.product : ''}
+                  />
                 </FormControl>
               </div>
 
@@ -1298,7 +1402,8 @@ const CostDebitNote = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
-
+{editId && (
+  <>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -1334,7 +1439,9 @@ const CostDebitNote = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              </>
+              )}
+              {/* <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.partyType}>
                   <InputLabel id="partyType">Party Type</InputLabel>
                   <Select
@@ -1353,18 +1460,98 @@ const CostDebitNote = () => {
                   </Select>
                   {fieldErrors.partyType && <FormHelperText>{fieldErrors.partyType}</FormHelperText>}
                 </FormControl>
+              </div> */}
+
+              <div className="col-md-3 mb-3">
+                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.partyType}>
+                  <InputLabel id="partyType">Party Type</InputLabel>
+                  <Select labelId="partyType" label="Party Type" name="partyType" value={formData.partyType} onChange={handleInputChange}>
+                    {allPartyType?.map((row) => (
+                      <MenuItem key={row.id} value={row.partyType}>
+                        {row.partyType}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.partyType && <FormHelperText>{fieldErrors.partyType}</FormHelperText>}
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <Autocomplete
+                  disablePortal
+                  options={allPartyName}
+                  getOptionLabel={(option) => option.partyName}
+                  sx={{ width: '100%' }}
+                  size="small"
+                  value={formData.partyName ? allPartyName.find((c) => c.partyName === formData.partyName) : null}
+                  onChange={handlePartyNameChange}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Party Name"
+                      name="partyName"
+                      error={!!fieldErrors.partyName}
+                      helperText={fieldErrors.partyName}
+                      InputProps={{
+                        ...params.InputProps,
+                        style: { height: 40 }
+                      }}
+                    />
+                  )}
+                />
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.orginBill}>
+                  <InputLabel id="orginBill">Original Bill</InputLabel>
+                  <Select
+                    labelId="orginBill"
+                    id="orginBill"
+                    label="Original Bill"
+                    onChange={handleOrginBillChange}
+                    name="orginBill"
+                    value={formData.orginBill}
+                  >
+                    <MenuItem value="">--Select--</MenuItem>
+                    {allOriginalBill.map((doc) => (
+                      <MenuItem key={doc.id} value={doc.docId}>
+                        {doc.docId}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.orginBill && <FormHelperText>{fieldErrors.orginBill}</FormHelperText>}
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Original Bill Date"
+                      value={formData.orginBillDate ? dayjs(formData.orginBillDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('orginBillDate', date)}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                      format="DD-MM-YYYY"
+                      error={!!fieldErrors.orginBillDate}
+                      helperText={fieldErrors.orginBillDate ? fieldErrors.orginBillDate : ''}
+                    />
+                  </LocalizationProvider>
+                </FormControl>
               </div>
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="partyCode"
-                    label="Party Code"
                     name="partyCode"
-                    value={formData.partyCode}
-                    variant="outlined"
+                    label="Party Code"
                     size="small"
-                    fullWidth
+                    value={formData.partyCode}
+                    // onChange={handleInputChange}
+                    // error={!!fieldErrors.partyCode}
+                    // helperText={fieldErrors.partyCode}
                     disabled
                   />
                 </FormControl>
@@ -1388,6 +1575,24 @@ const CostDebitNote = () => {
               </div>
 
               <div className="col-md-3 mb-3">
+                <FormControl fullWidth>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Supplier Ref Date"
+                      value={formData.suppRefDate ? dayjs(formData.suppRefDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('suppRefDate', date)}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                      format="DD-MM-YYYY"
+                      error={!!fieldErrors.suppRefDate}
+                      helperText={fieldErrors.suppRefDate ? fieldErrors.suppRefDate : ''}
+                    />
+                  </LocalizationProvider>
+                </FormControl>
+              </div>
+
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
@@ -1420,24 +1625,9 @@ const CostDebitNote = () => {
                     helperText={fieldErrors.currentDateValue ? fieldErrors.currentDateValue : ''}
                   />
                 </FormControl>
-              </div>
+              </div> */}
 
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="partyName"
-                    label="Party Name"
-                    name="partyName"
-                    value={formData.partyName}
-                    variant="outlined"
-                    size="small"
-                    disabled
-                    fullWidth
-                  />
-                </FormControl>
-              </div>
-
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="partyAddType"
@@ -1449,7 +1639,7 @@ const CostDebitNote = () => {
                     fullWidth
                   />
                 </FormControl>
-              </div>
+              </div> */}
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
@@ -1520,7 +1710,7 @@ const CostDebitNote = () => {
                   />
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
                   <InputLabel id="currency">Currency</InputLabel>
                   <Select
@@ -1538,6 +1728,24 @@ const CostDebitNote = () => {
                     ))}
                   </Select>
                   {fieldErrors.currency && <FormHelperText>{fieldErrors.currency}</FormHelperText>}
+                </FormControl>
+              </div> */}
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="currency"
+                    label="Currency"
+                    name="currency"
+                    value={formData.currency}
+                    variant="outlined"
+                    size="small"
+                    required
+                    fullWidth
+                    onChange={handleInputChange}
+                    error={!!fieldErrors.currency}
+                    helperText={fieldErrors.currency ? fieldErrors.currency : ''}
+                  />
                 </FormControl>
               </div>
 
@@ -1595,7 +1803,7 @@ const CostDebitNote = () => {
                 </FormControl>
               </div>
 
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="shipRefNo"
@@ -1611,7 +1819,7 @@ const CostDebitNote = () => {
                     helperText={fieldErrors.shipRefNo ? fieldErrors.shipRefNo : ''}
                   />
                 </FormControl>
-              </div>
+              </div> */}
 
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
@@ -1621,28 +1829,6 @@ const CostDebitNote = () => {
                     <MenuItem value="Release">Release</MenuItem>
                   </Select>
                   {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
-                </FormControl>
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.orginBill}>
-                  <InputLabel id="orginBill">Original Bill</InputLabel>
-                  <Select
-                    labelId="orginBill"
-                    id="orginBill"
-                    label="Original Bill"
-                    onChange={handleInputChange}
-                    name="orginBill"
-                    value={formData.orginBill}
-                  >
-                    <MenuItem value="">--Select--</MenuItem>
-                    {allOriginalBill.map((doc) => (
-                      <MenuItem key={doc.id} value={doc.docId}>
-                        {doc.docId}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.orginBill && <FormHelperText>{fieldErrors.orginBill}</FormHelperText>}
                 </FormControl>
               </div>
 
@@ -1683,7 +1869,7 @@ const CostDebitNote = () => {
                 <TabPanel value="1">
                   <div className="row d-flex ml">
                     <div className="mb-1">
-                      <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                      {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
                     </div>
                     <div className="row mt-2">
                       <div className="col-lg-12">
@@ -1695,27 +1881,19 @@ const CostDebitNote = () => {
                                   Action
                                 </th>
                                 <th className="px-2 py-2 text-white text-center">S.No</th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                  Job Type
-                                </th>
                                 <th className="px-2 py-2 text-white text-center">Job No</th>
-                                <th className="px-2 py-2 text-white text-center">Sub Job No</th>
-                                <th className="px-2 py-2 text-white text-center">House No</th>
                                 <th className="px-2 py-2 text-white text-center">Charge Code</th>
                                 <th className="px-2 py-2 text-white text-center">GCharge Code</th>
-                                <th className="px-2 py-2 text-white text-center">GSAC</th>
                                 <th className="px-2 py-2 text-white text-center">Charge Name</th>
-                                <th className="px-2 py-2 text-white text-center">Apply No</th>
-                                <th className="px-2 py-2 text-white text-center">Tax</th>
+                                <th className="px-2 py-2 text-white text-center">Taxable</th>
+                                <th className="px-2 py-2 text-white text-center">Qty</th>
+                                <th className="px-2 py-2 text-white text-center">Rate</th>
                                 <th className="px-2 py-2 text-white text-center">Currency</th>
                                 <th className="px-2 py-2 text-white text-center">Ex. Rate</th>
-                                <th className="px-2 py-2 text-white text-center">Rate</th>
-                                <th className="px-2 py-2 text-white text-center">Exempted</th>
                                 <th className="px-2 py-2 text-white text-center">FC Amount</th>
                                 <th className="px-2 py-2 text-white text-center">LC Amount</th>
-                                <th className="px-2 py-2 text-white text-center">Taxable Percentage</th>
-                                <th className="px-2 py-2 text-white text-center">TLC Amount</th>
                                 <th className="px-2 py-2 text-white text-center">Bill Amount</th>
+                                <th className="px-2 py-2 text-white text-center">SAC</th>
                                 <th className="px-2 py-2 text-white text-center">GST %</th>
                                 <th className="px-2 py-2 text-white text-center">GST</th>
                               </tr>
@@ -1742,44 +1920,7 @@ const CostDebitNote = () => {
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.jobType}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const validRegex = /^[a-zA-Z0-9\s\-]*$/; // Allows alphabets, numbers, spaces, and hyphens
-
-                                          if (validRegex.test(value)) {
-                                            setHouseChargeTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, jobType: value } : r))
-                                            );
-                                            setHouseChargeTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], jobType: !value ? 'jobType is required' : '' };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            setHouseChargeTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                jobType: 'Only alphabets and numbers are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={houseChargeTableErrors[index]?.jobType ? 'error form-control' : 'form-control'}
-                                        style={{ width: '150px' }}
-                                      />
-                                      {houseChargeTableErrors[index]?.jobType && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {houseChargeTableErrors[index].jobType}
-                                        </div>
-                                      )}
-                                    </td>
-
+                                    
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
@@ -1813,100 +1954,11 @@ const CostDebitNote = () => {
                                         </div>
                                       )}
                                     </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.subJobNo}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const validRegex = /^[a-zA-Z0-9\s\-]*$/; // Allows alphabets, numbers, spaces, and hyphens
-                                          if (validRegex.test(value)) {
-                                            setHouseChargeTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, subJobNo: value } : r))
-                                            );
-                                            setHouseChargeTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], subJobNo: !value ? 'subJobNo is required' : '' };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            setHouseChargeTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], subJobNo: 'Only numeric characters are allowed' };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={houseChargeTableErrors[index]?.subJobNo ? 'error form-control' : 'form-control'}
-                                        style={{ width: '150px' }}
-                                      />
-                                      {houseChargeTableErrors[index]?.subJobNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {houseChargeTableErrors[index].subJobNo}
-                                        </div>
-                                      )}
-                                    </td>
 
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.houseNo}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const validRegex = /^[a-zA-Z0-9\s\-]*$/; // Allows alphabets, numbers, spaces, and hyphens
-                                          if (validRegex.test(value)) {
-                                            setHouseChargeTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, houseNo: value } : r))
-                                            );
-                                            setHouseChargeTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], houseNo: !value ? 'houseNo is required' : '' };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            setHouseChargeTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], houseNo: 'Only numeric characters are allowed' };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={houseChargeTableErrors[index]?.houseNo ? 'error form-control' : 'form-control'}
-                                        style={{ width: '150px' }}
-                                      />
-                                      {houseChargeTableErrors[index]?.houseNo && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {houseChargeTableErrors[index].houseNo}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <select
                                         value={row.chargeCode}
-                                        onChange={(e) => handleChargeCodeChange(index, e.target.value)}
-                                        className="form-control"
-                                        style={{ width: '200px' }}
-                                      >
-                                        <option value="">Select Charge Code</option>
-                                        {allChargeCode.map((charge) => (
-                                          <option key={charge.chargeCode} value={charge.chargeCode}>
-                                            {charge.chargeCode}
-                                          </option>
-                                        ))}
-                                      </select>
-                                      {/* Display errors if any */}
-                                      {houseChargeTableErrors[index]?.chargeCode && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {houseChargeTableErrors[index].chargeCode}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.gchargeCode}
                                         readOnly // Make it read-only since it's populated by chargeCode selection
                                         className="form-control"
                                         style={{ width: '150px' }}
@@ -1916,7 +1968,7 @@ const CostDebitNote = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.gsac}
+                                        value={row.gchargeCode}
                                         readOnly // Make it read-only since it's populated by chargeCode selection
                                         className="form-control"
                                         style={{ width: '150px' }}
@@ -1936,124 +1988,43 @@ const CostDebitNote = () => {
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.applyOn}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const validRegex = /^[a-zA-Z0-9\s\-]*$/; // Allows alphabets, numbers, spaces, and hyphens
-                                          if (validRegex.test(value)) {
-                                            setHouseChargeTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, applyOn: value } : r))
-                                            );
-                                            setHouseChargeTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], applyOn: !value ? 'applyOn is required' : '' };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            setHouseChargeTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], applyOn: 'Only numeric characters are allowed' };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={houseChargeTableErrors[index]?.applyOn ? 'error form-control' : 'form-control'}
+                                        value={row.taxable}
+                                        readOnly // Make it read-only since it's populated by chargeCode selection
+                                        className="form-control"
                                         style={{ width: '150px' }}
                                       />
-                                      {houseChargeTableErrors[index]?.applyOn && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {houseChargeTableErrors[index].applyOn}
-                                        </div>
-                                      )}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <Checkbox
-                                          id="tax"
-                                          checked={row.tax}
-                                          onChange={(e) => {
-                                            const isChecked = e.target.checked;
-                                            setHouseChargeTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, tax: isChecked } : r))
-                                            );
-                                            // setHouseChargeTableErrors((prev) => {
-                                            //   const newErrors = [...prev];
-                                            //   newErrors[index] = { ...newErrors[index], tax: '' };
-                                            //   return newErrors;
-                                            // });
-                                          }}
-                                          sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
-                                        />
-                                      </div>
-                                      {/* {houseChargeTableErrors[index]?.tax && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {houseChargeTableErrors[index].tax}
-                                        </div>
-                                      )} */}
-                                    </td>
-
-                                    <td className="border px-2 py-2">
-                                      <select
-                                        value={row.currency}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setHouseChargeTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, currency: value } : r))
-                                          );
-                                          setHouseChargeTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], currency: !value ? 'currency is required' : '' };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        className={houseChargeTableErrors[index]?.currency ? 'error form-control' : 'form-control'}
-                                        style={{ width: '200px' }}
-                                      >
-                                        <option value="">Select Currency</option>
-                                        {currencies.map((currency) => (
-                                          <option key={currency.id} value={currency.currency}>
-                                            {currency.currency}
-                                          </option>
-                                        ))}
-                                      </select>
-                                      {houseChargeTableErrors[index]?.currency && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {houseChargeTableErrors[index].currency}
-                                        </div>
-                                      )}
                                     </td>
 
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
-                                        value={row.exRate}
+                                        value={row.qty}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          const numericRegex = /^[0-9]*$/;
-                                          if (numericRegex.test(value)) {
+                                          const validRegex = /^[a-zA-Z0-9\s\-]*$/; // Allows alphabets, numbers, spaces, and hyphens
+                                          if (validRegex.test(value)) {
                                             setHouseChargeTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r))
+                                              prev.map((r) => (r.id === row.id ? { ...r, qty: value } : r))
                                             );
                                             setHouseChargeTableErrors((prev) => {
                                               const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], exRate: !value ? 'exRate is required' : '' };
+                                              newErrors[index] = { ...newErrors[index], qty: !value ? 'qty is required' : '' };
                                               return newErrors;
                                             });
                                           } else {
                                             setHouseChargeTableErrors((prev) => {
                                               const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], exRate: 'Only numbers are allowed' };
+                                              newErrors[index] = { ...newErrors[index], qty: 'Only numeric characters are allowed' };
                                               return newErrors;
                                             });
                                           }
                                         }}
-                                        className={houseChargeTableErrors[index]?.exRate ? 'error form-control' : 'form-control'}
+                                        className={houseChargeTableErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                         style={{ width: '150px' }}
                                       />
-                                      {houseChargeTableErrors[index]?.exRate && (
+                                      {houseChargeTableErrors[index]?.qty && (
                                         <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {houseChargeTableErrors[index].exRate}
+                                          {houseChargeTableErrors[index].qty}
                                         </div>
                                       )}
                                     </td>
@@ -2092,30 +2063,88 @@ const CostDebitNote = () => {
                                     </td>
 
                                     <td className="border px-2 py-2">
-                                      <div style={{ display: 'flex', alignItems: 'center' }}>
-                                        <Checkbox
-                                          id="tax"
-                                          checked={row.exampted}
-                                          onChange={(e) => {
-                                            const isChecked = e.target.checked;
-                                            setHouseChargeTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, exampted: isChecked } : r))
-                                            );
-                                            // setHouseChargeTableErrors((prev) => {
-                                            //   const newErrors = [...prev];
-                                            //   newErrors[index] = { ...newErrors[index], exampted: '' };
-                                            //   return newErrors;
-                                            // });
-                                          }}
-                                          sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
-                                        />
-                                      </div>
-                                      {/* {houseChargeTableErrors[index]?.exampted && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {houseChargeTableErrors[index].exampted}
-                                        </div>
-                                      )} */}
+                                      <input
+                                        type="text"
+                                        value={row.currency}
+                                        readOnly // Make it read-only since it's populated by chargeCode selection
+                                        className="form-control"
+                                        style={{ width: '150px' }}
+                                      />
                                     </td>
+
+                                    {/* <td className="border px-2 py-2">
+                                      <select
+                                        value={row.currency}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const selectedCurrency = currencies.find((currency) => currency.currency === value);
+
+                                          setHouseChargeTableData((prev) =>
+                                            prev.map((r) =>
+                                              r.id === row.id ? { ...r, currency: value, exRate: selectedCurrency?.sellingExRate || '' } : r
+                                            )
+                                          );
+                                          setHouseChargeTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              currency: !value ? 'currency is required' : '',
+                                              exRate: selectedCurrency ? '' : 'Ex Rate is required'
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={houseChargeTableErrors[index]?.currency ? 'error form-control' : 'form-control'}
+                                        style={{ width: '200px' }}
+                                      >
+                                        <option value="">Select Currency</option>
+                                        {currencies.map((currency) => (
+                                          <option key={currency.id} value={currency.currency}>
+                                            {currency.currency}
+                                          </option>
+                                        ))}
+                                      </select>
+                                      {houseChargeTableErrors[index]?.currency && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {houseChargeTableErrors[index].currency}
+                                        </div>
+                                      )}
+                                    </td> */}
+
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.exRate}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setHouseChargeTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r))
+                                            );
+                                            setHouseChargeTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], exRate: !value ? 'Ex Rate is required' : '' };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setHouseChargeTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = { ...newErrors[index], exRate: 'Only numbers are allowed' };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={houseChargeTableErrors[index]?.exRate ? 'error form-control' : 'form-control'}
+                                        style={{ width: '150px' }}
+                                      />
+                                      {houseChargeTableErrors[index]?.exRate && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {houseChargeTableErrors[index].exRate}
+                                        </div>
+                                      )}
+                                    </td>
+                                    
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
@@ -2182,78 +2211,7 @@ const CostDebitNote = () => {
                                         </div>
                                       )}
                                     </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.taxPercentage}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const numericRegex = /^[0-9]*$/;
-                                          if (numericRegex.test(value)) {
-                                            setHouseChargeTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, taxPercentage: value } : r))
-                                            );
-                                            setHouseChargeTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                taxPercentage: !value ? 'taxPercentage is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            setHouseChargeTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                taxPercentage: 'Only numbers are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={houseChargeTableErrors[index]?.taxPercentage ? 'error form-control' : 'form-control'}
-                                        style={{ width: '150px' }}
-                                      />
-                                      {houseChargeTableErrors[index]?.taxPercentage && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {houseChargeTableErrors[index].taxPercentage}
-                                        </div>
-                                      )}
-                                    </td>
-                                    <td className="border px-2 py-2">
-                                      <input
-                                        type="text"
-                                        value={row.tlcAmt}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const numericRegex = /^[0-9]*$/;
-                                          if (numericRegex.test(value)) {
-                                            setHouseChargeTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, tlcAmt: value } : r))
-                                            );
-                                            setHouseChargeTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], tlcAmt: !value ? 'tlcAmt is required' : '' };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            setHouseChargeTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], tlcAmt: 'Only numbers are allowed' };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
-                                        className={houseChargeTableErrors[index]?.tlcAmt ? 'error form-control' : 'form-control'}
-                                        style={{ width: '150px' }}
-                                      />
-                                      {houseChargeTableErrors[index]?.tlcAmt && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {houseChargeTableErrors[index].tlcAmt}
-                                        </div>
-                                      )}
-                                    </td>
+
                                     <td className="border px-2 py-2">
                                       <input
                                         type="text"
@@ -2286,6 +2244,15 @@ const CostDebitNote = () => {
                                           {houseChargeTableErrors[index].billAmt}
                                         </div>
                                       )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.sac}
+                                        readOnly // Make it read-only since it's populated by chargeCode selection
+                                        className="form-control"
+                                        style={{ width: '150px' }}
+                                      />
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
@@ -2371,7 +2338,7 @@ const CostDebitNote = () => {
 
                 <TabPanel value="2">
                   <div className="row d-flex mt-3">
-                    <div className="col-md-3 mb-3">
+                    {/* <div className="col-md-3 mb-3">
                       <FormControl size="small" variant="outlined" fullWidth error={!!taxParticularErrors?.tds}>
                         <InputLabel id="tds">TDS</InputLabel>
                         <Select
@@ -2388,6 +2355,24 @@ const CostDebitNote = () => {
                           <MenuItem value="Special">Special</MenuItem>
                         </Select>
                         {taxParticularErrors?.tds && <FormHelperText>{taxParticularErrors?.tds}</FormHelperText>}
+                      </FormControl>
+                    </div> */}
+                    <div className="col-md-3 mb-3">
+                      <FormControl fullWidth variant="filled">
+                        <TextField
+                          id="tds"
+                          label="TDS"
+                          name="tds"
+                          value={taxParticularData.tds || ''}
+                          variant="outlined"
+                          size="small"
+                          required
+                          fullWidth
+                          onChange={handleInputChange}
+                          error={!!taxParticularErrors?.tds}
+                          helperText={taxParticularErrors?.tds || ''}
+                          // taxParticularErrors?.tds ?
+                        />
                       </FormControl>
                     </div>
                     <div className="col-md-3 mb-3">
@@ -2412,20 +2397,23 @@ const CostDebitNote = () => {
                     <div className="col-md-3 mb-3">
                       <FormControl fullWidth variant="filled">
                         <TextField
-                          id="tdsPercentage"
-                          name="tdsPercentage"
-                          // value={taxParticularData.tdsPercentage}
+                          id="section"
+                          label="Section"
+                          name="section"
+                          value={taxParticularData.section || ''}
                           variant="outlined"
                           size="small"
                           required
                           fullWidth
-                          // onChange={(e) => handleInputChange(e, 'tds', index)}
-                          //
+                          onChange={handleInputChange}
+                          error={!!taxParticularErrors?.section}
+                          helperText={taxParticularErrors?.section || ''}
+                          // taxParticularErrors?.section ?
                         />
                       </FormControl>
                     </div>
 
-                    <div className="col-md-3 mb-3">
+                    {/* <div className="col-md-3 mb-3">
                       <FormControl size="small" variant="outlined" fullWidth error={!!taxParticularErrors?.section}>
                         <InputLabel id="section">Section</InputLabel>
                         <Select
@@ -2441,7 +2429,7 @@ const CostDebitNote = () => {
                         </Select>
                         {taxParticularErrors?.section && <FormHelperText>{taxParticularErrors?.section}</FormHelperText>}
                       </FormControl>
-                    </div>
+                    </div> */}
 
                     <div className="col-md-3 mb-3">
                       <FormControl fullWidth variant="filled">
