@@ -33,9 +33,7 @@ const CostInvoice = () => {
   const [value, setValue] = useState(0);
   const [editId, setEditId] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
-  const [currencies, setCurrencies] = useState([]);
   const [exRates, setExRates] = useState([]);
-  const [tdsPer, setTdsPer] = useState([]);
   const [partyName, setPartyName] = useState([]);
   const [partyId, setPartyId] = useState('');
   const [stateName, setStateName] = useState([]);
@@ -43,7 +41,6 @@ const CostInvoice = () => {
   const [placeOfSupply, setPlaceOfSupply] = useState([]);
   const [jobNoList, setJobNoList] = useState([]);
   const [chargeCode, setChargeCode] = useState([]);
-  const [addressType, setAddressType] = useState([]);
   const [showChargeDetails, setShowChargeDetails] = useState(false);
   const [chargeDetails, setChargeDetails] = useState([
     {
@@ -164,85 +161,129 @@ const CostInvoice = () => {
     }
   ]);
 
-  const [costInvSummaryDTO, setCostInvSummaryDTO] = useState([
-    {
+  const handleClear = () => {
+    setFormData({
+      accuralid: '',
       actBillCurrAmt: '',
       actBillLcAmt: '',
+      address: '',
+      branch: '',
+      branchCode: '',
+      client: '',
+      costInvoiceDate: null,
+      costInvoiceNo: '',
+      creditDays: '',
+      currency: '',
+      customer: '',
+      dueDate: null,
+      docDate: dayjs(),
+      exRate: '',
+      finYear: '',
       gstInputLcAmt: '',
+      gstType: '',
+      ipNo: '',
+      latitude: '',
+      mode: '',
       netBillCurrAmt: '',
       netBillLcAmt: '',
+      otherInfo: '',
+      product: '',
+      payment: '',
+      purVoucherDate: null,
+      purVoucherNo: '',
+      remarks: '',
       roundOff: '',
+      shipperRefNo: '',
+      supplierBillNo: '',
+      supplierCode: '',
+      supplierGstIn: '',
+      supplierGstInCode: '',
+      supplierName: '',
+      supplierPlace: '',
+      supplierType: '',
       totChargesBillCurrAmt: '',
-      totChargesLcAmt: ''
-    }
-  ]);
-
-  const [costInvErrors, setCostInvErrors] = useState([
-    {
-      actBillCurrAmt: '',
-      actBillLcAmt: '',
-      gstInputLcAmt: '',
-      netBillCurrAmt: '',
-      netBillLcAmt: '',
-      roundOff: '',
-      totChargesBillCurrAmt: '',
-      totChargesLcAmt: ''
-    }
-  ]);
+      totChargesLcAmt: '',
+      utrRef: ''
+    });
+    setExRates([]);
+    setStateName([]);
+    getAllActiveCurrency(orgId);
+    setFieldErrors({
+      accuralid: '',
+      address: '',
+      branch: '',
+      branchCode: '',
+      client: '',
+      costInvoiceDate: null,
+      costInvoiceNo: '',
+      creditDays: '',
+      currency: '',
+      customer: '',
+      dueDate: null,
+      exRate: '',
+      finYear: '',
+      gstType: '',
+      ipNo: '',
+      latitude: '',
+      mode: '',
+      otherInfo: '',
+      product: '',
+      payment: '',
+      purVoucherDate: null,
+      purVoucherNo: '',
+      remarks: '',
+      shipperRefNo: '',
+      supplierBillNo: '',
+      supplierCode: '',
+      supplierGstIn: '',
+      supplierGstInCode: '',
+      supplierName: '',
+      supplierPlace: '',
+      supplierType: '',
+      utrRef: ''
+    });
+    setChargerCostInvoice([
+      {
+        chargeCode: '',
+        chargeLedger: '',
+        chargeName: '',
+        currency: '',
+        exRate: '',
+        exempted: '',
+        govChargeCode: '',
+        gst: '',
+        gstPercent: '',
+        jobNo: '',
+        ledger: '',
+        qty: '',
+        rate: '',
+        sac: '',
+        fcAmount: '',
+        lcAmount: '',
+        taxable: ''
+      }
+    ]);
+    setTdsCostInvoiceDTO([
+      {
+        section: '',
+        tdsWithHolding: '',
+        tdsWithHoldingPer: '',
+        totTdsWhAmnt: ''
+      }
+    ]);
+    setCostInvoiceErrors([]);
+    setTdsCostErrors([]);
+    setEditId('');
+    getCostInvoiceDocId();
+    setShowChargeDetails(false);
+  };
 
   const listViewColumns = [
     { accessorKey: 'mode', header: 'Mode', size: 140 },
-    { accessorKey: 'product', header: 'Product', size: 140 },
-    { accessorKey: 'costInvoiceNo', header: 'Cost Invoice No', size: 140 },
-    { accessorKey: 'purVoucherNo', header: 'Pur Voucher No', size: 140 },
-    { accessorKey: 'supplierType', header: 'Supplier Type', size: 140 }
+    { accessorKey: 'docId', header: 'Doc No', size: 140 },
+    { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 },
+    { accessorKey: 'gstType', header: 'GST Type', size: 140 }
   ];
-
-  // const handleFullGrid = async () => {
-  //   // Extract unique gstPercent values
-  //   const uniqueGstPercents = [...new Set(chargerCostInvoice.map((row) => row.gstPercent).filter(Boolean))];
-
-  //   if (uniqueGstPercents.length === 0) {
-  //     showToast("error",'No GST details found..!');
-  //     setShowChargeDetails(false);
-  //     return;
-  //   } else {
-  //     try {
-  //       // Call the API with unique GST percentages
-  //       const response = await apiCalls(
-  //         'get',
-  //         `/costInvoice/getChargeNameAndChargeCodeForIgst?orgId=${orgId}&gstTax=${uniqueGstPercents.join('&gstTax=')}`
-  //       );
-
-  //       const fetchedChargeDetails = response.paramObjectsMap.chargeDetails;
-  //       setShowChargeDetails(true);
-
-  //       // Perform calculations and merge with fetched details
-  //       const groupedByGstPercent = chargerCostInvoice.reduce((acc, row) => {
-  //         if (!acc[row.gstPercent]) {
-  //           acc[row.gstPercent] = 0;
-  //         }
-  //         acc[row.gstPercent] += parseFloat(row.gst || 0); // Sum `gst`
-  //         return acc;
-  //       }, {});
-
-  //       const updatedChargeDetails = Object.entries(groupedByGstPercent).map(([gstPercent, gst]) => {
-  //         const fetchedDetail = fetchedChargeDetails.find((detail) => Number(detail.gstPercent) === Number(gstPercent));
-
-  //         return {
-  //           gstPercent: Number(gstPercent),
-  //           lcAmount: gst.toFixed(2), // Format to two decimal places
-  //           ...fetchedDetail // Merge API response fields
-  //         };
-  //       });
-
-  //       // Update state
-  //       setChargeDetails(updatedChargeDetails);
-  //     } catch (error) {
-  //       console.error('Error fetching charge details:', error);
-  //     }
-  //   }
-  // };
 
   const calculateTotTdsWhAmnt = () => {
     const totalLcAmount = chargerCostInvoice.reduce((acc, curr) => acc + curr.lcAmount, 0);
@@ -256,7 +297,6 @@ const CostInvoice = () => {
     setTdsCostInvoiceDTO(updatedTdsCostInvoiceDTO);
   };
 
-  // Call the calculate function when either chargerCostInvoice or tdsWithHoldingPer changes
   useEffect(() => {
     calculateTotTdsWhAmnt();
   }, [chargerCostInvoice, tdsCostInvoiceDTO.map((item) => item.tdsWithHoldingPer)]);
@@ -270,88 +310,32 @@ const CostInvoice = () => {
     let totalLcAmount = 0;
     let totalGst = 0;
 
-    // Calculate sums from chargerCostInvoice
     chargerCostInvoice.forEach((row) => {
       totalBillAmt += parseFloat(row.billAmt || 0);
       totalLcAmount += parseFloat(row.lcAmount || 0);
       totalGst += parseFloat(row.gst || 0);
     });
 
-    // Get TDS value
     const totalTds = tdsCostInvoiceDTO.reduce((acc, row) => acc + parseFloat(row.totTdsWhAmnt || 0), 0);
 
-    // Update formData
+    const roundOffDifference = (Math.round(totalLcAmount) - totalLcAmount).toFixed(2);
+
+    const roundedLcAmount = Math.round(totalLcAmount);
+
     setFormData((prev) => ({
       ...prev,
       totChargesBillCurrAmt: totalBillAmt.toFixed(2),
-      totChargesLcAmt: totalLcAmount.toFixed(2),
+      totChargesLcAmt: roundedLcAmount.toFixed(2),
+      roundOff: roundOffDifference,
       actBillCurrAmt: (totalBillAmt + totalGst).toFixed(2),
-      actBillLcAmt: (totalBillAmt + totalGst - totalTds).toFixed(2),
+      actBillLcAmt: (roundedLcAmount + totalGst - totalTds).toFixed(2),
       netBillCurrAmt: (totalBillAmt + totalGst - totalTds).toFixed(2),
-      netBillLcAmt: (totalLcAmount + totalGst - totalTds).toFixed(2),
+      netBillLcAmt: (roundedLcAmount + totalGst - totalTds).toFixed(2),
       gstInputLcAmt: totalGst.toFixed(2)
     }));
   };
 
-  // useEffect(() => {
-  //   const isUniformGstPercent = chargerCostInvoice.every((row) => row.gstPercent === chargerCostInvoice[0]?.gstPercent);
-
-  //   if (isUniformGstPercent) {
-  //     const totalGst = chargerCostInvoice.reduce((sum, row) => sum + (Number(row.gst) || 0), 0);
-
-  //     setChargeDetails((prevDetails) =>
-  //       prevDetails.map((detail) => ({
-  //         ...detail,
-  //         lcAmount: totalGst
-  //       }))
-  //     );
-  //   }
-  // }, [chargerCostInvoice, setChargeDetails]);
-
-  // useEffect(() => {
-  //   const calculateChargeDetails = () => {
-  //     const groupedByGstPercent = chargerCostInvoice.reduce((acc, row) => {
-  //       if (!acc[row.gstPercent]) {
-  //         acc[row.gstPercent] = 0;
-  //       }
-  //       acc[row.gstPercent] += parseFloat(row.gst || 0); // Sum `gst`
-  //       return acc;
-  //     }, {});
-
-  //     const updatedChargeDetails = Object.entries(groupedByGstPercent).map(([gstPercent, gst]) => ({
-  //       gstPercent: Number(gstPercent),
-  //       lcAmount: gst.toFixed(2) // Format to two decimal places
-  //     }));
-
-  //     // Update the state while retaining other fields
-  //     setChargeDetails((prevChargeDetails) => {
-  //       const prevDetailsMap = prevChargeDetails.reduce((map, detail) => {
-  //         map[detail.gstPercent] = detail;
-  //         return map;
-  //       }, {});
-
-  //       return updatedChargeDetails.map((detail) => ({
-  //         ...prevDetailsMap[detail.gstPercent], // Retain previous values for the same gstPercent
-  //         ...detail // Overwrite with new lcAmount and gstPercent
-  //       }));
-  //     });
-  //   };
-
-  //   calculateChargeDetails();
-  // }, [chargerCostInvoice]);
-
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const currencyData = await getAllActiveCurrency(orgId);
-        setCurrencies(currencyData);
-        console.log('currency', currencyData);
-      } catch (error) {
-        console.error('Error fetching country data:', error);
-      }
-    };
-
-    fetchData();
     getAllCostInvoiceByOrgId();
     getCostInvoiceDocId();
     getJobNoFromTmsJobCard();
@@ -366,7 +350,6 @@ const CostInvoice = () => {
     try {
       const result = await apiCalls('get', `/costInvoice/getAllCostInvoiceByOrgId?orgId=${orgId}`);
       setData(result.paramObjectsMap.costInvoiceVO || []);
-      // showForm(true);
       console.log('costInvoiceVO', result);
     } catch (err) {
       console.log('error', err);
@@ -513,54 +496,77 @@ const CostInvoice = () => {
     }
   };
 
+  const handleInputChange = (e, fieldType, index) => {
+    const { name, value } = e.target;
+
+    if (name === 'gstType') {
+      if (formData.gstType !== value) {
+        setChargerCostInvoice([
+          {
+            chargeCode: '',
+            chargeLedger: '',
+            chargeName: '',
+            currency: '',
+            exRate: '',
+            exempted: '',
+            govChargeCode: '',
+            gst: '',
+            gstPercent: '',
+            jobNo: '',
+            ledger: '',
+            qty: '',
+            rate: '',
+            sac: '',
+            fcAmount: '',
+            lcAmount: '',
+            taxable: ''
+          }
+        ]);
+        setTdsCostInvoiceDTO([
+          {
+            section: '',
+            tdsWithHolding: '',
+            tdsWithHoldingPer: '',
+            totTdsWhAmnt: ''
+          }
+        ]);
+        setShowChargeDetails(false);
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          gstType: value,
+          actBillCurrAmt: '',
+          actBillLcAmt: '',
+          gstInputLcAmt: '',
+          netBillCurrAmt: '',
+          netBillLcAmt: '',
+          roundOff: '',
+          totChargesBillCurrAmt: '',
+          totChargesLcAmt: ''
+        }));
+      }
+    } else if (name === 'currency') {
+      const selectedCurrency = exRates.find((item) => item.currency === value);
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: value.toUpperCase(),
+        exRate: selectedCurrency ? selectedCurrency.buyingExRate : ''
+      }));
+    } else if (fieldType === 'tdsCostInvoiceDTO') {
+      setTdsCostInvoiceDTO((prevData) => prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item)));
+    } else {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: value.toUpperCase()
+      }));
+    }
+  };
+
   const getPartyName = async (partType) => {
     try {
       const response = await apiCalls('get', `/costInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=${partType}`);
       setPartyName(response.paramObjectsMap.partyMasterVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
-    }
-  };
-
-  const handleInputChange = (e, fieldType, index) => {
-    const { name, value } = e.target;
-
-    if (fieldType === 'tdsCostInvoiceDTO') {
-      setTdsCostInvoiceDTO((prevData) => prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item)));
-    } else if (fieldType === 'costInvSummaryDTO') {
-      setCostInvSummaryDTO((prevData) => prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item)));
-      // } else {
-      //   // Directly update formData here
-      //   setFormData({
-      //     ...formData,
-      //     [name]: value.toUpperCase() // Example: converting text to uppercase
-      //   });
-
-      //   setFieldErrors({
-      //     ...fieldErrors,
-      //     [name]: '' // Clear any field errors
-      //   });
-      // }
-    } else {
-      // For formData fields
-      setFormData((prevFormData) => {
-        // Check if the field being updated is `gstType`
-        if (name === 'gstType' && prevFormData.gstType !== value) {
-          // Toggle `showChargeDetails` state
-          // setShowChargeDetails(showChargeDetails === true ? false : true);
-          setShowChargeDetails(!showChargeDetails);
-        }
-
-        return {
-          ...prevFormData,
-          [name]: value.toUpperCase() // Example: converting text to uppercase
-        };
-      });
-
-      setFieldErrors({
-        ...fieldErrors,
-        [name]: '' // Clear any field errors
-      });
     }
   };
 
@@ -616,10 +622,7 @@ const CostInvoice = () => {
 
       console.log('tds', tdsWhPercent);
       setTdsCostInvoiceDTO((prevData) =>
-        prevData.map(
-          (item, index) => (index === 0 ? { ...item, tdsWithHoldingPer: tdsWhPercent } : item)
-          // index === 0 ? { ...item, tdsWithHoldingPer: tdsWhPercent, section: tdsData[0]?.section || '' } : item
-        )
+        prevData.map((item, index) => (index === 0 ? { ...item, tdsWithHoldingPer: tdsWhPercent } : item))
       );
     } catch (error) {
       console.error('Error fetching TDS details:', error);
@@ -721,136 +724,6 @@ const CostInvoice = () => {
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
 
-  const handleClear = () => {
-    setFormData({
-      accuralid: '',
-      actBillCurrAmt: '',
-      actBillLcAmt: '',
-      address: '',
-      branch: '',
-      branchCode: '',
-      client: '',
-      costInvoiceDate: null,
-      costInvoiceNo: '',
-      creditDays: '',
-      currency: '',
-      customer: '',
-      dueDate: null,
-      docDate: dayjs(),
-      exRate: '',
-      finYear: '',
-      gstInputLcAmt: '',
-      gstType: '',
-      ipNo: '',
-      latitude: '',
-      mode: '',
-      netBillCurrAmt: '',
-      netBillLcAmt: '',
-      otherInfo: '',
-      product: '',
-      payment: '',
-      purVoucherDate: null,
-      purVoucherNo: '',
-      remarks: '',
-      roundOff: '',
-      shipperRefNo: '',
-      supplierBillNo: '',
-      supplierCode: '',
-      supplierGstIn: '',
-      supplierGstInCode: '',
-      supplierName: '',
-      supplierPlace: '',
-      supplierType: '',
-      totChargesBillCurrAmt: '',
-      totChargesLcAmt: '',
-      utrRef: ''
-    });
-    setExRates([]);
-    setStateName([]);
-    getAllActiveCurrency(orgId);
-    setFieldErrors({
-      accuralid: '',
-      address: '',
-      branch: '',
-      branchCode: '',
-      client: '',
-      costInvoiceDate: null,
-      costInvoiceNo: '',
-      creditDays: '',
-      currency: '',
-      customer: '',
-      dueDate: null,
-      exRate: '',
-      finYear: '',
-      gstType: '',
-      ipNo: '',
-      latitude: '',
-      mode: '',
-      otherInfo: '',
-      product: '',
-      payment: '',
-      purVoucherDate: null,
-      purVoucherNo: '',
-      remarks: '',
-      shipperRefNo: '',
-      supplierBillNo: '',
-      supplierCode: '',
-      supplierGstIn: '',
-      supplierGstInCode: '',
-      supplierName: '',
-      supplierPlace: '',
-      supplierType: '',
-      utrRef: ''
-    });
-    setChargerCostInvoice([
-      {
-        chargeCode: '',
-        chargeLedger: '',
-        chargeName: '',
-        currency: '',
-        exRate: '',
-        exempted: '',
-        govChargeCode: '',
-        gst: '',
-        gstPercent: '',
-        jobNo: '',
-        ledger: '',
-        qty: '',
-        rate: '',
-        sac: '',
-        fcAmount: '',
-        lcAmount: '',
-        taxable: ''
-      }
-    ]);
-    setTdsCostInvoiceDTO([
-      {
-        section: '',
-        tdsWithHolding: '',
-        tdsWithHoldingPer: '',
-        totTdsWhAmnt: ''
-      }
-    ]);
-    setCostInvSummaryDTO([
-      {
-        actBillCurrAmt: '',
-        actBillLcAmt: '',
-        gstInputLcAmt: '',
-        netBillCurrAmt: '',
-        netBillLcAmt: '',
-        roundOff: '',
-        totChargesBillCurrAmt: '',
-        totChargesLcAmt: ''
-      }
-    ]);
-    setCostInvoiceErrors([]);
-    setCostInvErrors([]);
-    setTdsCostErrors([]);
-    setEditId('');
-    getCostInvoiceDocId();
-    setShowChargeDetails(false);
-  };
-
   // const handleKeyDown = (e, row, table) => {
   //   if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
   //     e.preventDefault();
@@ -863,37 +736,10 @@ const CostInvoice = () => {
   //   }
   // };
 
-  // const handleChargeCodeChange = async (e, index) => {
-  //   const selectedChargeCode = e.target.value;
-  //   const selectedChargeCodeData = chargeCode.find((item) => item.chargeCode === selectedChargeCode);
-  //   setShowChargeDetails(false);
-  //   // Update chargerCostInvoice with selectedChargeCode details
-  //   const updatedCurrencyData = [...chargerCostInvoice];
-  //   updatedCurrencyData[index] = {
-  //     ...updatedCurrencyData[index],
-  //     chargeCode: selectedChargeCode,
-  //     gstPercent: selectedChargeCodeData ? selectedChargeCodeData.GSTPercent : '',
-  //     ccFeeApplicable: selectedChargeCodeData ? selectedChargeCodeData.ccFeeApplicable : '',
-  //     chargeName: selectedChargeCodeData ? selectedChargeCodeData.chargeName : '',
-  //     exempted: selectedChargeCodeData ? selectedChargeCodeData.exempted : '',
-  //     govChargeCode: selectedChargeCodeData ? selectedChargeCodeData.govChargeCode : '',
-  //     ledger: selectedChargeCodeData ? selectedChargeCodeData.ledger : '',
-  //     sac: selectedChargeCodeData ? selectedChargeCodeData.sac : '',
-  //     taxable: selectedChargeCodeData ? selectedChargeCodeData.taxable : '',
-  //     qty: "",
-  //     rate: "",
-  //     currency: "",
-  //     exRate: "",
-  //     qty: "",
-  //   };
-  //   setChargerCostInvoice(updatedCurrencyData);
-  // };
-
   const handleChargeCodeChange = async (e, index) => {
     const selectedChargeCode = e.target.value;
     const selectedChargeCodeData = chargeCode.find((item) => item.chargeCode === selectedChargeCode);
 
-    // Default state values for fields to be reset
     const defaultStateValues = {
       qty: '',
       rate: '',
@@ -905,13 +751,12 @@ const CostInvoice = () => {
 
     setShowChargeDetails(false);
 
-    // Update `chargerCostInvoice` with selectedChargeCode details and reset defaults
     setChargerCostInvoice((prev) => {
       return prev.map((row, idx) => {
         if (idx === index) {
           return {
             ...row,
-            ...defaultStateValues, // Reset specified fields to their default state
+            ...defaultStateValues,
             chargeCode: selectedChargeCode,
             gstPercent: selectedChargeCodeData ? selectedChargeCodeData.GSTPercent : defaultStateValues.gstPercent,
             ccFeeApplicable: selectedChargeCodeData ? selectedChargeCodeData.ccFeeApplicable : '',
@@ -933,10 +778,8 @@ const CostInvoice = () => {
     setChargerCostInvoice((prev) => {
       return prev.map((row, idx) => {
         if (idx === index) {
-          // Update the field
           const updatedRow = { ...row, [field]: value };
 
-          // Perform calculations
           const qty = Number(updatedRow.qty) || 0;
           const rate = Number(updatedRow.rate) || 0;
           const selectedCurrencyData = exRates.find((currency) => currency.currency === updatedRow.currency);
@@ -970,117 +813,6 @@ const CostInvoice = () => {
       return newErrors;
     });
   };
-
-  // const handleFullGrid = async () => {
-  //   // Validate if `gstType` is selected
-  //   if (!formData.gstType) {
-  //     showToast('error', 'Please select a GST Type before proceeding!');
-  //     console.error('Error: gstType is not selected in formData.');
-  //     return;
-  //   }
-
-  //   // Check if `chargerCostInvoice` has any rows
-  //   if (chargerCostInvoice.length === 0) {
-  //     showToast('error', 'No GST details found!');
-  //     console.error('Error: chargerCostInvoice is empty.');
-  //     setShowChargeDetails(false);
-  //     return;
-  //   }
-
-  //   // Extract unique GST percentages, ensuring they are valid
-  //   const uniqueGstPercents = [
-  //     ...new Set(chargerCostInvoice.map((row) => row.gstPercent).filter((gstPercent) => gstPercent && gstPercent.length > 0))
-  //   ];
-
-  //   if (uniqueGstPercents.length === 0) {
-  //     showToast('error', 'No valid GST percentages found!');
-  //     console.error('Error: uniqueGstPercents is empty.');
-  //     setShowChargeDetails(false);
-  //     return;
-  //   }
-
-  //   try {
-  //     // Determine the API endpoint based on `gstType`
-  //     let apiEndpoint = '';
-  //     if (formData.gstType === 'INTER') {
-  //       apiEndpoint = `/costInvoice/getChargeNameAndChargeCodeForIgst?orgId=${orgId}&gstTax=${uniqueGstPercents.join('&gstTax=')}`;
-  //     } else if (formData.gstType === 'INTRA') {
-  //       // Split GST percentages into CGST and SGST
-  //       const cgstAndSgstPercents = uniqueGstPercents.flatMap((gstPercent) => {
-  //         const half = (parseFloat(gstPercent) / 2).toFixed(1); // Split equally and format to 1 decimal place
-  //         return [half, half];
-  //       });
-  //       apiEndpoint = `/costInvoice/getChargeNameAndChargeCodeForCgstAndSgst?orgId=${orgId}&gstTax=${cgstAndSgstPercents.join('&gstTax=')}`;
-  //     } else {
-  //       showToast('error', 'Invalid GST Type selected!');
-  //       console.error('Error: Invalid gstType in formData.');
-  //       setShowChargeDetails(false);
-  //       return;
-  //     }
-
-  //     // Call the API
-  //     const response = await apiCalls('get', apiEndpoint);
-
-  //     const fetchedChargeDetails = response.paramObjectsMap?.chargeDetails || [];
-  //     console.log('fetchedChargeDetails', fetchedChargeDetails);
-  //     setShowChargeDetails(true);
-
-  //     // Perform calculations and merge with fetched details
-  //     const groupedByGstPercent = chargerCostInvoice.reduce((acc, row) => {
-  //       if (!row.gst || isNaN(Number(row.gst))) {
-  //         showToast('error', 'Invalid or missing GST value.');
-  //         console.error('Error: Invalid gst value in chargerCostInvoice.');
-  //         setShowChargeDetails(false);
-  //         return acc;
-  //       }
-  //       if (row.gstPercent && row.gstPercent.length > 0) {
-  //         acc[row.gstPercent] = (acc[row.gstPercent] || 0) + parseFloat(row.gst || 0); // Sum `gst`
-  //       }
-  //       return acc;
-  //     }, {});
-
-  //     // const updatedChargeDetails = Object.entries(groupedByGstPercent).map(([gstPercent, gst]) => {
-  //     //   console.log('groupedByGstPercent', groupedByGstPercent);
-  //     //   const fetchedDetail = fetchedChargeDetails.find((detail) => Number(detail.gstPercent) === Number(gstPercent));
-  //     //   console.log('fetchedDetail', fetchedDetail);
-  //     //   return {
-  //     //     gstPercent: Number(gstPercent),
-  //     //     lcAmount: gst.toFixed(2), // Format to two decimal places
-  //     //     ...fetchedDetail // Merge API response fields
-  //     //   };
-  //     // });
-  //     const updatedChargeDetails = Object.entries(groupedByGstPercent).flatMap(([gstPercent, gst]) => {
-  //       console.log('Processing gstPercent:', gstPercent, 'with gst:', gst);
-
-  //       // Fetch both CGST and SGST details for the current GST percent
-  //       const fetchedDetails = fetchedChargeDetails.filter((detail) => Number(detail.gstPercent) === Number(gstPercent));
-
-  //       console.log('Fetched Details for gstPercent:', gstPercent, fetchedDetails);
-
-  //       if (!fetchedDetails.length) {
-  //         console.error(`No fetched details found for gstPercent: ${gstPercent}`);
-  //         return []; // Skip this gstPercent if no matching details
-  //       }
-
-  //       // Split GST equally between CGST and SGST
-  //       const halfGst = (gst / 2).toFixed(2); // Ensure two decimal places
-
-  //       // Map each detail (CGST and SGST) with calculated `lcAmount`
-  //       return fetchedDetails.map((detail) => ({
-  //         gstPercent: Number(detail.gstPercent),
-  //         lcAmount: halfGst,
-  //         ...detail // Merge API response fields
-  //       }));
-  //     });
-
-  //     console.log('updatedChargeDetails', updatedChargeDetails);
-  //     // Update state
-  //     setChargeDetails(updatedChargeDetails);
-  //   } catch (error) {
-  //     console.error('Error fetching charge details:', error);
-  //     showToast('error', 'Failed to fetch charge details. Please try again.');
-  //   }
-  // };
 
   const handleFullGrid = async () => {
     if (!formData.gstType) {
@@ -1156,10 +888,10 @@ const CostInvoice = () => {
               gstPercent: Number(gstPercent),
               lcAmount: gst.toFixed(2),
               ...fetchedDetail,
-              chargeCode: fetchedDetail.chargeCode // Ensure chargeCode is IGST
+              chargeCode: fetchedDetail.chargeCode
             };
           })
-          .filter(Boolean); // Remove null values
+          .filter(Boolean);
       } else if (formData.gstType === 'INTRA') {
         updatedChargeDetails = Object.entries(groupedByGstPercent).flatMap(([gstPercent, gst]) => {
           console.log('groupedByGstPercent', groupedByGstPercent);
@@ -1177,13 +909,14 @@ const CostInvoice = () => {
             gstPercent: Number(detail.gstPercent),
             lcAmount: halfGst,
             ...detail,
-            chargeCode: detail.chargeCode // Ensure chargeCode is CGST or SGST
+            chargeCode: detail.chargeCode
           }));
         });
       }
 
       console.log('updatedChargeDetails', updatedChargeDetails);
-      setChargeDetails(updatedChargeDetails);
+      // setChargeDetails(updatedChargeDetails);
+      setChargeDetails((prevDetails) => [...prevDetails, ...updatedChargeDetails]);
       setShowChargeDetails(true);
     } catch (error) {
       console.error('Error fetching charge details:', error);
@@ -1347,12 +1080,12 @@ const CostInvoice = () => {
     // if (!formData.product) {
     //   errors.product = 'Product is required';
     // }
-    if (!formData.purVoucherDate) {
-      errors.purVoucherDate = 'Pur Voucher Date is required';
-    }
-    if (!formData.purVoucherNo) {
-      errors.purVoucherNo = 'Pur Voucher No is required';
-    }
+    // if (!formData.purVoucherDate) {
+    //   errors.purVoucherDate = 'Pur Voucher Date is required';
+    // }
+    // if (!formData.purVoucherNo) {
+    //   errors.purVoucherNo = 'Pur Voucher No is required';
+    // }
     if (!formData.shipperRefNo) {
       errors.shipperRefNo = 'Shipper Ref No is required';
     }
@@ -1384,10 +1117,6 @@ const CostInvoice = () => {
     let CostInvoiceValid = true;
     const newTableErrors = chargerCostInvoice.map((row) => {
       const rowErrors = {};
-      // if (!row.billAmt) {
-      //   rowErrors.billAmt = 'Account Name is required';
-      //   CostInvoiceValid = false;
-      // }
       if (!row.chargeCode) {
         rowErrors.chargeCode = 'Charge Code is required';
         CostInvoiceValid = false;
@@ -1400,46 +1129,14 @@ const CostInvoice = () => {
         rowErrors.qty = 'Qty is required';
         CostInvoiceValid = false;
       }
-      // if (!row.chargeName) {
-      //   rowErrors.chargeName = 'Charge Name is required';
-      //   CostInvoiceValid = false;
-      // }
       if (!row.currency) {
         rowErrors.currency = 'Currency is required';
         CostInvoiceValid = false;
       }
-      // if (!row.exRate) {
-      //   rowErrors.exRate = 'EX Rate is required';
-      //   CostInvoiceValid = false;
-      // }
-      // if (!row.fcAmt) {
-      //   rowErrors.fcAmt = 'FC Amt is required';
-      //   CostInvoiceValid = false;
-      // }
-      // if (!row.sac) {
-      //   rowErrors.sac = 'SAC is required';
-      //   CostInvoiceValid = false;
-      // }
-      // if (!row.gst) {
-      //   rowErrors.gst = 'GST is required';
-      //   CostInvoiceValid = false;
-      // }
-      // if (!row.houseNo) {
-      //   rowErrors.houseNo = 'House No is required';
-      //   CostInvoiceValid = false;
-      // }
       if (!row.jobNo) {
         rowErrors.jobNo = 'Job No is required';
         CostInvoiceValid = false;
       }
-      // if (!row.lcAmt) {
-      //   rowErrors.lcAmt = 'LC Amt is required';
-      //   CostInvoiceValid = false;
-      // }
-      // if (!row.subJobNo) {
-      //   rowErrors.subJobNo = 'Sub Job No is required';
-      //   CostInvoiceValid = false;
-      // }
 
       return rowErrors;
     });
@@ -1458,62 +1155,12 @@ const CostInvoice = () => {
         rowErrors.tdsWithHolding = 'Tds With Holding is required';
         tdsValid = false;
       }
-      // if (!row.tdsWithHoldingPer) {
-      //   rowErrors.tdsWithHoldingPer = 'TdsWithHolding% is required';
-      //   tdsValid = false;
-      // }
-      // if (!row.totTdsWhAmnt) {
-      //   rowErrors.totTdsWhAmnt = 'Tot Tds Amount is required';
-      //   tdsValid = false;
-      // }
 
       return rowErrors;
     });
     setFieldErrors(errors);
 
     setTdsCostErrors(tdsTableErrors);
-
-    let summaryValid = true;
-    const summaryTableErrors = costInvSummaryDTO.map((row) => {
-      const rowErrors = {};
-      // if (!row.actBillCurrAmt) {
-      //   rowErrors.actBillCurrAmt = 'Act Bill Amt.(Bill Curr) is required';
-      //   summaryValid = false;
-      // }
-      // if (!row.actBillLcAmt) {
-      //   rowErrors.actBillLcAmt = 'Act Bill Amt.(LC) is required';
-      //   summaryValid = false;
-      // }
-      // if (!row.gstInputLcAmt) {
-      //   rowErrors.gstInputLcAmt = 'GST Input Amt(LC) is required';
-      //   summaryValid = false;
-      // }
-      // if (!row.netBillCurrAmt) {
-      //   rowErrors.netBillCurrAmt = 'Net Amt.(Bill Curr) is required';
-      //   summaryValid = false;
-      // }
-      // if (!row.netBillLcAmt) {
-      //   rowErrors.netBillLcAmt = 'Net Amt.(LC) is required';
-      //   summaryValid = false;
-      // }
-      // if (!row.roundOff) {
-      //   rowErrors.roundOff = 'Round Off is required';
-      //   summaryValid = false;
-      // }
-      // if (!row.totChargesBillCurrAmt) {
-      //   rowErrors.totChargesBillCurrAmt = 'Tot. Charge Amt.(Bill Curr) is required';
-      //   summaryValid = false;
-      // }
-      // if (!row.totChargesLcAmt) {
-      //   rowErrors.totChargesLcAmt = 'Tot. Charge Amt.(LC) is required';
-      //   summaryValid = false;
-      // }
-
-      return rowErrors;
-    });
-    setFieldErrors(errors);
-
-    setCostInvErrors(summaryTableErrors);
 
     if (Object.keys(errors).length === 0 && CostInvoiceValid) {
       console.log('try called');
@@ -1535,23 +1182,11 @@ const CostInvoice = () => {
         sac: row.sac,
         taxable: row.taxable
       }));
-      const costSummaryVO = costInvSummaryDTO.map((row) => ({
-        ...(editId && { id: row.id }),
-        actBillCurrAmt: row.actBillCurrAmt,
-        actBillLcAmt: row.actBillLcAmt,
-        gstInputLcAmt: row.gstInputLcAmt,
-        netBillCurrAmt: row.netBillCurrAmt,
-        netBillLcAmt: row.netBillLcAmt,
-        roundOff: row.roundOff,
-        totChargesBillCurrAmt: row.totChargesBillCurrAmt,
-        totChargesLcAmt: row.totChargesLcAmt
-      }));
       const tdsVO = tdsCostInvoiceDTO.map((row) => ({
         ...(editId && { id: row.id }),
         section: row.section,
         tdsWithHolding: row.tdsWithHolding,
         tdsWithHoldingPer: row.tdsWithHoldingPer
-        // totTdsWhAmnt: row.totTdsWhAmnt
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
@@ -1561,7 +1196,6 @@ const CostInvoice = () => {
         branchCode: branchCode,
         client: formData.client,
         chargerCostInvoiceDTO: costVO,
-        // costInvSummaryDTO: costSummaryVO,
         // costInvoiceDate: dayjs(formData.costInvoiceDate).format('YYYY-MM-DD'),
         // costInvoiceNo: formData.costInvoiceNo,
         costType: formData.costType,
@@ -1569,7 +1203,6 @@ const CostInvoice = () => {
         creditDays: formData.creditDays,
         currency: formData.currency,
         customer: formData.customer,
-        // dueDate: dayjs(formData.dueDate).format('YYYY-MM-DD'),
         dueDate: formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : dayjs(),
         exRate: formData.exRate,
         finYear: finYear,
@@ -1633,8 +1266,8 @@ const CostInvoice = () => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="outlined-textarea-zip"
-                    // label="Document Id"
-                    label="Cost Invoice No"
+                    label="Document Id"
+                    // label="Cost Invoice No"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -1649,8 +1282,8 @@ const CostInvoice = () => {
                   <FormControl fullWidth variant="filled" size="small">
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
-                        // label="Document Date"
-                        label="Cost Invoice Date"
+                        label="Document Date"
+                        // label="Cost Invoice Date"
                         value={formData.docDate}
                         onChange={(date) => handleDateChange('docDate', date)}
                         disabled
@@ -1692,7 +1325,7 @@ const CostInvoice = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.purVoucherNo}
                       onChange={handleInputChange}
-                      disabled={formData.mode === 'SUBMIT'}
+                      disabled
                       error={!!fieldErrors.purVoucherNo}
                       helperText={fieldErrors.purVoucherNo}
                     />
@@ -1706,7 +1339,7 @@ const CostInvoice = () => {
                         label="Purchase Voucher Date"
                         value={formData.purVoucherDate}
                         onChange={(date) => handleDateChange('purVoucherDate', date)}
-                        disabled={formData.mode === 'SUBMIT'}
+                        disabled
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
@@ -1923,8 +1556,8 @@ const CostInvoice = () => {
                       value={formData.currency}
                       disabled={formData.mode === 'SUBMIT'}
                     >
-                      {currencies &&
-                        currencies.map((item) => (
+                      {exRates &&
+                        exRates.map((item) => (
                           <MenuItem key={item.id} value={item.currency}>
                             {item.currency}
                           </MenuItem>
@@ -1943,7 +1576,7 @@ const CostInvoice = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.exRate}
                       onChange={handleInputChange}
-                      disabled={formData.mode === 'SUBMIT'}
+                      disabled
                       error={!!fieldErrors.exRate}
                       helperText={fieldErrors.exRate}
                     />
@@ -2282,7 +1915,6 @@ const CostInvoice = () => {
                                                   jobNo: selectedJobNo
                                                 };
                                                 setChargerCostInvoice(updatedJobNoData);
-                                                // getChargeDetailsFromChargeType(e.target.value);
                                               }}
                                               className={costInvoiceErrors[index]?.jobNo ? 'error form-control' : 'form-control'}
                                             >
@@ -2306,29 +1938,7 @@ const CostInvoice = () => {
                                             <select
                                               value={row.chargeCode}
                                               style={{ width: '150px' }}
-                                              // onChange={(e) => {
-                                              //   const selectedChargeCode = e.target.value;
-                                              //   const selectedChargeCodeData = chargeCode.find(
-                                              //     (item) => item.chargeCode === selectedChargeCode
-                                              //   );
-                                              //   const updatedCurrencyData = [...chargerCostInvoice];
-                                              //   updatedCurrencyData[index] = {
-                                              //     ...updatedCurrencyData[index],
-                                              //     chargeCode: selectedChargeCode,
-                                              //     gstPercent: selectedChargeCodeData ? selectedChargeCodeData.GSTPercent : '',
-                                              //     ccFeeApplicable: selectedChargeCodeData ? selectedChargeCodeData.ccFeeApplicable : '',
-                                              //     chargeName: selectedChargeCodeData ? selectedChargeCodeData.chargeName : '',
-                                              //     exempted: selectedChargeCodeData ? selectedChargeCodeData.exempted : '',
-                                              //     govChargeCode: selectedChargeCodeData ? selectedChargeCodeData.govChargeCode : '',
-                                              //     ledger: selectedChargeCodeData ? selectedChargeCodeData.ledger : '',
-                                              //     sac: selectedChargeCodeData ? selectedChargeCodeData.sac : '',
-                                              //     taxable: selectedChargeCodeData ? selectedChargeCodeData.taxable : ''
-                                              //   };
-
-                                              //   setChargerCostInvoice(updatedCurrencyData);
-                                              // }}
                                               onChange={(e) => handleChargeCodeChange(e, index)}
-                                              // onChange={(e) => handleRowUpdate(index, 'chargeCode', e.target.value)}
                                               className={costInvoiceErrors[index]?.chargeCode ? 'error form-control' : 'form-control'}
                                             >
                                               <option value="">--Select--</option>
@@ -2841,7 +2451,6 @@ const CostInvoice = () => {
                                         <th style={{ textAlign: 'center' }}>G-Tax Code</th>
                                         <th style={{ textAlign: 'center' }}>GST %</th>
                                         <th style={{ textAlign: 'center' }}>SAC</th>
-                                        {/* <th style={{ textAlign: 'center' }}>Taxable</th> */}
                                         <th style={{ textAlign: 'center' }}>LC Amount</th>
                                       </tr>
                                     </thead>
@@ -2850,11 +2459,10 @@ const CostInvoice = () => {
                                         <tr key={idx}>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{idx + 1}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.chargeCode}</td>
-                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.chargeDesc}</td>
+                                          <td style={{ width: '300px', textAlign: 'center' }}>{detail.chargeDesc}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.gChargeCode}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.gstPercent}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.sac}</td>
-                                          {/* <td style={{ width: '150px', textAlign: 'center' }}>{detail.taxable}</td> */}
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.lcAmount}</td>
                                         </tr>
                                       ))}
