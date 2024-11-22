@@ -1,35 +1,36 @@
+import CancelIcon from '@mui/icons-material/Cancel';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ClearIcon from '@mui/icons-material/Clear';
+import DeleteIcon from '@mui/icons-material/Delete';
+import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import SaveIcon from '@mui/icons-material/Save';
+import SearchIcon from '@mui/icons-material/Search';
+import { TabContext } from '@mui/lab';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
+import { Autocomplete, Chip, FormHelperText, Stack } from '@mui/material';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormGroup from '@mui/material/FormGroup';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import { useTheme } from '@mui/material/styles';
+import Tab from '@mui/material/Tab';
 import TextField from '@mui/material/TextField';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { TabContext } from '@mui/lab';
-import TabList from '@mui/lab/TabList';
-import TabPanel from '@mui/lab/TabPanel';
-import Tab from '@mui/material/Tab';
-import Box from '@mui/material/Box';
-import 'react-tabs/style/react-tabs.css';
-import React, { useState, useRef, useEffect } from 'react';
-import ActionButton from 'utils/ActionButton';
 import apiCalls from 'apicall';
+import dayjs from 'dayjs';
+import { useEffect, useRef, useState } from 'react';
+import 'react-tabs/style/react-tabs.css';
+import { ToastContainer } from 'react-toastify';
+import ActionButton from 'utils/ActionButton';
+import ConfirmationModal from 'utils/confirmationPopup';
+import GeneratePdfTempIRN from 'utils/pdfTempIRN';
 import { showToast } from 'utils/toast-component';
-import { Autocomplete, FormHelperText } from '@mui/material';
-import dayjs, { Dayjs } from 'dayjs';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import { ToastContainer, toast } from 'react-toastify';
-import ClearIcon from '@mui/icons-material/Clear';
-import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
-import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import { useTheme } from '@mui/material/styles';
-import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonListViewTable from '../../basicMaster/CommonListViewTable';
 
 const IrnCreditNote = () => {
@@ -52,10 +53,16 @@ const IrnCreditNote = () => {
   const [value, setValue] = useState('1');
   const [partyTypeData, setPartyTypeData] = useState([]);
   const [originBillList, setOriginBillList] = useState([]);
-
+  const [modalOpen, setModalOpen] = useState(false);
+  const [downloadPdf, setDownloadPdf] = useState(false);
+  const [pdfData, setPdfData] = useState([]);
+  const [approveStatus, setApproveStatus] = useState('');
   const [formData, setFormData] = useState({
     vohNo: '',
     vohDate: null,
+    approveStatus: '',
+    approveBy: '',
+    approveOn: '',
     partyType: '',
     partyName: '',
     originBill: '',
@@ -437,6 +444,100 @@ const IrnCreditNote = () => {
     setTabIndex(index);
   };
 
+  const handleOpenModalApprove = () => {
+    setModalOpen(true);
+    setApproveStatus('Approved');
+  };
+
+  const handleOpenModalReject = () => {
+    setModalOpen(true);
+    setApproveStatus('Rejected');
+  };
+
+  const handleCloseModal = () => setModalOpen(false);
+
+  const handleConfirmAction = async () => {
+    try {
+      const result = await apiCalls(
+        'put',
+        `/taxInvoice/approveTaxInvoice?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}`
+      );
+      console.log('API Response:==>', result);
+
+      if (result.status === true) {
+        setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
+        showToast(
+          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
+          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved'
+            ? ' TaxInvoice Approved successfully'
+            : 'TaxInvoice Rejected successfully'
+        );
+
+        const listValueVO = result.paramObjectsMap.taxInvoiceVO;
+
+        setFormData({
+          docId: listValueVO.docId,
+          approveStatus: listValueVO.approveStatus,
+          approveBy: listValueVO.approveBy,
+          approveOn: listValueVO.approveOn,
+          docDate: listValueVO.docDate,
+          type: listValueVO.type,
+          partyCode: listValueVO.partyCode,
+          partyName: listValueVO.partyName,
+          partyType: listValueVO.partyType,
+          bizType: listValueVO.bizType,
+          bizMode: listValueVO.bizMode,
+          stateNo: listValueVO.stateNo,
+          stateCode: listValueVO.stateCode,
+          address: listValueVO.address,
+          addressType: listValueVO.addressType,
+          gstType: listValueVO.gstType,
+          pinCode: listValueVO.pinCode,
+          placeOfSupply: listValueVO.placeOfSupply,
+          recipientGSTIN: listValueVO.recipientGSTIN,
+          billCurr: listValueVO.billCurr,
+          status: listValueVO.status,
+          salesType: listValueVO.salesType,
+          updatedBy: listValueVO.updatedBy,
+          supplierBillNo: listValueVO.supplierBillNo,
+          supplierBillDate: listValueVO.supplierBillDate,
+          billCurrRate: listValueVO.billCurrRate,
+          exAmount: listValueVO.exAmount,
+          creditDays: listValueVO.creditDays,
+          contactPerson: listValueVO.contactPerson,
+          shipperInvoiceNo: listValueVO.shipperInvoiceNo,
+          billOfEntry: listValueVO.billOfEntry,
+          billMonth: listValueVO.billMonth,
+          invoiceNo: listValueVO.invoiceNo,
+          invoiceDate: listValueVO.invoiceDate,
+          id: listValueVO.id,
+          totalChargeAmountLc: listValueVO.totalChargeAmountLc,
+          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
+          totalTaxAmountLc: listValueVO.totalTaxAmountLc,
+          totalInvAmountLc: listValueVO.totalInvAmountLc,
+          roundOffAmountLc: listValueVO.roundOffAmountLc,
+          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
+          totalInvAmountLc: listValueVO.totalInvAmountLc,
+          totalInvAmountBc: listValueVO.totalInvAmountBc,
+          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
+          totalTaxAmountBc: listValueVO.totalTaxAmountBc,
+          totalInvAmountBc: listValueVO.totalInvAmountBc,
+          totalTaxableAmountLc: listValueVO.totalTaxableAmountLc,
+          amountInWords: listValueVO.amountInWords,
+          billingRemarks: listValueVO.billingRemarks,
+          amountInWords: listValueVO.amountInWords
+        });
+        handleCloseModal();
+
+        console.log('TAX INVOICE:==>', result);
+      } else {
+        console.error('API Error:', result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   // const handleAddRow = () => {
   //   if (isLastRowEmpty(irnChargesData)) {
   //     displayRowError(irnChargesData);
@@ -677,7 +778,7 @@ const IrnCreditNote = () => {
         addressType: selectedBill.addressType,
         exAmount: selectedBill.exAmount,
         supplierRefNo: selectedBill.invoiceNo,
-        supplierRefDate: selectedBill.invoiceDate,
+        supplierRefDate: selectedBill.invoiceDate
         // Add other form fields as needed
       }));
 
@@ -816,6 +917,9 @@ const IrnCreditNote = () => {
           partyCode: irnCreditNoteVO.partyCode,
           partyType: irnCreditNoteVO.partyType,
           stateCode: irnCreditNoteVO.stateCode,
+          approveStatus: irnCreditNoteVO.approveStatus,
+          approveBy: irnCreditNoteVO.approveBy,
+          approveOn: irnCreditNoteVO.approveOn,
           stateNo: irnCreditNoteVO.stateNo,
           recipientGSTIN: irnCreditNoteVO.recipientGSTIN,
           placeOfSupply: irnCreditNoteVO.placeOfSupply,
@@ -844,7 +948,7 @@ const IrnCreditNote = () => {
           totGrossLCAmt: irnCreditNoteVO.totalInvAmountLc,
           netBillCurrAmt: irnCreditNoteVO.netBillCurrAmt,
           netLCAmt: irnCreditNoteVO.netLCAmt,
-          amtInWords: irnCreditNoteVO.amountInWords,
+          amtInWords: irnCreditNoteVO.amountInWords
           // summaryExRate: irnCreditNoteVO.summaryExRate,
           // totTaxAmt: irnCreditNoteVO.totTaxAmt
         });
@@ -881,7 +985,7 @@ const IrnCreditNote = () => {
             dbillAmt: invoiceData.gstDbBillAmount,
             crBillAmt: invoiceData.gstCrBillAmount,
             dblcamt: invoiceData.gstDbLcAmount,
-            crLCAmt: invoiceData.gstCrLcAmount,
+            crLCAmt: invoiceData.gstCrLcAmount
           }))
         );
       } else {
@@ -915,7 +1019,7 @@ const IrnCreditNote = () => {
       // currency: !row.currency ? 'Currency is required' : '',
       // exRate: !row.exRate ? 'Ex Rate is required' : '',
       // qty: !row.qty ? 'Qty is required' : '',
-      rate: !row.rate ? 'Rate is required' : '',
+      rate: !row.rate ? 'Rate is required' : ''
       // exempted: !row.exempted ? 'Excempted is required' : '',
       // fcAmount: !row.fcAmount ? 'FC Amount is required' : '',
       // lcAmount: !row.lcAmount ? 'LC Amount is required' : '',
@@ -979,7 +1083,7 @@ const IrnCreditNote = () => {
     }
     if (!formData.addressType) {
       errors.addressType = 'Address Type is required';
-    }   
+    }
     if (!formData.originBill) {
       errors.originBill = 'Origin Bill is required';
     }
@@ -1066,8 +1170,8 @@ const IrnCreditNote = () => {
         supplierRefNo: formData.supplierRefNo,
         voucherDate: formatDate(formData.vohDate),
         voucherNo: formData.vohNo,
-        bizMode: "TAX",
-        bizType: "B2B",
+        bizMode: 'TAX',
+        bizType: 'B2B'
       };
 
       try {
@@ -1090,7 +1194,7 @@ const IrnCreditNote = () => {
       }
     }
   };
-  
+
   useEffect(() => {
     if (formData.partyName) {
       getAllOriginalBill(formData.partyName);
@@ -1112,20 +1216,88 @@ const IrnCreditNote = () => {
     { accessorKey: 'vohDate', header: 'Voucher Date', size: 140 }
   ];
 
+  const GeneratePdf = (row) => {
+    console.log('PDF-Data =>', row.original);
+    setPdfData(row.original);
+    setDownloadPdf(true);
+  };
+
   return (
     <div>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
-        <div className="row d-flex ml" style={{ marginBottom: '20px' }}>
-          <div className="d-flex flex-wrap justify-content-start mb-4 " style={{ marginBottom: '20px' }}>
-            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />
+        <div className="row">
+          <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
+            <div className="d-flex">
+              <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+              <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+            </div>
+
+            {editId && !listView && (
+              <>
+                {formData.approveStatus === 'Approved' ? (
+                  <Stack direction="row" spacing={2}>
+                    <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
+                    <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
+                  </Stack>
+                ) : formData.approveStatus === 'Rejected' ? (
+                  <Stack direction="row" spacing={2}>
+                    <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
+                    <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
+                  </Stack>
+                ) : (
+                  <div className="d-flex" style={{ marginRight: '30px' }}>
+                    <Button
+                      variant="outlined"
+                      startIcon={<CheckCircleIcon />}
+                      size="small"
+                      style={{
+                        borderColor: '#4CAF50',
+                        color: '#4CAF50',
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        padding: '2px 8px',
+                        fontSize: '0.8rem',
+                        marginRight: '10px'
+                      }}
+                      onClick={handleOpenModalApprove}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      startIcon={<CancelIcon />}
+                      size="small"
+                      style={{
+                        borderColor: '#F44336',
+                        color: '#F44336',
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        padding: '2px 8px',
+                        fontSize: '0.8rem'
+                      }}
+                      onClick={handleOpenModalReject}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
         </div>
         {listView ? (
           <div className="">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getIrnCreditById} />
+            <CommonListViewTable
+              data={listViewData}
+              columns={listViewColumns}
+              blockEdit={true}
+              toEdit={getIrnCreditById}
+              isPdf={true}
+              GeneratePdf={GeneratePdf}
+            />
+            {downloadPdf && <GeneratePdfTempIRN row={pdfData} />}
           </div>
         ) : (
           <>
@@ -1754,20 +1926,14 @@ const IrnCreditNote = () => {
                   <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
                       <Tab label="Masters / House Charges" value="1" />
-                      {editId && (
-                      <Tab label="Gst" value="2" />
-                    )}
-                      {editId && (
-                      <Tab label="Summary" value="3" />
-                    )}
+                      {editId && <Tab label="Gst" value="2" />}
+                      {editId && <Tab label="Summary" value="3" />}
                     </TabList>
                   </Box>
                   <TabPanel value="1">
                     {/* <TableComponent /> */}
                     <div className="row d-flex ml">
-                      <div className="mb-1">
-                        {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
-                      </div>
+                      <div className="mb-1">{/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}</div>
                       <div className="row mt-2">
                         <div className="col-lg-12">
                           <div className="table-responsive">
@@ -2194,14 +2360,8 @@ const IrnCreditNote = () => {
                                         )}
                                       </td> */}
                                       <td className="border px-2 py-2">
-  <input
-    type="text"
-    value={row.qty}
-    readOnly
-    className="form-control"
-    style={{ width: '150px' }}
-  />
-</td>
+                                        <input type="text" value={row.qty} readOnly className="form-control" style={{ width: '150px' }} />
+                                      </td>
 
                                       {/* <td className="border px-2 py-2">
                                         <input
@@ -2355,66 +2515,70 @@ const IrnCreditNote = () => {
                                         )}
                                       </td> */}
                                       <td className="border px-2 py-2">
-  <input
-    type="text"
-    value={row.rate}
-    onChange={(e) => {
-      const value = e.target.value;
-      const isNumeric = /^[0-9]*\.?[0-9]*$/; // Updated regex to allow decimals
+                                        <input
+                                          type="text"
+                                          value={row.rate}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            const isNumeric = /^[0-9]*\.?[0-9]*$/; // Updated regex to allow decimals
 
-      if (isNumeric.test(value)) {
-        // Update the rate
-        setIrnChargesData((prev) =>
-          prev.map((r) => {
-            if (r.id === row.id) {
-              // Calculate new values based on the updated rate
-              const updatedRate = Number(value);
-              const newLcAmount = (Number(row.qty) * updatedRate * Number(row.exRate)).toFixed(2);
-              const newBillAmount = ((Number(row.qty) * updatedRate * Number(row.exRate)) / Number(row.exRate)).toFixed(2);
-              const newGstAmount = ((Number(row.qty) * updatedRate * Number(row.exRate) * Number(row.gstpercent)) / 100).toFixed(2);
+                                            if (isNumeric.test(value)) {
+                                              // Update the rate
+                                              setIrnChargesData((prev) =>
+                                                prev.map((r) => {
+                                                  if (r.id === row.id) {
+                                                    // Calculate new values based on the updated rate
+                                                    const updatedRate = Number(value);
+                                                    const newLcAmount = (Number(row.qty) * updatedRate * Number(row.exRate)).toFixed(2);
+                                                    const newBillAmount = (
+                                                      (Number(row.qty) * updatedRate * Number(row.exRate)) /
+                                                      Number(row.exRate)
+                                                    ).toFixed(2);
+                                                    const newGstAmount = (
+                                                      (Number(row.qty) * updatedRate * Number(row.exRate) * Number(row.gstpercent)) /
+                                                      100
+                                                    ).toFixed(2);
 
-              return {
-                ...r,
-                rate: value,
-                lcAmount: newLcAmount,
-                billAmount: newBillAmount,
-                gstAmount: newGstAmount,
-              };
-            }
-            return r;
-          })
-        );
+                                                    return {
+                                                      ...r,
+                                                      rate: value,
+                                                      lcAmount: newLcAmount,
+                                                      billAmount: newBillAmount,
+                                                      gstAmount: newGstAmount
+                                                    };
+                                                  }
+                                                  return r;
+                                                })
+                                              );
 
-        setIrnChargesError((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = {
-            ...newErrors[index],
-            rate: !value ? 'Rate is required' : '',
-          };
-          return newErrors;
-        });
-      } else {
-        setIrnChargesError((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = {
-            ...newErrors[index],
-            rate: 'Only numbers are allowed',
-          };
-          return newErrors;
-        });
-      }
-    }}
-    className={irnChargesError[index]?.rate ? 'error form-control' : 'form-control'}
-    style={{ width: '150px' }}
-  />
-  {irnChargesError[index]?.rate && (
-    <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-      {irnChargesError[index].rate}
-    </div>
-  )}
-</td>
-
-
+                                              setIrnChargesError((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  rate: !value ? 'Rate is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else {
+                                              setIrnChargesError((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  rate: 'Only numbers are allowed'
+                                                };
+                                                return newErrors;
+                                              });
+                                            }
+                                          }}
+                                          className={irnChargesError[index]?.rate ? 'error form-control' : 'form-control'}
+                                          style={{ width: '150px' }}
+                                        />
+                                        {irnChargesError[index]?.rate && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {irnChargesError[index].rate}
+                                          </div>
+                                        )}
+                                      </td>
 
                                       {/* <td className="border px-2 py-2">
                                         <input
@@ -2691,7 +2855,7 @@ const IrnCreditNote = () => {
                                                   ...newErrors[index],
                                                   tlcAmount: !value ? 'TLC Amount is required' : ''
                                                 };
-                                                return newErrors; 
+                                                return newErrors;
                                               });
                                             } else {
                                               setIrnChargesError((prev) => {
@@ -2905,432 +3069,434 @@ const IrnCreditNote = () => {
                     </div>
                   </TabPanel>
                   {editId && (
-                  <TabPanel value="2">
-                    {/* <TableComponent /> */}
-                    <div className="row d-flex ml">
-                      <div className="mb-1">
-                        {/* <ActionButton title="Add" icon={AddIcon} onClick={handleGstAddRow} /> */}
-                      </div>
-                      <div className="row mt-2">
-                        <div className="col-lg-12">
-                          <div className="table-responsive">
-                            <table className="table table-bordered">
-                              <thead>
-                                <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                    Action
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                    S.No
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center">Charge Account</th>
-                                  <th className="px-2 py-2 text-white text-center">Sub Ledger Code</th>
-                                  <th className="px-2 py-2 text-white text-center">D Bill Amount</th>
-                                  <th className="px-2 py-2 text-white text-center">CR Bill Amount</th>
-                                  <th className="px-2 py-2 text-white text-center">DB LC Amount</th>
-                                  <th className="px-2 py-2 text-white text-center">CR LC Amount</th>
-                                  <th className="px-2 py-2 text-white text-center">Remarks</th>
+                    <TabPanel value="2">
+                      {/* <TableComponent /> */}
+                      <div className="row d-flex ml">
+                        <div className="mb-1">{/* <ActionButton title="Add" icon={AddIcon} onClick={handleGstAddRow} /> */}</div>
+                        <div className="row mt-2">
+                          <div className="col-lg-12">
+                            <div className="table-responsive">
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr style={{ backgroundColor: '#673AB7' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                      Action
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                      S.No
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center">Charge Account</th>
+                                    <th className="px-2 py-2 text-white text-center">Sub Ledger Code</th>
+                                    <th className="px-2 py-2 text-white text-center">D Bill Amount</th>
+                                    <th className="px-2 py-2 text-white text-center">CR Bill Amount</th>
+                                    <th className="px-2 py-2 text-white text-center">DB LC Amount</th>
+                                    <th className="px-2 py-2 text-white text-center">CR LC Amount</th>
+                                    <th className="px-2 py-2 text-white text-center">Remarks</th>
 
-                                  {/* <th className="px-2 py-2 text-white text-center">Remarks</th> */}
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {Array.isArray(irnGstData) &&
-                                  irnGstData.map((row, index) => (
-                                    <tr key={row.id}>
-                                      <td className="border px-2 py-2 text-center">
-                                        <ActionButton
-                                          title="Delete"
-                                          icon={DeleteIcon}
-                                          onClick={() => handleDeleteRow1(row.id, irnGstData, setIrnGstData, irnGstError, setIrnGstError)}
-                                        />
-                                      </td>
-                                      <td className="text-center">
-                                        <div className="pt-2">{index + 1}</div>
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.chargeAcc}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const regex = /^[a-zA-Z0-9\s-]*$/;
-                                            if (regex.test(value)) {
-                                              setIrnGstData((prev) => prev.map((r) => (r.id === row.id ? { ...r, chargeAcc: value } : r)));
-                                              setIrnGstError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  chargeAcc: !value ? 'Charge Account is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              // Remove this block to not set any error for non-numeric input
-                                              setIrnGstError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  chargeAcc: 'Only alphabets and numbers are allowed'
-                                                }; // Clear the error instead
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnGstError[index]?.chargeAcc ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnGstError[index]?.chargeAcc && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnGstError[index].chargeAcc}
-                                          </div>
-                                        )}
-                                      </td>
+                                    {/* <th className="px-2 py-2 text-white text-center">Remarks</th> */}
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {Array.isArray(irnGstData) &&
+                                    irnGstData.map((row, index) => (
+                                      <tr key={row.id}>
+                                        <td className="border px-2 py-2 text-center">
+                                          <ActionButton
+                                            title="Delete"
+                                            icon={DeleteIcon}
+                                            onClick={() => handleDeleteRow1(row.id, irnGstData, setIrnGstData, irnGstError, setIrnGstError)}
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <div className="pt-2">{index + 1}</div>
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.chargeAcc}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const regex = /^[a-zA-Z0-9\s-]*$/;
+                                              if (regex.test(value)) {
+                                                setIrnGstData((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, chargeAcc: value } : r))
+                                                );
+                                                setIrnGstError((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    chargeAcc: !value ? 'Charge Account is required' : ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                // Remove this block to not set any error for non-numeric input
+                                                setIrnGstError((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    chargeAcc: 'Only alphabets and numbers are allowed'
+                                                  }; // Clear the error instead
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={irnGstError[index]?.chargeAcc ? 'error form-control' : 'form-control'}
+                                            style={{ width: '150px' }}
+                                          />
+                                          {irnGstError[index]?.chargeAcc && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {irnGstError[index].chargeAcc}
+                                            </div>
+                                          )}
+                                        </td>
 
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.subLodgerCode}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const regex = /^[a-zA-Z0-9\s-]*$/;
-                                            if (regex.test(value)) {
-                                              setIrnGstData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, subLodgerCode: value } : r))
-                                              );
-                                              setIrnGstError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  subLodgerCode: !value ? 'Sub Ledger Code is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              // Remove this block to not set any error for non-numeric input
-                                              setIrnGstError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  subLodgerCode: 'Only alphabets and numbers are allowed'
-                                                }; // Clear the error instead
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnGstError[index]?.subLodgerCode ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnGstError[index]?.subLodgerCode && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnGstError[index].subLodgerCode}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.dbillAmt}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setIrnGstData((prev) => prev.map((r) => (r.id === row.id ? { ...r, dbillAmt: value } : r)));
-                                              setIrnGstError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  dbillAmt: !value ? 'D Bill Amount is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setIrnGstError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  dbillAmt: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnGstError[index]?.dbillAmt ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnGstError[index]?.dbillAmt && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnGstError[index].dbillAmt}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.crBillAmt}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setIrnGstData((prev) => prev.map((r) => (r.id === row.id ? { ...r, crBillAmt: value } : r)));
-                                              setIrnGstError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  crBillAmt: !value ? 'CR Bill Amount is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setIrnGstError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  crBillAmt: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnGstError[index]?.crBillAmt ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnGstError[index]?.crBillAmt && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnGstError[index].crBillAmt}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.dblcamt}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setIrnGstData((prev) => prev.map((r) => (r.id === row.id ? { ...r, dblcamt: value } : r)));
-                                              setIrnGstError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  dblcamt: !value ? 'DB LC Amount is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setIrnGstError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  dblcamt: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnGstError[index]?.dblcamt ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnGstError[index]?.dblcamt && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnGstError[index].dblcamt}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.crLCAmt}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setIrnGstData((prev) => prev.map((r) => (r.id === row.id ? { ...r, crLCAmt: value } : r)));
-                                              setIrnGstError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  crLCAmt: !value ? 'CR LC Amount is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setIrnGstError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  crLCAmt: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnGstError[index]?.crLCAmt ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnGstError[index]?.crLCAmt && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnGstError[index].crLCAmt}
-                                          </div>
-                                        )}
-                                      </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.subLodgerCode}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const regex = /^[a-zA-Z0-9\s-]*$/;
+                                              if (regex.test(value)) {
+                                                setIrnGstData((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, subLodgerCode: value } : r))
+                                                );
+                                                setIrnGstError((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    subLodgerCode: !value ? 'Sub Ledger Code is required' : ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                // Remove this block to not set any error for non-numeric input
+                                                setIrnGstError((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    subLodgerCode: 'Only alphabets and numbers are allowed'
+                                                  }; // Clear the error instead
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={irnGstError[index]?.subLodgerCode ? 'error form-control' : 'form-control'}
+                                            style={{ width: '150px' }}
+                                          />
+                                          {irnGstError[index]?.subLodgerCode && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {irnGstError[index].subLodgerCode}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.dbillAmt}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const isNumeric = /^[0-9]*$/;
+                                              if (isNumeric.test(value)) {
+                                                setIrnGstData((prev) => prev.map((r) => (r.id === row.id ? { ...r, dbillAmt: value } : r)));
+                                                setIrnGstError((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    dbillAmt: !value ? 'D Bill Amount is required' : ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setIrnGstError((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    dbillAmt: 'Only numbers are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={irnGstError[index]?.dbillAmt ? 'error form-control' : 'form-control'}
+                                            style={{ width: '150px' }}
+                                          />
+                                          {irnGstError[index]?.dbillAmt && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {irnGstError[index].dbillAmt}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.crBillAmt}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const isNumeric = /^[0-9]*$/;
+                                              if (isNumeric.test(value)) {
+                                                setIrnGstData((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, crBillAmt: value } : r))
+                                                );
+                                                setIrnGstError((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    crBillAmt: !value ? 'CR Bill Amount is required' : ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setIrnGstError((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    crBillAmt: 'Only numbers are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={irnGstError[index]?.crBillAmt ? 'error form-control' : 'form-control'}
+                                            style={{ width: '150px' }}
+                                          />
+                                          {irnGstError[index]?.crBillAmt && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {irnGstError[index].crBillAmt}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.dblcamt}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const isNumeric = /^[0-9]*$/;
+                                              if (isNumeric.test(value)) {
+                                                setIrnGstData((prev) => prev.map((r) => (r.id === row.id ? { ...r, dblcamt: value } : r)));
+                                                setIrnGstError((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    dblcamt: !value ? 'DB LC Amount is required' : ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setIrnGstError((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    dblcamt: 'Only numbers are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={irnGstError[index]?.dblcamt ? 'error form-control' : 'form-control'}
+                                            style={{ width: '150px' }}
+                                          />
+                                          {irnGstError[index]?.dblcamt && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {irnGstError[index].dblcamt}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.crLCAmt}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const isNumeric = /^[0-9]*$/;
+                                              if (isNumeric.test(value)) {
+                                                setIrnGstData((prev) => prev.map((r) => (r.id === row.id ? { ...r, crLCAmt: value } : r)));
+                                                setIrnGstError((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    crLCAmt: !value ? 'CR LC Amount is required' : ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setIrnGstError((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    crLCAmt: 'Only numbers are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={irnGstError[index]?.crLCAmt ? 'error form-control' : 'form-control'}
+                                            style={{ width: '150px' }}
+                                          />
+                                          {irnGstError[index]?.crLCAmt && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {irnGstError[index].crLCAmt}
+                                            </div>
+                                          )}
+                                        </td>
 
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.gstRemarks}
-                                          className="form-control"
-                                          style={{ width: '150px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setIrnGstData((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstRemarks: value } : r)));
-                                          }}
-                                        />
-                                      </td>
-                                    </tr>
-                                  ))}
-                              </tbody>
-                            </table>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.gstRemarks}
+                                            className="form-control"
+                                            style={{ width: '150px' }}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setIrnGstData((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstRemarks: value } : r)));
+                                            }}
+                                          />
+                                        </td>
+                                      </tr>
+                                    ))}
+                                </tbody>
+                              </table>
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  </TabPanel>
-)}
+                    </TabPanel>
+                  )}
                   {editId && (
-                  <TabPanel value="3">
-                    <div>
-                      <div className="row d-flex mt-2">
-                        <div className="col-md-3 mb-3">
-                          <FormControl fullWidth variant="filled">
-                            <TextField
-                              id="roundOff"
-                              name="roundOff"
-                              label="Round Off"
-                              size="small"
-                              disabled
-                              value={formData.roundOff}
-                              onChange={handleInputChange}
-                              inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.roundOff}
-                              // helperText={fieldErrors.roundOff}
-                            />
-                          </FormControl>
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <FormControl fullWidth variant="filled">
-                            <TextField
-                              id="totChargesBillCurrAmt"
-                              name="totChargesBillCurrAmt"
-                              label="Total Charges Bill Curr Amount"
-                              size="small"
-                              disabled
-                              value={formData.totChargesBillCurrAmt}
-                              onChange={handleInputChange}
-                              inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.totChargesBillCurrAmt}
-                              // helperText={fieldErrors.totChargesBillCurrAmt}
-                            />
-                          </FormControl>
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <FormControl fullWidth variant="filled">
-                            <TextField
-                              id="totChargesLCAmt"
-                              name="totChargesLCAmt"
-                              label="Total Charges LC Amount"
-                              size="small"
-                              disabled
-                              value={formData.totChargesLCAmt}
-                              onChange={handleInputChange}
-                              inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.totChargesLCAmt}
-                              // helperText={fieldErrors.totChargesLCAmt}
-                            />
-                          </FormControl>
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <FormControl fullWidth variant="filled">
-                            <TextField
-                              id="totGrossBillAmt"
-                              name="totGrossBillAmt"
-                              label="Total Gross Bill Amount"
-                              size="small"
-                              disabled
-                              value={formData.totGrossBillAmt}
-                              onChange={handleInputChange}
-                              inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.totGrossBillAmt}
-                              // helperText={fieldErrors.totGrossBillAmt}
-                            />
-                          </FormControl>
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <FormControl fullWidth variant="filled">
-                            <TextField
-                              id="totGrossLCAmt"
-                              name="totGrossLCAmt"
-                              label="Total Gross LC Amount"
-                              size="small"
-                              disabled
-                              value={formData.totGrossLCAmt}
-                              onChange={handleInputChange}
-                              inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.totGrossLCAmt}
-                              // helperText={fieldErrors.totGrossLCAmt}
-                            />
-                          </FormControl>
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <FormControl fullWidth variant="filled">
-                            <TextField
-                              id="netBillCurrAmt"
-                              name="netBillCurrAmt"
-                              label="Net Bill Curr Amount"
-                              size="small"
-                              disabled
-                              value={formData.netBillCurrAmt}
-                              onChange={handleInputChange}
-                              inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.netBillCurrAmt}
-                              // helperText={fieldErrors.netBillCurrAmt}
-                            />
-                          </FormControl>
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <FormControl fullWidth variant="filled">
-                            <TextField
-                              id="netLCAmt"
-                              name="netLCAmt"
-                              label="Net LC Amount"
-                              size="small"
-                              disabled
-                              value={formData.netLCAmt}
-                              onChange={handleInputChange}
-                              inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.netLCAmt}
-                              // helperText={fieldErrors.netLCAmt}
-                            />
-                          </FormControl>
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <FormControl fullWidth variant="filled">
-                            <TextField
-                              id="amtInWords"
-                              name="amtInWords"
-                              label="Amount In Words"
-                              size="small"
-                              disabled
-                              value={formData.amtInWords}
-                              onChange={handleInputChange}
-                              inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.amtInWords}
-                              // helperText={fieldErrors.amtInWords}
-                            />
-                          </FormControl>
-                        </div>
-                        {/* <div className="col-md-3 mb-3">
+                    <TabPanel value="3">
+                      <div>
+                        <div className="row d-flex mt-2">
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="roundOff"
+                                name="roundOff"
+                                label="Round Off"
+                                size="small"
+                                disabled
+                                value={formData.roundOff}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                                // error={!!fieldErrors.roundOff}
+                                // helperText={fieldErrors.roundOff}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="totChargesBillCurrAmt"
+                                name="totChargesBillCurrAmt"
+                                label="Total Charges Bill Curr Amount"
+                                size="small"
+                                disabled
+                                value={formData.totChargesBillCurrAmt}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                                // error={!!fieldErrors.totChargesBillCurrAmt}
+                                // helperText={fieldErrors.totChargesBillCurrAmt}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="totChargesLCAmt"
+                                name="totChargesLCAmt"
+                                label="Total Charges LC Amount"
+                                size="small"
+                                disabled
+                                value={formData.totChargesLCAmt}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                                // error={!!fieldErrors.totChargesLCAmt}
+                                // helperText={fieldErrors.totChargesLCAmt}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="totGrossBillAmt"
+                                name="totGrossBillAmt"
+                                label="Total Gross Bill Amount"
+                                size="small"
+                                disabled
+                                value={formData.totGrossBillAmt}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                                // error={!!fieldErrors.totGrossBillAmt}
+                                // helperText={fieldErrors.totGrossBillAmt}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="totGrossLCAmt"
+                                name="totGrossLCAmt"
+                                label="Total Gross LC Amount"
+                                size="small"
+                                disabled
+                                value={formData.totGrossLCAmt}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                                // error={!!fieldErrors.totGrossLCAmt}
+                                // helperText={fieldErrors.totGrossLCAmt}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="netBillCurrAmt"
+                                name="netBillCurrAmt"
+                                label="Net Bill Curr Amount"
+                                size="small"
+                                disabled
+                                value={formData.netBillCurrAmt}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                                // error={!!fieldErrors.netBillCurrAmt}
+                                // helperText={fieldErrors.netBillCurrAmt}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="netLCAmt"
+                                name="netLCAmt"
+                                label="Net LC Amount"
+                                size="small"
+                                disabled
+                                value={formData.netLCAmt}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                                // error={!!fieldErrors.netLCAmt}
+                                // helperText={fieldErrors.netLCAmt}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="amtInWords"
+                                name="amtInWords"
+                                label="Amount In Words"
+                                size="small"
+                                disabled
+                                value={formData.amtInWords}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                                // error={!!fieldErrors.amtInWords}
+                                // helperText={fieldErrors.amtInWords}
+                              />
+                            </FormControl>
+                          </div>
+                          {/* <div className="col-md-3 mb-3">
                           <FormControl fullWidth variant="filled">
                             <TextField
                               id="summaryExRate"
@@ -3362,9 +3528,9 @@ const IrnCreditNote = () => {
                             />
                           </FormControl>
                         </div> */}
+                        </div>
                       </div>
-                    </div>
-                  </TabPanel>
+                    </TabPanel>
                   )}
                 </TabContext>
               </Box>
@@ -3372,7 +3538,13 @@ const IrnCreditNote = () => {
           </>
         )}
       </div>
-
+      <ConfirmationModal
+        open={modalOpen}
+        title="IRN Credit Note Approval"
+        message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
+        onConfirm={handleConfirmAction}
+        onCancel={handleCloseModal}
+      />
       <ToastContainer />
     </div>
   );

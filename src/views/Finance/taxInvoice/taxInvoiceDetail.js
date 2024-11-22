@@ -1,4 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
+import CancelIcon from '@mui/icons-material/Cancel';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
@@ -7,7 +9,9 @@ import SearchIcon from '@mui/icons-material/Search';
 import { TabContext } from '@mui/lab';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
+import { Chip, Stack } from '@mui/material';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -23,21 +27,22 @@ import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import ActionButton from 'utils/ActionButton';
+import ConfirmationModal from 'utils/confirmationPopup';
+import GeneratePdfTemp from 'utils/PdfTempTaxInvoice';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import CommonTable from 'views/basicMaster/CommonTable';
+import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import GstTable from './GstTable';
 
 const TaxInvoiceDetails = () => {
   const [tabIndex, setTabIndex] = useState(0);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
-  // const buttonStyle = {
-  //   fontSize: '20px' // Adjust the font size as needed
-  // };
-
+  const [downloadPdf, setDownloadPdf] = useState(false);
+  const [pdfData, setPdfData] = useState([]);
   const [listView, setlistView] = useState(false);
   const [editId, setEditId] = useState('');
   const [partyId, setPartyId] = useState('');
   const [stateCode, setStateCode] = useState('');
+  const [approveStatus, setApproveStatus] = useState('');
   const [data, setData] = useState([]);
   const [placeOfSupply, setPlaceOfSupply] = useState([]);
   const [addressType, setAddressType] = useState([]);
@@ -49,6 +54,9 @@ const TaxInvoiceDetails = () => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [formData, setFormData] = useState({
     bizType: 'B2B',
+    approveStatus: '',
+    approveBy: '',
+    approveOn: '',
     bizMode: 'TAX',
     partyCode: '',
     partyName: '',
@@ -121,7 +129,7 @@ const TaxInvoiceDetails = () => {
   const [value, setValue] = useState('1');
   const [fieldErrors, setFieldErrors] = useState({});
   const [partyName, setPartyName] = useState([]);
-
+  const [modalOpen, setModalOpen] = useState(false);
   const [stateName, setStateName] = useState([]);
 
   const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
@@ -172,13 +180,117 @@ const TaxInvoiceDetails = () => {
     getAllCurrency();
   }, []);
 
-  // useEffect(() => {
-  //   if (formData.totalInvAmountLc) {
-  //     const amount = parseFloat(formData.totalInvAmountLc);
-  //     const amountInWords = numToWords(Math.floor(amount)); // Convert only the integer part
-  //     setFormData((prev) => ({ ...prev, amountInWords }));
-  //   }
-  // }, [formData.totalInvAmountLc]);
+  useEffect(() => {
+    if (placeOfSupply && placeOfSupply.length === 1) {
+      setFormData((prev) => ({
+        ...prev,
+        placeOfSupply: placeOfSupply[0].placeOfSupply
+      }));
+    }
+  }, [placeOfSupply]);
+
+  useEffect(() => {
+    if (addressType && addressType.length === 1) {
+      setFormData((prev) => ({
+        ...prev,
+        addressType: addressType[0].addressType
+      }));
+    }
+  }, [addressType]);
+
+  const handleOpenModalApprove = () => {
+    setModalOpen(true);
+    setApproveStatus('Approved');
+  };
+
+  const handleOpenModalReject = () => {
+    setModalOpen(true);
+    setApproveStatus('Rejected');
+  };
+
+  const handleCloseModal = () => setModalOpen(false);
+
+  const handleConfirmAction = async () => {
+    try {
+      const result = await apiCalls(
+        'put',
+        `/taxInvoice/approveTaxInvoice?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}`
+      );
+      console.log('API Response:==>', result);
+
+      if (result.status === true) {
+        setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
+        showToast(
+          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
+          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved'
+            ? ' TaxInvoice Approved successfully'
+            : 'TaxInvoice Rejected successfully'
+        );
+
+        const listValueVO = result.paramObjectsMap.taxInvoiceVO;
+
+        setFormData({
+          docId: listValueVO.docId,
+          approveStatus: listValueVO.approveStatus,
+          approveBy: listValueVO.approveBy,
+          approveOn: listValueVO.approveOn,
+          docDate: listValueVO.docDate,
+          type: listValueVO.type,
+          partyCode: listValueVO.partyCode,
+          partyName: listValueVO.partyName,
+          partyType: listValueVO.partyType,
+          bizType: listValueVO.bizType,
+          bizMode: listValueVO.bizMode,
+          stateNo: listValueVO.stateNo,
+          stateCode: listValueVO.stateCode,
+          address: listValueVO.address,
+          addressType: listValueVO.addressType,
+          gstType: listValueVO.gstType,
+          pinCode: listValueVO.pinCode,
+          placeOfSupply: listValueVO.placeOfSupply,
+          recipientGSTIN: listValueVO.recipientGSTIN,
+          billCurr: listValueVO.billCurr,
+          status: listValueVO.status,
+          salesType: listValueVO.salesType,
+          updatedBy: listValueVO.updatedBy,
+          supplierBillNo: listValueVO.supplierBillNo,
+          supplierBillDate: listValueVO.supplierBillDate,
+          billCurrRate: listValueVO.billCurrRate,
+          exAmount: listValueVO.exAmount,
+          creditDays: listValueVO.creditDays,
+          contactPerson: listValueVO.contactPerson,
+          shipperInvoiceNo: listValueVO.shipperInvoiceNo,
+          billOfEntry: listValueVO.billOfEntry,
+          billMonth: listValueVO.billMonth,
+          invoiceNo: listValueVO.invoiceNo,
+          invoiceDate: listValueVO.invoiceDate,
+          id: listValueVO.id,
+          totalChargeAmountLc: listValueVO.totalChargeAmountLc,
+          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
+          totalTaxAmountLc: listValueVO.totalTaxAmountLc,
+          totalInvAmountLc: listValueVO.totalInvAmountLc,
+          roundOffAmountLc: listValueVO.roundOffAmountLc,
+          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
+          totalInvAmountLc: listValueVO.totalInvAmountLc,
+          totalInvAmountBc: listValueVO.totalInvAmountBc,
+          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
+          totalTaxAmountBc: listValueVO.totalTaxAmountBc,
+          totalInvAmountBc: listValueVO.totalInvAmountBc,
+          totalTaxableAmountLc: listValueVO.totalTaxableAmountLc,
+          amountInWords: listValueVO.amountInWords,
+          billingRemarks: listValueVO.billingRemarks,
+          amountInWords: listValueVO.amountInWords
+        });
+        handleCloseModal();
+
+        console.log('TAX INVOICE:==>', result);
+      } else {
+        console.error('API Error:', result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const getAllTaxInvoice = async () => {
     try {
@@ -487,6 +599,12 @@ const TaxInvoiceDetails = () => {
   //   getPlaceOfSupply('MH');
   // }, [formData.stateCode]);
 
+  const GeneratePdf = (row) => {
+    console.log('PDF-Data =>', row.original);
+    setPdfData(row.original);
+    setDownloadPdf(true);
+  };
+
   const getPartyName = async (partType) => {
     try {
       const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=${partType}`);
@@ -507,9 +625,12 @@ const TaxInvoiceDetails = () => {
     }
   };
 
-  const getPlaceOfSupply = async (stateCode) => {
+  const getPlaceOfSupply = async (stateCode, partyyId) => {
     try {
-      const response = await apiCalls('get', `/taxInvoice/getPlaceOfSupply?orgId=${orgId}&id=${partyId}&stateCode=${stateCode}`);
+      const response = await apiCalls(
+        'get',
+        `/taxInvoice/getPlaceOfSupply?orgId=${orgId}&id=${partyyId ? partyyId : partyId}&stateCode=${stateCode}`
+      );
       setPlaceOfSupply(response.paramObjectsMap.placeOfSupplyDetails);
 
       // setStateCode(response.paramObjectsMap.partyMasterVO.partyStateVO)
@@ -518,11 +639,11 @@ const TaxInvoiceDetails = () => {
     }
   };
 
-  const getAddessType = async (place) => {
+  const getAddessType = async (place, stateC, partyI) => {
     try {
       const response = await apiCalls(
         'get',
-        `/taxInvoice/getPartyAddress?orgId=${orgId}&id=${partyId}&stateCode=${stateCode}&placeOfSupply=${place}`
+        `/taxInvoice/getPartyAddress?orgId=${orgId}&id=${partyI ? partyI : partyId}&stateCode=${stateC ? stateC : stateCode}&placeOfSupply=${place}`
       );
       setAddressType(response.paramObjectsMap.partyAddress);
 
@@ -912,10 +1033,13 @@ const TaxInvoiceDetails = () => {
 
         setGstTableData(row.original.taxInvoiceGstVO);
 
-        console.log('DataToEdit ==>', row.original.taxInvoiceGstVO[0]);
+        console.log('DataToEdit ==>', result.paramObjectsMap.taxInvoiceVO);
 
         setFormData({
           docId: listValueVO.docId,
+          approveStatus: listValueVO.approveStatus,
+          approveBy: listValueVO.approveBy,
+          approveOn: listValueVO.approveOn,
           docDate: listValueVO.docDate,
           type: listValueVO.type,
           partyCode: listValueVO.partyCode,
@@ -928,6 +1052,7 @@ const TaxInvoiceDetails = () => {
           address: listValueVO.address,
           addressType: listValueVO.addressType,
           gstType: listValueVO.gstType,
+          partyId: listValueVO.partyId,
           pinCode: listValueVO.pinCode,
           placeOfSupply: listValueVO.placeOfSupply,
           recipientGSTIN: listValueVO.recipientGSTIN,
@@ -968,9 +1093,11 @@ const TaxInvoiceDetails = () => {
 
         // const selectedEmp = partyName.find((emp) => emp.partyName === value); // Check if 'empCode' is correct
 
-        // setPartyId(selectedEmp.id);
+        setPartyId(listValueVO.partyId);
 
-        // getPlaceOfSupply(listValueVO.addressType);
+        getPlaceOfSupply(listValueVO.stateCode, listValueVO.partyId);
+
+        getAddessType(listValueVO.placeOfSupply, listValueVO.stateCode, listValueVO.partyId);
 
         if (!listValueVO?.taxInvoiceDetailsVO) return;
 
@@ -1028,12 +1155,67 @@ const TaxInvoiceDetails = () => {
       <ToastComponent />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
-            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+          <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
+            <div className="d-flex">
+              <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
+              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+              <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+            </div>
+
+            {editId && !listView && (
+              <>
+                {formData.approveStatus === 'Approved' ? (
+                  <Stack direction="row" spacing={2}>
+                    <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
+                    <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
+                  </Stack>
+                ) : formData.approveStatus === 'Rejected' ? (
+                  <Stack direction="row" spacing={2}>
+                    <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
+                    <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
+                  </Stack>
+                ) : (
+                  <div className="d-flex" style={{ marginRight: '30px' }}>
+                    <Button
+                      variant="outlined"
+                      startIcon={<CheckCircleIcon />}
+                      size="small"
+                      style={{
+                        borderColor: '#4CAF50',
+                        color: '#4CAF50',
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        padding: '2px 8px',
+                        fontSize: '0.8rem',
+                        marginRight: '10px'
+                      }}
+                      onClick={handleOpenModalApprove}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      startIcon={<CancelIcon />}
+                      size="small"
+                      style={{
+                        borderColor: '#F44336',
+                        color: '#F44336',
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        padding: '2px 8px',
+                        fontSize: '0.8rem'
+                      }}
+                      onClick={handleOpenModalReject}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
+
           {!listView && (
             <div className="d-flex flex-wrap justify-content-start row">
               <div className="col-md-3 mb-3">
@@ -2418,10 +2600,26 @@ const TaxInvoiceDetails = () => {
         {listView && (
           <div>
             {/* <CommonTable data={data} columns={columns} editCallback={editCity} countryVO={countryVO} stateVO={stateVO} /> */}
-            {<CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getTaxInvoiceById} />}
+
+            <CommonListViewTable
+              data={data && data}
+              columns={columns}
+              blockEdit={true}
+              toEdit={getTaxInvoiceById}
+              isPdf={true}
+              GeneratePdf={GeneratePdf}
+            />
+            {downloadPdf && <GeneratePdfTemp row={pdfData} />}
           </div>
         )}
       </div>
+      <ConfirmationModal
+        open={modalOpen}
+        title="Tax Invoice Approval"
+        message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
+        onConfirm={handleConfirmAction}
+        onCancel={handleCloseModal}
+      />
     </>
   );
 };
