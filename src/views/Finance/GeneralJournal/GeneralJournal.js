@@ -45,11 +45,13 @@ const GeneralJournal = () => {
     remarks: '',
     totalCreditAmount: 0,
     totalDebitAmount: 0,
-    voucherSubType: ''
+    voucherSubType: '',
+    status:'',
   });
-
+  const isDisabled = formData.status === 'SUBMIT';
   const [fieldErrors, setFieldErrors] = useState({
     currency: '',
+    status:'',
     docDate: new Date(),
     exRate: '',
     orgId: orgId,
@@ -62,11 +64,12 @@ const GeneralJournal = () => {
   });
 
   const listViewColumns = [
+    { accessorKey: 'status', header: 'Status', size: 140 },
+    { accessorKey: 'totalDebitAmount', header: 'Voucher Amount', size: 140 },
+    { accessorKey: 'docId', header: 'Voucher No', size: 140 },
+    { accessorKey: 'docDate', header: 'Voucher Date', size: 140 },
     { accessorKey: 'voucherSubType', header: 'Voucher Sub Type', size: 140 },
-    { accessorKey: 'currency', header: 'Currency', size: 140 },
-    { accessorKey: 'exRate', header: 'Ex.Rate', size: 140 },
-    { accessorKey: 'refNo', header: 'Ref No', size: 140 },
-    { accessorKey: 'docId', header: 'Document Id', size: 140 }
+    { accessorKey: 'refNo', header: 'Ref No', size: 140 },    
   ];
 
   const [detailsTableData, setDetailsTableData] = useState([
@@ -83,8 +86,8 @@ const GeneralJournal = () => {
   const [detailsTableErrors, setDetailsTableErrors] = useState([
     {
       accountsName: '',
-      creditAmount: '',
-      debitAmount: '',
+      // creditAmount: '',
+      // debitAmount: '',
       narration: '',
       subLedgerCode: '',
       subledgerName: ''
@@ -164,6 +167,7 @@ const GeneralJournal = () => {
           refDate: glVO.refDate ? dayjs(glVO.refDate, 'YYYY-MM-DD') : dayjs(),
           remarks: glVO.remarks || '',
           orgId: glVO.orgId || '',
+          status:glVO.status || '',
           totalDebitAmount: glVO.totalDebitAmount || '',
           totalCreditAmount: glVO.totalCreditAmount || ''
           // active: glVO.active || false,
@@ -272,6 +276,7 @@ const GeneralJournal = () => {
       refDate: null,
       refNo: '',
       remarks: '',
+      status:'',
       totalCreditAmount: 0,
       totalDebitAmount: 0,
       voucherSubType: ''
@@ -281,6 +286,7 @@ const GeneralJournal = () => {
       currency: '',
       docDate: null,
       exRate: '',
+      status:'',
       orgId: orgId,
       refDate: '',
       refNo: '',
@@ -386,6 +392,9 @@ const GeneralJournal = () => {
     if (!formData.exRate) {
       errors.exRate = 'Ex Rate is required';
     }
+    if (!formData.status) {
+      errors.status = 'Status is required';
+    }
     if (!formData.refNo) {
       errors.refNo = 'Ref No is required';
     }
@@ -403,14 +412,14 @@ const GeneralJournal = () => {
         rowErrors.accountsName = 'Account Name is required';
         detailTableDataValid = false;
       }
-      if (!row.creditAmount) {
-        rowErrors.creditAmount = 'Credit is required';
-        detailTableDataValid = false;
-      }
-      if (!row.debitAmount) {
-        rowErrors.debitAmount = 'Debit is required';
-        detailTableDataValid = false;
-      }
+      // if (!row.creditAmount) {
+      //   rowErrors.creditAmount = 'Credit is required';
+      //   detailTableDataValid = false;
+      // }
+      // if (!row.debitAmount) {
+      //   rowErrors.debitAmount = 'Debit is required';
+      //   detailTableDataValid = false;
+      // }
       if (!row.narration) {
         rowErrors.narration = 'Narration is required';
         detailTableDataValid = false;
@@ -450,6 +459,7 @@ const GeneralJournal = () => {
         exRate: formData.exRate,
         finYear: finYear,
         orgId: orgId,
+        status:formData.status,
         particularsJournalDTO: GeneralJournalVO,
         refDate: dayjs(formData.refDate).format('YYYY-MM-DD'),
         refNo: formData.refNo,
@@ -489,7 +499,7 @@ const GeneralJournal = () => {
             <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+            <ActionButton title="Save" disabled={isDisabled} icon={SaveIcon} onClick={handleSave} />
           </div>
 
           {showForm ? (
@@ -532,6 +542,7 @@ const GeneralJournal = () => {
                       labelId="voucherSubType-label"
                       label="Voucher Sub Type"
                       value={formData.voucherSubType}
+                      disabled={isDisabled}
                       onChange={handleInputChange}
                       name="voucherSubType"
                     >
@@ -554,6 +565,7 @@ const GeneralJournal = () => {
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
                       label="Currency"
+                      disabled={isDisabled}
                       onChange={handleInputChange}
                       name="currency"
                       value={formData.currency}
@@ -580,6 +592,7 @@ const GeneralJournal = () => {
                     fullWidth
                     name="exRate"
                     type="number"
+                    disabled={isDisabled}
                     value={formData.exRate}
                     onChange={handleInputChange}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.exRate ? 'Ex. Rate is required' : ''}</span>}
@@ -598,6 +611,7 @@ const GeneralJournal = () => {
                     size="small"
                     fullWidth
                     name="refNo"
+                    disabled={isDisabled}
                     value={formData.refNo}
                     onChange={handleInputChange}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.refNo ? 'Ref No is required' : ''}</span>}
@@ -610,6 +624,7 @@ const GeneralJournal = () => {
                       <DatePicker
                         label="Reference Date"
                         value={formData.refDate}
+                        disabled={isDisabled}
                         onChange={(date) => handleDateChange('refDate', date)}
                         slotProps={{
                           textField: { size: 'small', clearable: true }
@@ -620,7 +635,30 @@ const GeneralJournal = () => {
                     {fieldErrors.refDate && <p className="dateErrMsg">Ref Date is required</p>}
                   </FormControl>
                 </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
+                    <InputLabel id="status-label">{
+                        <span>
+                          Status <span className="asterisk">*</span>
+                        </span>
+                      }</InputLabel>
+                    <Select
+                      labelId="status-label"
+                      label="Status"
+                      required
+                      disabled={isDisabled}
+                      value={formData.status}
+                      onChange={handleInputChange}
+                      name="status"
+                    >
+                      <MenuItem value="EDIT">EDIT</MenuItem>
+                      <MenuItem value="SUBMIT">SUBMIT</MenuItem>
+                    </Select>
+                    {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
+                  </FormControl>
+                </div>
               </div>
+              
               <div className="row d-flex">
                 <div className="col-md-8">
                   <FormControl fullWidth variant="filled">
@@ -629,10 +667,11 @@ const GeneralJournal = () => {
                       label="Remarks"
                       size="small"
                       name="remarks"
+                      disabled={isDisabled}
                       value={formData.remarks}
                       multiline
                       minRows={2}
-                      inputProps={{ maxLength: 30 }}
+                      inputProps={{ maxLength: 200 }}
                       onChange={handleInputChange}
                     />
                   </FormControl>
@@ -698,6 +737,7 @@ const GeneralJournal = () => {
                                       <td className="border px-2 py-2">
                                         <select
                                           value={row.accountsName}
+                                          disabled={isDisabled}
                                           style={{ width: '150px' }}
                                           className={detailsTableErrors[index]?.accountsName ? 'error form-control' : 'form-control'}
                                           onChange={(e) =>
@@ -723,6 +763,7 @@ const GeneralJournal = () => {
                                         <input
                                           type="text"
                                           value={row.subledgerName}
+                                          disabled={isDisabled}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailsTableData((prev) =>
@@ -749,6 +790,7 @@ const GeneralJournal = () => {
                                         <input
                                           type="text"
                                           value={row.subLedgerCode}
+                                          disabled={isDisabled}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailsTableData((prev) =>
@@ -837,35 +879,38 @@ const GeneralJournal = () => {
                                         <input
                                           type="text"
                                           value={row.debitAmount}
+                                          disabled={isDisabled}
                                           onChange={(e) => handleDebitChange(e, row, index)}
                                           maxLength="20"
                                           className={detailsTableErrors[index]?.debitAmount ? 'error form-control' : 'form-control'}
                                         />
-                                        {detailsTableErrors[index]?.debitAmount && (
+                                        {/* {detailsTableErrors[index]?.debitAmount && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                             {detailsTableErrors[index].debitAmount}
                                           </div>
-                                        )}
+                                        )} */}
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
                                           value={row.creditAmount}
+                                          disabled={isDisabled}
                                           onChange={(e) => handleCreditChange(e, row, index)}
                                           maxLength="20"
                                           className={detailsTableErrors[index]?.creditAmount ? 'error form-control' : 'form-control'}
                                         />
-                                        {detailsTableErrors[index]?.creditAmount && (
+                                        {/* {detailsTableErrors[index]?.creditAmount && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                             {detailsTableErrors[index].creditAmount}
                                           </div>
-                                        )}
+                                        )} */}
                                       </td>
 
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
                                           value={row.narration}
+                                          disabled={isDisabled}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailsTableData((prev) =>
