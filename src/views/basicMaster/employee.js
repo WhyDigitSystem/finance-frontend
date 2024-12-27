@@ -191,7 +191,7 @@ export const Employee = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.employeeVO);
+        setListViewData(response.paramObjectsMap.employeeVO.reverse());
       } else {
         console.error('API Error:', response);
       }

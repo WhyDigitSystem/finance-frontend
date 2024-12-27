@@ -64,30 +64,30 @@ const transactionChildren = [
     type: 'item',
     url: '/finance/Reconcile/ReconcileCash'
   },
-  // {
-  //   id: 'taxInvoiceDetail',
-  //   title: 'Tax Invoice',
-  //   type: 'item',
-  //   url: '/finance/taxInvoice/taxInvoiceDetail'
-  // },
-  // {
-  //   id: 'creditNoteDetail',
-  //   title: 'Credit Note',
-  //   type: 'item',
-  //   url: '/finance/creditNote/creditNoteDetail'
-  // },
-  // {
-  //   id: 'costInvoice',
-  //   title: 'Cost Invoice',
-  //   type: 'item',
-  //   url: '/finance/costInvoice/CostInvoice'
-  // },
-  // {
-  //   id: 'costDebitNote',
-  //   title: 'Debit Note',
-  //   type: 'item',
-  //   url: '/finance/costDebitNote/CostDebitNote'
-  // },
+  //   {
+  //     id: 'taxInvoiceDetail',
+  //     title: 'Tax Invoice',
+  //     type: 'item',
+  //     url: '/finance/taxInvoice/taxInvoiceDetail'
+  //   },
+  //   {
+  //     id: 'creditNoteDetail',
+  //     title: 'Credit Note',
+  //     type: 'item',
+  //     url: '/finance/creditNote/creditNoteDetail'
+  //   },
+  //   {
+  //     id: 'costInvoice',
+  //     title: 'Cost Invoice',
+  //     type: 'item',
+  //     url: '/finance/costInvoice/CostInvoice'
+  //   },
+  //   {
+  //     id: 'costDebitNote',
+  //     title: 'Debit Note',
+  //     type: 'item',
+  //     url: '/finance/costDebitNote/CostDebitNote'
+  //   },
   {
     id: 'paymentVoucher',
     title: 'Payment Voucher',
@@ -145,11 +145,11 @@ const transactionChildren = [
 ].filter((child) => isScreenAllowed(child.title)); // Filter by allowed screens
 
 // Define the transaction menu only if allowed screens exist
-const transaction =
+const genTransaction =
   transactionChildren.length > 0
     ? {
         id: 'transaction',
-        title: 'Transaction',
+        title: 'General Transaction',
         type: 'group',
         children: [
           {
@@ -163,4 +163,4 @@ const transaction =
       }
     : null; // Hide the transaction menu if no allowed screens exist
 
-export default transaction;
+export default genTransaction;

@@ -6,27 +6,27 @@ const icons = {
   IconKey
 };
 
+// Retrieve allowed screens from local storage
+const allowedScreens = JSON.parse(localStorage.getItem('screens') || '[]');
+
+// Helper function to check if a screen should be displayed
+const isScreenAllowed = (screenTitle) => {
+  return allowedScreens.includes(screenTitle.toUpperCase());
+};
+
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
 const finance = {
   id: 'finance',
-  title: 'Finance Master',
-  //   caption: 'Pages Caption',
+  title: 'Business Master',
   type: 'group',
   children: [
     {
       id: 'finance',
-      title: 'Finance Master',
+      title: 'Business Master',
       type: 'collapse',
       icon: icons.IconKey,
-
       children: [
-        // {
-        //   id: 'setTaxRate',
-        //   title: 'SetTaxRate',
-        //   type: 'item',
-        //   url: '/finance/setTaxRate'
-        // },
         {
           id: 'listOfValues',
           title: 'List Of Values',
@@ -35,31 +35,13 @@ const finance = {
         },
         {
           id: 'chargeTypeRequest',
-          title: 'Charge Type Request',
+          title: 'Charge Code',
           type: 'item',
           url: '/finance/ChargeTypeRequest'
         },
-        // {
-        //   id: 'taxMaster',
-        //   title: 'TaxMaster',
-        //   type: 'item',
-        //   url: '/finance/taxMaster'
-        // },
-        // {
-        //   id: 'taxes',
-        //   title: 'Taxes',
-        //   type: 'item',
-        //   url: '/finance/taxMaster/taxMaster'
-        // },
-        // {
-        //   id: 'tcsMaster',
-        //   title: 'TCS Master',
-        //   type: 'item',
-        //   url: '/finance/tcsMaster/TcsMaster'
-        // },
         {
           id: 'tdsMaster',
-          title: 'TDS Master',
+          title: 'TDS',
           type: 'item',
           url: '/finance/tdsMaster/TdsMaster'
         },
@@ -69,36 +51,12 @@ const finance = {
           type: 'item',
           url: '/finance/HsnSacCode'
         },
-        // {
-        //   id: 'hsnSacCodesListing',
-        //   title: 'HSN SAC Codes Listing',
-        //   type: 'item',
-        //   url: '/finance/HsnSacCodesListing'
-        // },
         {
           id: 'group',
-          title: 'Group',
+          title: 'COA',
           type: 'item',
           url: '/finance/Group'
         },
-        // {
-        //   id: 'account',
-        //   title: 'Account',
-        //   type: 'item',
-        //   url: '/finance/account/Account'
-        // },
-        // {
-        //   id: 'exRates',
-        //   title: 'ExRates',
-        //   type: 'item',
-        //   url: '/finance/ExRates'
-        // },
-        // {
-        //   id: 'subLedgerAccount',
-        //   title: 'Sub Ledger Account',
-        //   type: 'item',
-        //   url: '/finance/SubLedgerAccount'
-        // },
         {
           id: 'costCenter',
           title: 'Cost Center Values',
@@ -106,42 +64,36 @@ const finance = {
           url: '/finance/costcenter/CostCentre'
         },
         // {
-        //   id: 'chequeBookMaster',
-        //   title: 'Cheque Book Master',
+        //   id: 'finYear',
+        //   title: 'FinYear',
         //   type: 'item',
-        //   url: '/finance/chequeBookMaster/ChequeBookMaster'
+        //   url: '/basicMaster/finYear'
         // },
         {
-          id: 'finYear',
-          title: 'FinYear',
-          type: 'item',
-          url: '/basicMaster/finYear'
-        },
-        {
           id: 'partyMaster',
-          title: 'Party Master',
+          title: 'Party',
           type: 'item',
           url: '/finance/partyMaster'
-        },
-        {
-          id: 'documentType',
-          title: 'Document Type',
-          type: 'item',
-          url: '/finance/DocumentType/documentType'
-        },
-        {
-          id: 'documentTypeMaping',
-          title: 'Document Type Mapping',
-          type: 'item',
-          url: '/finance/DocumentType/documentTypeMapping'
-        },
-        {
-          id: 'multipleDocumentIdGeneration',
-          title: 'Multiple Document Id Generation',
-          type: 'item',
-          url: '/finance/DocumentType/multipleDocumentIdGeneration'
         }
-      ]
+        // {
+        //   id: 'documentType',
+        //   title: 'Document Type',
+        //   type: 'item',
+        //   url: '/finance/DocumentType/documentType'
+        // },
+        // {
+        //   id: 'documentTypeMaping',
+        //   title: 'Document Type Mapping',
+        //   type: 'item',
+        //   url: '/finance/DocumentType/documentTypeMapping'
+        // },
+        // {
+        //   id: 'multipleDocumentIdGeneration',
+        //   title: 'Multiple Document Id Generation',
+        //   type: 'item',
+        //   url: '/finance/DocumentType/multipleDocumentIdGeneration'
+        // }
+      ].filter((child) => isScreenAllowed(child.title)) // Filter based on allowed screens
     }
   ]
 };

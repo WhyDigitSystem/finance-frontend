@@ -10,7 +10,7 @@ const icons = {
 
 const ap = {
   id: 'ap',
-  title: 'AP',
+  title: 'Accounts Payable - AP',
   //   caption: 'Pages Caption',
   type: 'group',
   children: [
@@ -22,6 +22,18 @@ const ap = {
 
       children: [
         {
+          id: 'costInvoice',
+          title: 'Cost Invoice',
+          type: 'item',
+          url: '/finance/costInvoice/CostInvoice'
+        },
+        {
+          id: 'costDebitNote',
+          title: 'Debit Note',
+          type: 'item',
+          url: '/finance/costDebitNote/CostDebitNote'
+        },
+        {
           id: 'apBill',
           title: 'AP Bill Balance',
           type: 'item',
@@ -29,13 +41,25 @@ const ap = {
         },
         {
           id: 'payment',
-          title: 'Payment',
+          title: 'Vendor Payment',
           type: 'item',
           url: '/finance/payment/Payment'
         },
         {
+          id: 'apAdjustment',
+          title: 'AP Adjustment / Offset',
+          type: 'item',
+          url: '/finance/paymentRegister/PaymentRegister'
+        },
+        {
+          id: 'vendorLedger',
+          title: 'Vendor Ledger',
+          type: 'item',
+          url: '/finance/paymentRegister/PaymentRegister'
+        },
+        {
           id: 'paymentRegister',
-          title: 'Payment Register',
+          title: 'AP Outstanding with aging Report',
           type: 'item',
           url: '/finance/paymentRegister/PaymentRegister'
         }

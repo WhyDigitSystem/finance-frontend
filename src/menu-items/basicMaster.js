@@ -1,16 +1,32 @@
 // assets
-import { IconKey } from '@tabler/icons-react';
+import { IconCashBanknote, IconDatabaseStar, IconKey, IconUserShield, IconWorldPin } from '@tabler/icons-react';
 
 // constant
 const icons = {
   IconKey
 };
 
+const icons1 = {
+  IconWorldPin
+};
+
+const icons2 = {
+  IconDatabaseStar
+};
+
+const icons3 = {
+  IconCashBanknote
+};
+
+const icons4 = {
+  IconUserShield
+};
+
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
 const basicMaster = {
   id: 'basicMaster',
-  title: 'Setup',
+  title: '',
   //   caption: 'Pages Caption',
   type: 'group',
   children: [
@@ -18,7 +34,7 @@ const basicMaster = {
       id: 'ar',
       title: 'Basic Master',
       type: 'collapse',
-      icon: icons.IconKey,
+      icon: icons2.IconDatabaseStar,
 
       children: [
         // {
@@ -27,41 +43,47 @@ const basicMaster = {
         //   type: 'item',
         //   url: '/company/branch'
         // },
-        {
-          id: 'employee',
-          title: 'Employee',
-          type: 'item',
-          url: '/basicMaster/employee'
-        },
+
         {
           id: 'country',
           title: 'Country',
           type: 'item',
-          url: '/basicMaster/country'
+          url: '/basicMaster/country',
+          icon: icons1.IconWorldPin
         },
         {
           id: 'state',
           title: 'State',
           type: 'item',
-          url: '/basicMaster/state'
+          url: '/basicMaster/state',
+          icon: icons1.IconWorldPin
         },
         {
           id: 'city',
           title: 'City',
           type: 'item',
-          url: '/basicMaster/city'
+          url: '/basicMaster/city',
+          icon: icons1.IconWorldPin
         },
         {
           id: 'currency',
           title: 'Currency',
           type: 'item',
-          url: '/basicMaster/currency'
+          url: '/basicMaster/currency',
+          icon: icons3.IconCashBanknote
         },
         {
           id: 'region',
           title: 'Region',
           type: 'item',
           url: '/basicMaster/RegionMaster'
+        },
+        {
+          id: 'employee',
+          title: 'Employee',
+          type: 'item',
+          url: '/basicMaster/employee',
+          icon: icons4.IconUserShield
         }
         // {
         //   id: 'finYear',

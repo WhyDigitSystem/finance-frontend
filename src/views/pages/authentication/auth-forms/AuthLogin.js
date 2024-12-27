@@ -107,10 +107,30 @@ const FirebaseLogin = ({ ...others }) => {
         localStorage.setItem('token', response.data.paramObjectsMap.userVO.token);
         localStorage.setItem('tokenId', response.data.paramObjectsMap.userVO.tokenId);
         localStorage.setItem('userName', response.data.paramObjectsMap.userVO.userName);
+        localStorage.setItem('userType', response.data.paramObjectsMap.userVO.userType);
         localStorage.setItem('LoginMessage', true);
         const userRole = response.data.paramObjectsMap.userVO.roleVO;
         localStorage.setItem('ROLE', userRole);
         dispatch(setUserRole(userRole));
+
+        const userRoleVO = response.data.paramObjectsMap.userVO.roleVO;
+        const roles = userRoleVO.map((row) => ({
+          role: row.role
+        }));
+        localStorage.setItem('ROLES', JSON.stringify(roles));
+
+        // SET SCREENS
+        const roleVO = response.data.paramObjectsMap.userVO.roleVO;
+        let allScreensVO = [];
+        roleVO.forEach((roleObj) => {
+          roleObj.responsibilityVO.forEach((responsibility) => {
+            if (responsibility.screensVO) {
+              allScreensVO = allScreensVO.concat(responsibility.screensVO);
+            }
+          });
+        });
+        allScreensVO = [...new Set(allScreensVO)];
+        localStorage.setItem('screens', JSON.stringify(allScreensVO));
         resetForm();
         // window.location.href = "/login";
 

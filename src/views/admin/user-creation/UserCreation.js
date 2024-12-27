@@ -281,7 +281,7 @@ const UserCreation = () => {
           particularUser.roleAccessVO.map((role) => ({
             id: role.id,
             role: role.role,
-            // roleId: role.roleId,
+            roleId: role.roleId,
             startDate: role.startDate,
             endDate: role.endDate
           }))

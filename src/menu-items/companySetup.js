@@ -1,7 +1,5 @@
 // assets
-import { IconKey } from '@tabler/icons-react';
-import { IconCopyright } from '@tabler/icons-react';
-import { IconSettingsPlus, IconSquareRoundedPlus } from '@tabler/icons-react';
+import { IconCalendarDollar, IconCopyright, IconFileTypeDoc, IconSettingsPlus, IconSquareRoundedPlus } from '@tabler/icons-react';
 
 // constant
 const icons = {
@@ -13,6 +11,14 @@ const icons1 = {
 };
 const icons2 = {
   IconSettingsPlus
+};
+
+const icons3 = {
+  IconCalendarDollar
+};
+
+const icons4 = {
+  IconFileTypeDoc
 };
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -36,13 +42,13 @@ const icons2 = {
 
 const companySetup = {
   id: 'companySetup',
-  title: 'Company Setup',
+  title: '',
   //   caption: 'Pages Caption',
   type: 'group',
   children: [
     {
       id: 'companySetup',
-      title: 'Company Setup',
+      title: 'Setup',
       type: 'collapse',
       icon: icons.IconCopyright,
 
@@ -60,6 +66,35 @@ const companySetup = {
           type: 'item',
           url: '/companysetup/companysetup',
           icon: icons2.IconSettingsPlus
+        },
+        {
+          id: 'finYear',
+          title: 'FinYear',
+          type: 'item',
+          url: '/basicMaster/finYear',
+          icon: icons3.IconCalendarDollar
+        },
+
+        {
+          id: 'documentType',
+          title: 'Document Type',
+          type: 'item',
+          url: '/finance/DocumentType/documentType',
+          icon: icons4.IconFileTypeDoc
+        },
+        {
+          id: 'documentTypeMaping',
+          title: 'Document Type Mapping',
+          type: 'item',
+          url: '/finance/DocumentType/documentTypeMapping',
+          icon: icons4.IconFileTypeDoc
+        },
+        {
+          id: 'multipleDocumentIdGeneration',
+          title: 'Multiple Document Id Generation',
+          type: 'item',
+          url: '/finance/DocumentType/multipleDocumentIdGeneration',
+          icon: icons4.IconFileTypeDoc
         }
       ]
     }

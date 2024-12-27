@@ -1,14 +1,22 @@
 // assets
-import { IconUser } from '@tabler/icons-react';
+import { IconAppWindow, IconPasswordUser, IconUser } from '@tabler/icons-react';
 
 // constant
 const icons = { IconUser };
+
+const icons1 = {
+  IconPasswordUser
+};
+
+const icons2 = {
+  IconAppWindow
+};
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
 const admin = {
   id: 'admin',
-  title: 'Admin',
+  title: 'User Management',
   type: 'group',
   children: [
     {
@@ -18,6 +26,20 @@ const admin = {
       url: '/admin/user-creation/userCreation',
       icon: icons.IconUser,
       breadcrumbs: true
+    },
+    {
+      id: 'rolesAndResponsibilities',
+      title: 'Roles And Responsibilities',
+      type: 'item',
+      url: '/basicMaster/roles',
+      icon: icons1.IconPasswordUser
+    },
+    {
+      id: 'screenNames',
+      title: 'Screen Names',
+      type: 'item',
+      url: '/basicMaster/ScreenNames',
+      icon: icons2.IconAppWindow
     }
   ]
 };
