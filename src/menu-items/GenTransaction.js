@@ -6,15 +6,7 @@ const icons = {
   IconKey
 };
 
-// Retrieve allowed screens from local storage
-const allowedScreens = JSON.parse(localStorage.getItem('screens') || '[]');
-
-// Helper function to check if a screen is allowed
-const isScreenAllowed = (screenTitle) => {
-  return allowedScreens.includes(screenTitle.toUpperCase());
-};
-
-// Filter the transaction children dynamically
+// Define the transaction menu without filtering
 const transactionChildren = [
   {
     id: 'daily',
@@ -64,48 +56,12 @@ const transactionChildren = [
     type: 'item',
     url: '/finance/Reconcile/ReconcileCash'
   },
-  //   {
-  //     id: 'taxInvoiceDetail',
-  //     title: 'Tax Invoice',
-  //     type: 'item',
-  //     url: '/finance/taxInvoice/taxInvoiceDetail'
-  //   },
-  //   {
-  //     id: 'creditNoteDetail',
-  //     title: 'Credit Note',
-  //     type: 'item',
-  //     url: '/finance/creditNote/creditNoteDetail'
-  //   },
-  //   {
-  //     id: 'costInvoice',
-  //     title: 'Cost Invoice',
-  //     type: 'item',
-  //     url: '/finance/costInvoice/CostInvoice'
-  //   },
-  //   {
-  //     id: 'costDebitNote',
-  //     title: 'Debit Note',
-  //     type: 'item',
-  //     url: '/finance/costDebitNote/CostDebitNote'
-  //   },
   {
     id: 'paymentVoucher',
     title: 'Payment Voucher',
     type: 'item',
     url: '/finance/paymentVoucher/paymentVoucher'
   },
-  // {
-  //   id: 'ARAPDetail',
-  //   title: 'ARAP Detail',
-  //   type: 'item',
-  //   url: '/finance/ARAP-Details'
-  // },
-  // {
-  //   id: 'ARAPAdjustment',
-  //   title: 'ARAP Adjustment',
-  //   type: 'item',
-  //   url: '/finance/ARAP-Adjustment'
-  // },
   {
     id: 'adjustmentJournal',
     title: 'Adjustment Journal',
@@ -136,31 +92,22 @@ const transactionChildren = [
     type: 'item',
     url: '/finance/Withdrawal'
   }
-  // {
-  //   id: 'contraVoucher',
-  //   title: 'Contra Voucher',
-  //   type: 'item',
-  //   url: '/finance/ContraVoucher'
-  // }
-].filter((child) => isScreenAllowed(child.title)); // Filter by allowed screens
+];
 
-// Define the transaction menu only if allowed screens exist
-const genTransaction =
-  transactionChildren.length > 0
-    ? {
-        id: 'transaction',
-        title: 'General Transaction',
-        type: 'group',
-        children: [
-          {
-            id: 'transaction',
-            title: 'Transaction',
-            type: 'collapse',
-            icon: icons.IconKey,
-            children: transactionChildren
-          }
-        ]
-      }
-    : null; // Hide the transaction menu if no allowed screens exist
+// Define the transaction menu
+const genTransaction = {
+  id: 'transaction',
+  title: 'General Transaction',
+  type: 'group',
+  children: [
+    {
+      id: 'transaction',
+      title: 'Transaction',
+      type: 'collapse',
+      icon: icons.IconKey,
+      children: transactionChildren
+    }
+  ]
+};
 
 export default genTransaction;

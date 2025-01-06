@@ -33,13 +33,6 @@ const admin = {
       type: 'item',
       url: '/basicMaster/roles',
       icon: icons1.IconPasswordUser
-    },
-    {
-      id: 'screenNames',
-      title: 'Screen Names',
-      type: 'item',
-      url: '/basicMaster/ScreenNames',
-      icon: icons2.IconAppWindow
     }
   ]
 };

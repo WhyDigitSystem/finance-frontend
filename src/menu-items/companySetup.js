@@ -1,5 +1,12 @@
 // assets
-import { IconCalendarDollar, IconCopyright, IconFileTypeDoc, IconSettingsPlus, IconSquareRoundedPlus } from '@tabler/icons-react';
+import {
+  IconAppWindow,
+  IconCalendarDollar,
+  IconCopyright,
+  IconFileTypeDoc,
+  IconSettingsPlus,
+  IconSquareRoundedPlus
+} from '@tabler/icons-react';
 
 // constant
 const icons = {
@@ -19,6 +26,10 @@ const icons3 = {
 
 const icons4 = {
   IconFileTypeDoc
+};
+
+const icons5 = {
+  IconAppWindow
 };
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -95,6 +106,13 @@ const companySetup = {
           type: 'item',
           url: '/finance/DocumentType/multipleDocumentIdGeneration',
           icon: icons4.IconFileTypeDoc
+        },
+        {
+          id: 'screenNames',
+          title: 'Screen Names',
+          type: 'item',
+          url: '/basicMaster/ScreenNames',
+          icon: icons5.IconAppWindow
         }
       ]
     }

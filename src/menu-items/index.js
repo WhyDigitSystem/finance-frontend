@@ -7,7 +7,6 @@ import dashboard from './dashboard';
 import finalReport from './FinalReport';
 import finance from './finance';
 import genTransaction from './GenTransaction';
-import transaction from './transaction';
 
 // Function to get menu items based on localStorage value
 const getMenuItems = () => {
@@ -15,14 +14,14 @@ const getMenuItems = () => {
 
   // Define default menu items
   const defaultMenuItems = {
-    items: [dashboard, transaction, ar, ap]
+    items: [dashboard, ar, ap]
   };
 
   // Define menu items based on localStorage value
   switch (localStorageValue) {
     case 'ROLE_SUPER_ADMIN':
       return {
-        items: [dashboard, companySetup, basicMaster]
+        items: [dashboard, companySetup, basicMaster,]
       };
     case 'admin': // Correctly match the value
       return {
