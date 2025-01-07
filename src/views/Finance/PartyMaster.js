@@ -1103,15 +1103,15 @@ export const PartyMaster = () => {
       email: ''
     };
     setPartyDetailsOfDirectors([...partyDetailsOfDirectors, newRow]);
-    setPartyDetailsErrors([
-      ...partyDetailsErrors,
-      {
-        name: '',
-        designation: '',
-        phone: '',
-        email: ''
-      }
-    ]);
+    // setPartyDetailsErrors([
+    //   ...partyDetailsErrors,
+    //   {
+    //     name: '',
+    //     designation: '',
+    //     phone: '',
+    //     email: ''
+    //   }
+    // ]);
   };
 
   const [partySpecialTDS, setPartySpecialTDS] = useState([
@@ -1195,13 +1195,13 @@ export const PartyMaster = () => {
       charges: ''
     };
     setPartyChargesExemption([...partyChargesExemption, newRow]);
-    setPartyChargesExemptionErrors([
-      ...partyChargesExemptionErrors,
-      {
-        tdsWithSec: '',
-        charges: ''
-      }
-    ]);
+    // setPartyChargesExemptionErrors([
+    //   ...partyChargesExemptionErrors,
+    //   {
+    //     tdsWithSec: '',
+    //     charges: ''
+    //   }
+    // ]);
   };
 
   const [partyCurrencyMapping, setPartyCurrencyMapping] = useState([
@@ -1270,16 +1270,16 @@ export const PartyMaster = () => {
       salesPerson: ''
     };
     setPartySalesPersonTagging([...partySalesPersonTagging, newRow]);
-    setPartySalesPersonErrors([
-      ...partySalesPersonErrors,
-      {
-        effectiveFrom: null,
-        effectiveTill: null,
-        empCode: '',
-        salesBranch: '',
-        salesPerson: ''
-      }
-    ]);
+    // setPartySalesPersonErrors([
+    //   ...partySalesPersonErrors,
+    //   {
+    //     effectiveFrom: null,
+    //     effectiveTill: null,
+    //     empCode: '',
+    //     salesBranch: '',
+    //     salesPerson: ''
+    //   }
+    // ]);
   };
 
   const [partyTdsExempted, setPartyTdsExempted] = useState([
@@ -1344,12 +1344,12 @@ export const PartyMaster = () => {
       partnerName: ''
     };
     setPartyPartnerTagging([...partyPartnerTagging, newRow]);
-    setPartyPartnerErrors([
-      ...partyPartnerErrors,
-      {
-        partnerName: ''
-      }
-    ]);
+    // setPartyPartnerErrors([
+    //   ...partyPartnerErrors,
+    //   {
+    //     partnerName: ''
+    //   }
+    // ]);
   };
 
   const [partyVendorErrors, setPartyVendorErrors] = useState([
@@ -1388,18 +1388,18 @@ export const PartyMaster = () => {
     if (!formData.bussinessType) {
       errors.bussinessType = 'Business Type is required';
     }
-    if (!formData.carrierCode) {
-      errors.carrierCode = 'Carrier Code is required';
-    }
-    if (!formData.supplierType) {
-      errors.supplierType = 'Supplier Type is required';
-    }
-    if (!formData.salesPerson) {
-      errors.salesPerson = 'Sales Person is required';
-    }
-    if (!formData.customerCoord) {
-      errors.customerCoord = 'Customer Coordinator is required';
-    }
+    // if (!formData.carrierCode) {
+    //   errors.carrierCode = 'Carrier Code is required';
+    // }
+    // if (!formData.supplierType) {
+    //   errors.supplierType = 'Supplier Type is required';
+    // }
+    // if (!formData.salesPerson) {
+    //   errors.salesPerson = 'Sales Person is required';
+    // }
+    // if (!formData.customerCoord) {
+    //   errors.customerCoord = 'Customer Coordinator is required';
+    // }
     if (!formData.accountName) {
       errors.accountName = 'Account Name is required';
     }
@@ -1423,15 +1423,15 @@ export const PartyMaster = () => {
     if (!formData.currency) {
       errors.currency = 'Currency is required';
     }
-    if (!formData.panName) {
-      errors.panName = 'Pan Name is required';
-    }
-    if (!formData.airwayBillNo) {
-      errors.airwayBillNo = 'AirWay Bill Code is required';
-    }
-    if (!formData.airLineCode) {
-      errors.airLineCode = 'AirLine Code is required';
-    }
+    // if (!formData.panName) {
+    //   errors.panName = 'Pan Name is required';
+    // }
+    // if (!formData.airwayBillNo) {
+    //   errors.airwayBillNo = 'AirWay Bill Code is required';
+    // }
+    // if (!formData.airLineCode) {
+    //   errors.airLineCode = 'AirLine Code is required';
+    // }
     if (!formData.tanNo) {
       errors.tanNo = 'Tan No is required';
     }
@@ -1441,37 +1441,36 @@ export const PartyMaster = () => {
     if (!formData.country) {
       errors.country = 'Country is required';
     }
-    if (!formData.caf) {
-      errors.caf = 'Caf is required';
-    }
-    if (!formData.compoundScheme) {
-      errors.compoundScheme = 'Compounding Scheme is required';
-    }
+    // if (!formData.caf) {
+    //   errors.caf = 'Caf is required';
+    // }
+    // if (!formData.compoundScheme) {
+    //   errors.compoundScheme = 'Compounding Scheme is required';
+    // }
     if (!formData.psuGovOrg) {
-      errors.psuGovOrg = 'Psu is required';
+      errors.psuGovOrg = 'PSU is required';
     }
-    if (!formData.nameOfBank) {
-      errors.nameOfBank = 'Name of Bank is required';
-    }
-    if (!formData.addressBank) {
-      errors.addressBank = 'Branch is required';
-    }
+    // if (!formData.nameOfBank) {
+    //   errors.nameOfBank = 'Name of Bank is required';
+    // }
+    // if (!formData.addressBank) {
+    //   errors.addressBank = 'Branch is required';
+    // }
     // if (!formData.addressOfBranch) {
     //   errors.addressOfBranch = 'Address of Branch is required';
     // }
-    if (!formData.accountNo) {
-      errors.accountNo = 'Account No is required';
-    }
-    if (!formData.accType) {
-      errors.accType = 'Account Type is required';
-    }
-    if (!formData.ifscCode) {
-      errors.ifscCode = 'Ifsc Code is required';
-    }
-    if (!formData.swift) {
-      errors.swift = 'Swift is required';
-    }
-
+    // if (!formData.accountNo) {
+    //   errors.accountNo = 'Account No is required';
+    // }
+    // if (!formData.accType) {
+    //   errors.accType = 'Account Type is required';
+    // }
+    // if (!formData.ifscCode) {
+    //   errors.ifscCode = 'Ifsc Code is required';
+    // }
+    // if (!formData.swift) {
+    //   errors.swift = 'Swift is required';
+    // }
     // if (!errors.partyVendorEvaluationDTO) {
     //   errors.partyVendorEvaluationDTO = {};
     // }
@@ -1577,29 +1576,29 @@ export const PartyMaster = () => {
     });
     setPartyAddressDataErrors(newTableErrors1);
 
-    let partyDetailsOfDirectorsValid = true;
-    const newTableErrors2 = partyDetailsOfDirectors.map((row) => {
-      const rowErrors = {};
-      if (!row.name) {
-        rowErrors.name = 'Name is required';
-        partyDetailsOfDirectorsValid = false;
-      }
-      if (!row.designation) {
-        rowErrors.designation = 'Designation is required';
-        partyDetailsOfDirectorsValid = false;
-      }
-      if (!row.phone) {
-        rowErrors.phone = 'Phone is required';
-        partyDetailsOfDirectorsValid = false;
-      }
-      if (!row.email) {
-        rowErrors.email = 'Email is required';
-        partyDetailsOfDirectorsValid = false;
-      }
+    // let partyDetailsOfDirectorsValid = true;
+    // const newTableErrors2 = partyDetailsOfDirectors.map((row) => {
+    //   const rowErrors = {};
+    //   if (!row.name) {
+    //     rowErrors.name = 'Name is required';
+    //     partyDetailsOfDirectorsValid = false;
+    //   }
+    //   if (!row.designation) {
+    //     rowErrors.designation = 'Designation is required';
+    //     partyDetailsOfDirectorsValid = false;
+    //   }
+    //   if (!row.phone) {
+    //     rowErrors.phone = 'Phone is required';
+    //     partyDetailsOfDirectorsValid = false;
+    //   }
+    //   if (!row.email) {
+    //     rowErrors.email = 'Email is required';
+    //     partyDetailsOfDirectorsValid = false;
+    //   }
 
-      return rowErrors;
-    });
-    setPartyDetailsErrors(newTableErrors2);
+    //   return rowErrors;
+    // });
+    // setPartyDetailsErrors(newTableErrors2);
 
     let partySpecialTDSValid = true;
     const newTableErrors3 = partySpecialTDS.map((row) => {
@@ -1637,21 +1636,21 @@ export const PartyMaster = () => {
     });
     setPartySpecialTDSErrors(newTableErrors3);
 
-    let partyChargesExemptionValid = true;
-    const partyChargesExemptionErrors = partyChargesExemption.map((row) => {
-      const rowErrors = {};
-      if (!row.tdsWithSec) {
-        rowErrors.tdsWithSec = 'Tds Section is required';
-        partyChargesExemptionValid = false;
-      }
-      if (!row.charges) {
-        rowErrors.charges = 'Charge is required';
-        partyChargesExemptionValid = false;
-      }
+    // let partyChargesExemptionValid = true;
+    // const partyChargesExemptionErrors = partyChargesExemption.map((row) => {
+    //   const rowErrors = {};
+    //   if (!row.tdsWithSec) {
+    //     rowErrors.tdsWithSec = 'Tds Section is required';
+    //     partyChargesExemptionValid = false;
+    //   }
+    //   if (!row.charges) {
+    //     rowErrors.charges = 'Charge is required';
+    //     partyChargesExemptionValid = false;
+    //   }
 
-      return rowErrors;
-    });
-    setPartyChargesExemptionErrors(partyChargesExemptionErrors);
+    //   return rowErrors;
+    // });
+    // setPartyChargesExemptionErrors(partyChargesExemptionErrors);
 
     let partyCurrencyMappingValid = true;
     const partyCurrencyMappingErrors = partyCurrencyMapping.map((row) => {
@@ -1665,33 +1664,33 @@ export const PartyMaster = () => {
     });
     setPartyCurrencyMappingErrors(partyCurrencyMappingErrors);
 
-    let partySalesPersonTaggingValid = true;
-    const newTableErrors4 = partySalesPersonTagging.map((row) => {
-      const rowErrors = {};
-      if (!row.salesPerson) {
-        rowErrors.salesPerson = 'Sales Person is required';
-        partySalesPersonTaggingValid = false;
-      }
-      if (!row.empCode) {
-        rowErrors.empCode = 'Emp Code is required';
-        partySalesPersonTaggingValid = false;
-      }
-      if (!row.salesBranch) {
-        rowErrors.salesBranch = 'Sales Branch is required';
-        partySalesPersonTaggingValid = false;
-      }
-      if (!row.effectiveFrom) {
-        rowErrors.effectiveFrom = 'Effective From is required';
-        partySalesPersonTaggingValid = false;
-      }
-      if (!row.effectiveTill) {
-        rowErrors.effectiveTill = 'Effective Till is required';
-        partySalesPersonTaggingValid = false;
-      }
+    // let partySalesPersonTaggingValid = true;
+    // const newTableErrors4 = partySalesPersonTagging.map((row) => {
+    //   const rowErrors = {};
+    //   if (!row.salesPerson) {
+    //     rowErrors.salesPerson = 'Sales Person is required';
+    //     partySalesPersonTaggingValid = false;
+    //   }
+    //   if (!row.empCode) {
+    //     rowErrors.empCode = 'Emp Code is required';
+    //     partySalesPersonTaggingValid = false;
+    //   }
+    //   if (!row.salesBranch) {
+    //     rowErrors.salesBranch = 'Sales Branch is required';
+    //     partySalesPersonTaggingValid = false;
+    //   }
+    //   if (!row.effectiveFrom) {
+    //     rowErrors.effectiveFrom = 'Effective From is required';
+    //     partySalesPersonTaggingValid = false;
+    //   }
+    //   if (!row.effectiveTill) {
+    //     rowErrors.effectiveTill = 'Effective Till is required';
+    //     partySalesPersonTaggingValid = false;
+    //   }
 
-      return rowErrors;
-    });
-    setPartySalesPersonErrors(newTableErrors4);
+    //   return rowErrors;
+    // });
+    // setPartySalesPersonErrors(newTableErrors4);
 
     let partyTdsExemptedValid = true;
     const newTableErrors5 = partyTdsExempted.map((row) => {
@@ -1713,29 +1712,29 @@ export const PartyMaster = () => {
     });
     setPartyTdsErrors(newTableErrors5);
 
-    let partyPartnerTaggingValid = true;
-    const newTableErrors6 = partyPartnerTagging.map((row) => {
-      const rowErrors = {};
-      if (!row.partnerName) {
-        rowErrors.partnerName = 'Partner Name is required';
-        partyPartnerTaggingValid = false;
-      }
+    // let partyPartnerTaggingValid = true;
+    // const newTableErrors6 = partyPartnerTagging.map((row) => {
+    //   const rowErrors = {};
+    //   if (!row.partnerName) {
+    //     rowErrors.partnerName = 'Partner Name is required';
+    //     partyPartnerTaggingValid = false;
+    //   }
 
-      return rowErrors;
-    });
-    setPartyPartnerErrors(newTableErrors6);
+    //   return rowErrors;
+    // });
+    // setPartyPartnerErrors(newTableErrors6);
 
     if (
       Object.keys(errors).length === 0 &&
       partyStateDataValid &&
       partyAddressDataValid &&
-      partyDetailsOfDirectorsValid &&
       partySpecialTDSValid &&
-      partySalesPersonTaggingValid &&
       partyTdsExemptedValid &&
-      partyChargesExemptionValid &&
-      partyCurrencyMappingValid &&
-      partyPartnerTaggingValid
+      partyCurrencyMappingValid 
+      // &&  partyChargesExemptionValid &&
+      // partySalesPersonTaggingValid &&
+      // partyDetailsOfDirectorsValid &&
+      // partyPartnerTaggingValid
     ) {
       const partyAddressDTO = partyAddressData.map((row) => ({
         addressType: row.addressType,
@@ -1745,7 +1744,7 @@ export const PartyMaster = () => {
         businessPlace: row.businessPlace,
         city: row.city,
         contact: row.contact,
-        pincode: row.pincode,
+        pincode: parseInt(row.pincode),
         state: row.state,
         stateGstIn: row.stateGstIn
       }));
@@ -1757,7 +1756,7 @@ export const PartyMaster = () => {
         gstIn: row.gstIn,
         state: row.state,
         stateCode: row.stateCode,
-        stateNo: row.stateNo
+        stateNo: parseInt(row.stateNo)
       }));
 
       const partyDetailsOfDirectorsDTO = partyDetailsOfDirectors.map((row) => ({
@@ -1768,12 +1767,12 @@ export const PartyMaster = () => {
       }));
 
       const partySpecialTDSDTO = partySpecialTDS.map((row) => ({
-        edPercentage: row.edPercentage,
-        rateFrom: row.rateFrom,
-        rateTo: row.rateTo,
-        surchargePer: row.surchargePer,
+        edPercentage: parseInt(row.edPercentage),
+        rateFrom: parseInt(row.rateFrom),
+        rateTo: parseInt(row.rateTo),
+        surchargePer: parseInt(row.surchargePer),
         tdsCertifiNo: row.tdsCertifiNo,
-        tdsWithPer: row.tdsWithPer,
+        tdsWithPer: parseInt(row.tdsWithPer),
         tdsWithSec: row.tdsWithSec
       }));
 
@@ -1786,25 +1785,38 @@ export const PartyMaster = () => {
         transCurrency: row.transCurrency
       }));
 
+      // const partySalesPersonTaggingDTO = partySalesPersonTagging.map((row) => ({
+      //   effectiveFrom: dayjs(row.effectiveFrom).format('YYYY-MM-DD') || null,
+      //   effectiveTill: dayjs(row.effectiveTill).format('YYYY-MM-DD') || null,
+      //   empCode: row.empCode,
+      //   salesBranch: row.salesBranch,
+      //   salesPerson: row.salesPerson
+      // }));
       const partySalesPersonTaggingDTO = partySalesPersonTagging.map((row) => ({
-        effectiveFrom: dayjs(row.effectiveFrom).format('YYYY-MM-DD'),
-        effectiveTill: dayjs(row.effectiveTill).format('YYYY-MM-DD'),
+        effectiveFrom: row.effectiveFrom
+          ? dayjs(row.effectiveFrom).format('YYYY-MM-DD')
+          : null,
+        effectiveTill: row.effectiveTill
+          ? dayjs(row.effectiveTill).format('YYYY-MM-DD')
+          : null,
         empCode: row.empCode,
         salesBranch: row.salesBranch,
-        salesPerson: row.salesPerson
+        salesPerson: row.salesPerson,
       }));
+      
       const partyTdsExemptedDTO = partyTdsExempted.map((row) => ({
         finYear: row.finYear,
         tdsExempCerti: row.tdsExempCerti,
-        value: row.value
+        value: parseInt(row.value)
       }));
       const partyPartnerTaggingDTO = partyPartnerTagging.map((row) => ({
         partnerName: row.partnerName
       }));
-
       const saveData = {
         ...(editId && { id: editId }),
         ...formData,
+        creditDays: parseInt(formData.creditDays, 10),
+        creditLimit: parseInt(formData.creditLimit, 10),
         partyAddressDTO,
         partyStateDTO,
         partyDetailsOfDirectorsDTO,
@@ -1814,7 +1826,21 @@ export const PartyMaster = () => {
         partySalesPersonTaggingDTO,
         partyTdsExemptedDTO,
         partyPartnerTaggingDTO
-      };
+      };      
+
+      // const saveData = {
+      //   ...(editId && { id: editId }),
+      //   ...formData,
+      //   partyAddressDTO,
+      //   partyStateDTO,
+      //   partyDetailsOfDirectorsDTO,
+      //   partySpecialTDSDTO,
+      //   partyChargesExemptionDTO,
+      //   partyCurrencyMappingDTO,
+      //   partySalesPersonTaggingDTO,
+      //   partyTdsExemptedDTO,
+      //   partyPartnerTaggingDTO
+      // };
 
       console.log('DATA TO SAVE', saveData);
 
@@ -3876,14 +3902,14 @@ export const PartyMaster = () => {
                                         setPartyPartnerTagging((prev) =>
                                           prev.map((r) => (r.id === row.id ? { ...r, partnerName: value } : r))
                                         );
-                                        setPartyPartnerErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = {
-                                            ...newErrors[index],
-                                            partnerName: !value ? 'Partner Name is required' : ''
-                                          };
-                                          return newErrors;
-                                        });
+                                        // setPartyPartnerErrors((prev) => {
+                                        //   const newErrors = [...prev];
+                                        //   newErrors[index] = {
+                                        //     ...newErrors[index],
+                                        //     partnerName: !value ? 'Partner Name is required' : ''
+                                        //   };
+                                        //   return newErrors;
+                                        // });
                                       }}
                                       className={partyPartnerErrors[index]?.partnerName ? 'error form-control' : 'form-control'}
                                       style={{ width: '100%' }}
