@@ -1403,11 +1403,11 @@ export const PartyMaster = () => {
     // if (!formData.accountName) {
     //   errors.accountName = 'Account Name is required';
     // }
-    // if (formData.gstRegistered === 'YES' && !formData.gstIn) {
-    //   errors.gstIn = 'GST is Required';
-    // } else if (formData.gstRegistered === 'YES' && formData.gstIn.length < 15) {
-    //   errors.gstIn = 'Invalid GST Format';
-    // }
+    if (formData.gstRegistered === 'YES' && !formData.gstIn) {
+      errors.gstIn = 'GST is Required';
+    } else if (formData.gstRegistered === 'YES' && formData.gstIn.length < 15) {
+      errors.gstIn = 'Invalid GST Format';
+    }
     // if (!formData.creditLimit) {
     //   errors.creditLimit = 'Credit Limit is required';
     // }
@@ -1525,52 +1525,51 @@ export const PartyMaster = () => {
     //   return rowErrors;
     // });
     setFieldErrors(errors);
-
     // setPartyStateDataErrors(newTableErrors);
 
     let partyAddressDataValid = true;
     const newTableErrors1 = partyAddressData.map((row) => {
       const rowErrors = {};
-      // if (!row.state) {
-      //   rowErrors.state = 'State is required';
-      //   partyAddressDataValid = false;
-      // }
-      // if (!row.businessPlace) {
-      //   rowErrors.businessPlace = 'Business Place is required';
-      //   partyAddressDataValid = false;
-      // }
+      if (!row.state) {
+        rowErrors.state = 'State is required';
+        partyAddressDataValid = false;
+      }
+      if (!row.businessPlace) {
+        rowErrors.businessPlace = 'Business Place is required';
+        partyAddressDataValid = false;
+      }
       if (!row.stateGstIn) {
         rowErrors.stateGstIn = 'State GstIn is required';
         partyAddressDataValid = false;
       }
-      // if (!row.city) {
-      //   rowErrors.city = 'City Name is required';
-      //   partyAddressDataValid = false;
-      // }
-      // if (!row.addressType) {
-      //   rowErrors.addressType = 'Address Type is required';
-      //   partyAddressDataValid = false;
-      // }
-      // if (!row.addressLine1) {
-      //   rowErrors.addressLine1 = 'Address Line1 is required';
-      //   partyAddressDataValid = false;
-      // }
-      // if (!row.addressLine2) {
-      //   rowErrors.addressLine2 = 'Address Line2 is required';
-      //   partyAddressDataValid = false;
-      // }
-      // if (!row.addressLine3) {
-      //   rowErrors.addressLine3 = 'Address Line3 is required';
-      //   partyAddressDataValid = false;
-      // }
-      // if (!row.pincode) {
-      //   rowErrors.pincode = 'Pin Code is required';
-      //   partyAddressDataValid = false;
-      // }
-      // if (!row.contact) {
-      //   rowErrors.contact = 'Contact is required';
-      //   partyAddressDataValid = false;
-      // }
+      if (!row.city) {
+        rowErrors.city = 'City Name is required';
+        partyAddressDataValid = false;
+      }
+      if (!row.addressType) {
+        rowErrors.addressType = 'Address Type is required';
+        partyAddressDataValid = false;
+      }
+      if (!row.addressLine1) {
+        rowErrors.addressLine1 = 'Address Line1 is required';
+        partyAddressDataValid = false;
+      }
+      if (!row.addressLine2) {
+        rowErrors.addressLine2 = 'Address Line2 is required';
+        partyAddressDataValid = false;
+      }
+      if (!row.addressLine3) {
+        rowErrors.addressLine3 = 'Address Line3 is required';
+        partyAddressDataValid = false;
+      }
+      if (!row.pincode) {
+        rowErrors.pincode = 'Pin Code is required';
+        partyAddressDataValid = false;
+      }
+      if (!row.contact) {
+        rowErrors.contact = 'Contact is required';
+        partyAddressDataValid = false;
+      }
       return rowErrors;
     });
     setPartyAddressDataErrors(newTableErrors1);
