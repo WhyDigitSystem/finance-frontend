@@ -1364,30 +1364,30 @@ export const PartyMaster = () => {
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.partyType) {
-      errors.partyType = 'Party Type is required';
-    }
-    if (!formData.partyCode) {
-      errors.partyCode = 'Party Code is required';
-    }
+    // if (!formData.partyType) {
+    //   errors.partyType = 'Party Type is required';
+    // }
+    // if (!formData.partyCode) {
+    //   errors.partyCode = 'Party Code is required';
+    // }
     if (!formData.partyName) {
       errors.partyName = 'Party Name is required';
     }
-    if (!formData.gstPartyName) {
-      errors.gstPartyName = 'Gst Party Name is required';
-    }
-    if (!formData.customerType) {
-      errors.customerType = 'Customer Type is required';
-    }
-    if (!formData.agentName) {
-      errors.agentName = 'Agent Name is required';
-    }
-    if (!formData.accountType) {
-      errors.accountType = 'Accounts Type is required';
-    }
-    if (!formData.bussinessType) {
-      errors.bussinessType = 'Business Type is required';
-    }
+    // if (!formData.gstPartyName) {
+    //   errors.gstPartyName = 'Gst Party Name is required';
+    // }
+    // if (!formData.customerType) {
+    //   errors.customerType = 'Customer Type is required';
+    // }
+    // if (!formData.agentName) {
+    //   errors.agentName = 'Agent Name is required';
+    // }
+    // if (!formData.accountType) {
+    //   errors.accountType = 'Accounts Type is required';
+    // }
+    // if (!formData.bussinessType) {
+    //   errors.bussinessType = 'Business Type is required';
+    // }
     // if (!formData.carrierCode) {
     //   errors.carrierCode = 'Carrier Code is required';
     // }
@@ -1400,29 +1400,29 @@ export const PartyMaster = () => {
     // if (!formData.customerCoord) {
     //   errors.customerCoord = 'Customer Coordinator is required';
     // }
-    if (!formData.accountName) {
-      errors.accountName = 'Account Name is required';
-    }
-    if (formData.gstRegistered === 'YES' && !formData.gstIn) {
-      errors.gstIn = 'GST is Required';
-    } else if (formData.gstRegistered === 'YES' && formData.gstIn.length < 15) {
-      errors.gstIn = 'Invalid GST Format';
-    }
-    if (!formData.creditLimit) {
-      errors.creditLimit = 'Credit Limit is required';
-    }
-    if (!formData.creditDays) {
-      errors.creditDays = 'Credit Days is required';
-    }
-    if (!formData.panNo) {
-      errors.panNo = 'Pan No is required';
-    }
-    if (!formData.controllingOff) {
-      errors.controllingOff = 'Controlling Office is required';
-    }
-    if (!formData.currency) {
-      errors.currency = 'Currency is required';
-    }
+    // if (!formData.accountName) {
+    //   errors.accountName = 'Account Name is required';
+    // }
+    // if (formData.gstRegistered === 'YES' && !formData.gstIn) {
+    //   errors.gstIn = 'GST is Required';
+    // } else if (formData.gstRegistered === 'YES' && formData.gstIn.length < 15) {
+    //   errors.gstIn = 'Invalid GST Format';
+    // }
+    // if (!formData.creditLimit) {
+    //   errors.creditLimit = 'Credit Limit is required';
+    // }
+    // if (!formData.creditDays) {
+    //   errors.creditDays = 'Credit Days is required';
+    // }
+    // if (!formData.panNo) {
+    //   errors.panNo = 'Pan No is required';
+    // }
+    // if (!formData.controllingOff) {
+    //   errors.controllingOff = 'Controlling Office is required';
+    // }
+    // if (!formData.currency) {
+    //   errors.currency = 'Currency is required';
+    // }
     // if (!formData.panName) {
     //   errors.panName = 'Pan Name is required';
     // }
@@ -1432,24 +1432,24 @@ export const PartyMaster = () => {
     // if (!formData.airLineCode) {
     //   errors.airLineCode = 'AirLine Code is required';
     // }
-    if (!formData.tanNo) {
-      errors.tanNo = 'Tan No is required';
-    }
-    if (!formData.bussinessCate) {
-      errors.bussinessCate = 'Business Category is required';
-    }
-    if (!formData.country) {
-      errors.country = 'Country is required';
-    }
+    // if (!formData.tanNo) {
+    //   errors.tanNo = 'Tan No is required';
+    // }
+    // if (!formData.bussinessCate) {
+    //   errors.bussinessCate = 'Business Category is required';
+    // }
+    // if (!formData.country) {
+    //   errors.country = 'Country is required';
+    // }
     // if (!formData.caf) {
     //   errors.caf = 'Caf is required';
     // }
     // if (!formData.compoundScheme) {
     //   errors.compoundScheme = 'Compounding Scheme is required';
     // }
-    if (!formData.psuGovOrg) {
-      errors.psuGovOrg = 'PSU is required';
-    }
+    // if (!formData.psuGovOrg) {
+    //   errors.psuGovOrg = 'PSU is required';
+    // }
     // if (!formData.nameOfBank) {
     //   errors.nameOfBank = 'Name of Bank is required';
     // }
@@ -1490,88 +1490,87 @@ export const PartyMaster = () => {
     //   errors.partyVendorEvaluationDTO.commAgreedTerm = 'Common Agreed Terms is required';
     // }
 
-    let partyStateDataValid = true;
-    const newTableErrors = partyStateData.map((row) => {
-      const rowErrors = {};
-      if (!row.state) {
-        rowErrors.state = 'State is required';
-        partyStateDataValid = false;
-      }
-      if (!row.gstIn) {
-        rowErrors.gstIn = 'Gst In is required';
-        partyStateDataValid = false;
-      }
-      if (!row.stateNo) {
-        rowErrors.stateNo = 'State No is required';
-        partyStateDataValid = false;
-      }
-      if (!row.contactPerson) {
-        rowErrors.contactPerson = 'Contact Person is required';
-        partyStateDataValid = false;
-      }
-      if (!row.contactPhoneNo) {
-        rowErrors.contactPhoneNo = 'Contact Phone No is required';
-        partyStateDataValid = false;
-      }
-      if (!row.email) {
-        rowErrors.email = 'Contact Email is required';
-        partyStateDataValid = false;
-      }
-      if (!row.stateCode) {
-        rowErrors.stateCode = 'State Code is required';
-        partyStateDataValid = false;
-      }
+    // let partyStateDataValid = true;
+    // const newTableErrors = partyStateData.map((row) => {
+    //   const rowErrors = {};
+    //   if (!row.state) {
+    //     rowErrors.state = 'State is required';
+    //     partyStateDataValid = false;
+    //   }
+    //   if (!row.gstIn) {
+    //     rowErrors.gstIn = 'Gst In is required';
+    //     partyStateDataValid = false;
+    //   }
+    //   if (!row.stateNo) {
+    //     rowErrors.stateNo = 'State No is required';
+    //     partyStateDataValid = false;
+    //   }
+    //   if (!row.contactPerson) {
+    //     rowErrors.contactPerson = 'Contact Person is required';
+    //     partyStateDataValid = false;
+    //   }
+    //   if (!row.contactPhoneNo) {
+    //     rowErrors.contactPhoneNo = 'Contact Phone No is required';
+    //     partyStateDataValid = false;
+    //   }
+    //   if (!row.email) {
+    //     rowErrors.email = 'Contact Email is required';
+    //     partyStateDataValid = false;
+    //   }
+    //   if (!row.stateCode) {
+    //     rowErrors.stateCode = 'State Code is required';
+    //     partyStateDataValid = false;
+    //   }
 
-      return rowErrors;
-    });
+    //   return rowErrors;
+    // });
     setFieldErrors(errors);
 
-    setPartyStateDataErrors(newTableErrors);
+    // setPartyStateDataErrors(newTableErrors);
 
     let partyAddressDataValid = true;
     const newTableErrors1 = partyAddressData.map((row) => {
       const rowErrors = {};
-      if (!row.state) {
-        rowErrors.state = 'State is required';
-        partyAddressDataValid = false;
-      }
-      if (!row.businessPlace) {
-        rowErrors.businessPlace = 'Business Place is required';
-        partyAddressDataValid = false;
-      }
+      // if (!row.state) {
+      //   rowErrors.state = 'State is required';
+      //   partyAddressDataValid = false;
+      // }
+      // if (!row.businessPlace) {
+      //   rowErrors.businessPlace = 'Business Place is required';
+      //   partyAddressDataValid = false;
+      // }
       if (!row.stateGstIn) {
         rowErrors.stateGstIn = 'State GstIn is required';
         partyAddressDataValid = false;
       }
-      if (!row.city) {
-        rowErrors.city = 'City Name is required';
-        partyAddressDataValid = false;
-      }
-      if (!row.addressType) {
-        rowErrors.addressType = 'Address Type is required';
-        partyAddressDataValid = false;
-      }
-      if (!row.addressLine1) {
-        rowErrors.addressLine1 = 'Address Line1 is required';
-        partyAddressDataValid = false;
-      }
-      if (!row.addressLine2) {
-        rowErrors.addressLine2 = 'Address Line2 is required';
-        partyAddressDataValid = false;
-      }
-      if (!row.addressLine3) {
-        rowErrors.addressLine3 = 'Address Line3 is required';
-        partyAddressDataValid = false;
-      }
-      if (!row.pincode) {
-        rowErrors.pincode = 'Pin Code is required';
-        partyAddressDataValid = false;
-      }
-      if (!row.contact) {
-        rowErrors.contact = 'Contact is required';
-        partyAddressDataValid = false;
-      }
-
+      // if (!row.city) {
+      //   rowErrors.city = 'City Name is required';
+      //   partyAddressDataValid = false;
+      // }
+      // if (!row.addressType) {
+      //   rowErrors.addressType = 'Address Type is required';
+      //   partyAddressDataValid = false;
+      // }
+      // if (!row.addressLine1) {
+      //   rowErrors.addressLine1 = 'Address Line1 is required';
+      //   partyAddressDataValid = false;
+      // }
+      // if (!row.addressLine2) {
+      //   rowErrors.addressLine2 = 'Address Line2 is required';
+      //   partyAddressDataValid = false;
+      // }
+      // if (!row.addressLine3) {
+      //   rowErrors.addressLine3 = 'Address Line3 is required';
+      //   partyAddressDataValid = false;
+      // }
+      // if (!row.pincode) {
+      //   rowErrors.pincode = 'Pin Code is required';
+      //   partyAddressDataValid = false;
+      // }
+      // if (!row.contact) {
+      //   rowErrors.contact = 'Contact is required';
+      //   partyAddressDataValid = false;
+      // }
       return rowErrors;
     });
     setPartyAddressDataErrors(newTableErrors1);
@@ -1600,41 +1599,41 @@ export const PartyMaster = () => {
     // });
     // setPartyDetailsErrors(newTableErrors2);
 
-    let partySpecialTDSValid = true;
-    const newTableErrors3 = partySpecialTDS.map((row) => {
-      const rowErrors = {};
-      if (!row.tdsWithSec) {
-        rowErrors.tdsWithSec = 'Tds Section is required';
-        partySpecialTDSValid = false;
-      }
-      if (!row.rateFrom) {
-        rowErrors.rateFrom = 'Rate From is required';
-        partySpecialTDSValid = false;
-      }
-      if (!row.rateTo) {
-        rowErrors.rateTo = 'Rate To is required';
-        partySpecialTDSValid = false;
-      }
-      if (!row.tdsWithPer) {
-        rowErrors.tdsWithPer = 'Tds % is required';
-        partySpecialTDSValid = false;
-      }
-      if (!row.surchargePer) {
-        rowErrors.surchargePer = 'Sur % is required';
-        partySpecialTDSValid = false;
-      }
-      if (!row.edPercentage) {
-        rowErrors.edPercentage = 'Ed % is required';
-        partySpecialTDSValid = false;
-      }
-      if (!row.tdsCertifiNo) {
-        rowErrors.tdsCertifiNo = 'Tds Certificate No is required';
-        partySpecialTDSValid = false;
-      }
+    // let partySpecialTDSValid = true;
+    // const newTableErrors3 = partySpecialTDS.map((row) => {
+    //   const rowErrors = {};
+    //   if (!row.tdsWithSec) {
+    //     rowErrors.tdsWithSec = 'Tds Section is required';
+    //     partySpecialTDSValid = false;
+    //   }
+    //   if (!row.rateFrom) {
+    //     rowErrors.rateFrom = 'Rate From is required';
+    //     partySpecialTDSValid = false;
+    //   }
+    //   if (!row.rateTo) {
+    //     rowErrors.rateTo = 'Rate To is required';
+    //     partySpecialTDSValid = false;
+    //   }
+    //   if (!row.tdsWithPer) {
+    //     rowErrors.tdsWithPer = 'Tds % is required';
+    //     partySpecialTDSValid = false;
+    //   }
+    //   if (!row.surchargePer) {
+    //     rowErrors.surchargePer = 'Sur % is required';
+    //     partySpecialTDSValid = false;
+    //   }
+    //   if (!row.edPercentage) {
+    //     rowErrors.edPercentage = 'Ed % is required';
+    //     partySpecialTDSValid = false;
+    //   }
+    //   if (!row.tdsCertifiNo) {
+    //     rowErrors.tdsCertifiNo = 'Tds Certificate No is required';
+    //     partySpecialTDSValid = false;
+    //   }
 
-      return rowErrors;
-    });
-    setPartySpecialTDSErrors(newTableErrors3);
+    //   return rowErrors;
+    // });
+    // setPartySpecialTDSErrors(newTableErrors3);
 
     // let partyChargesExemptionValid = true;
     // const partyChargesExemptionErrors = partyChargesExemption.map((row) => {
@@ -1652,17 +1651,17 @@ export const PartyMaster = () => {
     // });
     // setPartyChargesExemptionErrors(partyChargesExemptionErrors);
 
-    let partyCurrencyMappingValid = true;
-    const partyCurrencyMappingErrors = partyCurrencyMapping.map((row) => {
-      const rowErrors = {};
-      if (!row.transCurrency) {
-        rowErrors.transCurrency = 'Transaction Currency is required';
-        partyCurrencyMappingValid = false;
-      }
+    // let partyCurrencyMappingValid = true;
+    // const partyCurrencyMappingErrors = partyCurrencyMapping.map((row) => {
+    //   const rowErrors = {};
+    //   if (!row.transCurrency) {
+    //     rowErrors.transCurrency = 'Transaction Currency is required';
+    //     partyCurrencyMappingValid = false;
+    //   }
 
-      return rowErrors;
-    });
-    setPartyCurrencyMappingErrors(partyCurrencyMappingErrors);
+    //   return rowErrors;
+    // });
+    // setPartyCurrencyMappingErrors(partyCurrencyMappingErrors);
 
     // let partySalesPersonTaggingValid = true;
     // const newTableErrors4 = partySalesPersonTagging.map((row) => {
@@ -1692,25 +1691,25 @@ export const PartyMaster = () => {
     // });
     // setPartySalesPersonErrors(newTableErrors4);
 
-    let partyTdsExemptedValid = true;
-    const newTableErrors5 = partyTdsExempted.map((row) => {
-      const rowErrors = {};
-      if (!row.tdsExempCerti) {
-        rowErrors.tdsExempCerti = 'Tds Exempted Certificate is required';
-        partyTdsExemptedValid = false;
-      }
-      if (!row.value) {
-        rowErrors.value = 'Value is required';
-        partyTdsExemptedValid = false;
-      }
-      if (!row.finYear) {
-        rowErrors.finYear = 'Fin Year is required';
-        partyTdsExemptedValid = false;
-      }
+    // let partyTdsExemptedValid = true;
+    // const newTableErrors5 = partyTdsExempted.map((row) => {
+    //   const rowErrors = {};
+    //   if (!row.tdsExempCerti) {
+    //     rowErrors.tdsExempCerti = 'Tds Exempted Certificate is required';
+    //     partyTdsExemptedValid = false;
+    //   }
+    //   if (!row.value) {
+    //     rowErrors.value = 'Value is required';
+    //     partyTdsExemptedValid = false;
+    //   }
+    //   if (!row.finYear) {
+    //     rowErrors.finYear = 'Fin Year is required';
+    //     partyTdsExemptedValid = false;
+    //   }
 
-      return rowErrors;
-    });
-    setPartyTdsErrors(newTableErrors5);
+    //   return rowErrors;
+    // });
+    // setPartyTdsErrors(newTableErrors5);
 
     // let partyPartnerTaggingValid = true;
     // const newTableErrors6 = partyPartnerTagging.map((row) => {
@@ -1726,12 +1725,12 @@ export const PartyMaster = () => {
 
     if (
       Object.keys(errors).length === 0 &&
-      partyStateDataValid &&
-      partyAddressDataValid &&
-      partySpecialTDSValid &&
-      partyTdsExemptedValid &&
-      partyCurrencyMappingValid 
-      // &&  partyChargesExemptionValid &&
+      partyAddressDataValid 
+      // && partyStateDataValid &&
+      // partySpecialTDSValid &&
+      // partyTdsExemptedValid &&
+      // partyCurrencyMappingValid &&
+      // partyChargesExemptionValid &&
       // partySalesPersonTaggingValid &&
       // partyDetailsOfDirectorsValid &&
       // partyPartnerTaggingValid
