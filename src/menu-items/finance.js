@@ -60,6 +60,18 @@ const finance = {
           title: 'Party',
           type: 'item',
           url: '/finance/partyMaster'
+        },
+        {
+          id: 'customer',
+          title: 'Customer',
+          type: 'item',
+          url: '/finance/customer'
+        },
+        {
+          id: 'vender',
+          title: 'Vender',
+          type: 'item',
+          url: '/finance/vender'
         }
       ] // No filter applied
     }

@@ -8,6 +8,8 @@ import DocumentTypeMappingMaster from 'views/Finance/DocumentType/documentTypeMa
 import MultipleDocumentIdGeneration from 'views/Finance/DocumentType/multipleDocumentIdGeneration';
 import ReconcileCash from 'views/Finance/Reconcile/ReconcileCash';
 import ReconcileCorp from 'views/Finance/Reconcile/ReconcileCorp';
+import Customer from 'views/Finance/Customer';
+import Vender from 'views/Finance/Vender';
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
 // login option 3 routing
@@ -110,6 +112,14 @@ const FinanceRoute = {
     {
       path: '/finance/partyMaster',
       element: <PartMaster />
+    },
+    {
+      path: '/finance/customer',
+      element: <Customer />
+    },
+    {
+      path: '/finance/vender',
+      element: <Vender />
     },
     {
       path: '/Finance/TaxMaster',
