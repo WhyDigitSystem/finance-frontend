@@ -180,23 +180,23 @@ const TaxInvoiceDetails = () => {
     getAllCurrency();
   }, []);
 
-  useEffect(() => {
-    if (placeOfSupply && placeOfSupply.length === 1) {
-      setFormData((prev) => ({
-        ...prev,
-        placeOfSupply: placeOfSupply[0].placeOfSupply
-      }));
-    }
-  }, [placeOfSupply]);
+  // useEffect(() => {
+  //   if (placeOfSupply && placeOfSupply.length === 1) {
+  //     setFormData((prev) => ({
+  //       ...prev,
+  //       placeOfSupply: placeOfSupply[0].placeOfSupply
+  //     }));
+  //   }
+  // }, [placeOfSupply]);
 
-  useEffect(() => {
-    if (addressType && addressType.length === 1) {
-      setFormData((prev) => ({
-        ...prev,
-        addressType: addressType[0].addressType
-      }));
-    }
-  }, [addressType]);
+  // useEffect(() => {
+  //   if (addressType && addressType.length === 1) {
+  //     setFormData((prev) => ({
+  //       ...prev,
+  //       addressType: addressType[0].addressType
+  //     }));
+  //   }
+  // }, [addressType]);
 
   const handleOpenModalApprove = () => {
     setModalOpen(true);
