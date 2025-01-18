@@ -18,8 +18,10 @@ import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import { getAllActiveCitiesByState, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
 import CommonBulkUpload from 'utils/CommonBulkUpload';
 import UploadIcon from '@mui/icons-material/Upload';
+import SampleFile from '../../assets/sample-files/Sample_Format_Customer_Finance.xlsx';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -28,16 +30,18 @@ export const Customer = () => {
     const [cityList, setCityList] = useState([]);
     const [editId, setEditId] = useState('');
     const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+    const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
     const [uploadOpen, setUploadOpen] = useState(false);
     const [formData, setFormData] = useState({
         customerName: '',
         customerCode: '',
         gstIn: '',
         panNo: '',
+        createdBy: loginUserName,
+        orgId: orgId,
     });
     const [listView, setListView] = useState(false);
     const [listViewData, setListViewData] = useState([]);
-    const [partyTypeData, setPartyTypeData] = useState([]);
     const [empData, setEmpData] = useState([]);
     const [branchData, setBranchData] = useState([]);
     const [tabValue, setTabValue] = useState(0);
@@ -46,8 +50,8 @@ export const Customer = () => {
     };
 
     const listViewColumns = [
-        { accessorKey: 'customerCode', header: 'Customer Code', size: 140 },
-        { accessorKey: 'customerName', header: 'Customer Name', size: 140 },
+        { accessorKey: 'partyCode', header: 'Customer Code', size: 140 },
+        { accessorKey: 'partyName', header: 'Customer Name', size: 140 },
         { accessorKey: 'gstIn', header: 'GST IN', size: 140 },
         { accessorKey: 'panNo', header: 'Pan No', size: 140 }
     ];
@@ -65,16 +69,26 @@ export const Customer = () => {
 
     useEffect(() => {
         getAllCustomerByOrgId();
+        getAllStates();
+        getAllBranches();
+        getAllEmployees();
     }, []);
+
+    useEffect(() => {
+        if (stateList.length > 0) {
+            const availableStates = getAvailableStates();
+            console.log(availableStates);
+        }
+    }, [stateList]);
 
 
     const getAllCustomerByOrgId = async () => {
         try {
-            const response = await apiCalls('get', ``);
+            const response = await apiCalls('get', `master/getAllCustomers?orgId=${orgId}`);
             console.log('API Response:', response);
 
             if (response.status === true) {
-                setPartyTypeData(response.paramObjectsMap.partyTypeVO);
+                setListViewData(response.paramObjectsMap.customersVO);
             } else {
                 console.error('API Error:', response);
             }
@@ -83,25 +97,79 @@ export const Customer = () => {
         }
     };
 
+    const getAllStates = async () => {
+        try {
+            const stateData = await getAllActiveStatesByCountry('INDIA', orgId);
+            setStateList(stateData || []); // Ensure it's an array
+        } catch (error) {
+            console.error('Error fetching states:', error);
+            setStateList([]); // Fallback to an empty array
+        }
+    };
+
+    const getAllCities = async (selectedState, rowId) => {
+        try {
+            const cityData = await getAllActiveCitiesByState(selectedState, orgId);
+            setPartyAddressData((prevData) =>
+                prevData.map((row) =>
+                    row.id === rowId ? { ...row, cityOptions: cityData } : row
+                )
+            );
+        } catch (error) {
+            console.error('Error fetching cities:', error);
+        }
+    };
+
+
+    const getAllBranches = async () => {
+        try {
+            const response = await apiCalls('get', `master/branch?orgid=${orgId}`);
+            console.log('API Response for branch:', response);
+
+            if (response.status === true) {
+                const branchData = response.paramObjectsMap.branchVO.filter((row) => row.active === 'Active');
+                setBranchData(branchData);
+            } else {
+                console.error('API Error:', response);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+    const getAllEmployees = async () => {
+        try {
+            const response = await apiCalls('get', `master/getAllEmployeeByOrgId?orgId=${orgId}`);
+            console.log('API Response for getAllEmployeeByOrgId:', response);
+
+            if (response.status === true) {
+                const empData = response.paramObjectsMap.employeeVO.filter((row) => row.active === 'Active');
+                setEmpData(empData);
+            } else {
+                console.error('API Error:', response);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
 
     const getCustomerById = async (row) => {
         console.log('THE SELECTED getPartyMasterById IS:', row.original.id);
         setEditId(row.original.id);
         try {
-            const response = await apiCalls('get', `?id=${row.original.id}`);
+            const response = await apiCalls('get', `master/getCustomersById?id=${row.original.id}`);
             console.log('API Response:', response);
+
             if (response.status === true) {
                 setListView(false);
-                const particularMaster = response.paramObjectsMap.partyMasterVO[0];
-                console.log('THE PARTICULAR CUSTOMER IS:', particularMaster);
+                const particularMaster = response.paramObjectsMap.customersVO;
 
                 setFormData({
                     ...formData,
-                    customerName: particularMaster.customerName,
-                    customerCode: particularMaster.customerCode,
+                    customerName: particularMaster.partyName,
+                    customerCode: particularMaster.partyCode,
                     gstIn: particularMaster.gstIn,
                     panNo: particularMaster.panNo,
-
                 });
 
                 setPartyStateData(
@@ -117,37 +185,41 @@ export const Customer = () => {
                     }))
                 );
 
-                setPartyAddressData(
-                    particularMaster.partyAddressVO.map((detail) => ({
-                        id: detail.id,
-                        addressType: detail.addressType || '',
-                        addressLine1: detail.addressLine1 || '',
-                        addressLine2: detail.addressLine2 || '',
-                        addressLine3: detail.addressLine3 || '',
-                        businessPlace: detail.businessPlace || '',
-                        city: detail.city || '',
-                        contact: detail.contact || '',
-                        pincode: detail.pincode || '',
-                        state: detail.state || '',
-                        stateGstIn: detail.stateGstIn || ''
-                    }))
-                );
+                const addressData = particularMaster.partyAddressVO.map((detail) => ({
+                    id: detail.id,
+                    addressType: detail.addressType || '',
+                    addressLine1: detail.addressLine1 || '',
+                    addressLine2: detail.addressLine2 || '',
+                    addressLine3: detail.addressLine3 || '',
+                    businessPlace: detail.businessPlace || '',
+                    city: detail.city || '',
+                    contact: detail.contact || '',
+                    pincode: detail.pincode || '',
+                    state: detail.state || '',
+                    stateGstIn: detail.stateGstIn || ''
+                }));
 
-                setPartySalesPersonTagging(
-                    particularMaster.partySalesPersonTaggingVO.map((detail) => ({
-                        id: detail.id,
-                        salesPerson: detail.salesPerson || '',
-                        empCode: detail.empCode || '',
-                        salesBranch: detail.salesBranch || '',
-                        effectiveFrom: detail.effectiveFrom || '',
-                        effectiveTill: detail.effectiveTill || ''
-                    }))
-                );
+                const SalesPersonTaggingData = particularMaster.partySalesPersonTaggingVO.map((detail) => ({
+                    id: detail.id,
+                    salesPerson: detail.salesPerson || '',
+                    empCode: detail.empCode || '',
+                    salesBranch: detail.salesBranch || '',
+                    effectiveFrom: detail.effectiveFrom || '',
+                    effectiveTill: detail.effectiveTill || ''
+                }))
+
+                setPartyAddressData(addressData);
+                setPartySalesPersonTagging(SalesPersonTaggingData);
+
+                if (addressData.length > 0 && addressData[0].state) {
+                    await getAllCities(addressData[0].state);
+                }
             }
         } catch (error) {
             console.error('Error fetching PartyMaster:', error);
         }
     };
+
 
     const handleBulkUploadOpen = () => {
         setUploadOpen(true);
@@ -164,19 +236,15 @@ export const Customer = () => {
     const handleSubmit = () => {
         console.log('Submit clicked');
         handleBulkUploadClose();
+        getAllCustomerByOrgId();
     };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-
-        const updatedFormData = {
-            ...formData,
+        setFormData((prev) => ({
+            ...prev,
             [name]: value,
-        };
-
-        setFormData(updatedFormData);
-
-        setFieldErrors({ ...fieldErrors, [name]: '' });
+        }));
     };
 
     const handleClear = () => {
@@ -304,7 +372,7 @@ export const Customer = () => {
                         ...r,
                         state: value,
                         stateCode: selectedState ? selectedState.stateCode : '',
-                        stateNo: selectedState ? selectedState.stateNumber : ''
+                        stateNo: selectedState ? selectedState.stateNumber : '',
                     }
                     : r
             )
@@ -314,16 +382,21 @@ export const Customer = () => {
             const newErrors = [...prev];
             newErrors[index] = {
                 ...newErrors[index],
-                state: !value ? 'State is required' : ''
+                state: !value ? 'State is required' : '',
             };
             return newErrors;
         });
     };
 
     const getAvailableStates = (currentRowId) => {
-        const selectedStates = partyStateData.filter((row) => row.id !== currentRowId).map((row) => row.state);
-
-        return stateList.filter((state) => !selectedStates.includes(state.stateName));
+        if (!Array.isArray(stateList)) {
+            console.error('stateList is not an array:', stateList);
+            return [];
+        }
+        return stateList.map((state) => ({
+            id: state.id,
+            stateName: state.stateName,
+        }));
     };
 
 
@@ -416,6 +489,7 @@ export const Customer = () => {
 
     const [partyAddressData, setPartyAddressData] = useState([
         {
+            id: 1,
             addressType: '',
             addressLine1: '',
             addressLine2: '',
@@ -425,7 +499,8 @@ export const Customer = () => {
             contact: '',
             pincode: '',
             state: '',
-            stateGstIn: ''
+            stateGstIn: '',
+            cityOptions: [] // Stores city options for this row
         }
     ]);
 
@@ -460,7 +535,8 @@ export const Customer = () => {
             contact: '',
             pincode: '',
             state: '',
-            stateGstIn: ''
+            stateGstIn: '',
+            cityOptions: [] // Initialize city options as empty
         };
         setPartyAddressData([...partyAddressData, newRow]);
         setPartyAddressDataErrors([
@@ -478,7 +554,7 @@ export const Customer = () => {
                 stateGstIn: ''
             }
         ]);
-    };
+    }
 
     const [partySalesPersonTagging, setPartySalesPersonTagging] = useState([
         {
@@ -515,18 +591,7 @@ export const Customer = () => {
             salesPerson: ''
         };
         setPartySalesPersonTagging([...partySalesPersonTagging, newRow]);
-        // setPartySalesPersonErrors([
-        //   ...partySalesPersonErrors,
-        //   {
-        //     effectiveFrom: null,
-        //     effectiveTill: null,
-        //     empCode: '',
-        //     salesBranch: '',
-        //     salesPerson: ''
-        //   }
-        // ]);
     };
-
 
     const handleSave = async () => {
         const errors = {};
@@ -541,9 +606,9 @@ export const Customer = () => {
             errors.panNo = 'Pan No is required';
         }
 
-        if (formData.gstIn === 'YES' && !formData.gstIn) {
+        if (!formData.gstIn) {
             errors.gstIn = 'GST is Required';
-        } else if (formData.gstIn === 'YES' && formData.gstIn.length < 15) {
+        } else if (formData.gstIn.length < 15) {
             errors.gstIn = 'Invalid GST Format';
         }
         setFieldErrors(errors);
@@ -595,34 +660,49 @@ export const Customer = () => {
         });
         setPartyAddressDataErrors(newTableErrors1);
 
+        let partyStateDataValid = true;
+        const newTableErrors2 = partyStateData.map((row) => {
+            const rowErrors = {};
+            if (!row.state) {
+                rowErrors.state = 'State is required';
+                partyStateDataValid = false;
+            }
+            if (!row.gstIn) {
+                rowErrors.gstIn = 'GST In is required';
+                partyStateDataValid = false;
+            }
+            return rowErrors;
+        });
+        setPartyStateDataErrors(newTableErrors2);
+
         if (
             Object.keys(errors).length === 0 &&
             partyAddressDataValid
         ) {
-            const partyAddressDTO = partyAddressData.map((row) => ({
+            const customersAddressDTO = partyAddressData.map((row) => ({
                 addressType: row.addressType,
-                addressLine1: row.addressLine1,
-                addressLine2: row.addressLine2,
-                addressLine3: row.addressLine3,
-                businessPlace: row.businessPlace,
+                addressLane1: row.addressLine1,
+                addressLane2: row.addressLine2,
+                addressLane3: row.addressLine3,
+                bussinesPlace: row.businessPlace,
                 city: row.city,
                 contact: row.contact,
-                pincode: parseInt(row.pincode),
+                pinCode: parseInt(row.pincode),
                 state: row.state,
-                stateGstIn: row.stateGstIn
+                gstnIn: row.stateGstIn
             }));
 
-            const partyStateDTO = partyStateData.map((row) => ({
+            const customersStateDTO = partyStateData.map((row) => ({
                 email: row.email,
                 contactPerson: row.contactPerson,
-                contactPhoneNo: row.contactPhoneNo,
+                phoneNo: row.contactPhoneNo,
                 gstIn: row.gstIn,
                 state: row.state,
                 stateCode: row.stateCode,
                 stateNo: parseInt(row.stateNo)
             }));
 
-            const partySalesPersonTaggingDTO = partySalesPersonTagging.map((row) => ({
+            const customerSalesPersonDTO = partySalesPersonTagging.map((row) => ({
                 effectiveFrom: row.effectiveFrom
                     ? dayjs(row.effectiveFrom).format('YYYY-MM-DD')
                     : null,
@@ -637,29 +717,27 @@ export const Customer = () => {
             const saveData = {
                 ...(editId && { id: editId }),
                 ...formData,
-                creditDays: parseInt(formData.creditDays, 10),
-                creditLimit: parseInt(formData.creditLimit, 10),
-                partyAddressDTO,
-                partyStateDTO,
-                partySalesPersonTaggingDTO
+                customersAddressDTO,
+                customersStateDTO,
+                customerSalesPersonDTO
             };
 
 
             console.log('DATA TO SAVE', saveData);
 
             try {
-                const response = await apiCalls('put', `master/updateCreatePartyMaster`, saveData);
+                const response = await apiCalls('put', `master/createUpdateCustomer`, saveData);
                 if (response.status === true) {
                     console.log('Response:', response);
-                    showToast('success', editId ? ' Party Master Updated Successfully' : 'Party Master created successfully');
+                    showToast('success', editId ? 'Customer Updated Successfully' : 'Customer created successfully');
                     handleClear();
                     getAllCustomerByOrgId();
                 } else {
-                    showToast('error', response.paramObjectsMap.errorMessage || 'Party Master creation failed');
+                    showToast('error', response.paramObjectsMap.errorMessage || 'Customer creation failed');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showToast('An error occurred while saving the Party Master');
+                showToast('An error occurred while saving the Customer');
             }
         } else {
             setFieldErrors(errors);
@@ -686,12 +764,14 @@ export const Customer = () => {
                             title="Upload Files"
                             uploadText="Upload file"
                             downloadText="Sample File"
-                            fileName="sampleFile.xlsx"
+                            fileName="sampleFileForCustomer.xlsx"
                             onSubmit={handleSubmit}
-                            // sampleFileDownload={SampleFile}
+                            sampleFileDownload={SampleFile}
                             handleFileUpload={handleFileUpload}
-                            // apiUrl={`/businesscontroller/excelUploadForCCoa`}
+                            apiUrl={`/master/customerUpload`}
                             screen="PutAway"
+                            loginUser={loginUserName}
+                            orgId={orgId}
                         />
                     )}
                 </div>
@@ -731,7 +811,6 @@ export const Customer = () => {
                                 />
                             </div>
 
-                            {/* {formData.gstRegistered === 'YES' && ( */}
                             <div className="col-md-3 mb-3">
                                 <TextField
                                     id="gstIn"
@@ -746,7 +825,6 @@ export const Customer = () => {
                                     inputProps={{ maxLength: 15 }}
                                 />
                             </div>
-                            {/* )} */}
 
                             <div className="col-md-3 mb-3">
                                 <TextField
@@ -1058,17 +1136,20 @@ export const Customer = () => {
                                                                             onChange={(e) => {
                                                                                 const updatedPartyAddressData = [...partyAddressData];
                                                                                 updatedPartyAddressData[index].state = e.target.value;
+                                                                                updatedPartyAddressData[index].city = '';
                                                                                 setPartyAddressData(updatedPartyAddressData);
+                                                                                getAllCities(e.target.value, row.id);
                                                                             }}
                                                                             className={partyAddressDataErrors[index]?.state ? 'error form-control' : 'form-control'}
                                                                         >
                                                                             <option value="">--Select--</option>
-                                                                            {stateList?.map((row) => (
-                                                                                <option key={row.id} value={row.stateName}>
-                                                                                    {row.stateName}
+                                                                            {stateList?.map((state) => (
+                                                                                <option key={state.id} value={state.stateName}>
+                                                                                    {state.stateName}
                                                                                 </option>
                                                                             ))}
                                                                         </select>
+
                                                                         {partyAddressDataErrors[index]?.state && (
                                                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                                                                 {partyAddressDataErrors[index].state}
@@ -1088,12 +1169,13 @@ export const Customer = () => {
                                                                             className={partyAddressDataErrors[index]?.city ? 'error form-control' : 'form-control'}
                                                                         >
                                                                             <option value="">--Select--</option>
-                                                                            {cityList?.map((row) => (
-                                                                                <option key={row.id} value={row.cityName}>
-                                                                                    {row.cityName}
+                                                                            {row.cityOptions?.map((city) => (
+                                                                                <option key={city.id} value={city.cityName}>
+                                                                                    {city.cityName}
                                                                                 </option>
                                                                             ))}
                                                                         </select>
+
                                                                         {partyAddressDataErrors[index]?.city && (
                                                                             <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].city}</div>
                                                                         )}
@@ -1374,6 +1456,7 @@ export const Customer = () => {
                                                                             <div style={{ color: 'red', fontSize: '12px' }}>{partySalesPersonErrors[index].salesPerson}</div>
                                                                         )}
                                                                     </td>
+
                                                                     <td className="border px-2 py-2">
                                                                         <input
                                                                             type="text"

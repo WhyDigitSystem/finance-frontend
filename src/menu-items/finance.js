@@ -68,8 +68,8 @@ const finance = {
           url: '/finance/customer'
         },
         {
-          id: 'vender',
-          title: 'Vender',
+          id: 'vendor',
+          title: 'Vendor',
           type: 'item',
           url: '/finance/vender'
         }

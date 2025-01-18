@@ -18,6 +18,8 @@ import { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import CommonBulkUpload from 'utils/CommonBulkUpload';
 import UploadIcon from '@mui/icons-material/Upload';
+import { getAllActiveCitiesByState, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
+import SampleFile from '../../assets/sample-files/Sample_Format_Customer_Finance.xlsx';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -26,26 +28,26 @@ export const Vender = () => {
     const [cityList, setCityList] = useState([]);
     const [editId, setEditId] = useState('');
     const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+    const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
     const [uploadOpen, setUploadOpen] = useState(false);
     const [formData, setFormData] = useState({
-        venderName: '',
-        venderCode: '',
+        vendorName: '',
+        vendorName: '',
         gstIn: '',
         panNo: '',
+        createdBy: loginUserName,
+        orgId: orgId,
     });
     const [listView, setListView] = useState(false);
     const [listViewData, setListViewData] = useState([]);
-    const [partyTypeData, setPartyTypeData] = useState([]);
-    const [empData, setEmpData] = useState([]);
-    const [branchData, setBranchData] = useState([]);
     const [tabValue, setTabValue] = useState(0);
     const handleChangeTab = (event, newValue) => {
         setTabValue(newValue);
     };
 
     const listViewColumns = [
-        { accessorKey: 'venderCode', header: 'Vender Code', size: 140 },
-        { accessorKey: 'venderName', header: 'Vender Name', size: 140 },
+        { accessorKey: 'partyCode', header: 'Vender Code', size: 140 },
+        { accessorKey: 'partyName', header: 'Vender Name', size: 140 },
         { accessorKey: 'gstIn', header: 'GST IN', size: 140 },
         { accessorKey: 'panNo', header: 'Pan No', size: 140 }
     ];
@@ -55,24 +57,26 @@ export const Vender = () => {
     };
 
     const [fieldErrors, setFieldErrors] = useState({
-        venderCode: '',
-        venderName: '',
+        vendorCode: '',
+        vendorName: '',
         gstIn: '',
         panNo: '',
     });
 
     useEffect(() => {
-        getAllCustomerByOrgId();
+        getAllVendorByOrgId();
+        getAllStates();
+        getAllCities();
     }, []);
 
 
-    const getAllCustomerByOrgId = async () => {
+    const getAllVendorByOrgId = async () => {
         try {
-            const response = await apiCalls('get', ``);
+            const response = await apiCalls('get', `master/getAllVendors?orgId=${orgId}`);
             console.log('API Response:', response);
 
             if (response.status === true) {
-                setPartyTypeData(response.paramObjectsMap.partyTypeVO);
+                setListViewData(response.paramObjectsMap.customersVO);
             } else {
                 console.error('API Error:', response);
             }
@@ -81,24 +85,47 @@ export const Vender = () => {
         }
     };
 
+    const getAllStates = async () => {
+        try {
+            const stateData = await getAllActiveStatesByCountry('INDIA', orgId);
+            setStateList(stateData || []); // Ensure it's an array
+        } catch (error) {
+            console.error('Error fetching states:', error);
+            setStateList([]); // Fallback to an empty array
+        }
+    };
+
+    const getAllCities = async (selectedState, rowId) => {
+        try {
+            const cityData = await getAllActiveCitiesByState(selectedState, orgId);
+            setPartyAddressData((prevData) =>
+                prevData.map((row) =>
+                    row.id === rowId ? { ...row, cityOptions: cityData } : row
+                )
+            );
+        } catch (error) {
+            console.error('Error fetching cities:', error);
+        }
+    };
+
     const getCustomerById = async (row) => {
         console.log('THE SELECTED getPartyMasterById IS:', row.original.id);
         setEditId(row.original.id);
         try {
-            const response = await apiCalls('get', `?id=${row.original.id}`);
+            const response = await apiCalls('get', `master/getVendorsById?id=${row.original.id}`);
             console.log('API Response:', response);
             if (response.status === true) {
                 setListView(false);
-                const particularMaster = response.paramObjectsMap.partyMasterVO[0];
+                const particularMaster = response.paramObjectsMap.customersVO;
                 console.log('THE PARTICULAR CUSTOMER IS:', particularMaster);
 
                 setFormData({
                     ...formData,
-                    venderName: particularMaster.venderName,
-                    venderCode: particularMaster.venderCode,
+                    vendorName: particularMaster.partyName,
+                    vendorCode: particularMaster.partyCode,
                     gstIn: particularMaster.gstIn,
                     panNo: particularMaster.panNo,
-
+                    orgId: orgId,
                 });
 
                 setPartyStateData(
@@ -114,34 +141,40 @@ export const Vender = () => {
                     }))
                 );
 
-                setPartyAddressData(
-                    particularMaster.partyAddressVO.map((detail) => ({
-                        id: detail.id,
-                        addressType: detail.addressType || '',
-                        addressLine1: detail.addressLine1 || '',
-                        addressLine2: detail.addressLine2 || '',
-                        addressLine3: detail.addressLine3 || '',
-                        businessPlace: detail.businessPlace || '',
-                        city: detail.city || '',
-                        contact: detail.contact || '',
-                        pincode: detail.pincode || '',
-                        state: detail.state || '',
-                        stateGstIn: detail.stateGstIn || ''
-                    }))
-                );
+                const partyAddressVO = particularMaster.partyAddressVO.map((detail) => ({
+                    id: detail.id,
+                    addressType: detail.addressType || '',
+                    addressLine1: detail.addressLine1 || '',
+                    addressLine2: detail.addressLine2 || '',
+                    addressLine3: detail.addressLine3 || '',
+                    businessPlace: detail.businessPlace || '',
+                    city: detail.city,
+                    contact: detail.contact || '',
+                    pincode: detail.pincode || '',
+                    state: detail.state || '',
+                    stateGstIn: detail.stateGstIn || ''
+                }));
 
-                setPartySpecialTDS(
-                    particularMaster.partySpecialTDSVO.map((detail) => ({
-                        id: detail.id,
-                        tdsWithSec: detail.tdsWithSec || '',
-                        rateFrom: detail.rateFrom || '',
-                        rateTo: detail.rateTo || '',
-                        tdsWithPer: detail.tdsWithPer || '',
-                        surchargePer: detail.surchargePer || '',
-                        edPercentage: detail.edPercentage || '',
-                        tdsCertifiNo: detail.tdsCertifiNo || ''
-                    }))
-                );
+                const partySpecialTDSVO = particularMaster.partySpecialTDSVO.map((detail) => ({
+                    id: detail.id,
+                    tdsWithSec: detail.tdsWithSec || '',
+                    rateFrom: detail.rateFrom || '',
+                    rateTo: detail.rateTo || '',
+                    tdsWithPer: detail.tdsWithPer || '',
+                    surchargePer: detail.surchargePer || '',
+                    edPercentage: detail.edPercentage || '',
+                    tdsCertifiNo: detail.tdsCertifiNo || ''
+                }))
+
+                setPartyAddressData(partyAddressVO);
+                setPartySpecialTDS(partySpecialTDSVO);
+
+                if (partyAddressVO.length > 0) {
+                    const firstState = partyAddressVO[0].state;
+                    if (firstState) {
+                        await getAllCities(firstState);
+                    }
+                }
             }
         } catch (error) {
             console.error('Error fetching PartyMaster:', error);
@@ -163,6 +196,7 @@ export const Vender = () => {
     const handleSubmit = () => {
         console.log('Submit clicked');
         handleBulkUploadClose();
+        getAllVendorByOrgId();
     };
 
     const handleInputChange = (e) => {
@@ -181,14 +215,14 @@ export const Vender = () => {
     const handleClear = () => {
         setEditId('');
         setFormData({
-            venderName: '',
-            venderCode: '',
+            vendorName: '',
+            vendorCode: '',
             gstIn: '',
             panNo: '',
         });
         setFieldErrors({
-            venderName: '',
-            venderCode: '',
+            vendorName: '',
+            vendorCode: '',
             gstIn: '',
             panNo: '',
         });
@@ -322,9 +356,14 @@ export const Vender = () => {
     };
 
     const getAvailableStates = (currentRowId) => {
-        const selectedStates = partyStateData.filter((row) => row.id !== currentRowId).map((row) => row.state);
-
-        return stateList.filter((state) => !selectedStates.includes(state.stateName));
+        if (!Array.isArray(stateList)) {
+            console.error('stateList is not an array:', stateList);
+            return [];
+        }
+        return stateList.map((state) => ({
+            id: state.id,
+            stateName: state.stateName,
+        }));
     };
 
     const [partyStateData, setPartyStateData] = useState([
@@ -384,6 +423,7 @@ export const Vender = () => {
 
     const [partyAddressData, setPartyAddressData] = useState([
         {
+            id: 1,
             addressType: '',
             addressLine1: '',
             addressLine2: '',
@@ -393,7 +433,8 @@ export const Vender = () => {
             contact: '',
             pincode: '',
             state: '',
-            stateGstIn: ''
+            stateGstIn: '',
+            cityOptions: [] // Stores city options for this row
         }
     ]);
 
@@ -428,7 +469,8 @@ export const Vender = () => {
             contact: '',
             pincode: '',
             state: '',
-            stateGstIn: ''
+            stateGstIn: '',
+            cityOptions: [] // Initialize city options as empty
         };
         setPartyAddressData([...partyAddressData, newRow]);
         setPartyAddressDataErrors([
@@ -446,7 +488,7 @@ export const Vender = () => {
                 stateGstIn: ''
             }
         ]);
-    };
+    }
 
     const [partySpecialTDS, setPartySpecialTDS] = useState([
         {
@@ -506,11 +548,11 @@ export const Vender = () => {
     const handleSave = async () => {
         const errors = {};
 
-        if (!formData.venderName) {
-            errors.venderName = 'Vender Name is required';
+        if (!formData.vendorName) {
+            errors.vendorName = 'Vender Name is required';
         }
-        if (!formData.venderCode) {
-            errors.venderCode = 'Vender Code is required';
+        if (!formData.vendorCode) {
+            errors.vendorCode = 'Vender Code is required';
         }
         if (!formData.panNo) {
             errors.panNo = 'Pan No is required';
@@ -573,30 +615,30 @@ export const Vender = () => {
             Object.keys(errors).length === 0 &&
             partyAddressDataValid
         ) {
-            const partyAddressDTO = partyAddressData.map((row) => ({
+            const vendorAddressDTO = partyAddressData.map((row) => ({
                 addressType: row.addressType,
-                addressLine1: row.addressLine1,
-                addressLine2: row.addressLine2,
-                addressLine3: row.addressLine3,
-                businessPlace: row.businessPlace,
+                addressLane1: row.addressLine1,
+                addressLane2: row.addressLine2,
+                addressLane3: row.addressLine3,
+                bussinesPlace: row.businessPlace,
                 city: row.city,
                 contact: row.contact,
-                pincode: parseInt(row.pincode),
+                pinCode: parseInt(row.pincode),
                 state: row.state,
-                stateGstIn: row.stateGstIn
+                gstnIn: row.stateGstIn
             }));
 
-            const partyStateDTO = partyStateData.map((row) => ({
+            const vendorStateDTO = partyStateData.map((row) => ({
                 email: row.email,
                 contactPerson: row.contactPerson,
-                contactPhoneNo: row.contactPhoneNo,
+                phoneNo: row.contactPhoneNo,
                 gstIn: row.gstIn,
                 state: row.state,
                 stateCode: row.stateCode,
                 stateNo: parseInt(row.stateNo)
             }));
 
-            const partySpecialTDSDTO = partySpecialTDS.map((row) => ({
+            const specialTdsDTO = partySpecialTDS.map((row) => ({
                 edPercentage: parseInt(row.edPercentage),
                 rateFrom: parseInt(row.rateFrom),
                 rateTo: parseInt(row.rateTo),
@@ -609,29 +651,27 @@ export const Vender = () => {
             const saveData = {
                 ...(editId && { id: editId }),
                 ...formData,
-                creditDays: parseInt(formData.creditDays, 10),
-                creditLimit: parseInt(formData.creditLimit, 10),
-                partyAddressDTO,
-                partyStateDTO,
-                partySpecialTDSDTO,
+                vendorAddressDTO,
+                vendorStateDTO,
+                specialTdsDTO,
             };
 
 
             console.log('DATA TO SAVE', saveData);
 
             try {
-                const response = await apiCalls('put', `master/updateCreatePartyMaster`, saveData);
+                const response = await apiCalls('put', `/master/createUpdateVendor`, saveData);
                 if (response.status === true) {
                     console.log('Response:', response);
-                    showToast('success', editId ? ' Party Master Updated Successfully' : 'Party Master created successfully');
+                    showToast('success', editId ? ' Vender Updated Successfully' : 'Vender created successfully');
                     handleClear();
-                    getAllCustomerByOrgId();
+                    getAllVendorByOrgId();
                 } else {
-                    showToast('error', response.paramObjectsMap.errorMessage || 'Party Master creation failed');
+                    showToast('error', response.paramObjectsMap.errorMessage || 'Vender creation failed');
                 }
             } catch (error) {
                 console.error('Error:', error);
-                showToast('An error occurred while saving the Party Master');
+                showToast('An error occurred while saving the Vender');
             }
         } else {
             setFieldErrors(errors);
@@ -660,10 +700,12 @@ export const Vender = () => {
                             downloadText="Sample File"
                             fileName="sampleFile.xlsx"
                             onSubmit={handleSubmit}
-                            // sampleFileDownload={SampleFile}
+                            sampleFileDownload={SampleFile}
                             handleFileUpload={handleFileUpload}
-                            // apiUrl={`/businesscontroller/excelUploadForCCoa`}
+                            apiUrl={`/master/vendorUpload`}
                             screen="PutAway"
+                            loginUser={loginUserName}
+                            orgId={orgId}
                         />
                     )}
                 </div>
@@ -677,33 +719,32 @@ export const Vender = () => {
 
                             <div className="col-md-3 mb-3">
                                 <TextField
-                                    id="venderName"
+                                    id="vendorName"
                                     fullWidth
-                                    name="venderName"
-                                    label="Vender Name"
+                                    name="vendorName"
+                                    label="Vendor Name"
                                     size="small"
-                                    value={formData.venderName}
+                                    value={formData.vendorName}
                                     onChange={handleInputChange}
-                                    error={fieldErrors.venderName}
-                                    helperText={fieldErrors.venderName}
+                                    error={fieldErrors.vendorName}
+                                    helperText={fieldErrors.vendorName}
                                 />
                             </div>
 
                             <div className="col-md-3 mb-3">
                                 <TextField
-                                    id="venderCode"
+                                    id="vendorCode"
                                     fullWidth
-                                    name="venderCode"
-                                    label="Vender Code"
+                                    name="vendorCode"
+                                    label="Vendor Code"
                                     size="small"
-                                    value={formData.venderCode}
+                                    value={formData.vendorCode}
                                     onChange={handleInputChange}
-                                    error={fieldErrors.venderCode}
-                                    helperText={fieldErrors.venderCode}
+                                    error={fieldErrors.vendorCode}
+                                    helperText={fieldErrors.vendorCode}
                                 />
                             </div>
 
-                            {/* {formData.gstRegistered === 'YES' && ( */}
                             <div className="col-md-3 mb-3">
                                 <TextField
                                     id="gstIn"
@@ -718,7 +759,6 @@ export const Vender = () => {
                                     inputProps={{ maxLength: 15 }}
                                 />
                             </div>
-                            {/* )} */}
 
                             <div className="col-md-3 mb-3">
                                 <TextField
@@ -745,6 +785,7 @@ export const Vender = () => {
                                 </Tabs>
                             </Box>
                             <Box sx={{ padding: 2 }}>
+
                                 {tabValue === 0 && (
                                     <div className="row d-flex ml">
                                         <div className="">
@@ -1030,17 +1071,20 @@ export const Vender = () => {
                                                                             onChange={(e) => {
                                                                                 const updatedPartyAddressData = [...partyAddressData];
                                                                                 updatedPartyAddressData[index].state = e.target.value;
+                                                                                updatedPartyAddressData[index].city = '';
                                                                                 setPartyAddressData(updatedPartyAddressData);
+                                                                                getAllCities(e.target.value, row.id);
                                                                             }}
                                                                             className={partyAddressDataErrors[index]?.state ? 'error form-control' : 'form-control'}
                                                                         >
                                                                             <option value="">--Select--</option>
-                                                                            {stateList?.map((row) => (
-                                                                                <option key={row.id} value={row.stateName}>
-                                                                                    {row.stateName}
+                                                                            {stateList?.map((state) => (
+                                                                                <option key={state.id} value={state.stateName}>
+                                                                                    {state.stateName}
                                                                                 </option>
                                                                             ))}
                                                                         </select>
+
                                                                         {partyAddressDataErrors[index]?.state && (
                                                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                                                                 {partyAddressDataErrors[index].state}
@@ -1060,12 +1104,13 @@ export const Vender = () => {
                                                                             className={partyAddressDataErrors[index]?.city ? 'error form-control' : 'form-control'}
                                                                         >
                                                                             <option value="">--Select--</option>
-                                                                            {cityList?.map((row) => (
-                                                                                <option key={row.id} value={row.cityName}>
-                                                                                    {row.cityName}
+                                                                            {row.cityOptions?.map((city) => (
+                                                                                <option key={city.id} value={city.cityName}>
+                                                                                    {city.cityName}
                                                                                 </option>
                                                                             ))}
                                                                         </select>
+
                                                                         {partyAddressDataErrors[index]?.city && (
                                                                             <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].city}</div>
                                                                         )}

@@ -1,4 +1,5 @@
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, IconButton, Slide, Typography } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 import apiCalls from 'apicall';
 import React, { useState } from 'react';
 import { FaCloudUploadAlt } from 'react-icons/fa';
@@ -16,18 +17,20 @@ const CommonBulkUpload = ({
   downloadText,
   onSubmit,
   sampleFileDownload,
+  fileName,
   handleFileUpload,
-  onOpenClick,
   apiUrl,
-  screen
+  loginUser,
+  screen,
+  orgId
 }) => {
   const [selectedFile, setSelectedFile] = useState(null);
-  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [successDialogOpen, setSuccessDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [successfulUploads, setSuccessfulUploads] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
@@ -51,44 +54,49 @@ const CommonBulkUpload = ({
   };
 
   const handleSubmit = async () => {
+    setIsLoading(true);
+
     if (selectedFile) {
+      const createdBy = loginUser || 'default_user';
       const formData = new FormData();
       formData.append('files', selectedFile);
+      formData.append('createdBy', createdBy);
+      formData.append('orgId', orgId);
+
       try {
         const headers = {
           'Content-Type': 'multipart/form-data'
         };
-        const response = await apiCalls('post', `${apiUrl}`, formData, {}, headers);
-        if (response.status === true) {
-          console.log('File uploaded successfully:', response);
-          const message = response.paramObjectsMap.paramObjectsMap.message;
-          const successfulUploads = response.paramObjectsMap.successfulUploads;
+        const response = await apiCalls('post', apiUrl, formData, {}, headers);
+
+        if (response.paramObjectsMap.status === true) {
+          const message = response.paramObjectsMap.message;
+          const uploadsCount = response.paramObjectsMap.successfulUploads || 0;
           setSuccessMessage(message);
-          setSuccessfulUploads(successfulUploads);
+          setSuccessfulUploads(uploadsCount);
           setSuccessDialogOpen(true);
           setSelectedFile(null);
+          setIsLoading(false);
           showToast('success', message);
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || `${screen} Bulk Uploaded failed`);
-          // showToast('error', response.paramObjectsMap.errorMessage || 'Buyer Order Bulk Uploaded failed');
-          setErrorMessage(response.paramObjectsMap.errorMessage);
+          const errorMessage = response.paramObjectsMap.errorMessage || 'Upload failed';
+          setErrorMessage(errorMessage);
           setErrorDialogOpen(true);
+          setIsLoading(false);
         }
       } catch (error) {
         console.error('Error:', error);
         showToast('error', ' failed');
-        setErrorMessage(errorMessage);
+        setErrorMessage('An unexpected error occurred during the upload.');
         setErrorDialogOpen(true);
       }
 
       handleClose();
-      onSubmit();
+      if (onSubmit) onSubmit();
     }
   };
 
-  const Transition = React.forwardRef(function Transition(props, ref) {
-    return <Slide direction="up" ref={ref} {...props} />;
-  });
+  const Transition = React.forwardRef((props, ref) => <Slide direction="up" ref={ref} {...props} />);
 
   return (
     <>
@@ -149,6 +157,7 @@ const CommonBulkUpload = ({
               size="small"
               component="a"
               href={sampleFileDownload}
+              download={fileName}
               variant="outlined"
               color="secondary"
               startIcon={<FiDownload />}
@@ -163,10 +172,22 @@ const CommonBulkUpload = ({
           </div>
         </DialogContent>
         <DialogActions className="d-flex justify-content-between p-2">
-          <Button onClick={handleClose} color="secondary" style={{ textTransform: 'none', padding: '4px 8px' }}>
+          <Button
+            onClick={handleClose}
+            color="secondary"
+            style={{ textTransform: 'none', padding: '4px 8px' }}
+            disabled={isLoading} // Disable cancel button while loading to prevent accidental changes
+          >
             Cancel
           </Button>
-          <Button onClick={handleSubmit} color="secondary" variant="contained" style={{ textTransform: 'none', padding: '4px 8px' }}>
+          <Button
+            onClick={handleSubmit}
+            color="secondary"
+            variant="contained"
+            style={{ textTransform: 'none', padding: '4px 8px', display: 'flex', alignItems: 'center' }}
+            disabled={isLoading} // Disable the button during loading
+          >
+            {isLoading ? <CircularProgress size={20} color="inherit" style={{ marginRight: '8px' }} /> : null}
             Submit
           </Button>
         </DialogActions>
