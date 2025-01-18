@@ -88,10 +88,10 @@ export const Vender = () => {
     const getAllStates = async () => {
         try {
             const stateData = await getAllActiveStatesByCountry('INDIA', orgId);
-            setStateList(stateData || []); // Ensure it's an array
+            setStateList(stateData || []);
         } catch (error) {
             console.error('Error fetching states:', error);
-            setStateList([]); // Fallback to an empty array
+            setStateList([]);
         }
     };
 
@@ -112,12 +112,12 @@ export const Vender = () => {
         console.log('THE SELECTED getPartyMasterById IS:', row.original.id);
         setEditId(row.original.id);
         try {
-            const response = await apiCalls('get', `master/getVendorsById?id=${row.original.id}`);
+            const response = await apiCalls('get', `master/getCustomersById?id=${row.original.id}`);
             console.log('API Response:', response);
+
             if (response.status === true) {
                 setListView(false);
                 const particularMaster = response.paramObjectsMap.customersVO;
-                console.log('THE PARTICULAR CUSTOMER IS:', particularMaster);
 
                 setFormData({
                     ...formData,
@@ -125,7 +125,6 @@ export const Vender = () => {
                     vendorCode: particularMaster.partyCode,
                     gstIn: particularMaster.gstIn,
                     panNo: particularMaster.panNo,
-                    orgId: orgId,
                 });
 
                 setPartyStateData(
@@ -141,18 +140,19 @@ export const Vender = () => {
                     }))
                 );
 
-                const partyAddressVO = particularMaster.partyAddressVO.map((detail) => ({
+                const addressData = particularMaster.partyAddressVO.map((detail) => ({
                     id: detail.id,
                     addressType: detail.addressType || '',
                     addressLine1: detail.addressLine1 || '',
                     addressLine2: detail.addressLine2 || '',
                     addressLine3: detail.addressLine3 || '',
                     businessPlace: detail.businessPlace || '',
-                    city: detail.city,
+                    city: detail.city || '',
                     contact: detail.contact || '',
                     pincode: detail.pincode || '',
                     state: detail.state || '',
-                    stateGstIn: detail.stateGstIn || ''
+                    stateGstIn: detail.stateGstIn || '',
+                    cityOptions: [],
                 }));
 
                 const partySpecialTDSVO = particularMaster.partySpecialTDSVO.map((detail) => ({
@@ -166,15 +166,16 @@ export const Vender = () => {
                     tdsCertifiNo: detail.tdsCertifiNo || ''
                 }))
 
-                setPartyAddressData(partyAddressVO);
-                setPartySpecialTDS(partySpecialTDSVO);
-
-                if (partyAddressVO.length > 0) {
-                    const firstState = partyAddressVO[0].state;
-                    if (firstState) {
-                        await getAllCities(firstState);
+                for (const row of addressData) {
+                    if (row.state) {
+                        const cityData = await getAllActiveCitiesByState(row.state, orgId);
+                        row.cityOptions = cityData;
                     }
                 }
+
+                setPartyAddressData(addressData);
+                setPartySpecialTDS(partySpecialTDSVO);
+
             }
         } catch (error) {
             console.error('Error fetching PartyMaster:', error);

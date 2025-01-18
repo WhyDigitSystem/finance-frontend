@@ -27,7 +27,6 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const Customer = () => {
     const [stateList, setStateList] = useState([]);
-    const [cityList, setCityList] = useState([]);
     const [editId, setEditId] = useState('');
     const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
     const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
@@ -74,13 +73,6 @@ export const Customer = () => {
         getAllEmployees();
     }, []);
 
-    useEffect(() => {
-        if (stateList.length > 0) {
-            const availableStates = getAvailableStates();
-            console.log(availableStates);
-        }
-    }, [stateList]);
-
 
     const getAllCustomerByOrgId = async () => {
         try {
@@ -100,10 +92,10 @@ export const Customer = () => {
     const getAllStates = async () => {
         try {
             const stateData = await getAllActiveStatesByCountry('INDIA', orgId);
-            setStateList(stateData || []); // Ensure it's an array
+            setStateList(stateData || []);
         } catch (error) {
             console.error('Error fetching states:', error);
-            setStateList([]); // Fallback to an empty array
+            setStateList([]);
         }
     };
 
@@ -119,7 +111,6 @@ export const Customer = () => {
             console.error('Error fetching cities:', error);
         }
     };
-
 
     const getAllBranches = async () => {
         try {
@@ -196,7 +187,8 @@ export const Customer = () => {
                     contact: detail.contact || '',
                     pincode: detail.pincode || '',
                     state: detail.state || '',
-                    stateGstIn: detail.stateGstIn || ''
+                    stateGstIn: detail.stateGstIn || '',
+                    cityOptions: [],
                 }));
 
                 const SalesPersonTaggingData = particularMaster.partySalesPersonTaggingVO.map((detail) => ({
@@ -208,18 +200,21 @@ export const Customer = () => {
                     effectiveTill: detail.effectiveTill || ''
                 }))
 
+                for (const row of addressData) {
+                    if (row.state) {
+                        const cityData = await getAllActiveCitiesByState(row.state, orgId);
+                        row.cityOptions = cityData;
+                    }
+                }
+
                 setPartyAddressData(addressData);
                 setPartySalesPersonTagging(SalesPersonTaggingData);
 
-                if (addressData.length > 0 && addressData[0].state) {
-                    await getAllCities(addressData[0].state);
-                }
             }
         } catch (error) {
             console.error('Error fetching PartyMaster:', error);
         }
     };
-
 
     const handleBulkUploadOpen = () => {
         setUploadOpen(true);
@@ -372,7 +367,7 @@ export const Customer = () => {
                         ...r,
                         state: value,
                         stateCode: selectedState ? selectedState.stateCode : '',
-                        stateNo: selectedState ? selectedState.stateNumber : '',
+                        stateNo: selectedState ? selectedState.stateNumber : ''
                     }
                     : r
             )
@@ -382,7 +377,7 @@ export const Customer = () => {
             const newErrors = [...prev];
             newErrors[index] = {
                 ...newErrors[index],
-                state: !value ? 'State is required' : '',
+                state: !value ? 'State is required' : ''
             };
             return newErrors;
         });
@@ -393,12 +388,12 @@ export const Customer = () => {
             console.error('stateList is not an array:', stateList);
             return [];
         }
+
         return stateList.map((state) => ({
             id: state.id,
             stateName: state.stateName,
         }));
     };
-
 
     const handleEmployeeChange = (row, index, event) => {
         const selectedName = event.target.value;
@@ -1168,7 +1163,7 @@ export const Customer = () => {
                                                                             }}
                                                                             className={partyAddressDataErrors[index]?.city ? 'error form-control' : 'form-control'}
                                                                         >
-                                                                            <option value="">--Select--</option>
+                                                                            <option value="">--Select City--</option>
                                                                             {row.cityOptions?.map((city) => (
                                                                                 <option key={city.id} value={city.cityName}>
                                                                                     {city.cityName}
@@ -1177,7 +1172,9 @@ export const Customer = () => {
                                                                         </select>
 
                                                                         {partyAddressDataErrors[index]?.city && (
-                                                                            <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].city}</div>
+                                                                            <div style={{ color: 'red', fontSize: '12px' }}>
+                                                                                {partyAddressDataErrors[index].city}
+                                                                            </div>
                                                                         )}
                                                                     </td>
 
