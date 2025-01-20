@@ -26,6 +26,12 @@ const finance = {
           url: '/finance/listOfValues/listOfValues'
         },
         {
+          id: 'group',
+          title: 'COA',
+          type: 'item',
+          url: '/finance/Group'
+        },
+        {
           id: 'chargeTypeRequest',
           title: 'Charge Code',
           type: 'item',
@@ -43,12 +49,7 @@ const finance = {
           type: 'item',
           url: '/finance/HsnSacCode'
         },
-        {
-          id: 'group',
-          title: 'COA',
-          type: 'item',
-          url: '/finance/Group'
-        },
+        
         {
           id: 'costCenter',
           title: 'Cost Center Values',

@@ -20,8 +20,12 @@ const CommonBulkUpload = ({
   fileName,
   handleFileUpload,
   apiUrl,
-  loginUser,
+  loginUser, // Accept loginUserName as a prop
+  clientCode,
+  finYear,
+  month,
   screen,
+  clientName,
   orgId
 }) => {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -61,6 +65,10 @@ const CommonBulkUpload = ({
       const formData = new FormData();
       formData.append('files', selectedFile);
       formData.append('createdBy', createdBy);
+      formData.append('clientCode', clientCode);
+      formData.append('clientName', clientName);
+      formData.append('finYear', finYear);
+      formData.append('month', month);
       formData.append('orgId', orgId);
 
       try {
@@ -69,20 +77,25 @@ const CommonBulkUpload = ({
         };
         const response = await apiCalls('post', apiUrl, formData, {}, headers);
 
-        if (response.paramObjectsMap.status === true) {
-          const message = response.paramObjectsMap.message;
-          const uploadsCount = response.paramObjectsMap.successfulUploads || 0;
+        if (response.status === true) {
+          const message = response.paramObjectsMap.message || 'Upload successful';
+          const uploadsCount = response.paramObjectsMap.successfulUploads;
           setSuccessMessage(message);
           setSuccessfulUploads(uploadsCount);
           setSuccessDialogOpen(true);
-          setSelectedFile(null);
+          // setSelectedFile(null);
           setIsLoading(false);
           showToast('success', message);
+        } else if (response.paramObjectsMap.status === false) {
+          showToast('error', response.paramObjectsMap.uploadResult.failureReasons[0] || 'Bulk Uploaded failed');
+          setIsLoading(false);
         } else {
+          showToast('error', response.paramObjectsMap.errorMessage || `${screen} Bulk Uploaded failed`);
           const errorMessage = response.paramObjectsMap.errorMessage || 'Upload failed';
           setErrorMessage(errorMessage);
           setErrorDialogOpen(true);
           setIsLoading(false);
+          console.log(errorMessage)
         }
       } catch (error) {
         console.error('Error:', error);
