@@ -1,4 +1,5 @@
 import ClearIcon from '@mui/icons-material/Clear';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
@@ -18,9 +19,11 @@ import 'react-tabs/style/react-tabs.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
+import COASample from '../../assets/sample-files/COASample.xlsx';
 
 const Group = () => {
   const theme = useTheme();
@@ -34,14 +37,17 @@ const Group = () => {
   const [currencies, setCurrencies] = useState([]);
   const [editId, setEditId] = useState('');
   const [groupList, setGroupList] = useState([]);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [formData, setFormData] = useState({
     groupName: '',
     gstTaxFlag: '',
-    gstType:'',
-    gstPercentage:'',
+    gstType: '',
+    gstPercentage: '',
     accountCode: '',
     coaList: '',
     accountGroupName: '',
+    pBFlag: '',
+    natureOfAccount: '',
     type: '',
     interBranchAc: false,
     controllAc: false,
@@ -53,16 +59,17 @@ const Group = () => {
   const [fieldErrors, setFieldErrors] = useState({
     groupName: false,
     gstTaxFlag: false,
-    gstType:false,
-    gstPercentage:false,
+    gstType: false,
+    gstPercentage: false,
     accountCode: false,
+    pBFlag: false,
+    natureOfAccount: false,
     coaList: false,
     accountGroupName: false,
     type: false,
     interBranchAc: false,
     controllAc: false,
     category: false,
-
     currency: false,
     active: false
   });
@@ -120,8 +127,8 @@ const Group = () => {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const inputValue = type === 'checkbox' ? checked : value;
-    let validInputValue = inputValue; 
-   
+    let validInputValue = inputValue;
+
     // Validation for accountCode (alphanumeric only)
     if (name === 'accountCode') {
       const alphanumericPattern = /^[a-zA-Z0-9]*$/; // Pattern for alphanumeric
@@ -133,7 +140,7 @@ const Group = () => {
     }
     // Update form data
     setFormData((prevState) => ({ ...prevState, [name]: validInputValue }));
-  
+
     // Handle dynamic validation
     if (name === 'gstTaxFlag') {
       if (value === 'NA') {
@@ -141,17 +148,17 @@ const Group = () => {
         setFormData((prevState) => ({
           ...prevState,
           gstType: '',
-          gstPercentage: '',
+          gstPercentage: ''
         }));
         // Clear field errors
         setFieldErrors((prevState) => ({
           ...prevState,
           gstType: '',
-          gstPercentage: '',
+          gstPercentage: ''
         }));
       }
     }
-  
+
     // Validate other fields if required
     let errorMessage = '';
     if (name === 'gstPercentage' && !value) {
@@ -160,7 +167,7 @@ const Group = () => {
     if (name === 'gstType' && !value) {
       errorMessage = 'GST Type is required.';
     }
-  
+
     // Set field errors
     setFieldErrors((prevState) => ({ ...prevState, [name]: errorMessage }));
   };
@@ -205,6 +212,10 @@ const Group = () => {
       errors.category = 'Category is required';
     }
 
+    if (!formData.pBFlag) {
+      errors.category = 'PB is required';
+    }
+
     // if (!formData.currency) {
     //   errors.currency = 'Currency is required';
     // }
@@ -234,16 +245,17 @@ const Group = () => {
         currency: 'INR',
         ...(formData.gstTaxFlag !== 'NA' && {
           gstType: formData.gstType,
-          gstPercentage: formData.gstPercentage,
+          gstPercentage: formData.gstPercentage
         }),
         ...(formData.gstTaxFlag === 'NA' && {
           gstType: 'NA',
-          gstPercentage: 0,
+          gstPercentage: 0
         }),
         orgId: orgId,
         createdBy: loginUserName,
+        pBFlag: formData.pBFlag,
+        natureOfAccount: formData.natureOfAccount
       };
-      
 
       console.log('DATA TO SAVE', saveData); // Add this line to log the save data
 
@@ -280,10 +292,12 @@ const Group = () => {
       interBranchAc: false,
       controllAc: false,
       category: '',
-      gstType:'',
-      gstPercentage:'',
+      gstType: '',
+      gstPercentage: '',
       branch: '',
       // currency: '',
+      pBFlag: '',
+      natureOfAccount: '',
       active: false
     });
     setFieldErrors({
@@ -292,9 +306,11 @@ const Group = () => {
       accountCode: false,
       coaList: false,
       accountGroupName: false,
+      pBFlag: false,
+      natureOfAccount: false,
       type: false,
-      gstType:false,
-      gstPercentage:false,
+      gstType: false,
+      gstPercentage: false,
       interBranchAc: false,
       controllAc: false,
       category: false,
@@ -313,6 +329,8 @@ const Group = () => {
       accountCode: false,
       coaList: false,
       accountGroupName: false,
+      pBFlag: false,
+      natureOfAccount: false,
       type: false,
       interBranchAc: false,
       controllAc: false,
@@ -351,11 +369,13 @@ const Group = () => {
           coaList: exRate.coaList,
           accountGroupName: exRate.accountGroupName,
           type: exRate.type,
-          gstType:exRate.gstType,
-          gstPercentage:exRate.gstPercentage,
+          gstType: exRate.gstType,
+          gstPercentage: exRate.gstPercentage,
           interBranchAc: exRate.interBranchAc,
           controllAc: exRate.controllAc,
           category: exRate.category,
+          pBFlag: exRate.pBFlag,
+          natureOfAccount: exRate.natureOfAccount,
           branch: exRate.branch,
           id: exRate.id,
           currency: 'INR',
@@ -385,6 +405,23 @@ const Group = () => {
     }
   };
 
+  const handleBulkUploadOpen = () => {
+    setUploadOpen(true); // Open dialog
+  };
+
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false); // Close dialog
+  };
+
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
+
   return (
     <>
       <div>
@@ -395,8 +432,25 @@ const Group = () => {
           <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
           <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleListView} />
-          <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
+          <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />
+          <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} />
         </div>
+        {uploadOpen && (
+          <CommonBulkUpload
+            open={uploadOpen}
+            handleClose={handleBulkUploadClose}
+            title="Upload Files"
+            uploadText="Upload file"
+            downloadText="Sample File"
+            onSubmit={handleSubmit}
+            sampleFileDownload={COASample}
+            handleFileUpload={handleFileUpload}
+            // apiUrl={`transaction/excelUploadForBrs?branch="CHENNAI"&branchCode="MAAW"&client="CASIO"&createdBy=${loginUserName}&customer="UNI"&finYear="2024"&orgId=${orgId}`}
+            apiUrl={`master/excelUploadForGroupLedger?createdBy=${loginUserName}&orgId=${orgId}`}
+            screen="COA"
+          ></CommonBulkUpload>
+        )}
+
         {/* <div className="d-flex justify-content-between">
           <h1 className="text-xl font-semibold mb-3">Group / Ledger</h1>
         </div> */}
@@ -492,65 +546,63 @@ const Group = () => {
               </FormControl>
             </div> */}
             {/* GST Tax Flag */}
-    <div className="col-md-3 mb-2">
-      <FormControl fullWidth size="small">
-        <InputLabel id="gstTaxFlag">GST Tax Flag</InputLabel>
-        <Select
-          labelId="gstTaxFlag"
-          id="gstTaxFlag"
-          label="GST Tax Flag"
-          onChange={handleInputChange}
-          name="gstTaxFlag"
-          value={formData.gstTaxFlag}
-        >
-          <MenuItem value="INPUT TAX">Input Tax</MenuItem>
-          <MenuItem value="OUTPUT TAX">Output Tax</MenuItem>
-          <MenuItem value="NA">NA</MenuItem>
-        </Select>
-        {fieldErrors.gstTaxFlag && <FormHelperText style={{ color: 'red' }}>{fieldErrors.gstTaxFlag}</FormHelperText>}
-      </FormControl>
-    </div>
+            <div className="col-md-3 mb-2">
+              <FormControl fullWidth size="small">
+                <InputLabel id="gstTaxFlag">GST Tax Flag</InputLabel>
+                <Select
+                  labelId="gstTaxFlag"
+                  id="gstTaxFlag"
+                  label="GST Tax Flag"
+                  onChange={handleInputChange}
+                  name="gstTaxFlag"
+                  value={formData.gstTaxFlag}
+                >
+                  <MenuItem value="INPUT TAX">Input Tax</MenuItem>
+                  <MenuItem value="OUTPUT TAX">Output Tax</MenuItem>
+                  <MenuItem value="NA">NA</MenuItem>
+                </Select>
+                {fieldErrors.gstTaxFlag && <FormHelperText style={{ color: 'red' }}>{fieldErrors.gstTaxFlag}</FormHelperText>}
+              </FormControl>
+            </div>
 
-    {/* GST Type - Conditional Rendering */}
-    {formData.gstTaxFlag !== 'NA' && (
-      <div className="col-md-3 mb-3">
-        <FormControl fullWidth size="small">
-          <InputLabel id="gstType">GST Type</InputLabel>
-          <Select
-            labelId="gstType"
-            id="gstType"
-            label="GST Type"
-            onChange={handleInputChange}
-            name="gstType"
-            value={formData.gstType}
-          >
-            <MenuItem value="INTRA">INTRA</MenuItem>
-            <MenuItem value="INTER">INTER</MenuItem>
-          </Select>
-          {fieldErrors.gstType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.gstType}</FormHelperText>}
-        </FormControl>
-      </div>
-    )}
+            {/* GST Type - Conditional Rendering */}
+            {formData.gstTaxFlag !== 'NA' && (
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <InputLabel id="gstType">GST Type</InputLabel>
+                  <Select
+                    labelId="gstType"
+                    id="gstType"
+                    label="GST Type"
+                    onChange={handleInputChange}
+                    name="gstType"
+                    value={formData.gstType}
+                  >
+                    <MenuItem value="INTRA">INTRA</MenuItem>
+                    <MenuItem value="INTER">INTER</MenuItem>
+                  </Select>
+                  {fieldErrors.gstType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.gstType}</FormHelperText>}
+                </FormControl>
+              </div>
+            )}
 
-    {/* GST Percentage - Conditional Rendering */}
-    {formData.gstTaxFlag !== 'NA' && (
-      <div className="col-md-3 mb-3">
-        <FormControl fullWidth variant="filled">
-          <TextField
-            id="gstPercentage"
-            label="GST %"
-            size="small"
-            placeholder="Enter GST %"
-            onChange={handleInputChange}
-            name="gstPercentage"
-            value={formData.gstPercentage}
-          />
-          {fieldErrors.gstPercentage && (
-            <FormHelperText style={{ color: 'red' }}>{fieldErrors.gstPercentage}</FormHelperText>
-          )}
-        </FormControl>
-      </div>
-    )}
+            {/* GST Percentage - Conditional Rendering */}
+            {formData.gstTaxFlag !== 'NA' && (
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="gstPercentage"
+                    label="GST %"
+                    size="small"
+                    placeholder="Enter GST %"
+                    onChange={handleInputChange}
+                    name="gstPercentage"
+                    value={formData.gstPercentage}
+                  />
+                  {fieldErrors.gstPercentage && <FormHelperText style={{ color: 'red' }}>{fieldErrors.gstPercentage}</FormHelperText>}
+                </FormControl>
+              </div>
+            )}
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
@@ -604,36 +656,6 @@ const Group = () => {
               </FormControl>
             </div>
 
-            <div className="col-md-3 mb-2">
-              <FormGroup>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={formData.interBranchAc}
-                      onChange={handleInputChange}
-                      name="interBranchAc"
-                      sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
-                    />
-                  }
-                  label="Interbranch A/c"
-                />
-              </FormGroup>
-            </div>
-            <div className="col-md-3 mb-2">
-              <FormGroup>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={formData.controllAc}
-                      onChange={handleInputChange}
-                      name="controllAc"
-                      sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
-                    />
-                  }
-                  label="Control A/c"
-                />
-              </FormGroup>
-            </div>
             <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <InputLabel id="demo-simple-select-label">Category</InputLabel>
@@ -672,6 +694,42 @@ const Group = () => {
             </div>
 
             <div className="col-md-3 mb-3">
+              <FormControl fullWidth size="small">
+                <InputLabel id="demo-simple-select-label">P/B Flag</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  label="pBFlag"
+                  onChange={handleInputChange}
+                  name="pBFlag"
+                  value={formData.pBFlag}
+                >
+                  <MenuItem value="P">Profit And Loss</MenuItem>
+                  <MenuItem value="B">Balance Sheet</MenuItem>
+                </Select>
+                {fieldErrors.pBFlag && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
+              </FormControl>
+            </div>
+            <div className="col-md-3 mb-3">
+              <FormControl fullWidth size="small">
+                <InputLabel id="demo-simple-select-label">Nature Of Account</InputLabel>
+                <Select
+                  labelId="demo-simple-select-label"
+                  id="demo-simple-select"
+                  label="natureOfAccount"
+                  onChange={handleInputChange}
+                  name="natureOfAccount"
+                  value={formData.natureOfAccount}
+                >
+                  <MenuItem value="Db">Db</MenuItem>
+                  <MenuItem value="Cr">Cr</MenuItem>
+                  <MenuItem value="NA">N/A</MenuItem>
+                </Select>
+                {fieldErrors.natureOfAccount && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
+              </FormControl>
+            </div>
+
+            <div className="col-md-3 mb-3">
               <FormGroup>
                 <FormControlLabel
                   control={
@@ -683,6 +741,36 @@ const Group = () => {
                     />
                   }
                   label="Active"
+                />
+              </FormGroup>
+            </div>
+            <div className="col-md-3 mb-2">
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.interBranchAc}
+                      onChange={handleInputChange}
+                      name="interBranchAc"
+                      sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                    />
+                  }
+                  label="Interbranch A/c"
+                />
+              </FormGroup>
+            </div>
+            <div className="col-md-3 mb-2">
+              <FormGroup>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={formData.controllAc}
+                      onChange={handleInputChange}
+                      name="controllAc"
+                      sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                    />
+                  }
+                  label="Control A/c"
                 />
               </FormGroup>
             </div>

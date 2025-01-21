@@ -14,14 +14,14 @@ const getMenuItems = () => {
 
   // Define default menu items
   const defaultMenuItems = {
-    items: [dashboard, ar, ap]
+    items: [dashboard, companySetup, admin, basicMaster, finance, genTransaction, ar, ap, finalReport]
   };
 
   // Define menu items based on localStorage value
   switch (localStorageValue) {
     case 'ROLE_SUPER_ADMIN':
       return {
-        items: [dashboard, companySetup, basicMaster,]
+        items: [dashboard, companySetup, basicMaster]
       };
     case 'admin': // Correctly match the value
       return {

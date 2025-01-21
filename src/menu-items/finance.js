@@ -49,7 +49,7 @@ const finance = {
           type: 'item',
           url: '/finance/HsnSacCode'
         },
-        
+
         {
           id: 'costCenter',
           title: 'Cost Center Values',
@@ -72,7 +72,7 @@ const finance = {
           id: 'vendor',
           title: 'Vendor',
           type: 'item',
-          url: '/finance/vender'
+          url: '/finance/vendor'
         }
       ] // No filter applied
     }

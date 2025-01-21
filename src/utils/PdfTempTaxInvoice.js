@@ -246,7 +246,7 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
             <div style={{ ...styles.beforeAfter, ...styles.after }} />
           </div>
 
-          <div style={styles1.container}>
+          {/* <div style={styles1.container}>
             <div>
               <div style={styles1.row}>
                 <span style={styles1.label}>Job Number / Dt. :</span>
@@ -307,7 +307,7 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
                 <span style={styles1.value}></span>
               </div>
             </div>
-          </div>
+          </div> */}
 
           {/* <!-- Table Section --> */}
           <table
