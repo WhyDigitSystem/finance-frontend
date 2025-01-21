@@ -5,7 +5,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Tab, Tabs } from '@mui/material';
+import { FormHelperText, Tab, Tabs } from '@mui/material';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import apiCalls from 'apicall';
@@ -21,6 +21,10 @@ import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import { getAllActiveCitiesByState, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
 import CommonBulkUpload from 'utils/CommonBulkUpload';
 import UploadIcon from '@mui/icons-material/Upload';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import SampleFile from '../../assets/sample-files/Sample_Format_Customer_Finance.xlsx';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -36,6 +40,10 @@ export const Customer = () => {
         customerCode: '',
         gstIn: '',
         panNo: '',
+        creditLimit: '',
+        creditDays: '',
+        creditTerms: '',
+        gstRegistered: '',
         createdBy: loginUserName,
         orgId: orgId,
     });
@@ -52,7 +60,11 @@ export const Customer = () => {
         { accessorKey: 'partyCode', header: 'Customer Code', size: 140 },
         { accessorKey: 'partyName', header: 'Customer Name', size: 140 },
         { accessorKey: 'gstIn', header: 'GST IN', size: 140 },
-        { accessorKey: 'panNo', header: 'Pan No', size: 140 }
+        { accessorKey: 'panNo', header: 'Pan No', size: 140 },
+        { accessorKey: 'creditLimit', header: 'Credit Limit', size: 140 },
+        { accessorKey: 'creditDays', header: 'Credit Days', size: 140 },
+        { accessorKey: 'creditTerms', header: 'Credit Terms', size: 140 },
+        { accessorKey: 'gstRegistered', header: 'Tax Registered', size: 140 },
     ];
 
     const handleView = () => {
@@ -64,6 +76,10 @@ export const Customer = () => {
         customerName: '',
         gstIn: '',
         panNo: '',
+        creditLimit: '',
+        creditDays: '',
+        creditTerms: '',
+        gstRegistered: '',
     });
 
     useEffect(() => {
@@ -161,6 +177,10 @@ export const Customer = () => {
                     customerCode: particularMaster.partyCode,
                     gstIn: particularMaster.gstIn,
                     panNo: particularMaster.panNo,
+                    creditLimit: particularMaster.creditLimit,
+                    creditDays: particularMaster.creditDays,
+                    creditTerms: particularMaster.creditTerms,
+                    gstRegistered: particularMaster.gstRegistered,
                 });
 
                 setPartyStateData(
@@ -249,12 +269,20 @@ export const Customer = () => {
             customerCode: '',
             gstIn: '',
             panNo: '',
+            creditLimit: '',
+            creditDays: '',
+            creditTerms: '',
+            gstRegistered: '',
         });
         setFieldErrors({
             customerName: '',
             customerCode: '',
             gstIn: '',
             panNo: '',
+            creditLimit: '',
+            creditDays: '',
+            creditTerms: '',
+            gstRegistered: '',
         });
         setPartyStateData([
             {
@@ -600,6 +628,18 @@ export const Customer = () => {
         if (!formData.panNo) {
             errors.panNo = 'Pan No is required';
         }
+        if (!formData.creditLimit) {
+            errors.creditLimit = 'Credit Limit is required';
+        }
+        if (!formData.creditDays) {
+            errors.creditDays = 'Credit Days is required';
+        }
+        if (!formData.creditTerms) {
+            errors.creditTerms = 'Credit Terms is required';
+        }
+        if (!formData.gstRegistered) {
+            errors.gstRegistered = 'Tax Registered is required';
+        }
 
         if (!formData.gstIn) {
             errors.gstIn = 'GST is Required';
@@ -660,10 +700,6 @@ export const Customer = () => {
             const rowErrors = {};
             if (!row.state) {
                 rowErrors.state = 'State is required';
-                partyStateDataValid = false;
-            }
-            if (!row.gstIn) {
-                rowErrors.gstIn = 'GST In is required';
                 partyStateDataValid = false;
             }
             return rowErrors;
@@ -801,8 +837,8 @@ export const Customer = () => {
                                     size="small"
                                     value={formData.customerCode}
                                     onChange={handleInputChange}
-                                    error={fieldErrors.customerCode}
-                                    helperText={fieldErrors.customerCode}
+                                // error={fieldErrors.customerCode}
+                                // helperText={fieldErrors.customerCode}
                                 />
                             </div>
 
@@ -815,8 +851,8 @@ export const Customer = () => {
                                     size="small"
                                     value={formData.gstIn}
                                     onChange={handleInputChange}
-                                    error={fieldErrors.gstIn}
-                                    helperText={fieldErrors.gstIn}
+                                    // error={fieldErrors.gstIn}
+                                    // helperText={fieldErrors.gstIn}
                                     inputProps={{ maxLength: 15 }}
                                 />
                             </div>
@@ -830,9 +866,74 @@ export const Customer = () => {
                                     size="small"
                                     value={formData.panNo}
                                     onChange={handleInputChange}
-                                    error={fieldErrors.panNo}
-                                    helperText={fieldErrors.panNo}
+                                // error={fieldErrors.panNo}
+                                // helperText={fieldErrors.panNo}
                                 />
+                            </div>
+
+                            <div className="col-md-3 mb-3">
+                                <TextField
+                                    id="creditLimit"
+                                    fullWidth
+                                    name="creditLimit"
+                                    label="Credit Limit"
+                                    size="small"
+                                    type="number"
+                                    value={formData.creditLimit}
+                                    onChange={handleInputChange}
+                                // error={fieldErrors.creditLimit}
+                                // helperText={fieldErrors.creditLimit}
+                                />
+                            </div>
+
+                            <div className="col-md-3 mb-3">
+                                <TextField
+                                    id="creditDays"
+                                    fullWidth
+                                    name="creditDays"
+                                    label="Credit Days"
+                                    size="small"
+                                    type="number"
+                                    value={formData.creditDays}
+                                    onChange={handleInputChange}
+                                // error={fieldErrors.creditDays}
+                                // helperText={fieldErrors.creditDays}
+                                />
+                            </div>
+
+                            <div className="col-md-3 mb-3">
+                                <FormControl variant="outlined" fullWidth size="small">
+                                    <InputLabel id="creditTerms">Credit Terms</InputLabel>
+                                    <Select
+                                        labelId="creditTerms"
+                                        label="Credit Terms"
+                                        name="creditTerms"
+                                        value={formData.creditTerms}
+                                        onChange={handleInputChange}
+                                    >
+                                        <MenuItem value="Prepaid">Prepaid</MenuItem>
+                                        <MenuItem value="Immediate">Immediate</MenuItem>
+                                        <MenuItem value="Credit">Credit</MenuItem>
+                                    </Select>
+                                    {/* {fieldErrors.creditTerms && <FormHelperText>{fieldErrors.creditTerms}</FormHelperText>} */}
+                                </FormControl>
+                            </div>
+
+                            <div className="col-md-3 mb-3">
+                                <FormControl variant="outlined" fullWidth size="small">
+                                    <InputLabel id="gstRegistered">Tax Registered</InputLabel>
+                                    <Select
+                                        labelId="gstRegistered"
+                                        label="Tax Registered"
+                                        name="gstRegistered"
+                                        value={formData.gstRegistered}
+                                        onChange={handleInputChange}
+                                    >
+                                        <MenuItem value="Yes">Yes</MenuItem>
+                                        <MenuItem value="No">No</MenuItem>
+                                    </Select>
+                                    {/* {fieldErrors.gstRegistered && <FormHelperText>{fieldErrors.gstRegistered}</FormHelperText>} */}
+                                </FormControl>
                             </div>
 
                         </div>

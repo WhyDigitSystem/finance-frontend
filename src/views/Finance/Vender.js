@@ -19,6 +19,10 @@ import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import CommonBulkUpload from 'utils/CommonBulkUpload';
 import UploadIcon from '@mui/icons-material/Upload';
 import { getAllActiveCitiesByState, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import SampleFile from '../../assets/sample-files/Sample_Format_Customer_Finance.xlsx';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -35,6 +39,10 @@ export const Vender = () => {
         vendorName: '',
         gstIn: '',
         panNo: '',
+        creditLimit: '',
+        creditDays: '',
+        creditTerms: '',
+        taxRegistered: '',
         createdBy: loginUserName,
         orgId: orgId,
     });
@@ -49,7 +57,11 @@ export const Vender = () => {
         { accessorKey: 'partyCode', header: 'Vender Code', size: 140 },
         { accessorKey: 'partyName', header: 'Vender Name', size: 140 },
         { accessorKey: 'gstIn', header: 'GST IN', size: 140 },
-        { accessorKey: 'panNo', header: 'Pan No', size: 140 }
+        { accessorKey: 'panNo', header: 'Pan No', size: 140 },
+        { accessorKey: 'creditLimit', header: 'Credit Limit', size: 140 },
+        { accessorKey: 'creditDays', header: 'Credit Days', size: 140 },
+        { accessorKey: 'creditTerms', header: 'Credit Terms', size: 140 },
+        { accessorKey: 'taxRegistered', header: 'Tax Registered', size: 140 }
     ];
 
     const handleView = () => {
@@ -61,6 +73,10 @@ export const Vender = () => {
         vendorName: '',
         gstIn: '',
         panNo: '',
+        creditLimit: '',
+        creditDays: '',
+        creditTerms: '',
+        taxRegistered: ''
     });
 
     useEffect(() => {
@@ -125,6 +141,10 @@ export const Vender = () => {
                     vendorCode: particularMaster.partyCode,
                     gstIn: particularMaster.gstIn,
                     panNo: particularMaster.panNo,
+                    creditLimit: particularMaster.creditLimit,
+                    creditDays: particularMaster.creditDays,
+                    creditTerms: particularMaster.creditTerms,
+                    taxRegistered: particularMaster.taxRegistered
                 });
 
                 setPartyStateData(
@@ -220,12 +240,20 @@ export const Vender = () => {
             vendorCode: '',
             gstIn: '',
             panNo: '',
+            creditLimit: '',
+            creditDays: '',
+            creditTerms: '',
+            taxRegistered: ''
         });
         setFieldErrors({
             vendorName: '',
             vendorCode: '',
             gstIn: '',
             panNo: '',
+            creditLimit: '',
+            creditDays: '',
+            creditTerms: '',
+            taxRegistered: ''
         });
         setPartyStateData([
             {
@@ -558,6 +586,18 @@ export const Vender = () => {
         if (!formData.panNo) {
             errors.panNo = 'Pan No is required';
         }
+        if (!formData.creditLimit) {
+            errors.creditLimit = 'Credit Limit is required';
+        }
+        if (!formData.creditDays) {
+            errors.creditDays = 'Credit Days is required';
+        }
+        if (!formData.creditTerms) {
+            errors.creditTerms = 'Credit Terms is required';
+        }
+        if (!formData.taxRegistered) {
+            errors.taxRegistered = 'Tax Registered is required';
+        }
         if (!formData.gstIn) {
             errors.gstIn = 'GST is Required';
         } else if (formData.gstIn.length < 15) {
@@ -643,10 +683,10 @@ export const Vender = () => {
                 edPercentage: parseInt(row.edPercentage),
                 rateFrom: parseInt(row.rateFrom),
                 rateTo: parseInt(row.rateTo),
-                surchargePer: parseInt(row.surchargePer),
-                tdsCertifiNo: row.tdsCertifiNo,
-                tdsWithPer: parseInt(row.tdsWithPer),
-                tdsWithSec: row.tdsWithSec
+                surPercentage: parseInt(row.surchargePer),
+                tdsCertificateNo: row.tdsCertifiNo,
+                whPercentage: parseInt(row.tdsWithPer),
+                whSection: row.tdsWithSec
             }));
 
             const saveData = {
@@ -741,8 +781,8 @@ export const Vender = () => {
                                     size="small"
                                     value={formData.vendorCode}
                                     onChange={handleInputChange}
-                                    error={fieldErrors.vendorCode}
-                                    helperText={fieldErrors.vendorCode}
+                                // error={fieldErrors.vendorCode}
+                                // helperText={fieldErrors.vendorCode}
                                 />
                             </div>
 
@@ -755,8 +795,8 @@ export const Vender = () => {
                                     size="small"
                                     value={formData.gstIn}
                                     onChange={handleInputChange}
-                                    error={fieldErrors.gstIn}
-                                    helperText={fieldErrors.gstIn}
+                                    // error={fieldErrors.gstIn}
+                                    // helperText={fieldErrors.gstIn}
                                     inputProps={{ maxLength: 15 }}
                                 />
                             </div>
@@ -770,9 +810,74 @@ export const Vender = () => {
                                     size="small"
                                     value={formData.panNo}
                                     onChange={handleInputChange}
-                                    error={fieldErrors.panNo}
-                                    helperText={fieldErrors.panNo}
+                                // error={fieldErrors.panNo}
+                                // helperText={fieldErrors.panNo}
                                 />
+                            </div>
+
+                            <div className="col-md-3 mb-3">
+                                <TextField
+                                    id="creditLimit"
+                                    fullWidth
+                                    name="creditLimit"
+                                    label="Credit Limit"
+                                    size="small"
+                                    type="number"
+                                    value={formData.creditLimit}
+                                    onChange={handleInputChange}
+                                // error={fieldErrors.creditLimit}
+                                // helperText={fieldErrors.creditLimit}
+                                />
+                            </div>
+
+                            <div className="col-md-3 mb-3">
+                                <TextField
+                                    id="creditDays"
+                                    fullWidth
+                                    name="creditDays"
+                                    label="Credit Days"
+                                    size="small"
+                                    type="number"
+                                    value={formData.creditDays}
+                                    onChange={handleInputChange}
+                                // error={fieldErrors.creditDays}
+                                // helperText={fieldErrors.creditDays}
+                                />
+                            </div>
+
+                            <div className="col-md-3 mb-3">
+                                <FormControl variant="outlined" fullWidth size="small">
+                                    <InputLabel id="creditTerms">Credit Terms</InputLabel>
+                                    <Select
+                                        labelId="creditTerms"
+                                        label="Credit Terms"
+                                        name="creditTerms"
+                                        value={formData.creditTerms}
+                                        onChange={handleInputChange}
+                                    >
+                                        <MenuItem value="Prepaid">Prepaid</MenuItem>
+                                        <MenuItem value="Immediate">Immediate</MenuItem>
+                                        <MenuItem value="Credit">Credit</MenuItem>
+                                    </Select>
+                                    {/* {fieldErrors.creditTerms && <FormHelperText>{fieldErrors.creditTerms}</FormHelperText>} */}
+                                </FormControl>
+                            </div>
+
+                            <div className="col-md-3 mb-3">
+                                <FormControl variant="outlined" fullWidth size="small">
+                                    <InputLabel id="taxRegistered">Tax Registered</InputLabel>
+                                    <Select
+                                        labelId="taxRegistered"
+                                        label="Tax Registered"
+                                        name="taxRegistered"
+                                        value={formData.taxRegistered}
+                                        onChange={handleInputChange}
+                                    >
+                                        <MenuItem value="Yes">Yes</MenuItem>
+                                        <MenuItem value="No">No</MenuItem>
+                                    </Select>
+                                    {/* {fieldErrors.taxRegistered && <FormHelperText>{fieldErrors.taxRegistered}</FormHelperText>} */}
+                                </FormControl>
                             </div>
 
                         </div>

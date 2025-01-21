@@ -42,6 +42,7 @@ export const PartyMaster = () => {
     accountName: '',
     accountNo: '',
     accType: '',
+    creditTerms: '',
     accountType: '',
     active: true,
     addressOfBranch: '',
@@ -120,6 +121,7 @@ export const PartyMaster = () => {
     accountName: '',
     accountNo: '',
     accountType: '',
+    creditTerms: '',
     active: true,
     addressOfBranch: '',
     agentName: '',
@@ -356,6 +358,7 @@ export const PartyMaster = () => {
           accountName: particularMaster.accountName,
           accountNo: particularMaster.accountNo || '',
           accType: particularMaster.accType,
+          creditTerms: particularMaster.creditTerms,
           accountType: particularMaster.accountType,
           active: particularMaster.active === 'Active',
           addressOfBranch: particularMaster.addressOfBranch,
@@ -542,6 +545,7 @@ export const PartyMaster = () => {
       accountName: '',
       accountNo: '',
       accountType: '',
+      creditTerms: '',
       active: true,
       addressOfBranch: '',
       agentName: '',
@@ -594,6 +598,7 @@ export const PartyMaster = () => {
       accountName: '',
       accountNo: '',
       accountType: '',
+      creditTerms: '',
       active: true,
       addressOfBranch: '',
       agentName: '',
@@ -1815,6 +1820,7 @@ export const PartyMaster = () => {
         ...formData,
         creditDays: parseInt(formData.creditDays, 10),
         creditLimit: parseInt(formData.creditLimit, 10),
+        creditTerms: formData.creditTerms,
         partyAddressDTO,
         partyStateDTO,
         partyDetailsOfDirectorsDTO,
@@ -2091,7 +2097,7 @@ export const PartyMaster = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.gstRegistered}>
-                  <InputLabel id="gstRegistered">GST Registered</InputLabel>
+                  <InputLabel id="gstRegistered">Tax Registered</InputLabel>
                   <Select
                     labelId="gstRegistered"
                     label="GST Registered"
