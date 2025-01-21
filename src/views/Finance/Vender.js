@@ -42,7 +42,7 @@ export const Vender = () => {
         creditLimit: '',
         creditDays: '',
         creditTerms: '',
-        taxRegistered: '',
+        gstRegistered: '',
         createdBy: loginUserName,
         orgId: orgId,
     });
@@ -61,7 +61,7 @@ export const Vender = () => {
         { accessorKey: 'creditLimit', header: 'Credit Limit', size: 140 },
         { accessorKey: 'creditDays', header: 'Credit Days', size: 140 },
         { accessorKey: 'creditTerms', header: 'Credit Terms', size: 140 },
-        { accessorKey: 'taxRegistered', header: 'Tax Registered', size: 140 }
+        { accessorKey: 'gstRegistered', header: 'Tax Registered', size: 140 }
     ];
 
     const handleView = () => {
@@ -76,7 +76,7 @@ export const Vender = () => {
         creditLimit: '',
         creditDays: '',
         creditTerms: '',
-        taxRegistered: ''
+        gstRegistered: ''
     });
 
     useEffect(() => {
@@ -144,7 +144,7 @@ export const Vender = () => {
                     creditLimit: particularMaster.creditLimit,
                     creditDays: particularMaster.creditDays,
                     creditTerms: particularMaster.creditTerms,
-                    taxRegistered: particularMaster.taxRegistered
+                    gstRegistered: particularMaster.gstRegistered
                 });
 
                 setPartyStateData(
@@ -243,7 +243,7 @@ export const Vender = () => {
             creditLimit: '',
             creditDays: '',
             creditTerms: '',
-            taxRegistered: ''
+            gstRegistered: ''
         });
         setFieldErrors({
             vendorName: '',
@@ -253,7 +253,7 @@ export const Vender = () => {
             creditLimit: '',
             creditDays: '',
             creditTerms: '',
-            taxRegistered: ''
+            gstRegistered: ''
         });
         setPartyStateData([
             {
@@ -580,29 +580,6 @@ export const Vender = () => {
         if (!formData.vendorName) {
             errors.vendorName = 'Vender Name is required';
         }
-        if (!formData.vendorCode) {
-            errors.vendorCode = 'Vender Code is required';
-        }
-        if (!formData.panNo) {
-            errors.panNo = 'Pan No is required';
-        }
-        if (!formData.creditLimit) {
-            errors.creditLimit = 'Credit Limit is required';
-        }
-        if (!formData.creditDays) {
-            errors.creditDays = 'Credit Days is required';
-        }
-        if (!formData.creditTerms) {
-            errors.creditTerms = 'Credit Terms is required';
-        }
-        if (!formData.taxRegistered) {
-            errors.taxRegistered = 'Tax Registered is required';
-        }
-        if (!formData.gstIn) {
-            errors.gstIn = 'GST is Required';
-        } else if (formData.gstIn.length < 15) {
-            errors.gstIn = 'Invalid GST Format';
-        }
         setFieldErrors(errors);
 
         let partyAddressDataValid = true;
@@ -610,42 +587,6 @@ export const Vender = () => {
             const rowErrors = {};
             if (!row.state) {
                 rowErrors.state = 'State is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.businessPlace) {
-                rowErrors.businessPlace = 'Business Place is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.stateGstIn) {
-                rowErrors.stateGstIn = 'State GstIn is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.city) {
-                rowErrors.city = 'City Name is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.addressType) {
-                rowErrors.addressType = 'Address Type is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.addressLine1) {
-                rowErrors.addressLine1 = 'Address Line1 is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.addressLine2) {
-                rowErrors.addressLine2 = 'Address Line2 is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.addressLine3) {
-                rowErrors.addressLine3 = 'Address Line3 is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.pincode) {
-                rowErrors.pincode = 'Pin Code is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.contact) {
-                rowErrors.contact = 'Contact is required';
                 partyAddressDataValid = false;
             }
             return rowErrors;
@@ -692,6 +633,7 @@ export const Vender = () => {
             const saveData = {
                 ...(editId && { id: editId }),
                 ...formData,
+                taxRegistered: formData.gstRegistered,
                 vendorAddressDTO,
                 vendorStateDTO,
                 specialTdsDTO,
@@ -865,18 +807,18 @@ export const Vender = () => {
 
                             <div className="col-md-3 mb-3">
                                 <FormControl variant="outlined" fullWidth size="small">
-                                    <InputLabel id="taxRegistered">Tax Registered</InputLabel>
+                                    <InputLabel id="gstRegistered">Tax Registered</InputLabel>
                                     <Select
-                                        labelId="taxRegistered"
+                                        labelId="gstRegistered"
                                         label="Tax Registered"
-                                        name="taxRegistered"
-                                        value={formData.taxRegistered}
+                                        name="gstRegistered"
+                                        value={formData.gstRegistered}
                                         onChange={handleInputChange}
                                     >
                                         <MenuItem value="Yes">Yes</MenuItem>
                                         <MenuItem value="No">No</MenuItem>
                                     </Select>
-                                    {/* {fieldErrors.taxRegistered && <FormHelperText>{fieldErrors.taxRegistered}</FormHelperText>} */}
+                                    {/* {fieldErrors.gstRegistered && <FormHelperText>{fieldErrors.gstRegistered}</FormHelperText>} */}
                                 </FormControl>
                             </div>
 

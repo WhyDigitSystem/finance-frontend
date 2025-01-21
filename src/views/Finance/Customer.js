@@ -622,30 +622,6 @@ export const Customer = () => {
         if (!formData.customerName) {
             errors.customerName = 'Customer Name is required';
         }
-        if (!formData.customerCode) {
-            errors.customerCode = 'Customer Code is required';
-        }
-        if (!formData.panNo) {
-            errors.panNo = 'Pan No is required';
-        }
-        if (!formData.creditLimit) {
-            errors.creditLimit = 'Credit Limit is required';
-        }
-        if (!formData.creditDays) {
-            errors.creditDays = 'Credit Days is required';
-        }
-        if (!formData.creditTerms) {
-            errors.creditTerms = 'Credit Terms is required';
-        }
-        if (!formData.gstRegistered) {
-            errors.gstRegistered = 'Tax Registered is required';
-        }
-
-        if (!formData.gstIn) {
-            errors.gstIn = 'GST is Required';
-        } else if (formData.gstIn.length < 15) {
-            errors.gstIn = 'Invalid GST Format';
-        }
         setFieldErrors(errors);
 
         let partyAddressDataValid = true;
@@ -653,42 +629,6 @@ export const Customer = () => {
             const rowErrors = {};
             if (!row.state) {
                 rowErrors.state = 'State is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.businessPlace) {
-                rowErrors.businessPlace = 'Business Place is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.stateGstIn) {
-                rowErrors.stateGstIn = 'State GstIn is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.city) {
-                rowErrors.city = 'City Name is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.addressType) {
-                rowErrors.addressType = 'Address Type is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.addressLine1) {
-                rowErrors.addressLine1 = 'Address Line1 is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.addressLine2) {
-                rowErrors.addressLine2 = 'Address Line2 is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.addressLine3) {
-                rowErrors.addressLine3 = 'Address Line3 is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.pincode) {
-                rowErrors.pincode = 'Pin Code is required';
-                partyAddressDataValid = false;
-            }
-            if (!row.contact) {
-                rowErrors.contact = 'Contact is required';
                 partyAddressDataValid = false;
             }
             return rowErrors;

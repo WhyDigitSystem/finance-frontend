@@ -72,7 +72,7 @@ const finance = {
           id: 'vendor',
           title: 'Vendor',
           type: 'item',
-          url: '/finance/vendor'
+          url: '/finance/vender'
         },
         {
           id: 'taxMaster',
