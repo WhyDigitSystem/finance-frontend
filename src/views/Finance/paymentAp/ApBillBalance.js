@@ -258,7 +258,7 @@ const ApBillBalance = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.PartyMasterVO);
+        setListViewData(response.paramObjectsMap.apBillBalanceVO);
       } else {
         console.error('API Error:', response);
       }
@@ -444,6 +444,18 @@ const ApBillBalance = () => {
     }
   };
 
+  useEffect(() => {
+    if (currencies.length === 1) {
+      handleInputChange({ target: { name: "currency", value: currencies[0].currency } });
+    }
+  }, [currencies]);
+
+  useEffect(() => {
+    if (partyList.length === 1) {
+      handleInputChange({ target: { name: "partyName", value: partyList[0].partyName } });
+    }
+  }, [partyList]);
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
@@ -589,6 +601,7 @@ const ApBillBalance = () => {
                     onChange={handleInputChange}
                     name="currency"
                     value={formData.currency}
+                    // disabled={currencies.length === 1}
                   >
                     {currencies.map((currency) => (
                       <MenuItem key={currency.id} value={currency.currency}>
