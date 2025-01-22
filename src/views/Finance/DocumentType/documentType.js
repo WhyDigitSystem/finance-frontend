@@ -54,17 +54,12 @@ export const DocumentTypeMaster = () => {
   ];
   const [listViewData, setListViewData] = useState([]);
   const [screenList, setScreenList] = useState([]);
-  const [customerList, setCustomerList] = useState([]);
-  const [clientList, setClientList] = useState([]);
+  // const [customerList, setCustomerList] = useState([]);
+  // const [clientList, setClientList] = useState([]);
 
-  const handleChange = (event, newValue) => {
-    setValue(newValue);
-  };
   useEffect(() => {
     getAllScreens();
     getAllDocumentType();
-    // getAllCustomers();
-    getAllClients();
   }, []);
 
   const getAllScreens = async () => {
@@ -74,21 +69,6 @@ export const DocumentTypeMaster = () => {
 
       if (response.status === true) {
         setScreenList(response.paramObjectsMap.finScreen);
-      } else {
-        console.error('API Error:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  const getAllClients = async () => {
-    try {
-      const response = await apiCalls('get', `warehousemastercontroller/getClientAndClientCodeByOrgId?orgId=${orgId}`);
-      console.log('API Response:', response);
-
-      if (response.status === true) {
-        setClientList(response.paramObjectsMap.CustomerVO);
       } else {
         console.error('API Error:', response);
       }
@@ -130,16 +110,16 @@ export const DocumentTypeMaster = () => {
           active: particularClient.active === 'Active' ? true : false
         });
 
-        const alreadySelectedClient = particularClient.documentTypeDetailsVO.map((i) => {
-          const foundClient = clientList.find((cl) => cl.client === i.client);
-          console.log(`Searching for branch with code ${i.client}:`, foundClient);
-          return {
-            id: i.id,
-            client: foundClient ? foundClient.client : 'Not Found',
-            clientCode: foundClient.clientCode ? foundClient.clientCode : 'Not Found'
-          };
-        });
-        setClientTableData(alreadySelectedClient);
+        // const alreadySelectedClient = particularClient.documentTypeDetailsVO.map((i) => {
+        //   const foundClient = clientList.find((cl) => cl.client === i.client);
+        //   console.log(`Searching for branch with code ${i.client}:`, foundClient);
+        //   return {
+        //     id: i.id,
+        //     client: foundClient ? foundClient.client : 'Not Found',
+        //     clientCode: foundClient.clientCode ? foundClient.clientCode : 'Not Found'
+        //   };
+        // });
+        // setClientTableData(alreadySelectedClient);
       } else {
         console.error('API Error:', response);
       }
@@ -235,26 +215,26 @@ export const DocumentTypeMaster = () => {
     }
   };
 
-  const getAvailableClients = (currentRowId) => {
-    const selectedClients = clientTableData.filter((row) => row.id !== currentRowId).map((row) => row.client);
-    return clientList.filter((client) => !selectedClients.includes(client.client));
-  };
+  // const getAvailableClients = (currentRowId) => {
+  //   const selectedClients = clientTableData.filter((row) => row.id !== currentRowId).map((row) => row.client);
+  //   return clientList.filter((client) => !selectedClients.includes(client.client));
+  // };
 
-  const handleClientChange = (row, index, event) => {
-    const value = event.target.value;
-    const selectedClient = clientList.find((client) => client.client === value);
-    setClientTableData((prev) =>
-      prev.map((r) => (r.id === row.id ? { ...r, client: value, clientCode: selectedClient ? selectedClient.clientCode : '' } : r))
-    );
-    setClientTableErrors((prev) => {
-      const newErrors = [...prev];
-      newErrors[index] = {
-        ...newErrors[index],
-        client: !value ? 'Client is required' : ''
-      };
-      return newErrors;
-    });
-  };
+  // const handleClientChange = (row, index, event) => {
+  //   const value = event.target.value;
+  //   const selectedClient = clientList.find((client) => client.client === value);
+  //   setClientTableData((prev) =>
+  //     prev.map((r) => (r.id === row.id ? { ...r, client: value, clientCode: selectedClient ? selectedClient.clientCode : '' } : r))
+  //   );
+  //   setClientTableErrors((prev) => {
+  //     const newErrors = [...prev];
+  //     newErrors[index] = {
+  //       ...newErrors[index],
+  //       client: !value ? 'Client is required' : ''
+  //     };
+  //     return newErrors;
+  //   });
+  // };
 
   const handleClear = () => {
     setFormData({

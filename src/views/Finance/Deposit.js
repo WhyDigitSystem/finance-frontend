@@ -39,15 +39,14 @@ const Deposit = () => {
   const [formData, setFormData] = useState({
     orgId: orgId,
     depositMode: '',
-    // docId: '',
     docDate: dayjs(),
     receivedFrom: '',
     chequeNo: '',
     chequeDate: dayjs(),
     chequeBank: '',
     bankName: '',
-    currency: '',
-    exRate: '',
+    currency: 'INR',
+    exRate: 1,
     depositAmount: '',
     totalCreditAmount: 0,
     totalDebitAmount: 0,
@@ -94,7 +93,7 @@ const Deposit = () => {
     { accessorKey: 'currency', header: 'Currency', size: 140 },
     { accessorKey: 'exchangeRate', header: 'Ex.Rate', size: 140 },
     { accessorKey: 'chequeNo', header: 'Ref No', size: 140 },
-    { accessorKey: 'docId', header: 'document No', size: 140 }
+    { accessorKey: 'docId', header: 'Document No', size: 140 }
   ];
 
   const handleClear = () => {
@@ -522,6 +521,9 @@ const Deposit = () => {
       case 'receivedFrom':
         if (!/^[A-Za-z\s]*$/.test(value)) errorMessage = 'Invalid format';
         break;
+      // case 'remarks':
+      //   if (!/^[A-Za-z\ /-s]*$/.test(value)) errorMessage = 'Invalid format';
+      //   break;
       case 'depositAmount':
         if (isNaN(value)) {
           errorMessage = 'Invalid format';
@@ -603,7 +605,7 @@ const Deposit = () => {
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
-                  <TextField id="docId" label="document No" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
+                  <TextField id="docId" label="Document No" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled" size="small">

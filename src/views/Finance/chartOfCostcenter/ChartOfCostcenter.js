@@ -264,7 +264,6 @@ export const ChartOfCostcenter = () => {
 
   const handleSave = async () => {
     const errors = {};
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
     let detailsTableDataValid = true;
     const newTableErrors1 = detailsTableData.map((row) => {
@@ -277,7 +276,6 @@ export const ChartOfCostcenter = () => {
         rowErrors.costCenterName = 'Cost Center Code is required';
         detailsTableDataValid = false;
       }
-
       if (!row.credit) {
         rowErrors.credit = 'Credit is required';
         detailsTableDataValid = false;
@@ -379,7 +377,7 @@ export const ChartOfCostcenter = () => {
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
           costCenterCode: !table[table.length - 1].costCenterCode ? 'Cost Center Code is required' : '',
-          costCenterName: !table[table.length - 1].costCenterName ? 'cost Center Name is required' : '',
+          costCenterName: !table[table.length - 1].costCenterName ? 'Cost Center Name is required' : '',
           debit: !table[table.length - 1].debit ? 'Debit is required' : '',
           credit: !table[table.length - 1].credit ? 'Credit is required' : ''
         };
@@ -656,6 +654,193 @@ export const ChartOfCostcenter = () => {
                               <tbody>
                                 {detailsTableData.map((row, index) => (
                                   <tr key={row.id}>
+                                    {/* Delete Action */}
+                                    <td className="border px-2 py-2 text-center">
+                                      <ActionButton
+                                        title="Delete"
+                                        icon={DeleteIcon}
+                                        onClick={() =>
+                                          handleDeleteRow(
+                                            row.id,
+                                            detailsTableData,
+                                            setDetailsTableData,
+                                            detailsTableErrors,
+                                            setDetailsTableErrors
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                    <td className="text-center">
+                                      <div className="pt-2">{index + 1}</div>
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.costCenterCode}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const nameRegex = /^[A-Za-z0-9/ \-]*$/;
+                                          if (nameRegex.test(value)) {
+                                            setDetailsTableData((prev) =>
+                                              prev.map((r) =>
+                                                r.id === row.id ? { ...r, costCenterCode: value } : r
+                                              )
+                                            );
+                                            setDetailsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                costCenterCode: !value ? 'Cost Center Name is required' : '',
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setDetailsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                costCenterCode: 'Only numeric characters are allowed',
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={detailsTableErrors[index]?.costCenterCode ? 'error form-control' : 'form-control'}
+                                      />
+                                      {detailsTableErrors[index]?.costCenterCode && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {detailsTableErrors[index].costCenterCode}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.costCenterName}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const nameRegex = /^[A-Za-z0-9/ \-]*$/;
+                                          if (nameRegex.test(value)) {
+                                            setDetailsTableData((prev) =>
+                                              prev.map((r) =>
+                                                r.id === row.id ? { ...r, costCenterName: value } : r
+                                              )
+                                            );
+                                            setDetailsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                costCenterName: !value ? 'Cost Center Name is required' : '',
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setDetailsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                costCenterName: 'Only numeric characters are allowed',
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={detailsTableErrors[index]?.costCenterName ? 'error form-control' : 'form-control'}
+                                      />
+                                      {detailsTableErrors[index]?.costCenterName && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {detailsTableErrors[index].costCenterName}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.credit}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setDetailsTableData((prev) =>
+                                              prev.map((r) =>
+                                                r.id === row.id ? { ...r, credit: value } : r
+                                              )
+                                            );
+                                            setDetailsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                credit: !value ? 'Credit is required' : '',
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setDetailsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                credit: 'Only numeric characters are allowed',
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={detailsTableErrors[index]?.credit ? 'error form-control' : 'form-control'}
+                                      />
+                                      {detailsTableErrors[index]?.credit && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {detailsTableErrors[index].credit}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.debit}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          const numericRegex = /^[0-9]*$/;
+                                          if (numericRegex.test(value)) {
+                                            setDetailsTableData((prev) =>
+                                              prev.map((r) =>
+                                                r.id === row.id ? { ...r, debit: value } : r
+                                              )
+                                            );
+                                            setDetailsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                debit: !value ? 'Debit is required' : '',
+                                              };
+                                              return newErrors;
+                                            });
+                                          } else {
+                                            setDetailsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                debit: 'Only numeric characters are allowed',
+                                              };
+                                              return newErrors;
+                                            });
+                                          }
+                                        }}
+                                        className={detailsTableErrors[index]?.debit ? 'error form-control' : 'form-control'}
+                                        onKeyDown={(e) => handleKeyDown(e, row, detailsTableData)}
+                                      />
+                                      {detailsTableErrors[index]?.debit && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {detailsTableErrors[index].debit}
+                                        </div>
+                                      )}
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+
+                              {/* <tbody>
+                                {detailsTableData.map((row, index) => (
+                                  <tr key={row.id}>
                                     <td className="border px-2 py-2 text-center">
                                       <ActionButton
                                         title="Delete"
@@ -688,7 +873,7 @@ export const ChartOfCostcenter = () => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              costCenterCode: !value ? 'costCenterCode is required' : ''
+                                              costCenterCode: !value ? 'Cost Center Code is required' : ''
                                             };
                                             return newErrors;
                                           });
@@ -715,7 +900,7 @@ export const ChartOfCostcenter = () => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              costCenterName: !value ? 'costCenterName is required' : ''
+                                              costCenterName: !value ? 'Cost Center Name is required' : ''
                                             };
                                             return newErrors;
                                           });
@@ -791,7 +976,7 @@ export const ChartOfCostcenter = () => {
                                     </td>
                                   </tr>
                                 ))}
-                              </tbody>
+                              </tbody> */}
                             </table>
                           </div>
                         </div>
