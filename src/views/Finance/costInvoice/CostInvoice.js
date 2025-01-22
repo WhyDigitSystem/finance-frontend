@@ -1709,7 +1709,7 @@ const CostInvoice = () => {
                     <InputLabel id="demo-simple-select-label">
                       {
                         <span>
-                          Currency <span className="asterisk">*</span>
+                          Currency
                         </span>
                       }
                     </InputLabel>

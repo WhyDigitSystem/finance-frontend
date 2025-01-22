@@ -72,7 +72,13 @@ const finance = {
           id: 'vendor',
           title: 'Vendor',
           type: 'item',
-          url: '/finance/vendor'
+          url: '/finance/vender'
+        },
+        {
+          id: 'taxMaster',
+          title: 'Tax Master',
+          type: 'item',
+          url: '/finance/taxMaster'
         }
       ] // No filter applied
     }
