@@ -3,12 +3,12 @@ import { lazy } from 'react';
 // project imports
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
+import Customer from 'views/Finance/Customer';
 import DocumentTypeMaster from 'views/Finance/DocumentType/documentType';
 import DocumentTypeMappingMaster from 'views/Finance/DocumentType/documentTypeMapping';
 import MultipleDocumentIdGeneration from 'views/Finance/DocumentType/multipleDocumentIdGeneration';
 import ReconcileCash from 'views/Finance/Reconcile/ReconcileCash';
 import ReconcileCorp from 'views/Finance/Reconcile/ReconcileCorp';
-import Customer from 'views/Finance/Customer';
 import Vender from 'views/Finance/Vender';
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
@@ -75,7 +75,6 @@ const ARAPAdjustment = Loadable(lazy(() => import('views/Finance/APAP-Adjustment
 const ARadjustmentOffset = Loadable(lazy(() => import('views/Finance/AR-adjustmentOffset')));
 const PartMaster = Loadable(lazy(() => import('views/Finance/PartyMaster')));
 
-
 const TrailBalance = Loadable(lazy(() => import('views/Finance/FinalReport/TrailBalance')));
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
@@ -118,7 +117,7 @@ const FinanceRoute = {
       element: <Customer />
     },
     {
-      path: '/finance/vender',
+      path: '/finance/vendor',
       element: <Vender />
     },
     {

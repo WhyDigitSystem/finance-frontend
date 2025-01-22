@@ -179,10 +179,7 @@ export const PaymentRegister = () => {
 
   const getAllPartyName = async () => {
     try {
-      const response = await apiCalls(
-        'get',
-        `/payable/getPartyNameAndCodeForPayment?orgId=${orgId}`
-      );
+      const response = await apiCalls('get', `/payable/getPartyNameAndCodeForPayment?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -249,7 +246,13 @@ export const PaymentRegister = () => {
               getOptionLabel={(option) => option.partyName}
               sx={{ width: '100%' }}
               size="small"
-              value={formData.partyName ? partyList.find((p) => p.partyName === formData.partyName) : null}
+              value={
+                partyList.length === 1
+                  ? partyList[0]
+                  : formData.partyName
+                    ? partyList.find((p) => p.partyName === formData.partyName)
+                    : null
+              }
               onChange={handleInputChange('partyName')}
               renderInput={(params) => (
                 <TextField
@@ -272,7 +275,13 @@ export const PaymentRegister = () => {
               getOptionLabel={(option) => option.branchCode}
               sx={{ width: '100%' }}
               size="small"
-              value={formData.branchCode ? branchList.find((p) => p.branchCode === formData.branchCode) : null}
+              value={
+                branchList.length === 1
+                  ? branchList[0]
+                  : formData.branchCode
+                    ? branchList.find((p) => p.branchCode === formData.branchCode)
+                    : null
+              }
               onChange={handleInputChange('branchCode')}
               renderInput={(params) => (
                 <TextField
