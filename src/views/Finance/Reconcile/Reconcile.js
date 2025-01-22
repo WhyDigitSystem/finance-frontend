@@ -6,6 +6,10 @@ import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Grid, Tab, TextField } from '@mui/material';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import { useTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -17,10 +21,6 @@ import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
 
 const Reconcile = () => {
   const [tabIndex, setTabIndex] = useState(0);
@@ -754,7 +754,7 @@ const Reconcile = () => {
                                       <td className="border px-2 py-2">
                                         <input
                                           type="date"
-                                          value={row.voucherDate}
+                                          value={row.voucherDate ? new Date(row.voucherDate).toISOString().split('T')[0] : ''}
                                           onChange={(e) => {
                                             const date = e.target.value;
 
@@ -773,6 +773,7 @@ const Reconcile = () => {
                                           }}
                                           className={withdrawalsTableErrors[index]?.voucherDate ? 'error form-control' : 'form-control'}
                                         />
+
                                         {withdrawalsTableErrors[index]?.voucherDate && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                             {withdrawalsTableErrors[index].voucherDate}
