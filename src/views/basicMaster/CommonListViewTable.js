@@ -5,6 +5,7 @@ import { useTheme } from '@mui/material/styles';
 import { MaterialReactTable } from 'material-react-table';
 import { useEffect, useState } from 'react';
 import ActionButton from 'utils/ActionButton';
+import dayjs from 'dayjs';
 
 const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon, viewIcon, isPdf, GeneratePdf }) => {
   const [tableData, setTableData] = useState(data || []);
@@ -40,6 +41,16 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
   }, []);
 
   const customColumns = columns.map((column) => {
+    if (column.accessorKey && column.accessorKey.toLowerCase().includes('date')) {
+      return {
+        ...column,
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          return value ? dayjs(value).format('DD-MM-YYYY') : '-';
+        }
+      };
+    }
+
     if (column.accessorKey === 'active') {
       console.log('the columns are:', column);
 
