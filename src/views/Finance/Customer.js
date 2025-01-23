@@ -169,22 +169,21 @@ export const Customer = () => {
 
             if (response.status === true) {
                 setListView(false);
-                const particularMaster = response.paramObjectsMap.customersVO;
+                const customer = response.paramObjectsMap.customersVO;
 
                 setFormData({
-                    ...formData,
-                    customerName: particularMaster.partyName,
-                    customerCode: particularMaster.partyCode,
-                    gstIn: particularMaster.gstIn,
-                    panNo: particularMaster.panNo,
-                    creditLimit: particularMaster.creditLimit,
-                    creditDays: particularMaster.creditDays,
-                    creditTerms: particularMaster.creditTerms,
-                    gstRegistered: particularMaster.gstRegistered,
+                    customerName: customer.partyName,
+                    customerCode: customer.partyCode,
+                    gstIn: customer.gstIn,
+                    panNo: customer.panNo,
+                    creditLimit: customer.creditLimit,
+                    creditDays: customer.creditDays,
+                    creditTerms: customer.creditTerms,
+                    gstRegistered: customer.gstRegistered,
                 });
 
                 setPartyStateData(
-                    particularMaster.partyStateVO.map((detail) => ({
+                    customer.partyStateVO.map((detail) => ({
                         id: detail.id,
                         state: detail.state || '',
                         gstIn: detail.gstIn || '',
@@ -196,7 +195,7 @@ export const Customer = () => {
                     }))
                 );
 
-                const addressData = particularMaster.partyAddressVO.map((detail) => ({
+                const addressData = customer.partyAddressVO.map((detail) => ({
                     id: detail.id,
                     addressType: detail.addressType || '',
                     addressLine1: detail.addressLine1 || '',
@@ -211,7 +210,7 @@ export const Customer = () => {
                     cityOptions: [],
                 }));
 
-                const SalesPersonTaggingData = particularMaster.partySalesPersonTaggingVO.map((detail) => ({
+                const SalesPersonTaggingData = customer.partySalesPersonTaggingVO.map((detail) => ({
                     id: detail.id,
                     salesPerson: detail.salesPerson || '',
                     empCode: detail.empCode || '',
@@ -650,7 +649,7 @@ export const Customer = () => {
             Object.keys(errors).length === 0 &&
             partyAddressDataValid
         ) {
-            const customersAddressDTO = partyAddressData.map((row) => ({
+            const customersAddressVO = partyAddressData.map((row) => ({
                 addressType: row.addressType,
                 addressLane1: row.addressLine1,
                 addressLane2: row.addressLine2,
@@ -663,7 +662,7 @@ export const Customer = () => {
                 gstnIn: row.stateGstIn
             }));
 
-            const customersStateDTO = partyStateData.map((row) => ({
+            const customersStateVO = partyStateData.map((row) => ({
                 email: row.email,
                 contactPerson: row.contactPerson,
                 phoneNo: row.contactPhoneNo,
@@ -673,7 +672,7 @@ export const Customer = () => {
                 stateNo: parseInt(row.stateNo)
             }));
 
-            const customerSalesPersonDTO = partySalesPersonTagging.map((row) => ({
+            const customerSalesPersonVO = partySalesPersonTagging.map((row) => ({
                 effectiveFrom: row.effectiveFrom
                     ? dayjs(row.effectiveFrom).format('YYYY-MM-DD')
                     : null,
@@ -687,10 +686,19 @@ export const Customer = () => {
 
             const saveData = {
                 ...(editId && { id: editId }),
-                ...formData,
-                customersAddressDTO,
-                customersStateDTO,
-                customerSalesPersonDTO
+                customerName: formData.customerName,
+                customerCode: formData.customerCode,
+                gstIn: formData.gstIn,
+                panNo: formData.panNo,
+                creditLimit: formData.creditLimit,
+                creditDays: formData.creditDays,
+                creditTerms: formData.creditTerms,
+                taxRegistered: formData.gstRegistered,
+                createdBy: loginUserName,
+                orgId: orgId,
+                customersAddressDTO: customersAddressVO,
+                customersStateDTO: customersStateVO,
+                customerSalesPersonDTO: customerSalesPersonVO
             };
 
 

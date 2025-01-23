@@ -29,14 +29,13 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const Vender = () => {
     const [stateList, setStateList] = useState([]);
-    const [cityList, setCityList] = useState([]);
     const [editId, setEditId] = useState('');
     const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
     const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
     const [uploadOpen, setUploadOpen] = useState(false);
     const [formData, setFormData] = useState({
         vendorName: '',
-        vendorName: '',
+        vendorCode: '',
         gstIn: '',
         panNo: '',
         creditLimit: '',
@@ -133,57 +132,56 @@ export const Vender = () => {
 
             if (response.status === true) {
                 setListView(false);
-                const particularMaster = response.paramObjectsMap.customersVO;
+                const vendorData = response.paramObjectsMap.customersVO;
 
                 setFormData({
-                    ...formData,
-                    vendorName: particularMaster.partyName,
-                    vendorCode: particularMaster.partyCode,
-                    gstIn: particularMaster.gstIn,
-                    panNo: particularMaster.panNo,
-                    creditLimit: particularMaster.creditLimit,
-                    creditDays: particularMaster.creditDays,
-                    creditTerms: particularMaster.creditTerms,
-                    gstRegistered: particularMaster.gstRegistered
+                    vendorName: vendorData.partyName,
+                    vendorCode: vendorData.partyCode,
+                    gstIn: vendorData.gstIn,
+                    panNo: vendorData.panNo,
+                    creditLimit: vendorData.creditLimit,
+                    creditDays: vendorData.creditDays,
+                    creditTerms: vendorData.creditTerms,
+                    gstRegistered: vendorData.gstRegistered
                 });
 
                 setPartyStateData(
-                    particularMaster.partyStateVO.map((detail) => ({
-                        id: detail.id,
-                        state: detail.state || '',
-                        gstIn: detail.gstIn || '',
-                        stateNo: detail.stateNo || '',
-                        contactPerson: detail.contactPerson || '',
-                        contactPhoneNo: detail.contactPhoneNo || '',
-                        email: detail.email || '',
-                        stateCode: detail.stateCode || ''
+                    vendorData.partyStateVO.map((vendorState) => ({
+                        id: vendorState.id,
+                        state: vendorState.state || '',
+                        gstIn: vendorState.gstIn || '',
+                        stateNo: vendorState.stateNo || '',
+                        contactPerson: vendorState.contactPerson || '',
+                        contactPhoneNo: vendorState.contactPhoneNo || '',
+                        email: vendorState.email || '',
+                        stateCode: vendorState.stateCode || ''
                     }))
                 );
 
-                const addressData = particularMaster.partyAddressVO.map((detail) => ({
-                    id: detail.id,
-                    addressType: detail.addressType || '',
-                    addressLine1: detail.addressLine1 || '',
-                    addressLine2: detail.addressLine2 || '',
-                    addressLine3: detail.addressLine3 || '',
-                    businessPlace: detail.businessPlace || '',
-                    city: detail.city || '',
-                    contact: detail.contact || '',
-                    pincode: detail.pincode || '',
-                    state: detail.state || '',
-                    stateGstIn: detail.stateGstIn || '',
+                const addressData = vendorData.partyAddressVO.map((vendorAddress) => ({
+                    id: vendorAddress.id,
+                    addressType: vendorAddress.addressType || '',
+                    addressLine1: vendorAddress.addressLine1 || '',
+                    addressLine2: vendorAddress.addressLine2 || '',
+                    addressLine3: vendorAddress.addressLine3 || '',
+                    businessPlace: vendorAddress.businessPlace || '',
+                    city: vendorAddress.city || '',
+                    contact: vendorAddress.contact || '',
+                    pincode: vendorAddress.pincode || '',
+                    state: vendorAddress.state || '',
+                    stateGstIn: vendorAddress.stateGstIn || '',
                     cityOptions: [],
                 }));
 
-                const partySpecialTDSVO = particularMaster.partySpecialTDSVO.map((detail) => ({
-                    id: detail.id,
-                    tdsWithSec: detail.tdsWithSec || '',
-                    rateFrom: detail.rateFrom || '',
-                    rateTo: detail.rateTo || '',
-                    tdsWithPer: detail.tdsWithPer || '',
-                    surchargePer: detail.surchargePer || '',
-                    edPercentage: detail.edPercentage || '',
-                    tdsCertifiNo: detail.tdsCertifiNo || ''
+                const partySpecialTDSVO = vendorData.partySpecialTDSVO.map((vendorSpecialTDSVO) => ({
+                    id: vendorSpecialTDSVO.id,
+                    tdsWithSec: vendorSpecialTDSVO.tdsWithSec || '',
+                    rateFrom: vendorSpecialTDSVO.rateFrom || '',
+                    rateTo: vendorSpecialTDSVO.rateTo || '',
+                    tdsWithPer: vendorSpecialTDSVO.tdsWithPer || '',
+                    surchargePer: vendorSpecialTDSVO.surchargePer || '',
+                    edPercentage: vendorSpecialTDSVO.edPercentage || '',
+                    tdsCertifiNo: vendorSpecialTDSVO.tdsCertifiNo || ''
                 }))
 
                 for (const row of addressData) {
@@ -201,6 +199,78 @@ export const Vender = () => {
             console.error('Error fetching PartyMaster:', error);
         }
     };
+
+    // const getCustomerById = async (row) => {
+    //     handleClear();
+    //     setEditId(row.original.id);
+    //     console.log('Editing Exchange Rate:', row.original.id);
+    //     try {
+    //         const response = await apiCalls('get', `master/getCustomersById?id=${row.original.id}`);
+
+    //         if (response.status === true) {
+    //             const vendor = response.paramObjectsMap.customersVO[0];
+
+    //             setFormData({
+    //                 ...formData,
+    //                 vendorName: vendor.partyName,
+    //                 vendorCode: vendor.partyCode,
+    //                 gstIn: vendor.gstIn,
+    //                 panNo: vendor.panNo,
+    //                 creditLimit: vendor.creditLimit,
+    //                 creditDays: vendor.creditDays,
+    //                 creditTerms: vendor.creditTerms,
+    //                 gstRegistered: vendor.gstRegistered
+    //             });
+
+    //             setPartyStateData(
+    //                 vendor.partyStateVO.map((detail) => ({
+    //                     id: detail.id,
+    //                     state: detail.state || '',
+    //                     gstIn: detail.gstIn || '',
+    //                     stateNo: detail.stateNo || '',
+    //                     contactPerson: detail.contactPerson || '',
+    //                     contactPhoneNo: detail.contactPhoneNo || '',
+    //                     email: detail.email || '',
+    //                     stateCode: detail.stateCode || ''
+    //                 }))
+    //             );
+
+    //             const addressData = vendor.partyAddressVO.map((detail) => ({
+    //                 id: detail.id,
+    //                 addressType: detail.addressType || '',
+    //                 addressLine1: detail.addressLine1 || '',
+    //                 addressLine2: detail.addressLine2 || '',
+    //                 addressLine3: detail.addressLine3 || '',
+    //                 businessPlace: detail.businessPlace || '',
+    //                 city: detail.city || '',
+    //                 contact: detail.contact || '',
+    //                 pincode: detail.pincode || '',
+    //                 state: detail.state || '',
+    //                 stateGstIn: detail.stateGstIn || '',
+    //                 cityOptions: [],
+    //             }));
+
+    //             const partySpecialTDSVO = vendor.partySpecialTDSVO.map((detail) => ({
+    //                 id: detail.id,
+    //                 tdsWithSec: detail.tdsWithSec || '',
+    //                 rateFrom: detail.rateFrom || '',
+    //                 rateTo: detail.rateTo || '',
+    //                 tdsWithPer: detail.tdsWithPer || '',
+    //                 surchargePer: detail.surchargePer || '',
+    //                 edPercentage: detail.edPercentage || '',
+    //                 tdsCertifiNo: detail.tdsCertifiNo || ''
+    //             }))
+
+    //             setPartyAddressData(addressData);
+    //             setPartySpecialTDS(partySpecialTDSVO);
+
+    //         } else {
+    //             console.error('API Error:', response.paramObjectsMap.errorMessage);
+    //         }
+    //     } catch (error) {
+    //         console.error('Error fetching data:', error);
+    //     }
+    // };
 
     const handleBulkUploadOpen = () => {
         setUploadOpen(true);
@@ -597,7 +667,7 @@ export const Vender = () => {
             Object.keys(errors).length === 0 &&
             partyAddressDataValid
         ) {
-            const vendorAddressDTO = partyAddressData.map((row) => ({
+            const vendorAddressVO = partyAddressData.map((row) => ({
                 addressType: row.addressType,
                 addressLane1: row.addressLine1,
                 addressLane2: row.addressLine2,
@@ -610,7 +680,7 @@ export const Vender = () => {
                 gstnIn: row.stateGstIn
             }));
 
-            const vendorStateDTO = partyStateData.map((row) => ({
+            const vendorStateVO = partyStateData.map((row) => ({
                 email: row.email,
                 contactPerson: row.contactPerson,
                 phoneNo: row.contactPhoneNo,
@@ -620,7 +690,7 @@ export const Vender = () => {
                 stateNo: parseInt(row.stateNo)
             }));
 
-            const specialTdsDTO = partySpecialTDS.map((row) => ({
+            const specialTdsVO = partySpecialTDS.map((row) => ({
                 edPercentage: parseInt(row.edPercentage),
                 rateFrom: parseInt(row.rateFrom),
                 rateTo: parseInt(row.rateTo),
@@ -632,11 +702,20 @@ export const Vender = () => {
 
             const saveData = {
                 ...(editId && { id: editId }),
-                ...formData,
+                // ...formData,
+                vendorName: formData.vendorName,
+                vendorCode: formData.vendorCode,
+                gstIn: formData.gstIn,
+                panNo: formData.panNo,
+                creditLimit: formData.creditLimit,
+                creditDays: formData.creditDays,
+                creditTerms: formData.creditTerms,
                 taxRegistered: formData.gstRegistered,
-                vendorAddressDTO,
-                vendorStateDTO,
-                specialTdsDTO,
+                createdBy: loginUserName,
+                orgId: orgId,
+                vendorAddressDTO: vendorAddressVO,
+                vendorStateDTO: vendorStateVO,
+                specialTdsDTO: specialTdsVO,
             };
 
 
@@ -829,7 +908,7 @@ export const Vender = () => {
                                 <Tabs value={tabValue} onChange={handleChangeTab} variant="scrollable" scrollButtons="auto">
                                     <Tab label="Party State" />
                                     <Tab label="Address" />
-                                    <Tab label="Special TDS / WH Tax Detail" />
+                                    <Tab label="Tax Detail" />
                                 </Tabs>
                             </Box>
                             <Box sx={{ padding: 2 }}>
@@ -1393,13 +1472,13 @@ export const Vender = () => {
                                                             <tr style={{ backgroundColor: '#673AB7' }}>
                                                                 <th className="table-header">Action</th>
                                                                 <th className="table-header">SNo</th>
-                                                                <th className="table-header">TDS / WH Section</th>
+                                                                <th className="table-header">Tax Section</th>
                                                                 <th className="table-header">Rate From</th>
                                                                 <th className="table-header">Rate To</th>
-                                                                <th className="table-header">TDS / WH %</th>
+                                                                <th className="table-header">Tax %</th>
                                                                 <th className="table-header">SUR %</th>
                                                                 <th className="table-header">ED %</th>
-                                                                <th className="table-header">TDS Certificate No</th>
+                                                                <th className="table-header">Tax Certificate No</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
