@@ -343,6 +343,12 @@ const BRSOpening = () => {
     handleBulkUploadClose();
   };
 
+  useEffect(() => {
+    if (currencies.length === 1) {
+      handleInputChange({ target: { name: "currency", value: currencies[0].currency } });
+    }
+  }, [currencies]);
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>

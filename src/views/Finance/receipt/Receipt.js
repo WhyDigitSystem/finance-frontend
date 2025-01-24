@@ -793,6 +793,18 @@ const Receipt = () => {
     { accessorKey: 'receiptAmt', header: 'Receipt Amount', size: 140 }
   ];
 
+  useEffect(() => {
+    if (currencies.length === 1) {
+      handleInputChange({ target: { name: "currency", value: currencies[0].currency } });
+    }
+  }, [currencies]);
+
+  useEffect(() => {
+    if (allCustomerName.length === 1) {
+      handleInputChange({ target: { name: "customerName", value: allCustomerName[0].customerName } });
+    }
+  }, [allCustomerName]);
+
   return (
     <div>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
