@@ -688,21 +688,13 @@ const ReconcileCorp = () => {
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                       S.No
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center">Voucher No</th>
-                                    <th className="px-2 py-2 text-white text-center">Voucher Date</th>
-                                    {/* <th 
-  className="px-2 py-2 text-white text-center" 
-  style={{ width: '100px' }} 
-  scope="col"
->
-  Voucher Date
-</th> */}
-
-                                    <th className="px-2 py-2 text-white text-center">Chq/DD No</th>
-                                    <th className="px-2 py-2 text-white text-center">Chq/DD Date</th>
-                                    <th className="px-2 py-2 text-white text-center">Deposit</th>
-                                    <th className="px-2 py-2 text-white text-center">Withdrawal</th>
-                                    <th className="px-2 py-2 text-white text-center">Bank Ref</th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>Voucher No</th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '230px' }}>Voucher Date</th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>Chq/DD No</th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '230px' }}>Chq/DD Date</th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>Deposit</th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>Withdrawal</th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>Bank Ref</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -731,7 +723,7 @@ const ReconcileCorp = () => {
                                           <input
                                             type="text"
                                             value={row.voucherNo}
-                                            style={{ width: '100px' }}
+                                            
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const regex = /^[a-zA-Z0-9\s- /]*$/;
@@ -819,7 +811,7 @@ const ReconcileCorp = () => {
                                           <input
                                             type="text"
                                             value={row.chequeNo}
-                                            style={{ width: '100px' }}
+                                            
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const numericRegex = /^[0-9]*$/;
@@ -904,7 +896,7 @@ const ReconcileCorp = () => {
                                           <input
                                             type="text"
                                             value={row.deposit}
-                                            style={{ width: '100px' }}
+                                            
                                             onChange={(e) => handleDepositChange(e, row, index)}
                                             // onChange={(e) => {
                                             //   const value = e.target.value;
@@ -949,7 +941,7 @@ const ReconcileCorp = () => {
                                           <input
                                             type="text"
                                             value={row.withdrawal}
-                                            style={{ width: '100px' }}
+                                            
                                             onChange={(e) => handleWithdrawalChange(e, row, index)}
                                             // onChange={(e) => {
                                             //   const value = e.target.value;
@@ -992,7 +984,7 @@ const ReconcileCorp = () => {
                                           <input
                                             type="text"
                                             value={row.bankRef}
-                                            style={{ width: '100px' }}
+                                            
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const regex = /^[a-zA-Z0-9\s-/]*$/; // Allow letters, numbers, spaces, and dashes
@@ -1040,7 +1032,7 @@ const ReconcileCorp = () => {
                                           <input
                                             type="text"
                                             value={row.bankRef}
-                                            style={{ width: '100px' }}
+                                            
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const regex = /^[a-zA-Z0-9\s-]*$/;
