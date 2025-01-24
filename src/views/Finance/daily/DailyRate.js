@@ -100,7 +100,7 @@ export const DailyRate = () => {
   const getAllDailyMonthlyExRatesByOrgId = async () => {
     try {
       const result = await apiCalls('get', `/transaction/getAllDailyMonthlyExRatesByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.dailyMonthlyExRatesVO || []);
+      setData(result.paramObjectsMap.dailyMonthlyExRatesVO.reverse() || []);
       // showForm(true);
       console.log('Test', result);
     } catch (err) {

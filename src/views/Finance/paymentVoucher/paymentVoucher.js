@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
@@ -48,7 +48,7 @@ const PaymentVoucher = () => {
     remarks: '',
     totalCreditAmount: 0,
     totalDebitAmount: 0,
-    vehicleSubType: ''
+    voucherSubType: ''
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -69,7 +69,8 @@ const PaymentVoucher = () => {
 
   const listViewColumns = [
     { accessorKey: 'docId', header: 'Document Id', size: 140 },
-    { accessorKey: 'vehicleSubType', header: 'Vehicle Sub Type', size: 140 },
+    { accessorKey: 'docDate', header: 'Document Date', size: 140 },
+    // { accessorKey: 'voucherSubType', header: 'Vehicle Sub Type', size: 140 },
     { accessorKey: 'currency', header: 'Currency', size: 140 },
     { accessorKey: 'exRate', header: 'Ex.Rate', size: 140 },
     { accessorKey: 'referenceNo', header: 'Ref No', size: 140 }
@@ -125,12 +126,18 @@ const PaymentVoucher = () => {
     }));
   }, [detailsTableData]);
 
+  useEffect(() => {
+    if (accountNames.length === 1) {
+      setDetailsTableData((prevData) =>
+        prevData.map((row) => (row.accountName === '' || !row.accountName ? { ...row, accountName: accountNames[0].accountName } : row))
+      );
+    }
+  }, [accountNames]);
+
   const getAllPaymentVoucherByOrgId = async () => {
     try {
       const result = await apiCalls('get', `/transaction/getAllPaymentVoucherByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.paymentVoucherVO || []);
-      // showForm(true);
-      console.log('paymentVoucherVO', result);
+      setData(result.paramObjectsMap.paymentVoucherVO.reverse() || []);
     } catch (err) {
       console.log('error', err);
     }
@@ -152,18 +159,17 @@ const PaymentVoucher = () => {
     }
   };
 
-  const getAllPaymentVoucherById = async (row) => {
-    console.log('first', row);
+  const getPaymentVoucherById = async (row) => {
     setShowForm(true);
     try {
-      const result = await apiCalls('get', `/transaction/getAllPaymentVoucherById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/transaction/getPaymentVoucherById?id=${row.original.id}`);
 
       if (result) {
         const paymentVO = result.paramObjectsMap.paymentVoucherVO[0];
         setEditId(row.original.id);
 
         setFormData({
-          vehicleSubType: paymentVO.vehicleSubType || '',
+          voucherSubType: paymentVO.vehicleSubType || '',
           id: paymentVO.id || '',
           docDate: paymentVO.docDate ? dayjs(paymentVO.docDate, 'YYYY-MM-DD') : dayjs(),
           docId: paymentVO.docId || '',
@@ -191,8 +197,6 @@ const PaymentVoucher = () => {
             subLedgerName: row.subLedgerName
           }))
         );
-
-        console.log('DataToEdit', paymentVO);
       } else {
         // Handle erro
       }
@@ -205,7 +209,6 @@ const PaymentVoucher = () => {
     try {
       const response = await apiCalls('get', `/transaction/getAccountNameFromGroup?orgId=${orgId}`);
       setAccountNames(response.paramObjectsMap.generalJournalVO);
-      console.log('generalJournalVO', response.paramObjectsMap.generalJournalVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -280,32 +283,21 @@ const PaymentVoucher = () => {
     setFormData({
       chequeBank: '',
       chequeDate: null,
+      currency: 'INR',
       chequeNo: '',
       docDate: dayjs(),
-      exRate: '',
+      exRate: '1',
       orgId: orgId,
       referenceDate: null,
       referenceNo: '',
       remarks: '',
       totalCreditAmount: 0,
       totalDebitAmount: 0,
-      vehicleSubType: ''
+      voucherSubType: ''
     });
     getAllActiveCurrency(orgId);
-    setFieldErrors({
-      chequeBank: '',
-      chequeDate: null,
-      chequeNo: '',
-      currency: 'INR',
-      docDate: null,
-      exRate: 1,
-      orgId: orgId,
-      referenceDate: '',
-      referenceNo: '',
-      remarks: '',
-      vehicleSubType: ''
-    });
-    setDetailsTableData([{ id: 1, accountName: '', subLedgerCode: '', narration: '', subLedgerName: '' }]);
+    setFieldErrors({});
+    setDetailsTableData([{ id: 1, accountName: '', credit: '', debit: '', subLedgerCode: '', narration: '', subLedgerName: '' }]);
     setDetailsTableErrors('');
     setEditId('');
     getPaymentVoucherDocId();
@@ -338,10 +330,7 @@ const PaymentVoucher = () => {
       subLedgerName: ''
     };
     setDetailsTableData([...detailsTableData, newRow]);
-    setDetailsTableErrors([
-      ...detailsTableErrors,
-      { accountName: '', subLedgerCode: '', debit: '', credit: '', narration: '', subLedgerName: '' }
-    ]);
+    setDetailsTableErrors([...detailsTableErrors, { accountName: '', subLedgerCode: '', debit: '', credit: '', subLedgerName: '' }]);
   };
 
   const isLastRowEmpty = (table) => {
@@ -349,7 +338,7 @@ const PaymentVoucher = () => {
     if (!lastRow) return false;
 
     if (table === detailsTableData) {
-      return !lastRow.accountName || !lastRow.narration || !lastRow.subLedgerCode || !lastRow.subLedgerName;
+      return !lastRow.accountName || !lastRow.subLedgerCode || !lastRow.subLedgerName;
     }
     return false;
   };
@@ -363,7 +352,7 @@ const PaymentVoucher = () => {
           accountName: !table[table.length - 1].accountName ? 'Account Name is required' : '',
           // credit: !table[table.length - 1].credit ? 'Credit is required' : '',
           // debit: !table[table.length - 1].debit ? 'Debit is required' : '',
-          narration: !table[table.length - 1].narration ? 'Narration is required' : '',
+          // narration: !table[table.length - 1].narration ? 'Narration is required' : '',
           subLedgerCode: !table[table.length - 1].subLedgerCode ? 'Sub Ledger Code is required' : '',
           subLedgerName: !table[table.length - 1].subLedgerName ? 'Sub Ledger Name is required' : ''
         };
@@ -404,9 +393,9 @@ const PaymentVoucher = () => {
     if (!formData.referenceDate) {
       errors.referenceDate = 'Ref Date is required';
     }
-    if (!formData.vehicleSubType) {
-      errors.vehicleSubType = 'Vehicle Sub Type is required';
-    }
+    // if (!formData.voucherSubType) {
+    //   errors.voucherSubType = 'Vehicle Sub Type is required';
+    // }
     if (!formData.chequeNo) {
       errors.chequeNo = 'Cheque No is required';
     }
@@ -420,31 +409,32 @@ const PaymentVoucher = () => {
     let detailTableDataValid = true;
     const newTableErrors = detailsTableData.map((row) => {
       const rowErrors = {};
-      if (!row.accountName) {
-        rowErrors.accountName = 'Account Name is required';
-        detailTableDataValid = false;
+      if (!(row.credit || row.debit === '0' || row.debit || row.credit === '0')) {
+        if (!row.accountName) {
+          rowErrors.accountName = 'Account Name is required';
+          detailTableDataValid = false;
+        }
+        if (!row.credit) {
+          rowErrors.credit = 'Credit is required';
+          detailTableDataValid = false;
+        }
+        if (!row.debit) {
+          rowErrors.debit = 'Debit is required';
+          detailTableDataValid = false;
+        }
+        // if (!row.narration) {
+        //   rowErrors.narration = 'Narration is required';
+        //   detailTableDataValid = false;
+        // }
+        if (!row.subLedgerCode) {
+          rowErrors.subLedgerCode = 'Sub Ledger Code is required';
+          detailTableDataValid = false;
+        }
+        if (!row.subLedgerName) {
+          rowErrors.subLedgerName = 'Sub Ledger Name is required';
+          detailTableDataValid = false;
+        }
       }
-      if (!row.credit) {
-        rowErrors.credit = 'Credit is required';
-        detailTableDataValid = false;
-      }
-      if (!row.debit) {
-        rowErrors.debit = 'Debit is required';
-        detailTableDataValid = false;
-      }
-      if (!row.narration) {
-        rowErrors.narration = 'Narration is required';
-        detailTableDataValid = false;
-      }
-      if (!row.subLedgerCode) {
-        rowErrors.subLedgerCode = 'Sub Ledger Code is required';
-        detailTableDataValid = false;
-      }
-      if (!row.subLedgerName) {
-        rowErrors.subLedgerName = 'Sub Ledger Name is required';
-        detailTableDataValid = false;
-      }
-
       return rowErrors;
     });
     setFieldErrors(errors);
@@ -480,7 +470,7 @@ const PaymentVoucher = () => {
         remarks: formData.remarks,
         totalCreditAmount: formData.totalCreditAmount,
         totalDebitAmount: formData.totalDebitAmount,
-        vehicleSubType: formData.vehicleSubType
+        vehicleSubType: formData.voucherSubType
       };
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
@@ -550,19 +540,19 @@ const PaymentVoucher = () => {
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
-                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.vehicleSubType}>
-                    <InputLabel id="vehicleSubType-label">Vehicle Sub Type</InputLabel>
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.voucherSubType}>
+                    <InputLabel id="voucherSubType-label">Voucher Sub Type</InputLabel>
                     <Select
-                      labelId="vehicleSubType-label"
-                      label="Vehicle Sub Type"
-                      value={formData.vehicleSubType}
+                      labelId="voucherSubType-label"
+                      label="Voucher Sub Type"
+                      value={formData.voucherSubType}
                       onChange={handleInputChange}
-                      name="vehicleSubType"
+                      name="voucherSubType"
                     >
-                      <MenuItem value="VEHICLESUBTYPE1">VEHICLESUBTYPE1</MenuItem>
-                      <MenuItem value="VEHICLESUBTYPE2">VEHICLESUBTYPE2</MenuItem>
+                      <MenuItem value="BANKPAYMENT">BANK PAYMENT</MenuItem>
+                      <MenuItem value="CASH">CASH</MenuItem>
                     </Select>
-                    {fieldErrors.vehicleSubType && <FormHelperText>{fieldErrors.vehicleSubType}</FormHelperText>}
+                    {fieldErrors.voucherSubType && <FormHelperText>{fieldErrors.voucherSubType}</FormHelperText>}
                   </FormControl>
                 </div>
 
@@ -774,7 +764,7 @@ const PaymentVoucher = () => {
                                       <td className="text-center">
                                         <div className="pt-2">{index + 1}</div>
                                       </td>
-                                      <td className="border px-2 py-2">
+                                      {/* <td className="border px-2 py-2">
                                         <select
                                           value={row.accountName}
                                           style={{ width: '150px' }}
@@ -791,6 +781,36 @@ const PaymentVoucher = () => {
                                               {item.accountName}
                                             </option>
                                           ))}
+                                        </select>
+                                        {detailsTableErrors[index]?.accountName && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].accountName}
+                                          </div>
+                                        )}
+                                      </td> */}
+                                      <td className="border px-2 py-2">
+                                        <select
+                                          value={row.accountName || (accountNames.length === 1 ? accountNames[0].accountName : '')}
+                                          style={{ width: '150px' }}
+                                          className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
+                                          onChange={(e) =>
+                                            setDetailsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: e.target.value } : r))
+                                            )
+                                          }
+                                        >
+                                          <option value="">-- Select --</option>
+                                          {accountNames
+                                            .filter(
+                                              (item) =>
+                                                !detailsTableData.some((tableRow) => tableRow.accountName === item.accountName) ||
+                                                row.accountName === item.accountName
+                                            )
+                                            .map((item) => (
+                                              <option key={item.accountName} value={item.accountName}>
+                                                {item.accountName}
+                                              </option>
+                                            ))}
                                         </select>
                                         {detailsTableErrors[index]?.accountName && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1006,7 +1026,7 @@ const PaymentVoucher = () => {
               </div>
             </>
           ) : (
-            <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getAllPaymentVoucherById} />
+            <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getPaymentVoucherById} />
           )}
         </div>
       </div>

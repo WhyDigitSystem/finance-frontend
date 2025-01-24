@@ -7,7 +7,7 @@ import TextField from '@mui/material/TextField';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
@@ -35,10 +35,10 @@ const GeneralJournal = () => {
   const [currencies, setCurrencies] = useState([]);
   const [formData, setFormData] = useState({
     active: true,
-    currency: '',
+    currency: 'INR',
     docDate: dayjs(),
     docId: '',
-    exRate: '',
+    exRate: 1,
     orgId: orgId,
     refDate: null,
     refNo: '',
@@ -46,12 +46,12 @@ const GeneralJournal = () => {
     totalCreditAmount: 0,
     totalDebitAmount: 0,
     voucherSubType: '',
-    status:'',
+    status: 'EDIT'
   });
   const isDisabled = formData.status === 'SUBMIT';
   const [fieldErrors, setFieldErrors] = useState({
     currency: '',
-    status:'',
+    status: '',
     docDate: new Date(),
     exRate: '',
     orgId: orgId,
@@ -69,7 +69,7 @@ const GeneralJournal = () => {
     { accessorKey: 'docId', header: 'Voucher No', size: 140 },
     { accessorKey: 'docDate', header: 'Voucher Date', size: 140 },
     { accessorKey: 'voucherSubType', header: 'Voucher Sub Type', size: 140 },
-    { accessorKey: 'refNo', header: 'Ref No', size: 140 },    
+    { accessorKey: 'refNo', header: 'Ref No', size: 140 }
   ];
 
   const [detailsTableData, setDetailsTableData] = useState([
@@ -141,13 +141,15 @@ const GeneralJournal = () => {
   const getAllGeneralJournalByOrgId = async () => {
     try {
       const result = await apiCalls('get', `/transaction/getAllGeneralJournalByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.generalJournalVO || []);
+      setData(result.paramObjectsMap.generalJournalVO.reverse() || []);
     } catch (err) {
       console.log('error', err);
     }
   };
 
   const getGeneralJournalById = async (row) => {
+    setFieldErrors('');
+    setDetailsTableErrors('');
     setShowForm(true);
     try {
       const result = await apiCalls('get', `/transaction/getGeneralJournalById?id=${row.original.id}`);
@@ -167,7 +169,7 @@ const GeneralJournal = () => {
           refDate: glVO.refDate ? dayjs(glVO.refDate, 'YYYY-MM-DD') : dayjs(),
           remarks: glVO.remarks || '',
           orgId: glVO.orgId || '',
-          status:glVO.status || '',
+          status: glVO.status || '',
           totalDebitAmount: glVO.totalDebitAmount || '',
           totalCreditAmount: glVO.totalCreditAmount || ''
           // active: glVO.active || false,
@@ -271,28 +273,19 @@ const GeneralJournal = () => {
   const handleClear = () => {
     setFormData({
       docDate: dayjs(),
-      exRate: '',
+      currency: 'INR',
+      exRate: 1,
       orgId: orgId,
       refDate: null,
       refNo: '',
       remarks: '',
-      status:'',
+      status: 'EDIT',
       totalCreditAmount: 0,
       totalDebitAmount: 0,
       voucherSubType: ''
     });
     getAllActiveCurrency(orgId);
-    setFieldErrors({
-      currency: '',
-      docDate: null,
-      exRate: '',
-      status:'',
-      orgId: orgId,
-      refDate: '',
-      refNo: '',
-      remarks: '',
-      voucherSubType: ''
-    });
+    setFieldErrors({});
     setDetailsTableData([
       { id: 1, accountsName: '', subLedgerCode: '', debitAmount: '', creditAmount: '', narration: '', subledgerName: '' }
     ]);
@@ -328,7 +321,7 @@ const GeneralJournal = () => {
       subledgerName: ''
     };
     setDetailsTableData([...detailsTableData, newRow]);
-    setDetailsTableErrors([...detailsTableErrors, { accountsName: '', subLedgerCode: '', narration: '', subledgerName: '' }]);
+    setDetailsTableErrors([...detailsTableErrors, { accountsName: '', subLedgerCode: '', subledgerName: '' }]);
   };
 
   const isLastRowEmpty = (table) => {
@@ -340,7 +333,7 @@ const GeneralJournal = () => {
         !lastRow.accountsName ||
         // !lastRow.creditAmount ||
         // !lastRow.debitAmount ||
-        !lastRow.narration ||
+        // !lastRow.narration ||
         !lastRow.subLedgerCode ||
         !lastRow.subledgerName
       );
@@ -357,7 +350,7 @@ const GeneralJournal = () => {
           accountsName: !table[table.length - 1].accountsName ? 'Account Name is required' : '',
           // creditAmount: !table[table.length - 1].creditAmount ? 'Credit is required' : '',
           // debitAmount: !table[table.length - 1].debitAmount ? 'Debit is required' : '',
-          narration: !table[table.length - 1].narration ? 'Narration is required' : '',
+          // narration: !table[table.length - 1].narration ? 'Narration is required' : '',
           subLedgerCode: !table[table.length - 1].subLedgerCode ? 'Sub Ledger Code is required' : '',
           subledgerName: !table[table.length - 1].subledgerName ? 'Sub Ledger Name is required' : ''
         };
@@ -408,31 +401,32 @@ const GeneralJournal = () => {
     let detailTableDataValid = true;
     const newTableErrors = detailsTableData.map((row) => {
       const rowErrors = {};
-      if (!row.accountsName) {
-        rowErrors.accountsName = 'Account Name is required';
-        detailTableDataValid = false;
+      if (!(row.credit || row.debit === '0' || row.debit || row.credit === '0')) {
+        if (!row.accountsName) {
+          rowErrors.accountsName = 'Account Name is required';
+          detailTableDataValid = false;
+        }
+        // if (!row.creditAmount) {
+        //   rowErrors.creditAmount = 'Credit is required';
+        //   detailTableDataValid = false;
+        // }
+        // if (!row.debitAmount) {
+        //   rowErrors.debitAmount = 'Debit is required';
+        //   detailTableDataValid = false;
+        // }
+        // if (!row.narration) {
+        //   rowErrors.narration = 'Narration is required';
+        //   detailTableDataValid = false;
+        // }
+        if (!row.subLedgerCode) {
+          rowErrors.subLedgerCode = 'Sub Ledger Code is required';
+          detailTableDataValid = false;
+        }
+        if (!row.subledgerName) {
+          rowErrors.subledgerName = 'Sub Ledger Name is required';
+          detailTableDataValid = false;
+        }
       }
-      // if (!row.creditAmount) {
-      //   rowErrors.creditAmount = 'Credit is required';
-      //   detailTableDataValid = false;
-      // }
-      // if (!row.debitAmount) {
-      //   rowErrors.debitAmount = 'Debit is required';
-      //   detailTableDataValid = false;
-      // }
-      if (!row.narration) {
-        rowErrors.narration = 'Narration is required';
-        detailTableDataValid = false;
-      }
-      if (!row.subLedgerCode) {
-        rowErrors.subLedgerCode = 'Sub Ledger Code is required';
-        detailTableDataValid = false;
-      }
-      if (!row.subledgerName) {
-        rowErrors.subledgerName = 'Sub Ledger Name is required';
-        detailTableDataValid = false;
-      }
-
       return rowErrors;
     });
     setFieldErrors(errors);
@@ -459,7 +453,7 @@ const GeneralJournal = () => {
         exRate: formData.exRate,
         finYear: finYear,
         orgId: orgId,
-        status:formData.status,
+        status: formData.status,
         particularsJournalDTO: GeneralJournalVO,
         refDate: dayjs(formData.refDate).format('YYYY-MM-DD'),
         refNo: formData.refNo,
@@ -565,7 +559,8 @@ const GeneralJournal = () => {
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
                       label="Currency"
-                      disabled={isDisabled}
+                      // disabled={isDisabled}
+                      disabled
                       onChange={handleInputChange}
                       name="currency"
                       value={formData.currency}
@@ -592,7 +587,7 @@ const GeneralJournal = () => {
                     fullWidth
                     name="exRate"
                     type="number"
-                    disabled={isDisabled}
+                    disabled
                     value={formData.exRate}
                     onChange={handleInputChange}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.exRate ? 'Ex. Rate is required' : ''}</span>}
@@ -635,13 +630,15 @@ const GeneralJournal = () => {
                     {fieldErrors.refDate && <p className="dateErrMsg">Ref Date is required</p>}
                   </FormControl>
                 </div>
-                <div className="col-md-3 mb-3">
+                {/* <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                    <InputLabel id="status-label">{
+                    <InputLabel id="status-label">
+                      {
                         <span>
                           Status <span className="asterisk">*</span>
                         </span>
-                      }</InputLabel>
+                      }
+                    </InputLabel>
                     <Select
                       labelId="status-label"
                       label="Status"
@@ -656,9 +653,9 @@ const GeneralJournal = () => {
                     </Select>
                     {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
                   </FormControl>
-                </div>
+                </div> */}
               </div>
-              
+
               <div className="row d-flex">
                 <div className="col-md-8">
                   <FormControl fullWidth variant="filled">
@@ -734,7 +731,7 @@ const GeneralJournal = () => {
                                       <td className="text-center">
                                         <div className="pt-2">{index + 1}</div>
                                       </td>
-                                      <td className="border px-2 py-2">
+                                      {/* <td className="border px-2 py-2">
                                         <select
                                           value={row.accountsName}
                                           disabled={isDisabled}
@@ -752,6 +749,37 @@ const GeneralJournal = () => {
                                               {item.accountName}
                                             </option>
                                           ))}
+                                        </select>
+                                        {detailsTableErrors[index]?.accountsName && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].accountsName}
+                                          </div>
+                                        )}
+                                      </td> */}
+                                      <td className="border px-2 py-2">
+                                        <select
+                                          value={row.accountsName || (accountNames.length === 1 ? accountNames[0].accountName : '')}
+                                          disabled={isDisabled}
+                                          style={{ width: '150px' }}
+                                          className={detailsTableErrors[index]?.accountsName ? 'error form-control' : 'form-control'}
+                                          onChange={(e) =>
+                                            setDetailsTableData((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, accountsName: e.target.value } : r))
+                                            )
+                                          }
+                                        >
+                                          <option value="">-- Select --</option>
+                                          {accountNames
+                                            .filter(
+                                              (item) =>
+                                                !detailsTableData.some((tableRow) => tableRow.accountsName === item.accountName) ||
+                                                row.accountsName === item.accountName
+                                            )
+                                            .map((item) => (
+                                              <option key={item.accountName} value={item.accountName}>
+                                                {item.accountName}
+                                              </option>
+                                            ))}
                                         </select>
                                         {detailsTableErrors[index]?.accountsName && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
