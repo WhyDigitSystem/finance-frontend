@@ -593,7 +593,7 @@ const Withdrawal = () => {
                     id="payTo"
                     label={
                       <span>
-                        pay To <span className="asterisk">*</span>
+                        Pay To <span className="asterisk">*</span>
                       </span>
                     }
                     variant="outlined"
@@ -831,10 +831,18 @@ const Withdrawal = () => {
                                               setDetailsTableData((prev) =>
                                                 prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
                                               );
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  accountName: !value ? 'Account Name is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
 
-                                              setDetailsTableErrors((prevErrors) =>
-                                                prevErrors.map((err, idx) => (idx === index ? { ...err, accountName: '' } : err))
-                                              );
+                                              // setDetailsTableErrors((prevErrors) =>
+                                              //   prevErrors.map((err, idx) => (idx === index ? { ...err, accountName: '' } : err))
+                                              // );
                                             }}
                                             size="small"
                                             renderInput={(params) => (
