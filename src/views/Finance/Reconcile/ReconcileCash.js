@@ -8,6 +8,7 @@ import { useTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { FormHelperText } from '@mui/material';
 
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
@@ -38,6 +39,37 @@ const ReconcileCash = () => {
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [formData, setFormData] = useState({
+    active: true,
+    balanceAsPerBooks: 0,
+    cashAccount: '',
+    createdBy: loginUserName,
+    differenceAmount: 0,
+    dn1: 0,
+    dn1Amt: 0,
+    dn2: 0,
+    dn2Amt: 0,
+    dn3: 0,
+    dn3Amt: 0,
+    dn4: 0,
+    dn4Amt: 0,
+    dn5: 0,
+    dn5Amt: 0,
+    dn6: 0,
+    dn6Amt: 0,
+    dn7: 0,
+    dn7Amt: 0,
+    dn8: 0,
+    dn8Amt: 0,
+    docDate: dayjs(),
+    docId: '',
+    orgId: orgId,
+    remarks: '',
+    totalPhyAmount: 0,
+    branch: branch,
+    branchCode: loginBranchCode,
+    finYear: finYear
+  });
+  const [fieldErrors, setFieldErrors] = useState({
     active: true,
     balanceAsPerBooks: 0,
     cashAccount: '',
@@ -120,6 +152,20 @@ const ReconcileCash = () => {
   };
 
   const handleSave = async () => {
+   
+    const errors = {};
+
+    // Check for empty fields and set error messages
+    if (!formData.cashAccount) {
+      errors.cashAccount = 'Cash Account is required.';
+    }
+  
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors); // Update the field errors state
+      return;
+    }
+  
+
     console.log('FormData=>', formData);
 
     const newFormdata = {
@@ -218,7 +264,7 @@ const ReconcileCash = () => {
           dn8: listValueVO.dn8 || 0,
           dn8Amt: listValueVO.dn8Amt || 0,
           docId: listValueVO.docId,
-          docDate: parsedDocDate && parsedDocDate.isValid() ? parsedDocDate : null,
+           docDate: listValueVO.docDate ? dayjs(listValueVO.docDate, 'YYYY-MM-DD') : dayjs(),
           id: listValueVO.id || 0,
           orgId: listValueVO.orgId || 0,
           remarks: listValueVO.remarks || '',
@@ -234,6 +280,7 @@ const ReconcileCash = () => {
       console.error('Error fetching data:', error);
     }
   };
+  
 
   const handleClear = () => {
     setFormData({
@@ -257,13 +304,37 @@ const ReconcileCash = () => {
       dn7: 0,
       dn7Amt: 0,
       dn8: 0,
-      dn8Amt: 0,
-      docDate: dayjs(),
-      docId: '',
+      dn8Amt: 0, 
       id: 0,
-      orgId: 0,
       remarks: '',
-      totalPhyAmount: 0
+      totalPhyAmount: 0,
+       docDate: dayjs(),
+    });
+    setFieldErrors({
+      active: true,
+      balanceAsPerBooks: 0,
+      cashAccount: '',
+      createdBy: loginUserName,
+      differenceAmount: 0,
+      dn1: 0,
+      dn1Amt: 0,
+      dn2: 0,
+      dn2Amt: 0,
+      dn3: 0,
+      dn3Amt: 0,
+      dn4: 0,
+      dn4Amt: 0,
+      dn5: 0,
+      dn5Amt: 0,
+      dn6: 0,
+      dn6Amt: 0,
+      dn7: 0,
+      dn7Amt: 0,
+      dn8: 0,
+      dn8Amt: 0, 
+      remarks: '',
+      totalPhyAmount: 0, 
+      docDate: null,
     });
     setEditId('');
     getNewCashpDocId();
@@ -341,37 +412,31 @@ const ReconcileCash = () => {
               </Grid>
 
               <Grid item xs={12} sm={6} md={3}>
-                {/* <TextField
-                  label="Cash Account"
-                  size="small"
-                  fullWidth
-                  required
-                  name="cashAccount"
-                  value={formData.cashAccount}
-                  onChange={handleFieldChange}
-                /> */}
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Cash Account
-                  </InputLabel>
-                  <Select
-                    labelId="cashAccount"
-                    value={formData.cashAccount}
-                    onChange={(e) => setFormData({ ...formData, cashAccount: e.target.value })}
-                    label="Cash Account"
-                    required
-                    // error={!!errors.cashAccount}
-                    // helperText={errors.cashAccount}
-                  >
-                    {bankName &&
-                      bankName.map((bank, index) => (
-                        <MenuItem key={index} value={bank.accountgroupname}>
-                          {bank.accountgroupname}
-                        </MenuItem>
-                      ))}
-                  </Select>
-                </FormControl>
-              </Grid>
+  <FormControl fullWidth size="small" error={!!fieldErrors.cashAccount}>
+    <InputLabel id="cashAccount-label" required>
+      Cash Account
+    </InputLabel>
+    <Select
+      labelId="cashAccount-label"
+      value={formData.cashAccount}
+      onChange={(e) => {
+        setFormData({ ...formData, cashAccount: e.target.value });
+        setFieldErrors({ ...fieldErrors, cashAccount: '' }); // Clear error on change
+      }}
+      label="Cash Account"
+    >
+      {bankName &&
+        bankName.map((bank, index) => (
+          <MenuItem key={index} value={bank.accountgroupname}>
+            {bank.accountgroupname}
+          </MenuItem>
+        ))}
+    </Select>
+    {fieldErrors.cashAccount && (
+      <FormHelperText>{fieldErrors.cashAccount}</FormHelperText>
+    )}
+  </FormControl>
+</Grid>
               <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   label="Balance as per Books"
@@ -386,10 +451,10 @@ const ReconcileCash = () => {
             </Grid>
 
             {/* Tabs Section */}
-            <div className="card w-full p-6 bg-base-100 shadow-xl mt-2" style={{ padding: '20px' }}>
+            <div className="w-full p-6 bg-base-100 shadow-xl mt-2" style={{ padding: '20px' }}>
               <Box sx={{ width: '100%', typography: 'body1' }}>
                 <TabContext value={value}>
-                  <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                  <Box sx={{ borderBottom: 0, borderColor: 'divider' }}>
                     <TabList onChange={handleChangeTab} textColor="secondary" indicatorColor="secondary">
                       <Tab label="Withdrawals" value="1" />
                       {/* <Tab label="Deposits" value="2" />

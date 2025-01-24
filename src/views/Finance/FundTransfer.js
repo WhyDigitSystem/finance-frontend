@@ -234,7 +234,19 @@ const FundTransfer = () => {
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
-  };
+  }; 
+
+  useEffect(() => {
+    if (currencies.length === 1) {
+      handleInputChange({ target: { name: "currency", value: currencies[0].currency } });
+    }
+  }, [currencies]);
+
+  useEffect(() => {
+    if (currencies.length === 1) {
+      handleInputChange({ target: { name: "currency", value: currencies[0].currency } });
+    }
+  }, [currencies]);
 
   useEffect(() => {
     getAllFundTransfer();
@@ -322,9 +334,9 @@ const FundTransfer = () => {
     if (!formData.currency) {
       errors.currency = 'Currency is required';
     }
-    if (!formData.exRate) {
-      errors.exRate = 'Ex Rate is required';
-    }
+    // if (!formData.exRate) {
+    //   errors.exRate = 'Ex Rate is required';
+    // }
     if (!formData.transferTo) {
       errors.transferTo = 'Transfer To is required';
     }
@@ -417,7 +429,7 @@ const FundTransfer = () => {
                   </InputLabel>
                   <Select labelId="mode" id="mode" name="mode" required value={formData.mode} label="Mode" onChange={handleInputChange}>
                     <MenuItem value="HEAD OFFICE">HEAD OFFICE</MenuItem>
-                    <MenuItem value="Branch">Branch</MenuItem>
+                    <MenuItem value="Branch">BRANCH</MenuItem>
                   </Select>
                   {fieldErrors.mode && <FormHelperText>{fieldErrors.mode}</FormHelperText>}
                 </FormControl>
@@ -465,7 +477,7 @@ const FundTransfer = () => {
                     onChange={handleInputChange}
                   >
                     <MenuItem value="HEAD OFFICE">HEAD OFFICE</MenuItem>
-                    <MenuItem value="Branch">Branch</MenuItem>
+                    <MenuItem value="Branch">BRANCH</MenuItem>
                   </Select>
                   {fieldErrors.branchAcc && <FormHelperText>{fieldErrors.branchAcc}</FormHelperText>}
                 </FormControl>
@@ -502,8 +514,8 @@ const FundTransfer = () => {
                   onChange={handleInputChange}
                   disabled
                   fullWidth
-                  error={!!fieldErrors.exRate}
-                  helperText={fieldErrors.exRate ? fieldErrors.exRate : ''}
+                  // error={!!fieldErrors.exRate}
+                  // helperText={fieldErrors.exRate ? fieldErrors.exRate : ''}
                 />
               </div>
               <div className="col-md-3 mb-3">
