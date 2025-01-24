@@ -877,17 +877,13 @@ const Reconcile = () => {
                                             type="date"
                                             value={
                                               row.voucherDate
-                                                ? new Date(row.voucherDate).toISOString().split('T')[0] // Keeps the ISO format for the input element
+                                                ? new Date(row.voucherDate).toISOString().split('T')[0] // Ensure the value is in yyyy-MM-dd format
                                                 : ''
                                             }
                                             onChange={(e) => {
-                                              const date = e.target.value; // This will be in yyyy-mm-dd format
-                                              const formattedDate = date
-                                                ? date.split('-').reverse().join('-') // Convert yyyy-mm-dd to dd-mm-yyyy
-                                                : '';
-
+                                              const date = e.target.value; // This is in yyyy-MM-dd format
                                               setWithdrawalsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, voucherDate: date } : r)) // Store as yyyy-mm-dd
+                                                prev.map((r) => (r.id === row.id ? { ...r, voucherDate: date } : r))
                                               );
 
                                               setWithdrawalsTableErrors((prev) => {
@@ -912,7 +908,6 @@ const Reconcile = () => {
                                             </div>
                                           )}
                                         </td>
-
                                         {/* <td className="border px-2 py-2">
                                           <input
                                             type="date"
@@ -978,12 +973,48 @@ const Reconcile = () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             type="date"
+                                            value={
+                                              row.chequeDate
+                                                ? new Date(row.chequeDate).toISOString().split('T')[0] // Ensure the value is in yyyy-MM-dd format
+                                                : ''
+                                            }
+                                            onChange={(e) => {
+                                              const date = e.target.value; // This is in yyyy-MM-dd format
+                                              setWithdrawalsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, chequeDate: date } : r))
+                                              );
+
+                                              setWithdrawalsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  chequeDate: !date ? 'Voucher Date is required' : '',
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            className={
+                                              withdrawalsTableErrors[index]?.chequeDate
+                                                ? 'error form-control'
+                                                : 'form-control'
+                                            }
+                                          />
+
+                                          {withdrawalsTableErrors[index]?.chequeDate && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {withdrawalsTableErrors[index].chequeDate}
+                                            </div>
+                                          )}
+                                        </td>
+                                        {/* <td className="border px-2 py-2">
+                                          <input
+                                            type="date"
                                             value={row.chequeDate}
                                             onChange={(e) => {
                                               const date = e.target.value;
 
                                               setWithdrawalsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, chequeDate: date } : r))
+                                                prev.map((r) => (r.id === row.id ? { ...r, chequeDate: date ? dayjs(date).format('DD-MM-yyyy') : '-' } : r))
                                               );
 
                                               setWithdrawalsTableErrors((prev) => {
@@ -1002,7 +1033,7 @@ const Reconcile = () => {
                                               {withdrawalsTableErrors[index].chequeDate}
                                             </div>
                                           )}
-                                        </td>
+                                        </td> */}
 
                                         <td className="border px-2 py-2">
                                           <input
