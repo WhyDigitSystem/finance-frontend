@@ -134,6 +134,7 @@ const Deposit = () => {
     setDetailsTableErrors('');
     setEditId('');
     getDepositDocId();
+    // setAllAccountName([]);
   };
 
   const handleView = () => {
@@ -241,13 +242,17 @@ const Deposit = () => {
         console.error('Error fetching country data:', error);
       }
     };
-
     fetchData();
     getDepositDocId();
     getAllDepositByOrgId();
     getAllbankName();
     getAllAccountName();
   }, []);
+  useEffect(() => {
+    if (allbankName.length === 1) {
+      handleInputChange({ target: { name: "bankName", value: allbankName[0].accountgroupname } });
+    }
+  }, [allbankName]);
 
   useEffect(() => {
     const totalDebit = detailsTableData.reduce((sum, row) => sum + Number(row.debit || 0), 0);
@@ -467,6 +472,9 @@ const Deposit = () => {
 
       if (response.status === true) {
         setAllAccountName(response.paramObjectsMap.generalJournalVO);
+        // if (allAccountName.length === 1) {
+        //   handleInputChange({ target: { name: "accountName", value: allAccountName[0].accountName } });
+        // }
         console.log('Account Name', response.paramObjectsMap.generalJournalVO);
       } else {
         console.error('API Error:', response);
@@ -860,17 +868,27 @@ const Deposit = () => {
                                             options={allAccountName}
                                             getOptionLabel={(option) => option.accountName || ''}
                                             groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')}
-                                            value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
+                                            value={
+                                              row.accountName
+                                                ? allAccountName.find((a) => a.accountName === row.accountName)
+                                                : allAccountName.length === 1
+                                                ? allAccountName[0]
+                                                : null
+                                            }
+                                            // value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
                                             onChange={(event, newValue) => {
                                               const value = newValue ? newValue.accountName : '';
                                               setDetailsTableData((prev) =>
                                                 prev.map((r) => (r.id === row.id ? { ...r, accountName: value } : r))
                                               );
-
-                                              // Clear the error for the current row and field
-                                              setDetailsTableErrors((prevErrors) =>
-                                                prevErrors.map((err, idx) => (idx === index ? { ...err, accountName: '' } : err))
-                                              );
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  accountName: !value ? 'Account Name is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
                                             }}
                                             size="small"
                                             renderInput={(params) => (
