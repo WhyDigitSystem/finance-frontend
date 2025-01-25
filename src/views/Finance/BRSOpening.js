@@ -384,7 +384,7 @@ const BRSOpening = () => {
           <>
             <div className="row d-flex mt-3">
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
+                <FormControl size="small" variant="outlined" fullWidth>
                   <InputLabel id="branch">Branch/Location</InputLabel>
                   <Select
                     labelId="branch"
@@ -397,7 +397,7 @@ const BRSOpening = () => {
                     <MenuItem value="Head Office">Head Office</MenuItem>
                     <MenuItem value="Branch">Branch</MenuItem>
                   </Select>
-                  {fieldErrors.branch && <FormHelperText>{fieldErrors.branch}</FormHelperText>}
+                  {/* {fieldErrors.branch && <FormHelperText>{fieldErrors.branch}</FormHelperText>} */}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -427,8 +427,8 @@ const BRSOpening = () => {
                         textField: { size: 'small', clearable: true }
                       }}
                       format="DD-MM-YYYY"
-                      error={!!fieldErrors.billDate}
-                      helperText={fieldErrors.billDate ? fieldErrors.billDate : ''}
+                      // error={!!fieldErrors.billDate}
+                      // helperText={fieldErrors.billDate ? fieldErrors.billDate : ''}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -444,8 +444,8 @@ const BRSOpening = () => {
                   onChange={handleInputChange}
                   size="small"
                   fullWidth
-                  error={!!fieldErrors.chqNo}
-                  helperText={fieldErrors.chqNo ? fieldErrors.chqNo : ''}
+                  // error={!!fieldErrors.chqNo}
+                  // helperText={fieldErrors.chqNo ? fieldErrors.chqNo : ''}
                 />
               </div>
 
@@ -460,8 +460,8 @@ const BRSOpening = () => {
                         textField: { size: 'small', clearable: true }
                       }}
                       format="DD-MM-YYYY"
-                      error={!!fieldErrors.chqDate}
-                      helperText={fieldErrors.chqDate ? fieldErrors.chqDate : ''}
+                      // error={!!fieldErrors.chqDate}
+                      // helperText={fieldErrors.chqDate ? fieldErrors.chqDate : ''}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -498,7 +498,7 @@ const BRSOpening = () => {
                 />
               </div> */}
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
+                <FormControl size="small" variant="outlined" fullWidth>
                   <InputLabel id="currency">Currency</InputLabel>
                   <Select
                     labelId="currency"
@@ -514,7 +514,7 @@ const BRSOpening = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.currency && <FormHelperText>{fieldErrors.currency}</FormHelperText>}
+                  {/* {fieldErrors.currency && <FormHelperText>{fieldErrors.currency}</FormHelperText>} */}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -530,8 +530,8 @@ const BRSOpening = () => {
                   onChange={handleInputChange}
                   fullWidth
                   disabled
-                  error={!!fieldErrors.exRate}
-                  helperText={fieldErrors.exRate ? fieldErrors.exRate : ''}
+                  // error={!!fieldErrors.exRate}
+                  // helperText={fieldErrors.exRate ? fieldErrors.exRate : ''}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -541,12 +541,13 @@ const BRSOpening = () => {
                   label="Receipt Amount"
                   placeholder="Receipt Amount"
                   variant="outlined"
+                  type='number'
                   size="small"
                   value={formData.receiptAmount}
                   onChange={handleInputChange}
                   fullWidth
-                  error={!!fieldErrors.receiptAmount}
-                  helperText={fieldErrors.receiptAmount ? fieldErrors.receiptAmount : ''}
+                  // error={!!fieldErrors.receiptAmount}
+                  // helperText={fieldErrors.receiptAmount ? fieldErrors.receiptAmount : ''}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -557,11 +558,12 @@ const BRSOpening = () => {
                   placeholder="Payment Amount"
                   variant="outlined"
                   size="small"
+                  type='number'
                   value={formData.paymentAmount}
                   onChange={handleInputChange}
                   fullWidth
-                  error={!!fieldErrors.paymentAmount}
-                  helperText={fieldErrors.paymentAmount ? fieldErrors.paymentAmount : ''}
+                  // error={!!fieldErrors.paymentAmount}
+                  // helperText={fieldErrors.paymentAmount ? fieldErrors.paymentAmount : ''}
                 />
               </div>
               <div className="col-md-3 mb-3">

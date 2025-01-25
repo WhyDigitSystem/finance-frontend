@@ -5,7 +5,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { Tab, Tabs } from '@mui/material';
+import { Checkbox, FormControlLabel, FormGroup, Tab, Tabs } from '@mui/material';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import apiCalls from 'apicall';
@@ -34,6 +34,7 @@ export const Vender = () => {
     const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
     const [uploadOpen, setUploadOpen] = useState(false);
     const [formData, setFormData] = useState({
+        active: true,
         vendorName: '',
         vendorCode: '',
         gstIn: '',
@@ -55,12 +56,13 @@ export const Vender = () => {
     const listViewColumns = [
         { accessorKey: 'partyCode', header: 'Vender Code', size: 140 },
         { accessorKey: 'partyName', header: 'Vender Name', size: 140 },
-        { accessorKey: 'gstIn', header: 'GST IN', size: 140 },
+        { accessorKey: 'gstIn', header: 'Registration No', size: 140 },
         { accessorKey: 'panNo', header: 'Pan No', size: 140 },
         { accessorKey: 'creditLimit', header: 'Credit Limit', size: 140 },
         { accessorKey: 'creditDays', header: 'Credit Days', size: 140 },
         { accessorKey: 'creditTerms', header: 'Credit Terms', size: 140 },
-        { accessorKey: 'gstRegistered', header: 'Tax Registered', size: 140 }
+        { accessorKey: 'gstRegistered', header: 'Tax Registered', size: 140 },
+        // { accessorKey: 'active', header: 'Active', size: 140 },
     ];
 
     const handleView = () => {
@@ -142,7 +144,8 @@ export const Vender = () => {
                     creditLimit: vendorData.creditLimit,
                     creditDays: vendorData.creditDays,
                     creditTerms: vendorData.creditTerms,
-                    gstRegistered: vendorData.gstRegistered
+                    gstRegistered: vendorData.gstRegistered,
+                    active: vendorData.active
                 });
 
                 setPartyStateData(
@@ -291,7 +294,7 @@ export const Vender = () => {
     };
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, checked, type, id } = e.target;
 
         const updatedFormData = {
             ...formData,
@@ -299,6 +302,10 @@ export const Vender = () => {
         };
 
         setFormData(updatedFormData);
+        setFormData((prev) => ({
+            ...prev,
+            [id]: type === 'checkbox' ? checked : value
+        }));
 
         setFieldErrors({ ...fieldErrors, [name]: '' });
     };
@@ -313,7 +320,8 @@ export const Vender = () => {
             creditLimit: '',
             creditDays: '',
             creditTerms: '',
-            gstRegistered: ''
+            gstRegistered: '',
+            active: true
         });
         setFieldErrors({
             vendorName: '',
@@ -711,6 +719,7 @@ export const Vender = () => {
                 creditDays: formData.creditDays,
                 creditTerms: formData.creditTerms,
                 taxRegistered: formData.gstRegistered,
+                active: formData.active,
                 createdBy: loginUserName,
                 orgId: orgId,
                 vendorAddressDTO: vendorAddressVO,
@@ -800,6 +809,7 @@ export const Vender = () => {
                                     name="vendorCode"
                                     label="Vendor Code"
                                     size="small"
+                                    disabled
                                     value={formData.vendorCode}
                                     onChange={handleInputChange}
                                 // error={fieldErrors.vendorCode}
@@ -812,7 +822,7 @@ export const Vender = () => {
                                     id="gstIn"
                                     fullWidth
                                     name="gstIn"
-                                    label="GST IN"
+                                    label="Registration No"
                                     size="small"
                                     value={formData.gstIn}
                                     onChange={handleInputChange}
@@ -901,6 +911,22 @@ export const Vender = () => {
                                 </FormControl>
                             </div>
 
+                            {/* <div className="col-md-3 mb-3">
+                                <FormGroup>
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                id="active"
+                                                checked={formData.active}
+                                                onChange={handleInputChange}
+                                                sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                                            />
+                                        }
+                                        label="Active"
+                                    />
+                                </FormGroup>
+                            </div> */}
+
                         </div>
 
                         <div className="row mt-2">
@@ -929,7 +955,7 @@ export const Vender = () => {
                                                                 <th className="table-header">State</th>
                                                                 <th className="table-header">State Code</th>
                                                                 <th className="table-header">State No</th>
-                                                                <th className="table-header">GSTIN</th>
+                                                                <th className="table-header">Registration No</th>
                                                                 <th className="table-header">Contact Person</th>
                                                                 <th className="table-header">Contact Phone No</th>
                                                                 <th className="table-header">Contact Email</th>

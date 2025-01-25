@@ -5,7 +5,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { FormHelperText, Tab, Tabs } from '@mui/material';
+import { Checkbox, FormControlLabel, FormGroup, FormHelperText, Tab, Tabs } from '@mui/material';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import apiCalls from 'apicall';
@@ -36,6 +36,7 @@ export const Customer = () => {
     const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
     const [uploadOpen, setUploadOpen] = useState(false);
     const [formData, setFormData] = useState({
+        active: true,
         customerName: '',
         customerCode: '',
         gstIn: '',
@@ -59,12 +60,13 @@ export const Customer = () => {
     const listViewColumns = [
         { accessorKey: 'partyCode', header: 'Customer Code', size: 140 },
         { accessorKey: 'partyName', header: 'Customer Name', size: 140 },
-        { accessorKey: 'gstIn', header: 'GST IN', size: 140 },
+        { accessorKey: 'gstIn', header: 'Registration No', size: 140 },
         { accessorKey: 'panNo', header: 'Pan No', size: 140 },
         { accessorKey: 'creditLimit', header: 'Credit Limit', size: 140 },
         { accessorKey: 'creditDays', header: 'Credit Days', size: 140 },
         { accessorKey: 'creditTerms', header: 'Credit Terms', size: 140 },
         { accessorKey: 'gstRegistered', header: 'Tax Registered', size: 140 },
+        // { accessorKey: 'active', header: 'Active', size: 140 }
     ];
 
     const handleView = () => {
@@ -176,6 +178,7 @@ export const Customer = () => {
                     customerCode: customer.partyCode,
                     gstIn: customer.gstIn,
                     panNo: customer.panNo,
+                    active: customer.active,
                     creditLimit: customer.creditLimit,
                     creditDays: customer.creditDays,
                     creditTerms: customer.creditTerms,
@@ -254,17 +257,22 @@ export const Customer = () => {
     };
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+        const { name, value, checked, type, id } = e.target;
         setFormData((prev) => ({
             ...prev,
             [name]: value,
         }));
+        setFormData((prev) => ({
+            ...prev,
+            [id]: type === 'checkbox' ? checked : value
+          }));
     };
 
     const handleClear = () => {
         setEditId('');
         setFormData({
             customerName: '',
+            active: '',
             customerCode: '',
             gstIn: '',
             panNo: '',
@@ -694,6 +702,7 @@ export const Customer = () => {
                 creditDays: formData.creditDays,
                 creditTerms: formData.creditTerms,
                 taxRegistered: formData.gstRegistered,
+                active: formData.active,
                 createdBy: loginUserName,
                 orgId: orgId,
                 customersAddressDTO: customersAddressVO,
@@ -795,7 +804,7 @@ export const Customer = () => {
                                     id="gstIn"
                                     fullWidth
                                     name="gstIn"
-                                    label="GST IN"
+                                    label="Registration No"
                                     size="small"
                                     value={formData.gstIn}
                                     onChange={handleInputChange}
@@ -883,6 +892,21 @@ export const Customer = () => {
                                     {/* {fieldErrors.gstRegistered && <FormHelperText>{fieldErrors.gstRegistered}</FormHelperText>} */}
                                 </FormControl>
                             </div>
+                            {/* <div className="col-md-3 mb-3">
+                                <FormGroup>
+                                    <FormControlLabel
+                                        control={
+                                            <Checkbox
+                                                id="active"
+                                                checked={formData.active}
+                                                onChange={handleInputChange}
+                                                sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                                            />
+                                        }
+                                        label="Active"
+                                    />
+                                </FormGroup>
+                            </div> */}
 
                         </div>
 
@@ -911,7 +935,7 @@ export const Customer = () => {
                                                                 <th className="table-header">State</th>
                                                                 <th className="table-header">State Code</th>
                                                                 <th className="table-header">State No</th>
-                                                                <th className="table-header">GSTIN</th>
+                                                                <th className="table-header">Registration No</th>
                                                                 <th className="table-header">Contact Person</th>
                                                                 <th className="table-header">Contact Phone No</th>
                                                                 <th className="table-header">Contact Email</th>
@@ -1555,14 +1579,14 @@ export const Customer = () => {
                                                                     <td className="border px-2 py-2">
                                                                         <div className="w-100">
                                                                             <DatePicker
-                                                                                // selected={row.effectiveFrom}
-                                                                                selected={
-                                                                                    row.effectiveFrom
-                                                                                        ? dayjs(row.effectiveFrom, 'YYYY-MM-DD').isValid()
-                                                                                            ? dayjs(row.effectiveFrom, 'YYYY-MM-DD').toDate()
-                                                                                            : null
-                                                                                        : null
-                                                                                }
+                                                                                selected={row.effectiveFrom}
+                                                                                // selected={
+                                                                                //     row.effectiveFrom
+                                                                                //         ? dayjs(row.effectiveFrom, 'YYYY-MM-DD').isValid()
+                                                                                //             ? dayjs(row.effectiveFrom, 'YYYY-MM-DD').toDate()
+                                                                                //             : null
+                                                                                //         : null
+                                                                                // }
                                                                                 className={partySalesPersonErrors[index]?.effectiveFrom ? 'error form-control' : 'form-control'}
                                                                                 onChange={(date) => {
                                                                                     setPartySalesPersonTagging((prev) =>
@@ -1600,14 +1624,14 @@ export const Customer = () => {
 
                                                                     <td className="border px-2 py-2">
                                                                         <DatePicker
-                                                                            // selected={row.effectiveTill}
-                                                                            selected={
-                                                                                row.effectiveTill
-                                                                                    ? dayjs(row.effectiveTill, 'YYYY-MM-DD').isValid()
-                                                                                        ? dayjs(row.effectiveTill, 'YYYY-MM-DD').toDate()
-                                                                                        : null
-                                                                                    : null
-                                                                            }
+                                                                            selected={row.effectiveTill}
+                                                                            // selected={
+                                                                            //     row.effectiveTill
+                                                                            //         ? dayjs(row.effectiveTill, 'YYYY-MM-DD').isValid()
+                                                                            //             ? dayjs(row.effectiveTill, 'YYYY-MM-DD').toDate()
+                                                                            //             : null
+                                                                            //         : null
+                                                                            // }
                                                                             className={partySalesPersonErrors[index]?.effectiveTill ? 'error form-control' : 'form-control'}
                                                                             onChange={(date) => {
                                                                                 setPartySalesPersonTagging((prev) =>

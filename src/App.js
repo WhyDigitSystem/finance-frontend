@@ -33,7 +33,7 @@ const App = () => {
         <CssBaseline />
         <NavigationScroll>
           <Routes />
-          <ToastComponent />
+          {/* <ToastComponent /> */}
           <SessionExpiredPopup open={sessionExpired} />
         </NavigationScroll>
       </ThemeProvider>
