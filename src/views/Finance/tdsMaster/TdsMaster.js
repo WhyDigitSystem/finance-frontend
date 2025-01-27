@@ -145,55 +145,6 @@ const TdsMaster = () => {
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
-  // const handleClear = () => {
-  //   setFormValues({
-  //     section: '',
-  //     sectionName: '',
-  //     active: true
-  //     // orgId: ''
-  //   });
-  //   setTdsTableData({
-  //     fromDate: null,
-  //     toDate: null,
-  //     tcs: '',
-  //     sur: '',
-  //     eds: ''
-  //   });
-  //   setValidationErrors({});
-  //   setEditId('');
-  // };
-
-  // const handleClear = () => {
-  //   setFormValues({
-  //     section: '',
-  //     sectionName: '',
-  //     active: true
-  //   });
-
-  //   setTdsTableData((prevData) =>
-  //     prevData.map((row) => ({
-  //       ...row,
-  //       fromDate: '',
-  //       toDate: '',
-  //       tcs: '',
-  //       sur: '',
-  //       eds: ''
-  //     }))
-  //   );
-
-  //   setValidationErrors({});
-  //   setTdsTableErrors(
-  //     tdsTableData.map(() => ({
-  //       fromDate: null,
-  //       toDate: null,
-  //       tcs: '',
-  //       sur: '',
-  //       eds: ''
-  //     }))
-  //   );
-  //   setEditId('');
-  // };
-
   const handleClear = () => {
     setFormValues({
       section: '',
@@ -209,7 +160,7 @@ const TdsMaster = () => {
         toDate: '', // Empty 'toDate'
         tcs: '', // Empty 'tcs'
         sur: '', // Empty 'sur'
-        eds: '' // Empty 'eds'
+        eds: '' 
       }
     ]);
 
@@ -236,177 +187,6 @@ const TdsMaster = () => {
     const day = String(formattedDate.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
-
-  // const handleSave = async () => {
-  //   const formDataWithEncryptedPassword = {
-  //     ...formValues,
-  //     tdsMaster2DTO: formValues.tdsMaster2DTO.map((item) => ({
-  //       ...item,
-  //       fromDate: formatDate(item.fromDate),
-  //       toDate: formatDate(item.toDate)
-  //     }))
-  //   };
-  //   if (validateForm()) {
-  //     try {
-  //       setIsLoading(true);
-  //       const response = await apiCalls('put', '/master/updateCreateTdsMaster', formDataWithEncryptedPassword);
-  //       console.log('Save Successful', response.data);
-  //       toast.success(editMode ? ' Tds Master Updated Successfully' : ' Tds Master created successfully', {
-  //         autoClose: 2000,
-  //         theme: 'colored'
-  //       });
-  //       getAllTdsMasterByOrgId();
-  //       handleClear();
-  //       setIsLoading(false);
-  //     } catch (error) {
-  //       console.error('Save Failed', error);
-  //     }
-  //   } else {
-  //     console.error('Validation Errors:', validationErrors);
-  //   }
-  // };
-
-  // const handleSave = async () => {
-  //   // Ensure dates are formatted and fields are mapped correctly
-  //   const formDataWithMappedFields = {
-  //     ...formValues,
-  //     tdsMaster2DTO: tdsTableData.map((item) => ({
-  //       // id: item.id || 0, // If id exists, otherwise 0
-  //       fromDate: formatDate(item.fromDate), // Format the date
-  //       toDate: formatDate(item.toDate), // Format the date
-  //       tcsPercentage: parseFloat(item.tcs) || 0, // Ensure it's a number
-  //       surPercentage: parseFloat(item.sur) || 0, // Ensure it's a number
-  //       edcessPercentage: parseFloat(item.eds) || 0 // Ensure it's a number
-  //     }))
-  //   };
-
-  //   if (validateForm()) {
-  //     try {
-  //       setIsLoading(true);
-  //       const response = await apiCalls('put', '/master/updateCreateTdsMaster', formDataWithMappedFields);
-  //       console.log('Save Successful', response.data);
-  //       toast.success(editMode ? 'Tds Master Updated Successfully' : 'Tds Master created successfully', {
-  //         autoClose: 2000,
-  //         theme: 'colored'
-  //       });
-  //       getAllTdsMasterByOrgId();
-  //       handleClear();
-  //       setIsLoading(false);
-  //     } catch (error) {
-  //       console.error('Save Failed', error);
-  //     }
-  //   } else {
-  //     console.error('Validation Errors:', validationErrors);
-  //   }
-  // };
-
-  // const handleSave = async () => {
-  //   // Ensure dates are formatted and fields are mapped correctly
-  //   const formDataWithMappedFields = {
-  //     ...formValues,
-  //     tdsMaster2DTO: tdsTableData.map((item) => ({
-  //       fromDate: formatDate(item.fromDate), // Format the date
-  //       toDate: formatDate(item.toDate), // Format the date
-  //       tcsPercentage: parseFloat(item.tcs) || 0, // Ensure it's a number
-  //       surPercentage: parseFloat(item.sur) || 0, // Ensure it's a number
-  //       edcessPercentage: parseFloat(item.eds) || 0 // Ensure it's a number
-  //     }))
-  //   };
-
-  //   if (validateForm()) {
-  //     try {
-  //       setIsLoading(true);
-  //       const response = await apiCalls('put', '/master/updateCreateTdsMaster', formDataWithMappedFields);
-
-  //       const { status, paramObjectsMap, statusFlag } = response.data;
-
-  //       if (response.status === 200 && status && statusFlag !== 'Error') {
-  //         // Show success message when HTTP status is 200 and backend logic is successful
-  //         toast.success(editMode ? 'Tds Master Updated Successfully' : 'Tds Master created successfully', {
-  //           autoClose: 2000,
-  //           theme: 'colored'
-  //         });
-
-  //         // Clear the form and table data only on success
-  //         handleClear();
-
-  //         // Reload data if necessary
-  //         getAllTdsMasterByOrgId();
-  //       } else {
-  //         // Show error message from backend if business logic failed
-  //         toast.error(paramObjectsMap?.errorMessage || 'Failed to save. Please try again.', {
-  //           autoClose: 4000,
-  //           theme: 'colored'
-  //         });
-  //       }
-  //     } catch (error) {
-  //       // Capture and display the error from the backend
-  //       console.error('Save Failed', error.response?.data?.message || error.message);
-
-  //       // Show error message to the user
-  //       toast.error(error.response?.data?.message || 'An error occurred. Please try again.', {
-  //         autoClose: 4000,
-  //         theme: 'colored'
-  //       });
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   } else {
-  //     // Handle validation errors
-  //     console.error('Validation Errors:', validationErrors);
-  //   }
-  // };
-
-  // const handleSave = async () => {
-  //   const errors = {};
-  //   if (!formValues.section.trim()) {
-  //     errors.section = 'This field is required';
-  //   }
-  //   if (!formValues.sectionName.trim()) {
-  //     errors.sectionName = 'This field is required';
-  //   }
-  //   setValidationErrors(errors);
-
-  //   if (Object.keys(errors).length === 0) {
-  //     setIsLoading(true);
-
-  //     const tdsTableVo = tdsTableData.map((item) => ({
-  //       // ...(editId && { id: row.id }),
-  //       fromDate: formatDate(item.fromDate), // Format the date
-  //       toDate: formatDate(item.toDate), // Format the date
-  //       tcsPercentage: parseFloat(item.tcs) || 0, // Ensure it's a number
-  //       surPercentage: parseFloat(item.sur) || 0, // Ensure it's a number
-  //       edcessPercentage: parseFloat(item.eds) || 0 // Ensure it's a number
-  //     }));
-
-  //     const saveFormData = {
-  //       ...(editId && { id: formValues.docId }),
-  //       ...formValues,
-  //       tdsMaster2DTO: tdsTableVo
-  //     };
-
-  //     console.log('DATA TO SAVE IS:', saveFormData);
-  //     try {
-  //       const response = await apiCalls('put', `master/updateCreateTdsMaster`, saveFormData);
-  //       if (response.status === true) {
-  //         console.log('Response:', response);
-  //         showToast('success', editId ? 'Tds Updated Successfully' : 'Tds created successfully');
-  //         handleClear();
-  //         getAllTdsMasterByOrgId();
-  //         setIsLoading(false);
-  //       } else {
-  //         showToast('error', response.paramObjectsMap.errorMessage || 'Tds creation failed');
-  //         setIsLoading(false);
-  //       }
-  //     } catch (error) {
-  //       console.error('Error:', error);
-  //       showToast('error', 'Tds creation failed');
-  //       setIsLoading(false);
-  //     }
-  //   } else {
-  //     setValidationErrors(errors);
-  //   }
-  // };
 
   const handleSave = async () => {
     const errors = {};
@@ -481,7 +261,7 @@ const TdsMaster = () => {
   const getAllTdsMasterByOrgId = async () => {
     try {
       const result = await apiCalls('get', `/master/getAllTdsMasterByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.tdsMasterVO || []);
+      setData(result.paramObjectsMap.tdsMasterVO.reverse() || []);
       showForm(true);
       console.log('Test', result);
     } catch (err) {
@@ -503,10 +283,7 @@ const TdsMaster = () => {
         setFormValues({
           section: tdsMasterVO.section,
           sectionName: tdsMasterVO.sectionName,
-          active: tdsMasterVO.active
-          // id: tdsMasterVO.id || 0,
-          // tdsMaster2DTO: tdsMasterVO.tdsMaster2VO || [],
-          // orgId: orgId
+          active: tdsMasterVO.active 
         });
         setTdsTableData(
           tdsMasterVO.tdsMaster2VO.map((role) => ({
@@ -530,26 +307,16 @@ const TdsMaster = () => {
     setShowForm(!showForm);
   };
 
-  // const validateForm = () => {
-  //   const errors = {};
-  //   if (!formValues.section.trim()) {
-  //     errors.section = 'This field is required';
-  //   }
-  //   if (!formValues.sectionName.trim()) {
-  //     errors.sectionName = 'This field is required';
-  //   }
-  //   setValidationErrors(errors);
-  //   return Object.keys(errors).length === 0;
-  // };
+ 
 
   return (
     <div>
       <ToastComponent />
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <div className="d-flex flex-wrap justify-content-start mb-4">
-          <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+          {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}          
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
           <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} isLoading={isLoading} margin="0 10px 0 10px" />
         </div>
         {showForm ? (

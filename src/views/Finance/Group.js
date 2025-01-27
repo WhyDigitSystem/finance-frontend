@@ -92,59 +92,33 @@ const Group = () => {
     getAllGroupName();
   }, []);
 
-  // const handleInputChange = (e) => {
-  //   const { name, value, type, checked } = e.target;
-  //   const inputValue = type === 'checkbox' ? checked : value;
-  //   setFormData({ ...formData, [name]: inputValue });
-  //   setFieldErrors({ ...fieldErrors, [name]: false });
-  // };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value, type, checked } = e.target;
-  //   const inputValue = type === 'checkbox' ? checked : value;
-
-  //   let errorMessage = '';
-  //   let validInputValue = inputValue; // Initialize valid input value
-
-  //   // Validation for accountCode (alphanumeric only)
-  //   if (name === 'accountCode') {
-  //     const alphanumericPattern = /^[a-zA-Z0-9]*$/; // Pattern for alphanumeric
-  //     if (!alphanumericPattern.test(inputValue)) {
-  //       errorMessage = 'Only alphabets and numbers are allowed.';
-  //       // Set validInputValue to prevent invalid character input
-  //       validInputValue = inputValue.replace(/[^a-zA-Z0-9]/g, '');
-  //     }
-  //   }
-
-  //   // Validation for accountGroupName (alphabets only)
-
-  //   // Update the form data with the valid input value
-  //   setFormData({ ...formData, [name]: validInputValue });
-
-  //   // Update the error messages
-  //   setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-  // };
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const inputValue = type === 'checkbox' ? checked : value;
     let validInputValue = inputValue;
-
-    // Validation for accountCode (alphanumeric only)
+    let errorMessage = '';
     if (name === 'accountCode') {
-      const alphanumericPattern = /^[a-zA-Z0-9]*$/; // Pattern for alphanumeric
+      const alphanumericPattern = /^[a-zA-Z0-9]*$/;
       if (!alphanumericPattern.test(inputValue)) {
         errorMessage = 'Only alphabets and numbers are allowed.';
-        // Set validInputValue to prevent invalid character input
         validInputValue = inputValue.replace(/[^a-zA-Z0-9]/g, '');
       }
     }
-    // Update form data
+
+    if (name === 'gstPercentage') {
+      const numericPattern = /^[0-9]+(\.[0-9]{1,2})?$/;
+      if (!numericPattern.test(inputValue)) {
+        // errorMessage = 'Please enter a valid number for GST percentage.';
+        validInputValue = inputValue.replace(/[^0-9.]/g, '');
+      } else {
+        errorMessage = '';
+      }
+    }
+
     setFormData((prevState) => ({ ...prevState, [name]: validInputValue }));
 
-    // Handle dynamic validation
     if (name === 'gstTaxFlag') {
       if (value === 'NA') {
-        // Reset gstType and gstPercentage if GST Tax Flag is NA
         setFormData((prevState) => ({
           ...prevState,
           gstType: '',
@@ -159,18 +133,16 @@ const Group = () => {
       }
     }
 
-    // Validate other fields if required
-    let errorMessage = '';
+    let fieldErrorMessage = '';
     if (name === 'gstPercentage' && !value) {
-      errorMessage = 'GST Percentage is required.';
     }
     if (name === 'gstType' && !value) {
-      errorMessage = 'GST Type is required.';
+      fieldErrorMessage = 'GST Type is required.';
     }
 
-    // Set field errors
-    setFieldErrors((prevState) => ({ ...prevState, [name]: errorMessage }));
+    setFieldErrors((prevState) => ({ ...prevState, [name]: fieldErrorMessage || errorMessage }));
   };
+
 
   const getGroup = async () => {
     try {
@@ -178,7 +150,6 @@ const Group = () => {
       if (result) {
         setData(result.paramObjectsMap.groupLedgerVO.reverse());
       } else {
-        // Handle error
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -188,12 +159,15 @@ const Group = () => {
   const validateForm = (formData) => {
     let errors = {};
 
-    if (formData.type === 'ACCOUNT' ? !formData.groupName : '') {
-      errors.groupName = 'Group Name is required';
-    }
+    // if (formData.type === 'ACCOUNT' ? !formData.groupName : '') {
+    //   errors.groupName = 'Group Name is required';
+    // }
 
     if (!formData.gstTaxFlag) {
       errors.gstTaxFlag = 'GST Tax Flag is required';
+    }
+    if (!formData.gstPercentage) {
+      errors.gstPercentage = 'GST Percentage is required';
     }
 
     if (!formData.coaList || formData.coaList.length === 0) {
@@ -216,27 +190,25 @@ const Group = () => {
       errors.category = 'PB is required';
     }
 
-    // if (!formData.currency) {
-    //   errors.currency = 'Currency is required';
-    // }
 
     return errors;
   };
 
   const handleSave = async () => {
-    const errors = validateForm(formData); // Validate the form data
+    const errors = validateForm(formData);
 
     if (Object.keys(errors).length === 0) {
-      // No errors, proceed with the save
       setIsLoading(true);
 
       const saveData = {
-        ...(editId && { id: editId }), // Include id if editing
+        ...(editId && { id: editId }),
         active: formData.active,
         groupName: formData.groupName,
         gstTaxFlag: formData.gstTaxFlag,
         coaList: formData.coaList,
         accountGroupName: formData.accountGroupName,
+        accountCode: formData.accountCode,
+        gstType: formData.gstType,
         type: formData.type,
         interBranchAc: formData.interBranchAc,
         controllAc: formData.controllAc,
@@ -257,7 +229,7 @@ const Group = () => {
         natureOfAccount: formData.natureOfAccount
       };
 
-      console.log('DATA TO SAVE', saveData); // Add this line to log the save data
+      console.log('DATA TO SAVE', saveData);
 
       try {
         const response = await apiCalls('put', `master/updateCreateGroupLedger`, saveData);
@@ -268,16 +240,14 @@ const Group = () => {
         } else {
           showToast('error', editId ? 'Group updation failed' : 'Group creation failed');
         }
-        // Handle response (success, errors, etc.)
       } catch (error) {
         console.error('Error:', error);
       } finally {
-        setIsLoading(false); // Stop the loader after the operation
+        setIsLoading(false);
       }
     } else {
-      // Handle validation errors (e.g., show error messages)
       console.log('Validation Errors:', errors);
-      setFieldErrors(errors); // Set errors to display in the UI if needed
+      setFieldErrors(errors);
     }
   };
 
@@ -295,7 +265,7 @@ const Group = () => {
       gstType: '',
       gstPercentage: '',
       branch: '',
-      // currency: '',
+      currency: '',
       pBFlag: '',
       natureOfAccount: '',
       active: false
@@ -345,7 +315,7 @@ const Group = () => {
     { accessorKey: 'id', header: 'Account Code', size: 140 },
     { accessorKey: 'coaList', header: 'COA List', size: 100 },
     { accessorKey: 'accountGroupName', header: 'Account/Groupname', size: 100 },
-    { accessorKey: 'type', header: 'type', size: 100 },
+    { accessorKey: 'type', header: 'Type', size: 100 },
     { accessorKey: 'currency', header: 'Currency', size: 100 },
     { accessorKey: 'active', header: 'Active', size: 100 }
   ];
@@ -429,9 +399,9 @@ const Group = () => {
       </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="d-flex flex-wrap justify-content-start mb-4">
-          <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+          {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleListView} />
+          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
           <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />
           <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} />
         </div>
@@ -451,9 +421,7 @@ const Group = () => {
           ></CommonBulkUpload>
         )}
 
-        {/* <div className="d-flex justify-content-between">
-          <h1 className="text-xl font-semibold mb-3">Group / Ledger</h1>
-        </div> */}
+
         {showForm ? (
           <div className="row d-flex ">
             <div className="col-md-3 mb-3">
@@ -467,8 +435,8 @@ const Group = () => {
                   name="type"
                   value={formData.type}
                 >
-                  <MenuItem value="ACCOUNT">Account</MenuItem>
-                  <MenuItem value="GROUP">Group</MenuItem>
+                  <MenuItem value="ACCOUNT">ACCOUNT</MenuItem>
+                  <MenuItem value="GROUP">GROUP</MenuItem>
                 </Select>
                 {fieldErrors.type && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
@@ -494,57 +462,7 @@ const Group = () => {
                 {fieldErrors.groupName && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
             </div>
-            {/* <div className="col-md-3 mb-2">
-              <FormControl fullWidth size="small">
-                <InputLabel id="gstTaxFlag">GST Tax Flag</InputLabel>
-                <Select
-                  labelId="gstTaxFlag"
-                  id="gstTaxFlag"
-                  label="GST Tax Flag"
-                  onChange={handleInputChange}
-                  name="gstTaxFlag"
-                  value={formData.gstTaxFlag}
-                >
-                  <MenuItem value="INPUT TAX">Input Tax</MenuItem>
-                  <MenuItem value="OUTPUT TAX">Output Tax</MenuItem>
-                  <MenuItem value="NA">NA</MenuItem>
-                </Select>
-                {fieldErrors.gstTaxFlag && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
-              </FormControl>
-            </div>
-            
-            <div className="col-md-3 mb-3">
-              <FormControl fullWidth size="small">
-                <InputLabel id="demo-simple-select-label">Gst Type</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  label="gstType"
-                  onChange={handleInputChange}
-                  name="gstType"
-                  value={formData.gstType}
-                >
-                  <MenuItem value="INTRA">INTRA</MenuItem>
-                  <MenuItem value="INTER">INTER</MenuItem>
-                </Select>
-                {fieldErrors.gstType && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
-              </FormControl>
-            </div>
-            <div className="col-md-3 mb-3">
-              <FormControl fullWidth variant="filled">
-                <TextField
-                  id="gstPercentage"
-                  label="Gst %"
-                  size="small"
-                  placeholder="Enter Gst %"
-                  inputProps={{ maxLength: 30 }}
-                  onChange={handleInputChange}
-                  name="gstPercentage"
-                  value={formData.gstPercentage}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.gstPercentage ? fieldErrors.gstPercentage : ''}</span>}
-                />
-              </FormControl>
-            </div> */}
+
             {/* GST Tax Flag */}
             <div className="col-md-3 mb-2">
               <FormControl fullWidth size="small">
@@ -557,8 +475,8 @@ const Group = () => {
                   name="gstTaxFlag"
                   value={formData.gstTaxFlag}
                 >
-                  <MenuItem value="INPUT TAX">Input Tax</MenuItem>
-                  <MenuItem value="OUTPUT TAX">Output Tax</MenuItem>
+                  <MenuItem value="INPUT TAX">INPUT TAX</MenuItem>
+                  <MenuItem value="OUTPUT TAX">OUTPUT TAX</MenuItem>
                   <MenuItem value="NA">NA</MenuItem>
                 </Select>
                 {fieldErrors.gstTaxFlag && <FormHelperText style={{ color: 'red' }}>{fieldErrors.gstTaxFlag}</FormHelperText>}
@@ -594,7 +512,6 @@ const Group = () => {
                     id="gstPercentage"
                     label="GST %"
                     size="small"
-                    placeholder="Enter GST %"
                     onChange={handleInputChange}
                     name="gstPercentage"
                     value={formData.gstPercentage}
@@ -610,7 +527,6 @@ const Group = () => {
                   label="Account Code"
                   size="small"
                   required
-                  disabled
                   placeholder="40003600104"
                   inputProps={{ maxLength: 30 }}
                   onChange={handleInputChange}
@@ -631,10 +547,11 @@ const Group = () => {
                   name="coaList"
                   value={formData.coaList}
                 >
-                  <MenuItem value="ASSET">Asset</MenuItem>
-                  <MenuItem value="LIABILITY">Liability</MenuItem>
-                  <MenuItem value="INCOME">Income</MenuItem>
-                  <MenuItem value="EXPENCE">Expense</MenuItem>
+                  <MenuItem value="ASSET">ASSET</MenuItem>
+                  <MenuItem value="LIABILITY">LIABILITY</MenuItem>
+                  <MenuItem value="INCOME">INCOME</MenuItem>
+                  <MenuItem value="EXPENCE">EXPENCE</MenuItem>
+                  <MenuItem value="Capital">CAPITAL</MenuItem>
                 </Select>
               </FormControl>
             </div>
@@ -646,7 +563,6 @@ const Group = () => {
                   label="Account/Group Name"
                   size="small"
                   required
-                  placeholder="Enter Group Name"
                   inputProps={{ maxLength: 30 }}
                   onChange={handleInputChange}
                   name="accountGroupName"
@@ -704,8 +620,8 @@ const Group = () => {
                   name="pBFlag"
                   value={formData.pBFlag}
                 >
-                  <MenuItem value="P">Profit And Loss</MenuItem>
-                  <MenuItem value="B">Balance Sheet</MenuItem>
+                  <MenuItem value="P">PROFIT AND LOSS</MenuItem>
+                  <MenuItem value="B">BALANCE SHEET</MenuItem>
                 </Select>
                 {fieldErrors.pBFlag && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
@@ -721,8 +637,8 @@ const Group = () => {
                   name="natureOfAccount"
                   value={formData.natureOfAccount}
                 >
-                  <MenuItem value="Db">Db</MenuItem>
-                  <MenuItem value="Cr">Cr</MenuItem>
+                  <MenuItem value="Db">DB</MenuItem>
+                  <MenuItem value="Cr">CR</MenuItem>
                   <MenuItem value="NA">N/A</MenuItem>
                 </Select>
                 {fieldErrors.natureOfAccount && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}

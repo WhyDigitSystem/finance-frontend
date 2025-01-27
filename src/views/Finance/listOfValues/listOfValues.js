@@ -104,16 +104,16 @@ const ListOfValues = () => {
     }
   };
 
-  const handleKeyDown = (e, row, table) => {
-    if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
-      e.preventDefault();
-      if (isLastRowEmpty(table)) {
-        displayRowError(table);
-      } else {
-        handleAddRow();
-      }
-    }
-  };
+  // const handleKeyDown = (e, row, table) => {
+  //   if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
+  //     e.preventDefault();
+  //     if (isLastRowEmpty(table)) {
+  //       displayRowError(table);
+  //     } else {
+  //       handleAddRow();
+  //     }
+  //   }
+  // };
 
   const handleAddRow = () => {
     if (isLastRowEmpty(detailsTableData)) {
@@ -267,7 +267,7 @@ const ListOfValues = () => {
   const getAllListOfValuesByOrgId = async () => {
     try {
       const result = await apiCalls('get', `/master/getListOfValuesByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.listOfValuesVO || []);
+      setData(result.paramObjectsMap.listOfValuesVO.reverse() || []);
       showForm(true);
       console.log('Test', result);
     } catch (err) {
@@ -321,9 +321,9 @@ const ListOfValues = () => {
       <ToastContainer />
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <div className="d-flex flex-wrap justify-content-start mb-4">
-          <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+          {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
           <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} isLoading={isLoading} margin="0 10px 0 10px" />
         </div>
         {showForm ? (
@@ -401,9 +401,9 @@ const ListOfValues = () => {
                             <table className="table table-bordered ">
                               <thead>
                                 <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                {!editId ?   <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                     Action
-                                  </th>
+                                  </th>: "" }
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
@@ -421,8 +421,9 @@ const ListOfValues = () => {
                               <tbody>
                                 {detailsTableData.map((row, index) => (
                                   <tr key={row.id}>
-                                    <td className="border px-2 py-2 text-center">
-                                      <ActionButton
+                                    {!editId ?    <td className="border px-2 py-2 text-center">
+                                   <ActionButton
+                                      
                                         title="Delete"
                                         icon={DeleteIcon}
                                         onClick={() =>
@@ -435,13 +436,12 @@ const ListOfValues = () => {
                                           )
                                         }
                                       />
-                                    </td>
+                                    </td>: "" }
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        // style={{ width: '150px' }}
                                         type="text"
                                         value={row.valueCode}
                                         onChange={(e) => {
@@ -468,7 +468,6 @@ const ListOfValues = () => {
                                     </td>
                                     <td className="border px-2 py-2">
                                       <input
-                                        // style={{ width: '150px' }}
                                         type="text"
                                         value={row.valueDesc}
                                         onChange={(e) => {
@@ -494,33 +493,35 @@ const ListOfValues = () => {
                                       )}
                                     </td>
                                     <td className="border px-2 py-2">
-                                      <select
-                                        value={row.active}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, active: value } : r)));
-                                          setDetailsTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              active: !value ? 'Active is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
+                                      <FormControlLabel
+                                        control={
+                                          <Checkbox
+                                            checked={row.active}
+                                            onChange={(e) => {
+                                              const isChecked = e.target.checked;
+
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) =>
+                                                  r.id === row.id ? { ...r, active: isChecked } : r 
+                                                )
+                                              );
+                                            }}
+                                            name="active"
+                                            color="primary"
+                                          />
+                                        }
+                                        label="Active"
+                                        sx={{
+                                          "& .MuiSvgIcon-root": { color: "#5e35b1" },
                                         }}
-                                        onKeyDown={(e) => handleKeyDown(e, row, detailsTableData)}
-                                        className={detailsTableErrors[index]?.active ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">Select</option>
-                                        <option value="true">true</option>
-                                        <option value="false">false</option>
-                                      </select>
+                                      />
                                       {detailsTableErrors[index]?.active && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        <div className="mt-2" style={{ color: "red", fontSize: "12px" }}>
                                           {detailsTableErrors[index].active}
                                         </div>
                                       )}
                                     </td>
+
                                   </tr>
                                 ))}
                               </tbody>

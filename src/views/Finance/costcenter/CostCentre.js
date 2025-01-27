@@ -174,7 +174,7 @@ const CostCenter = () => {
   const getAllCostCenterByOrgId = async () => {
     try {
       const result = await apiCalls('get', `/master/getAllCostCenterByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.costCenterVO || []);
+      setData(result.paramObjectsMap.costCenterVO.reverse() || []);
       showForm(true);
       console.log('Test', result);
     } catch (err) {
@@ -239,20 +239,20 @@ const CostCenter = () => {
         {showForm ? (
           <>
             <div className="row d-flex">
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="dimensionType">Dimension Type</InputLabel>
-                  <Select
-                    labelId="dimensionType"
+            <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
                     id="dimensionType"
                     label="Dimension Type"
-                    onChange={handleInputChange}
                     name="dimensionType"
+                    size="small"
+                    required
                     value={formValues.dimensionType}
-                  >
-                    <MenuItem value="Others">Others</MenuItem>
-                  </Select>
-                  {validationErrors.dimensionType && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 30 }}
+                    error={!!validationErrors.dimensionType}
+                    helperText={validationErrors.dimensionType}
+                  />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">

@@ -105,18 +105,15 @@ export const ChargeTypeRequest = () => {
     const newValue = type === 'checkbox' ? checked : value;
 
     if (name === 'serviceAccountCode') {
-      // Find the selected serviceAccountCode's description
       const selectedService = serviceCode.find((item) => item.serviceAccountCode === value);
       const sacDescription = selectedService ? selectedService.sacDescription : '';
 
-      // Update both serviceAccountCode and sacDescripition in formData
       setFormData({
         ...formData,
         [name]: newValue,
         sacDescripition: sacDescription
       });
     } else {
-      // For other fields, just update the value as usual
       setFormData({ ...formData, [name]: newValue });
     }
   };
@@ -338,19 +335,7 @@ export const ChargeTypeRequest = () => {
       errors.taxablePercentage = 'Taxable Percentage is required';
       hasError = true;
     }
-
-    if (!formData.taxType) {
-      errors.taxType = 'Tax Type is required';
-      hasError = true;
-    }
-    if (!formData.ccFeeApplicable) {
-      errors.ccFeeApplicable = 'CC Fee Applicable is required';
-      hasError = true;
-    }
-    if (!formData.ccJob) {
-      errors.ccJob = 'CC Job is required';
-      hasError = true;
-    }
+ 
     if (!formData.govtSac) {
       errors.govtSac = 'Govt Sac is required';
       hasError = true;
@@ -363,18 +348,6 @@ export const ChargeTypeRequest = () => {
       errors.gstTax = 'GST Tax is required';
       hasError = true;
     }
-    // if (!formData.gstControl) {
-    //   errors.gstControl = 'Field is required';
-    //   hasError = true;
-    // }
-    // if (!formData.service) {
-    //   errors.service = 'Field is required';
-    //   hasError = true;
-    // }
-    // if (!formData.type) {
-    //   errors.type = 'Field is required';
-    //   hasError = true;
-    // }
 
     setFieldErrors(errors);
     return !hasError;
@@ -401,8 +374,7 @@ export const ChargeTypeRequest = () => {
         govtSac: formData.govtSac,
         excempted: formData.excempted,
         gstTax: formData.gstTax,
-        orgId: orgId,
-        // createdBy: loginUserName,
+        orgId: orgId, 
         active: formData.active
       };
 
@@ -438,9 +410,9 @@ export const ChargeTypeRequest = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} margin="0 10px 0 10px" />
           </div>
 
@@ -449,11 +421,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.chargeType}>
                   <InputLabel id="demo-simple-select-label">
-                    {
-                      <span>
-                        Charge Type <span className="asterisk">*</span>
-                      </span>
-                    }
+                  Charge Type
                   </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -481,12 +449,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label={
-                    <span>
-                      Charge Code <span className="asterisk">*</span>
-                    </span>
-                  }
-                  placeholder="Placeholder"
+                  label='Charge Code'
                   variant="outlined"
                   size="small"
                   name="chargeCode"
@@ -497,42 +460,11 @@ export const ChargeTypeRequest = () => {
                   helperText={fieldErrors.chargeCode}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.product}>
-                  <InputLabel id="demo-simple-select-label">
-                    {
-                      <span>
-                        Product <span className="asterisk">*</span>
-                      </span>
-                    }
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Product"
-                    required
-                    value={formData.product}
-                    name="product"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="string">String</MenuItem>
-                  </Select>
-                  {fieldErrors.product && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.product}
-                    </p>
-                  )}
-                </FormControl>
-              </div> */}
+           
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label={
-                    <span>
-                      Charge Description <span className="asterisk">*</span>
-                    </span>
-                  }
-                  placeholder="Placeholder"
+                  label='Charge Description'
                   variant="outlined"
                   size="small"
                   name="chargeDescription"
@@ -546,12 +478,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label={
-                    <span>
-                      Local Charge Description <span className="asterisk">*</span>
-                    </span>
-                  }
-                  placeholder="Placeholder"
+                  label="Local Charge Description"
                   variant="outlined"
                   size="small"
                   name="localChargeDescripition"
@@ -565,11 +492,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.chargeType}>
                   <InputLabel id="demo-simple-select-label">
-                    {
-                      <span>
-                        Service Account Code <span className="asterisk">*</span>
-                      </span>
-                    }
+                  Service Account Code
                   </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -596,12 +519,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label={
-                    <span>
-                      SAC Description <span className="asterisk">*</span>
-                    </span>
-                  }
-                  placeholder="Placeholder"
+                  label='SAC Description'
                   variant="outlined"
                   size="small"
                   disabled
@@ -616,11 +534,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.salesAccount}>
                   <InputLabel id="demo-simple-select-label">
-                    {
-                      <span>
-                        Sales Account <span className="asterisk">*</span>
-                      </span>
-                    }
+                  Sales Account
                   </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -647,11 +561,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.purchaseAccount}>
                   <InputLabel id="demo-simple-select-label">
-                    {
-                      <span>
-                        Purchase Account <span className="asterisk">*</span>
-                      </span>
-                    }
+                  Purchase Account
                   </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -678,11 +588,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.taxable}>
                   <InputLabel id="demo-simple-select-labeltax">
-                    {
-                      <span>
-                        Taxable <span className="asterisk">*</span>
-                      </span>
-                    }
+                  Taxable
                   </InputLabel>
                   <Select
                     labelId="demo-simple-select-labeltax"
@@ -693,8 +599,8 @@ export const ChargeTypeRequest = () => {
                     name="taxable"
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="YES">Yes</MenuItem>
-                    <MenuItem value="NO">No</MenuItem>
+                    <MenuItem value="YES">YES</MenuItem>
+                    <MenuItem value="NO">NO</MenuItem>
                   </Select>
                   {fieldErrors.taxable && (
                     <p className="error-text ml-2 " style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
@@ -702,45 +608,11 @@ export const ChargeTypeRequest = () => {
                     </p>
                   )}
                 </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.taxType}>
-                  <InputLabel id="demo-simple-select-labeltaxtype">
-                    {
-                      <span>
-                        Tax Type <span className="asterisk">*</span>
-                      </span>
-                    }
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-labeltaxtype"
-                    id="demo-simple-selecttaxtype"
-                    label="Tax Type"
-                    required
-                    value={formData.taxType}
-                    name="taxType"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="BAS">BAS</MenuItem>
-                    <MenuItem value="BSS">BSS</MenuItem>
-                    <MenuItem value="CHA">CHA</MenuItem>
-                  </Select>
-                  {fieldErrors.taxType && (
-                    <p className="error-text ml-2 " style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.taxType}
-                    </p>
-                  )}
-                </FormControl>
-              </div>
+              </div> 
               <div className="col-md-3 mb-3">
                 <TextField
                   id="taxable100%"
-                  label={
-                    <span>
-                      Taxable % <span className="asterisk">*</span>
-                    </span>
-                  }
-                  placeholder="Placeholder"
+                  label='Taxable %'
                   variant="outlined"
                   size="small"
                   type='number'
@@ -755,11 +627,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.excempted}>
                   <InputLabel id="demo-simple-select-label">
-                    {
-                      <span>
-                        Exempted <span className="asterisk">*</span>
-                      </span>
-                    }
+                  Exempted
                   </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -770,8 +638,8 @@ export const ChargeTypeRequest = () => {
                     name="excempted"
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="YES">Yes</MenuItem>
-                    <MenuItem value="NO">No</MenuItem>
+                    <MenuItem value="YES">YES</MenuItem>
+                    <MenuItem value="NO">NO</MenuItem>
                   </Select>
                   {fieldErrors.excempted && (
                     <p className="error-text ml-2 " style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
@@ -780,72 +648,11 @@ export const ChargeTypeRequest = () => {
                   )}
                 </FormControl>
               </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.taxable}>
-                  <InputLabel id="demo-simple-select-labelcc">
-                    {
-                      <span>
-                        CC Job <span className="asterisk">*</span>
-                      </span>
-                    }
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-labelcc"
-                    id="demo-simple-selectcc"
-                    label="CC Job"
-                    required
-                    value={formData.ccJob}
-                    name="ccJob"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="YES">Yes</MenuItem>
-                    <MenuItem value="NO">No</MenuItem>
-                  </Select>
-                  {fieldErrors.ccJob && (
-                    <p className="error-text ml-2 " style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.ccJob}
-                    </p>
-                  )}
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.taxable}>
-                  <InputLabel id="demo-simple-select-labelfee">
-                    {
-                      <span>
-                        CC Fee Applicable <span className="asterisk">*</span>
-                      </span>
-                    }
-                  </InputLabel>
-                  <Select
-                    labelId="demo-simple-select-labelfee"
-                    id="demo-simple-selectfee"
-                    label="CC Fee Applicable"
-                    required
-                    value={formData.ccFeeApplicable}
-                    name="ccFeeApplicable"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="YES">Yes</MenuItem>
-                    <MenuItem value="NO">No</MenuItem>
-                  </Select>
-                  {fieldErrors.ccFeeApplicable && (
-                    <p className="error-text ml-2 " style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.ccFeeApplicable}
-                    </p>
-                  )}
-                </FormControl>
-              </div>
+              
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label={
-                    <span>
-                      Govt. SAC <span className="asterisk">*</span>
-                    </span>
-                  }
-                  placeholder="Placeholder"
+                  label="Govt. SAC"
                   variant="outlined"
                   size="small"
                   name="govtSac"
@@ -860,12 +667,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label={
-                    <span>
-                      GST Tax <span className="asterisk">*</span>
-                    </span>
-                  }
-                  placeholder="Placeholder"
+                  label="GST Tax"
                   variant="outlined"
                   size="small"
                   name="gstTax"
@@ -877,69 +679,6 @@ export const ChargeTypeRequest = () => {
                   helperText={fieldErrors.gstTax}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.gstControl}>
-                  <InputLabel id="demo-simple-select-label">GST Control</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="GST Control"
-                    required
-                    value={formData.gstControl}
-                    name="gstControl"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="string">String</MenuItem>
-                  </Select>
-                  {fieldErrors.gstControl && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.gstControl}
-                    </p>
-                  )}
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.service}>
-                  <InputLabel id="demo-simple-select-label">Service</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Service"
-                    required
-                    value={formData.service}
-                    name="service"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="string">String</MenuItem>
-                  </Select>
-                  {fieldErrors.service && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.service}
-                    </p>
-                  )}
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.type}>
-                  <InputLabel id="demo-simple-select-label">Type</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="Type"
-                    required
-                    value={formData.type}
-                    name="type"
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="string">String</MenuItem>
-                  </Select>
-                  {fieldErrors.type && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.type}
-                    </p>
-                  )}
-                </FormControl>
-              </div> */}
               <div className="col-md-3 mb-3">
                 <FormGroup>
                   <FormControlLabel
