@@ -504,7 +504,7 @@ export const Employee = () => {
                     labelId="department-label"
                     id='department'
                     label="department"
-                    value={formValues.department}
+                    value={formData.department}
                     onChange={handleInputChange}
                     name="department"
                     // disabled={isEditMode}
@@ -525,7 +525,7 @@ export const Employee = () => {
                     labelId="designation-label"
                     id='designation'
                     label="designation"
-                    value={formValues.designation}
+                    value={formData.designation}
                     onChange={handleInputChange}
                     name="designation"
                     // disabled={isEditMode}
