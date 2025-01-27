@@ -186,17 +186,17 @@ export const Currency = () => {
         const response = await apiCalls('put', `commonmaster/createUpdateCurrency`, saveData);
         if (response.status === true) {
           console.log('Response:', response);
-          showToast('success', editId ? ' Currency Updated Successfully' : 'Currency created successfully');
+          showToast('success', editId ? ' Currency Updated Successfully' : 'Currency Created Successfully');
           handleClear();
           getAllCurrencies();
           setIsLoading(false);
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Currency creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'Currency Creation Failed');
           setIsLoading(false);
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'Currency creation failed');
+        showToast('error', 'Currency Creation Failed');
         setIsLoading(false);
       }
     } else {

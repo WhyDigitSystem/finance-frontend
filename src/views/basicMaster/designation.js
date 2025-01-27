@@ -32,10 +32,10 @@ export const Designation = () => {
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'designationCode', header: 'Code', size: 140 },
+    { accessorKey: 'designationCode', header: 'Designation Code', size: 140 },
     {
       accessorKey: 'designationName',
-      header: 'Country',
+      header: 'Designation',
       size: 140
     },
     { accessorKey: 'active', header: 'Active', size: 140 }

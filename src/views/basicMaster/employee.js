@@ -29,7 +29,7 @@ export const Employee = () => {
     gender: '',
     branch: '',
     branchCode: '',
-    dept: '',
+    department: '',
     designation: '',
     dob: null,
     doj: null,
@@ -47,7 +47,7 @@ export const Employee = () => {
     gender: '',
     branch: '',
     branchCode: '',
-    dept: '',
+    department: '',
     designation: '',
     dob: '',
     doj: '',
@@ -66,12 +66,12 @@ export const Employee = () => {
   }, []);
   const getAllDesignation = async () => {
     try {
-      const response = await apiCalls('get', `commonmaster/getAllAciveFInYear?orgId=${orgId}`);
+      const response = await apiCalls('get', `master/getDesignationNameForEmployee?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setDesignationList(response.paramObjectsMap.financialYearVOs);
-        console.log('fin', response.paramObjectsMap.financialYearVOs);
+        setDesignationList(response.paramObjectsMap.designationName);
+        console.log('fin', response.paramObjectsMap.designationName);
       } else {
         console.error('API Error:', response);
       }
@@ -81,12 +81,12 @@ export const Employee = () => {
   };
   const getAllDepartment = async () => {
     try {
-      const response = await apiCalls('get', `commonmaster/getAllAciveFInYear?orgId=${orgId}`);
+      const response = await apiCalls('get', `master/getDepartmentNameForEmployee?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setDepartmentList(response.paramObjectsMap.financialYearVOs);
-        console.log('fin', response.paramObjectsMap.financialYearVOs);
+        setDepartmentList(response.paramObjectsMap.departmentName);
+        console.log('fin', response.paramObjectsMap.departmentName);
       } else {
         console.error('API Error:', response);
       }
@@ -257,7 +257,7 @@ export const Employee = () => {
       gender: '',
       branch: '',
       branchCode: '',
-      dept: '',
+      department: '',
       designation: '',
       dob: null,
       doj: null,
@@ -270,7 +270,7 @@ export const Employee = () => {
       gender: '',
       branch: '',
       branchCode: '',
-      dept: '',
+      department: '',
       designation: '',
       dob: '',
       doj: '',
@@ -320,14 +320,14 @@ export const Employee = () => {
           email: particularEmp.email,
           empName: particularEmp.employeeName,
           gender: particularEmp.gender,
-          dept: particularEmp.department,
+          department: particularEmp.department,
           designation: particularEmp.designation,
           branch: particularEmp.branch,
           branchCode: selectedBranch ? selectedBranch.branchCode : '', // Handle case where selectedBranch might be undefined
           dob: particularEmp.dateOfBirth,
           doj: particularEmp.joiningDate,
           active: particularEmp.active === 'Active' ? true : false,
-          salesFlag: particularEmp.salesFlag === 'SALESFLAG' ? true : false
+          salesFlag: particularEmp.salesFlag === true ? true : false
         });
       } else {
         console.error('API Error:', response);
@@ -352,8 +352,8 @@ export const Employee = () => {
     if (!formData.branch) {
       errors.branch = 'Branch is required';
     }
-    if (!formData.dept) {
-      errors.dept = 'Department is required';
+    if (!formData.department) {
+      errors.department = 'Department is required';
     }
     if (!formData.designation) {
       errors.designation = 'Designation is required';
@@ -369,6 +369,7 @@ export const Employee = () => {
     } else if (!emailRegex.test(formData.email)) {
       errors.email = 'Invalid Mail ID Format';
     }
+console.log("save",errors);
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
@@ -383,7 +384,7 @@ export const Employee = () => {
         gender: formData.gender,
         branch: formData.branch,
         branchCode: formData.branchCode,
-        department: formData.dept,
+        department: formData.department,
         designation: formData.designation,
         dateOfBirth: formData.dob,
         joiningdate: formData.doj,
@@ -422,7 +423,7 @@ export const Employee = () => {
     { accessorKey: 'employeeCode', header: 'Emp Code', size: 140 },
     { accessorKey: 'employeeName', header: 'Employee', size: 140 },
     { accessorKey: 'branch', header: 'Branch', size: 140 },
-    { accessorKey: 'department', header: 'Dept', size: 140 },
+    { accessorKey: 'department', header: 'department', size: 140 },
     { accessorKey: 'designation', header: 'Designation', size: 140 },
     { accessorKey: 'joiningDate', header: 'Joining Date', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
@@ -478,8 +479,8 @@ export const Employee = () => {
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gender}>
                   <InputLabel id="gender-label">Gender</InputLabel>
                   <Select labelId="gender-label" label="Gender" value={formData.gender} onChange={handleInputChange} name="gender">
-                    <MenuItem value="MALE">Male</MenuItem>
-                    <MenuItem value="FEMALE">Female</MenuItem>
+                    <MenuItem value="MALE">MALE</MenuItem>
+                    <MenuItem value="FEMALE">FEMALE</MenuItem>
                   </Select>
                   {fieldErrors.gender && <FormHelperText>{fieldErrors.gender}</FormHelperText>}
                 </FormControl>
@@ -499,7 +500,7 @@ export const Employee = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.department}>
-                  <InputLabel id="department-label">Fin Year</InputLabel>
+                  <InputLabel id="department-label">Department</InputLabel>
                   <Select
                     labelId="department-label"
                     id='department'
@@ -510,8 +511,8 @@ export const Employee = () => {
                     // disabled={isEditMode}
                   >
                     {departmentList?.map((row) => (
-                      <MenuItem key={row.id} value={row.department}>
-                        {row.department}
+                      <MenuItem key={row.id} value={row.departmentName}>
+                        {row.departmentName}
                       </MenuItem>
                     ))}
                   </Select>
@@ -520,7 +521,7 @@ export const Employee = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.designation}>
-                  <InputLabel id="designation-label">Fin Year</InputLabel>
+                  <InputLabel id="designation-label">Designation</InputLabel>
                   <Select
                     labelId="designation-label"
                     id='designation'
@@ -531,8 +532,8 @@ export const Employee = () => {
                     // disabled={isEditMode}
                   >
                     {designationList?.map((row) => (
-                      <MenuItem key={row.id} value={row.designation}>
-                        {row.designation}
+                      <MenuItem key={row.id} value={row.designationName}>
+                        {row.designationName}
                       </MenuItem>
                     ))}
                   </Select>
