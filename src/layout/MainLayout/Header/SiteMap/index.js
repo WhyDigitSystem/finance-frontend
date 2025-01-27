@@ -32,6 +32,8 @@ const sitemapData = [
           { name: 'State / Province / Region' },
           { name: 'City' },
           { name: 'Region' },
+          { name: 'Department' },
+          { name: 'Designation' },
           { name: 'Employee' }
         ]
       }

@@ -53,6 +53,8 @@ const Country = Loadable(lazy(() => import('views/basicMaster/country')));
 const State = Loadable(lazy(() => import('views/basicMaster/state')));
 const City = Loadable(lazy(() => import('views/basicMaster/city')));
 const Currency = Loadable(lazy(() => import('views/basicMaster/currency')));
+const Department = Loadable(lazy(() => import('views/basicMaster/department')));
+const Designation = Loadable(lazy(() => import('views/basicMaster/designation')));
 const Region = Loadable(lazy(() => import('views/basicMaster/RegionMaster')));
 const FinYear = Loadable(lazy(() => import('views/basicMaster/finYear')));
 // const Branch = Loadable(lazy(() => import('views/company/branch')));
@@ -251,6 +253,14 @@ const FinanceRoute = {
     {
       path: '/basicMaster/RegionMaster',
       element: <Region />
+    },
+    {
+      path: '/basicMaster/Department',
+      element: <Department />
+    },
+    {
+      path: '/basicMaster/Designation',
+      element: <Designation />
     },
     {
       path: '/basicMaster/finYear',

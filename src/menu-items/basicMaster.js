@@ -1,5 +1,5 @@
 // assets
-import { IconCashBanknote, IconDatabaseStar, IconKey, IconUserShield, IconWorldPin } from '@tabler/icons-react';
+import { IconCashBanknote, IconDatabaseStar, IconKey, IconWorldPin,IconUserPlus, IconBuildingFactory2, IconIdBadge2,IconMapQuestion   } from '@tabler/icons-react';
 
 // constant
 const icons = {
@@ -19,7 +19,16 @@ const icons3 = {
 };
 
 const icons4 = {
-  IconUserShield
+  IconBuildingFactory2 
+};
+const icons5 = {
+  IconUserPlus
+};
+const icons6 = {
+  IconIdBadge2
+};
+const icons7 = {
+  IconMapQuestion 
 };
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
@@ -76,14 +85,30 @@ const basicMaster = {
           id: 'region',
           title: 'Region',
           type: 'item',
-          url: '/basicMaster/RegionMaster'
+          url: '/basicMaster/RegionMaster',
+          icon: icons7.IconMapQuestion 
+        },
+        {
+          id: 'department',
+          title: 'Department',
+          type: 'item',
+          url: '/basicMaster/Department',
+          icon: icons4.IconBuildingFactory2 
+        },
+        {
+          id: 'designation',
+          title: 'Designation',
+          type: 'item',
+          url: '/basicMaster/Designation',
+          icon: icons6.IconIdBadge2
         },
         {
           id: 'employee',
           title: 'Employee',
           type: 'item',
           url: '/basicMaster/employee',
-          icon: icons4.IconUserShield
+          icon: icons5.IconUserPlus
+          // <IconUserPlus stroke={2} />
         }
         // {
         //   id: 'finYear',

@@ -14,31 +14,27 @@ import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from './CommonListViewTable';
 
-export const Country = () => {
+export const Designation = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     active: true,
-    countryCode: '',
-    countryName: ''
+    designationCode: '',
+    designationName: ''
   });
   const [editId, setEditId] = useState('');
 
-  const theme = useTheme();
-  const anchorRef = useRef(null);
-
   const [fieldErrors, setFieldErrors] = useState({
-    countryName: '',
-    countryCode: ''
+    designationName: '',
+    designationCode: ''
   });
   const [listView, setListView] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'countryCode', header: 'Code', size: 140 },
+    { accessorKey: 'designationCode', header: 'Code', size: 140 },
     {
-      accessorKey: 'countryName',
+      accessorKey: 'designationName',
       header: 'Country',
       size: 140
     },
@@ -47,30 +43,30 @@ export const Country = () => {
   const [listViewData, setListViewData] = useState([]);
 
   useEffect(() => {
-    getAllCountries();
+    getAllDesignation();
   }, []);
 
-  const getAllCountries = async () => {
+  const getAllDesignation = async () => {
     try {
-      const result = await apiCalls('get', `commonmaster/country?orgid=${orgId}`);
-      setListViewData(result.paramObjectsMap.countryVO.reverse());
+      const result = await apiCalls('get', `commonmaster/getDesignationByOrgId?orgid=${orgId}`);
+      setListViewData(result.paramObjectsMap.designationVO.reverse());
       console.log('Test', result);
     } catch (err) {
       console.log('error', err);
     }
   };
 
-  const getCountryById = async (row) => {
-    console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
+  const getDesignationById = async (row) => {
+    console.log('THE SELECTED DESIGNATION ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `commonmaster/country/${row.original.id}`);
+      const response = await apiCalls('get', `commonmaster/getDesignationById?id=${row.original.id}`);
 
       if (response.status === true) {
-        const particularCountry = response.paramObjectsMap.Country;
+        const particularCountry = response.paramObjectsMap.designationVO;
         setFormData({
-          countryCode: particularCountry.countryCode,
-          countryName: particularCountry.countryName,
+          designationCode: particularCountry.designationCode,
+          designationName: particularCountry.designationName,
           active: particularCountry.active === 'Active' ? true : false
         });
         setListView(false);
@@ -81,30 +77,14 @@ export const Country = () => {
       console.error('Error fetching data:', error);
     }
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-
-  //   if (name === 'countryCode' && !codeRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else if (name === 'countryName' && !nameRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else {
-  //     setFormData({ ...formData, [name]: value.toUpperCase() });
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-  // };
-
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd, type } = e.target;
-    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-    const nameRegex = /^[A-Za-z ]*$/;
+    const codeRegex = /^[a-zA-Z0-9#_\- \/\\]*$/;
+    // const nameRegex = /^[A-Za-z - ]*$/;
 
-    if (name === 'countryCode' && !codeRegex.test(value)) {
+    if (name === 'designationCode' && !codeRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else if (name === 'countryName' && !nameRegex.test(value)) {
+    } else if (name === 'designationName' && !codeRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else {
       setFormData({ ...formData, [name]: value.toUpperCase() });
@@ -124,24 +104,24 @@ export const Country = () => {
 
   const handleClear = () => {
     setFormData({
-      countryName: '',
-      countryCode: '',
+      designationName: '',
+      designationCode: '',
       active: true
     });
     setFieldErrors({
-      countryName: '',
-      countryCode: ''
+      designationName: '',
+      designationCode: ''
     });
     setEditId('');
   };
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.countryCode) {
-      errors.countryCode = 'Country Code is required';
+    if (!formData.designationCode) {
+      errors.designationCode = 'Designation Code is required';
     }
-    if (!formData.countryName) {
-      errors.countryName = 'Country is required';
+    if (!formData.designationName) {
+      errors.designationName = 'Designation is required';
     }
 
     if (Object.keys(errors).length === 0) {
@@ -149,8 +129,8 @@ export const Country = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        countryCode: formData.countryCode,
-        countryName: formData.countryName,
+        designationCode: formData.designationCode,
+        designationName: formData.designationName,
         orgId: orgId,
         createdBy: loginUserName
       };
@@ -158,21 +138,21 @@ export const Country = () => {
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const result = await apiCalls('post', `commonmaster/createUpdateCountry`, saveFormData);
+        const result = await apiCalls('post', `commonmaster/createUpdateDesignation`, saveFormData);
 
         if (result.status === true) {
           console.log('Response:', result);
-          showToast('success', editId ? ' Country Updated Successfully' : 'Country created successfully');
+          showToast('success', editId ? ' Designation Updated Successfully' : 'Designation created successfully');
           handleClear();
-          getAllCountries();
+          getAllDesignation();
           setIsLoading(false);
         } else {
-          showToast('error', result.paramObjectsMap.errorMessage || 'Country creation failed');
+          showToast('error', result.paramObjectsMap.errorMessage || 'Designation creation failed');
           setIsLoading(false);
         }
       } catch (err) {
         console.log('error', err);
-        showToast('error', 'Country creation failed');
+        showToast('error', 'Designation creation failed');
         setIsLoading(false);
       }
     } else {
@@ -182,14 +162,6 @@ export const Country = () => {
 
   const handleView = () => {
     setListView(!listView);
-  };
-
-  const handleClose = () => {
-    setEditMode(false);
-    setFormData({
-      country: '',
-      countryCode: ''
-    });
   };
 
   const handleCheckboxChange = (event) => {
@@ -221,7 +193,7 @@ export const Country = () => {
               data={listViewData}
               columns={listViewColumns}
               blockEdit={true} // DISAPLE THE MODAL IF TRUE
-              toEdit={getCountryById}
+              toEdit={getDesignationById}
             />
           </div>
         ) : (
@@ -229,28 +201,28 @@ export const Country = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Code"
+                  label="Designation"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="countryCode"
-                  value={formData.countryCode}
+                  name="designationCode"
+                  value={formData.designationCode}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.countryCode}
-                  helperText={fieldErrors.countryCode}
+                  error={!!fieldErrors.designationCode}
+                  helperText={fieldErrors.designationCode}
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Name"
+                  label="Designation Code"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="countryName"
-                  value={formData.countryName}
+                  name="designationName"
+                  value={formData.designationName}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.countryName}
-                  helperText={fieldErrors.countryName}
+                  error={!!fieldErrors.designationName}
+                  helperText={fieldErrors.designationName}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -270,4 +242,4 @@ export const Country = () => {
     </>
   );
 };
-export default Country;
+export default Designation;

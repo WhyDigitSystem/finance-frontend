@@ -135,7 +135,7 @@ export const ChartOfCostcenter = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.chartCostCenterVO);
+        setListViewData(response.paramObjectsMap.chartCostCenterVO.reverse());
       } else {
         console.error('API Error:', response);
       }
@@ -699,7 +699,7 @@ export const ChartOfCostcenter = () => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                costCenterCode: 'Only numeric characters are allowed',
+                                                costCenterCode: 'Invalid Format',
                                               };
                                               return newErrors;
                                             });
@@ -739,7 +739,7 @@ export const ChartOfCostcenter = () => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                costCenterName: 'Only numeric characters are allowed',
+                                                costCenterName: 'Invalid format',
                                               };
                                               return newErrors;
                                             });

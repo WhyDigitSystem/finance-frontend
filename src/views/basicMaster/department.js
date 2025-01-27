@@ -14,15 +14,15 @@ import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from './CommonListViewTable';
 
-export const Country = () => {
+export const Department = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
   
   const [formData, setFormData] = useState({
     active: true,
-    countryCode: '',
-    countryName: ''
+    department: '',
+    departmentCode: ''
   });
   const [editId, setEditId] = useState('');
 
@@ -30,16 +30,15 @@ export const Country = () => {
   const anchorRef = useRef(null);
 
   const [fieldErrors, setFieldErrors] = useState({
-    countryName: '',
-    countryCode: ''
+    departmentCode: '',
+    department: ''
   });
   const [listView, setListView] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'countryCode', header: 'Code', size: 140 },
+    { accessorKey: 'departmentName', header: 'Department', size: 140 },
     {
-      accessorKey: 'countryName',
-      header: 'Country',
+      accessorKey: 'departmentCode',
+      header: 'Department Code',
       size: 140
     },
     { accessorKey: 'active', header: 'Active', size: 140 }
@@ -47,33 +46,34 @@ export const Country = () => {
   const [listViewData, setListViewData] = useState([]);
 
   useEffect(() => {
-    getAllCountries();
+    getAllDepartment();
   }, []);
 
-  const getAllCountries = async () => {
+  const getAllDepartment = async () => {
     try {
-      const result = await apiCalls('get', `commonmaster/country?orgid=${orgId}`);
-      setListViewData(result.paramObjectsMap.countryVO.reverse());
+      const result = await apiCalls('get', `commonmaster/getDepartmentByOrgId?orgid=${orgId}`);
+      setListViewData(result.paramObjectsMap.departmentVO.reverse());
       console.log('Test', result);
     } catch (err) {
       console.log('error', err);
     }
   };
 
-  const getCountryById = async (row) => {
-    console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
+  const getDepartmentById = async (row) => {
+    console.log('THE SELECTED DEPARTMENT ID IS:', row.original.id);
     setEditId(row.original.id);
     try {
-      const response = await apiCalls('get', `commonmaster/country/${row.original.id}`);
-
+      const response = await apiCalls('get', `/commonmaster/getDepartmentById?id=${row.original.id}`);
+      console.log('API Response:', response);
       if (response.status === true) {
-        const particularCountry = response.paramObjectsMap.Country;
-        setFormData({
-          countryCode: particularCountry.countryCode,
-          countryName: particularCountry.countryName,
-          active: particularCountry.active === 'Active' ? true : false
-        });
         setListView(false);
+        const particularDepartment = response.paramObjectsMap.departmentVO;
+        setFormData({
+          department: particularDepartment.departmentName,
+          departmentCode: particularDepartment.departmentCode,
+          active: particularDepartment.active === 'Active' ? true : false
+        });
+        
       } else {
         console.error('API Error');
       }
@@ -82,29 +82,14 @@ export const Country = () => {
     }
   };
 
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-
-  //   if (name === 'countryCode' && !codeRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else if (name === 'countryName' && !nameRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else {
-  //     setFormData({ ...formData, [name]: value.toUpperCase() });
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-  // };
-
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd, type } = e.target;
     const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
 
-    if (name === 'countryCode' && !codeRegex.test(value)) {
+    if (name === 'department' && !codeRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else if (name === 'countryName' && !nameRegex.test(value)) {
+    } else if (name === 'departmentCode' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
     } else {
       setFormData({ ...formData, [name]: value.toUpperCase() });
@@ -124,24 +109,24 @@ export const Country = () => {
 
   const handleClear = () => {
     setFormData({
-      countryName: '',
-      countryCode: '',
+      departmentCode: '',
+      department: '',
       active: true
     });
     setFieldErrors({
-      countryName: '',
-      countryCode: ''
+      departmentCode: '',
+      department: ''
     });
     setEditId('');
   };
 
   const handleSave = async () => {
     const errors = {};
-    if (!formData.countryCode) {
-      errors.countryCode = 'Country Code is required';
+    if (!formData.department) {
+      errors.department = 'Department is required';
     }
-    if (!formData.countryName) {
-      errors.countryName = 'Country is required';
+    if (!formData.departmentCode) {
+      errors.departmentCode = 'Department Code is required';
     }
 
     if (Object.keys(errors).length === 0) {
@@ -149,8 +134,8 @@ export const Country = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        countryCode: formData.countryCode,
-        countryName: formData.countryName,
+        departmentCode: formData.departmentCode,
+        departmentName: formData.department,
         orgId: orgId,
         createdBy: loginUserName
       };
@@ -158,21 +143,21 @@ export const Country = () => {
       console.log('DATA TO SAVE IS:', saveFormData);
 
       try {
-        const result = await apiCalls('post', `commonmaster/createUpdateCountry`, saveFormData);
+        const result = await apiCalls('post', `commonmaster/createUpdateDepartment`, saveFormData);
 
         if (result.status === true) {
           console.log('Response:', result);
-          showToast('success', editId ? ' Country Updated Successfully' : 'Country created successfully');
+          showToast('success', editId ? ' Department Updated Successfully' : 'Department created successfully');
           handleClear();
-          getAllCountries();
+          getAllDepartment();
           setIsLoading(false);
         } else {
-          showToast('error', result.paramObjectsMap.errorMessage || 'Country creation failed');
+          showToast('error', result.paramObjectsMap.errorMessage || 'Department creation failed');
           setIsLoading(false);
         }
       } catch (err) {
         console.log('error', err);
-        showToast('error', 'Country creation failed');
+        showToast('error', 'Department creation failed');
         setIsLoading(false);
       }
     } else {
@@ -182,14 +167,6 @@ export const Country = () => {
 
   const handleView = () => {
     setListView(!listView);
-  };
-
-  const handleClose = () => {
-    setEditMode(false);
-    setFormData({
-      country: '',
-      countryCode: ''
-    });
   };
 
   const handleCheckboxChange = (event) => {
@@ -203,8 +180,8 @@ export const Country = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton
               title="Save"
@@ -221,7 +198,7 @@ export const Country = () => {
               data={listViewData}
               columns={listViewColumns}
               blockEdit={true} // DISAPLE THE MODAL IF TRUE
-              toEdit={getCountryById}
+              toEdit={getDepartmentById}
             />
           </div>
         ) : (
@@ -229,28 +206,28 @@ export const Country = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Code"
+                  label="Department"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="countryCode"
-                  value={formData.countryCode}
+                  name="department"
+                  value={formData.department}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.countryCode}
-                  helperText={fieldErrors.countryCode}
+                  error={!!fieldErrors.department}
+                  helperText={fieldErrors.department}
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Name"
+                  label="Department Code"
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="countryName"
-                  value={formData.countryName}
+                  name="departmentCode"
+                  value={formData.departmentCode}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.countryName}
-                  helperText={fieldErrors.countryName}
+                  error={!!fieldErrors.departmentCode}
+                  helperText={fieldErrors.departmentCode}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -270,4 +247,4 @@ export const Country = () => {
     </>
   );
 };
-export default Country;
+export default Department;
