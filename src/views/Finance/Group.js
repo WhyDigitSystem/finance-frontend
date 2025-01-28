@@ -159,6 +159,7 @@ const Group = () => {
   const validateForm = (data) => {
     const errors = {};
 
+    if (!data.type) errors.type = 'Type is required';
     if (!data.accountCode) errors.accountCode = 'Account code is required';
     if (data.gstTaxFlag !== 'NA') {
       if (!data.gstPercentage || data.gstPercentage < 0 || data.gstPercentage > 100) {
@@ -239,33 +240,33 @@ const Group = () => {
       groupName: '',
       gstTaxFlag: '',
       gstType: '',
-      gst: '',
+      gstPercentage: '',
       accountCode: '',
       coaList: '',
       accountGroupName: '',
       category: '',
       currency: '',
-      pbFlag: '',
+      pBFlag: '',
       natureOfAccount: '',
       interBranchAc: false,
       controllAc: false,
     });
     setFieldErrors({
       active: false,
-      type: '',
-      groupName: '',
-      gstTaxFlag: '',
-      gstType: '',
-      gst: '',
-      accountCode: '',
-      coaList: '',
-      accountGroupName: '',
-      category: '',
-      currency: '',
-      pbFlag: '',
-      natureOfAccount: '',
-      interBranchAc: false,
-      controllAc: false,
+    type: '',
+    groupName: '',
+    gstTaxFlag: '',
+    gstType: '',
+    gstPercentage: '',
+    accountCode: '',
+    coaList: '',
+    accountGroupName: '',
+    category: '',
+    currency: '',
+    pBFlag: '',
+    natureOfAccount: '',
+    interBranchAc: false,
+    controllAc: false,
     });
     setEditId('');
   };
@@ -278,13 +279,13 @@ const Group = () => {
       groupName: '',
       gstTaxFlag: '',
       gstType: '',
-      gst: '',
+      gstPercentage: '',
       accountCode: '',
       coaList: '',
       accountGroupName: '',
       category: '',
       currency: '',
-      pbFlag: '',
+      pBFlag: '',
       natureOfAccount: '',
       interBranchAc: false,
       controllAc: false,
@@ -507,8 +508,7 @@ const Group = () => {
                   id="accountCode"
                   label="Account Code"
                   size="small"
-                  required
-                  placeholder="40003600104"
+                  required 
                   inputProps={{ maxLength: 30 }}
                   onChange={handleInputChange}
                   name="accountCode"

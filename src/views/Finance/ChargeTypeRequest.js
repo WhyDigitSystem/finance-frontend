@@ -40,18 +40,16 @@ export const ChargeTypeRequest = () => {
     sacDescripition: '',
     salesAccount: '',
     purchaseAccount: '',
-    taxType: '',
-    ccFeeApplicable: '',
     taxable: '',
     taxablePercentage: '',
-    ccJob: '',
     govtSac: '',
     excempted: '',
     orgId: orgId,
     gstTax: '',
     gstControl: '',
     service: '',
-    type: ''
+    type: '',
+    approved: false
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -65,16 +63,14 @@ export const ChargeTypeRequest = () => {
     salesAccount: '',
     purchaseAccount: '',
     taxable: '',
-    taxType: '',
     taxablePercentage: '',
-    ccFeeApplicable: '',
-    ccJob: '',
     govtSac: '',
     excempted: '',
     gstTax: '',
     gstControl: '',
     service: '',
-    type: ''
+    type: '',
+    approved: false
   });
 
   const columns = [
@@ -86,11 +82,9 @@ export const ChargeTypeRequest = () => {
     // { accessorKey: 'sACDescription', header: 'SAC Description', size: 140 },
     // { accessorKey: 'salesAccount', header: 'Sales Account', size: 140 },
     // { accessorKey: 'purchaseAccount', header: 'Purchase Account', size: 140 },
-    // { accessorKey: 'taxType', header: 'Tax Type', size: 140 },
     // { accessorKey: 'ccFeeApplicable', header: 'CC Fee Applicable', size: 140 },
     // { accessorKey: 'taxable', header: 'Taxable', size: 140 },
     // { accessorKey: 'taxablePercentage', header: 'Taxable Percentage', size: 140 },
-    // { accessorKey: 'ccJob', header: 'CC Job', size: 140 },
     // { accessorKey: 'govtSac', header: 'Govt SAC', size: 140 },
     // { accessorKey: 'excempted', header: 'Exempted', size: 140 },
     { accessorKey: 'gstTax', header: 'GST Tax', size: 140 },
@@ -191,6 +185,7 @@ export const ChargeTypeRequest = () => {
           active: chargeTypeRequestVO.active,
           chargeType: chargeTypeRequestVO.chargeType || '',
           chargeCode: chargeTypeRequestVO.chargeCode || '',
+          approved: chargeTypeRequestVO.approved || '',
           product: chargeTypeRequestVO.product || '',
           chargeDescription: chargeTypeRequestVO.chargeDescription || '',
           localChargeDescripition: chargeTypeRequestVO.localChargeDescripition || '',
@@ -198,11 +193,8 @@ export const ChargeTypeRequest = () => {
           sacDescripition: chargeTypeRequestVO.sacDescripition || '',
           salesAccount: chargeTypeRequestVO.salesAccount || '',
           purchaseAccount: chargeTypeRequestVO.purchaseAccount || '',
-          taxType: chargeTypeRequestVO.taxType || '',
-          ccFeeApplicable: chargeTypeRequestVO.ccFeeApplicable || '',
           taxable: chargeTypeRequestVO.taxable || '',
           taxablePercentage: chargeTypeRequestVO.taxablePercentage || '',
-          ccJob: chargeTypeRequestVO.ccJob || '',
           id: chargeTypeRequestVO.id || 0,
           govtSac: chargeTypeRequestVO.govtSac || '',
           excempted: chargeTypeRequestVO.excempted || '',
@@ -247,18 +239,16 @@ export const ChargeTypeRequest = () => {
       sacDescripition: '',
       salesAccount: '',
       purchaseAccount: '',
-      taxType: '',
-      ccFeeApplicable: '',
       taxable: '',
       taxablePercentage: '',
-      ccJob: '',
       govtSac: '',
       excempted: '',
       orgId: orgId,
       gstTax: '',
       gstControl: '',
       service: '',
-      type: ''
+      type: '',
+      approved: false
     });
 
     setEditId('');
@@ -274,16 +264,14 @@ export const ChargeTypeRequest = () => {
       salesAccount: '',
       purchaseAccount: '',
       taxable: '',
-      taxType: '',
       taxablePercentage: '',
-      ccFeeApplicable: '',
-      ccJob: '',
       govtSac: '',
       excempted: '',
       gstTax: '',
       gstControl: '',
       service: '',
-      type: ''
+      type: '',
+      approved: false
     });
   };
 
@@ -335,7 +323,7 @@ export const ChargeTypeRequest = () => {
       errors.taxablePercentage = 'Taxable Percentage is required';
       hasError = true;
     }
- 
+
     if (!formData.govtSac) {
       errors.govtSac = 'Govt Sac is required';
       hasError = true;
@@ -359,22 +347,19 @@ export const ChargeTypeRequest = () => {
         ...(editId && { id: editId }),
         taxablePercentage: formData.taxablePercentage ? parseInt(formData.taxablePercentage, 10) : 0,
         chargeType: formData.chargeType,
-        chargeCode: formData.chargeCode,
-        // product: formData.product,
+        chargeCode: formData.chargeCode, 
         chargeDescription: formData.chargeDescription,
+        approved: formData.approved,
         localChargeDescripition: formData.localChargeDescripition,
         serviceAccountCode: formData.serviceAccountCode,
         sacDescripition: formData.sacDescripition,
         salesAccount: formData.salesAccount,
         purchaseAccount: formData.purchaseAccount,
         taxable: formData.taxable,
-        taxType: formData.taxType,
-        ccFeeApplicable: formData.ccFeeApplicable,
-        ccJob: formData.ccJob,
         govtSac: formData.govtSac,
         excempted: formData.excempted,
         gstTax: formData.gstTax,
-        orgId: orgId, 
+        orgId: orgId,
         active: formData.active
       };
 
@@ -421,7 +406,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.chargeType}>
                   <InputLabel id="demo-simple-select-label">
-                  Charge Type
+                    Charge Type
                   </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -460,7 +445,7 @@ export const ChargeTypeRequest = () => {
                   helperText={fieldErrors.chargeCode}
                 />
               </div>
-           
+
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
@@ -492,7 +477,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.chargeType}>
                   <InputLabel id="demo-simple-select-label">
-                  Service Account Code
+                    Service Account Code
                   </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -534,7 +519,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.salesAccount}>
                   <InputLabel id="demo-simple-select-label">
-                  Sales Account
+                    Sales Account
                   </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -561,7 +546,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.purchaseAccount}>
                   <InputLabel id="demo-simple-select-label">
-                  Purchase Account
+                    Purchase Account
                   </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -588,7 +573,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.taxable}>
                   <InputLabel id="demo-simple-select-labeltax">
-                  Taxable
+                    Taxable
                   </InputLabel>
                   <Select
                     labelId="demo-simple-select-labeltax"
@@ -608,7 +593,7 @@ export const ChargeTypeRequest = () => {
                     </p>
                   )}
                 </FormControl>
-              </div> 
+              </div>
               <div className="col-md-3 mb-3">
                 <TextField
                   id="taxable100%"
@@ -627,7 +612,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.excempted}>
                   <InputLabel id="demo-simple-select-label">
-                  Exempted
+                    Exempted
                   </InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -648,7 +633,7 @@ export const ChargeTypeRequest = () => {
                   )}
                 </FormControl>
               </div>
-              
+
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
@@ -684,6 +669,21 @@ export const ChargeTypeRequest = () => {
                   <FormControlLabel
                     control={<Checkbox name="active" checked={formData.active} onChange={handleInputChange} />}
                     label="Active"
+                  />
+                </FormGroup>
+              </div>
+              <div className="col-md-3 mb-2">
+                <FormGroup>
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={formData.approved}
+                        onChange={handleInputChange}
+                        name="approved"
+                        sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                      />
+                    }
+                    label="Approved"
                   />
                 </FormGroup>
               </div>
