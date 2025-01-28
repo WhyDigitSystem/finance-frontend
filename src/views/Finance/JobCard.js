@@ -89,9 +89,9 @@ export const JobCard = () => {
 
 
   const listViewColumns = [
-    { accessorKey: 'jobNo', header: 'DocId', size: 140 },
+    { accessorKey: 'jobNo', header: 'Document No', size: 140 },
     { accessorKey: 'customer', header: 'Customer', size: 140 },
-    { accessorKey: 'date', header: 'Data', size: 140 },
+    { accessorKey: 'date', header: 'Date', size: 140 },
     { accessorKey: 'closedOn', header: 'ClosedOn', size: 140 }
   ];
 
@@ -229,10 +229,10 @@ export const JobCard = () => {
   const handleSave = async () => {
     const errors = {};
     if (!formData.customer) {
-      errors.customer = 'customer is required';
+      errors.customer = 'Customer is required';
     }
     if (!formData.income) {
-      errors.income = 'InCome is required';
+      errors.income = 'Income is required';
     }
     if (!formData.expense) {
       errors.expense = 'Expense is required';
@@ -240,13 +240,6 @@ export const JobCard = () => {
     if (!formData.profit) {
       errors.profit = 'Profit is required';
     }
-    // if (!formData.closedOn) {
-    //   errors.closedOn = 'Closed On is required';
-    // }
-    if (!formData.remarks) {
-      errors.remarks = 'Remarks is required';
-    }
-
 
     let detailTableDataValid = true;
     const newTableErrors = detailsTableData.map((row) => {
@@ -513,7 +506,7 @@ export const JobCard = () => {
           <>
             <div className="row d-flex">
               <div className="col-md-3 mb-3">
-                <TextField id="docId" label="Doc No" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
+                <TextField id="docId" label="Document No" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
               </div>
 
               <div className="col-md-3 mb-3">
@@ -616,7 +609,6 @@ export const JobCard = () => {
                 <TextField
                   id="income"
                   label="Income"
-                  placeholder="Income"
                   variant="outlined"
                   size="small"
                   name="income"
@@ -631,7 +623,6 @@ export const JobCard = () => {
                 <TextField
                   id="expense"
                   label="Expense"
-                  placeholder="Expense"
                   variant="outlined"
                   size="small"
                   name="expense"
@@ -646,7 +637,6 @@ export const JobCard = () => {
                 <TextField
                   id="profit"
                   label="Profit"
-                  placeholder="Profit"
                   variant="outlined"
                   size="small"
                   name="profit"

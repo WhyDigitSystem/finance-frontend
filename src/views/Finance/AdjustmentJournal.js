@@ -69,7 +69,7 @@ const AdjustmentJournal = () => {
     { accessorKey: 'currency', header: 'Currency', size: 140 },
     { accessorKey: 'exRate', header: 'Ex.Rate', size: 140 },
     { accessorKey: 'refNo', header: 'Ref No', size: 140 },
-    { accessorKey: 'docId', header: 'document No', size: 140 }
+    { accessorKey: 'docId', header: 'Document No', size: 140 }
   ];
 
   const [detailsTableData, setDetailsTableData] = useState([
@@ -350,69 +350,6 @@ const AdjustmentJournal = () => {
       });
     }
   };
-  
-
-  // const handleDebitChange = (e, row, index) => {
-  //   const value = e.target.value;
-
-  //   if (/^\d{0,20}$/.test(value)) {
-  //     setDetailsTableData((prev) =>
-  //       prev.map((r) =>
-  //         r.id === row.id ? { ...r, debitAmount: value, creditAmount: value ? 0 : '', debitBase: value, creditBase: value ? 0 : '' } : r
-  //       )
-  //     );
-
-  //     setDetailsTableErrors((prev) => {
-  //       const newErrors = [...prev];
-  //       newErrors[index] = {
-  //         ...newErrors[index],
-  //         debitAmount: !value ? 'Debit Amount is required' : '',
-  //         debitBase: !value ? 'Debit Base is required' : ''
-  //       };
-  //       return newErrors;
-  //     });
-  //   }
-  // };
-
-  // const handleCreditChange = (e, row, index) => {
-  //   const value = e.target.value;
-
-  //   if (/^\d{0,20}$/.test(value)) {
-  //     setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, creditAmount: value, debitAmount: value ? '0' : '' } : r)));
-
-  //     setDetailsTableErrors((prev) => {
-  //       const newErrors = [...prev];
-  //       newErrors[index] = {
-  //         ...newErrors[index],
-  //         creditAmount: !value ? 'Credit Amount is required' : ''
-  //       };
-  //       return newErrors;
-  //     });
-  //   }
-  // };
-
-  // const handleCreditChange = (e, row, index) => {
-  //   const value = e.target.value;
-
-  //   if (/^\d{0,20}$/.test(value)) {
-  //     setDetailsTableData((prev) =>
-  //       prev.map((r) =>
-  //         r.id === row.id ? { ...r, creditAmount: value, debitAmount: value ? 0 : '', creditBase: value, debitBase: value ? 0 : '' } : r
-  //       )
-  //     );
-
-  //     setDetailsTableErrors((prev) => {
-  //       const newErrors = [...prev];
-  //       newErrors[index] = {
-  //         ...newErrors[index],
-  //         creditAmount: !value ? 'Credit Amount is required' : '',
-  //         creditBase: !value ? 'Credit Base is required' : ''
-  //       };
-  //       return newErrors;
-  //     });
-  //   }
-  // };
-
   const handleView = () => {
     setShowForm(!showForm);
   };
@@ -423,7 +360,7 @@ const AdjustmentJournal = () => {
       errors.refNo = 'Reference No is required';
     }
     if (!formData.suppRefNo) {
-      errors.suppRefNo = 'suppRef Date No is required';
+      errors.suppRefNo = 'Supp Ref No is required';
     }
 
     let detailTableDataValid = true;
@@ -631,7 +568,7 @@ const AdjustmentJournal = () => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="docId"
-                    label="document No"
+                    label="Document No"
                     variant="outlined"
                     size="small"
                     fullWidth

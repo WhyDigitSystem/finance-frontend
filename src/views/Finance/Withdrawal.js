@@ -95,7 +95,7 @@ const Withdrawal = () => {
     { accessorKey: 'currency', header: 'Currency', size: 140 },
     { accessorKey: 'exchangeRate', header: 'Ex.Rate', size: 140 },
     { accessorKey: 'chequeNo', header: 'Ref No', size: 140 },
-    { accessorKey: 'docId', header: 'Document Id', size: 140 }
+    { accessorKey: 'docId', header: 'Document No', size: 140 }
   ];
 
   const handleClear = () => {
@@ -363,7 +363,7 @@ const Withdrawal = () => {
       errors.currency = 'Currency is required';
     }
     if (!formData.payTo) {
-      errors.payTo = 'pay To is required';
+      errors.payTo = 'Pay To is required';
     }
     if (!formData.chequeNo) {
       errors.chequeNo = 'Cheque No is required';
@@ -573,7 +573,7 @@ const Withdrawal = () => {
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
-                  <TextField id="docId" label="Document Id" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
+                  <TextField id="docId" label="Document No" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled" size="small">

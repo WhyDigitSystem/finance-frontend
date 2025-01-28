@@ -342,9 +342,9 @@ const ReconcileCash = () => {
 
   const columns = [
     { accessorKey: 'docId', header: 'Doc No', size: 140 },
-    { accessorKey: 'docDate', header: 'reconcileDate', size: 140 },
+    { accessorKey: 'docDate', header: 'Reconcile Date', size: 140 },
     { accessorKey: 'cashAccount', header: 'Cash Account', size: 140 },
-    { accessorKey: 'balanceAsPerBooks', header: 'Balance As Per Books', size: 140 }
+    { accessorKey: 'balanceAsPerBooks', header: 'Balance As Per Books', size: 240 }
     // { accessorKey: 'totalDeposit', header: 'Total Deposit', size: 140 },
     // { accessorKey: 'totalWithdrawal', header: 'Total Withdrawal', size: 140 }
   ];

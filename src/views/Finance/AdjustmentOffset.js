@@ -121,7 +121,7 @@ const AdjustmentOffset = () => {
 
   const listViewColumns = [
     { accessorKey: 'currency', header: 'Subledger Type', size: 140 },
-    { accessorKey: 'exRate', header: 'currency', size: 140 },
+    { accessorKey: 'exRate', header: 'Currency', size: 140 },
     { accessorKey: 'docId', header: 'ExRate', size: 140 },
     { accessorKey: 'docDate', header: 'Subledger Name', size: 140 }
   ];
@@ -368,7 +368,7 @@ const AdjustmentOffset = () => {
           invDate: !lastRow.invDate ? 'Invoice Date is required' : '',
           refNo: !lastRow.refNo ? 'Reference Number is required' : '',
           refDate: !lastRow.refDate ? 'Reference Date is required' : '',
-          curr: !lastRow.curr ? 'curr is required' : '',
+          curr: !lastRow.curr ? 'Curr is required' : '',
           exchangeRate: !lastRow.exchangeRate ? 'Exchange Rate is required' : '',
           invoiceAmount: !lastRow.invoiceAmount ? 'Invoice Amount is required' : '',
           outStanding: !lastRow.outStanding ? 'Outstanding Amount is required' : '',
@@ -378,7 +378,7 @@ const AdjustmentOffset = () => {
             : '',
           txnSettled: !lastRow.txnSettled ? 'Transaction Settled is required' : '',
           gainorLoss: !lastRow.gainorLoss ? 'Gain or Loss is required' : '',
-          remarks: !lastRow.remarks ? 'Remarks are required' : '',
+          remarks: !lastRow.remarks ? 'Remarks is required' : '',
         };
 
         console.log('Updated errors for last row:', newErrors[index]);
@@ -428,7 +428,7 @@ const AdjustmentOffset = () => {
         const newErrors = [...prev];
         newErrors[index] = {
           ...newErrors[index],
-          refNo: !value ? 'refNo Amount is required' : ''
+          refNo: !value ? 'Ref No Amount is required' : ''
         };
         return newErrors;
       });
@@ -467,10 +467,10 @@ const AdjustmentOffset = () => {
       errors.subledgerType = 'Subledger Type is required';
     }
     if (!formData.currency) {
-      errors.currency = 'currency is required';
+      errors.currency = 'Currency is required';
     }
     if (!formData.exRate) {
-      errors.exRate = 'ExRate is required';
+      errors.exRate = 'Ex Rate is required';
     }
     if (!formData.subledgerName) {
       errors.subledgerName = 'Subledger Name is required';
@@ -479,10 +479,10 @@ const AdjustmentOffset = () => {
       errors.amount = 'Amount Name is required';
     }
     if (!formData.supplierRefNo) {
-      errors.supplierRefNo = 'Supplier RefNo Name is required';
+      errors.supplierRefNo = 'Supplier RefNo is required';
     }
     if (!formData.subledgerCode) {
-      errors.subledgerCode = 'Subledger Code RefNo Name is required';
+      errors.subledgerCode = 'Subledger Code RefNo is required';
     }
     let detailTableDataValid = true;
     const newTableErrors = detailsTableData.map((row) => {
@@ -649,7 +649,7 @@ const AdjustmentOffset = () => {
         const newErrors = [...prev];
         newErrors[index] = {
           ...newErrors[index],
-          exchangeRate: !value ? 'ExchangeRate Amount is required' : ''
+          exchangeRate: !value ? 'Exchange Rate Amount is required' : ''
         };
         return newErrors;
       });
@@ -665,7 +665,7 @@ const AdjustmentOffset = () => {
         const newErrors = [...prev];
         newErrors[index] = {
           ...newErrors[index],
-          invoiceAmount: !value ? 'InvoiceAmount Amount is required' : ''
+          invoiceAmount: !value ? 'Invoice Amount Amount is required' : ''
         };
         return newErrors;
       });
@@ -681,7 +681,7 @@ const AdjustmentOffset = () => {
         const newErrors = [...prev];
         newErrors[index] = {
           ...newErrors[index],
-          outStanding: !value ? 'outStanding Amount is required' : ''
+          outStanding: !value ? 'Out Standing Amount is required' : ''
         };
         return newErrors;
       });
@@ -697,7 +697,7 @@ const AdjustmentOffset = () => {
         const newErrors = [...prev];
         newErrors[index] = {
           ...newErrors[index],
-          settled: !value ? 'settled Amount is required' : ''
+          settled: !value ? 'Settled Amount is required' : ''
         };
         return newErrors;
       });
@@ -911,7 +911,7 @@ const AdjustmentOffset = () => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="currency"
-                    label="currency"
+                    label="Currency"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -926,7 +926,7 @@ const AdjustmentOffset = () => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="exrate"
-                    label="ExRate"
+                    label="Ex Rate"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -1034,10 +1034,10 @@ const AdjustmentOffset = () => {
                                       <th className="table-header">Invoice Date</th>
                                       <th className="table-header">Reference Number</th>
                                       <th className="table-header">Reference Date</th>
-                                      <th className="table-header">currency</th>
+                                      <th className="table-header">Currency</th>
                                       <th className="table-header">Exchange Rate</th>
                                       <th className="table-header">Invoice Amount</th>
-                                      <th className="table-header">outStanding Amount</th>
+                                      <th className="table-header">OutStanding Amount</th>
                                       <th className="table-header">Settled Amount</th>
                                       <th className="table-header">Settlement Exchange Rate</th>
                                       <th className="table-header">Txn Settled</th>

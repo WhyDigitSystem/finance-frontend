@@ -68,7 +68,7 @@ const PaymentVoucher = () => {
   });
 
   const listViewColumns = [
-    { accessorKey: 'docId', header: 'Document Id', size: 140 },
+    { accessorKey: 'docId', header: 'Document No', size: 140 },
     { accessorKey: 'docDate', header: 'Document Date', size: 140 },
     // { accessorKey: 'voucherSubType', header: 'Vehicle Sub Type', size: 140 },
     { accessorKey: 'currency', header: 'Currency', size: 140 },
@@ -512,7 +512,7 @@ const PaymentVoucher = () => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="outlined-textarea-zip"
-                    label="Document Id"
+                    label="Document No"
                     variant="outlined"
                     size="small"
                     fullWidth

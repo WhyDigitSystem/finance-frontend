@@ -350,7 +350,7 @@ const Reconcile = () => {
     { accessorKey: 'docId', header: 'Doc No', size: 140 },
     { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
     { accessorKey: 'bankStmtDate', header: 'Bank Stmt Date', size: 140 },
-    { accessorKey: 'bankAccount', header: 'bankAccount', size: 140 },
+    { accessorKey: 'bankAccount', header: 'Bank Account', size: 140 },
     { accessorKey: 'totalDeposit', header: 'Total Deposit', size: 140 },
     { accessorKey: 'totalWithdrawal', header: 'Total Withdrawal', size: 140 }
   ];
