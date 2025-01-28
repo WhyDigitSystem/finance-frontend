@@ -502,7 +502,7 @@ const GeneralJournal = () => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="outlined-textarea-zip"
-                    label="Document Id"
+                    label="Document No"
                     variant="outlined"
                     size="small"
                     fullWidth

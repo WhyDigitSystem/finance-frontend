@@ -219,41 +219,26 @@ const ReconcileCorp = () => {
         const newErrors = [...prevErrors];
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
-          voucherNo: !table[table.length - 1].voucherNo ? 'voucherNo is required' : '',
-          voucherDate: !table[table.length - 1].voucherDate ? 'voucherDate is required' : '',
-          chequeNo: !table[table.length - 1].chequeNo ? 'chequeNo is required' : '',
-          chequeDate: !table[table.length - 1].chequeDate ? 'chequeDate is required' : '',
-          clearedDate: !table[table.length - 1].clearedDate ? 'clearedDate is required' : '',
-          withdrawal: !table[table.length - 1].withdrawal ? 'withdrawal is required' : '',
-          bankRef: !table[table.length - 1].bankRef ? 'bankRef is required' : '',
-          deposit: !table[table.length - 1].deposit ? 'deposit is required' : ''
+          voucherNo: !table[table.length - 1].voucherNo ? 'Voucher No is required' : '',
+          voucherDate: !table[table.length - 1].voucherDate ? 'Voucher Date is required' : '',
+          chequeNo: !table[table.length - 1].chequeNo ? 'ChequeNo is required' : '',
+          chequeDate: !table[table.length - 1].chequeDate ? 'Cheque Date is required' : '',
+          clearedDate: !table[table.length - 1].clearedDate ? 'Cleared Date is required' : '',
+          withdrawal: !table[table.length - 1].withdrawal ? 'Withdrawal is required' : '',
+          bankRef: !table[table.length - 1].bankRef ? 'Bank Ref is required' : '',
+          deposit: !table[table.length - 1].deposit ? 'Deposit is required' : ''
         };
         return newErrors;
       });
     }
   };
-
-  // const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
-  //   const rowIndex = table.findIndex((row) => row.id === id);
-  //   // If the row exists, proceed to delete
-  //   if (rowIndex !== -1) {
-  //     const updatedData = table.filter((row) => row.id !== id);
-  //     const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
-  //     setTable(updatedData);
-  //     setErrorTable(updatedErrors);
-  //   }
-  // };
-
   const handleClear = () => {
     setFormData({
       bankStmtDate: null,
       bankAccount: '',
       remarks: ''
     });
-
     getNewCorpDocId();
-
-    // Set the table to only have one empty row
     setWithdrawalsTableData([
       {
         id: 1,
@@ -268,8 +253,6 @@ const ReconcileCorp = () => {
         deposit: ''
       }
     ]);
-
-    // Reset table errors for just one row
     setWithdrawalsTableErrors([
       {
         sno: '',
@@ -283,8 +266,6 @@ const ReconcileCorp = () => {
         deposit: ''
       }
     ]);
-
-    // setValidationErrors({});
     setEditId('');
   };
 
@@ -373,51 +354,45 @@ const ReconcileCorp = () => {
     if (!formData.bankAccount) errors.bankAccount = 'Bank Account is required';
 
     let detailsTableDataValid = true;
-    // if (!withdrawalsTableData || withdrawalsTableData.length === 0) {
-    //   detailsTableDataValid = false;
-    //   setWithdrawalsTableErrors([{ general: 'detail Table Data is required' }]);
-    // }
-    // else {
-    //   const newTableErrors = withdrawalsTableData.map((row, index) => {
-    //     const rowErrors = {};
-    //     if (!row.voucherNo) {
-    //       rowErrors.voucherNo = 'VoucherNo is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.voucherDate) {
-    //       rowErrors.voucherDate = 'voucherDate is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.chequeNo) {
-    //       rowErrors.chequeNo = 'cheque No is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.chequeDate) {
-    //       rowErrors.chequeDate = 'cheque Date is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.deposit) {
-    //       rowErrors.deposit = 'deposit is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.withdrawal) {
-    //       rowErrors.withdrawal = 'withdrawal is required';
-    //       detailsTableDataValid = false;
-    //     }
+    if (!withdrawalsTableData || withdrawalsTableData.length === 0) {
+      detailsTableDataValid = false;
+      setWithdrawalsTableErrors([{ general: 'detail Table Data is required' }]);
+    }
+    else {
+      const newTableErrors = withdrawalsTableData.map((row, index) => {
+        const rowErrors = {};
+        if (!row.voucherNo) {
+          rowErrors.voucherNo = 'Voucher No is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.voucherDate) {
+          rowErrors.voucherDate = 'Voucher Date is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.chequeNo) {
+          rowErrors.chequeNo = 'Cheque No is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.chequeDate) {
+          rowErrors.chequeDate = 'Cheque Date is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.deposit) {
+          rowErrors.deposit = 'Deposit is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.withdrawal) {
+          rowErrors.withdrawal = 'Withdrawal is required';
+          detailsTableDataValid = false;
+        }
+        return rowErrors;
+      });
+      setWithdrawalsTableErrors(newTableErrors);
+    }
+    setFormDataErrors(errors);
 
-    //     if (row.active === undefined || row.active === null) {
-    //       rowErrors.active = 'Active is required';
-    //       detailsTableDataValid = false;
-    //     }
-
-    //     return rowErrors;
-    //   });
-    //   setWithdrawalsTableErrors(newTableErrors);
-    // }
-    // setFormDataErrors(errors);
-
-    // if (Object.keys(errors).length === 0 && detailsTableDataValid) {
-    if (detailsTableDataValid) {
+    if (Object.keys(errors).length === 0 && detailsTableDataValid) {
+    // if (detailsTableDataValid) {
       setIsLoading(true);
 
       const detailsVo = withdrawalsTableData.map((row) => ({

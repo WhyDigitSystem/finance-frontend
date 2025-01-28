@@ -263,8 +263,8 @@ export const DailyRate = () => {
           ...newErrors[table.length - 1],
           currency: !table[table.length - 1].currency ? 'Currency is required' : '',
           currencyDescription: !table[table.length - 1].currencyDescription ? 'Currency Desc is required' : '',
-          sellingExRate: !table[table.length - 1].sellingExRate ? 'Selling Exrate is required' : '',
-          buyingExrate: !table[table.length - 1].buyingExrate ? 'Buying Exrate is required' : ''
+          sellingExRate: !table[table.length - 1].sellingExRate ? 'Selling Ex rate is required' : '',
+          buyingExrate: !table[table.length - 1].buyingExrate ? 'Buying Ex rate is required' : ''
         };
         return newErrors;
       });
