@@ -39,6 +39,8 @@ const Group = () => {
   const [groupList, setGroupList] = useState([]);
   const [uploadOpen, setUploadOpen] = useState(false);
   const [formData, setFormData] = useState({
+    active: false,
+    type: '',
     groupName: '',
     gstTaxFlag: '',
     gstType: '',
@@ -46,32 +48,30 @@ const Group = () => {
     accountCode: '',
     coaList: '',
     accountGroupName: '',
-    pBFlag: '',
-    natureOfAccount: '',
-    type: '',
-    interBranchAc: false,
-    controllAc: false,
     category: '',
     currency: 'INR',
-    active: false
+    pBFlag: '',
+    natureOfAccount: '',
+    interBranchAc: false,
+    controllAc: false,
   });
 
   const [fieldErrors, setFieldErrors] = useState({
-    groupName: false,
-    gstTaxFlag: false,
-    gstType: false,
-    gstPercentage: false,
-    accountCode: false,
-    pBFlag: false,
-    natureOfAccount: false,
-    coaList: false,
-    accountGroupName: false,
-    type: false,
+    active: false,
+    type: '',
+    groupName: '',
+    gstTaxFlag: '',
+    gstType: '',
+    gstPercentage: '',
+    accountCode: '',
+    coaList: '',
+    accountGroupName: '',
+    category: '',
+    currency: '',
+    pBFlag: '',
+    natureOfAccount: '',
     interBranchAc: false,
     controllAc: false,
-    category: false,
-    currency: false,
-    active: false
   });
 
   useEffect(() => {
@@ -156,40 +156,16 @@ const Group = () => {
     }
   };
 
-  const validateForm = (formData) => {
-    let errors = {};
+  const validateForm = (data) => {
+    const errors = {};
 
-    // if (formData.type === 'ACCOUNT' ? !formData.groupName : '') {
-    //   errors.groupName = 'Group Name is required';
-    // }
-
-    if (!formData.gstTaxFlag) {
-      errors.gstTaxFlag = 'GST Tax Flag is required';
+    if (!data.accountCode) errors.accountCode = 'Account code is required';
+    if (data.gstTaxFlag !== 'NA') {
+      if (!data.gstPercentage || data.gstPercentage < 0 || data.gstPercentage > 100) {
+        errors.gstPercentage = 'GST is required';
+      }
+      if (!data.gstType) errors.gstType = 'GST Type is required';
     }
-    if (!formData.gstPercentage) {
-      errors.gstPercentage = 'GST Percentage is required';
-    }
-
-    if (!formData.coaList || formData.coaList.length === 0) {
-      errors.coaList = 'COA List is required';
-    }
-
-    if (!formData.accountGroupName) {
-      errors.accountGroupName = 'Account Group Name is required';
-    }
-
-    if (!formData.type) {
-      errors.type = 'Type is required';
-    }
-
-    if (!formData.category) {
-      errors.category = 'Category is required';
-    }
-
-    if (!formData.pBFlag) {
-      errors.category = 'PB is required';
-    }
-
 
     return errors;
   };
@@ -204,6 +180,7 @@ const Group = () => {
         ...(editId && { id: editId }),
         active: formData.active,
         groupName: formData.groupName,
+        // parentGroup: formData.parentGroup,
         gstTaxFlag: formData.gstTaxFlag,
         coaList: formData.coaList,
         accountGroupName: formData.accountGroupName,
@@ -217,31 +194,36 @@ const Group = () => {
         currency: 'INR',
         ...(formData.gstTaxFlag !== 'NA' && {
           gstType: formData.gstType,
-          gstPercentage: formData.gstPercentage
+          gstPercentage: formData.gstPercentage,
         }),
         ...(formData.gstTaxFlag === 'NA' && {
           gstType: 'NA',
-          gstPercentage: 0
+          gstPercentage: 0,
         }),
         orgId: orgId,
         createdBy: loginUserName,
         pBFlag: formData.pBFlag,
-        natureOfAccount: formData.natureOfAccount
+        natureOfAccount: formData.natureOfAccount,
       };
 
       console.log('DATA TO SAVE', saveData);
 
       try {
         const response = await apiCalls('put', `master/updateCreateGroupLedger`, saveData);
+
         if (response.status === true) {
-          showToast('success', editId ? 'Group updated successfully' : 'Group created successfully');
+          showToast('success', editId ? `Group '${formData.groupName}' updated successfully` : `Group '${formData.groupName}' created successfully`);
           getGroup();
           handleClear();
         } else {
-          showToast('error', editId ? 'Group updation failed' : 'Group creation failed');
+
+          const errorMessage = response.paramObjectsMap.errorMessage || 'Something went wrong. Please try again.';
+          showToast('error', errorMessage);
         }
       } catch (error) {
         console.error('Error:', error);
+        const errorMessage = error?.response?.data?.paramObjectsMap?.errorMessage || 'Something went wrong. Please try again.';
+        showToast('error', errorMessage);
       } finally {
         setIsLoading(false);
       }
@@ -250,43 +232,40 @@ const Group = () => {
       setFieldErrors(errors);
     }
   };
-
   const handleClear = () => {
     setFormData({
+      active: false,
+      type: '',
       groupName: '',
       gstTaxFlag: '',
+      gstType: '',
+      gst: '',
       accountCode: '',
       coaList: '',
       accountGroupName: '',
-      type: '',
+      category: '',
+      currency: '',
+      pbFlag: '',
+      natureOfAccount: '',
       interBranchAc: false,
       controllAc: false,
-      category: '',
-      gstType: '',
-      gstPercentage: '',
-      branch: '',
-      currency: '',
-      pBFlag: '',
-      natureOfAccount: '',
-      active: false
     });
     setFieldErrors({
-      groupName: false,
-      gstTaxFlag: false,
-      accountCode: false,
-      coaList: false,
-      accountGroupName: false,
-      pBFlag: false,
-      natureOfAccount: false,
-      type: false,
-      gstType: false,
-      gstPercentage: false,
+      active: false,
+      type: '',
+      groupName: '',
+      gstTaxFlag: '',
+      gstType: '',
+      gst: '',
+      accountCode: '',
+      coaList: '',
+      accountGroupName: '',
+      category: '',
+      currency: '',
+      pbFlag: '',
+      natureOfAccount: '',
       interBranchAc: false,
       controllAc: false,
-      category: false,
-      branch: false,
-      // currency: false,
-      active: false
     });
     setEditId('');
   };
@@ -294,19 +273,21 @@ const Group = () => {
   const handleListView = () => {
     setShowForm(!showForm);
     setFieldErrors({
-      groupName: false,
-      gstTaxFlag: false,
-      accountCode: false,
-      coaList: false,
-      accountGroupName: false,
-      pBFlag: false,
-      natureOfAccount: false,
-      type: false,
+      active: false,
+      type: '',
+      groupName: '',
+      gstTaxFlag: '',
+      gstType: '',
+      gst: '',
+      accountCode: '',
+      coaList: '',
+      accountGroupName: '',
+      category: '',
+      currency: '',
+      pbFlag: '',
+      natureOfAccount: '',
       interBranchAc: false,
       controllAc: false,
-      category: false,
-      branch: false,
-      active: false
     });
   };
 
@@ -335,7 +316,7 @@ const Group = () => {
           orgId: orgId,
           groupName: exRate.groupName,
           gstTaxFlag: exRate.gstTaxFlag,
-          accountCode: exRate.id,
+          accountCode: exRate.accountCode,
           coaList: exRate.coaList,
           accountGroupName: exRate.accountGroupName,
           type: exRate.type,
@@ -523,7 +504,7 @@ const Group = () => {
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
-                  id="account"
+                  id="accountCode"
                   label="Account Code"
                   size="small"
                   required
@@ -541,7 +522,7 @@ const Group = () => {
                 <InputLabel id="demo-simple-select-label">COA List</InputLabel>
                 <Select
                   labelId="demo-simple-select-label"
-                  id="demo-simple-select"
+                  id="coaList"
                   label="COA List"
                   onChange={handleInputChange}
                   name="coaList"
@@ -577,7 +558,7 @@ const Group = () => {
                 <InputLabel id="demo-simple-select-label">Category</InputLabel>
                 <Select
                   labelId="demo-simple-select-label"
-                  id="demo-simple-select"
+                  id="category"
                   label="Category"
                   onChange={handleInputChange}
                   name="category"
