@@ -214,6 +214,7 @@ const Group = () => {
           showToast('success', editId ? `Group '${formData.groupName}' updated successfully` : `Group '${formData.groupName}' created successfully`);
           getGroup();
           handleClear();
+
         } else {
           const errorMessage = response.paramObjectsMap.errorMessage || 'Something went wrong. Please try again.';
           showToast('error', errorMessage);
@@ -346,7 +347,7 @@ const Group = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setGroupList(response.paramObjectsMap.groupNameDetails);
+        setGroupList(response.paramObjectsMap.groupNameDetails.reverse());
       } else {
         console.error('API Error:', response);
       }
