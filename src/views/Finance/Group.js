@@ -41,7 +41,7 @@ const Group = () => {
   const [formData, setFormData] = useState({
     active: false,
     type: '',
-    groupName: '',
+    groupName: "",
     gstTaxFlag: '',
     gstType: '',
     gstPercentage: '',
@@ -50,7 +50,7 @@ const Group = () => {
     accountGroupName: '',
     category: '',
     currency: 'INR',
-    pBFlag: '',
+    pbflag: '',
     natureOfAccount: '',
     interBranchAc: false,
     controllAc: false,
@@ -68,7 +68,7 @@ const Group = () => {
     accountGroupName: '',
     category: '',
     currency: '',
-    pBFlag: '',
+    pbflag: '',
     natureOfAccount: '',
     interBranchAc: false,
     controllAc: false,
@@ -167,21 +167,19 @@ const Group = () => {
       }
       if (!data.gstType) errors.gstType = 'GST Type is required';
     }
-
+ 
     return errors;
   };
 
-  const handleSave = async () => {
+  const handleSave = async () => { 
     const errors = validateForm(formData);
-
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
-
+  
       const saveData = {
         ...(editId && { id: editId }),
         active: formData.active,
         groupName: formData.groupName,
-        // parentGroup: formData.parentGroup,
         gstTaxFlag: formData.gstTaxFlag,
         coaList: formData.coaList,
         accountGroupName: formData.accountGroupName,
@@ -203,21 +201,20 @@ const Group = () => {
         }),
         orgId: orgId,
         createdBy: loginUserName,
-        pBFlag: formData.pBFlag,
+        pbflag: formData.pbflag,
         natureOfAccount: formData.natureOfAccount,
       };
-
+  
       console.log('DATA TO SAVE', saveData);
-
+  
       try {
-        const response = await apiCalls('put', `master/updateCreateGroupLedger`, saveData);
-
+        const response = await apiCalls('put', 'master/updateCreateGroupLedger', saveData);
+  
         if (response.status === true) {
           showToast('success', editId ? `Group '${formData.groupName}' updated successfully` : `Group '${formData.groupName}' created successfully`);
           getGroup();
           handleClear();
         } else {
-
           const errorMessage = response.paramObjectsMap.errorMessage || 'Something went wrong. Please try again.';
           showToast('error', errorMessage);
         }
@@ -233,6 +230,7 @@ const Group = () => {
       setFieldErrors(errors);
     }
   };
+  
   const handleClear = () => {
     setFormData({
       active: false,
@@ -246,7 +244,7 @@ const Group = () => {
       accountGroupName: '',
       category: '',
       currency: '',
-      pBFlag: '',
+      pbflag: '',
       natureOfAccount: '',
       interBranchAc: false,
       controllAc: false,
@@ -263,7 +261,7 @@ const Group = () => {
     accountGroupName: '',
     category: '',
     currency: '',
-    pBFlag: '',
+    pbflag: '',
     natureOfAccount: '',
     interBranchAc: false,
     controllAc: false,
@@ -285,7 +283,7 @@ const Group = () => {
       accountGroupName: '',
       category: '',
       currency: '',
-      pBFlag: '',
+      pbflag: '',
       natureOfAccount: '',
       interBranchAc: false,
       controllAc: false,
@@ -326,7 +324,7 @@ const Group = () => {
           interBranchAc: exRate.interBranchAc,
           controllAc: exRate.controllAc,
           category: exRate.category,
-          pBFlag: exRate.pBFlag,
+          pbflag: exRate.pbflag,
           natureOfAccount: exRate.natureOfAccount,
           branch: exRate.branch,
           id: exRate.id,
@@ -492,7 +490,7 @@ const Group = () => {
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="gstPercentage"
-                    label="GST %"
+                    label="Tax %"
                     size="small"
                     onChange={handleInputChange}
                     name="gstPercentage"
@@ -596,15 +594,15 @@ const Group = () => {
                 <Select
                   labelId="demo-simple-select-label"
                   id="demo-simple-select"
-                  label="pBFlag"
+                  label="pbflag"
                   onChange={handleInputChange}
-                  name="pBFlag"
-                  value={formData.pBFlag}
+                  name="pbflag"
+                  value={formData.pbflag}
                 >
                   <MenuItem value="P">PROFIT AND LOSS</MenuItem>
                   <MenuItem value="B">BALANCE SHEET</MenuItem>
                 </Select>
-                {fieldErrors.pBFlag && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
+                {fieldErrors.pbflag && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
               </FormControl>
             </div>
             <div className="col-md-3 mb-3">
