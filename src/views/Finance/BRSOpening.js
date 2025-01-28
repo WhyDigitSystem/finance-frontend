@@ -196,7 +196,7 @@ const BRSOpening = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.brsOpeningVO);
+        setListViewData(response.paramObjectsMap.brsOpeningVO.reverse());
       } else {
         console.error('API Error:', response);
       }
@@ -305,7 +305,9 @@ const BRSOpening = () => {
       receiptAmount: formData.receiptAmount,
       reconcile: formData.reconcile,
       orgId: orgId,
-      createdBy: loginUserName
+      createdBy: loginUserName,
+      finYear: finYear,
+      branchCode: branchCode
     };
 
     try {
@@ -354,9 +356,9 @@ const BRSOpening = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-2 " style={{ marginBottom: '20px' }}>
-            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />
             <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} />
           </div>
@@ -403,10 +405,9 @@ const BRSOpening = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="billNo"
-                  label="Bill No."
+                  label="Bill No"
                   name="billNo"
                   value={formData.billNo}
-                  placeholder="Bill No."
                   variant="outlined"
                   size="small"
                   required
@@ -438,8 +439,7 @@ const BRSOpening = () => {
                   id="chqNo"
                   name="chqNo"
                   value={formData.chqNo}
-                  label="Ref./Chq.No"
-                  placeholder="Ref./Chq.No"
+                  label="Ref/Chq No"
                   variant="outlined"
                   onChange={handleInputChange}
                   size="small"
@@ -453,7 +453,7 @@ const BRSOpening = () => {
                 <FormControl fullWidth>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Ref./chq.Date"
+                      label="Ref/Chq Date"
                       value={formData.chqDate ? dayjs(formData.chqDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('chqDate', date)}
                       slotProps={{
@@ -471,7 +471,6 @@ const BRSOpening = () => {
                   id="bank"
                   label="Bank/Cash/A/C"
                   name="bank"
-                  placeholder="Bank/Cash/A/C"
                   variant="outlined"
                   size="small"
                   value={formData.bank}
@@ -482,21 +481,6 @@ const BRSOpening = () => {
                   helperText={fieldErrors.bank ? fieldErrors.bank : ''}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <TextField
-                  id="currency"
-                  name="currency"
-                  value={formData.currency}
-                  label="Currency"
-                  placeholder="Currency"
-                  variant="outlined"
-                  size="small"
-                  onChange={handleInputChange}
-                  fullWidth
-                  error={!!fieldErrors.currency}
-                  helperText={fieldErrors.currency ? fieldErrors.currency : ''}
-                />
-              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth>
                   <InputLabel id="currency">Currency</InputLabel>
@@ -524,7 +508,6 @@ const BRSOpening = () => {
                   name="exRate"
                   value={formData.exRate}
                   label="Ex.rate"
-                  placeholder="Ex.rate"
                   variant="outlined"
                   size="small"
                   onChange={handleInputChange}
@@ -539,7 +522,6 @@ const BRSOpening = () => {
                   id="receiptAmount"
                   name="receiptAmount"
                   label="Receipt Amount"
-                  placeholder="Receipt Amount"
                   variant="outlined"
                   type='number'
                   size="small"
@@ -555,7 +537,6 @@ const BRSOpening = () => {
                   id="paymentAmount"
                   name="paymentAmount"
                   label="Payment Amount"
-                  placeholder="Payment Amount"
                   variant="outlined"
                   size="small"
                   type='number'

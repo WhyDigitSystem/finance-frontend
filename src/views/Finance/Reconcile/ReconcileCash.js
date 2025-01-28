@@ -374,9 +374,9 @@ const ReconcileCash = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <Grid container spacing={2} alignItems="center">
           <div className="d-flex flex-wrap justify-content-start p-2">
-            <ActionButton title="Search" icon={SearchIcon} onClick={handleSearch} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            {/* <ActionButton title="Search" icon={SearchIcon} onClick={handleSearch} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} loading={loading} />
           </div>
         </Grid>

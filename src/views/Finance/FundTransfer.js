@@ -257,9 +257,8 @@ const FundTransfer = () => {
     try {
       const response = await apiCalls('get', `transaction/getAllFundTransferByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
-
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.fundTransferVO);
+        setListViewData(response.paramObjectsMap.fundTransferVO.reverse());
      
       } else {
         console.error('API Error:', response);
@@ -408,9 +407,9 @@ const FundTransfer = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml" style={{ marginBottom: '20px' }}>
           <div className="d-flex flex-wrap justify-content-start mb-2 " style={{ marginBottom: '20px' }}>
-            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />
           </div>
         </div>
@@ -453,11 +452,11 @@ const FundTransfer = () => {
                     <DatePicker
                       label="Date"
                       value={dayjs()}
+                      disabled
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
                       format="DD-MM-YYYY"
-                      readOnly
                     />
                   </LocalizationProvider>
                 </FormControl>

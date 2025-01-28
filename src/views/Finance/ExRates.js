@@ -59,7 +59,7 @@ const ExRates = () => {
   const getExRates = async () => {
     try {
       const response = await apiCalls('get', `master/getAllExRatesByOrgId?orgId=${orgId}`);
-      setData(response.paramObjectsMap.exRatesVO);
+      setData(response.paramObjectsMap.exRatesVO.reverse());
       console.log('exRatesVO', response.paramObjectsMap.exRatesVO);
     } catch (error) {
       console.error('Error fetching data:', error);

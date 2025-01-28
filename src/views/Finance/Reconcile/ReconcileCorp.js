@@ -91,7 +91,7 @@ const ReconcileCorp = () => {
   const getAllReconsileCorp = async () => {
     try {
       const result = await apiCalls('get', `/transaction/getAllReconcileCorpBankByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.reconcileCorpBankVO || []);
+      setData(result.paramObjectsMap.reconcileCorpBankVO.reverse() || []);
       showForm(true);
       console.log('Test', result);
     } catch (err) {
@@ -565,9 +565,9 @@ const ReconcileCorp = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
       <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start p-2">
-            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
           </div>
         </div>

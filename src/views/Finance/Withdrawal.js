@@ -51,7 +51,8 @@ const Withdrawal = () => {
     totalCreditAmount: 0,
     totalDebitAmount: 0,
     totalAmount: 0,
-    remarks: ''
+    remarks: '',
+    status:''
   });
   const [fieldErrors, setFieldErrors] = useState({
     withdrawalMode: '',
@@ -68,7 +69,8 @@ const Withdrawal = () => {
     totalCreditAmount: 0,
     totalDebitAmount: 0,
     totalAmount: 0,
-    remarks: ''
+    remarks: '',
+    status:''
   });
   const [detailsTableData, setDetailsTableData] = useState([
     {
@@ -250,6 +252,7 @@ const Withdrawal = () => {
     getAllbankName();
     getAllAccountName();
   }, []);
+  
 
   useEffect(() => {
     const totalDebit = detailsTableData.reduce((sum, row) => sum + Number(row.debit || 0), 0);
@@ -282,7 +285,7 @@ const Withdrawal = () => {
   const getAllWithdrawalByOrgId = async () => {
     try {
       const result = await apiCalls('get', `/transaction/getAllBankingWithdrawalByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.bankingWithdrawalVO || []);
+      setData(result.paramObjectsMap.bankingWithdrawalVO.reverse() || []);
       // showForm(true);
       console.log('bankingWithdrawalVO', result);
     } catch (err) {
@@ -412,8 +415,8 @@ const Withdrawal = () => {
         chequeNo: formData.chequeNo,
         chequeDate: dayjs(formData.chequeDate).format('YYYY-MM-DD'),
         chequeBank: formData.chequeBank,
-        remarks: formData.remarks
-        // totalCreditAmount: formData.totalCreditAmount,
+        remarks: formData.remarks,
+        status: formData.status,
         // totalDebitAmount: formData.totalDebitAmount
       };
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -544,9 +547,9 @@ const Withdrawal = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
           </div>
 
@@ -763,6 +766,22 @@ const Withdrawal = () => {
                     error={!!fieldErrors.withdrawalAmount}
                   />
                 </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
+                    <InputLabel id="status">Status</InputLabel>
+                    <Select
+                      labelId="status"
+                      label="Status"
+                      value={formData.status}
+                      onChange={handleInputChange}
+                      name="status"
+                    >
+                      <MenuItem value="EDIT">EDIT</MenuItem>
+                      <MenuItem value="SUBMIT">SUBMIT</MenuItem>
+                    </Select>
+                    {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
+                  </FormControl>
+                </div>
               </div>
               <>
                 <div className="row mt-2">
@@ -825,7 +844,14 @@ const Withdrawal = () => {
                                             options={allAccountName}
                                             getOptionLabel={(option) => option.accountName || ''}
                                             groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')}
-                                            value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
+                                            // value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
+                                            value={
+                                              row.accountName
+                                                ? allAccountName.find((a) => a.accountName === row.accountName)
+                                                : allAccountName.length === 1
+                                                ? allAccountName[0]
+                                                : null
+                                            }
                                             onChange={(event, newValue) => {
                                               const value = newValue ? newValue.accountName : '';
                                               setDetailsTableData((prev) =>
