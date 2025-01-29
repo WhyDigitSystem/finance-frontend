@@ -1076,7 +1076,7 @@ const IrnCreditNote = () => {
       errors.stateNo = 'State No is required';
     }
     if (!formData.recipientGSTIN) {
-      errors.recipientGSTIN = 'Recipient GST IN is required';
+      errors.recipientGSTIN = 'Recipient Reg No is required';
     }
     if (!formData.placeOfSupply) {
       errors.placeOfSupply = 'Place Of Supply is required';
@@ -1097,17 +1097,17 @@ const IrnCreditNote = () => {
     //   errors.pincode = 'Pin code is required';
     // }
     if (!formData.gstType) {
-      errors.gstType = 'Gst Type is required';
+      errors.gstType = 'Tax Type is required';
     }
-    if (!formData.billingMonth) {
-      errors.billingMonth = 'Bill Amount is required';
-    }
-    if (!formData.salesType) {
-      errors.salesType = 'Sales Type is required';
-    }
-    if (!formData.exAmount) {
-      errors.exAmount = 'Ex Amount is required';
-    }
+    // if (!formData.billingMonth) {
+    //   errors.billingMonth = 'Bill Amount is required';
+    // }
+    // if (!formData.salesType) {
+    //   errors.salesType = 'Sales Type is required';
+    // }
+    // if (!formData.exAmount) {
+    //   errors.exAmount = 'Ex Amount is required';
+    // }
     if (!formData.creditRemarks) {
       errors.creditRemarks = 'Credit Remarks is required';
     }
@@ -1228,9 +1228,9 @@ const IrnCreditNote = () => {
         <div className="row">
           <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
             <div className="d-flex">
-              <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+              {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
               <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
               <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
             </div>
 
@@ -1672,7 +1672,7 @@ const IrnCreditNote = () => {
                   <TextField
                     id="stateCode"
                     name="stateCode"
-                    label="state Code"
+                    label="State Code"
                     size="small"
                     value={formData.stateCode}
                     onChange={handleInputChange}
@@ -1704,7 +1704,7 @@ const IrnCreditNote = () => {
                   <TextField
                     id="recipientGSTIN"
                     name="recipientGSTIN"
-                    label="Recipient GST IN"
+                    label="Recipient Reg No"
                     size="small"
                     value={formData.recipientGSTIN}
                     onChange={handleInputChange}
@@ -1814,7 +1814,7 @@ const IrnCreditNote = () => {
                   <TextField
                     id="gstType"
                     name="gstType"
-                    label="Gst Type"
+                    label="TAX Type"
                     size="small"
                     value={formData.gstType}
                     onChange={handleInputChange}
@@ -1825,7 +1825,7 @@ const IrnCreditNote = () => {
                   />
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="billingMonth"
@@ -1840,7 +1840,7 @@ const IrnCreditNote = () => {
                     disabled
                   />
                 </FormControl>
-              </div>
+              </div> */}
               {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -1856,7 +1856,7 @@ const IrnCreditNote = () => {
                   />
                 </FormControl>
               </div> */}
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="salesType"
@@ -1886,7 +1886,7 @@ const IrnCreditNote = () => {
                     helperText={fieldErrors.exAmount}
                   />
                 </FormControl>
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -1899,6 +1899,22 @@ const IrnCreditNote = () => {
                     inputProps={{ maxLength: 150 }}
                     error={!!fieldErrors.creditRemarks}
                     helperText={fieldErrors.creditRemarks}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="jobNo"
+                    name="jobNo"
+                    label="Job No"
+                    size="small"
+                    value={formData.jobNo}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 30 }}
+                    error={!!fieldErrors.jobNo}
+                    helperText={fieldErrors.jobNo}
+                    disabled
                   />
                 </FormControl>
               </div>
@@ -1925,8 +1941,8 @@ const IrnCreditNote = () => {
                 <TabContext value={value}>
                   <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
-                      <Tab label="Masters / House Charges" value="1" />
-                      {editId && <Tab label="Gst" value="2" />}
+                      <Tab label="Charges" value="1" />
+                      {editId && <Tab label="Tax" value="2" />}
                       {editId && <Tab label="Summary" value="3" />}
                     </TabList>
                   </Box>
@@ -1964,8 +1980,8 @@ const IrnCreditNote = () => {
                                   <th className="px-2 py-2 text-white text-center">TLC Amount</th>
                                   <th className="px-2 py-2 text-white text-center">Bill Amount</th>
                                   <th className="px-2 py-2 text-white text-center">SAC</th>
-                                  <th className="px-2 py-2 text-white text-center">GST</th>
-                                  <th className="px-2 py-2 text-white text-center">GST %</th>
+                                  <th className="px-2 py-2 text-white text-center">TAX</th>
+                                  <th className="px-2 py-2 text-white text-center">TAX %</th>
                                   {/* <th className="px-2 py-2 text-white text-center">Remarks</th> */}
                                 </tr>
                               </thead>
@@ -3022,7 +3038,7 @@ const IrnCreditNote = () => {
                                                 const newErrors = [...prev];
                                                 newErrors[index] = {
                                                   ...newErrors[index],
-                                                  gstpercent: !value ? 'GST % is required' : ''
+                                                  gstpercent: !value ? 'TAX % is required' : ''
                                                 };
                                                 return newErrors;
                                               });

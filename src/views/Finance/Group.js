@@ -41,7 +41,7 @@ const Group = () => {
   const [formData, setFormData] = useState({
     active: false,
     type: '',
-    groupName: "",
+    groupName: '',
     gstTaxFlag: '',
     gstType: '',
     gstPercentage: '',
@@ -53,7 +53,7 @@ const Group = () => {
     pbflag: '',
     natureOfAccount: '',
     interBranchAc: false,
-    controllAc: false,
+    controllAc: false
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -71,7 +71,7 @@ const Group = () => {
     pbflag: '',
     natureOfAccount: '',
     interBranchAc: false,
-    controllAc: false,
+    controllAc: false
   });
 
   useEffect(() => {
@@ -143,7 +143,6 @@ const Group = () => {
     setFieldErrors((prevState) => ({ ...prevState, [name]: fieldErrorMessage || errorMessage }));
   };
 
-
   const getGroup = async () => {
     try {
       const result = await apiCalls('get', `/master/getAllGroupLedgerByOrgId?orgId=${orgId}`);
@@ -163,19 +162,19 @@ const Group = () => {
     if (!data.accountCode) errors.accountCode = 'Account code is required';
     if (data.gstTaxFlag !== 'NA') {
       if (!data.gstPercentage || data.gstPercentage < 0 || data.gstPercentage > 100) {
-        errors.gstPercentage = 'GST is required';
+        errors.gstPercentage = 'TAX is required';
       }
-      if (!data.gstType) errors.gstType = 'GST Type is required';
+      if (!data.gstType) errors.gstType = 'TAX Type is required';
     }
- 
+
     return errors;
   };
 
-  const handleSave = async () => { 
+  const handleSave = async () => {
     const errors = validateForm(formData);
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
-  
+
       const saveData = {
         ...(editId && { id: editId }),
         active: formData.active,
@@ -193,28 +192,30 @@ const Group = () => {
         currency: 'INR',
         ...(formData.gstTaxFlag !== 'NA' && {
           gstType: formData.gstType,
-          gstPercentage: formData.gstPercentage,
+          gstPercentage: formData.gstPercentage
         }),
         ...(formData.gstTaxFlag === 'NA' && {
           gstType: 'NA',
-          gstPercentage: 0,
+          gstPercentage: 0
         }),
         orgId: orgId,
         createdBy: loginUserName,
         pbflag: formData.pbflag,
-        natureOfAccount: formData.natureOfAccount,
+        natureOfAccount: formData.natureOfAccount
       };
-  
+
       console.log('DATA TO SAVE', saveData);
-  
+
       try {
         const response = await apiCalls('put', 'master/updateCreateGroupLedger', saveData);
-  
+
         if (response.status === true) {
-          showToast('success', editId ? `Group '${formData.groupName}' updated successfully` : `Group '${formData.groupName}' created successfully`);
+          showToast(
+            'success',
+            editId ? `Group '${formData.groupName}' updated successfully` : `Group '${formData.groupName}' created successfully`
+          );
           getGroup();
           handleClear();
-
         } else {
           const errorMessage = response.paramObjectsMap.errorMessage || 'Something went wrong. Please try again.';
           showToast('error', errorMessage);
@@ -231,7 +232,7 @@ const Group = () => {
       setFieldErrors(errors);
     }
   };
-  
+
   const handleClear = () => {
     setFormData({
       active: false,
@@ -248,24 +249,24 @@ const Group = () => {
       pbflag: '',
       natureOfAccount: '',
       interBranchAc: false,
-      controllAc: false,
+      controllAc: false
     });
     setFieldErrors({
       active: false,
-    type: '',
-    groupName: '',
-    gstTaxFlag: '',
-    gstType: '',
-    gstPercentage: '',
-    accountCode: '',
-    coaList: '',
-    accountGroupName: '',
-    category: '',
-    currency: '',
-    pbflag: '',
-    natureOfAccount: '',
-    interBranchAc: false,
-    controllAc: false,
+      type: '',
+      groupName: '',
+      gstTaxFlag: '',
+      gstType: '',
+      gstPercentage: '',
+      accountCode: '',
+      coaList: '',
+      accountGroupName: '',
+      category: '',
+      currency: '',
+      pbflag: '',
+      natureOfAccount: '',
+      interBranchAc: false,
+      controllAc: false
     });
     setEditId('');
   };
@@ -287,7 +288,7 @@ const Group = () => {
       pbflag: '',
       natureOfAccount: '',
       interBranchAc: false,
-      controllAc: false,
+      controllAc: false
     });
   };
 
@@ -402,7 +403,6 @@ const Group = () => {
           ></CommonBulkUpload>
         )}
 
-
         {showForm ? (
           <div className="row d-flex ">
             <div className="col-md-3 mb-3">
@@ -447,11 +447,11 @@ const Group = () => {
             {/* GST Tax Flag */}
             <div className="col-md-3 mb-2">
               <FormControl fullWidth size="small">
-                <InputLabel id="gstTaxFlag">GST Tax Flag</InputLabel>
+                <InputLabel id="gstTaxFlag">TAX Flag</InputLabel>
                 <Select
                   labelId="gstTaxFlag"
                   id="gstTaxFlag"
-                  label="GST Tax Flag"
+                  label="TAX Flag"
                   onChange={handleInputChange}
                   name="gstTaxFlag"
                   value={formData.gstTaxFlag}
@@ -468,11 +468,11 @@ const Group = () => {
             {formData.gstTaxFlag !== 'NA' && (
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="gstType">GST Type</InputLabel>
+                  <InputLabel id="gstType">TAX Type</InputLabel>
                   <Select
                     labelId="gstType"
                     id="gstType"
-                    label="GST Type"
+                    label="TAX Type"
                     onChange={handleInputChange}
                     name="gstType"
                     value={formData.gstType}
@@ -507,7 +507,7 @@ const Group = () => {
                   id="accountCode"
                   label="Account Code"
                   size="small"
-                  required 
+                  required
                   inputProps={{ maxLength: 30 }}
                   onChange={handleInputChange}
                   name="accountCode"
@@ -569,7 +569,7 @@ const Group = () => {
                   <MenuItem value="BANK">BANK</MenuItem>
                   <MenuItem value="TAX">TAX</MenuItem>
                 </Select>
-                {fieldErrors.category && <FormHelperText style={{ color: 'red' }}>This field is required</FormHelperText>}
+                {fieldErrors.category && <FormHelperText style={{ color: 'red' }}>Type is required</FormHelperText>}
               </FormControl>
             </div>
 

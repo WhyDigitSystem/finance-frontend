@@ -18,7 +18,7 @@ export const Designation = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     active: true,
     designationCode: '',
@@ -205,11 +205,11 @@ export const Designation = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="designationCode"
-                  value={formData.designationCode}
+                  name="designationName"
+                  value={formData.designationName}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.designationCode}
-                  helperText={fieldErrors.designationCode}
+                  error={!!fieldErrors.designationName}
+                  helperText={fieldErrors.designationName}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -218,11 +218,11 @@ export const Designation = () => {
                   variant="outlined"
                   size="small"
                   fullWidth
-                  name="designationName"
-                  value={formData.designationName}
+                  name="designationCode"
+                  value={formData.designationCode}
                   onChange={handleInputChange}
-                  error={!!fieldErrors.designationName}
-                  helperText={fieldErrors.designationName}
+                  error={!!fieldErrors.designationCode}
+                  helperText={fieldErrors.designationCode}
                 />
               </div>
               <div className="col-md-3 mb-3">

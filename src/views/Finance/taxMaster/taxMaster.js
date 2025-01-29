@@ -23,7 +23,6 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
-import { toDate } from 'date-fns';
 
 const TaxMaster = () => {
   const [showForm, setShowForm] = useState(true);
@@ -34,44 +33,6 @@ const TaxMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [editId, setEditId] = useState('');
-  const [formValues, setFormValues] = useState({
-    active: true,
-    finYear: '',
-    tax: '',
-    taxSlab: 0,
-    serviceAccountCode: '',
-  });
-  const [fieldErrors, setFieldErrors] = useState({
-    active: true,
-    finYear: '',
-    tax: '',
-    taxSlab: '',
-    serviceAccountCode: '',
-  });
-  const [taxMasterTable, setTaxMasterTable] = useState([{
-    sno:'',
-    active: true,
-    tax: '',
-    taxType: '',
-    percentage: '',
-    type: '',
-    fromDate: '',
-    toDate: '',
-    revenueLedger: '',
-    costLedger: '',
-}]);
-  const [detailsTableErrors, setDetailsTableErrors] = useState([{
-    sno:'',
-    active: true,
-    tax: '',
-    taxType: '',
-    percentage: '',
-    type: '',
-    fromDate: '',
-    toDate: '',
-    revenueLedger: '',
-    costLedger: '',
-  }]);
   const [finYearList, setFinYearList] = useState([]);
   const [serviceAccountCodeList, setServiceAccountCodeList] = useState([]);
   const [revenueLedgerList, setRevenueLedgerList] = useState([]);
@@ -79,6 +40,49 @@ const TaxMaster = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const [value, setValue] = useState(0);
+  const [formValues, setFormValues] = useState({
+    active: true,
+    finYear: '',
+    tax: '',
+    taxSlab: 0,
+    serviceAccountCode: ''
+  });
+  const [fieldErrors, setFieldErrors] = useState({
+    active: true,
+    finYear: '',
+    tax: '',
+    taxSlab: '',
+    serviceAccountCode: ''
+  });
+  const [taxMasterTable, setTaxMasterTable] = useState([
+    {
+      sno: '',
+      active: true,
+      tax: '',
+      taxType: '',
+      percentage: '',
+      type: '',
+      fromDate: '',
+      toDate: '',
+      revenueLedger: '',
+      costLedger: ''
+    }
+  ]);
+  const [detailsTableErrors, setDetailsTableErrors] = useState([
+    {
+      sno: '',
+      active: true,
+      tax: '',
+      taxType: '',
+      percentage: '',
+      type: '',
+      fromDate: '',
+      toDate: '',
+      revenueLedger: '',
+      costLedger: ''
+    }
+  ]);
+
   useEffect(() => {
     getAllTaxMasterByOrgId();
     getAllFinYear();
@@ -170,10 +174,9 @@ const TaxMaster = () => {
     } else {
       if (name === 'active') {
         setFormValues({ ...formValues, [name]: checked });
-      } else if(type === 'text') {
+      } else if (type === 'text') {
         setFormValues({ ...formValues, [name]: value.toUpperCase() });
-      }
-       else {
+      } else {
         setFormValues({ ...formValues, [name]: value });
       }
       setFieldErrors({ ...fieldErrors, [name]: '' });
@@ -204,21 +207,23 @@ const TaxMaster = () => {
       tax: '',
       taxSlab: ''
     });
-    setTaxMasterTable([{
-      sno:'',
-      active: true,
-      tax: '',
-      taxType: '',
-      percentage: '',
-      type: '',
-      fromDate: '',
-      toDate: '',
-      revenueLedger: '',
-      costLedger: '',
-    }]);
-    setFieldErrors([])
+    setTaxMasterTable([
+      {
+        sno: '',
+        active: true,
+        tax: '',
+        taxType: '',
+        percentage: '',
+        type: '',
+        fromDate: '',
+        toDate: '',
+        revenueLedger: '',
+        costLedger: ''
+      }
+    ]);
+    setFieldErrors([]);
     setDetailsTableErrors([]);
-  }; 
+  };
   const handleAddRow = () => {
     if (isLastRowEmpty(taxMasterTable)) {
       displayRowError(taxMasterTable);
@@ -226,7 +231,7 @@ const TaxMaster = () => {
     }
     const newRow = {
       id: Date.now(),
-      sno:'',
+      sno: '',
       active: true,
       tax: '',
       taxType: '',
@@ -235,28 +240,39 @@ const TaxMaster = () => {
       fromDate: '',
       toDate: '',
       revenueLedger: '',
-      costLedger: '',
+      costLedger: ''
     };
     setTaxMasterTable([...taxMasterTable, newRow]);
-    setDetailsTableErrors([...detailsTableErrors, {
-      sno:'',
-      tax: '',
-      taxType: '',
-      percentage: '',
-      type: '',
-      fromDate: '',
-      toDate: '',
-      revenueLedger: '',
-      costLedger: '', 
-    }]);
+    setDetailsTableErrors([
+      ...detailsTableErrors,
+      {
+        sno: '',
+        tax: '',
+        taxType: '',
+        percentage: '',
+        type: '',
+        fromDate: '',
+        toDate: '',
+        revenueLedger: '',
+        costLedger: ''
+      }
+    ]);
   };
   const isLastRowEmpty = (table) => {
     const lastRow = table[table.length - 1];
     if (!lastRow) return false;
 
     if (table === taxMasterTable) {
-      return !lastRow.tax || !lastRow.taxType || !lastRow.costLedger || !lastRow.revenueLedger || !lastRow.toDate || !lastRow.fromDate || !lastRow.type || !lastRow.percentage;
-
+      return (
+        !lastRow.tax ||
+        !lastRow.taxType ||
+        !lastRow.costLedger ||
+        !lastRow.revenueLedger ||
+        !lastRow.toDate ||
+        !lastRow.fromDate ||
+        !lastRow.type ||
+        !lastRow.percentage
+      );
     }
     return false;
   };
@@ -288,6 +304,60 @@ const TaxMaster = () => {
       setErrorTable(updatedErrors);
     }
   };
+
+  const getAllTaxMasterByOrgId = async () => {
+    try {
+      const result = await apiCalls('get', `/master/getAllTaxMasterByOrgId?orgId=${orgId}`);
+      setData(result.paramObjectsMap.taxMasterVO.reverse() || []);
+      showForm(true);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
+  const getTaxMasterById = async (row) => {
+    console.log('first', row);
+    setEditId(row.original.id);
+    setShowForm(true);
+    try {
+      const result = await apiCalls('get', `/master/getAllTaxMasterById?id=${row.original.id}`);
+      if (result) {
+        const taxMasterVO = result.paramObjectsMap.taxMasterVO[0];
+        setEditMode(true);
+        setFormValues({
+          finYear: taxMasterVO.finYear || '',
+          tax: taxMasterVO.gst || '',
+          taxSlab: taxMasterVO.gstSlab || '',
+          serviceAccountCode: taxMasterVO.serviceAccountCode || '',
+          active: taxMasterVO.active || false,
+          id: taxMasterVO.id,
+          taxMasterDetailsDTO: taxMasterVO.taxMasterDetailsVO || [],
+          orgId: orgId
+        });
+        setTaxMasterTable(
+          taxMasterVO.taxMasterDetailsVO.map((tm) => ({
+            id: tm.id,
+            tax: tm.gst,
+            taxType: tm.gstType,
+            percentage: tm.percentage,
+            type: tm.taxType,
+            revenueLedger: tm.revenueLedger,
+            costLedger: tm.costLedger,
+            toDate: tm.toDate ? dayjs(tm.toDate, 'YYYY-MM-DD') : dayjs(),
+            fromDate: tm.fromDate ? dayjs(tm.fromDate, 'YYYY-MM-DD') : dayjs(),
+            active: tm.active
+          }))
+        );
+      } else {
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const handleList = () => {
+    setShowForm(!showForm);
+  };
+
   const handleSave = async () => {
     const errors = {};
     if (!formValues.finYear) {
@@ -389,59 +459,6 @@ const TaxMaster = () => {
     }
   };
 
-  const getAllTaxMasterByOrgId = async () => {
-    try {
-      const result = await apiCalls('get', `/master/getAllTaxMasterByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.taxMasterVO.reverse() || []);
-      showForm(true);
-      console.log('Test', result);
-    } catch (err) {
-      console.log('error', err);
-    }
-  };
-  const getTaxMasterById = async (row) => {
-    console.log('first', row);
-    setEditId(row.original.id);
-    setShowForm(true);
-    try {
-      const result = await apiCalls('get', `/master/getAllTaxMasterById?id=${row.original.id}`);
-      if (result) {
-        const taxMasterVO = result.paramObjectsMap.taxMasterVO[0];
-        setEditMode(true);
-        setFormValues({
-          finYear: taxMasterVO.finYear || '',
-          tax: taxMasterVO.gst || '',
-          taxSlab: taxMasterVO.gstSlab || '',
-          serviceAccountCode: taxMasterVO.serviceAccountCode || '',
-          active: taxMasterVO.active || false,
-          id: taxMasterVO.id,
-          taxMasterDetailsDTO: taxMasterVO.taxMasterDetailsVO || [],
-          orgId: orgId
-        });
-        setTaxMasterTable(
-          taxMasterVO.taxMasterDetailsVO.map((tm) => ({
-            id: tm.id,
-            tax: tm.gst,
-            taxType: tm.gstType,
-            percentage: tm.percentage,
-            type: tm.taxType,
-            revenueLedger: tm.revenueLedger,
-            costLedger: tm.costLedger,
-            toDate: tm.toDate ? dayjs(tm.toDate, 'YYYY-MM-DD') : dayjs(),
-            fromDate: tm.fromDate ? dayjs(tm.fromDate, 'YYYY-MM-DD') : dayjs(),
-            active: tm.active
-          }))
-        );
-      } else {
-
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-  const handleList = () => {
-    setShowForm(!showForm);
-  };
   return (
     <div>
       <ToastContainer />
@@ -455,12 +472,12 @@ const TaxMaster = () => {
         {showForm ? (
           <>
             <div className="row d-flex">
-            <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.finYear}>
                   <InputLabel id="finYear-label">Fin Year</InputLabel>
                   <Select
                     labelId="finYear-label"
-                    id='finYear'
+                    id="finYear"
                     label="finYear"
                     value={formValues.finYear}
                     onChange={handleInputChange}
@@ -476,12 +493,12 @@ const TaxMaster = () => {
                   {fieldErrors.finYear && <FormHelperText>{fieldErrors.finYear}</FormHelperText>}
                 </FormControl>
               </div>
-            <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.serviceAccountCode}>
                   <InputLabel id="serviceAccountCode">Service Account Code</InputLabel>
                   <Select
                     labelId="Service Account Code"
-                    id='serviceAccountCode'
+                    id="serviceAccountCode"
                     label="serviceAccountCode"
                     value={formValues.serviceAccountCode}
                     onChange={handleInputChange}
@@ -545,29 +562,23 @@ const TaxMaster = () => {
               </div>
             </div>
             <>
-                <div className="row mt-2">
-                  <Box sx={{ width: '100%' }}>
-                    <Tabs
-                      value={value}
-                      onChange={handleChange}
-                      textColor="secondary"
-                      indicatorColor="secondary"
-                      aria-label="secondary tabs example"
-                    >
-                      <Tab value={0} label="Details" />
-                    </Tabs>
-                  </Box>
-                  <Box sx={{ padding: 2 }}>
-                    {value === 0 && (
-                      <>
-                        <div className="row d-flex ml">
-                          <div className="mb-1">
-                            <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                          </div>
-                          <div className="row mt-2" style={{width: '100%'}}>
-                            <div className="col-lg-12">
-                              <div className="table-responsive">
-                                <table className="table table-bordered ">
+              <div className="row mt-2">
+                <Box sx={{ width: '100%' }}>
+                  <Tabs value={value} onChange={handleChange} variant="scrollable" scrollButtons="auto">
+                    <Tab value={0} label="Details" />
+                  </Tabs>
+                </Box>
+                <Box sx={{ padding: 2 }}>
+                  {value === 0 && (
+                    <>
+                      <div className="row d-flex ml">
+                        <div className="mb-1">
+                          <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                        </div>
+                        <div className="row mt-2">
+                          <div className="col-lg-12">
+                            <div className="table-responsive">
+                              <table className="table table-bordered ">
                                 <thead>
                                   <tr style={{ backgroundColor: '#673AB7' }}>
                                     <th className="table-header">Action</th>
@@ -576,420 +587,490 @@ const TaxMaster = () => {
                                     <th className="table-header">Tax Type</th>
                                     <th className="table-header">Percentage</th>
                                     <th className="table-header">Type</th>
-                                    <th className="table-header">From Date</th>
-                                    <th className="table-header">To Date</th>
+                                    <th className="px-2 py-2 text-white text-center">From Date</th>
+                                    <th className="px-2 py-2 text-white text-center">To Date</th>
                                     <th className="table-header">Revenue Ledger</th>
                                     <th className="table-header">Cost Ledger</th>
                                     <th className="table-header">Active</th>
                                   </tr>
                                 </thead>
-                                  <tbody>
-                                    {taxMasterTable.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="border px-2 py-2 text-center">
-                                          <ActionButton
-                                            title="Delete"
-                                            icon={DeleteIcon}
-                                            onClick={() =>
-                                              handleDeleteRow(
-                                                row.id,
-                                                taxMasterTable,
-                                                setTaxMasterTable,
-                                                detailsTableErrors,
-                                                setDetailsTableErrors
-                                              )
+                                <tbody>
+                                  {taxMasterTable.map((row, index) => (
+                                    <tr key={row.id}>
+                                      <td className="border px-2 py-2 text-center">
+                                        <ActionButton
+                                          title="Delete"
+                                          icon={DeleteIcon}
+                                          onClick={() =>
+                                            handleDeleteRow(
+                                              row.id,
+                                              taxMasterTable,
+                                              setTaxMasterTable,
+                                              detailsTableErrors,
+                                              setDetailsTableErrors
+                                            )
+                                          }
+                                        />
+                                      </td>
+                                      <td className="text-center">
+                                        <div className="pt-2">{index + 1}</div>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="number"
+                                          value={row.tax}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            const regex = /^[0-9]*$/;
+                                            if (regex.test(value)) {
+                                              setTaxMasterTable((prev) => {
+                                                const updatedData = prev.map((r) => (r.id === row.id ? { ...r, tax: value } : r));
+                                                return updatedData;
+                                              });
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  tax: value ? '' : 'Tax is required'
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else {
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  tax: 'Invalid Format'
+                                                };
+                                                return newErrors;
+                                              });
                                             }
-                                          />
-                                        </td>
-                                        <td className="text-center">
-                                          <div className="pt-2">{index + 1}</div>
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="number"
-                                            value={row.tax}
-                                            sx={{ width: '100px' }}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const regex = /^[0-9]*$/; 
-                                              if (regex.test(value)) {
-                                                setTaxMasterTable((prev) => {
-                                                  const updatedData = prev.map((r) =>
-                                                    r.id === row.id ? { ...r, tax: value } : r
-                                                  );
-                                                  return updatedData;
-                                                });
-                                                setDetailsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    tax: value ? '' : 'Tax is required'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setDetailsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    tax: 'Invalid Format'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              }
-                                            }}
-                                            className={
-                                              detailsTableErrors[index]?.tax ? 'error form-control' : 'form-control'
+                                          }}
+                                          className={detailsTableErrors[index]?.tax ? 'error form-control' : 'form-control'}
+                                        />
+                                        {detailsTableErrors[index]?.tax && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].tax}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.taxType}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            const regex = /^[a-zA-Z\s-/]*$/;
+                                            if (regex.test(value)) {
+                                              setTaxMasterTable((prev) => {
+                                                const updatedData = prev.map((r) => (r.id === row.id ? { ...r, taxType: value } : r));
+                                                return updatedData;
+                                              });
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  taxType: value ? '' : 'Tax Type is required'
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else {
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  taxType: 'Invalid Format'
+                                                };
+                                                return newErrors;
+                                              });
                                             }
-                                          />
-                                          {detailsTableErrors[index]?.tax && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailsTableErrors[index].tax}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            value={row.taxType}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const regex = /^[a-zA-Z\s-/]*$/;
-                                              if (regex.test(value)) {
-                                                setTaxMasterTable((prev) => {
-                                                  const updatedData = prev.map((r) =>
-                                                    r.id === row.id ? { ...r, taxType: value } : r
-                                                  );
-                                                  return updatedData;
-                                                });
-                                                setDetailsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    taxType: value ? '' : 'Tax Type is required'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setDetailsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    taxType: 'Invalid Format'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              }
-                                            }}
-                                            className={
-                                              detailsTableErrors[index]?.taxType ? 'error form-control' : 'form-control'
-                                            }
-                                          />
-                                          {detailsTableErrors[index]?.taxType && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailsTableErrors[index].taxType}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            value={row.percentage}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const numericRegex = /^[0-9]*$/;
-                                              if (numericRegex.test(value)) {
-                                                setTaxMasterTable((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, percentage: value } : r))
-                                                );
-                                                setDetailsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], percentage: !value ? 'Percentage is required' : '' };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setDetailsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], percentage: 'Invalid Format' };
-                                                  return newErrors;
-                                                });
-                                              }
-                                            }}
-                                            className={detailsTableErrors[index]?.percentage ? 'error form-control' : 'form-control'}
-                                          />
-                                          {detailsTableErrors[index]?.percentage && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailsTableErrors[index].percentage}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            value={row.type}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const regex = /^[a-zA-Z0-9\s-/]*$/;
-                                              if (regex.test(value)) {
-                                                setTaxMasterTable((prev) => {
-                                                  const updatedData = prev.map((r) =>
-                                                    r.id === row.id ? { ...r, type: value } : r
-                                                  );
-                                                  return updatedData;
-                                                });
-                                                setDetailsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    type: value ? '' : 'Type is required'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setDetailsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    type: 'Invalid Format'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              }
-                                            }}
-                                            className={
-                                              detailsTableErrors[index]?.type ? 'error form-control' : 'form-control'
-                                            }
-                                            // sx={{ width: '180px' }}
-                                          />
-                                          {detailsTableErrors[index]?.type && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailsTableErrors[index].type}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                            <DatePicker
-                                              value={
-                                                row.fromDate
-                                                  ? dayjs(row.fromDate, 'YYYY-MM-DD').isValid()
-                                                    ? dayjs(row.fromDate, 'YYYY-MM-DD')
-                                                    : null
-                                                  : null
-                                              }
-                                              slotProps={{
-                                                textField: { size: 'small', clearable: true }
-                                              }}
-                                              format="DD-MM-YYYY"
-                                              onChange={(newValue) => {
-                                                setTaxMasterTable((prev) =>
-                                                  prev.map((r) =>
-                                                    r.id === row.id
-                                                      ? { ...r, fromDate: newValue ? newValue.format('YYYY-MM-DD') : null }
-                                                      : r
-                                                  )
-                                                );
-                                                setDetailsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    fromDate: !newValue ? 'From Date is required' : '',
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              }}
-                                              renderInput={(params) => (
-                                                <TextField
-                                                  {...params}
-                                                  className={
-                                                    detailsTableErrors[index]?.fromDate
-                                                      ? 'error form-control'
-                                                      : 'form-control'
-                                                  }
-                                                />
-                                              )}
-                                              minDate={row.fromDate ? dayjs(row.fromDate) : dayjs()}
-                                              // sx={{ width: '180px' }}
-                                            />
-                                            {detailsTableErrors[index]?.fromDate && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {detailsTableErrors[index].fromDate}
-                                              </div>
-                                            )}
-                                          </LocalizationProvider>
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                            <DatePicker
-                                              value={
-                                                row.toDate
-                                                  ? dayjs(row.toDate, 'YYYY-MM-DD').isValid()
-                                                    ? dayjs(row.toDate, 'YYYY-MM-DD')
-                                                    : null
-                                                  : null
-                                              }
-                                              slotProps={{
-                                                textField: { size: 'small', clearable: true }
-                                              }}
-                                              format="DD-MM-YYYY"
-                                              onChange={(newValue) => {
-                                                setTaxMasterTable((prev) =>
-                                                  prev.map((r) =>
-                                                    r.id === row.id
-                                                      ? { ...r, toDate: newValue ? newValue.format('YYYY-MM-DD') : null }
-                                                      : r
-                                                  )
-                                                );
-                                                setDetailsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    toDate: !newValue ? 'To Date is required' : '',
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              }}
-                                              renderInput={(params) => (
-                                                <TextField
-                                                  {...params}
-                                                  className={
-                                                    detailsTableErrors[index]?.toDate
-                                                      ? 'error form-control'
-                                                      : 'form-control'
-                                                  }
-                                                />
-                                              )}
-                                              minDate={row.toDate ? dayjs(row.toDate) : dayjs()}
-                                              // sx={{ width: '180px' }}
-                                            />
-                                            {detailsTableErrors[index]?.toDate && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {detailsTableErrors[index].toDate}
-                                              </div>
-                                            )}
-                                            
-                                          </LocalizationProvider>
-                                        </td>
-                                        <td>
-                                          <Autocomplete
-                                            options={revenueLedgerList}
-                                            getOptionLabel={(option) => option.revenueLedger || ''}
-                                            groupBy={(option) => (option.revenueLedger ? option.revenueLedger[0].toUpperCase() : '')}
-                                            value={
-                                              row.revenueLedger
-                                                ? revenueLedgerList.find((a) => a.revenueLedger === row.revenueLedger)
-                                                : revenueLedgerList.length === 1
-                                                ? revenueLedgerList[0]
-                                                : null
-                                            }
-                                            onChange={(event, newValue) => {
-                                              const value = newValue ? newValue.revenueLedger : '';
+                                          }}
+                                          className={detailsTableErrors[index]?.taxType ? 'error form-control' : 'form-control'}
+                                        />
+                                        {detailsTableErrors[index]?.taxType && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].taxType}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.percentage}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            const numericRegex = /^[0-9]*$/;
+                                            if (numericRegex.test(value)) {
                                               setTaxMasterTable((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, revenueLedger: value } : r))
+                                                prev.map((r) => (r.id === row.id ? { ...r, percentage: value } : r))
                                               );
                                               setDetailsTableErrors((prev) => {
                                                 const newErrors = [...prev];
                                                 newErrors[index] = {
                                                   ...newErrors[index],
-                                                  revenueLedger: !value ? 'Revenue Ledger is required' : ''
+                                                  percentage: !value ? 'Percentage is required' : ''
                                                 };
                                                 return newErrors;
                                               });
-                                            }}
-                                            size="small"
-                                            renderInput={(params) => (
-                                              <TextField
-                                                {...params}
-                                                label="Revenue Ledger"
-                                                variant="outlined"
-                                                error={!!detailsTableErrors[index]?.revenueLedger}
-                                                helperText={detailsTableErrors[index]?.revenueLedger}
-                                              />
-                                            )}
-                                            // sx={{ width: 150 }}
-                                          />
-                                        </td>
-                                        <td>
-                                          <Autocomplete
-                                            options={costLedgerList}
-                                            getOptionLabel={(option) => option.costLedger || ''}
-                                            groupBy={(option) => (option.costLedger ? option.costLedger[0].toUpperCase() : '')}
-                                            value={
-                                              row.costLedger
-                                                ? costLedgerList.find((a) => a.costLedger === row.costLedger)
-                                                : costLedgerList.length === 1
-                                                ? costLedgerList[0]
-                                                : null
+                                            } else {
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = { ...newErrors[index], percentage: 'Invalid Format' };
+                                                return newErrors;
+                                              });
                                             }
-                                            onChange={(event, newValue) => {
-                                              const value = newValue ? newValue.costLedger : '';
-                                              setTaxMasterTable((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, costLedger: value } : r))
-                                              );
+                                          }}
+                                          className={detailsTableErrors[index]?.percentage ? 'error form-control' : 'form-control'}
+                                        />
+                                        {detailsTableErrors[index]?.percentage && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].percentage}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.type}
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            const regex = /^[a-zA-Z0-9\s-/]*$/;
+                                            if (regex.test(value)) {
+                                              setTaxMasterTable((prev) => {
+                                                const updatedData = prev.map((r) => (r.id === row.id ? { ...r, type: value } : r));
+                                                return updatedData;
+                                              });
                                               setDetailsTableErrors((prev) => {
                                                 const newErrors = [...prev];
                                                 newErrors[index] = {
                                                   ...newErrors[index],
-                                                  costLedger: !value ? 'Cost Ledger is required' : ''
+                                                  type: value ? '' : 'Type is required'
                                                 };
                                                 return newErrors;
                                               });
+                                            } else {
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  type: 'Invalid Format'
+                                                };
+                                                return newErrors;
+                                              });
+                                            }
+                                          }}
+                                          className={detailsTableErrors[index]?.type ? 'error form-control' : 'form-control'}
+                                          // sx={{ width: '180px' }}
+                                        />
+                                        {detailsTableErrors[index]?.type && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].type}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                          <DatePicker
+                                            value={
+                                              row.fromDate
+                                                ? dayjs(row.fromDate, 'YYYY-MM-DD').isValid()
+                                                  ? dayjs(row.fromDate, 'YYYY-MM-DD')
+                                                  : null
+                                                : null
+                                            }
+                                            slotProps={{
+                                              textField: { size: 'small', clearable: true, style: { width: '200px' } }
                                             }}
-                                            size="small"
-                                            renderInput={(params) => (
-                                              <TextField
-                                                {...params}
-                                                label="Cost Ledger"
-                                                variant="outlined"
-                                                error={!!detailsTableErrors[index]?.costLedger}
-                                                helperText={detailsTableErrors[index]?.costLedger}
-                                              />
-                                            )}
-                                            // sx={{ width: 150 }}
-                                          />
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                      <FormControlLabel
-                                        control={
-                                          <Checkbox
-                                            checked={row.active}
-                                            onChange={(e) => {
-                                              const isChecked = e.target.checked;
-
+                                            format="DD-MM-YYYY"
+                                            onChange={(newValue) => {
                                               setTaxMasterTable((prev) =>
                                                 prev.map((r) =>
-                                                  r.id === row.id ? { ...r, active: isChecked } : r 
+                                                  r.id === row.id ? { ...r, fromDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
                                                 )
                                               );
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  fromDate: !newValue ? 'From Date is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
                                             }}
-                                            name="active"
-                                            color="primary"
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                className={detailsTableErrors[index]?.fromDate ? 'error form-control' : 'form-control'}
+                                              />
+                                            )}
+                                            minDate={dayjs()}
                                           />
-                                        }
-                                        label="Active"
-                                        sx={{
-                                          "& .MuiSvgIcon-root": { color: "#5e35b1" },
-                                        }}
-                                      />
-                                      {detailsTableErrors[index]?.active && (
-                                        <div className="mt-2" style={{ color: "red", fontSize: "12px" }}>
-                                          {detailsTableErrors[index].active}
-                                        </div>
-                                      )}
-                                    </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
+                                        </LocalizationProvider>
+                                        {detailsTableErrors[index]?.fromDate && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].fromDate}
+                                          </div>
+                                        )}
+                                      </td>
+
+                                      <td className="border px-2 py-2">
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                          <DatePicker
+                                            value={
+                                              row.toDate
+                                                ? dayjs(row.toDate, 'YYYY-MM-DD').isValid()
+                                                  ? dayjs(row.toDate, 'YYYY-MM-DD')
+                                                  : null
+                                                : null
+                                            }
+                                            slotProps={{
+                                              textField: { size: 'small', clearable: true, style: { width: '200px' } }
+                                            }}
+                                            format="DD-MM-YYYY"
+                                            onChange={(newValue) => {
+                                              setTaxMasterTable((prev) =>
+                                                prev.map((r) =>
+                                                  r.id === row.id ? { ...r, toDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
+                                                )
+                                              );
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  toDate: !newValue ? 'To Date is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                className={detailsTableErrors[index]?.toDate ? 'error form-control' : 'form-control'}
+                                              />
+                                            )}
+                                            minDate={row.toDate ? dayjs(row.toDate) : dayjs()}
+                                          />
+                                          {detailsTableErrors[index]?.toDate && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailsTableErrors[index].toDate}
+                                            </div>
+                                          )}
+                                        </LocalizationProvider>
+                                      </td>
+                                      {/* <td className="border px-2 py-2">
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                          <DatePicker
+                                            value={
+                                              row.fromDate
+                                                ? dayjs(row.fromDate, 'YYYY-MM-DD').isValid()
+                                                  ? dayjs(row.fromDate, 'YYYY-MM-DD')
+                                                  : null
+                                                : null
+                                            }
+                                            slotProps={{
+                                              textField: { size: 'small', clearable: true }
+                                            }}
+                                            format="DD-MM-YYYY"
+                                            onChange={(newValue) => {
+                                              setTaxMasterTable((prev) =>
+                                                prev.map((r) =>
+                                                  r.id === row.id ? { ...r, fromDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
+                                                )
+                                              );
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  fromDate: !newValue ? 'From Date is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                className={detailsTableErrors[index]?.fromDate ? 'error form-control' : 'form-control'}
+                                                style={{ width: '150px' }}
+                                              />
+                                            )}
+                                            minDate={row.fromDate ? dayjs(row.fromDate) : dayjs()}
+                                          />
+                                          {detailsTableErrors[index]?.fromDate && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailsTableErrors[index].fromDate}
+                                            </div>
+                                          )}
+                                        </LocalizationProvider>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                          <DatePicker
+                                            value={
+                                              row.toDate
+                                                ? dayjs(row.toDate, 'YYYY-MM-DD').isValid()
+                                                  ? dayjs(row.toDate, 'YYYY-MM-DD')
+                                                  : null
+                                                : null
+                                            }
+                                            slotProps={{
+                                              textField: { size: 'small', clearable: true }
+                                            }}
+                                            format="DD-MM-YYYY"
+                                            onChange={(newValue) => {
+                                              setTaxMasterTable((prev) =>
+                                                prev.map((r) =>
+                                                  r.id === row.id ? { ...r, toDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
+                                                )
+                                              );
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  toDate: !newValue ? 'To Date is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                className={detailsTableErrors[index]?.toDate ? 'error form-control' : 'form-control'}
+                                                style={{ width: '150px' }}
+                                              />
+                                            )}
+                                            minDate={row.toDate ? dayjs(row.toDate) : dayjs()}
+                                          />
+                                          {detailsTableErrors[index]?.toDate && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailsTableErrors[index].toDate}
+                                            </div>
+                                          )}
+                                        </LocalizationProvider>
+                                      </td> */}
+                                      <td>
+                                        <Autocomplete
+                                          options={revenueLedgerList}
+                                          getOptionLabel={(option) => option.revenueLedger || ''}
+                                          groupBy={(option) => (option.revenueLedger ? option.revenueLedger[0].toUpperCase() : '')}
+                                          value={
+                                            row.revenueLedger
+                                              ? revenueLedgerList.find((a) => a.revenueLedger === row.revenueLedger)
+                                              : revenueLedgerList.length === 1
+                                                ? revenueLedgerList[0]
+                                                : null
+                                          }
+                                          onChange={(event, newValue) => {
+                                            const value = newValue ? newValue.revenueLedger : '';
+                                            setTaxMasterTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, revenueLedger: value } : r))
+                                            );
+                                            setDetailsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                revenueLedger: !value ? 'Revenue Ledger is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          size="small"
+                                          style={{ width: '150px' }}
+                                          renderInput={(params) => (
+                                            <TextField
+                                              {...params}
+                                              label="Revenue Ledger"
+                                              variant="outlined"
+                                              error={!!detailsTableErrors[index]?.revenueLedger}
+                                              helperText={detailsTableErrors[index]?.revenueLedger}
+                                            />
+                                          )}
+                                          // sx={{ width: 150 }}
+                                        />
+                                      </td>
+                                      <td>
+                                        <Autocomplete
+                                          options={costLedgerList}
+                                          getOptionLabel={(option) => option.costLedger || ''}
+                                          groupBy={(option) => (option.costLedger ? option.costLedger[0].toUpperCase() : '')}
+                                          value={
+                                            row.costLedger
+                                              ? costLedgerList.find((a) => a.costLedger === row.costLedger)
+                                              : costLedgerList.length === 1
+                                                ? costLedgerList[0]
+                                                : null
+                                          }
+                                          onChange={(event, newValue) => {
+                                            const value = newValue ? newValue.costLedger : '';
+                                            setTaxMasterTable((prev) =>
+                                              prev.map((r) => (r.id === row.id ? { ...r, costLedger: value } : r))
+                                            );
+                                            setDetailsTableErrors((prev) => {
+                                              const newErrors = [...prev];
+                                              newErrors[index] = {
+                                                ...newErrors[index],
+                                                costLedger: !value ? 'Cost Ledger is required' : ''
+                                              };
+                                              return newErrors;
+                                            });
+                                          }}
+                                          size="small"
+                                          style={{ width: '150px' }}
+                                          renderInput={(params) => (
+                                            <TextField
+                                              {...params}
+                                              label="Cost Ledger"
+                                              variant="outlined"
+                                              error={!!detailsTableErrors[index]?.costLedger}
+                                              helperText={detailsTableErrors[index]?.costLedger}
+                                            />
+                                          )}
+                                          // sx={{ width: 150 }}
+                                        />
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <FormControlLabel
+                                          control={
+                                            <Checkbox
+                                              checked={row.active}
+                                              onChange={(e) => {
+                                                const isChecked = e.target.checked;
+
+                                                setTaxMasterTable((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, active: isChecked } : r))
+                                                );
+                                              }}
+                                              name="active"
+                                              color="primary"
+                                            />
+                                          }
+                                          // label="Active"
+                                          sx={{
+                                            '& .MuiSvgIcon-root': { color: '#5e35b1' }
+                                          }}
+                                        />
+                                        {detailsTableErrors[index]?.active && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].active}
+                                          </div>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
                             </div>
                           </div>
                         </div>
-                      </>
-                    )}
-                  </Box>
-                </div>
-              </>
+                      </div>
+                    </>
+                  )}
+                </Box>
+              </div>
+            </>
           </>
         ) : (
           <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getTaxMasterById} />

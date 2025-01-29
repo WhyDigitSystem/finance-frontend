@@ -410,7 +410,7 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
                 INDIA OF WHICH WE ARE MEMBERS, COPIES OF STANDARD TRADING CONDITIONS ARE AVAILABLE ON REQUEST.
               </li>
               <li>INTEREST WILL BE CHARGED @ 16% PER ANNUM FOR ALL PAYMENT RECEIVED ON OR AFTER DUE DATE AS MENTIONED ABOVE.</li>
-              <li>CHEQUE / DD SHOULD BE IN FAVOUR OF UNIWORLD LOGISTICS PRIVATE LIMITED.</li>
+              <li>CHEQUE / DD SHOULD BE IN FAVOUR OF XYZ LOGISTICS PRIVATE LIMITED.</li>
             </ol>
           </div>
 
@@ -420,10 +420,10 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
               <span style={styles2.label}>BANK NAME:</span> HDFC BANK LIMITED
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT CODE:</span> UWLIND
+              <span style={styles2.label}>ACCOUNT CODE:</span> XYZ
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>BENEFICIARY NAME:</span> UNIWORLD LOGISTICS PVT LTD
+              <span style={styles2.label}>BENEFICIARY NAME:</span> XYZ LOGISTICS PVT LTD
             </p>
             <p style={styles2.item}>
               <span style={styles2.label}>BRANCH:</span> KORAMANGALA, BENGALURU

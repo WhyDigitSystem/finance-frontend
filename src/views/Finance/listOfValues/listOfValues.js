@@ -401,9 +401,13 @@ const ListOfValues = () => {
                             <table className="table table-bordered ">
                               <thead>
                                 <tr style={{ backgroundColor: '#673AB7' }}>
-                                {!editId ?   <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                    Action
-                                  </th>: "" }
+                                  {!editId ? (
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                      Action
+                                    </th>
+                                  ) : (
+                                    ''
+                                  )}
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                     S.No
                                   </th>
@@ -413,7 +417,7 @@ const ListOfValues = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Value Description
                                   </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '120px' }}>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '70px' }}>
                                     Active
                                   </th>
                                 </tr>
@@ -421,22 +425,25 @@ const ListOfValues = () => {
                               <tbody>
                                 {detailsTableData.map((row, index) => (
                                   <tr key={row.id}>
-                                    {!editId ?    <td className="border px-2 py-2 text-center">
-                                   <ActionButton
-                                      
-                                        title="Delete"
-                                        icon={DeleteIcon}
-                                        onClick={() =>
-                                          handleDeleteRow(
-                                            row.id,
-                                            detailsTableData,
-                                            setDetailsTableData,
-                                            detailsTableErrors,
-                                            setDetailsTableErrors
-                                          )
-                                        }
-                                      />
-                                    </td>: "" }
+                                    {!editId ? (
+                                      <td className="border px-2 py-2 text-center">
+                                        <ActionButton
+                                          title="Delete"
+                                          icon={DeleteIcon}
+                                          onClick={() =>
+                                            handleDeleteRow(
+                                              row.id,
+                                              detailsTableData,
+                                              setDetailsTableData,
+                                              detailsTableErrors,
+                                              setDetailsTableErrors
+                                            )
+                                          }
+                                        />
+                                      </td>
+                                    ) : (
+                                      ''
+                                    )}
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
                                     </td>
@@ -492,36 +499,34 @@ const ListOfValues = () => {
                                         </div>
                                       )}
                                     </td>
-                                    <td className="border px-2 py-2">
+                                    <td className="border px-2 py-2 text-center">
                                       <FormControlLabel
                                         control={
                                           <Checkbox
+                                            className="ms-2 pb-0 pt-1"
                                             checked={row.active}
                                             onChange={(e) => {
                                               const isChecked = e.target.checked;
 
                                               setDetailsTableData((prev) =>
-                                                prev.map((r) =>
-                                                  r.id === row.id ? { ...r, active: isChecked } : r 
-                                                )
+                                                prev.map((r) => (r.id === row.id ? { ...r, active: isChecked } : r))
                                               );
                                             }}
                                             name="active"
                                             color="primary"
                                           />
                                         }
-                                        label="Active"
+                                        // label="Active"
                                         sx={{
-                                          "& .MuiSvgIcon-root": { color: "#5e35b1" },
+                                          '& .MuiSvgIcon-root': { color: '#5e35b1' }
                                         }}
                                       />
                                       {detailsTableErrors[index]?.active && (
-                                        <div className="mt-2" style={{ color: "red", fontSize: "12px" }}>
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                           {detailsTableErrors[index].active}
                                         </div>
                                       )}
                                     </td>
-
                                   </tr>
                                 ))}
                               </tbody>
