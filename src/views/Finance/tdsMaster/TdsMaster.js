@@ -1,26 +1,25 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { FormHelperText, Checkbox, FormControlLabel, FormGroup, TextField } from '@mui/material';
 import apiCalls from 'apicall';
-import { useEffect, useRef, useState } from 'react';
-import { ToastContainer, toast } from 'react-toastify';
+import { useEffect, useState } from 'react';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import CommonTable from 'views/basicMaster/CommonTable';
-import TableComponent from './TableComponent';
+import FormControl from '@mui/material/FormControl';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-// import 'react-datepicker/dist/react-datepicker.css';
-// import DatePicker from 'react-datepicker';
-import { toDate } from 'date-fns';
 import ToastComponent, { showToast } from 'utils/toast-component';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import dayjs from 'dayjs';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 const TdsMaster = () => {
-  const theme = useTheme();
-  const anchorRef = useRef(null);
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
   const [editId, setEditId] = useState('');
@@ -30,7 +29,6 @@ const TdsMaster = () => {
     active: true,
     section: '',
     sectionName: ''
-    // tdsMaster2DTO: []
   });
   const [validationErrors, setValidationErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
@@ -41,26 +39,15 @@ const TdsMaster = () => {
   }, []);
 
   const handleInputChange = (e) => {
-    const { id, value, checked, type } = e.target;
+    const { name, value, checked, type, id } = e.target;
+
     setFormValues((prev) => ({
       ...prev,
-      [id]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value.toUpperCase(),
+      [id]: type === 'checkbox' ? checked : value.toUpperCase(),
     }));
 
-    // Validate the input fields
-    if (id === 'section' || id === 'sectionName') {
-      if (!value.trim()) {
-        setValidationErrors((prev) => ({
-          ...prev,
-          [id]: 'This field is required'
-        }));
-      } else {
-        setValidationErrors((prev) => {
-          const { [id]: removed, ...rest } = prev;
-          return rest;
-        });
-      }
-    }
+    setValidationErrors({ ...validationErrors, [name]: '' });
   };
 
   const [tdsTableData, setTdsTableData] = useState([
@@ -89,6 +76,7 @@ const TdsMaster = () => {
       displayRowError(tdsTableData);
       return;
     }
+
     const newRow = {
       id: Date.now(),
       fromDate: '',
@@ -97,40 +85,47 @@ const TdsMaster = () => {
       sur: '',
       eds: ''
     };
-    setTdsTableData([...tdsTableData, newRow]);
-    setTdsTableErrors([...tdsTableErrors, { fromDate: null, toDate: null, tcs: '', sur: '', eds: '' }]);
+
+    setTdsTableData((prevData) => [...prevData, newRow]);
+    setTdsTableErrors((prevErrors) => [
+      ...prevErrors,
+      { fromDate: null, toDate: null, tcs: '', sur: '', eds: '' }
+    ]);
   };
+
 
   const isLastRowEmpty = (table) => {
     const lastRow = table[table.length - 1];
     if (!lastRow) return false;
 
-    if (table === tdsTableData) {
-      return !lastRow.fromDate || !lastRow.toDate || !lastRow.tcs || !lastRow.sur || !lastRow.eds;
-    }
-    return false;
+    return (!lastRow.fromDate || !lastRow.toDate || !lastRow.tcs || !lastRow.sur || !lastRow.eds);
   };
 
+
   const displayRowError = (table) => {
-    if (table === tdsTableData) {
-      setTdsTableErrors((prevErrors) => {
-        const newErrors = [...prevErrors];
-        newErrors[table.length - 1] = {
-          ...newErrors[table.length - 1],
-          fromDate: !table[table.length - 1].fromDate ? 'From Date is required' : '',
-          toDate: !table[table.length - 1].toDate ? 'To Date is required' : '',
-          tcs: !table[table.length - 1].tcs ? 'Tcs is required' : '',
-          sur: !table[table.length - 1].sur ? 'Sur is required' : '',
-          eds: !table[table.length - 1].eds ? 'Eds is required' : ''
-        };
-        return newErrors;
-      });
-    }
+    setTdsTableErrors((prevErrors) => {
+      const lastIndex = table.length - 1;
+
+      const newErrors = [...prevErrors];
+      while (newErrors.length < table.length) {
+        newErrors.push({ fromDate: null, toDate: null, tcs: '', sur: '', eds: '' });
+      }
+
+      newErrors[lastIndex] = {
+        fromDate: !table[lastIndex].fromDate ? 'From Date is required' : '',
+        toDate: !table[lastIndex].toDate ? 'To Date is required' : '',
+        tcs: !table[lastIndex].tcs ? 'Tcs is required' : '',
+        sur: !table[lastIndex].sur ? 'Sur is required' : '',
+        eds: !table[lastIndex].eds ? 'Eds is required' : ''
+      };
+
+      return newErrors;
+    });
   };
+
 
   const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
     const rowIndex = table.findIndex((row) => row.id === id);
-    // If the row exists, proceed to delete
     if (rowIndex !== -1) {
       const updatedData = table.filter((row) => row.id !== id);
       const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
@@ -152,19 +147,17 @@ const TdsMaster = () => {
       active: true
     });
 
-    // Set the table to only have one empty row
     setTdsTableData([
       {
-        id: 1, // Set an initial id (or use Date.now() or any unique identifier)
-        fromDate: '', // Empty 'fromDate'
-        toDate: '', // Empty 'toDate'
-        tcs: '', // Empty 'tcs'
-        sur: '', // Empty 'sur'
-        eds: '' 
+        id: 1,
+        fromDate: '',
+        toDate: '',
+        tcs: '',
+        sur: '',
+        eds: ''
       }
     ]);
 
-    // Reset table errors for just one row
     setTdsTableErrors([
       {
         fromDate: null,
@@ -183,7 +176,7 @@ const TdsMaster = () => {
     if (!date) return '';
     const formattedDate = new Date(date);
     const year = formattedDate.getFullYear();
-    const month = String(formattedDate.getMonth() + 1).padStart(2, '0'); // Months are zero based
+    const month = String(formattedDate.getMonth() + 1).padStart(2, '0');
     const day = String(formattedDate.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
   };
@@ -191,11 +184,11 @@ const TdsMaster = () => {
   const handleSave = async () => {
     const errors = {};
     const tableErrors = tdsTableData.map((row) => ({
-      fromDate: !row.fromDate ? 'From Date is required' : '',
-      toDate: !row.toDate ? 'To Date is required' : '',
-      tcs: !row.tcs ? 'TCS is required' : '',
-      sur: !row.sur ? 'Sur is required' : '',
-      eds: !row.eds ? 'EDS is required' : ''
+      // fromDate: !row.fromDate ? 'From Date is required' : '',
+      // toDate: !row.toDate ? 'To Date is required' : '',
+      // tcs: !row.tcs ? 'TCS is required' : '',
+      // sur: !row.sur ? 'Sur is required' : '',
+      // eds: !row.eds ? 'EDS is required' : ''
     }));
 
     let hasTableErrors = false;
@@ -207,10 +200,10 @@ const TdsMaster = () => {
     });
 
     if (!formValues.section.trim()) {
-      errors.section = 'This field is required';
+      errors.section = 'Section is required';
     }
-    if (!formValues.sectionName.trim()) {
-      errors.sectionName = 'This field is required';
+    if (!formValues.sectionName) {
+      errors.sectionName = 'Section Name is required';
     }
 
     setValidationErrors(errors);
@@ -221,7 +214,6 @@ const TdsMaster = () => {
       setIsLoading(true);
 
       const tdsTableVo = tdsTableData.map((row) => ({
-        // id: item.id || 0, // If id exists, otherwise 0
         ...(editId && { id: row.id }),
         fromDate: formatDate(row.fromDate),
         toDate: formatDate(row.toDate),
@@ -283,7 +275,7 @@ const TdsMaster = () => {
         setFormValues({
           section: tdsMasterVO.section,
           sectionName: tdsMasterVO.sectionName,
-          active: tdsMasterVO.active 
+          active: tdsMasterVO.active
         });
         setTdsTableData(
           tdsMasterVO.tdsMaster2VO.map((role) => ({
@@ -307,14 +299,14 @@ const TdsMaster = () => {
     setShowForm(!showForm);
   };
 
- 
+
 
   return (
     <div>
       <ToastComponent />
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <div className="d-flex flex-wrap justify-content-start mb-4">
-          {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}          
+          {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
           <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
           <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} isLoading={isLoading} margin="0 10px 0 10px" />
@@ -323,18 +315,20 @@ const TdsMaster = () => {
           <>
             <div className="row d-flex">
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="section"
+                <FormControl variant="outlined" fullWidth size="small" error={!!validationErrors.section}>
+                  <InputLabel id="section">Section</InputLabel>
+                  <Select
+                    labelId="section"
                     label="Section"
-                    size="small"
-                    required
+                    name="section"
                     value={formValues.section}
                     onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!validationErrors.section}
-                    helperText={validationErrors.section}
-                  />
+                  >
+                    <MenuItem value="NO">NO</MenuItem>
+                    <MenuItem value="NORMAL">NORMAL</MenuItem>
+                    <MenuItem value="SPECIAL">SPECIAL</MenuItem>
+                  </Select>
+                  {validationErrors.section && <FormHelperText>{validationErrors.section}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -343,7 +337,6 @@ const TdsMaster = () => {
                     id="sectionName"
                     label="Section Name"
                     size="small"
-                    required
                     value={formValues.sectionName}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
@@ -408,30 +401,47 @@ const TdsMaster = () => {
                               </td>
 
                               <td className="border px-2 py-2">
-                                <input
-                                  type="date"
-                                  value={row.fromDate}
-                                  onChange={(e) => {
-                                    const date = e.target.value;
-
-                                    setTdsTableData((prev) =>
-                                      prev.map((r) =>
-                                        r.id === row.id ? { ...r, fromDate: date, endDate: date > r.endDate ? '' : r.endDate } : r
-                                      )
-                                    );
-
-                                    setTdsTableErrors((prev) => {
-                                      const newErrors = [...prev];
-                                      newErrors[index] = {
-                                        ...newErrors[index],
-                                        fromDate: !date ? 'From Date is required' : ''
-                                      };
-                                      return newErrors;
-                                    });
-                                  }}
-                                  className={tdsTableErrors[index]?.fromDate ? 'error form-control' : 'form-control'}
-                                  // onKeyDown={(e) => handleKeyDown(e, row, tdsTableData)}
-                                />
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                  <DatePicker
+                                    value={
+                                      row.fromDate
+                                        ? dayjs(row.fromDate, 'YYYY-MM-DD').isValid()
+                                          ? dayjs(row.fromDate, 'YYYY-MM-DD')
+                                          : null
+                                        : null
+                                    }
+                                    slotProps={{
+                                      textField: { size: 'small', clearable: true }
+                                    }}
+                                    format="DD-MM-YYYY"
+                                    onChange={(newValue) => {
+                                      setTdsTableData((prev) =>
+                                        prev.map((r) =>
+                                          r.id === row.id
+                                            ? { ...r, fromDate: newValue ? newValue.format('YYYY-MM-DD') : null }
+                                            : r
+                                        )
+                                      );
+                                      setTdsTableErrors((prev) => {
+                                        const newErrors = [...prev];
+                                        newErrors[index] = {
+                                          ...newErrors[index],
+                                          fromDate: !newValue ? 'From Date is required' : '',
+                                        };
+                                        return newErrors;
+                                      });
+                                    }}
+                                    renderInput={(params) => (
+                                      <TextField
+                                        {...params}
+                                        className={
+                                          tdsTableErrors[index]?.fromDate ? 'error form-control' : 'form-control'
+                                        }
+                                      />
+                                    )}
+                                    minDate={dayjs()}
+                                  />
+                                </LocalizationProvider>
                                 {tdsTableErrors[index]?.fromDate && (
                                   <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                     {tdsTableErrors[index].fromDate}
@@ -439,36 +449,59 @@ const TdsMaster = () => {
                                 )}
                               </td>
 
+
                               <td className="border px-2 py-2">
-                                <input
-                                  type="date"
-                                  value={row.toDate}
-                                  onChange={(e) => {
-                                    const date = e.target.value;
-
-                                    setTdsTableData((prev) =>
-                                      prev.map((r) =>
-                                        r.id === row.id ? { ...r, toDate: date, endDate: date > r.endDate ? '' : r.endDate } : r
-                                      )
-                                    );
-
-                                    setTdsTableErrors((prev) => {
-                                      const newErrors = [...prev];
-                                      newErrors[index] = {
-                                        ...newErrors[index],
-                                        toDate: !date ? 'To Date is required' : ''
-                                      };
-                                      return newErrors;
-                                    });
-                                  }}
-                                  className={tdsTableErrors[index]?.toDate ? 'error form-control' : 'form-control'}
-                                />
-                                {tdsTableErrors[index]?.toDate && (
-                                  <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                    {tdsTableErrors[index].toDate}
-                                  </div>
-                                )}
+                                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                  <DatePicker
+                                    value={
+                                      row.toDate
+                                        ? dayjs(row.toDate, 'YYYY-MM-DD').isValid()
+                                          ? dayjs(row.toDate, 'YYYY-MM-DD')
+                                          : null
+                                        : null
+                                    }
+                                    slotProps={{
+                                      textField: { size: 'small', clearable: true }
+                                    }}
+                                    format="DD-MM-YYYY"
+                                    onChange={(newValue) => {
+                                      setTdsTableData((prev) =>
+                                        prev.map((r) =>
+                                          r.id === row.id
+                                            ? { ...r, toDate: newValue ? newValue.format('YYYY-MM-DD') : null }
+                                            : r
+                                        )
+                                      );
+                                      setTdsTableErrors((prev) => {
+                                        const newErrors = [...prev];
+                                        newErrors[index] = {
+                                          ...newErrors[index],
+                                          toDate: !newValue ? 'To Date is required' : '',
+                                        };
+                                        return newErrors;
+                                      });
+                                    }}
+                                    renderInput={(params) => (
+                                      <TextField
+                                        {...params}
+                                        // size="small"
+                                        className={
+                                          tdsTableErrors[index]?.toDate
+                                            ? 'error form-control'
+                                            : 'form-control'
+                                        }
+                                      />
+                                    )}
+                                    minDate={row.toDate ? dayjs(row.toDate) : dayjs()}
+                                  />
+                                  {tdsTableErrors[index]?.toDate && (
+                                    <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                      {tdsTableErrors[index].toDate}
+                                    </div>
+                                  )}
+                                </LocalizationProvider>
                               </td>
+
                               <td className="border px-2 py-2">
                                 <input
                                   type="text"
@@ -499,6 +532,7 @@ const TdsMaster = () => {
                                   </div>
                                 )}
                               </td>
+
                               <td className="border px-2 py-2">
                                 <input
                                   type="text"
@@ -522,7 +556,7 @@ const TdsMaster = () => {
                                     }
                                   }}
                                   className={tdsTableErrors[index]?.sur ? 'error form-control' : 'form-control'}
-                                  // onKeyDown={(e) => handleKeyDown(e, row, tdsTableData)}
+                                // onKeyDown={(e) => handleKeyDown(e, row, tdsTableData)}
                                 />
                                 {tdsTableErrors[index]?.sur && (
                                   <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -530,6 +564,7 @@ const TdsMaster = () => {
                                   </div>
                                 )}
                               </td>
+
                               <td className="border px-2 py-2">
                                 <input
                                   type="text"
@@ -553,7 +588,6 @@ const TdsMaster = () => {
                                     }
                                   }}
                                   className={tdsTableErrors[index]?.eds ? 'error form-control' : 'form-control'}
-                                  // onKeyDown={(e) => handleKeyDown(e, row, tdsTableData)}
                                 />
                                 {tdsTableErrors[index]?.eds && (
                                   <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>

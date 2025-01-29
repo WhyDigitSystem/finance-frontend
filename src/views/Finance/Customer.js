@@ -4,8 +4,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import { Checkbox, FormControlLabel, FormGroup, FormHelperText, Tab, Tabs } from '@mui/material';
+import { Checkbox, FormHelperText, Tab, Tabs } from '@mui/material';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import apiCalls from 'apicall';
@@ -18,7 +17,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
-import { getAllActiveCitiesByState, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
+import { getAllActiveCitiesByState, getAllActiveStatesByCountry, getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonBulkUpload from 'utils/CommonBulkUpload';
 import UploadIcon from '@mui/icons-material/Upload';
 import FormControl from '@mui/material/FormControl';
@@ -32,6 +31,8 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const Customer = () => {
     const [stateList, setStateList] = useState([]);
     const [editId, setEditId] = useState('');
+    const [currencies, setCurrencies] = useState([]);
+    const [currencyExRates, setCurrencyExRates] = useState([]);
     const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
     const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
     const [uploadOpen, setUploadOpen] = useState(false);
@@ -45,6 +46,10 @@ export const Customer = () => {
         creditDays: '',
         creditTerms: '',
         gstRegistered: '',
+        bussinessType: '',
+        bussinessCate: '',
+        accType: 'RECEIVABLE',
+        currency: '',
         createdBy: loginUserName,
         orgId: orgId,
     });
@@ -60,12 +65,16 @@ export const Customer = () => {
     const listViewColumns = [
         { accessorKey: 'partyCode', header: 'Customer Code', size: 140 },
         { accessorKey: 'partyName', header: 'Customer Name', size: 140 },
-        { accessorKey: 'gstIn', header: 'Registration No', size: 140 },
+        { accessorKey: 'gstIn', header: 'Reg No', size: 140 },
         { accessorKey: 'panNo', header: 'Pan No', size: 140 },
         { accessorKey: 'creditLimit', header: 'Credit Limit', size: 140 },
         { accessorKey: 'creditDays', header: 'Credit Days', size: 140 },
         { accessorKey: 'creditTerms', header: 'Credit Terms', size: 140 },
         { accessorKey: 'gstRegistered', header: 'Tax Registered', size: 140 },
+        { accessorKey: 'bussinessType', header: 'Bussiness Type', size: 140 },
+        { accessorKey: 'bussinessCate', header: 'Bussiness Category', size: 140 },
+        { accessorKey: 'accType', header: 'Account Type', size: 140 },
+        { accessorKey: 'currency', header: 'Currency', size: 140 },
         // { accessorKey: 'active', header: 'Active', size: 140 }
     ];
 
@@ -82,15 +91,87 @@ export const Customer = () => {
         creditDays: '',
         creditTerms: '',
         gstRegistered: '',
+        bussinessType: '',
+        bussinessCate: '',
+        accType: '',
+        currency: '',
     });
 
     useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const currencyData = await getAllActiveCurrency(orgId);
+                setCurrencies(currencyData);
+
+                console.log('currency', currencyData);
+            } catch (error) {
+                console.error('Error fetching country data:', error);
+            }
+        };
+
+        fetchData();
         getAllCustomerByOrgId();
+        getAllCurrencyForExRate();
         getAllStates();
         getAllBranches();
-        getAllEmployees();
+        getAllSalesPerson();
     }, []);
 
+    useEffect(() => {
+        if (currencies.length === 1) {
+            handleInputChange({ target: { name: 'currency', value: currencies[0].currency } });
+        }
+    }, [currencies]);
+
+    const handleCurrencyChange = (row, index, event) => {
+        const value = event.target.value;
+
+        setPartyCurrencyMapping((prev) =>
+            prev.map((r) =>
+                r.id === row.id
+                    ? {
+                        ...r,
+                        transCurrency: value
+                    }
+                    : r
+            )
+        );
+
+        setPartyCurrencyMappingErrors((prev) => {
+            const newErrors = [...prev];
+            newErrors[index] = {
+                ...newErrors[index],
+                transCurrency: !value ? 'Transaction Currency is required' : ''
+            };
+            return newErrors;
+        });
+    };
+
+    const getAvailableCurrencies = (currentRowId) => {
+        const selectedCurrencies = partyCurrencyMapping.filter((row) => row.id !== currentRowId).map((row) => row.transCurrency);
+
+        return currencyExRates.filter((currency) => !selectedCurrencies.includes(currency.currency));
+    };
+
+    const getAllCurrencyForExRate = async () => {
+        try {
+            const response = await apiCalls('get', `commonmaster/getAllCurrencyForExRate?&orgId=${orgId}`);
+            console.log('getAllCurrencyForExRate:', response);
+            if (response.status === true) {
+                const exRates = response.paramObjectsMap.currencyVO;
+
+                setCurrencyExRates(
+                    exRates.map((row) => ({
+                        id: row.id,
+                        currency: row.currency,
+                        currencyDescription: row.currencyDescription
+                    }))
+                );
+            }
+        } catch (error) {
+            console.error('Error fetching employee data:', error);
+        }
+    };
 
     const getAllCustomerByOrgId = async () => {
         try {
@@ -98,7 +179,7 @@ export const Customer = () => {
             console.log('API Response:', response);
 
             if (response.status === true) {
-                setListViewData(response.paramObjectsMap.customersVO);
+                setListViewData(response.paramObjectsMap.customersVO.reverse());
             } else {
                 console.error('API Error:', response);
             }
@@ -146,13 +227,16 @@ export const Customer = () => {
         }
     };
 
-    const getAllEmployees = async () => {
+    const getAllSalesPerson = async () => {
         try {
-            const response = await apiCalls('get', `master/getAllEmployeeByOrgId?orgId=${orgId}`);
-            console.log('API Response for getAllEmployeeByOrgId:', response);
+            const response = await apiCalls('get', `master/getSalesPersonForCustomer?orgId=${orgId}`);
 
             if (response.status === true) {
-                const empData = response.paramObjectsMap.employeeVO.filter((row) => row.active === 'Active');
+                const empData = response.paramObjectsMap.salesPerson.map((row) => ({
+                    salesPerson: row.salesPerson,
+                    employeeCode: row.salesPersonCode,
+                    active: row.active
+                }));
                 setEmpData(empData);
             } else {
                 console.error('API Error:', response);
@@ -161,6 +245,7 @@ export const Customer = () => {
             console.error('Error fetching data:', error);
         }
     };
+
 
     const getCustomerById = async (row) => {
         console.log('THE SELECTED getPartyMasterById IS:', row.original.id);
@@ -183,6 +268,10 @@ export const Customer = () => {
                     creditDays: customer.creditDays,
                     creditTerms: customer.creditTerms,
                     gstRegistered: customer.gstRegistered,
+                    bussinessType: customer.bussinessType,
+                    bussinessCate: customer.bussinessCate,
+                    accType: customer.accountType,
+                    currency: customer.currency,
                 });
 
                 setPartyStateData(
@@ -205,6 +294,7 @@ export const Customer = () => {
                     addressLine2: detail.addressLine2 || '',
                     addressLine3: detail.addressLine3 || '',
                     businessPlace: detail.businessPlace || '',
+                    sez: detail.sez || '',
                     city: detail.city || '',
                     contact: detail.contact || '',
                     pincode: detail.pincode || '',
@@ -220,6 +310,11 @@ export const Customer = () => {
                     salesBranch: detail.salesBranch || '',
                     effectiveFrom: detail.effectiveFrom || '',
                     effectiveTill: detail.effectiveTill || ''
+                }));
+
+                const CurrencyMappingData = customer.partyCurrencyMappingVO.map((detail) => ({
+                    id: detail.id,
+                    transCurrency: detail.transCurrency || ''
                 }))
 
                 for (const row of addressData) {
@@ -231,6 +326,7 @@ export const Customer = () => {
 
                 setPartyAddressData(addressData);
                 setPartySalesPersonTagging(SalesPersonTaggingData);
+                setPartyCurrencyMapping(CurrencyMappingData);
 
             }
         } catch (error) {
@@ -264,8 +360,9 @@ export const Customer = () => {
         }));
         setFormData((prev) => ({
             ...prev,
-            [id]: type === 'checkbox' ? checked : value
-          }));
+            [name]: type === 'checkbox' ? checked : value.toUpperCase(),
+            [id]: type === 'checkbox' ? checked : value.toUpperCase(),
+        }));
     };
 
     const handleClear = () => {
@@ -280,6 +377,10 @@ export const Customer = () => {
             creditDays: '',
             creditTerms: '',
             gstRegistered: '',
+            bussinessType: '',
+            bussinessCate: '',
+            accType: 'RECEIVABLE',
+            currency: '',
         });
         setFieldErrors({
             customerName: '',
@@ -290,6 +391,10 @@ export const Customer = () => {
             creditDays: '',
             creditTerms: '',
             gstRegistered: '',
+            bussinessType: '',
+            bussinessCate: '',
+            accType: '',
+            currency: '',
         });
         setPartyStateData([
             {
@@ -310,6 +415,7 @@ export const Customer = () => {
                 addressLine2: '',
                 addressLine3: '',
                 businessPlace: '',
+                sez: '',
                 city: '',
                 contact: '',
                 pincode: '',
@@ -330,6 +436,13 @@ export const Customer = () => {
             }
         ]);
 
+        setPartyCurrencyMappingErrors([]);
+        setPartyCurrencyMapping([
+            {
+                transCurrency: ''
+            }
+        ])
+
     };
 
     const isLastRowEmpty = (table) => {
@@ -344,6 +457,9 @@ export const Customer = () => {
         }
         if (table === partySalesPersonTagging) {
             return !lastRow.salesPerson;
+        }
+        if (table === partyCurrencyMapping) {
+            return !lastRow.transCurrency;
         }
         return false;
     };
@@ -375,6 +491,16 @@ export const Customer = () => {
                 newErrors[table.length - 1] = {
                     ...newErrors[table.length - 1],
                     salesPerson: !table[table.length - 1].salesPerson ? 'Sales Person is required' : ''
+                };
+                return newErrors;
+            });
+        }
+        if (table === partyCurrencyMapping) {
+            setPartyCurrencyMapping((prevErrors) => {
+                const newErrors = [...prevErrors];
+                newErrors[table.length - 1] = {
+                    ...newErrors[table.length - 1],
+                    transCurrency: !table[table.length - 1].transCurrency ? 'Transaction Currency is required' : ''
                 };
                 return newErrors;
             });
@@ -432,7 +558,7 @@ export const Customer = () => {
 
     const handleEmployeeChange = (row, index, event) => {
         const selectedName = event.target.value;
-        const selectedEmployee = empData.find((item) => item.employeeName === selectedName);
+        const selectedEmployee = empData.find((item) => item.salesPerson === selectedName);
 
         setPartySalesPersonTagging((prev) =>
             prev.map((r) =>
@@ -457,9 +583,11 @@ export const Customer = () => {
     };
 
     const getAvailableEmp = (currentRowId) => {
-        const selectedEmployees = partySalesPersonTagging.filter((row) => row.id !== currentRowId).map((row) => row.salesPerson);
+        const selectedEmployees = partySalesPersonTagging
+            .filter((row) => row.id !== currentRowId)
+            .map((row) => row.salesPerson);
 
-        return empData.filter((item) => !selectedEmployees.includes(item.employeeName));
+        return empData.filter((item) => !selectedEmployees.includes(item.salesPerson));
     };
 
     const [partyStateData, setPartyStateData] = useState([
@@ -525,12 +653,13 @@ export const Customer = () => {
             addressLine2: '',
             addressLine3: '',
             businessPlace: '',
+            sez: true,
             city: '',
             contact: '',
             pincode: '',
             state: '',
             stateGstIn: '',
-            cityOptions: [] // Stores city options for this row
+            cityOptions: []
         }
     ]);
 
@@ -541,6 +670,7 @@ export const Customer = () => {
             addressLine2: '',
             addressLine3: '',
             businessPlace: '',
+            sez: '',
             city: '',
             contact: '',
             pincode: '',
@@ -561,6 +691,7 @@ export const Customer = () => {
             addressLine2: '',
             addressLine3: '',
             businessPlace: '',
+            sez: '',
             city: '',
             contact: '',
             pincode: '',
@@ -577,6 +708,7 @@ export const Customer = () => {
                 addressLine2: '',
                 addressLine3: '',
                 businessPlace: '',
+                sez: '',
                 city: '',
                 contact: '',
                 pincode: '',
@@ -623,6 +755,37 @@ export const Customer = () => {
         setPartySalesPersonTagging([...partySalesPersonTagging, newRow]);
     };
 
+    const [partyCurrencyMapping, setPartyCurrencyMapping] = useState([
+        {
+            id: Date.now(),
+            transCurrency: ''
+        }
+    ]);
+
+    const [partyCurrencyMappingErrors, setPartyCurrencyMappingErrors] = useState([
+        {
+            transCurrency: ''
+        }
+    ]);
+
+    const handleAddRowCurrencyMapping = () => {
+        if (isLastRowEmpty(partyCurrencyMapping)) {
+            displayRowError(partyCurrencyMapping);
+            return;
+        }
+        const newRow = {
+            id: Date.now(),
+            transCurrency: ''
+        };
+        setPartyCurrencyMapping([...partyCurrencyMapping, newRow]);
+        setPartyCurrencyMappingErrors([
+            ...partyCurrencyMappingErrors,
+            {
+                transCurrency: ''
+            }
+        ]);
+    };
+
     const handleSave = async () => {
         const errors = {};
 
@@ -663,8 +826,10 @@ export const Customer = () => {
                 addressLane2: row.addressLine2,
                 addressLane3: row.addressLine3,
                 bussinesPlace: row.businessPlace,
+                sez: true,
                 city: row.city,
                 contact: row.contact,
+                contactNo: row.contact,
                 pinCode: parseInt(row.pincode),
                 state: row.state,
                 gstnIn: row.stateGstIn
@@ -692,6 +857,11 @@ export const Customer = () => {
                 salesPerson: row.salesPerson,
             }));
 
+            const partyCurrencyMappingDTO = partyCurrencyMapping.map((row) => ({
+                transCurrency: row.transCurrency
+            }));
+
+
             const saveData = {
                 ...(editId && { id: editId }),
                 customerName: formData.customerName,
@@ -702,12 +872,18 @@ export const Customer = () => {
                 creditDays: formData.creditDays,
                 creditTerms: formData.creditTerms,
                 taxRegistered: formData.gstRegistered,
-                active: formData.active,
+                bussinessType: formData.bussinessType,
+                bussinessCategory: formData.bussinessCate,
+                accountsType: formData.accType,
+                currency: formData.currency,
+                active: true,
+                approved: true,
                 createdBy: loginUserName,
                 orgId: orgId,
                 customersAddressDTO: customersAddressVO,
                 customersStateDTO: customersStateVO,
-                customerSalesPersonDTO: customerSalesPersonVO
+                customerSalesPersonDTO: customerSalesPersonVO,
+                customerCurrencyMappingDTO: partyCurrencyMappingDTO,
             };
 
 
@@ -739,9 +915,9 @@ export const Customer = () => {
             </div>
             <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-                    <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-                    <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                    {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
                     <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                    <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                     <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
                     <ActionButton icon={UploadIcon} title="Upload" onClick={handleBulkUploadOpen} />
 
@@ -804,7 +980,7 @@ export const Customer = () => {
                                     id="gstIn"
                                     fullWidth
                                     name="gstIn"
-                                    label="Registration No"
+                                    label="Reg No"
                                     size="small"
                                     value={formData.gstIn}
                                     onChange={handleInputChange}
@@ -868,9 +1044,9 @@ export const Customer = () => {
                                         value={formData.creditTerms}
                                         onChange={handleInputChange}
                                     >
-                                        <MenuItem value="Prepaid">Prepaid</MenuItem>
-                                        <MenuItem value="Immediate">Immediate</MenuItem>
-                                        <MenuItem value="Credit">Credit</MenuItem>
+                                        <MenuItem value="PREPAID">PREPAID</MenuItem>
+                                        <MenuItem value="IMMEDIATE">IMMEDIATE</MenuItem>
+                                        <MenuItem value="CREDIT">CREDIT</MenuItem>
                                     </Select>
                                     {/* {fieldErrors.creditTerms && <FormHelperText>{fieldErrors.creditTerms}</FormHelperText>} */}
                                 </FormControl>
@@ -886,27 +1062,107 @@ export const Customer = () => {
                                         value={formData.gstRegistered}
                                         onChange={handleInputChange}
                                     >
-                                        <MenuItem value="Yes">Yes</MenuItem>
-                                        <MenuItem value="No">No</MenuItem>
+                                        <MenuItem value="YES">YES</MenuItem>
+                                        <MenuItem value="NO">NO</MenuItem>
                                     </Select>
                                     {/* {fieldErrors.gstRegistered && <FormHelperText>{fieldErrors.gstRegistered}</FormHelperText>} */}
                                 </FormControl>
                             </div>
-                            {/* <div className="col-md-3 mb-3">
-                                <FormGroup>
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                id="active"
-                                                checked={formData.active}
-                                                onChange={handleInputChange}
-                                                sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
-                                            />
-                                        }
-                                        label="Active"
-                                    />
-                                </FormGroup>
-                            </div> */}
+                            <div className="col-md-3 mb-3">
+                                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.bussinessType}>
+                                    <InputLabel id="bussinessType">Business Type</InputLabel>
+                                    <Select
+                                        labelId="bussinessType"
+                                        label="Business Type"
+                                        name="bussinessType"
+                                        value={formData.bussinessType}
+                                        onChange={handleInputChange}
+                                    >
+                                        <MenuItem value="PROPRIETOR SHOP">PROPRIETOR SHOP</MenuItem>
+                                        <MenuItem value="PARTNER SHIP">PARTNER SHIP</MenuItem>
+                                        <MenuItem value="PRIVATE LIMITED">PRIVATE LIMITED</MenuItem>
+                                        <MenuItem value="LLP">LLP</MenuItem>
+                                        <MenuItem value="GOVTFIRM">GOVT.FIRM</MenuItem>
+                                        <MenuItem value="LIMITED">LIMITED</MenuItem>
+                                        <MenuItem value="NGO">NGO</MenuItem>
+                                    </Select>
+                                    {fieldErrors.bussinessType && <FormHelperText>{fieldErrors.bussinessType}</FormHelperText>}
+                                </FormControl>
+                            </div>
+
+                            <div className="col-md-3 mb-3">
+                                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.bussinessCate}>
+                                    <InputLabel id="bussinessCate">Business Category</InputLabel>
+                                    <Select
+                                        labelId="bussinessCate"
+                                        label="Business Category"
+                                        name="bussinessCate"
+                                        value={formData.bussinessCate}
+                                        onChange={handleInputChange}
+                                    >
+                                        <MenuItem value="MANUFACTURER">MANUFACTURER</MenuItem>
+                                        <MenuItem value="TRADER">TRADER</MenuItem>
+                                        <MenuItem value="SERVICE PROVIDER">SERVICE PROVIDER</MenuItem>
+                                        <MenuItem value="WORKS CONTRACTOR">WORKS CONTRACTOR</MenuItem>
+                                        <MenuItem value="TRANSPORTER">TRANSPORTER</MenuItem>
+                                        <MenuItem value="OTHERS">OTHERS</MenuItem>
+                                    </Select>
+                                    {fieldErrors.bussinessCate && <FormHelperText>{fieldErrors.bussinessCate}</FormHelperText>}
+                                </FormControl>
+                            </div>
+
+                            <div className="col-md-3 mb-3">
+                                <TextField
+                                    id="accType"
+                                    fullWidth
+                                    name="accType"
+                                    label="Account Type"
+                                    size="small"
+                                    // value={formData.accType}
+                                    value={formData.accType}
+                                    onChange={handleInputChange}
+                                    error={fieldErrors.accType}
+                                    helperText={fieldErrors.accType}
+                                />
+                            </div>
+
+                            <div className="col-md-3 mb-3">
+                                <FormControl fullWidth size="small" error={!!fieldErrors.currency}>
+                                    <InputLabel id="demo-simple-select-label">
+                                        <span>
+                                            Currency
+                                        </span>
+                                    </InputLabel>
+                                    <Select
+                                        labelId="demo-simple-select-label"
+                                        id="demo-simple-select"
+                                        label="Currency"
+                                        onChange={handleInputChange}
+                                        name="currency"
+                                        value={formData.currency}
+                                    >
+                                        {/* Automatically select the single option if only one currency exists */}
+                                        {currencies.length === 1 ? (
+                                            // .filter((row) => row.currency === 'INR')
+                                            <MenuItem key={currencies[0].id} value={currencies[0].currency}>
+                                                {currencies[0].currency}
+                                            </MenuItem>
+                                        ) : (
+                                            currencies.map((item) => (
+                                                <MenuItem key={item.id} value={item.currency}>
+                                                    {item.currency}
+                                                </MenuItem>
+                                            ))
+                                        )}
+                                    </Select>
+                                    {fieldErrors.currency && (
+                                        <FormHelperText style={{ color: 'red' }}>
+                                            Currency is required
+                                        </FormHelperText>
+                                    )}
+                                </FormControl>
+                            </div>
+
 
                         </div>
 
@@ -916,6 +1172,7 @@ export const Customer = () => {
                                     <Tab label="Party State" />
                                     <Tab label="Address" />
                                     <Tab label="Sales Person Tagging" />
+                                    <Tab label="Currency Mapping" />
                                 </Tabs>
                             </Box>
                             <Box sx={{ padding: 2 }}>
@@ -935,7 +1192,7 @@ export const Customer = () => {
                                                                 <th className="table-header">State</th>
                                                                 <th className="table-header">State Code</th>
                                                                 <th className="table-header">State No</th>
-                                                                <th className="table-header">Registration No</th>
+                                                                <th className="table-header">Reg No</th>
                                                                 <th className="table-header">Contact Person</th>
                                                                 <th className="table-header">Contact Phone No</th>
                                                                 <th className="table-header">Contact Email</th>
@@ -1166,13 +1423,14 @@ export const Customer = () => {
                                                                 <th className="table-header">State</th>
                                                                 <th className="table-header">City</th>
                                                                 <th className="table-header">Business Place</th>
-                                                                <th className="table-header">State GST IN</th>
+                                                                <th className="table-header">State Reg No</th>
+                                                                <th className="table-header">Tax Free</th>
                                                                 <th className="table-header">Address Type</th>
                                                                 <th className="table-header">Address Line1</th>
                                                                 <th className="table-header">Address Line2</th>
                                                                 <th className="table-header">Address Line3</th>
                                                                 <th className="table-header">Pin Code</th>
-                                                                <th className="table-header">Contact</th>
+                                                                <th className="table-header">Contact Person</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -1301,6 +1559,27 @@ export const Customer = () => {
                                                                             <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].stateGstIn}</div>
                                                                         )}
                                                                     </td>
+
+                                                                    <td className="border px-2 py-2">
+                                                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                                            <Checkbox
+                                                                                id={`tax-${row.id}`}
+                                                                                checked={row.sez}
+                                                                                onChange={(e) => {
+                                                                                    const isChecked = e.target.checked;
+
+                                                                                    // Update the state with the new value for the specific row
+                                                                                    setPartyAddressData((prev) =>
+                                                                                        prev.map((r) =>
+                                                                                            r.id === row.id ? { ...r, sez: isChecked } : r
+                                                                                        )
+                                                                                    );
+                                                                                }}
+                                                                                sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                                                                            />
+                                                                        </div>
+                                                                    </td>
+
 
                                                                     <td className="border px-2 py-2">
                                                                         <input
@@ -1517,11 +1796,12 @@ export const Customer = () => {
                                                                         >
                                                                             <option value="">-- Select --</option>
                                                                             {getAvailableEmp(row.id).map((item) => (
-                                                                                <option key={item.id} value={item.employeeName}>
-                                                                                    {item.employeeName}
+                                                                                <option key={item.employeeCode} value={item.salesPerson}>
+                                                                                    {item.salesPerson}
                                                                                 </option>
                                                                             ))}
                                                                         </select>
+
                                                                         {partySalesPersonErrors[index]?.salesPerson && (
                                                                             <div style={{ color: 'red', fontSize: '12px' }}>{partySalesPersonErrors[index].salesPerson}</div>
                                                                         )}
@@ -1653,6 +1933,72 @@ export const Customer = () => {
                                                                         {partySalesPersonErrors[index]?.effectiveTill && (
                                                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                                                                 {partySalesPersonErrors[index].effectiveTill}
+                                                                            </div>
+                                                                        )}
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                {tabValue === 3 && (
+                                    <div className="row d-flex ml">
+                                        <div className="">
+                                            <ActionButton title="Add" icon={AddIcon} onClick={handleAddRowCurrencyMapping} />
+                                        </div>
+                                        <div className="row mt-2">
+                                            <div className="col-lg-6">
+                                                <div className="table-responsive">
+                                                    <table className="table table-bordered">
+                                                        <thead>
+                                                            <tr style={{ backgroundColor: '#673AB7' }}>
+                                                                <th className="table-header">Action</th>
+                                                                <th className="table-header">SNo</th>
+                                                                <th className="table-header">Transaction Currency</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {partyCurrencyMapping.map((row, index) => (
+                                                                <tr key={row.id}>
+                                                                    <td className="border px-2 py-2 text-center">
+                                                                        <ActionButton
+                                                                            title="Delete"
+                                                                            icon={DeleteIcon}
+                                                                            onClick={() =>
+                                                                                handleDeleteRow(
+                                                                                    row.id,
+                                                                                    partyCurrencyMapping,
+                                                                                    setPartyCurrencyMapping,
+                                                                                    partyCurrencyMappingErrors,
+                                                                                    setPartyCurrencyMappingErrors
+                                                                                )
+                                                                            }
+                                                                        />
+                                                                    </td>
+                                                                    <td className="text-center">
+                                                                        <div className="pt-2">{index + 1}</div>
+                                                                    </td>
+
+                                                                    <td className="border px-2 py-2">
+                                                                        <select
+                                                                            className={partyCurrencyMappingErrors[index]?.transCurrency ? 'error form-control' : 'form-control'}
+                                                                            value={row.transCurrency}
+                                                                            onChange={(e) => handleCurrencyChange(row, index, e)}
+                                                                        >
+                                                                            <option value="">-- Select --</option>
+                                                                            {getAvailableCurrencies(row.id).map((item) => (
+                                                                                <option key={item.id} value={item.currency}>
+                                                                                    {item.currency}
+                                                                                </option>
+                                                                            ))}
+                                                                        </select>
+                                                                        {partyCurrencyMappingErrors[index]?.transCurrency && (
+                                                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                                                {partyCurrencyMappingErrors[index].transCurrency}
                                                                             </div>
                                                                         )}
                                                                     </td>

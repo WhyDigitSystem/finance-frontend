@@ -4,8 +4,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import { Checkbox, FormControlLabel, FormGroup, Tab, Tabs } from '@mui/material';
+import { FormHelperText, Tab, Tabs } from '@mui/material';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import apiCalls from 'apicall';
@@ -30,6 +29,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const Vender = () => {
     const [stateList, setStateList] = useState([]);
     const [editId, setEditId] = useState('');
+    const [sectionOptions, setSectionOptions] = useState({});
     const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
     const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
     const [uploadOpen, setUploadOpen] = useState(false);
@@ -43,6 +43,9 @@ export const Vender = () => {
         creditDays: '',
         creditTerms: '',
         gstRegistered: '',
+        bussinessType: '',
+        bussinessCate: '',
+        accType: 'RECEIVABLE',
         createdBy: loginUserName,
         orgId: orgId,
     });
@@ -56,12 +59,15 @@ export const Vender = () => {
     const listViewColumns = [
         { accessorKey: 'partyCode', header: 'Vender Code', size: 140 },
         { accessorKey: 'partyName', header: 'Vender Name', size: 140 },
-        { accessorKey: 'gstIn', header: 'Registration No', size: 140 },
+        { accessorKey: 'gstIn', header: 'Reg No', size: 140 },
         { accessorKey: 'panNo', header: 'Pan No', size: 140 },
         { accessorKey: 'creditLimit', header: 'Credit Limit', size: 140 },
         { accessorKey: 'creditDays', header: 'Credit Days', size: 140 },
         { accessorKey: 'creditTerms', header: 'Credit Terms', size: 140 },
         { accessorKey: 'gstRegistered', header: 'Tax Registered', size: 140 },
+        { accessorKey: 'bussinessType', header: 'Bussiness Type', size: 140 },
+        { accessorKey: 'bussinessCate', header: 'Bussiness Category', size: 140 },
+        { accessorKey: 'accType', header: 'Account Type', size: 140 },
         // { accessorKey: 'active', header: 'Active', size: 140 },
     ];
 
@@ -77,15 +83,18 @@ export const Vender = () => {
         creditLimit: '',
         creditDays: '',
         creditTerms: '',
-        gstRegistered: ''
+        gstRegistered: '',
+        bussinessType: '',
+        bussinessCate: '',
+        accType: '',
     });
 
     useEffect(() => {
         getAllVendorByOrgId();
         getAllStates();
         getAllCities();
+        getAllSectionName();
     }, []);
-
 
     const getAllVendorByOrgId = async () => {
         try {
@@ -93,7 +102,7 @@ export const Vender = () => {
             console.log('API Response:', response);
 
             if (response.status === true) {
-                setListViewData(response.paramObjectsMap.customersVO);
+                setListViewData(response.paramObjectsMap.customersVO.reverse());
             } else {
                 console.error('API Error:', response);
             }
@@ -125,6 +134,29 @@ export const Vender = () => {
         }
     };
 
+    const getAllSectionName = async (section, rowId) => {
+        try {
+            const response = await apiCalls(
+                'get',
+                `master/getSectionNameFromTds?orgId=${orgId}&section=${section}`
+            );
+            console.log('API Response:', response);
+
+            if (response.status === true) {
+                setSectionOptions((prev) => ({
+                    ...prev,
+                    [rowId]: response.paramObjectsMap.tdsMasterVO.map((item) => item.sectionName),
+                }));
+            } else {
+                console.error('API Error:', response);
+            }
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
+
+
     const getCustomerById = async (row) => {
         console.log('THE SELECTED getPartyMasterById IS:', row.original.id);
         setEditId(row.original.id);
@@ -145,6 +177,9 @@ export const Vender = () => {
                     creditDays: vendorData.creditDays,
                     creditTerms: vendorData.creditTerms,
                     gstRegistered: vendorData.gstRegistered,
+                    bussinessType: vendorData.bussinessType,
+                    bussinessCate: vendorData.bussinessCate,
+                    accType: vendorData.accType,
                     active: vendorData.active
                 });
 
@@ -178,6 +213,7 @@ export const Vender = () => {
 
                 const partySpecialTDSVO = vendorData.partySpecialTDSVO.map((vendorSpecialTDSVO) => ({
                     id: vendorSpecialTDSVO.id,
+                    section: vendorSpecialTDSVO.section || '',
                     tdsWithSec: vendorSpecialTDSVO.tdsWithSec || '',
                     rateFrom: vendorSpecialTDSVO.rateFrom || '',
                     rateTo: vendorSpecialTDSVO.rateTo || '',
@@ -203,78 +239,6 @@ export const Vender = () => {
         }
     };
 
-    // const getCustomerById = async (row) => {
-    //     handleClear();
-    //     setEditId(row.original.id);
-    //     console.log('Editing Exchange Rate:', row.original.id);
-    //     try {
-    //         const response = await apiCalls('get', `master/getCustomersById?id=${row.original.id}`);
-
-    //         if (response.status === true) {
-    //             const vendor = response.paramObjectsMap.customersVO[0];
-
-    //             setFormData({
-    //                 ...formData,
-    //                 vendorName: vendor.partyName,
-    //                 vendorCode: vendor.partyCode,
-    //                 gstIn: vendor.gstIn,
-    //                 panNo: vendor.panNo,
-    //                 creditLimit: vendor.creditLimit,
-    //                 creditDays: vendor.creditDays,
-    //                 creditTerms: vendor.creditTerms,
-    //                 gstRegistered: vendor.gstRegistered
-    //             });
-
-    //             setPartyStateData(
-    //                 vendor.partyStateVO.map((detail) => ({
-    //                     id: detail.id,
-    //                     state: detail.state || '',
-    //                     gstIn: detail.gstIn || '',
-    //                     stateNo: detail.stateNo || '',
-    //                     contactPerson: detail.contactPerson || '',
-    //                     contactPhoneNo: detail.contactPhoneNo || '',
-    //                     email: detail.email || '',
-    //                     stateCode: detail.stateCode || ''
-    //                 }))
-    //             );
-
-    //             const addressData = vendor.partyAddressVO.map((detail) => ({
-    //                 id: detail.id,
-    //                 addressType: detail.addressType || '',
-    //                 addressLine1: detail.addressLine1 || '',
-    //                 addressLine2: detail.addressLine2 || '',
-    //                 addressLine3: detail.addressLine3 || '',
-    //                 businessPlace: detail.businessPlace || '',
-    //                 city: detail.city || '',
-    //                 contact: detail.contact || '',
-    //                 pincode: detail.pincode || '',
-    //                 state: detail.state || '',
-    //                 stateGstIn: detail.stateGstIn || '',
-    //                 cityOptions: [],
-    //             }));
-
-    //             const partySpecialTDSVO = vendor.partySpecialTDSVO.map((detail) => ({
-    //                 id: detail.id,
-    //                 tdsWithSec: detail.tdsWithSec || '',
-    //                 rateFrom: detail.rateFrom || '',
-    //                 rateTo: detail.rateTo || '',
-    //                 tdsWithPer: detail.tdsWithPer || '',
-    //                 surchargePer: detail.surchargePer || '',
-    //                 edPercentage: detail.edPercentage || '',
-    //                 tdsCertifiNo: detail.tdsCertifiNo || ''
-    //             }))
-
-    //             setPartyAddressData(addressData);
-    //             setPartySpecialTDS(partySpecialTDSVO);
-
-    //         } else {
-    //             console.error('API Error:', response.paramObjectsMap.errorMessage);
-    //         }
-    //     } catch (error) {
-    //         console.error('Error fetching data:', error);
-    //     }
-    // };
-
     const handleBulkUploadOpen = () => {
         setUploadOpen(true);
     };
@@ -296,15 +260,10 @@ export const Vender = () => {
     const handleInputChange = (e) => {
         const { name, value, checked, type, id } = e.target;
 
-        const updatedFormData = {
-            ...formData,
-            [name]: value,
-        };
-
-        setFormData(updatedFormData);
         setFormData((prev) => ({
             ...prev,
-            [id]: type === 'checkbox' ? checked : value
+            [name]: type === 'checkbox' ? checked : value.toUpperCase(),
+            [id]: type === 'checkbox' ? checked : value.toUpperCase(),
         }));
 
         setFieldErrors({ ...fieldErrors, [name]: '' });
@@ -321,6 +280,9 @@ export const Vender = () => {
             creditDays: '',
             creditTerms: '',
             gstRegistered: '',
+            bussinessType: '',
+            bussinessCate: '',
+            accType: 'RECEIVABLE',
             active: true
         });
         setFieldErrors({
@@ -331,7 +293,10 @@ export const Vender = () => {
             creditLimit: '',
             creditDays: '',
             creditTerms: '',
-            gstRegistered: ''
+            gstRegistered: '',
+            bussinessType: '',
+            bussinessCate: '',
+            accType: '',
         });
         setPartyStateData([
             {
@@ -370,7 +335,8 @@ export const Vender = () => {
                 surchargePer: '',
                 tdsCertifiNo: '',
                 tdsWithPer: '',
-                tdsWithSec: ''
+                tdsWithSec: '',
+                section: '',
             }
         ]);
 
@@ -388,6 +354,9 @@ export const Vender = () => {
         }
         if (table === partySpecialTDS) {
             return !lastRow.tdsWithSec;
+        }
+        if (table === partySpecialTDS) {
+            return !lastRow.section;
         }
         return false;
     };
@@ -418,7 +387,7 @@ export const Vender = () => {
                 const newErrors = [...prevErrors];
                 newErrors[table.length - 1] = {
                     ...newErrors[table.length - 1],
-                    tdsWithSec: !table[table.length - 1].tdsWithSec ? 'TDS Section is required' : ''
+                    section: !table[table.length - 1].section ? 'Type is required' : ''
                 };
                 return newErrors;
             });
@@ -606,7 +575,8 @@ export const Vender = () => {
             surchargePer: '',
             tdsCertifiNo: '',
             tdsWithPer: '',
-            tdsWithSec: ''
+            tdsWithSec: '',
+            section: '',
         }
     ]);
 
@@ -618,7 +588,8 @@ export const Vender = () => {
             surchargePer: '',
             tdsCertifiNo: '',
             tdsWithPer: '',
-            tdsWithSec: ''
+            tdsWithSec: '',
+            section: '',
         }
     ]);
 
@@ -635,7 +606,8 @@ export const Vender = () => {
             surchargePer: '',
             tdsCertifiNo: '',
             tdsWithPer: '',
-            tdsWithSec: ''
+            tdsWithSec: '',
+            section: '',
         };
         setPartySpecialTDS([...partySpecialTDS, newRow]);
         setPartySpecialTDSErrors([
@@ -647,7 +619,8 @@ export const Vender = () => {
                 surchargePer: '',
                 tdsCertifiNo: '',
                 tdsWithPer: '',
-                tdsWithSec: ''
+                tdsWithSec: '',
+                section: '',
             }
         ]);
     };
@@ -657,6 +630,11 @@ export const Vender = () => {
 
         if (!formData.vendorName) {
             errors.vendorName = 'Vender Name is required';
+        }
+        if (formData.gstRegistered === 'YES' && !formData.gstIn) {
+            errors.gstIn = 'Reg No is Required';
+        } else if (formData.gstRegistered === 'YES' && formData.gstIn.length < 15) {
+            errors.gstIn = 'Invalid GST Format';
         }
         setFieldErrors(errors);
 
@@ -705,12 +683,12 @@ export const Vender = () => {
                 surPercentage: parseInt(row.surchargePer),
                 tdsCertificateNo: row.tdsCertifiNo,
                 whPercentage: parseInt(row.tdsWithPer),
-                whSection: row.tdsWithSec
+                whSection: row.tdsWithSec,
+                section: row.section,
             }));
 
             const saveData = {
                 ...(editId && { id: editId }),
-                // ...formData,
                 vendorName: formData.vendorName,
                 vendorCode: formData.vendorCode,
                 gstIn: formData.gstIn,
@@ -719,7 +697,11 @@ export const Vender = () => {
                 creditDays: formData.creditDays,
                 creditTerms: formData.creditTerms,
                 taxRegistered: formData.gstRegistered,
-                active: formData.active,
+                bussinessType: formData.bussinessType,
+                bussinessCategory: formData.bussinessCate,
+                accountsType: formData.accType,
+                active: true,
+                approved: true,
                 createdBy: loginUserName,
                 orgId: orgId,
                 vendorAddressDTO: vendorAddressVO,
@@ -756,9 +738,9 @@ export const Vender = () => {
             </div>
             <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-                    <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-                    <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                    {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
                     <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+                    <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                     <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
                     <ActionButton icon={UploadIcon} title="Upload" onClick={handleBulkUploadOpen} />
 
@@ -822,12 +804,12 @@ export const Vender = () => {
                                     id="gstIn"
                                     fullWidth
                                     name="gstIn"
-                                    label="Registration No"
+                                    label="Reg No"
                                     size="small"
                                     value={formData.gstIn}
                                     onChange={handleInputChange}
-                                    // error={fieldErrors.gstIn}
-                                    // helperText={fieldErrors.gstIn}
+                                    error={fieldErrors.gstIn}
+                                    helperText={fieldErrors.gstIn}
                                     inputProps={{ maxLength: 15 }}
                                 />
                             </div>
@@ -886,9 +868,9 @@ export const Vender = () => {
                                         value={formData.creditTerms}
                                         onChange={handleInputChange}
                                     >
-                                        <MenuItem value="Prepaid">Prepaid</MenuItem>
-                                        <MenuItem value="Immediate">Immediate</MenuItem>
-                                        <MenuItem value="Credit">Credit</MenuItem>
+                                        <MenuItem value="PREPAID">PREPAID</MenuItem>
+                                        <MenuItem value="IMMEDIATE">IMMEDIATE</MenuItem>
+                                        <MenuItem value="CREDIT">CREDIT</MenuItem>
                                     </Select>
                                     {/* {fieldErrors.creditTerms && <FormHelperText>{fieldErrors.creditTerms}</FormHelperText>} */}
                                 </FormControl>
@@ -904,28 +886,70 @@ export const Vender = () => {
                                         value={formData.gstRegistered}
                                         onChange={handleInputChange}
                                     >
-                                        <MenuItem value="Yes">Yes</MenuItem>
-                                        <MenuItem value="No">No</MenuItem>
+                                        <MenuItem value="YES">YES</MenuItem>
+                                        <MenuItem value="NO">NO</MenuItem>
                                     </Select>
                                     {/* {fieldErrors.gstRegistered && <FormHelperText>{fieldErrors.gstRegistered}</FormHelperText>} */}
                                 </FormControl>
                             </div>
 
-                            {/* <div className="col-md-3 mb-3">
-                                <FormGroup>
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                id="active"
-                                                checked={formData.active}
-                                                onChange={handleInputChange}
-                                                sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
-                                            />
-                                        }
-                                        label="Active"
-                                    />
-                                </FormGroup>
-                            </div> */}
+                            <div className="col-md-3 mb-3">
+                                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.bussinessType}>
+                                    <InputLabel id="bussinessType">Business Type</InputLabel>
+                                    <Select
+                                        labelId="bussinessType"
+                                        label="Business Type"
+                                        name="bussinessType"
+                                        value={formData.bussinessType}
+                                        onChange={handleInputChange}
+                                    >
+                                        <MenuItem value="PROPRIETOR SHOP">PROPRIETOR SHOP</MenuItem>
+                                        <MenuItem value="PARTNER SHIP">PARTNER SHIP</MenuItem>
+                                        <MenuItem value="PRIVATE LIMITED">PRIVATE LIMITED</MenuItem>
+                                        <MenuItem value="LLP">LLP</MenuItem>
+                                        <MenuItem value="GOVTFIRM">GOVT.FIRM</MenuItem>
+                                        <MenuItem value="LIMITED">LIMITED</MenuItem>
+                                        <MenuItem value="NGO">NGO</MenuItem>
+                                    </Select>
+                                    {fieldErrors.bussinessType && <FormHelperText>{fieldErrors.bussinessType}</FormHelperText>}
+                                </FormControl>
+                            </div>
+
+                            <div className="col-md-3 mb-3">
+                                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.bussinessCate}>
+                                    <InputLabel id="bussinessCate">Business Category</InputLabel>
+                                    <Select
+                                        labelId="bussinessCate"
+                                        label="Business Category"
+                                        name="bussinessCate"
+                                        value={formData.bussinessCate}
+                                        onChange={handleInputChange}
+                                    >
+                                        <MenuItem value="MANUFACTURER">MANUFACTURER</MenuItem>
+                                        <MenuItem value="TRADER">TRADER</MenuItem>
+                                        <MenuItem value="SERVICE PROVIDER">SERVICE PROVIDER</MenuItem>
+                                        <MenuItem value="WORKS CONTRACTOR">WORKS CONTRACTOR</MenuItem>
+                                        <MenuItem value="TRANSPORTER">TRANSPORTER</MenuItem>
+                                        <MenuItem value="OTHERS">OTHERS</MenuItem>
+                                    </Select>
+                                    {fieldErrors.bussinessCate && <FormHelperText>{fieldErrors.bussinessCate}</FormHelperText>}
+                                </FormControl>
+                            </div>
+
+                            <div className="col-md-3 mb-3">
+                                <TextField
+                                    id="accType"
+                                    fullWidth
+                                    name="accType"
+                                    label="Account Type"
+                                    size="small"
+                                    // value={formData.accType}
+                                    value={formData.accType}
+                                    onChange={handleInputChange}
+                                    error={fieldErrors.accType}
+                                    helperText={fieldErrors.accType}
+                                />
+                            </div>
 
                         </div>
 
@@ -955,7 +979,7 @@ export const Vender = () => {
                                                                 <th className="table-header">State</th>
                                                                 <th className="table-header">State Code</th>
                                                                 <th className="table-header">State No</th>
-                                                                <th className="table-header">Registration No</th>
+                                                                <th className="table-header">Reg No</th>
                                                                 <th className="table-header">Contact Person</th>
                                                                 <th className="table-header">Contact Phone No</th>
                                                                 <th className="table-header">Contact Email</th>
@@ -1186,13 +1210,13 @@ export const Vender = () => {
                                                                 <th className="table-header">State</th>
                                                                 <th className="table-header">City</th>
                                                                 <th className="table-header">Business Place</th>
-                                                                <th className="table-header">State GST IN</th>
+                                                                <th className="table-header">State Reg No</th>
                                                                 <th className="table-header">Address Type</th>
                                                                 <th className="table-header">Address Line1</th>
                                                                 <th className="table-header">Address Line2</th>
                                                                 <th className="table-header">Address Line3</th>
                                                                 <th className="table-header">Pin Code</th>
-                                                                <th className="table-header">Contact</th>
+                                                                <th className="table-header">Contact Person</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -1498,6 +1522,7 @@ export const Vender = () => {
                                                             <tr style={{ backgroundColor: '#673AB7' }}>
                                                                 <th className="table-header">Action</th>
                                                                 <th className="table-header">SNo</th>
+                                                                <th className="table-header">Type</th>
                                                                 <th className="table-header">Tax Section</th>
                                                                 <th className="table-header">Rate From</th>
                                                                 <th className="table-header">Rate To</th>
@@ -1531,6 +1556,35 @@ export const Vender = () => {
 
                                                                     <td className="border px-2 py-2">
                                                                         <select
+                                                                            value={row.section}
+                                                                            style={{ width: '150px' }}
+                                                                            className={partySpecialTDSErrors[index]?.section ? 'error form-control' : 'form-control'}
+                                                                            onChange={(e) => {
+                                                                                const selectedSection = e.target.value;
+                                                                                setPartySpecialTDS((prev) =>
+                                                                                    prev.map((r) => (r.id === row.id ? { ...r, section: selectedSection, tdsWithSec: '' } : r))
+                                                                                );
+
+                                                                                if (selectedSection) {
+                                                                                    getAllSectionName(selectedSection, row.id);
+                                                                                }
+                                                                            }}
+                                                                        >
+                                                                            <option value="">-- Select --</option>
+                                                                            <option value="NO">NO</option>
+                                                                            <option value="NORMAL">NORMAL</option>
+                                                                            <option value="SPECIAL">SPECIAL</option>
+                                                                        </select>
+
+                                                                        {partySpecialTDSErrors[index]?.section && (
+                                                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                                                {partySpecialTDSErrors[index].section}
+                                                                            </div>
+                                                                        )}
+                                                                    </td>
+
+                                                                    <td className="border px-2 py-2">
+                                                                        <select
                                                                             value={row.tdsWithSec}
                                                                             style={{ width: '150px' }}
                                                                             className={partySpecialTDSErrors[index]?.tdsWithSec ? 'error form-control' : 'form-control'}
@@ -1541,8 +1595,11 @@ export const Vender = () => {
                                                                             }
                                                                         >
                                                                             <option value="">-- Select --</option>
-                                                                            <option value="Yes">Yes</option>
-                                                                            <option value="No">No</option>
+                                                                            {(sectionOptions[row.id] || []).map((section, id) => (
+                                                                                <option key={id} value={section}>
+                                                                                    {section}
+                                                                                </option>
+                                                                            ))}
                                                                         </select>
                                                                         {partySpecialTDSErrors[index]?.tdsWithSec && (
                                                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
