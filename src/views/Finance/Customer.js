@@ -130,9 +130,9 @@ export const Customer = () => {
       prev.map((r) =>
         r.id === row.id
           ? {
-              ...r,
-              transCurrency: value
-            }
+            ...r,
+            transCurrency: value
+          }
           : r
       )
     );
@@ -518,11 +518,11 @@ export const Customer = () => {
       prev.map((r) =>
         r.id === row.id
           ? {
-              ...r,
-              state: value,
-              stateCode: selectedState ? selectedState.stateCode : '',
-              stateNo: selectedState ? selectedState.stateNumber : ''
-            }
+            ...r,
+            state: value,
+            stateCode: selectedState ? selectedState.stateCode : '',
+            stateNo: selectedState ? selectedState.stateNumber : ''
+          }
           : r
       )
     );
@@ -557,10 +557,10 @@ export const Customer = () => {
       prev.map((r) =>
         r.id === row.id
           ? {
-              ...r,
-              salesPerson: selectedName,
-              empCode: selectedEmployee ? selectedEmployee.employeeCode : ''
-            }
+            ...r,
+            salesPerson: selectedName,
+            empCode: selectedEmployee ? selectedEmployee.employeeCode : ''
+          }
           : r
       )
     );
@@ -644,7 +644,7 @@ export const Customer = () => {
       addressLine2: '',
       addressLine3: '',
       businessPlace: '',
-      sez: true,
+      sez: '',
       city: '',
       contact: '',
       pincode: '',
@@ -951,8 +951,8 @@ export const Customer = () => {
                   size="small"
                   value={formData.customerCode}
                   onChange={handleInputChange}
-                  // error={fieldErrors.customerCode}
-                  // helperText={fieldErrors.customerCode}
+                // error={fieldErrors.customerCode}
+                // helperText={fieldErrors.customerCode}
                 />
               </div>
 
@@ -980,8 +980,8 @@ export const Customer = () => {
                   size="small"
                   value={formData.panNo}
                   onChange={handleInputChange}
-                  // error={fieldErrors.panNo}
-                  // helperText={fieldErrors.panNo}
+                // error={fieldErrors.panNo}
+                // helperText={fieldErrors.panNo}
                 />
               </div>
 
@@ -995,8 +995,8 @@ export const Customer = () => {
                   type="number"
                   value={formData.creditLimit}
                   onChange={handleInputChange}
-                  // error={fieldErrors.creditLimit}
-                  // helperText={fieldErrors.creditLimit}
+                // error={fieldErrors.creditLimit}
+                // helperText={fieldErrors.creditLimit}
                 />
               </div>
 
@@ -1010,8 +1010,8 @@ export const Customer = () => {
                   type="number"
                   value={formData.creditDays}
                   onChange={handleInputChange}
-                  // error={fieldErrors.creditDays}
-                  // helperText={fieldErrors.creditDays}
+                // error={fieldErrors.creditDays}
+                // helperText={fieldErrors.creditDays}
                 />
               </div>
 
@@ -1536,6 +1536,7 @@ export const Customer = () => {
                                       <Checkbox
                                         id={`tax-${row.id}`}
                                         checked={row.sez}
+                                        disabled
                                         onChange={(e) => {
                                           const isChecked = e.target.checked;
 
@@ -1839,10 +1840,10 @@ export const Customer = () => {
                                             prev.map((r) =>
                                               r.id === row.id
                                                 ? {
-                                                    ...r,
-                                                    effectiveFrom: date,
-                                                    effectiveTill: date > r.effectiveTill ? null : r.effectiveTill
-                                                  }
+                                                  ...r,
+                                                  effectiveFrom: date,
+                                                  effectiveTill: date > r.effectiveTill ? null : r.effectiveTill
+                                                }
                                                 : r
                                             )
                                           );

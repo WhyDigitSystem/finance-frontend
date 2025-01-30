@@ -45,7 +45,7 @@ export const Vender = () => {
         gstRegistered: '',
         bussinessType: '',
         bussinessCate: '',
-        accType: 'RECEIVABLE',
+        accType: 'PAYABLE',
         createdBy: loginUserName,
         orgId: orgId,
     });
@@ -144,7 +144,7 @@ export const Vender = () => {
 
             if (response.status === true) {
                 setSectionOptions((prev) => ({
-                    ...prev,
+                    ...prev,  // Preserve existing options
                     [rowId]: response.paramObjectsMap.tdsMasterVO.map((item) => item.sectionName),
                 }));
             } else {
@@ -156,10 +156,10 @@ export const Vender = () => {
     };
 
 
-
     const getCustomerById = async (row) => {
         console.log('THE SELECTED getPartyMasterById IS:', row.original.id);
         setEditId(row.original.id);
+
         try {
             const response = await apiCalls('get', `master/getCustomersById?id=${row.original.id}`);
             console.log('API Response:', response);
@@ -211,7 +211,7 @@ export const Vender = () => {
                     cityOptions: [],
                 }));
 
-                const partySpecialTDSVO = vendorData.partySpecialTDSVO.map((vendorSpecialTDSVO) => ({
+                let partySpecialTDSVO = vendorData.partySpecialTDSVO.map((vendorSpecialTDSVO) => ({
                     id: vendorSpecialTDSVO.id,
                     section: vendorSpecialTDSVO.section || '',
                     tdsWithSec: vendorSpecialTDSVO.tdsWithSec || '',
@@ -220,24 +220,42 @@ export const Vender = () => {
                     tdsWithPer: vendorSpecialTDSVO.tdsWithPer || '',
                     surchargePer: vendorSpecialTDSVO.surchargePer || '',
                     edPercentage: vendorSpecialTDSVO.edPercentage || '',
-                    tdsCertifiNo: vendorSpecialTDSVO.tdsCertifiNo || ''
-                }))
+                    tdsCertifiNo: vendorSpecialTDSVO.tdsCertifiNo || '',
+                    tdsWithSecOptions: [],  // Empty initially, will be filled asynchronously
+                }));
 
-                for (const row of addressData) {
-                    if (row.state) {
-                        const cityData = await getAllActiveCitiesByState(row.state, orgId);
-                        row.cityOptions = cityData;
-                    }
-                }
-
-                setPartyAddressData(addressData);
                 setPartySpecialTDS(partySpecialTDSVO);
 
+                // Fetch TDS Section Data Asynchronously
+                const sectionPromises = partySpecialTDSVO.map(async (row) => {
+                    if (row.section) {
+                        const tdsWithSecData = await getAllSectionName(row.section, row.id);
+                        return { ...row, tdsWithSecOptions: tdsWithSecData };
+                    }
+                    return row;
+                });
+
+                partySpecialTDSVO = await Promise.all(sectionPromises);
+                setPartySpecialTDS(partySpecialTDSVO);
+
+                // Fetch City Data Asynchronously
+                const cityPromises = addressData.map(async (row) => {
+                    if (row.state) {
+                        const cityData = await getAllActiveCitiesByState(row.state, orgId);
+                        return { ...row, cityOptions: cityData };
+                    }
+                    return row;
+                });
+
+                const updatedAddressData = await Promise.all(cityPromises);
+                setPartyAddressData(updatedAddressData);
             }
         } catch (error) {
             console.error('Error fetching PartyMaster:', error);
         }
     };
+
+
 
     const handleBulkUploadOpen = () => {
         setUploadOpen(true);
@@ -282,7 +300,7 @@ export const Vender = () => {
             gstRegistered: '',
             bussinessType: '',
             bussinessCate: '',
-            accType: 'RECEIVABLE',
+            accType: 'PAYABLE',
             active: true
         });
         setFieldErrors({
@@ -510,7 +528,7 @@ export const Vender = () => {
             pincode: '',
             state: '',
             stateGstIn: '',
-            cityOptions: [] // Stores city options for this row
+            cityOptions: []
         }
     ]);
 
@@ -577,6 +595,7 @@ export const Vender = () => {
             tdsWithPer: '',
             tdsWithSec: '',
             section: '',
+            tdsWithSecOptions: []
         }
     ]);
 
@@ -608,6 +627,7 @@ export const Vender = () => {
             tdsWithPer: '',
             tdsWithSec: '',
             section: '',
+            tdsWithSecOptions: []
         };
         setPartySpecialTDS([...partySpecialTDS, newRow]);
         setPartySpecialTDSErrors([
@@ -1585,12 +1605,14 @@ export const Vender = () => {
 
                                                                     <td className="border px-2 py-2">
                                                                         <select
-                                                                            value={row.tdsWithSec}
+                                                                            value={row.tdsWithSec || ''}  // Ensure the value is correctly set
                                                                             style={{ width: '150px' }}
                                                                             className={partySpecialTDSErrors[index]?.tdsWithSec ? 'error form-control' : 'form-control'}
                                                                             onChange={(e) =>
                                                                                 setPartySpecialTDS((prev) =>
-                                                                                    prev.map((r) => (r.id === row.id ? { ...r, tdsWithSec: e.target.value } : r))
+                                                                                    prev.map((r) =>
+                                                                                        r.id === row.id ? { ...r, tdsWithSec: e.target.value } : r
+                                                                                    )
                                                                                 )
                                                                             }
                                                                         >
@@ -1601,6 +1623,7 @@ export const Vender = () => {
                                                                                 </option>
                                                                             ))}
                                                                         </select>
+
                                                                         {partySpecialTDSErrors[index]?.tdsWithSec && (
                                                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                                                                 {partySpecialTDSErrors[index].tdsWithSec}
