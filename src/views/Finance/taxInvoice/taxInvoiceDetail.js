@@ -52,79 +52,69 @@ const TaxInvoiceDetails = () => {
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [formData, setFormData] = useState({
-    bizType: 'B2B',
+    address: '',
+    addressType: '',
     approveStatus: '',
     approveBy: '',
     approveOn: '',
+    billCurr: 'INR',
+    billCurrRate: '',
+    billOfEntry: '',
     bizMode: 'TAX',
+    bizType: 'B2B',
+    creditDays: '',
+    docId: '',
+    docDate: dayjs(),
+    gstType: '',
+    invoiceDate: '',
+    invoiceNo: '',
+    jobOrderNo: '',
+    orgId: orgId,
     partyCode: '',
+    partyId: '',
     partyName: '',
     partyType: 'CUSTOMER',
-    stateNo: '',
-    stateCode: '',
-    address: '',
-    addressType: '',
-    gstType: '',
     pinCode: '',
     placeOfSupply: '',
     recipientGSTIN: '',
-    billCurr: 'INR',
-    status: 'PROFORMA',
-    docId: '',
-    docDate: dayjs(),
-    active: true,
-    orgId: orgId,
-    salesType: '',
-    updatedBy: '',
-    supplierBillNo: '',
-    supplierBillDate: '',
-    billCurrRate: '',
-    exAmount: '',
-    creditDays: '',
-    contactPerson: '',
     shipperInvoiceNo: '',
-    billOfEntry: '',
-    billMonth: '',
-    invoiceNo: '',
-    invoiceDate: '',
-    jobNo: '',
-    taxInvoiceDetailsDTO: []
+    stateCode: '',
+    stateNo: '',
+    status: 'PROFORMA',
+    supplierBillDate: '',
+    supplierBillNo: ''
   });
 
   const [errors, setErrors] = useState({
-    bizType: '',
-    bizMode: '',
-    partyCode: '',
-    partyName: '',
-    partyType: '',
-    stateNo: '',
-    stateCode: '',
     address: '',
     addressType: '',
-    gstType: '',
-    pinCode: '',
+    approveStatus: '',
+    approveBy: '',
+    approveOn: '',
     billCurr: '',
+    billCurrRate: '',
+    billOfEntry: '',
+    bizMode: '',
+    bizType: '',
+    creditDays: '',
+    gstType: '',
+    invoiceDate: '',
+    invoiceNo: '',
+    jobOrderNo: '',
+    orgId: orgId,
+    partyCode: '',
+    partyId: '',
+    partyName: '',
+    partyType: '',
+    pinCode: '',
     placeOfSupply: '',
     recipientGSTIN: '',
-    status: '',
-    docId: '',
-    docDate: '',
-    active: true,
-    orgId: orgId,
-    salesType: '',
-    updatedBy: '',
-    supplierBillNo: '',
-    supplierBillDate: '',
-    billCurrRate: '',
-    exAmount: '',
-    creditDays: '',
-    contactPerson: '',
     shipperInvoiceNo: '',
-    billOfEntry: '',
-    billMonth: '',
-    jobNo: '',
-    invoiceNo: '',
-    invoiceDate: ''
+    stateCode: '',
+    stateNo: '',
+    status: '',
+    supplierBillDate: '',
+    supplierBillNo: ''
   });
 
   const [withdrawalsTableData, setWithdrawalsTableData] = useState([
@@ -166,12 +156,12 @@ const TaxInvoiceDetails = () => {
   ]);
 
   const columns = [
-    { accessorKey: 'docId', header: 'Prof.Inv.No', size: 140 },
-    { accessorKey: 'docDate', header: 'Prof.Inv.Date', size: 140 },
     { accessorKey: 'status', header: 'Status', size: 140 },
-    { accessorKey: 'partyName', header: 'Party Name', size: 140 },
-    { accessorKey: 'partyType', header: 'Party Type', size: 140 },
-    { accessorKey: 'partyCode', header: 'Party Code', size: 140 }
+    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
+    { accessorKey: 'docId', header: 'Prof.Inv.No', size: 140 },
+    // { accessorKey: 'docDate', header: 'Prof.Inv.Date', size: 140 },
+    { accessorKey: 'partyName', header: 'Party Name', size: 140 }
+    // { accessorKey: 'partyCode', header: 'Party Code', size: 140 }
   ];
 
   useEffect(() => {
@@ -235,17 +225,13 @@ const TaxInvoiceDetails = () => {
           recipientGSTIN: listValueVO.recipientGSTIN,
           billCurr: listValueVO.billCurr,
           status: listValueVO.status,
-          salesType: listValueVO.salesType,
           updatedBy: listValueVO.updatedBy,
           supplierBillNo: listValueVO.supplierBillNo,
           supplierBillDate: listValueVO.supplierBillDate,
           billCurrRate: listValueVO.billCurrRate,
-          exAmount: listValueVO.exAmount,
           creditDays: listValueVO.creditDays,
-          contactPerson: listValueVO.contactPerson,
           shipperInvoiceNo: listValueVO.shipperInvoiceNo,
           billOfEntry: listValueVO.billOfEntry,
-          billMonth: listValueVO.billMonth,
           invoiceNo: listValueVO.invoiceNo,
           invoiceDate: listValueVO.invoiceDate,
           id: listValueVO.id,
@@ -450,74 +436,69 @@ const TaxInvoiceDetails = () => {
 
   const handleClear = () => {
     setFormData({
-      bizType: 'B2B',
-      bizMode: 'TAX',
-      partyCode: '',
-      partyName: '',
-      partyType: '',
-      stateNo: '',
-      stateCode: '',
       address: '',
       addressType: '',
+      approveStatus: '',
+      approveBy: '',
+      approveOn: '',
+      billCurr: 'INR',
+      billCurrRate: '',
+      billOfEntry: '',
+      bizMode: 'TAX',
+      bizType: 'B2B',
+      creditDays: '',
+      docId: '',
+      docDate: dayjs(),
       gstType: '',
+      invoiceDate: '',
+      invoiceNo: '',
+      jobOrderNo: '',
+      orgId: orgId,
+      partyCode: '',
+      partyId: '',
+      partyName: '',
+      partyType: 'CUSTOMER',
       pinCode: '',
       placeOfSupply: '',
       recipientGSTIN: '',
-      billCurr: 'INR',
-      status: 'PROFORMA',
-      docId: '',
-      docDate: dayjs(),
-      active: true,
-      orgId: orgId,
-      salesType: '',
-      updatedBy: '',
-      supplierBillNo: '',
-      supplierBillDate: '',
-      billCurrRate: '',
-      exAmount: '',
-      creditDays: '',
-      contactPerson: '',
       shipperInvoiceNo: '',
-      billOfEntry: '',
-      billMonth: '',
-      jobNo: '',
-      invoiceNo: '',
-      invoiceDate: ''
+      stateCode: '',
+      stateNo: '',
+      status: 'PROFORMA',
+      supplierBillDate: '',
+      supplierBillNo: ''
     });
     getTaxInvoiceDocId();
     setErrors({
-      bizType: '',
-      bizMode: '',
-      partyCode: '',
-      partyName: '',
-      partyType: '',
-      stateNo: '',
-      stateCode: '',
       address: '',
       addressType: '',
+      approveStatus: '',
+      approveBy: '',
+      approveOn: '',
+      billCurr: '',
+      billCurrRate: '',
+      billOfEntry: '',
+      bizMode: '',
+      bizType: '',
+      creditDays: '',
       gstType: '',
+      invoiceDate: '',
+      invoiceNo: '',
+      jobOrderNo: '',
+      orgId: orgId,
+      partyCode: '',
+      partyId: '',
+      partyName: '',
+      partyType: '',
       pinCode: '',
       placeOfSupply: '',
       recipientGSTIN: '',
-      billCurr: '',
-      status: '',
-      docId: '',
-      docDate: dayjs(),
-      active: true,
-      orgId: orgId,
-      salesType: '',
-      updatedBy: '',
-      supplierBillNo: '',
-      supplierBillDate: '',
-      billCurrRate: '',
-      exAmount: '',
-      creditDays: '',
-      contactPerson: '',
       shipperInvoiceNo: '',
-      billOfEntry: '',
-      billMonth: '',
-      invoiceNo: '',
-      invoiceDate: ''
+      stateCode: '',
+      stateNo: '',
+      status: '',
+      supplierBillDate: '',
+      supplierBillNo: ''
     });
     setEditId('');
 
@@ -615,7 +596,6 @@ const TaxInvoiceDetails = () => {
         address: defaultAddressType.address,
         pinCode: defaultAddressType.pinCode
       }));
-      getAddessType(defaultAddressType.addressType);
       console.log('defaultAddressType.addressType', defaultAddressType.addressType);
     }
   }, [addressType]);
@@ -895,17 +875,13 @@ const TaxInvoiceDetails = () => {
           recipientGSTIN: listValueVO.recipientGSTIN,
           billCurr: listValueVO.billCurr,
           status: listValueVO.status,
-          salesType: listValueVO.salesType,
           updatedBy: listValueVO.updatedBy,
           supplierBillNo: listValueVO.supplierBillNo,
           supplierBillDate: listValueVO.supplierBillDate,
           billCurrRate: listValueVO.billCurrRate,
-          exAmount: listValueVO.exAmount,
           creditDays: listValueVO.creditDays,
-          contactPerson: listValueVO.contactPerson,
           shipperInvoiceNo: listValueVO.shipperInvoiceNo,
           billOfEntry: listValueVO.billOfEntry,
-          billMonth: listValueVO.billMonth,
           invoiceNo: listValueVO.invoiceNo,
           invoiceDate: listValueVO.invoiceDate,
           id: listValueVO.id,
@@ -958,7 +934,7 @@ const TaxInvoiceDetails = () => {
             sac: cl.sac,
             taxable: cl.taxable,
             gst: cl.gstAmount,
-            GSTPercent: cl.gstpercent // Consider this: you already mapped gstpercent.
+            GSTPercent: cl.gstpercent
           };
         });
 
@@ -987,112 +963,32 @@ const TaxInvoiceDetails = () => {
   //   getPartyName(value);
   // };
 
-  const validateForm = () => {
-    let formValid = true;
-    const newErrors = { ...errors };
-
-    // Party Name
-    if (!formData.partyName) {
-      newErrors.partyName = 'Party Name is required';
-      formValid = false;
-    } else {
-      newErrors.partyName = '';
-    }
-
-    // Party Code
-    if (!formData.partyCode) {
-      newErrors.partyCode = 'Party Code is required';
-      formValid = false;
-    } else {
-      newErrors.partyCode = '';
-    }
-
-    // Party Type
-    if (!formData.partyType) {
-      newErrors.partyType = 'Party Type is required';
-      formValid = false;
-    } else {
-      newErrors.partyType = '';
-    }
-
-    // Address Type
-    if (!formData.addressType) {
-      newErrors.addressType = 'Address Type is required';
-      formValid = false;
-    } else {
-      newErrors.addressType = '';
-    }
-
-    // Recipient GSTIN
-    if (!formData.recipientGSTIN) {
-      newErrors.recipientGSTIN = 'Recipient GSTIN is required';
-      formValid = false;
-    } else {
-      newErrors.recipientGSTIN = '';
-    }
-
-    // Place of Supply
-    if (!formData.placeOfSupply) {
-      newErrors.placeOfSupply = 'Place of Supply is required';
-      formValid = false;
-    } else {
-      newErrors.placeOfSupply = '';
-    }
-
-    // Address
-    if (!formData.address) {
-      newErrors.address = 'Address is required';
-      formValid = false;
-    } else {
-      newErrors.address = '';
-    }
-
-    // Pincode
-    if (!formData.pinCode) {
-      newErrors.pinCode = 'Pin Code is required';
-      formValid = false;
-    } else {
-      newErrors.pinCode = '';
-    }
-
-    // Status
-    if (!formData.status) {
-      newErrors.status = 'Status is required';
-      formValid = false;
-    } else {
-      newErrors.status = '';
-    }
-
-    // TAX Type
-    if (!formData.gstType) {
-      newErrors.gstType = 'TAX Type is required';
-      formValid = false;
-    } else {
-      newErrors.gstType = '';
-    }
-
-    // Bill Curr
-    if (!formData.billCurr) {
-      newErrors.billCurr = 'Bill Curr is required';
-      formValid = false;
-    } else {
-      newErrors.billCurr = '';
-    }
-
-    // Sales Type
-    // if (!formData.salesType) {
-    //   newErrors.salesType = 'Sales Type is required';
-    //   formValid = false;
-    // } else {
-    //   newErrors.salesType = '';
-    // }
-
-    setErrors(newErrors);
-    return formValid;
-  };
-
   const handleSave = async () => {
-    console.log('handleSave', formData);
+    const errors = {};
+
+    if (!formData.partyName) {
+      errors.partyName = 'Party Name is required';
+    }
+    if (!formData.partyType) {
+      errors.partyType = 'Party Type is required';
+    }
+    if (!formData.stateCode) {
+      errors.stateCode = 'State Code is required';
+    }
+    if (!formData.addressType) {
+      errors.addressType = 'Address Type is required';
+    }
+    if (!formData.placeOfSupply) {
+      errors.placeOfSupply = 'Place of Supply is required';
+    }
+    if (!formData.supplierBillDate) {
+      errors.supplierBillDate = 'Supplier Bill Date is required';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setErrors(errors);
+      return;
+    }
 
     const detailsVo = withdrawalsTableData.map((row) => ({
       ...(editId && { id: row.id }),
@@ -1104,7 +1000,6 @@ const TaxInvoiceDetails = () => {
       exempted: row.exempted,
       govChargeCode: row.govChargeCode,
       gstpercent: parseFloat(row.GSTPercent),
-      gst: row.gst,
       ledger: row.ledger,
       qty: parseInt(row.qty),
       rate: parseInt(row.rate),
@@ -1114,61 +1009,53 @@ const TaxInvoiceDetails = () => {
 
     const saveFormData = {
       ...(editId && { id: editId }),
-      // active: formData.active,
-      bizType: formData.bizType,
-      bizMode: formData.bizMode,
-      partyCode: formData.partyCode,
-      partyName: formData.partyName,
-      partyType: formData.partyType,
-      stateNo: formData.stateNo,
-      stateCode: formData.stateCode,
       address: formData.address,
       addressType: formData.addressType,
+      billCurr: formData.billCurr,
+      billCurrRate: parseFloat(formData.billCurrRate),
+      billOfEntry: formData.billOfEntry,
+      bizMode: formData.bizMode,
+      bizType: formData.bizType,
+      branch: branch,
+      branchCode: loginBranchCode,
+      createdBy: loginUserName,
+      creditDays: parseInt(formData.creditDays),
+      finYear: finYear,
       gstType: formData.gstType,
+      invoiceDate: dayjs(formData.invoiceDate).format('YYYY-MM-DD'),
+      invoiceNo: formData.invoiceNo,
+      jobOrderNo: formData.jobOrderNo,
+      orgId: orgId,
+      partyCode: formData.partyCode,
+      partyId: formData.partyId,
+      partyName: formData.partyName,
+      partyType: formData.partyType,
       pinCode: formData.pinCode,
       placeOfSupply: formData.placeOfSupply,
       recipientGSTIN: formData.recipientGSTIN,
-      billCurr: formData.billCurr,
-      status: formData.status,
-      salesType: formData.salesType,
-      updatedBy: formData.updatedBy,
-      supplierBillNo: formData.supplierBillNo,
-      supplierBillDate: dayjs(formData.supplierBillDate).format('YYYY-MM-DD'),
-      billCurrRate: parseInt(formData.billCurrRate),
-      exAmount: parseInt(formData.exAmount),
-      creditDays: parseInt(formData.creditDays),
-      contactPerson: formData.contactPerson,
       shipperInvoiceNo: formData.shipperInvoiceNo,
-      billOfEntry: formData.billOfEntry,
-      billMonth: formData.billMonth,
-      invoiceNo: formData.invoiceNo,
-      invoiceDate: dayjs(formData.invoiceDate).format('YYYY-MM-DD'),
-      taxInvoiceDetailsDTO: detailsVo,
-      createdBy: loginUserName,
-      orgId: orgId,
-      finYear: finYear,
-      branch: branch,
-      branchCode: loginBranchCode
+      stateCode: formData.stateCode,
+      stateNo: formData.stateNo,
+      status: formData.status,
+      supplierBillDate: dayjs(formData.supplierBillDate).format('YYYY-MM-DD'),
+      supplierBillNo: formData.supplierBillNo,
+      taxInvoiceDetailsDTO: detailsVo
     };
 
-    if (validateForm()) {
-      try {
-        const response = await apiCalls('put', '/taxInvoice/updateCreateTaxInvoice', saveFormData);
-        if (response.status === true) {
-          console.log('Response:', response);
-          showToast('success', editId ? ' TaxInvoice updated successfully' : 'TaxInvoice created successfully');
-          getAllTaxInvoice();
-          handleClear();
-          // setIsLoading(false);
-        } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'TaxInvoice creation failed');
-          // setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        showToast('error', ' TaxInvoice creation failed');
-        // setIsLoading(false);
+    console.log('DATA TO SAVE:', saveFormData);
+
+    try {
+      const response = await apiCalls('put', '/taxInvoice/updateCreateTaxInvoice', saveFormData);
+      if (response.status === true) {
+        showToast('success', editId ? 'TaxInvoice updated successfully' : 'TaxInvoice created successfully');
+        getAllTaxInvoice();
+        handleClear();
+      } else {
+        showToast('error', response.paramObjectsMap.errorMessage || 'TaxInvoice creation failed');
       }
+    } catch (error) {
+      console.error('Error:', error);
+      showToast('error', 'TaxInvoice creation failed');
     }
   };
 
@@ -1187,17 +1074,19 @@ const TaxInvoiceDetails = () => {
 
             {editId && !listView && (
               <>
-                {formData.approveStatus === 'Approved' ? (
+                {formData.approveStatus === 'Approved' && (
                   <Stack direction="row" spacing={2}>
                     <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
                     <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
                   </Stack>
-                ) : formData.approveStatus === 'Rejected' ? (
+                )}
+                {formData.approveStatus === 'Rejected' && (
                   <Stack direction="row" spacing={2}>
                     <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
                     <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
                   </Stack>
-                ) : (
+                )}
+                {formData.status === 'TAX' && (
                   <div className="d-flex" style={{ marginRight: '30px' }}>
                     <Button
                       variant="outlined"
@@ -1424,6 +1313,7 @@ const TaxInvoiceDetails = () => {
                       <MenuItem disabled>No states available</MenuItem> // Fallback option
                     )}
                   </Select>
+                  {errors.stateCode && <FormHelperText style={{ color: 'red' }}>{errors.stateCode}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -1478,6 +1368,7 @@ const TaxInvoiceDetails = () => {
                         </MenuItem>
                       ))}
                   </Select>
+                  {errors.placeOfSupply && <FormHelperText style={{ color: 'red' }}>{errors.placeOfSupply}</FormHelperText>}
                 </FormControl>
               </div>
 
@@ -1503,28 +1394,10 @@ const TaxInvoiceDetails = () => {
                         </MenuItem>
                       ))}
                   </Select>
+                  {errors.addressType && <FormHelperText style={{ color: 'red' }}>{errors.addressType}</FormHelperText>}
                 </FormControl>
               </div>
 
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Place of Supply
-                  </InputLabel>
-                  <Select
-                    labelId="placeOfSupplyLabel"
-                    value={formData.placeOfSupply}
-                    onChange={(e) => setFormData({ ...formData, placeOfSupply: e.target.value })}
-                    label="Place of Supply"
-                    required
-                    error={!!errors.placeOfSupply}
-                    helperText={errors.placeOfSupply}
-                  >
-                    <MenuItem value="Customer">Customer</MenuItem>
-                    <MenuItem value="Vendor">Vendor</MenuItem>
-                  </Select>
-                </FormControl>
-              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
@@ -1602,6 +1475,7 @@ const TaxInvoiceDetails = () => {
                       onChange={(newValue) => setFormData({ ...formData, supplierBillDate: newValue })}
                     />
                   </LocalizationProvider>
+                  {errors.supplierBillDate && <FormHelperText style={{ color: 'red' }}>{errors.supplierBillDate}</FormHelperText>}
                 </FormControl>
               </div>
 
@@ -1649,20 +1523,6 @@ const TaxInvoiceDetails = () => {
                   />
                 </FormControl>
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Ex Amount"
-                    size="small"
-                    required
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.exAmount}
-                    onChange={(e) => setFormData({ ...formData, exAmount: e.target.value })}
-                    error={!!errors.exAmount}
-                    // helperText={errors.pincode}
-                  />
-                </FormControl>
-              </div> */}
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
@@ -1679,21 +1539,6 @@ const TaxInvoiceDetails = () => {
                   />
                 </FormControl>
               </div>
-
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Contact Person"
-                    size="small"
-                    required
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.contactPerson}
-                    onChange={(e) => setFormData({ ...formData, contactPerson: e.target.value })}
-                    error={!!errors.contactPerson}
-                    // helperText={errors.pincode}
-                  />
-                </FormControl>
-              </div> */}
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
@@ -1725,20 +1570,6 @@ const TaxInvoiceDetails = () => {
                 </FormControl>
               </div>
 
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Bill Month"
-                    size="small"
-                    required
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.billMonth}
-                    onChange={(e) => setFormData({ ...formData, billMonth: e.target.value })}
-                    error={!!errors.billMonth}
-                    // helperText={errors.pincode}
-                  />
-                </FormControl>
-              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
@@ -1749,6 +1580,7 @@ const TaxInvoiceDetails = () => {
                     value={formData.invoiceNo}
                     onChange={(e) => setFormData({ ...formData, invoiceNo: e.target.value })}
                     error={!!errors.invoiceNo}
+                    disabled
                     // helperText={errors.pincode}
                   />
                 </FormControl>
@@ -1760,6 +1592,7 @@ const TaxInvoiceDetails = () => {
                     <DatePicker
                       label="Invoice Date"
                       format="DD-MM-YYYY"
+                      disabled
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
@@ -1770,36 +1603,18 @@ const TaxInvoiceDetails = () => {
                 </FormControl>
               </div>
 
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Sales Type
-                  </InputLabel>
-                  <Select
-                    labelId="salesTypeLabel"
-                    value={formData.salesType}
-                    onChange={(e) => setFormData({ ...formData, salesType: e.target.value })}
-                    label="Sales Type"
-                    required
-                    error={!!errors.salesType}
-                    helperText={errors.salesType}
-                  >
-                    <MenuItem value="CREDIT">Credit</MenuItem>
-                  </Select>
-                </FormControl>
-              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="jobNo"
-                    name="jobNo"
+                    id="jobOrderNo"
+                    name="jobOrderNo"
                     label="Job No"
                     size="small"
-                    value={formData.jobNo}
+                    value={formData.jobOrderNo}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                     inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.jobNo}
-                    helperText={fieldErrors.jobNo}
+                    error={!!fieldErrors.jobOrderNo}
+                    helperText={fieldErrors.jobOrderNo}
                   />
                 </FormControl>
               </div>
