@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import apiCalls from 'apicall';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -43,6 +43,7 @@ const CostDebitNote = () => {
   const [originBillVo, setOriginBillVo] = useState([]);
   const [partyName, setPartyName] = useState([]);
   const [partyId, setPartyId] = useState('');
+  const [docId, setDocId] = useState('');
   const [stateCode, setStateCode] = useState('');
   const [placeOfSupply, setPlaceOfSupply] = useState([]);
   const [jobNoList, setJobNoList] = useState([]);
@@ -120,15 +121,6 @@ const CostDebitNote = () => {
     totChargesLcAmt: '',
     utrRef: ''
   });
-
-  // useEffect(() => {
-  //   if (formData.originBill) {
-  //     handleOriginBillChange(formData.originBill);
-  //   }
-  //   // if (formData.poNumber) {
-  //   //   getAllItemName(formData.poNumber);
-  //   // }
-  // }, [formData.originBill]);
 
   const [chargerCostInvoice, setChargerCostInvoice] = useState([
     {
@@ -309,6 +301,7 @@ const CostDebitNote = () => {
     setTdsCostErrors([]);
     setEditId('');
     getCostDebitNoteDocId();
+    setOriginBillVo([])
     setShowChargeDetails(false);
   };
 
@@ -332,81 +325,81 @@ const CostDebitNote = () => {
   const handleCloseModal = () => setModalOpen(false);
 
   const handleConfirmAction = async () => {
-    // try {
-    //   const result = await apiCalls(
-    //     'put',
-    //     `/taxInvoice/approveTaxInvoice?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}`
-    //   );
-    //   console.log('API Response:==>', result);
-    //   if (result.status === true) {
-    //     setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
-    //     showToast(
-    //       result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
-    //       result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved'
-    //         ? ' TaxInvoice Approved successfully'
-    //         : 'TaxInvoice Rejected successfully'
-    //     );
-    //     const listValueVO = result.paramObjectsMap.taxInvoiceVO;
-    //     setFormData({
-    //       docId: listValueVO.docId,
-    //       approveStatus: listValueVO.approveStatus,
-    //       approveBy: listValueVO.approveBy,
-    //       approveOn: listValueVO.approveOn,
-    //       docDate: listValueVO.docDate,
-    //       type: listValueVO.type,
-    //       partyCode: listValueVO.partyCode,
-    //       partyName: listValueVO.partyName,
-    //       partyType: listValueVO.partyType,
-    //       bizType: listValueVO.bizType,
-    //       bizMode: listValueVO.bizMode,
-    //       stateNo: listValueVO.stateNo,
-    //       stateCode: listValueVO.stateCode,
-    //       address: listValueVO.address,
-    //       addressType: listValueVO.addressType,
-    //       gstType: listValueVO.gstType,
-    //       pinCode: listValueVO.pinCode,
-    //       placeOfSupply: listValueVO.placeOfSupply,
-    //       recipientGSTIN: listValueVO.recipientGSTIN,
-    //       billCurr: listValueVO.billCurr,
-    //       status: listValueVO.status,
-    //       salesType: listValueVO.salesType,
-    //       updatedBy: listValueVO.updatedBy,
-    //       supplierBillNo: listValueVO.supplierBillNo,
-    //       supplierBillDate: listValueVO.supplierBillDate,
-    //       billCurrRate: listValueVO.billCurrRate,
-    //       exAmount: listValueVO.exAmount,
-    //       creditDays: listValueVO.creditDays,
-    //       contactPerson: listValueVO.contactPerson,
-    //       shipperInvoiceNo: listValueVO.shipperInvoiceNo,
-    //       billOfEntry: listValueVO.billOfEntry,
-    //       billMonth: listValueVO.billMonth,
-    //       invoiceNo: listValueVO.invoiceNo,
-    //       invoiceDate: listValueVO.invoiceDate,
-    //       id: listValueVO.id,
-    //       totalChargeAmountLc: listValueVO.totalChargeAmountLc,
-    //       totalChargeAmountBc: listValueVO.totalChargeAmountBc,
-    //       totalTaxAmountLc: listValueVO.totalTaxAmountLc,
-    //       totalInvAmountLc: listValueVO.totalInvAmountLc,
-    //       roundOffAmountLc: listValueVO.roundOffAmountLc,
-    //       totalChargeAmountBc: listValueVO.totalChargeAmountBc,
-    //       totalInvAmountLc: listValueVO.totalInvAmountLc,
-    //       totalInvAmountBc: listValueVO.totalInvAmountBc,
-    //       totalChargeAmountBc: listValueVO.totalChargeAmountBc,
-    //       totalTaxAmountBc: listValueVO.totalTaxAmountBc,
-    //       totalInvAmountBc: listValueVO.totalInvAmountBc,
-    //       totalTaxableAmountLc: listValueVO.totalTaxableAmountLc,
-    //       amountInWords: listValueVO.amountInWords,
-    //       billingRemarks: listValueVO.billingRemarks,
-    //       amountInWords: listValueVO.amountInWords
-    //     });
-    //     handleCloseModal();
-    //     console.log('TAX INVOICE:==>', result);
-    //   } else {
-    //     console.error('API Error:', result.data);
-    //   }
-    // } catch (error) {
-    //   console.error('Error fetching data:', error);
-    // }
+    try {
+      const result = await apiCalls(
+        'put',
+        `/costdebitnote/approveCostDebitNote?action=${loginUserName}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}&orgId=${orgId}`
+      );
+      console.log('API Response:==>', result);
+      if (result.status === true) {
+        setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
+        showToast(
+          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
+          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved'
+            ? ' Cost Debit Note Approved successfully'
+            : 'Cost Debit Note Rejected successfully'
+        );
+        const listValueVO = result.paramObjectsMap.taxInvoiceVO;
+        setFormData({
+          docId: listValueVO.docId,
+          approveStatus: listValueVO.approveStatus,
+          approveBy: listValueVO.approveBy,
+          approveOn: listValueVO.approveOn,
+          docDate: listValueVO.docDate,
+          type: listValueVO.type,
+          partyCode: listValueVO.partyCode,
+          partyName: listValueVO.partyName,
+          partyType: listValueVO.partyType,
+          bizType: listValueVO.bizType,
+          bizMode: listValueVO.bizMode,
+          stateNo: listValueVO.stateNo,
+          stateCode: listValueVO.stateCode,
+          address: listValueVO.address,
+          addressType: listValueVO.addressType,
+          gstType: listValueVO.gstType,
+          pinCode: listValueVO.pinCode,
+          placeOfSupply: listValueVO.placeOfSupply,
+          recipientGSTIN: listValueVO.recipientGSTIN,
+          billCurr: listValueVO.billCurr,
+          status: listValueVO.status,
+          salesType: listValueVO.salesType,
+          updatedBy: listValueVO.updatedBy,
+          supplierBillNo: listValueVO.supplierBillNo,
+          supplierBillDate: listValueVO.supplierBillDate,
+          billCurrRate: listValueVO.billCurrRate,
+          exAmount: listValueVO.exAmount,
+          creditDays: listValueVO.creditDays,
+          contactPerson: listValueVO.contactPerson,
+          shipperInvoiceNo: listValueVO.shipperInvoiceNo,
+          billOfEntry: listValueVO.billOfEntry,
+          billMonth: listValueVO.billMonth,
+          invoiceNo: listValueVO.invoiceNo,
+          invoiceDate: listValueVO.invoiceDate,
+          id: listValueVO.id,
+          totalChargeAmountLc: listValueVO.totalChargeAmountLc,
+          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
+          totalTaxAmountLc: listValueVO.totalTaxAmountLc,
+          totalInvAmountLc: listValueVO.totalInvAmountLc,
+          roundOffAmountLc: listValueVO.roundOffAmountLc,
+          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
+          totalInvAmountLc: listValueVO.totalInvAmountLc,
+          totalInvAmountBc: listValueVO.totalInvAmountBc,
+          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
+          totalTaxAmountBc: listValueVO.totalTaxAmountBc,
+          totalInvAmountBc: listValueVO.totalInvAmountBc,
+          totalTaxableAmountLc: listValueVO.totalTaxableAmountLc,
+          amountInWords: listValueVO.amountInWords,
+          billingRemarks: listValueVO.billingRemarks,
+          amountInWords: listValueVO.amountInWords
+        });
+        handleCloseModal();
+        console.log('TAX INVOICE:==>', result);
+      } else {
+        console.error('API Error:', result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
 
   const calculateTotTdsWhAmnt = () => {
@@ -468,6 +461,12 @@ const CostDebitNote = () => {
   }, []);
 
   useEffect(() => {
+    if (formData.supplierName) {
+      getOrginBillNoByParty(formData.supplierName);
+    }
+  }, [formData.supplierName]);
+
+  useEffect(() => {
     getPartyName(formData.supplierType);
   }, [formData.supplierType]);
 
@@ -487,11 +486,7 @@ const CostDebitNote = () => {
         'get',
         `/costdebitnote/getCostDebitNoteDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
-      setFormData((prevData) => ({
-        ...prevData,
-        docId: response.paramObjectsMap.costDebitNoteDocId,
-        docDate: dayjs()
-      }));
+      setDocId(response.paramObjectsMap.costDebitNoteDocId);
     } catch (error) {
       console.error('Error fetching invoice:', error);
     }
@@ -695,11 +690,9 @@ const CostDebitNote = () => {
         [name]: value.toUpperCase(),
         exRate: selectedCurrency ? selectedCurrency.buyingExRate : ''
       }));
-    } else {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: value.toUpperCase()
-      }));
+    }
+    else {
+      console.log("All working fine");
     }
   };
 
@@ -715,10 +708,6 @@ const CostDebitNote = () => {
   const handleSelectPartyChange = (e) => {
     const value = e.target.value;
 
-    partyName.forEach((emp, index) => {
-      console.log(`Employee ${index}:`, emp);
-    });
-
     const selectedEmp = partyName.find((emp) => emp.partyName === value);
 
     if (selectedEmp) {
@@ -728,8 +717,6 @@ const CostDebitNote = () => {
         supplierName: selectedEmp.partyName,
         supplierCode: selectedEmp.partyCode
       }));
-
-
       getOrginBillNoByParty(selectedEmp.partyName);
     } else {
       console.log('No employee found with the given code:', value);
@@ -740,57 +727,52 @@ const CostDebitNote = () => {
     const value = e.target.value;
     console.log(`Origin e.target.value`, e.target.value);
 
-    originBillVo.forEach((emp, index) => {
-      console.log(`Origin ${index}:`, emp);
-    });
-
     const selectedBill = originBillVo.find((emp) => emp.docId === value);
 
     if (selectedBill) {
       console.log('Selected Employee:', selectedBill);
-      setFormData({
-        accuralid: selectedBill.accuralid,
-        address: selectedBill.address,
+      setFormData((prevData) => ({
+        ...prevData,
+
         actBillCurrAmt: selectedBill.actBillCurrAmt,
         actBillLcAmt: selectedBill.actBillLcAmt,
+        customer: selectedBill.customer,
+        // docDate: selectedBill.docDate ? dayjs(selectedBill.docDate) : dayjs(),
+        finYear: finYear,
+        gstInputLcAmt: selectedBill.gstInputLcAmt,
+        netBillCurrAmt: selectedBill.netBillCurrAmt,
+        netBillLcAmt: selectedBill.netBillLcAmt,
+        originBillDate: selectedBill.docDate,
+        product: selectedBill.product,
+        roundOff: selectedBill.roundOff,
+        supplierType: selectedBill.supplierType,
+        totChargesBillCurrAmt: selectedBill.totChargesBillCurrAmt,
+        totChargesLcAmt: selectedBill.totChargesLcAmt,
+        originBill: selectedBill.docId,
+        orgId: orgId,
         branch: selectedBill.branch,
         branchCode: selectedBill.branchCode,
         client: selectedBill.client,
         createdBy: loginUserName,
+        accuralid: selectedBill.accuralid,
+        address: selectedBill.address,
+        exRate: selectedBill.exRate,
+        dueDate: selectedBill.dueDate ? dayjs(selectedBill.dueDate) : dayjs(),
         creditDays: selectedBill.creditDays,
         currency: selectedBill.currency,
-        customer: selectedBill.customer,
-        dueDate: selectedBill.dueDate ? dayjs(selectedBill.dueDate) : dayjs(),
-        docDate: selectedBill.docDate ? dayjs(selectedBill.docDate) : dayjs(),
-        docId: selectedBill.docId,
-        exRate: selectedBill.exRate,
-        finYear: finYear,
-        gstInputLcAmt: selectedBill.gstInputLcAmt,
         gstType: selectedBill.gstType,
-        netBillCurrAmt: selectedBill.netBillCurrAmt,
-        netBillLcAmt: selectedBill.netBillLcAmt,
-        orgId: orgId,
-        originBill: selectedBill.docId,
-        originBillDate: selectedBill.docDate,
         otherInfo: selectedBill.otherInfo,
         payment: selectedBill.payment,
-        product: selectedBill.product,
         purVoucherDate: selectedBill.purVoucherDate ? dayjs(selectedBill.purVoucherDate) : dayjs(),
         purVoucherNo: selectedBill.purVoucherNo,
         remarks: selectedBill.remarks,
-        roundOff: selectedBill.roundOff,
         shipperRefNo: selectedBill.shipperRefNo,
         supplierBillNo: selectedBill.supplierBillNo,
-        supplierCode: selectedBill.supplierCode,
         supplierGstIn: selectedBill.supplierGstIn,
         supplierGstInCode: selectedBill.supplierGstInCode,
-        supplierName: selectedBill.supplierName,
         supplierPlace: selectedBill.supplierPlace,
-        supplierType: selectedBill.supplierType,
-        totChargesBillCurrAmt: selectedBill.totChargesBillCurrAmt,
-        totChargesLcAmt: selectedBill.totChargesLcAmt,
         utrRef: selectedBill.utrRef
-      });
+      }));
       setChargerCostInvoice(
         (selectedBill.chargerCostInvoiceVO || []).map((row) => ({
           id: row.id,
@@ -956,32 +938,6 @@ const CostDebitNote = () => {
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
-  };
-
-  const getAddessType = async (place) => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `/costInvoice/getPartyAddress?orgId=${orgId}&id=${partyId}&stateCode=${stateCode}&placeOfSupply=${place}`
-      );
-      setFormData((prevData) => ({
-        ...prevData,
-        address: response.paramObjectsMap.partyAddress[0].address
-      }));
-    } catch (error) {
-      console.error('Error fetching gate passes:', error);
-    }
-  };
-
-  const handleCostTypeChange = (type) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      costType: type
-    }));
-    setFieldErrors((prevErrors) => ({
-      ...prevErrors,
-      costType: ''
-    }));
   };
 
   const handleDateChange = (field, date) => {
@@ -1563,7 +1519,7 @@ const CostDebitNote = () => {
                     size="small"
                     fullWidth
                     name="docId"
-                    value={formData.docId}
+                    value={docId}
                     onChange={handleInputChange}
                     disabled
                     inputProps={{ maxLength: 10 }}
@@ -1698,7 +1654,7 @@ const CostDebitNote = () => {
                       id="demo-simple-select-party"
                       label="Origin Bill No"
                       required
-                      value={formData.originBill}
+                      value={formData.originBill || ''}
                       onChange={handleOriginBillChange}
                       disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.originBill}
@@ -3081,7 +3037,7 @@ const CostDebitNote = () => {
       </div>
       <ConfirmationModal
         open={modalOpen}
-        title="Tax Invoice Approval"
+        title="Cost Debit Note Approval"
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={handleConfirmAction}
         onCancel={handleCloseModal}
