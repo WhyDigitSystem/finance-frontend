@@ -732,33 +732,50 @@ const TaxInvoiceDetails = () => {
   //     console.error('Error fetching gate passes:', error);
   //   }
   // };
+
   const getAllCurrency = async () => {
     try {
       const response = await apiCalls('get', `/taxInvoice/getCurrencyAndExrateDetails?orgId=${orgId}`);
-      const currencyList = response.paramObjectsMap.currencyVO;
-  
-      setCurrencyList(currencyList);
-  
-      // Automatically set default currency (first in the list)
-      if (currencyList.length > 0) {
-        const defaultCurrency = currencyList[0];
-  
-        // setFormData((prevFormData) => ({
-        //   ...prevFormData,
-        //   currency: defaultCurrency.currency,
-        //   billCurrRate: defaultCurrency.sellingExRate[defaultCurrency.id],
-        // }));
-        setFieldErrors((prevFieldErrors) => ({
-          ...prevFieldErrors,
-          currency: false,
-        }));
+      
+      if (response?.paramObjectsMap?.currencyVO) {
+        setCurrencyList(response.paramObjectsMap.currencyVO);
+      } else {
+        setCurrencyList([]); // Set an empty array if data is missing
       }
   
-      console.log('Currency List:', currencyList);
     } catch (error) {
       console.error('Error fetching currency details:', error);
+      setCurrencyList([]); // Prevent undefined state
     }
   };
+  
+  // const getAllCurrency = async () => {
+  //   try {
+  //     const response = await apiCalls('get', `/taxInvoice/getCurrencyAndExrateDetails?orgId=${orgId}`);
+  //     const currencyList = response.paramObjectsMap.currencyVO;
+  
+  //     setCurrencyList(currencyList);
+  
+  //     // Automatically set default currency (first in the list)
+  //     if (currencyList.length > 0) {
+  //       const defaultCurrency = currencyList[0];
+  
+  //       // setFormData((prevFormData) => ({
+  //       //   ...prevFormData,
+  //       //   currency: defaultCurrency.currency,
+  //       //   billCurrRate: defaultCurrency.sellingExRate[defaultCurrency.id],
+  //       // }));
+  //       setFieldErrors((prevFieldErrors) => ({
+  //         ...prevFieldErrors,
+  //         currency: false,
+  //       }));
+  //     }
+  
+  //     console.log('Currency List:', currencyList);
+  //   } catch (error) {
+  //     console.error('Error fetching currency details:', error);
+  //   }
+  // };
   
   // Function to handle currency selection
   // const handleCurrencyChange = (name, value) => {
@@ -1177,6 +1194,40 @@ const TaxInvoiceDetails = () => {
       showToast('error', 'TaxInvoice creation failed');
     }
   };
+  const handleTableInputChange = (index, field, value) => {
+    const updatedTableData = [...withdrawalsTableData];
+  
+    // Ensure value is treated as a number
+    const numericValue = parseFloat(value) || 0;
+  
+    updatedTableData[index] = {
+      ...updatedTableData[index],
+      [field]: numericValue, // Update the changed field
+    };
+  
+    // Extract required values for calculation
+    const qty = parseFloat(updatedTableData[index].qty) || 0;
+    const rate = parseFloat(updatedTableData[index].rate) || 0;
+    const exRate = parseFloat(updatedTableData[index].exRate) || 1; // Avoid division by zero
+    const gstPercent = parseFloat(updatedTableData[index].GSTPercent) || 0;
+  
+    // Perform calculations
+    const billAmount = qty * rate;
+    const lcAmount = billAmount * exRate;
+    const gstAmount = (billAmount * gstPercent) / 100;
+  
+    // Update dependent fields
+    updatedTableData[index] = {
+      ...updatedTableData[index],
+      billAmount,
+      lcAmount,
+      gst: gstAmount,
+    };
+  
+    // Update state
+    setWithdrawalsTableData(updatedTableData);
+  };
+  
 
   return (
     <>
@@ -1205,8 +1256,8 @@ const TaxInvoiceDetails = () => {
                     <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
                   </Stack>
                 )}
-                {listViewData.status === 'TAX' &&(
-                // {listViewData.status === 'TAX' &&  formData.approveStatus === 'null' &&(
+                {/* {listViewData.status === 'TAX' && (formData.approveStatus === 'Rejected' || formData.approveStatus === 'Approved') &&( */}
+                {listViewData.status === 'TAX' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
                   <div className="d-flex" style={{ marginRight: '30px' }}>
                     <Button
                       variant="outlined"
@@ -1629,16 +1680,20 @@ const TaxInvoiceDetails = () => {
                     // onChange={(e) => setFormData({ ...formData, billCurr: e.target.value })}
                     onChange={(e) => {
                       const selectedBillCurrency = e.target.value;
+                    
+                      if (!currencyList || currencyList.length === 0) {
+                        console.error("Currency list is empty or undefined.");
+                        return;
+                      }
                       const selectedBillCurrencyData = currencyList.find(
                         (currency) => currency.currency === selectedBillCurrency
                       );
-                    
                       setFormData((prevData) => ({
                         ...prevData,
                         billCurr: selectedBillCurrency,
-                        billCurrRate: selectedBillCurrencyData?.sellingExRate || 0, // Handle cases where sellingExRate is undefined
+                        billCurrRate: selectedBillCurrencyData?.sellingExRate || 0, // Handle missing data gracefully
                       }));
-                    }}                     
+                    }}                                       
                     label="Currency"
                     required
                     error={!!errors.billCurr}
@@ -1830,8 +1885,8 @@ const TaxInvoiceDetails = () => {
                                 <th className="table-header">GCharge Code</th>
                                 <th className="table-header">Charge Name</th>
                                 <th className="table-header">Taxable</th>
-                                <th className="table-header">Qty</th>
-                                <th className="table-header">Rate</th>
+                                <th className="table-header"style={{ width: '100px' }}>Qty</th>
+                                <th className="table-header"style={{ width: '100px' }}>Rate</th>
                                 <th className="table-header">Currency</th>
                                 <th className="table-header">Ex Rate</th>
                                 <th className="table-header">FC Amount</th>
@@ -1927,10 +1982,10 @@ const TaxInvoiceDetails = () => {
                                             ledger: selectedCurrencyData ? selectedCurrencyData.ledger : '',
                                             sac: selectedCurrencyData ? selectedCurrencyData.sac : '',
                                             taxable: selectedCurrencyData ? selectedCurrencyData.taxable : '',
-                                            qty: 0,
-                                            rate: 0,
-                                            billAmount: 0,
-                                            lcAmount: 0
+                                            qty: '',
+                                            rate: '',
+                                            billAmount: '',
+                                            lcAmount: ''
                                           };
 
                                           setWithdrawalsTableData(updatedCurrencyData);
@@ -2075,37 +2130,45 @@ const TaxInvoiceDetails = () => {
                                     </td>
 
                                     <td className="border px-2 py-2">
+                                      {/* <input
+                                        type="number"
+                                        value={row.qty}
+                                        onChange={(e) => handleTableInputChange(index, "qty", e.target.value)}
+                                        className="form-control"
+                                        disabled={formData.status === 'TAX'}
+                                      /> */}
                                       <input
                                         type="text"
                                         value={row.qty}
                                         disabled={formData.status === 'TAX'}
                                         style={{ width: '100px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const numericRegex = /^[0-9]*$/;
-                                          if (numericRegex.test(value)) {
-                                            setWithdrawalsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, qty: value } : r))
-                                            );
-                                            setWithdrawalsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                qty: !value ? 'qty is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            setWithdrawalsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                qty: 'Only numeric characters are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
+                                        // onChange={(e) => {
+                                        //   const value = e.target.value;
+                                        //   const numericRegex = /^[0-9]*$/;
+                                        //   if (numericRegex.test(value)) {
+                                        //     setWithdrawalsTableData((prev) =>
+                                        //       prev.map((r) => (r.id === row.id ? { ...r, qty: value } : r))
+                                        //     );
+                                        //     setWithdrawalsTableErrors((prev) => {
+                                        //       const newErrors = [...prev];
+                                        //       newErrors[index] = {
+                                        //         ...newErrors[index],
+                                        //         qty: !value ? 'qty is required' : ''
+                                        //       };
+                                        //       return newErrors;
+                                        //     });
+                                        //   } else {
+                                        //     setWithdrawalsTableErrors((prev) => {
+                                        //       const newErrors = [...prev];
+                                        //       newErrors[index] = {
+                                        //         ...newErrors[index],
+                                        //         qty: 'Only numeric characters are allowed'
+                                        //       };
+                                        //       return newErrors;
+                                        //     });
+                                        //   }
+                                        // }}
+                                        onChange={(e) => handleTableInputChange(index, "qty", e.target.value)}
                                         className={withdrawalsTableErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                         // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                       />
@@ -2122,32 +2185,33 @@ const TaxInvoiceDetails = () => {
                                         value={row.rate}
                                         disabled={formData.status === 'TAX'}
                                         style={{ width: '100px' }}
-                                        onChange={(e) => {
-                                          const value = e.target.value;
-                                          const numericRegex = /^[0-9]*$/;
-                                          if (numericRegex.test(value)) {
-                                            setWithdrawalsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, rate: value } : r))
-                                            );
-                                            setWithdrawalsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                rate: !value ? 'rate is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          } else {
-                                            setWithdrawalsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                rate: 'Only numeric characters are allowed'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }
-                                        }}
+                                        // onChange={(e) => {
+                                        //   const value = e.target.value;
+                                        //   const numericRegex = /^[0-9]*$/;
+                                        //   if (numericRegex.test(value)) {
+                                        //     setWithdrawalsTableData((prev) =>
+                                        //       prev.map((r) => (r.id === row.id ? { ...r, rate: value } : r))
+                                        //     );
+                                        //     setWithdrawalsTableErrors((prev) => {
+                                        //       const newErrors = [...prev];
+                                        //       newErrors[index] = {
+                                        //         ...newErrors[index],
+                                        //         rate: !value ? 'rate is required' : ''
+                                        //       };
+                                        //       return newErrors;
+                                        //     });
+                                        //   } else {
+                                        //     setWithdrawalsTableErrors((prev) => {
+                                        //       const newErrors = [...prev];
+                                        //       newErrors[index] = {
+                                        //         ...newErrors[index],
+                                        //         rate: 'Only numeric characters are allowed'
+                                        //       };
+                                        //       return newErrors;
+                                        //     });
+                                        //   }
+                                        // }}
+                                        onChange={(e) => handleTableInputChange(index, "rate", e.target.value)}
                                         className={withdrawalsTableErrors[index]?.rate ? 'error form-control' : 'form-control'}
                                         // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                       />
