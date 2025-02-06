@@ -59,8 +59,8 @@ const TaxInvoiceDetails = () => {
     approveStatus: '',
     approveBy: '',
     approveOn: '',
-    billCurr: 'INR',
-    billCurrRate: '1',
+    billCurr: '',
+    billCurrRate: '',
     billOfEntry: '',
     bizMode: 'TAX',
     bizType: 'B2B',
@@ -444,8 +444,8 @@ const TaxInvoiceDetails = () => {
       approveStatus: '',
       approveBy: '',
       approveOn: '',
-      billCurr: 'INR',
-      billCurrRate: '1',
+      billCurr: '',
+      billCurrRate: '',
       billOfEntry: '',
       bizMode: 'TAX',
       bizType: 'B2B',
@@ -743,12 +743,11 @@ const TaxInvoiceDetails = () => {
       if (currencyList.length > 0) {
         const defaultCurrency = currencyList[0];
   
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          currency: defaultCurrency.currency,
-          exRate: defaultCurrency.sellingExRate,
-        }));
-  
+        // setFormData((prevFormData) => ({
+        //   ...prevFormData,
+        //   currency: defaultCurrency.currency,
+        //   billCurrRate: defaultCurrency.sellingExRate[defaultCurrency.id],
+        // }));
         setFieldErrors((prevFieldErrors) => ({
           ...prevFieldErrors,
           currency: false,
@@ -762,23 +761,23 @@ const TaxInvoiceDetails = () => {
   };
   
   // Function to handle currency selection
-  const handleCurrencyChange = (name, value) => {
-    if (name === 'currency') {
-      const selectedCurrency = currencyList.find((currency) => currency.currency === value);
-      if (selectedCurrency) {
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          currency: value,
-          exRate: selectedCurrency.sellingExRate,
-        }));
+  // const handleCurrencyChange = (name, value) => {
+  //   if (name === 'currency') {
+  //     const selectedCurrency = currencyList.find((currency) => currency.currency === value);
+  //     if (selectedCurrency) {
+  //       setFormData((prevFormData) => ({
+  //         ...prevFormData,
+  //         currency: value,
+  //         exRate: selectedCurrency.sellingExRate,
+  //       }));
   
-        setFieldErrors((prevFieldErrors) => ({
-          ...prevFieldErrors,
-          currency: false,
-        }));
-      }
-    }
-  };  
+  //       setFieldErrors((prevFieldErrors) => ({
+  //         ...prevFieldErrors,
+  //         currency: false,
+  //       }));
+  //     }
+  //   }
+  // };  
 
   const getChargeCodeDetail = async (type) => {
     try {
@@ -1619,18 +1618,44 @@ const TaxInvoiceDetails = () => {
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <TextField
-                    label="Bill Currency"
-                    size="small"
-                    required
-                    disabled
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.billCurr}
+                  <InputLabel id="demo-simple-select-label" required>
+                    Currency
+                  </InputLabel>
+                  <Select
+                    labelId="addressTypeLabel"
+                    // value={formData.stateCode}
+                    value={formData.billCurr || (currencyList.length === 1 ? currencyList[0].currency : '')}
+                    // onChange={handleSelectStateChange}
                     // onChange={(e) => setFormData({ ...formData, billCurr: e.target.value })}
+                    onChange={(e) => {
+                      const selectedBillCurrency = e.target.value;
+                      const selectedBillCurrencyData = currencyList.find(
+                        (currency) => currency.currency === selectedBillCurrency
+                      );
+                    
+                      setFormData((prevData) => ({
+                        ...prevData,
+                        billCurr: selectedBillCurrency,
+                        billCurrRate: selectedBillCurrencyData?.sellingExRate || 0, // Handle cases where sellingExRate is undefined
+                      }));
+                    }}                     
+                    label="Currency"
+                    required
                     error={!!errors.billCurr}
-                    onChange={(e) => handleCurrencyChange(e.target.name, e.target.value)}
-                    // helperText={errors.pincode}
-                  />
+                    helperText={errors.billCurr}
+                    disabled={formData.status === 'TAX'}
+                  >
+                    {currencyList?.length > 0 ? (
+                      currencyList.map((par, index) => (
+                        <MenuItem key={index} value={par.currency}>
+                          {par.currency}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled>No Currency available</MenuItem> // Fallback option
+                    )}
+                  </Select>
+                  {errors.billCurr && <FormHelperText style={{ color: 'red' }}>{errors.billCurr}</FormHelperText>}
                 </FormControl>
               </div>
 
