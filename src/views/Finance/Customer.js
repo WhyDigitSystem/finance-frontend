@@ -349,28 +349,33 @@ export const Customer = () => {
   const handleInputChange = (e) => {
     const { name, value, checked, type, id } = e.target;
 
-    let formattedValue = value.toUpperCase();
+    let formattedValue = value;
+
+    if (name === "panNo" || name === "gstIn") {
+      formattedValue = value.toUpperCase();
+    }
 
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
-    if (formattedValue.length > 10) return;
+    if (name === "panNo" && formattedValue.length > 10) return;
 
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : formattedValue,
-      [id]: type === 'checkbox' ? checked : formattedValue
+      [name]: type === "checkbox" ? checked : formattedValue,
     }));
 
-    if (!panRegex.test(formattedValue) && formattedValue.length === 10) {
-      setFieldErrors((prev) => ({
-        ...prev,
-        [name]: 'Invalid PAN format (e.g., ABCDE1234F)',
-      }));
-    } else {
-      setFieldErrors((prev) => ({
-        ...prev,
-        [name]: '',
-      }));
+    if (name === "panNo") {
+      if (!panRegex.test(formattedValue) && formattedValue.length === 10) {
+        setFieldErrors((prev) => ({
+          ...prev,
+          [name]: "Invalid PAN format (e.g., ABCDE1234F)",
+        }));
+      } else {
+        setFieldErrors((prev) => ({
+          ...prev,
+          [name]: "",
+        }));
+      }
     }
   };
 

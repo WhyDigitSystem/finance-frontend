@@ -58,7 +58,7 @@ export const Vender = () => {
 
     const listViewColumns = [
         { accessorKey: 'partyCode', header: 'Vendor Code', size: 140 },
-        { accessorKey: 'partyName', header: 'Vendor Name', size: 140 },
+        { accessorKey: 'partyName', header: 'Vendr Name', size: 140 },
         { accessorKey: 'gstIn', header: 'Reg No', size: 140 },
         { accessorKey: 'panNo', header: 'Pan No', size: 140 },
         { accessorKey: 'creditLimit', header: 'Credit Limit', size: 140 },
@@ -255,8 +255,6 @@ export const Vender = () => {
         }
     };
 
-
-
     const handleBulkUploadOpen = () => {
         setUploadOpen(true);
     };
@@ -278,28 +276,36 @@ export const Vender = () => {
     const handleInputChange = (e) => {
         const { name, value, checked, type, id } = e.target;
 
-        let formattedValue = value.toUpperCase();
+        let formattedValue = value;
 
+        // Apply toUpperCase only for PAN number field
+        if (name === "panNo") {
+            formattedValue = value.toUpperCase();
+        }
+
+        // PAN validation logic
         const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
-        if (formattedValue.length > 10) return;
+        if (name === "panNo" && formattedValue.length > 10) return;
 
         setFormData((prev) => ({
             ...prev,
-            [name]: type === 'checkbox' ? checked : formattedValue,
-            [id]: type === 'checkbox' ? checked : formattedValue
+            [name]: type === "checkbox" ? checked : formattedValue,
         }));
 
-        if (!panRegex.test(formattedValue) && formattedValue.length === 10) {
-            setFieldErrors((prev) => ({
-                ...prev,
-                [name]: 'Invalid PAN format (e.g., ABCDE1234F)',
-            }));
-        } else {
-            setFieldErrors((prev) => ({
-                ...prev,
-                [name]: '',
-            }));
+        // Apply validation only for PAN number
+        if (name === "panNo") {
+            if (!panRegex.test(formattedValue) && formattedValue.length === 10) {
+                setFieldErrors((prev) => ({
+                    ...prev,
+                    [name]: "Invalid PAN format (e.g., ABCDE1234F)",
+                }));
+            } else {
+                setFieldErrors((prev) => ({
+                    ...prev,
+                    [name]: "",
+                }));
+            }
         }
     };
 
