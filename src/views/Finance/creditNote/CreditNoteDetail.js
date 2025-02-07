@@ -63,7 +63,7 @@ const IrnCreditNote = () => {
     approveStatus: '',
     approveBy: '',
     approveOn: '',
-    partyType: '',
+    partyType: 'CUSTOMER',
     partyName: '',
     originBill: '',
     partyCode: '',
@@ -76,16 +76,16 @@ const IrnCreditNote = () => {
     // dueDate: null,
     currency: '',
     exRate: '',
-    status: '',
+    status: 'PROFORMA',
     // remarks: '',
     address: '',
     shipRefNo: '',
     pincode: '',
     gstType: '',
-    billingMonth: '',
+    // billingMonth: '',
     // otherInfo: '',
     salesType: '',
-    exAmount: '',
+    // exAmount: '',
     creditRemarks: '',
     // charges: '',
     stateCode: '',
@@ -102,6 +102,7 @@ const IrnCreditNote = () => {
     netLCAmt: '',
     summaryExRate: '',
     amtInWords: '',
+    docId: '',
     totTaxAmt: ''
   });
 
@@ -127,10 +128,10 @@ const IrnCreditNote = () => {
     shipRefNo: '',
     pincode: '',
     gstType: '',
-    billingMonth: '',
+    // billingMonth: '',
     // otherInfo: '',
     salesType: '',
-    exAmount: '',
+    // exAmount: '',
     creditRemarks: '',
     // charges: '',
     stateCode: '',
@@ -306,7 +307,7 @@ const IrnCreditNote = () => {
     setFormData({
       vohNo: '',
       vohDate: null,
-      partyType: '',
+      partyType: 'CUSTOMER',
       partyName: '',
       originBill: '',
       partyCode: '',
@@ -319,16 +320,16 @@ const IrnCreditNote = () => {
       // dueDate: null,
       currency: '',
       exRate: '',
-      status: '',
+      status: 'PROFORMA',
       // remarks: '',
       address: '',
       shipRefNo: '',
       pincode: '',
       gstType: '',
-      billingMonth: '',
+      // billingMonth: '',
       // otherInfo: '',
       salesType: '',
-      exAmount: '',
+      // exAmount: '',
       creditRemarks: '',
       // charges: '',
       stateCode: '',
@@ -370,10 +371,10 @@ const IrnCreditNote = () => {
       shipRefNo: '',
       pincode: '',
       gstType: '',
-      billingMonth: '',
+      // billingMonth: '',
       // otherInfo: '',
       salesType: '',
-      exAmount: '',
+      // exAmount: '',
       creditRemarks: '',
       // charges: '',
       stateCode: '',
@@ -456,11 +457,11 @@ const IrnCreditNote = () => {
 
   const handleCloseModal = () => setModalOpen(false);
 
-  const handleConfirmAction = async () => {
+  const handleConfirmAction = async (docId) => {
     try {
       const result = await apiCalls(
         'put',
-        `/taxInvoice/approveTaxInvoice?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}`
+        `/irnCreditNote/approveIrnCreditNote?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${encodeURIComponent(docId)}&id=${formData.id}`
       );
       console.log('API Response:==>', result);
 
@@ -485,6 +486,7 @@ const IrnCreditNote = () => {
           partyCode: listValueVO.partyCode,
           partyName: listValueVO.partyName,
           partyType: listValueVO.partyType,
+          originBill: listValueVO.originBillNo,
           bizType: listValueVO.bizType,
           bizMode: listValueVO.bizMode,
           stateNo: listValueVO.stateNo,
@@ -497,12 +499,12 @@ const IrnCreditNote = () => {
           recipientGSTIN: listValueVO.recipientGSTIN,
           billCurr: listValueVO.billCurr,
           status: listValueVO.status,
-          salesType: listValueVO.salesType,
+          // salesType: listValueVO.salesType,
           updatedBy: listValueVO.updatedBy,
           supplierBillNo: listValueVO.supplierBillNo,
           supplierBillDate: listValueVO.supplierBillDate,
           billCurrRate: listValueVO.billCurrRate,
-          exAmount: listValueVO.exAmount,
+          // exAmount: listValueVO.exAmount,
           creditDays: listValueVO.creditDays,
           contactPerson: listValueVO.contactPerson,
           shipperInvoiceNo: listValueVO.shipperInvoiceNo,
@@ -766,17 +768,18 @@ const IrnCreditNote = () => {
         creditDays: selectedBill.creditDays,
         currency: selectedBill.billCurr,
         exRate: selectedBill.billCurrRate,
+        originBill: selectedBill.originBillNo,
         address: selectedBill.address,
         pincode: selectedBill.pinCode,
         gstType: selectedBill.gstType,
-        billingMonth: selectedBill.billMonth,
-        salesType: selectedBill.salesType,
+        // billingMonth: selectedBill.billMonth,
+        // salesType: selectedBill.salesType,
         stateCode: selectedBill.stateCode,
         stateNo: selectedBill.stateNo,
         recipientGSTIN: selectedBill.recipientGSTIN,
         placeOfSupply: selectedBill.placeOfSupply,
         addressType: selectedBill.addressType,
-        exAmount: selectedBill.exAmount,
+        // exAmount: selectedBill.exAmount,
         supplierRefNo: selectedBill.invoiceNo,
         supplierRefDate: selectedBill.invoiceDate
         // Add other form fields as needed
@@ -855,10 +858,13 @@ const IrnCreditNote = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setDocId(response.paramObjectsMap.irnCreditVO);
-      } else {
-        console.error('API Error:', response);
+        if (response.paramObjectsMap.irnCreditVO && response.paramObjectsMap.irnCreditVO) {
+          setDocId(response.paramObjectsMap.irnCreditVO); // Extracting the actual docId
+        } else {
+          console.error("Invalid response format: Missing docId");
+        }
       }
+      
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -925,7 +931,7 @@ const IrnCreditNote = () => {
           placeOfSupply: irnCreditNoteVO.placeOfSupply,
           addressType: irnCreditNoteVO.addressType,
           address: irnCreditNoteVO.address,
-          pinCode: irnCreditNoteVO.pinCode,
+          pincode: irnCreditNoteVO.pinCode,
           status: irnCreditNoteVO.status,
           gstType: irnCreditNoteVO.gstType,
           originBill: irnCreditNoteVO.originBillNo,
@@ -935,11 +941,11 @@ const IrnCreditNote = () => {
           supplierRefDate: irnCreditNoteVO.supplierRefDate,
           currency: irnCreditNoteVO.billCurr,
           exRate: irnCreditNoteVO.billCurrRate,
-          exAmount: irnCreditNoteVO.exAmount,
+          // exAmount: irnCreditNoteVO.exAmount,
           creditDays: irnCreditNoteVO.creditDays,
           shipRefNo: irnCreditNoteVO.shipperRefNo,
-          billingMonth: irnCreditNoteVO.billMonth,
-          salesType: irnCreditNoteVO.salesType,
+          // billingMonth: irnCreditNoteVO.billMonth,
+          // salesType: irnCreditNoteVO.salesType,
           creditRemarks: irnCreditNoteVO.creditRemarks,
           roundOff: irnCreditNoteVO.roundOffAmountLc,
           totChargesBillCurrAmt: irnCreditNoteVO.totalChargeAmountBc,
@@ -948,6 +954,7 @@ const IrnCreditNote = () => {
           totGrossLCAmt: irnCreditNoteVO.totalInvAmountLc,
           netBillCurrAmt: irnCreditNoteVO.netBillCurrAmt,
           netLCAmt: irnCreditNoteVO.netLCAmt,
+          id: irnCreditNoteVO.id,
           amtInWords: irnCreditNoteVO.amountInWords
           // summaryExRate: irnCreditNoteVO.summaryExRate,
           // totTaxAmt: irnCreditNoteVO.totTaxAmt
@@ -1008,26 +1015,26 @@ const IrnCreditNote = () => {
   const handleSave = async () => {
     const errors = {};
     const tableErrors = irnChargesData.map((row) => ({
-      // jobNo: !row.jobNo ? 'Job No is required' : '',
-      // chargeType: !row.chargeType ? 'Charge Type is required' : '',
-      // chargeCode: !row.chargeCode ? 'Charge Code is required' : '',
-      // govChargeCode: !row.govChargeCode ? 'G Charge Code is required' : '',
-      // ledger: !row.ledger ? 'G Charge Code is required' : '',
-      // chargeName: !row.chargeName ? 'Charge Name is required' : '',
-      // applyOn: !row.applyOn ? 'Apply On is required' : '',
-      // taxable: !row.taxable ? 'Apply On is required' : '',
-      // currency: !row.currency ? 'Currency is required' : '',
-      // exRate: !row.exRate ? 'Ex Rate is required' : '',
-      // qty: !row.qty ? 'Qty is required' : '',
+    //   // jobNo: !row.jobNo ? 'Job No is required' : '',
+    //   // chargeType: !row.chargeType ? 'Charge Type is required' : '',
+    //   // chargeCode: !row.chargeCode ? 'Charge Code is required' : '',
+    //   // govChargeCode: !row.govChargeCode ? 'G Charge Code is required' : '',
+    //   // ledger: !row.ledger ? 'G Charge Code is required' : '',
+    //   // chargeName: !row.chargeName ? 'Charge Name is required' : '',
+    //   // applyOn: !row.applyOn ? 'Apply On is required' : '',
+    //   // taxable: !row.taxable ? 'Apply On is required' : '',
+    //   // currency: !row.currency ? 'Currency is required' : '',
+    //   // exRate: !row.exRate ? 'Ex Rate is required' : '',
+    //   // qty: !row.qty ? 'Qty is required' : '',
       rate: !row.rate ? 'Rate is required' : ''
-      // exempted: !row.exempted ? 'Excempted is required' : '',
-      // fcAmount: !row.fcAmount ? 'FC Amount is required' : '',
-      // lcAmount: !row.lcAmount ? 'LC Amount is required' : '',
-      // tlcAmount: !row.tlcAmount ? 'TLC Amount is required' : '',
-      // billAmount: !row.billAmount ? 'Bill Amount is required' : '',
-      // sac: !row.sac ? 'Sac is required' : '',
-      // gstAmount: !row.gstAmount ? 'GST is required' : '',
-      // gstpercent: !row.gstpercent ? 'GST % is required' : ''
+    //   // exempted: !row.exempted ? 'Excempted is required' : '',
+    //   // fcAmount: !row.fcAmount ? 'FC Amount is required' : '',
+    //   // lcAmount: !row.lcAmount ? 'LC Amount is required' : '',
+    //   // tlcAmount: !row.tlcAmount ? 'TLC Amount is required' : '',
+    //   // billAmount: !row.billAmount ? 'Bill Amount is required' : '',
+    //   // sac: !row.sac ? 'Sac is required' : '',
+    //   // gstAmount: !row.gstAmount ? 'GST is required' : '',
+    //   // gstpercent: !row.gstpercent ? 'GST % is required' : ''
     }));
 
     let hasTableErrors = false;
@@ -1099,24 +1106,17 @@ const IrnCreditNote = () => {
     if (!formData.gstType) {
       errors.gstType = 'Tax Type is required';
     }
-    // if (!formData.billingMonth) {
-    //   errors.billingMonth = 'Bill Amount is required';
-    // }
-    // if (!formData.salesType) {
-    //   errors.salesType = 'Sales Type is required';
-    // }
-    // if (!formData.exAmount) {
-    //   errors.exAmount = 'Ex Amount is required';
-    // }
     if (!formData.creditRemarks) {
       errors.creditRemarks = 'Credit Remarks is required';
     }
+console.log("Error Save", errors);
+
 
     setFieldErrors(errors);
     setIrnChargesError(tableErrors);
 
     // Prevent saving if form or table errors exist
-    if (Object.keys(errors).length === 0 && !hasTableErrors) {
+    if (Object.keys(errors).length === 0 ) {
       setIsLoading(true);
 
       const irnCreditChargesVo = irnChargesData.map((row) => ({
@@ -1143,13 +1143,13 @@ const IrnCreditNote = () => {
         addressType: formData.addressType,
         billCurr: formData.currency,
         billCurrRate: parseInt(formData.exRate),
-        billMonth: formData.billingMonth,
         branch: branch,
+        status: formData.status,
         branchCode: branchCode,
         createdBy: loginUserName,
         creditDays: parseInt(formData.creditDays),
-        exAmount: parseInt(formData.exAmount),
-        creditRemarks: formData.creditRemarks,
+        // exAmount: parseInt(formData.exAmount),
+        creditRemarks: formData.creditRemarks || null,
         finYear: finYear,
         gstType: formData.gstType,
         irnCreditNoteDetailsDTO: irnCreditChargesVo,
@@ -1158,11 +1158,11 @@ const IrnCreditNote = () => {
         partyCode: formData.partyCode,
         partyName: formData.partyName,
         partyType: formData.partyType,
-        pincode: formData.pincode,
+        pinCode: formData.pincode,
         placeOfSupply: formData.placeOfSupply,
         recipientGSTIN: formData.recipientGSTIN,
-        salesType: formData.salesType,
-        shipperRefNo: formData.shipRefNo,
+        // salesType: formData.salesType,
+        shipperRefNo: formData.shipRefNo || null,
         stateCode: formData.stateCode,
         stateNo: formData.stateNo,
         status: formData.status,
@@ -1171,7 +1171,7 @@ const IrnCreditNote = () => {
         voucherDate: formatDate(formData.vohDate),
         voucherNo: formData.vohNo,
         bizMode: 'TAX',
-        bizType: 'B2B'
+        bizType: 'B2B',
       };
 
       try {
@@ -1208,9 +1208,10 @@ const IrnCreditNote = () => {
   }, [formData.partyType]);
 
   const listViewColumns = [
+    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 },
     { accessorKey: 'partyCode', header: 'Party Code', size: 140 },
-    // { accessorKey: 'docId', header: 'Doc Id', size: 140 },
+    { accessorKey: 'status', header: 'Status', size: 140 },
     { accessorKey: 'partyType', header: 'Party Type', size: 140 },
     { accessorKey: 'vohNo', header: 'Voucher No', size: 140 },
     { accessorKey: 'vohDate', header: 'Voucher Date', size: 140 }
@@ -1221,6 +1222,7 @@ const IrnCreditNote = () => {
     setPdfData(row.original);
     setDownloadPdf(true);
   };
+
 
   return (
     <div>
@@ -1247,41 +1249,45 @@ const IrnCreditNote = () => {
                     <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
                   </Stack>
                 ) : (
-                  <div className="d-flex" style={{ marginRight: '30px' }}>
-                    <Button
-                      variant="outlined"
-                      startIcon={<CheckCircleIcon />}
-                      size="small"
-                      style={{
-                        borderColor: '#4CAF50',
-                        color: '#4CAF50',
-                        fontWeight: 'bold',
-                        textTransform: 'none',
-                        padding: '2px 8px',
-                        fontSize: '0.8rem',
-                        marginRight: '10px'
-                      }}
-                      onClick={handleOpenModalApprove}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      startIcon={<CancelIcon />}
-                      size="small"
-                      style={{
-                        borderColor: '#F44336',
-                        color: '#F44336',
-                        fontWeight: 'bold',
-                        textTransform: 'none',
-                        padding: '2px 8px',
-                        fontSize: '0.8rem'
-                      }}
-                      onClick={handleOpenModalReject}
-                    >
-                      Reject
-                    </Button>
-                  </div>
+                  <>
+                    {formData.status !== 'PROFORMA' && (
+                      <div className="d-flex" style={{ marginRight: '30px' }}>
+                        <Button
+                          variant="outlined"
+                          startIcon={<CheckCircleIcon />}
+                          size="small"
+                          style={{
+                            borderColor: '#4CAF50',
+                            color: '#4CAF50',
+                            fontWeight: 'bold',
+                            textTransform: 'none',
+                            padding: '2px 8px',
+                            fontSize: '0.8rem',
+                            marginRight: '10px',
+                          }}
+                          onClick={handleOpenModalApprove}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          startIcon={<CancelIcon />}
+                          size="small"
+                          style={{
+                            borderColor: '#F44336',
+                            color: '#F44336',
+                            fontWeight: 'bold',
+                            textTransform: 'none',
+                            padding: '2px 8px',
+                            fontSize: '0.8rem',
+                          }}
+                          onClick={handleOpenModalReject}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    )}
+                  </>
                 )}
               </>
             )}
@@ -1312,6 +1318,7 @@ const IrnCreditNote = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Doc Date"
+                      disabled
                       value={dayjs()}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -1349,17 +1356,65 @@ const IrnCreditNote = () => {
                         textField: { size: 'small', clearable: true }
                       }}
                       format="DD-MM-YYYY"
+                      disabled={formData.status === 'TAX'}
                       error={!!fieldErrors.vohDate}
                       helperText={fieldErrors.vohDate ? fieldErrors.vohDate : ''}
-                      disabled
+
                     />
                   </LocalizationProvider>
                 </FormControl>
               </div>
+
+              {/* <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Party Type"
+                    size="small"
+                    required
+                    disabled
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.partyType}
+                    // onChange={(e) => setFormData({ ...formData, partyType: e.target.value })}
+                    // error={!!errors.partyType}
+                    // helperText={errors.partyType}
+                  />
+                </FormControl>
+              </div> */}
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <InputLabel id="demo-simple-select-label" required>
+                    Status
+                  </InputLabel>
+                  <Select
+                    labelId="statusLabel"
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    label="Status"
+                    required
+                    // error={!!errors.status}
+                    // helperText={errors.status}
+                    disabled={formData.status === 'TAX' || !editId}
+                  >
+                    {editId && <MenuItem value="TAX">TAX</MenuItem>}
+                    <MenuItem value="PROFORMA">PROFORMA</MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
+
+
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.partyType}>
                   <InputLabel id="partyType">Party Type</InputLabel>
-                  <Select labelId="partyType" label="Party Type" name="partyType" value={formData.partyType} onChange={handleInputChange}>
+                  <Select
+                    labelId="partyType"
+                    label="Party Type"
+                    name="partyType"
+                    disabled
+                    value={formData.partyType}
+                    onChange={handleInputChange}
+                  // disabled={formData.partyType === 'SpecificValue'}  
+                  >
                     {partyTypeData?.map((row) => (
                       <MenuItem key={row.id} value={row.partyType}>
                         {row.partyType}
@@ -1370,11 +1425,26 @@ const IrnCreditNote = () => {
                 </FormControl>
               </div>
 
+              {/* <div className="col-md-3 mb-3">
+                  <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.partyType}>
+                    <InputLabel id="partyType">Party Type</InputLabel>
+                    <Select labelId="partyType" label="Party Type" name="partyType" value={formData.partyType} onChange={handleInputChange}>
+                      {partyTypeData?.map((row) => (
+                        <MenuItem key={row.id} value={row.partyType}>
+                          {row.partyType}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {fieldErrors.partyType && <FormHelperText>{fieldErrors.partyType}</FormHelperText>}
+                  </FormControl>
+                </div> */}
+
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
                   options={allPartyName}
                   getOptionLabel={(option) => option.partyName}
+                  disabled={formData.status === 'TAX'}
                   sx={{ width: '100%' }}
                   size="small"
                   value={formData.partyName ? allPartyName.find((c) => c.partyName === formData.partyName) : null}
@@ -1407,6 +1477,21 @@ const IrnCreditNote = () => {
                   )}
                 />
               </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="partyCode"
+                    name="partyCode"
+                    label="Party Code"
+                    size="small"
+                    value={formData.partyCode}
+                    // onChange={handleInputChange}
+                    // error={!!fieldErrors.partyCode}
+                    // helperText={fieldErrors.partyCode}
+                    disabled
+                  />
+                </FormControl>
+              </div>
 
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.originBill}>
@@ -1416,6 +1501,7 @@ const IrnCreditNote = () => {
                     labelId="originBill"
                     label="Origin Bill"
                     name="originBill"
+                    disabled={formData.status === 'TAX'}
                     value={formData.originBill}
                     onChange={(event) => {
                       const selectedDocId = event.target.value;
@@ -1444,33 +1530,20 @@ const IrnCreditNote = () => {
                 </FormControl>
               </div>
 
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="partyCode"
-                    name="partyCode"
-                    label="Party Code"
-                    size="small"
-                    value={formData.partyCode}
-                    // onChange={handleInputChange}
-                    // error={!!fieldErrors.partyCode}
-                    // helperText={fieldErrors.partyCode}
-                    disabled
-                  />
-                </FormControl>
-              </div>
+
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="supplierRefNo"
                     name="supplierRefNo"
                     label="Supplier Ref No"
+                    disabled
                     size="small"
                     value={formData.supplierRefNo}
                     onChange={handleInputChange}
                     error={!!fieldErrors.supplierRefNo}
                     helperText={fieldErrors.supplierRefNo}
-                    disabled
+
                   />
                 </FormControl>
               </div>
@@ -1631,7 +1704,7 @@ const IrnCreditNote = () => {
                   />
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
                   <InputLabel id="status" required>
                     Status
@@ -1650,7 +1723,7 @@ const IrnCreditNote = () => {
                   </Select>
                   {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
                 </FormControl>
-              </div>
+              </div> */}
 
               {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
@@ -1770,6 +1843,7 @@ const IrnCreditNote = () => {
                     name="shipRefNo"
                     label="Shipper Ref. No."
                     size="small"
+                    disabled={formData.status === 'TAX'}
                     value={formData.shipRefNo}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
@@ -1778,7 +1852,7 @@ const IrnCreditNote = () => {
                   />
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="pincode"
@@ -1793,7 +1867,7 @@ const IrnCreditNote = () => {
                     disabled
                   />
                 </FormControl>
-              </div>
+              </div> */}
               {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -1809,6 +1883,22 @@ const IrnCreditNote = () => {
                   />
                 </FormControl>
               </div> */}
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="pincode"
+                    name="pincode"
+                    label="Pin code"
+                    size="small"
+                    value={formData.pincode}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 30 }}
+                    error={!!fieldErrors.pincode}
+                    helperText={fieldErrors.pincode}
+                    disabled
+                  />
+                </FormControl>
+              </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -1893,6 +1983,7 @@ const IrnCreditNote = () => {
                     id="creditRemarks"
                     name="creditRemarks"
                     label="Credit Remarks"
+                    disabled={formData.status === 'TAX'}
                     size="small"
                     value={formData.creditRemarks}
                     onChange={handleInputChange}
@@ -2534,6 +2625,7 @@ const IrnCreditNote = () => {
                                         <input
                                           type="text"
                                           value={row.rate}
+                                          disabled={formData.status === 'TAX'}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             const isNumeric = /^[0-9]*\.?[0-9]*$/; // Updated regex to allow decimals
@@ -3130,6 +3222,7 @@ const IrnCreditNote = () => {
                                           <input
                                             type="text"
                                             value={row.chargeAcc}
+                                            disabled={formData.status === 'TAX'}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const regex = /^[a-zA-Z0-9\s-]*$/;
@@ -3171,6 +3264,7 @@ const IrnCreditNote = () => {
                                           <input
                                             type="text"
                                             value={row.subLodgerCode}
+                                            disabled={formData.status === 'TAX'}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const regex = /^[a-zA-Z0-9\s-]*$/;
@@ -3211,6 +3305,7 @@ const IrnCreditNote = () => {
                                           <input
                                             type="text"
                                             value={row.dbillAmt}
+                                            disabled={formData.status === 'TAX'}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const isNumeric = /^[0-9]*$/;
@@ -3248,6 +3343,7 @@ const IrnCreditNote = () => {
                                           <input
                                             type="text"
                                             value={row.crBillAmt}
+                                            disabled={formData.status === 'TAX'}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const isNumeric = /^[0-9]*$/;
@@ -3287,6 +3383,7 @@ const IrnCreditNote = () => {
                                           <input
                                             type="text"
                                             value={row.dblcamt}
+                                            disabled={formData.status === 'TAX'}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const isNumeric = /^[0-9]*$/;
@@ -3324,6 +3421,7 @@ const IrnCreditNote = () => {
                                           <input
                                             type="text"
                                             value={row.crLCAmt}
+                                            disabled={formData.status === 'TAX'}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const isNumeric = /^[0-9]*$/;
@@ -3362,6 +3460,7 @@ const IrnCreditNote = () => {
                                           <input
                                             type="text"
                                             value={row.gstRemarks}
+                                            disabled={formData.status === 'TAX'}
                                             className="form-control"
                                             style={{ width: '150px' }}
                                             onChange={(e) => {
@@ -3395,8 +3494,8 @@ const IrnCreditNote = () => {
                                 value={formData.roundOff}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.roundOff}
-                                // helperText={fieldErrors.roundOff}
+                              // error={!!fieldErrors.roundOff}
+                              // helperText={fieldErrors.roundOff}
                               />
                             </FormControl>
                           </div>
@@ -3411,8 +3510,8 @@ const IrnCreditNote = () => {
                                 value={formData.totChargesBillCurrAmt}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.totChargesBillCurrAmt}
-                                // helperText={fieldErrors.totChargesBillCurrAmt}
+                              // error={!!fieldErrors.totChargesBillCurrAmt}
+                              // helperText={fieldErrors.totChargesBillCurrAmt}
                               />
                             </FormControl>
                           </div>
@@ -3427,8 +3526,8 @@ const IrnCreditNote = () => {
                                 value={formData.totChargesLCAmt}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.totChargesLCAmt}
-                                // helperText={fieldErrors.totChargesLCAmt}
+                              // error={!!fieldErrors.totChargesLCAmt}
+                              // helperText={fieldErrors.totChargesLCAmt}
                               />
                             </FormControl>
                           </div>
@@ -3443,8 +3542,8 @@ const IrnCreditNote = () => {
                                 value={formData.totGrossBillAmt}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.totGrossBillAmt}
-                                // helperText={fieldErrors.totGrossBillAmt}
+                              // error={!!fieldErrors.totGrossBillAmt}
+                              // helperText={fieldErrors.totGrossBillAmt}
                               />
                             </FormControl>
                           </div>
@@ -3459,8 +3558,8 @@ const IrnCreditNote = () => {
                                 value={formData.totGrossLCAmt}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.totGrossLCAmt}
-                                // helperText={fieldErrors.totGrossLCAmt}
+                              // error={!!fieldErrors.totGrossLCAmt}
+                              // helperText={fieldErrors.totGrossLCAmt}
                               />
                             </FormControl>
                           </div>
@@ -3475,8 +3574,8 @@ const IrnCreditNote = () => {
                                 value={formData.netBillCurrAmt}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.netBillCurrAmt}
-                                // helperText={fieldErrors.netBillCurrAmt}
+                              // error={!!fieldErrors.netBillCurrAmt}
+                              // helperText={fieldErrors.netBillCurrAmt}
                               />
                             </FormControl>
                           </div>
@@ -3491,8 +3590,8 @@ const IrnCreditNote = () => {
                                 value={formData.netLCAmt}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.netLCAmt}
-                                // helperText={fieldErrors.netLCAmt}
+                              // error={!!fieldErrors.netLCAmt}
+                              // helperText={fieldErrors.netLCAmt}
                               />
                             </FormControl>
                           </div>
@@ -3507,8 +3606,8 @@ const IrnCreditNote = () => {
                                 value={formData.amtInWords}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.amtInWords}
-                                // helperText={fieldErrors.amtInWords}
+                              // error={!!fieldErrors.amtInWords}
+                              // helperText={fieldErrors.amtInWords}
                               />
                             </FormControl>
                           </div>
@@ -3558,7 +3657,8 @@ const IrnCreditNote = () => {
         open={modalOpen}
         title="IRN Credit Note Approval"
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
-        onConfirm={handleConfirmAction}
+        onConfirm={() => handleConfirmAction(docId)}
+
         onCancel={handleCloseModal}
       />
       <ToastContainer />
