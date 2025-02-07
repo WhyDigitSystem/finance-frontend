@@ -348,15 +348,30 @@ export const Customer = () => {
 
   const handleInputChange = (e) => {
     const { name, value, checked, type, id } = e.target;
+
+    let formattedValue = value.toUpperCase();
+
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
+    if (formattedValue.length > 10) return;
+
     setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: type === 'checkbox' ? checked : formattedValue,
+      [id]: type === 'checkbox' ? checked : formattedValue
     }));
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value.toUpperCase(),
-      [id]: type === 'checkbox' ? checked : value.toUpperCase()
-    }));
+
+    if (!panRegex.test(formattedValue) && formattedValue.length === 10) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        [name]: 'Invalid PAN format (e.g., ABCDE1234F)',
+      }));
+    } else {
+      setFieldErrors((prev) => ({
+        ...prev,
+        [name]: '',
+      }));
+    }
   };
 
   const handleClear = () => {
@@ -980,7 +995,7 @@ export const Customer = () => {
                   size="small"
                   value={formData.panNo}
                   onChange={handleInputChange}
-                // error={fieldErrors.panNo}
+                // error={Boolean(fieldErrors.panNo)}
                 // helperText={fieldErrors.panNo}
                 />
               </div>
@@ -1099,6 +1114,7 @@ export const Customer = () => {
                   name="accType"
                   label="Account Type"
                   size="small"
+                  disabled
                   // value={formData.accType}
                   value={formData.accType}
                   onChange={handleInputChange}

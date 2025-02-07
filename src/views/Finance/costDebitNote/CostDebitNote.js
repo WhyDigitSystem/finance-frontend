@@ -328,11 +328,14 @@ const CostDebitNote = () => {
     try {
       const result = await apiCalls(
         'put',
-        `/costdebitnote/approveCostDebitNote?action=${loginUserName}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}&orgId=${orgId}`
+        `/costdebitnote/approveCostDebitNote?action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${editId}&orgId=${orgId}`
       );
       console.log('API Response:==>', result);
       if (result.status === true) {
-        setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
+        setFormData(prevState => ({
+          ...prevState,
+          approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus
+        }));
         showToast(
           result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
           result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved'
@@ -392,13 +395,15 @@ const CostDebitNote = () => {
           billingRemarks: listValueVO.billingRemarks,
           amountInWords: listValueVO.amountInWords
         });
-        handleCloseModal();
+        // handleCloseModal();
         console.log('TAX INVOICE:==>', result);
       } else {
         console.error('API Error:', result.data);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    } finally {
+      handleCloseModal(); // Ensure the modal always closes
     }
   };
 
@@ -473,7 +478,7 @@ const CostDebitNote = () => {
   const getAllCostDebitNoteByOrgId = async () => {
     try {
       const result = await apiCalls('get', `/costdebitnote/getCostDebitNoteByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.costDebitNoteVOs || []);
+      setData(result.paramObjectsMap.costDebitNoteVOs.reverse());
       console.log('costInvoiceVO', result);
     } catch (err) {
       console.log('error', err);
@@ -1449,9 +1454,9 @@ const CostDebitNote = () => {
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
             <div className="d-flex">
-              <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+              {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
               <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
               <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
             </div>
 
