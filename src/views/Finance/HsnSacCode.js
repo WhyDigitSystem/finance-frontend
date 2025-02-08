@@ -10,17 +10,22 @@ import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 const HsnSacCode = () => {
 
   const [formData, setFormData] = useState({
     active: true,
-    serviceAccountCode: '',
-    sacDescription: '',
-    product: ''
+    type:'',
+    chapterCode:'',
+    description:'',
+    taxType:'',
+    igst:'',
+    cgst:'',
+    sgst:''
   });
-
-
   const [fieldErrors, setFieldErrors] = useState({});
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
@@ -56,11 +61,14 @@ const HsnSacCode = () => {
         const hsnSocCodeVO = result.paramObjectsMap.sacCodeVO[0];
         setShowForm(true);
         setFormData({
+          type: hsnSocCodeVO.type || '',
+          chapterCode: hsnSocCodeVO.chapterCode || '',
+          description: hsnSocCodeVO.description || '',
+          taxType: hsnSocCodeVO.taxType || '',
+          igst: hsnSocCodeVO.igst || '',
+          cgst: hsnSocCodeVO.cgst || '',
+          sgst: hsnSocCodeVO.sgst || '',
           active: hsnSocCodeVO.active || false,
-          serviceAccountCode: hsnSocCodeVO.serviceAccountCode || '',
-          sacDescription: hsnSocCodeVO.sacDescription || '',
-          product: hsnSocCodeVO.product || '',
-          id: hsnSocCodeVO.id || 0,
           orgId: orgId
         });
       } else {
@@ -71,11 +79,37 @@ const HsnSacCode = () => {
     }
   };
 
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    setFormData({ ...formData, [name]: value });
-    setFieldErrors({ ...fieldErrors, [name]: false });
-  };
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    let inputValue = type === 'checkbox' ? checked : value;
+  
+    // Allow only numeric input and limit length to 6
+    if (name === 'chapterCode') {
+      if (!/^\d*$/.test(inputValue)) {
+        setFieldErrors((prevErrors) => ({
+          ...prevErrors,
+          [name]: 'Only numbers are allowed'
+        }));
+        return; // Prevent invalid input from being set
+      } else if (inputValue.length > 6) {
+        setFieldErrors((prevErrors) => ({
+          ...prevErrors,
+          [name]: 'Maximum length is 6 digits'
+        }));
+        return;
+      } else {
+        setFieldErrors((prevErrors) => ({
+          ...prevErrors,
+          [name]: ''
+        }));
+      }
+    }
+  
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: inputValue
+    }));
+  };  
 
   const handleCheckboxChange = (event) => {
     setFormData({ ...formData, active: event.target.checked });
@@ -84,9 +118,13 @@ const HsnSacCode = () => {
   const handleClear = () => {
     setFormData({
       active: true,
-      serviceAccountCode: '',
-      sacDescription: '',
-      product: ''
+      type:'',
+      chapterCode:'',
+      description:'',
+      taxType:'',
+      igst:'',
+      cgst:'',
+      sgst:''
     });
     setEditId('');
     setFieldErrors({});
@@ -101,18 +139,18 @@ const HsnSacCode = () => {
     let errors = {};
     let hasError = false;
 
-    if (!formData.serviceAccountCode) {
-      errors.serviceAccountCode = 'SAC is required';
-      hasError = true;
-    }
-    if (!formData.sacDescription) {
-      errors.sacDescription = 'SAC Description is required';
-      hasError = true;
-    }
-    if (!formData.product) {
-      errors.product = 'Product is required';
-      hasError = true;
-    }
+    // if (!formData.serviceAccountCode) {
+    //   errors.serviceAccountCode = 'SAC is required';
+    //   hasError = true;
+    // }
+    // if (!formData.sacDescription) {
+    //   errors.sacDescription = 'SAC Description is required';
+    //   hasError = true;
+    // }
+    // if (!formData.product) {
+    //   errors.product = 'Product is required';
+    //   hasError = true;
+    // }
 
     setFieldErrors(errors);
     return !hasError;
@@ -123,23 +161,25 @@ const HsnSacCode = () => {
       const formDataToSend = {
         ...(editId && { id: editId }),
         active: formData.active,
-        serviceAccountCode: formData.serviceAccountCode,
-        sacDescription: formData.sacDescription,
-        product: formData.product,
+        type: formData.type,
+        chapterCode: formData.chapterCode,
+        description: formData.description,
+        taxType: formData.taxType,
+        igst: formData.igst,
+        cgst: formData.cgst,
+        sgst: formData.sgst,
         orgId: orgId,
         createdBy: loginUserName
       };
-
       console.log('Saving HSN code with payload:', formDataToSend);
-
       try {
         const result = await apiCalls('put', '/master/updateCreateSacCode', formDataToSend);
         if (result.status === true) {
-          showToast('success', editId ? 'SAC Code Updated Successfully' : 'SAC Code created successfully');
+          showToast('success', editId ? `${formData.type} Code Updated Successfully` : `${formData.type} Code created successfully`);
           getAllHsnSacCode();
           handleClear();
         } else {
-          showToast('error', result.paramObjectsMap.errorMessage || 'SAC code creation failed');
+          showToast('error', result.paramObjectsMap.errorMessage || `${formData.type} code creation failed`);
         }
       } catch (error) {
         console.error('API Error:', error);
@@ -166,62 +206,153 @@ const HsnSacCode = () => {
         {showForm ? (
           <div className="row d-flex align-items-center">
             <div className="col-md-3 mb-3">
-              <FormControl fullWidth variant="filled">
-                <TextField
-                  id="serviceAccountCode"
-                  name="serviceAccountCode"
-                  label={
-                    <span>
-                      Service Account Code <span className="asterisk">*</span>
-                    </span>
-                  }
-                  size="small"
-                  value={formData.serviceAccountCode}
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 30 }}
-                  error={!!fieldErrors.serviceAccountCode}
-                  helperText={fieldErrors.serviceAccountCode}
-                />
-              </FormControl>
-            </div>
+                <FormControl fullWidth size="small">
+                  <InputLabel id="demo-simple-select-label" required>
+                    Type
+                  </InputLabel>
+                  <Select
+                    labelId="statusLabel"
+                    value={formData.type}
+                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                    label={
+                      <span>
+                        Type <span className="asterisk">*</span>
+                      </span>
+                    }
+                    required
+                    error={!!fieldErrors.type}
+                    helperText={fieldErrors.type}
+                    // disabled={formData.type === 'TAX' || !editId}
+                  >
+                    <MenuItem value="HSN">HSN</MenuItem>
+                    <MenuItem value="SAC">SAC</MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
-                  id="sacDescription"
-                  name="sacDescription"
+                  id="chapterCode"
+                  name="chapterCode"
                   label={
                     <span>
-                      SAC Description <span className="asterisk">*</span>
+                      Chapter Code <span className="asterisk">*</span>
                     </span>
                   }
                   size="small"
-                  value={formData.sacDescription}
+                  value={formData.chapterCode}
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 50 }}
-                  error={!!fieldErrors.sacDescription}
-                  helperText={fieldErrors.sacDescription}
+                  error={!!fieldErrors.chapterCode}
+                  helperText={fieldErrors.chapterCode}
                 />
               </FormControl>
             </div>
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
-                  id="product"
-                  name="product"
+                  id="description"
+                  name="description"
                   label={
                     <span>
-                      Product <span className="asterisk">*</span>
+                      Description <span className="asterisk">*</span>
                     </span>
                   }
                   size="small"
-                  value={formData.product}
+                  value={formData.description}
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 30 }}
-                  error={!!fieldErrors.product}
-                  helperText={fieldErrors.product}
+                  error={!!fieldErrors.description}
+                  helperText={fieldErrors.description}
                 />
               </FormControl>
             </div>
+            {formData.type === 'SAC' && (
+              <>
+            <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <InputLabel id="demo-simple-select-label">
+                    Tax Type
+                  </InputLabel>
+                  <Select
+                    labelId="statusLabel"
+                    value={formData.taxType}
+                    onChange={(e) => setFormData({ ...formData, taxType: e.target.value })}
+                    label="Tax Type"
+                    error={!!fieldErrors.taxType}
+                    helperText={fieldErrors.taxType}
+                    // disabled={formData.type === 'TAX' || !editId}
+                  >
+                    <MenuItem value="INTER">INTER</MenuItem>
+                    <MenuItem value="INTRA">INTRA</MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
+              {formData.taxType === 'INTER' && (
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled">
+                    <TextField
+                      id="igst"
+                      name="igst"
+                      label={
+                        <span>
+                          IGST
+                        </span>
+                      }
+                      size="small"
+                      value={formData.igst}
+                      onChange={handleInputChange}
+                      inputProps={{ maxLength: 30 }}
+                      error={!!fieldErrors.igst}
+                      helperText={fieldErrors.igst}
+                    />
+                  </FormControl>
+                </div>
+              )}
+              {formData.taxType === 'INTRA' && (
+                <>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled">
+                    <TextField
+                      id="sgst"
+                      name="sgst"
+                      label={
+                        <span>
+                          SGST
+                        </span>
+                      }
+                      size="small"
+                      value={formData.sgst}
+                      onChange={handleInputChange}
+                      inputProps={{ maxLength: 30 }}
+                      error={!!fieldErrors.sgst}
+                      helperText={fieldErrors.sgst}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled">
+                    <TextField
+                      id="cgst"
+                      name="cgst"
+                      label={
+                        <span>
+                          CGST
+                        </span>
+                      }
+                      size="small"
+                      value={formData.cgst}
+                      onChange={handleInputChange}
+                      inputProps={{ maxLength: 30 }}
+                      error={!!fieldErrors.cgst}
+                      helperText={fieldErrors.cgst}
+                    />
+                  </FormControl>
+                </div>
+                </>
+              )}
+            </>
+            )}
             <div className="col-md-4 mb-2">
               <FormGroup>
                 <FormControlLabel control={<Checkbox checked={formData.active} onChange={handleCheckboxChange} />} label="Active" />

@@ -42,6 +42,7 @@ const IrnCreditNote = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
+  const [listViewById, setListViewById] = useState([]);
   const [currencies, setCurrencies] = useState([]);
   const [allPartyName, setAllPartyName] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -68,7 +69,9 @@ const IrnCreditNote = () => {
     originBill: '',
     partyCode: '',
     supplierRefNo: '',
+    jobOrderNo: '',
     supplierRefDate: null,
+    originBillDate: null,
     // currentDate: dayjs(),
     // currentDateValue: '',
     // product: '',
@@ -108,6 +111,7 @@ const IrnCreditNote = () => {
 
   const [fieldErrors, setFieldErrors] = useState({
     vohNo: '',
+    jobOrderNo: '',
     vohDate: null,
     partyType: '',
     partyName: '',
@@ -154,7 +158,7 @@ const IrnCreditNote = () => {
   const [irnChargesData, setIrnChargesData] = useState([
     {
       id: 1,
-      // jobNo: '',
+      jobOrderNo: '',
       chargeType: '',
       chargeCode: '',
       govChargeCode: '',
@@ -230,19 +234,17 @@ const IrnCreditNote = () => {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const inputValue = type === 'checkbox' ? checked : value;
-
+    const inputValue = type === 'checkbox' ? checked : value || ''; // ✅ Default to empty string if undefined
+  
     // Define regex for numeric fields
     const isNumeric = /^[0-9]*$/;
-
+  
     // Validation logic for numeric fields
     const numericFields = [
       'pincode',
       'creditDays',
-      // 'currentDateValue',
       'exRate',
       'netBillCurrAmt',
       'netLCAmt',
@@ -253,50 +255,129 @@ const IrnCreditNote = () => {
       'totGrossLCAmt',
       'summaryExRate',
       'totTaxAmt'
-    ]; // Add other numeric fields if needed
+    ];
+  
     if (numericFields.includes(name)) {
-      if (!isNumeric.test(value)) {
-        setFieldErrors({
-          ...fieldErrors,
+      if (!isNumeric.test(inputValue)) {
+        setFieldErrors((prevErrors) => ({
+          ...prevErrors,
           [name]: 'Only numbers are allowed'
-        });
+        }));
         return; // Prevent further form updates if invalid input
       }
     }
-
+  
     // Handle other fields
-    setFormData({ ...formData, [name]: inputValue });
-
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: inputValue
+    }));
+  
     // Clear error when input is valid
-    setFieldErrors({ ...fieldErrors, [name]: false });
-
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: false
+    }));
+  
     if (name === 'partyType') {
-      setFormData({ ...formData, partyType: inputValue, partyName: '', partyCode: '' });
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        partyType: inputValue,
+        partyName: '',
+        partyCode: ''
+      }));
       getAllPartyName(inputValue); // Fetch all party names based on selected partyType
       return;
     }
-
+  
     if (name === 'partyName') {
-      const selectedParty = allPartyName.find((party) => party.partyName === value);
-      setFormData({
-        ...formData,
-        partyName: value,
+      const selectedParty = allPartyName.find((party) => party.partyName === inputValue);
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        partyName: inputValue,
         partyCode: selectedParty ? selectedParty.partyCode : ''
-      });
+      }));
       return;
     }
-
+  
     // If the currency field is being changed, update exRate based on the selected currency's sellingExRate
     if (name === 'currency') {
-      const selectedCurrency = currencies.find((currency) => currency.currency === value);
+      const selectedCurrency = currencies.find((currency) => currency.currency === inputValue);
       if (selectedCurrency) {
         setFormData((prevFormData) => ({
           ...prevFormData,
-          exRate: selectedCurrency.sellingExRate
+          exRate: selectedCurrency.sellingExRate || ''
         }));
       }
     }
-  };
+  };  
+
+  // const handleInputChange = (e) => {
+  //   const { name, value, type, checked } = e.target;
+  //   const inputValue = type === 'checkbox' ? checked : value || '';
+
+  //   // Define regex for numeric fields
+  //   const isNumeric = /^[0-9]*$/;
+
+  //   // Validation logic for numeric fields
+  //   const numericFields = [
+  //     'pincode',
+  //     'creditDays',
+  //     // 'currentDateValue',
+  //     'exRate',
+  //     'netBillCurrAmt',
+  //     'netLCAmt',
+  //     'roundOff',
+  //     'totChargesBillCurrAmt',
+  //     'totChargesLCAmt',
+  //     'totGrossBillAmt',
+  //     'totGrossLCAmt',
+  //     'summaryExRate',
+  //     'totTaxAmt'
+  //   ]; // Add other numeric fields if needed
+  //   if (numericFields.includes(name)) {
+  //     if (!isNumeric.test(value)) {
+  //       setFieldErrors({
+  //         ...fieldErrors,
+  //         [name]: 'Only numbers are allowed'
+  //       });
+  //       return; // Prevent further form updates if invalid input
+  //     }
+  //   }
+
+  //   // Handle other fields
+  //   setFormData({ ...formData, [name]: inputValue });
+
+  //   // Clear error when input is valid
+  //   setFieldErrors({ ...fieldErrors, [name]: false });
+
+  //   if (name === 'partyType') {
+  //     setFormData({ ...formData, partyType: inputValue, partyName: '', partyCode: '' });
+  //     getAllPartyName(inputValue); // Fetch all party names based on selected partyType
+  //     return;
+  //   }
+
+  //   if (name === 'partyName') {
+  //     const selectedParty = allPartyName.find((party) => party.partyName === value);
+  //     setFormData({
+  //       ...formData,
+  //       partyName: value,
+  //       partyCode: selectedParty ? selectedParty.partyCode : ''
+  //     });
+  //     return;
+  //   }
+
+  //   // If the currency field is being changed, update exRate based on the selected currency's sellingExRate
+  //   if (name === 'currency') {
+  //     const selectedCurrency = currencies.find((currency) => currency.currency === value);
+  //     if (selectedCurrency) {
+  //       setFormData((prevFormData) => ({
+  //         ...prevFormData,
+  //         exRate: selectedCurrency ? selectedCurrency.sellingExRate : ''
+  //       }));
+  //     }
+  //   }
+  // };
 
   const handleDateChange = (name, date) => {
     setFormData({ ...formData, [name]: date });
@@ -464,18 +545,15 @@ const IrnCreditNote = () => {
         `/irnCreditNote/approveIrnCreditNote?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${encodeURIComponent(docId)}&id=${formData.id}`
       );
       console.log('API Response:==>', result);
-
       if (result.status === true) {
-        setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
+        setFormData({ ...formData, approveStatus: result.paramObjectsMap.irnCreditNoteVO.approveStatus });
         showToast(
-          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
-          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved'
-            ? ' TaxInvoice Approved successfully'
-            : 'TaxInvoice Rejected successfully'
+          result.paramObjectsMap.irnCreditNoteVO.approveStatus === 'Approved' ? 'success' : 'error',
+          result.paramObjectsMap.irnCreditNoteVO.approveStatus === 'Approved'
+            ? ' Credit Note Approved successfully'
+            : 'Credit Note Rejected successfully'
         );
-
-        const listValueVO = result.paramObjectsMap.taxInvoiceVO;
-
+        const listValueVO = result.paramObjectsMap.irnCreditNoteVO;
         setFormData({
           docId: listValueVO.docId,
           approveStatus: listValueVO.approveStatus,
@@ -530,8 +608,8 @@ const IrnCreditNote = () => {
           amountInWords: listValueVO.amountInWords
         });
         handleCloseModal();
-
-        console.log('TAX INVOICE:==>', result);
+        getAllIrnCredit();
+        console.log('Credit Note:==>', result);
       } else {
         console.error('API Error:', result.data);
       }
@@ -763,8 +841,8 @@ const IrnCreditNote = () => {
       // Update the formData with selected bill data (excluding table data for Party Name)
       setFormData((prev) => ({
         ...prev,
-        vohNo: selectedBill.invoiceNo,
-        vohDate: selectedBill.invoiceDate,
+        // vohNo: selectedBill.invoiceNo,
+        // vohDate: selectedBill.invoiceDate,
         creditDays: selectedBill.creditDays,
         currency: selectedBill.billCurr,
         exRate: selectedBill.billCurrRate,
@@ -779,10 +857,9 @@ const IrnCreditNote = () => {
         recipientGSTIN: selectedBill.recipientGSTIN,
         placeOfSupply: selectedBill.placeOfSupply,
         addressType: selectedBill.addressType,
-        // exAmount: selectedBill.exAmount,
+        jobOrderNo: selectedBill.jobOrderNo,
         supplierRefNo: selectedBill.invoiceNo,
         supplierRefDate: selectedBill.invoiceDate
-        // Add other form fields as needed
       }));
 
       // Example: Update table data (assuming you're maintaining a table state)
@@ -846,7 +923,7 @@ const IrnCreditNote = () => {
     getIrnCreditNoteDocId();
     getAllPartyTypeByOrgId();
     getAllCurrency();
-    getAllOriginalBill();
+    // getAllOriginalBill();
   }, []);
 
   const getIrnCreditNoteDocId = async () => {
@@ -914,11 +991,9 @@ const IrnCreditNote = () => {
       const response = await apiCalls('get', `/irnCreditNote/getIrnCreditById?id=${row.original.id}`);
       if (response.status === true) {
         const irnCreditNoteVO = response.paramObjectsMap.irnCreditVO[0];
-
+        setListViewById(response.paramObjectsMap.irnCreditVO[0]);
         setDocId(irnCreditNoteVO.docId);
-
         setFormData({
-          // docId: irnCreditNoteVO.docId,
           partyName: irnCreditNoteVO.partyName,
           partyCode: irnCreditNoteVO.partyCode,
           partyType: irnCreditNoteVO.partyType,
@@ -1046,12 +1121,9 @@ const IrnCreditNote = () => {
     });
 
     // Check for empty fields and set error messages
-    if (!formData.vohNo) {
-      errors.vohNo = 'Voucher No is required';
-    }
-    if (!formData.vohDate) {
-      errors.vohDate = 'Voucher Date is required';
-    }
+    // if (!formData.vohNo) {
+    //   errors.vohNo = 'Voucher No is required';
+    // }
     if (!formData.partyName) {
       errors.partyName = 'Party Name is required';
     }
@@ -1064,9 +1136,9 @@ const IrnCreditNote = () => {
     // if (!formData.supplierRefDate) {
     //   errors.supplierRefDate = 'SupRef Date is required';
     // }
-    if (!formData.creditDays) {
-      errors.creditDays = 'Credit Days is required';
-    }
+    // if (!formData.creditDays) {
+    //   errors.creditDays = 'Credit Days is required';
+    // }
     if (!formData.currency) {
       errors.currency = 'Currency is required';
     }
@@ -1152,6 +1224,7 @@ console.log("Error Save", errors);
         creditRemarks: formData.creditRemarks || null,
         finYear: finYear,
         gstType: formData.gstType,
+        originBillDate: formData.originBillDate,
         irnCreditNoteDetailsDTO: irnCreditChargesVo,
         orgId: parseInt(orgId),
         originBillNo: formData.originBill,
@@ -1208,13 +1281,14 @@ console.log("Error Save", errors);
   }, [formData.partyType]);
 
   const listViewColumns = [
-    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
+    { accessorKey: 'docId', header: 'Doc No', size: 140 },
+    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 },
     { accessorKey: 'partyCode', header: 'Party Code', size: 140 },
     { accessorKey: 'status', header: 'Status', size: 140 },
     { accessorKey: 'partyType', header: 'Party Type', size: 140 },
-    { accessorKey: 'vohNo', header: 'Voucher No', size: 140 },
-    { accessorKey: 'vohDate', header: 'Voucher Date', size: 140 }
+    { accessorKey: 'voucherNo', header: 'Voucher No', size: 140 },
+    { accessorKey: 'voucherDate', header: 'Voucher Date', size: 140 }
   ];
 
   const GeneratePdf = (row) => {
@@ -1235,8 +1309,61 @@ console.log("Error Save", errors);
               <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
               <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
             </div>
-
-            {editId && !listView && (
+            {editId && !listView && (formData.status.toUpperCase() === 'TAX' || listViewById.status === 'TAX') && (
+              // {editId && !listView && (
+              <>
+                {formData.approveStatus === 'Approved' && (
+                  <Stack direction="row" spacing={2}>
+                    <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
+                    <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
+                  </Stack>
+                )}
+                {formData.approveStatus === 'Rejected' && (
+                  <Stack direction="row" spacing={2}>
+                    <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
+                    <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
+                  </Stack>
+                )}
+                {listViewById.status === 'TAX' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                  <div className="d-flex" style={{ marginRight: '30px' }}>
+                    <Button
+                      variant="outlined"
+                      startIcon={<CheckCircleIcon />}
+                      size="small"
+                      style={{
+                        borderColor: '#4CAF50',
+                        color: '#4CAF50',
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        padding: '2px 8px',
+                        fontSize: '0.8rem',
+                        marginRight: '10px'
+                      }}
+                      onClick={handleOpenModalApprove}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      startIcon={<CancelIcon />}
+                      size="small"
+                      style={{
+                        borderColor: '#F44336',
+                        color: '#F44336',
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        padding: '2px 8px',
+                        fontSize: '0.8rem'
+                      }}
+                      onClick={handleOpenModalReject}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+            {/* {editId && !listView && (formData.status.toUpperCase() === 'TAX' || listViewById.status.toUpperCase() === 'TAX') && (
               <>
                 {formData.approveStatus === 'Approved' ? (
                   <Stack direction="row" spacing={2}>
@@ -1250,7 +1377,7 @@ console.log("Error Save", errors);
                   </Stack>
                 ) : (
                   <>
-                    {formData.status !== 'PROFORMA' && (
+                    {listViewById.status === 'TAX' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
                       <div className="d-flex" style={{ marginRight: '30px' }}>
                         <Button
                           variant="outlined"
@@ -1290,7 +1417,7 @@ console.log("Error Save", errors);
                   </>
                 )}
               </>
-            )}
+            )} */}
           </div>
         </div>
         {listView ? (
@@ -1310,7 +1437,7 @@ console.log("Error Save", errors);
             <div className="row d-flex ml" style={{ marginBottom: '20px' }}>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
-                  <TextField id="docId" name="docId" label="Doc ID" size="small" value={docId} disabled required fullWidth />
+                  <TextField id="docId" name="docId" label="Doc No" size="small" value={docId} disabled required fullWidth />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -1401,8 +1528,6 @@ console.log("Error Save", errors);
                   </Select>
                 </FormControl>
               </div>
-
-
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.partyType}>
                   <InputLabel id="partyType">Party Type</InputLabel>
@@ -1515,7 +1640,7 @@ console.log("Error Save", errors);
                       // Update the formData with the selected origin bill
                       setFormData((prev) => ({
                         ...prev,
-                        originBill: selectedDocId
+                        originBill: selectedDocId ? selectedDocId : ''
                       }));
                     }}
                   >
@@ -2721,7 +2846,7 @@ console.log("Error Save", errors);
                                           value={row.currency}
                                           disabled
                                           onChange={(e) => {
-                                            const value = e.target.value.toUpperCase(); // Ensure currency is uppercase
+                                            const value = e.target.value; 
                                             setIrnChargesData((prev) => prev.map((r) => (r.id === row.id ? { ...r, currency: value } : r)));
 
                                             // Recalculate fcAmount based on currency
@@ -3658,7 +3783,6 @@ console.log("Error Save", errors);
         title="IRN Credit Note Approval"
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={() => handleConfirmAction(docId)}
-
         onCancel={handleCloseModal}
       />
       <ToastContainer />

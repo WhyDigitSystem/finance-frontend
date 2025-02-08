@@ -70,7 +70,7 @@ const TaxInvoiceDetails = () => {
     gstType: '',
     invoiceDate: null,
     invoiceNo: '',
-    jobOrderNo: '',
+    jobNo: '',
     orgId: orgId,
     partyCode: '',
     partyId: '',
@@ -102,7 +102,7 @@ const TaxInvoiceDetails = () => {
     gstType: '',
     invoiceDate: '',
     invoiceNo: '',
-    jobOrderNo: '',
+    jobNo: '',
     orgId: orgId,
     partyCode: '',
     partyId: '',
@@ -198,7 +198,7 @@ const TaxInvoiceDetails = () => {
       if (result.status === true) {
         setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
         showToast(
-          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved' ? 'Success' : 'error',
+          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
           result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved'
             ? 'TaxInvoice Approved successfully'
             : 'TaxInvoice Rejected successfully'
@@ -455,7 +455,7 @@ const TaxInvoiceDetails = () => {
       gstType: '',
       invoiceDate: null,
       invoiceNo: '',
-      jobOrderNo: '',
+      jobNo: '',
       orgId: orgId,
       partyCode: '',
       partyId: '',
@@ -487,7 +487,7 @@ const TaxInvoiceDetails = () => {
       gstType: '',
       invoiceDate: '',
       invoiceNo: '',
-      jobOrderNo: '',
+      jobNo: '',
       orgId: orgId,
       partyCode: '',
       partyId: '',
@@ -565,34 +565,34 @@ const TaxInvoiceDetails = () => {
     }
   }, [partyName]);
 
-  useEffect(() => {
-    if (stateName.length > 0 && formData.stateCode) {
-      const isValidState = stateName.some(state => state.stateCode === formData.stateCode);
-      if (!isValidState) {
-        setFormData((prev) => ({
-          ...prev,
-          stateCode: ''  // Reset to empty if not found
-        }));
-      }
-    }
-  }, [stateName, formData.stateCode]);
+  // useEffect(() => {
+  //   if (stateName.length > 0 && formData.stateCode) {
+  //     const isValidState = stateName.some(state => state.stateCode === formData.stateCode);
+  //     if (!isValidState) {
+  //       setFormData((prev) => ({
+  //         ...prev,
+  //         stateCode: ''  // Reset to empty if not found
+  //       }));
+  //     }
+  //   }
+  // }, [stateName, formData.stateCode]);
   
 
-  // useEffect(() => {
-  //   if (stateName.length === 1) {
-  //     const defaultStateCode = stateName[0];
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       stateCode: defaultStateCode.stateCode,
-  //       stateNo: defaultStateCode.stateNo,
-  //       recipientGSTIN: defaultStateCode.recipientGSTIN
-  //     }));
-  //     getPlaceOfSupply(defaultStateCode.stateCode);
-  //     setStateCode(defaultStateCode.stateCode);
-  //     getGSTType(defaultStateCode.stateCode);
-  //     console.log('state code', defaultStateCode.stateCode);
-  //   }
-  // }, [stateName]);
+  useEffect(() => {
+    if (stateName.length === 1) {
+      const defaultStateCode = stateName[0];
+      setFormData((prevData) => ({
+        ...prevData,
+        stateCode: defaultStateCode.stateCode,
+        stateNo: defaultStateCode.stateNo,
+        recipientGSTIN: defaultStateCode.recipientGSTIN
+      }));
+      getPlaceOfSupply(defaultStateCode.stateCode);
+      setStateCode(defaultStateCode.stateCode);
+      getGSTType(defaultStateCode.stateCode);
+      console.log('state code', defaultStateCode.stateCode);
+    }
+  }, [stateName]);
 
   useEffect(() => {
     if (placeOfSupply.length === 1) {
@@ -604,6 +604,19 @@ const TaxInvoiceDetails = () => {
       getAddessType(defaultPlaceOfSupply.placeOfSupply);
     }
   }, [placeOfSupply]);
+
+  useEffect(() => {
+    if (jobCardNo.length === 1) {
+      const defaultJobCardNo = jobCardNo[0];
+      setFormData((prevData) => ({
+        ...prevData,
+        jobNo: defaultJobCardNo.jobNo
+      }));
+      // getAddessType(defaultPlaceOfSupply.placeOfSupply);
+    console.log("useEffect jobNo", formData.jobNo)
+    console.log("useEffect jobNo", defaultJobCardNo.jobNo)
+    }
+  }, [jobCardNo]);
 
   useEffect(() => {
     if (addressType.length === 1) {
@@ -878,6 +891,21 @@ const TaxInvoiceDetails = () => {
       console.log('No employee found with the given code:', value); // Log if no employee is found
     }
   };
+  const handleJobOrderNo = (e) => {
+    const value = e.target.value; // Get the selected value (employeeCode)
+    console.log('Selected JobOrderNo value:', value);
+    const selectedJobOrder = jobCardNo.find((job) => job.jobNo === value); // Check if 'empCode' is correct
+    if (selectedJobOrder) {
+      console.log('Selected JobOrderNo onchange:', selectedJobOrder);
+      setFormData((prevData) => ({
+        ...prevData,
+        jobNo: selectedJobOrder.jobNo,
+      }));
+      console.log("Onchange joborderno", formData.jobNo);
+    } else {
+      console.log('No JobOrderNo found with the given code:', value);
+    }
+  };
 
   const handleSelectPlaceChange = (e) => {
     const value = e.target.value; // Get the selected value (employeeCode)
@@ -1029,8 +1057,7 @@ const TaxInvoiceDetails = () => {
           totalTaxableAmountLc: listValueVO.totalTaxableAmountLc,
           amountInWords: listValueVO.amountInWords,
           billingRemarks: listValueVO.billingRemarks,
-          jobOrderNo: listValueVO.jobOrderNo,
-          // jobOrderNo: listValueVO.jobOrderNo,
+          jobNo: listValueVO.jobOrderNo,
           addressType: listValueVO.addressType
         });
 
@@ -1160,7 +1187,7 @@ const TaxInvoiceDetails = () => {
       gstType: formData.gstType,
       // invoiceDate: dayjs(formData.invoiceDate).format('YYYY-MM-DD'),
       invoiceNo: formData.invoiceNo,
-      jobOrderNo: formData.jobOrderNo,
+      jobOrderNo: formData.jobNo,
       orgId: orgId,
       partyCode: formData.partyCode,
       partyId: parseInt(partyId),
@@ -1183,15 +1210,15 @@ const TaxInvoiceDetails = () => {
     try {
       const response = await apiCalls('put', '/taxInvoice/updateCreateTaxInvoice', saveFormData);
       if (response.status === true) {
-        showToast('success', editId ? 'TaxInvoice updated successfully' : 'TaxInvoice created successfully');
+        showToast('success', editId ? 'Tax Invoice updated successfully' : 'Tax Invoice created successfully');
         getAllTaxInvoice();
         handleClear();
       } else {
-        showToast('error', response.paramObjectsMap.errorMessage || 'TaxInvoice creation failed');
+        showToast('error', response.paramObjectsMap.errorMessage || 'Tax Invoice creation failed');
       }
     } catch (error) {
       console.error('Error:', error);
-      showToast('error', 'TaxInvoice creation failed');
+      showToast('error', 'Tax Invoice creation failed');
     }
   };
   const handleTableInputChange = (index, field, value) => {
@@ -1810,22 +1837,19 @@ const TaxInvoiceDetails = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label" required>
                     Job Card No
                   </InputLabel>
                   <Select
-                    labelId="addressTypeLabel"
-                    // value={formData.stateCode}
-                    value={formData.jobOrderNo || (jobCardNo.length === 1 ? jobCardNo[0].jobNo : '')}
-                    // onChange={handleSelectStateChange}
-                    onChange={(e) => setFormData({ ...formData, jobOrderNo: e.target.value })}
+                    labelId="jobCardNo"
+                    value={formData.jobNo || (jobCardNo.length === 1 ? jobCardNo[0].jobNo : '')}
+                    onChange={handleJobOrderNo}
                     label="Job Card No"
                     required
-                    error={!!errors.jobOrderNo}
-                    helperText={errors.jobOrderNo}
+                    error={!!errors.jobNo}
+                    helperText={errors.jobNo}
                     disabled={formData.status === 'TAX'}
                   >
                     {jobCardNo?.length > 0 ? (
@@ -1835,10 +1859,10 @@ const TaxInvoiceDetails = () => {
                         </MenuItem>
                       ))
                     ) : (
-                      <MenuItem disabled>No Job Card no available</MenuItem> // Fallback option
+                      <MenuItem disabled>No Job Card no available</MenuItem> 
                     )}
                   </Select>
-                  {errors.jobOrderNo && <FormHelperText style={{ color: 'red' }}>{errors.jobOrderNo}</FormHelperText>}
+                  {errors.jobNo && <FormHelperText style={{ color: 'red' }}>{errors.jobNo}</FormHelperText>}
                 </FormControl>
               </div>
             </div>
