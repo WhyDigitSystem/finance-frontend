@@ -9,17 +9,17 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
-import CommonTable from 'views/basicMaster/CommonTable';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import CommonListViewTable from '../../views/basicMaster/CommonListViewTable';
 
 const HsnSacCode = () => {
 
   const [formData, setFormData] = useState({
     active: true,
     type:'',
-    chapterCode:'',
+    code:'',
     description:'',
     taxType:'',
     igst:'',
@@ -34,9 +34,9 @@ const HsnSacCode = () => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
 
   const columns = [
-    { accessorKey: 'serviceAccountCode', header: 'Service Account Code', size: 240 },
-    { accessorKey: 'sacDescription', header: 'SAC Description', size: 140 },
-    { accessorKey: 'product', header: 'Product', size: 100 },
+    { accessorKey: 'type', header: 'Type', size: 240 },
+    { accessorKey: 'description', header: 'Description', size: 140 },
+    { accessorKey: 'code', header: 'Code', size: 100 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
@@ -46,8 +46,8 @@ const HsnSacCode = () => {
 
   const getAllHsnSacCode = async () => {
     try {
-      const result = await apiCalls('get', `/master/getAllSacCodeByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.sacCodeVO);
+      const result = await apiCalls('get', `/master/getAllHSNSacCodeByOrgId?orgId=${orgId}`);
+      setData(result.paramObjectsMap.hsnSacCodeVO);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -56,13 +56,13 @@ const HsnSacCode = () => {
   const getAllSacCodeById = async (row) => {
     setEditId(row.original.id);
     try {
-      const result = await apiCalls('get', `/master/getAllSacCodeById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/master/getAllHSNSacCodeById?id=${row.original.id}`);
       if (result.status === true) {
-        const hsnSocCodeVO = result.paramObjectsMap.sacCodeVO[0];
+        const hsnSocCodeVO = result.paramObjectsMap.hsnSacCodeVO;
         setShowForm(true);
         setFormData({
           type: hsnSocCodeVO.type || '',
-          chapterCode: hsnSocCodeVO.chapterCode || '',
+          code: hsnSocCodeVO.code || '',
           description: hsnSocCodeVO.description || '',
           taxType: hsnSocCodeVO.taxType || '',
           igst: hsnSocCodeVO.igst || '',
@@ -82,9 +82,7 @@ const HsnSacCode = () => {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     let inputValue = type === 'checkbox' ? checked : value;
-  
-    // Allow only numeric input and limit length to 6
-    if (name === 'chapterCode') {
+    if (name === 'code') {
       if (!/^\d*$/.test(inputValue)) {
         setFieldErrors((prevErrors) => ({
           ...prevErrors,
@@ -104,7 +102,6 @@ const HsnSacCode = () => {
         }));
       }
     }
-  
     setFormData((prevFormData) => ({
       ...prevFormData,
       [name]: inputValue
@@ -114,12 +111,11 @@ const HsnSacCode = () => {
   const handleCheckboxChange = (event) => {
     setFormData({ ...formData, active: event.target.checked });
   };
-
   const handleClear = () => {
     setFormData({
       active: true,
       type:'',
-      chapterCode:'',
+      code:'',
       description:'',
       taxType:'',
       igst:'',
@@ -129,28 +125,26 @@ const HsnSacCode = () => {
     setEditId('');
     setFieldErrors({});
   };
-
   const handleList = () => {
     setShowForm(!showForm);
     setFieldErrors({});
   };
-
   const validateForm = () => {
     let errors = {};
     let hasError = false;
 
-    // if (!formData.serviceAccountCode) {
-    //   errors.serviceAccountCode = 'SAC is required';
-    //   hasError = true;
-    // }
-    // if (!formData.sacDescription) {
-    //   errors.sacDescription = 'SAC Description is required';
-    //   hasError = true;
-    // }
-    // if (!formData.product) {
-    //   errors.product = 'Product is required';
-    //   hasError = true;
-    // }
+    if (!formData.type) {
+      errors.type = 'Type is required';
+      hasError = true;
+    }
+    if (!formData.description) {
+      errors.description = 'Description is required';
+      hasError = true;
+    }
+    if (!formData.code) {
+      errors.code = 'Code is required';
+      hasError = true;
+    }
 
     setFieldErrors(errors);
     return !hasError;
@@ -160,20 +154,21 @@ const HsnSacCode = () => {
     if (validateForm()) {
       const formDataToSend = {
         ...(editId && { id: editId }),
-        active: formData.active,
+        active: formData.active === 'Active' ? true : false,
         type: formData.type,
-        chapterCode: formData.chapterCode,
+        code: formData.code,
         description: formData.description,
         taxType: formData.taxType,
-        igst: formData.igst,
-        cgst: formData.cgst,
-        sgst: formData.sgst,
-        orgId: orgId,
+        igst: formData.igst ? parseInt(formData.igst) : 0,
+        cgst: formData.cgst ? parseInt(formData.cgst) : 0,
+        sgst: formData.sgst ? parseInt(formData.sgst) : 0,
+        orgId: parseInt(orgId),
         createdBy: loginUserName
       };
+      
       console.log('Saving HSN code with payload:', formDataToSend);
       try {
-        const result = await apiCalls('put', '/master/updateCreateSacCode', formDataToSend);
+        const result = await apiCalls('put', '/master/updateCreateHSNSacCode', formDataToSend);
         if (result.status === true) {
           showToast('success', editId ? `${formData.type} Code Updated Successfully` : `${formData.type} Code created successfully`);
           getAllHsnSacCode();
@@ -232,19 +227,19 @@ const HsnSacCode = () => {
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
-                  id="chapterCode"
-                  name="chapterCode"
+                  id="code"
+                  name="code"
                   label={
                     <span>
-                      Chapter Code <span className="asterisk">*</span>
+                      Code <span className="asterisk">*</span>
                     </span>
                   }
                   size="small"
-                  value={formData.chapterCode}
+                  value={formData.code}
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 50 }}
-                  error={!!fieldErrors.chapterCode}
-                  helperText={fieldErrors.chapterCode}
+                  error={!!fieldErrors.code}
+                  helperText={fieldErrors.code}
                 />
               </FormControl>
             </div>
@@ -360,7 +355,13 @@ const HsnSacCode = () => {
             </div>
           </div>
         ) : (
-          <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getAllSacCodeById} />
+          <CommonListViewTable
+              data={data}
+              columns={columns}
+              blockEdit={true}
+              toEdit={getAllSacCodeById}
+            />
+          // <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getAllSacCodeById} />
         )}
       </div>
     </div>
