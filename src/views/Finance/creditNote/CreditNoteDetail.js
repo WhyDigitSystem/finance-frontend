@@ -841,28 +841,24 @@ const IrnCreditNote = () => {
       // Update the formData with selected bill data (excluding table data for Party Name)
       setFormData((prev) => ({
         ...prev,
-        // vohNo: selectedBill.invoiceNo,
-        // vohDate: selectedBill.invoiceDate,
         creditDays: selectedBill.creditDays,
         currency: selectedBill.billCurr,
         exRate: selectedBill.billCurrRate,
         originBill: selectedBill.originBillNo,
+        originBillDate: selectedBill.docDate,  
         address: selectedBill.address,
         pincode: selectedBill.pinCode,
         gstType: selectedBill.gstType,
-        // billingMonth: selectedBill.billMonth,
-        // salesType: selectedBill.salesType,
         stateCode: selectedBill.stateCode,
         stateNo: selectedBill.stateNo,
         recipientGSTIN: selectedBill.recipientGSTIN,
         placeOfSupply: selectedBill.placeOfSupply,
         addressType: selectedBill.addressType,
+        shipRefNo: selectedBill.shipperInvoiceNo,
         jobOrderNo: selectedBill.jobOrderNo,
         supplierRefNo: selectedBill.invoiceNo,
         supplierRefDate: selectedBill.invoiceDate
       }));
-
-      // Example: Update table data (assuming you're maintaining a table state)
       if (selectedBill.taxInvoiceDetailsVO) {
         setIrnChargesData(
           selectedBill.taxInvoiceDetailsVO.map((item) => ({
@@ -889,6 +885,7 @@ const IrnCreditNote = () => {
           }))
         );
       }
+      console.log("orgin bill ", formData.originBillDate ,"docDate", selectedBill.docDate);
     }
   };
 
@@ -923,7 +920,7 @@ const IrnCreditNote = () => {
     getIrnCreditNoteDocId();
     getAllPartyTypeByOrgId();
     getAllCurrency();
-    // getAllOriginalBill();
+    getAllIrnCredit();
   }, []);
 
   const getIrnCreditNoteDocId = async () => {
@@ -963,10 +960,6 @@ const IrnCreditNote = () => {
     }
   };
 
-  useEffect(() => {
-    getAllIrnCredit();
-  }, []);
-
   const getAllIrnCredit = async () => {
     try {
       const response = await apiCalls('get', `irnCreditNote/getAllIrnCreditByOrgId?orgId=${orgId}`);
@@ -994,6 +987,7 @@ const IrnCreditNote = () => {
         setListViewById(response.paramObjectsMap.irnCreditVO[0]);
         setDocId(irnCreditNoteVO.docId);
         setFormData({
+          jobOrderNo: irnCreditNoteVO.jobNo,
           partyName: irnCreditNoteVO.partyName,
           partyCode: irnCreditNoteVO.partyCode,
           partyType: irnCreditNoteVO.partyType,
@@ -1119,11 +1113,6 @@ const IrnCreditNote = () => {
         hasTableErrors = true;
       }
     });
-
-    // Check for empty fields and set error messages
-    // if (!formData.vohNo) {
-    //   errors.vohNo = 'Voucher No is required';
-    // }
     if (!formData.partyName) {
       errors.partyName = 'Party Name is required';
     }
@@ -1133,12 +1122,6 @@ const IrnCreditNote = () => {
     if (!formData.partyType) {
       errors.partyType = 'Party Type is required';
     }
-    // if (!formData.supplierRefDate) {
-    //   errors.supplierRefDate = 'SupRef Date is required';
-    // }
-    // if (!formData.creditDays) {
-    //   errors.creditDays = 'Credit Days is required';
-    // }
     if (!formData.currency) {
       errors.currency = 'Currency is required';
     }
@@ -1172,14 +1155,8 @@ const IrnCreditNote = () => {
     if (!formData.shipRefNo) {
       errors.shipRefNo = 'shipper RefNo is required';
     }
-    // if (!formData.pincode) {
-    //   errors.pincode = 'Pin code is required';
-    // }
     if (!formData.gstType) {
       errors.gstType = 'Tax Type is required';
-    }
-    if (!formData.creditRemarks) {
-      errors.creditRemarks = 'Credit Remarks is required';
     }
 console.log("Error Save", errors);
 
@@ -1190,9 +1167,7 @@ console.log("Error Save", errors);
     // Prevent saving if form or table errors exist
     if (Object.keys(errors).length === 0 ) {
       setIsLoading(true);
-
       const irnCreditChargesVo = irnChargesData.map((row) => ({
-        // id: item.id || 0, // If id exists, otherwise 0
         ...(editId && { id: row.id }),
         chargeType: row.chargeType,
         chargeCode: row.chargeCode,
@@ -1208,10 +1183,10 @@ console.log("Error Save", errors);
         sac: row.sac,
         gstpercent: parseInt(row.gstpercent)
       }));
-
       const saveFormData = {
         ...(editId && { id: editId }),
         address: formData.address,
+        jobNo: formData.jobOrderNo,
         addressType: formData.addressType,
         billCurr: formData.currency,
         billCurrRate: parseInt(formData.exRate),
@@ -1363,61 +1338,6 @@ console.log("Error Save", errors);
                 )}
               </>
             )}
-            {/* {editId && !listView && (formData.status.toUpperCase() === 'TAX' || listViewById.status.toUpperCase() === 'TAX') && (
-              <>
-                {formData.approveStatus === 'Approved' ? (
-                  <Stack direction="row" spacing={2}>
-                    <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
-                    <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
-                  </Stack>
-                ) : formData.approveStatus === 'Rejected' ? (
-                  <Stack direction="row" spacing={2}>
-                    <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
-                    <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
-                  </Stack>
-                ) : (
-                  <>
-                    {listViewById.status === 'TAX' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
-                      <div className="d-flex" style={{ marginRight: '30px' }}>
-                        <Button
-                          variant="outlined"
-                          startIcon={<CheckCircleIcon />}
-                          size="small"
-                          style={{
-                            borderColor: '#4CAF50',
-                            color: '#4CAF50',
-                            fontWeight: 'bold',
-                            textTransform: 'none',
-                            padding: '2px 8px',
-                            fontSize: '0.8rem',
-                            marginRight: '10px',
-                          }}
-                          onClick={handleOpenModalApprove}
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          variant="outlined"
-                          startIcon={<CancelIcon />}
-                          size="small"
-                          style={{
-                            borderColor: '#F44336',
-                            color: '#F44336',
-                            fontWeight: 'bold',
-                            textTransform: 'none',
-                            padding: '2px 8px',
-                            fontSize: '0.8rem',
-                          }}
-                          onClick={handleOpenModalReject}
-                        >
-                          Reject
-                        </Button>
-                      </div>
-                    )}
-                  </>
-                )}
-              </>
-            )} */}
           </div>
         </div>
         {listView ? (
@@ -1491,23 +1411,6 @@ console.log("Error Save", errors);
                   </LocalizationProvider>
                 </FormControl>
               </div>
-
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <TextField
-                    label="Party Type"
-                    size="small"
-                    required
-                    disabled
-                    inputProps={{ maxLength: 30 }}
-                    value={formData.partyType}
-                    // onChange={(e) => setFormData({ ...formData, partyType: e.target.value })}
-                    // error={!!errors.partyType}
-                    // helperText={errors.partyType}
-                  />
-                </FormControl>
-              </div> */}
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label" required>
@@ -1519,8 +1422,6 @@ console.log("Error Save", errors);
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                     label="Status"
                     required
-                    // error={!!errors.status}
-                    // helperText={errors.status}
                     disabled={formData.status === 'TAX' || !editId}
                   >
                     {editId && <MenuItem value="TAX">TAX</MenuItem>}
@@ -1537,8 +1438,7 @@ console.log("Error Save", errors);
                     name="partyType"
                     disabled
                     value={formData.partyType}
-                    onChange={handleInputChange}
-                  // disabled={formData.partyType === 'SpecificValue'}  
+                    onChange={handleInputChange} 
                   >
                     {partyTypeData?.map((row) => (
                       <MenuItem key={row.id} value={row.partyType}>
@@ -1549,21 +1449,6 @@ console.log("Error Save", errors);
                   {fieldErrors.partyType && <FormHelperText>{fieldErrors.partyType}</FormHelperText>}
                 </FormControl>
               </div>
-
-              {/* <div className="col-md-3 mb-3">
-                  <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.partyType}>
-                    <InputLabel id="partyType">Party Type</InputLabel>
-                    <Select labelId="partyType" label="Party Type" name="partyType" value={formData.partyType} onChange={handleInputChange}>
-                      {partyTypeData?.map((row) => (
-                        <MenuItem key={row.id} value={row.partyType}>
-                          {row.partyType}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {fieldErrors.partyType && <FormHelperText>{fieldErrors.partyType}</FormHelperText>}
-                  </FormControl>
-                </div> */}
-
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
@@ -1574,15 +1459,12 @@ console.log("Error Save", errors);
                   size="small"
                   value={formData.partyName ? allPartyName.find((c) => c.partyName === formData.partyName) : null}
                   onChange={(event, newValue) => {
-                    // Update formData with selected partyName
                     handleInputChange({
                       target: {
                         name: 'partyName',
                         value: newValue ? newValue.partyName : ''
                       }
                     });
-
-                    // Fetch origin bills based on the selected partyName
                     if (newValue) {
                       getAllOriginalBill(newValue.partyName);
                     }
@@ -1621,7 +1503,6 @@ console.log("Error Save", errors);
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.originBill}>
                   <InputLabel id="originBill">Origin Bill</InputLabel>
-
                   <Select
                     labelId="originBill"
                     label="Origin Bill"
@@ -1630,14 +1511,8 @@ console.log("Error Save", errors);
                     value={formData.originBill}
                     onChange={(event) => {
                       const selectedDocId = event.target.value;
-
-                      // Find the selected origin bill data
                       const selectedBill = originBillList.find((item) => item.docId === selectedDocId);
-
-                      // Call the function to handle the mapping (form fields and table fields)
                       handleOriginBillSelection(selectedBill);
-
-                      // Update the formData with the selected origin bill
                       setFormData((prev) => ({
                         ...prev,
                         originBill: selectedDocId ? selectedDocId : ''
@@ -1650,12 +1525,9 @@ console.log("Error Save", errors);
                       </MenuItem>
                     ))}
                   </Select>
-
                   {fieldErrors.originBill && <FormHelperText>{fieldErrors.originBill}</FormHelperText>}
                 </FormControl>
               </div>
-
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -1968,7 +1840,7 @@ console.log("Error Save", errors);
                     name="shipRefNo"
                     label="Shipper Ref. No."
                     size="small"
-                    disabled={formData.status === 'TAX'}
+                    disabled
                     value={formData.shipRefNo}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
@@ -1977,37 +1849,6 @@ console.log("Error Save", errors);
                   />
                 </FormControl>
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="pincode"
-                    name="pincode"
-                    label="Pin Code"
-                    size="small"
-                    value={formData.pincode}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 6 }}
-                    error={!!fieldErrors.pincode}
-                    helperText={fieldErrors.pincode}
-                    disabled
-                  />
-                </FormControl>
-              </div> */}
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="pincode"
-                    name="pincode"
-                    // label="Pin Code"
-                    size="small"
-                    // value={formData.pincode}
-                    // onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    // error={!!fieldErrors.pincode}
-                    // helperText={fieldErrors.pincode}
-                  />
-                </FormControl>
-              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -2040,68 +1881,6 @@ console.log("Error Save", errors);
                   />
                 </FormControl>
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="billingMonth"
-                    name="billingMonth"
-                    label="Billing Month"
-                    size="small"
-                    value={formData.billingMonth}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.billingMonth}
-                    helperText={fieldErrors.billingMonth}
-                    disabled
-                  />
-                </FormControl>
-              </div> */}
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="otherInfo"
-                    name="otherInfo"
-                    label="Other Info"
-                    size="small"
-                    value={formData.otherInfo}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.otherInfo}
-                    helperText={fieldErrors.otherInfo}
-                  />
-                </FormControl>
-              </div> */}
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="salesType"
-                    name="salesType"
-                    label="Sales Type"
-                    size="small"
-                    value={formData.salesType}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.salesType}
-                    helperText={fieldErrors.salesType}
-                    disabled
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="exAmount"
-                    name="exAmount"
-                    label="Ex Amount"
-                    size="small"
-                    value={formData.exAmount}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 150 }}
-                    error={!!fieldErrors.exAmount}
-                    helperText={fieldErrors.exAmount}
-                  />
-                </FormControl>
-              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -2121,36 +1900,20 @@ console.log("Error Save", errors);
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="jobNo"
-                    name="jobNo"
+                    id="jobOrderNo"
+                    name="jobOrderNo"
                     label="Job No"
                     size="small"
-                    value={formData.jobNo}
+                    value={formData.jobOrderNo}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.jobNo}
-                    helperText={fieldErrors.jobNo}
+                    error={!!fieldErrors.jobOrderNo}
+                    helperText={fieldErrors.jobOrderNo}
                     disabled
                   />
                 </FormControl>
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="charges"
-                    name="charges"
-                    label="Charges"
-                    size="small"
-                    value={formData.charges}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 50 }}
-                    error={!!fieldErrors.charges}
-                    helperText={fieldErrors.charges}
-                  />
-                </FormControl>
-              </div> */}
             </div>
-            {/* </div> */}
 
             <div className="card w-full p-6 bg-base-100 shadow-xl mb-3">
               <Box sx={{ width: '100%', typography: 'body1' }}>
