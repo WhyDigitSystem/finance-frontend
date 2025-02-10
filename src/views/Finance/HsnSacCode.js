@@ -82,13 +82,13 @@ const HsnSacCode = () => {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     let inputValue = type === 'checkbox' ? checked : value;
-    if (name === 'code') {
+    if (name === 'code' ) {
       if (!/^\d*$/.test(inputValue)) {
         setFieldErrors((prevErrors) => ({
           ...prevErrors,
           [name]: 'Only numbers are allowed'
         }));
-        return; // Prevent invalid input from being set
+        return;
       } else if (inputValue.length > 6) {
         setFieldErrors((prevErrors) => ({
           ...prevErrors,
@@ -100,6 +100,15 @@ const HsnSacCode = () => {
           ...prevErrors,
           [name]: ''
         }));
+      }
+    }
+    if (name === 'igst' || name === 'cgst' || name === 'sgst') {
+      if (!/^\d*$/.test(inputValue)) {
+        setFieldErrors((prevErrors) => ({
+          ...prevErrors,
+          [name]: 'Only numbers are allowed'
+        }));
+        return;
       }
     }
     setFormData((prevFormData) => ({
