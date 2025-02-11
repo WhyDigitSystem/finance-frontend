@@ -8,7 +8,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { FormControl, FormHelperText, InputLabel, MenuItem, Select } from '@mui/material';
@@ -63,7 +62,7 @@ const CostDebitNote = () => {
       gstPercent: '',
       sac: '',
       taxable: '',
-      lcAmount: ''
+      lcAmt: ''
     }
   ]);
 
@@ -139,7 +138,7 @@ const CostDebitNote = () => {
       rate: '',
       sac: '',
       fcAmount: '',
-      lcAmount: '',
+      lcAmt: '',
       taxable: ''
     }
   ]);
@@ -161,7 +160,7 @@ const CostDebitNote = () => {
       rate: '',
       sac: '',
       fcAmount: '',
-      lcAmount: '',
+      lcAmt: '',
       taxable: ''
     }
   ]);
@@ -285,7 +284,7 @@ const CostDebitNote = () => {
         rate: '',
         sac: '',
         fcAmount: '',
-        lcAmount: '',
+        lcAmt: '',
         taxable: ''
       }
     ]);
@@ -298,6 +297,7 @@ const CostDebitNote = () => {
       }
     ]);
     setCostInvoiceErrors([]);
+    getCurrencyAndExratesForMatchingParties([]);
     setTdsCostErrors([]);
     setEditId('');
     getCostDebitNoteDocId();
@@ -393,7 +393,9 @@ const CostDebitNote = () => {
           totalTaxableAmountLc: listValueVO.totalTaxableAmountLc,
           amountInWords: listValueVO.amountInWords,
           billingRemarks: listValueVO.billingRemarks,
-          amountInWords: listValueVO.amountInWords
+          amountInWords: listValueVO.amountInWords,
+          purVoucherNo: listValueVO.purVoucherNo,
+          purVoucherDate: listValueVO.purVoucherDate
         });
         // handleCloseModal();
         console.log('TAX INVOICE:==>', result);
@@ -408,11 +410,11 @@ const CostDebitNote = () => {
   };
 
   const calculateTotTdsWhAmnt = () => {
-    const totalLcAmount = chargerCostInvoice.reduce((acc, curr) => acc + curr.lcAmount, 0);
+    const totallcAmt = chargerCostInvoice.reduce((acc, curr) => acc + curr.lcAmt, 0);
 
     const updatedTdsCostInvoiceDTO = costDebitNoteTaxPrtculDTO.map((item) => {
       const tdsWithHoldingPer = parseFloat(item.tdsWithHoldingPer);
-      const totTdsWhAmnt = tdsWithHoldingPer ? (totalLcAmount * tdsWithHoldingPer) / 100 : 0;
+      const totTdsWhAmnt = tdsWithHoldingPer ? (totallcAmt * tdsWithHoldingPer) / 100 : 0;
       return { ...item, totTdsWhAmnt: totTdsWhAmnt.toFixed(2) };
     });
 
@@ -429,31 +431,31 @@ const CostDebitNote = () => {
 
   const calculateTotals = () => {
     let totalBillAmt = 0;
-    let totalLcAmount = 0;
-    let totalGst = 0;
+    let totallcAmt = 0;
+    let totalGstAmount = 0;
 
     chargerCostInvoice.forEach((row) => {
       totalBillAmt += parseFloat(row.billAmt || 0);
-      totalLcAmount += parseFloat(row.lcAmount || 0);
-      totalGst += parseFloat(row.gst || 0);
+      totallcAmt += parseFloat(row.lcAmt || 0);
+      totalGstAmount += parseFloat(row.gstAmount || 0);
     });
 
     const totalTds = costDebitNoteTaxPrtculDTO.reduce((acc, row) => acc + parseFloat(row.totTdsWhAmnt || 0), 0);
 
-    const roundOffDifference = (Math.round(totalLcAmount) - totalLcAmount).toFixed(2);
+    const roundOffDifference = (Math.round(totallcAmt) - totallcAmt).toFixed(2);
 
-    const roundedLcAmount = Math.round(totalLcAmount);
+    const roundedlcAmt = Math.round(totallcAmt);
 
     setFormData((prev) => ({
       ...prev,
       totChargesBillCurrAmt: totalBillAmt.toFixed(2),
-      totChargesLcAmt: roundedLcAmount.toFixed(2),
+      totChargesLcAmt: roundedlcAmt.toFixed(2),
       roundOff: roundOffDifference,
-      actBillCurrAmt: (totalBillAmt + totalGst).toFixed(2),
-      actBillLcAmt: (roundedLcAmount + totalGst - totalTds).toFixed(2),
-      netBillCurrAmt: (totalBillAmt + totalGst - totalTds).toFixed(2),
-      netBillLcAmt: (roundedLcAmount + totalGst - totalTds).toFixed(2),
-      gstInputLcAmt: totalGst.toFixed(2)
+      actBillCurrAmt: (totalBillAmt + totalGstAmount).toFixed(2),
+      actBillLcAmt: (roundedlcAmt + totalGstAmount - totalTds).toFixed(2),
+      netBillCurrAmt: (totalBillAmt + totalGstAmount - totalTds).toFixed(2),
+      netBillLcAmt: (roundedlcAmt + totalGstAmount - totalTds).toFixed(2),
+      gstInputLcAmt: totalGstAmount.toFixed(2)
     }));
   };
 
@@ -529,99 +531,109 @@ const CostDebitNote = () => {
 
       if (result) {
         const costVO = result.paramObjectsMap.costDebitNoteVOs[0];
+
         setEditId(row.original.id);
         getCurrencyAndExratesForMatchingParties(costVO.supplierName);
+
         setFormData({
-          accuralid: costVO.accuralid,
-          address: costVO.address,
-          actBillCurrAmt: costVO.actBillCurrAmt,
-          actBillLcAmt: costVO.actBillLcAmt,
-          originBill: costVO.orginBill,
-          branch: costVO.branch,
-          branchCode: costVO.branchCode,
-          client: costVO.client,
-          costInvoiceDate: costVO.costInvoiceDate ? dayjs(costVO.costInvoiceDate) : dayjs(),
-          costInvoiceNo: costVO.costInvoiceNo,
-          costType: costVO.costType,
-          createdBy: loginUserName,
-          creditDays: costVO.creditDays,
-          currency: costVO.currency,
-          customer: costVO.customer,
-          dueDate: costVO.dueDate ? dayjs(costVO.dueDate) : dayjs(),
-          docDate: costVO.docDate ? dayjs(costVO.docDate) : dayjs(),
-          docId: costVO.docId,
-          exRate: costVO.exRate,
-          finYear: finYear,
-          gstInputLcAmt: costVO.gstInputLcAmt,
-          gstType: costVO.gstType,
-          mode: costVO.mode,
-          netBillCurrAmt: costVO.netBillCurrAmt,
-          netBillLcAmt: costVO.netBillLcAmt,
-          orgId: orgId,
-          otherInfo: costVO.otherInfo,
-          payment: costVO.payment,
-          product: costVO.product,
-          purVoucherDate: costVO.purVoucherDate ? dayjs(costVO.purVoucherDate) : dayjs(),
-          purVoucherNo: costVO.purVoucherNo,
-          remarks: costVO.remarks,
-          roundOff: costVO.roundOff,
-          shipperRefNo: costVO.shipperRefNo,
-          supplierBillNo: costVO.supplierBillNo,
-          supplierCode: costVO.supplierCode,
-          supplierGstIn: costVO.supplierGstIn,
-          supplierGstInCode: costVO.supplierGstInCode,
-          supplierName: costVO.supplierName,
-          supplierPlace: costVO.supplierPlace,
-          supplierType: costVO.supplierType,
-          totChargesBillCurrAmt: costVO.totChargesBillCurrAmt,
-          totChargesLcAmt: costVO.totChargesLcAmt,
-          utrRef: costVO.utrRef
+          accuralid: costVO?.accuralid || '',
+          address: costVO?.address || '',
+          actBillCurrAmt: costVO?.actBillCurrAmt || '',
+          actBillLcAmt: costVO?.actBillLcAmt || '',
+          originBill: costVO?.orginBill || '',
+          branch: costVO?.branch || '',
+          branchCode: costVO?.branchCode || '',
+          client: costVO?.client || '',
+          costInvoiceDate: costVO?.costInvoiceDate ? dayjs(costVO.costInvoiceDate) : dayjs(),
+          costInvoiceNo: costVO?.costInvoiceNo || '',
+          costType: costVO?.costType || '',
+          createdBy: costVO?.createdBy || loginUserName,
+          creditDays: costVO?.creditDays || '',
+          currency: costVO?.currency || '',
+          customer: costVO?.customer || '',
+          dueDate: costVO?.dueDate ? dayjs(costVO.dueDate) : dayjs(),
+          docDate: costVO?.docDate ? dayjs(costVO.docDate) : dayjs(),
+          docId: costVO?.docId || '',
+          exRate: costVO?.exRate || '',
+          finYear: costVO?.finYear || finYear,
+          gstInputLcAmt: costVO?.gstInputLcAmt || '',
+          gstType: costVO?.gstType || '',
+          mode: costVO?.mode || '',
+          netBillCurrAmt: costVO?.netBillCurrAmt || '',
+          netBillLcAmt: costVO?.netBillLcAmt || '',
+          orgId: costVO?.orgId || orgId,
+          otherInfo: costVO?.otherInfo || '',
+          payment: costVO?.payment || '',
+          product: costVO?.product || '',
+          purVoucherDate: costVO?.purVoucherDate ? dayjs(costVO.purVoucherDate) : dayjs(),
+          purVoucherDate: costVO?.purVoucherDate,
+          purVoucherNo: costVO?.purVoucherNo || '',
+          remarks: costVO?.remarks || '',
+          roundOff: costVO?.roundOff || '',
+          shipperRefNo: costVO?.shipperRefNo || '',
+          supplierBillNo: costVO?.supplierBillNo || '',
+          supplierCode: costVO?.supplierCode || '',
+          supplierGstIn: costVO?.supplierGstIn || '',
+          supplierGstInCode: costVO?.supplierGstInCode || '',
+          supplierName: costVO?.supplierName || '',
+          supplierPlace: costVO?.supplierPlace || '',
+          supplierType: costVO?.supplierType || '',
+          totChargesBillCurrAmt: costVO?.totChargesBillCurrAmt || '',
+          totChargesLcAmt: costVO?.totChargesLcAmt || '',
+          utrRef: costVO?.utrRef || ''
         });
+
+        // Correct Mapping of Charges
         setChargerCostInvoice(
-          costVO.normalCharges.map((row) => ({
-            id: row.id,
-            billAmt: row.billAmt,
-            chargeCode: row.chargeCode,
-            chargeLedger: row.chargeLedger,
-            chargeName: row.chargeName,
-            govChargeCode: row.govChargeCode,
-            currency: row.currency,
-            exRate: row.exRate,
-            fcAmount: row.fcAmt,
-            gst: row.gst,
-            gstPercent: row.gstpercent,
-            jobNo: row.jobNo,
-            lcAmount: row.lcAmt,
-            qty: row.qty,
-            rate: row.rate,
-            sac: row.sac,
-            taxable: row.taxable
-          }))
+          costVO?.costDebitChargesVO?.map(row => ({
+            id: row?.id || '',
+            billAmt: row?.billAmt || '',
+            chargeCode: row?.chargeCode || '',
+            chargeLedger: row?.chargeLedger || '',
+            chargeName: row?.chargeName || '',
+            govChargeCode: row?.govChargeCode || '',
+            currency: row?.currency || '',
+            exRate: row?.exRate || '',
+            fcAmount: row?.fcAmt || '',
+            gst: row?.gst || '',
+            gstAmount: row?.gstAmount || '',
+            jobNo: row?.jobNo || '',
+            lcAmt: row?.lcAmt || '',
+            qty: row?.qty || '',
+            rate: row?.rate || '',
+            sac: row?.sac || '',
+            taxable: row?.taxable || ''
+          })) || []
         );
+
+        // Correct Mapping of TDS
         setTdsCostInvoiceDTO(
-          costVO.tdsCostInvoiceVO.map((row) => ({
-            id: row.id,
-            section: row.section,
-            tdsWithHolding: row.tdsWithHolding,
-            tdsWithHoldingPer: row.tdsWithHoldingPer,
-            totTdsWhAmnt: row.totTdsWhAmnt
-          }))
+          costVO?.tdsCostDebitNoteVO?.map(row => ({
+            id: row?.id || '',
+            section: row?.section || '',
+            tdsWithHolding: row?.tdsWithHolding || '',
+            tdsWithHoldingPer: row?.tdsWithHoldingPer || '',
+            totTdsWhAmnt: row?.totTdsWhAmnt || ''
+          })) || []
         );
+
+        // Correct Mapping of GST Lines
         setChargeDetails(
-          costVO.gstLines.map((row) => ({
-            id: row.id,
-            chargeCode: row.chargeCode,
-            chargeDesc: row.chargeName,
-            gChargeCode: row.govChargeCode,
-            gstPercent: row.gstpercent,
-            sac: row.sac,
-            lcAmount: row.lcAmt
-          }))
+          costVO?.costDebitChargesVO?.map(row => ({
+            id: row?.id || '',
+            chargeCode: row?.chargeCode || '',
+            chargeDesc: row?.chargeName || '',
+            gChargeCode: row?.govChargeCode || '',
+            gstPercent: row?.gstpercent || '',
+            sac: row?.sac || '',
+            lcAmt: row?.lcAmt || ''
+          })) || []
         );
+
         setShowChargeDetails(true);
         console.log('DataToEdit', costVO);
       } else {
-        // Handle erro
+        console.error('Error: No data found for this ID.');
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -665,7 +677,7 @@ const CostDebitNote = () => {
           rate: '',
           sac: '',
           fcAmount: '',
-          lcAmount: '',
+          lcAmt: '',
           taxable: ''
         }]);
         setTdsCostInvoiceDTO([{
@@ -722,7 +734,7 @@ const CostDebitNote = () => {
         supplierName: selectedEmp.partyName,
         supplierCode: selectedEmp.partyCode
       }));
-      getOrginBillNoByParty(selectedEmp.partyName);
+      // getOrginBillNoByParty(selectedEmp.partyName);
     } else {
       console.log('No employee found with the given code:', value);
     }
@@ -748,7 +760,6 @@ const CostDebitNote = () => {
         netBillCurrAmt: selectedBill.netBillCurrAmt,
         netBillLcAmt: selectedBill.netBillLcAmt,
         originBillDate: selectedBill.docDate,
-        product: selectedBill.product,
         roundOff: selectedBill.roundOff,
         supplierType: selectedBill.supplierType,
         totChargesBillCurrAmt: selectedBill.totChargesBillCurrAmt,
@@ -776,7 +787,8 @@ const CostDebitNote = () => {
         supplierGstIn: selectedBill.supplierGstIn,
         supplierGstInCode: selectedBill.supplierGstInCode,
         supplierPlace: selectedBill.supplierPlace,
-        utrRef: selectedBill.utrRef
+        utrRef: selectedBill.utrRef,
+        product: selectedBill.product,
       }));
       setChargerCostInvoice(
         (selectedBill.chargerCostInvoiceVO || []).map((row) => ({
@@ -793,7 +805,7 @@ const CostDebitNote = () => {
           gst: row.gst,
           billAmt: row.billAmt,
           gstPercent: row.gstpercent,
-          tlcAmount: row.tlcAmount,
+          lcAmt: row.lcAmt,
           gstAmount: row.gstAmount,
           ledger: row.ledger,
           govChargeCode: row.govChargeCode,
@@ -822,7 +834,7 @@ const CostDebitNote = () => {
           gChargeCode: row.govChargeCode,
           gstPercent: row.gstpercent,
           sac: row.sac,
-          lcAmount: row.lcAmt,
+          lcAmt: row.lcAmt,
         }))
       );
 
@@ -1002,15 +1014,15 @@ const CostDebitNote = () => {
           const exRate = selectedCurrencyData?.buyingExRate || 1;
 
           const fcAmount = updatedRow.currency === 'INR' ? 0 : qty * rate;
-          const lcAmount = qty * rate * exRate;
-          const billAmt = lcAmount / exRate;
-          const gst = (lcAmount * (updatedRow.gstPercent || 0)) / 100;
+          const lcAmt = qty * rate * exRate;
+          const billAmt = lcAmt / exRate;
+          const gst = (lcAmt * (updatedRow.gstPercent || 0)) / 100;
 
           return {
             ...updatedRow,
             exRate,
             fcAmount,
-            lcAmount,
+            lcAmt,
             billAmt,
             gst
           };
@@ -1102,7 +1114,7 @@ const CostDebitNote = () => {
 
             return {
               gstPercent: Number(gstPercent),
-              lcAmount: gst.toFixed(2),
+              lcAmt: gst.toFixed(2),
               ...fetchedDetail,
               chargeCode: fetchedDetail.chargeCode
             };
@@ -1123,7 +1135,7 @@ const CostDebitNote = () => {
 
           return fetchedDetails.map((detail) => ({
             gstPercent: Number(detail.gstPercent),
-            lcAmount: halfGst,
+            lcAmt: halfGst,
             ...detail,
             chargeCode: detail.chargeCode
           }));
@@ -1162,7 +1174,7 @@ const CostDebitNote = () => {
       rate: '',
       sac: '',
       fcAmount: '',
-      lcAmount: '',
+      lcAmt: '',
       taxable: ''
     };
     setChargerCostInvoice([...chargerCostInvoice, newRow]);
@@ -1184,7 +1196,7 @@ const CostDebitNote = () => {
         rate: '',
         sac: '',
         fcAmount: '',
-        lcAmount: '',
+        lcAmt: '',
         taxable: ''
       }
     ]);
@@ -1413,6 +1425,12 @@ const CostDebitNote = () => {
         payment: formData.payment,
         product: formData.product,
         remarks: formData.remarks,
+        // roundOff: formData.roundOff,
+        // totChargesBillCurrAmt: formData.totChargesBillCurrAmt,
+        // gstInputLcAmt: formData.gstInputLcAmt,
+        // approveBy: loginUserName,
+        // approveOn: formData.approveOn,
+        // approveStatus: formData.approveStatus,
         shipperRefNo: formData.shipperRefNo,
         supplierBillNo: formData.supplierBillNo,
         supplierCode: formData.supplierCode,
@@ -1430,15 +1448,15 @@ const CostDebitNote = () => {
         const response = await apiCalls('put', `/costdebitnote/updateCreateCostDebitNote`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
-          showToast('success', editId ? 'Cost Invoice Updated Successfully' : 'Cost Invoice Created successfully');
+          showToast('success', editId ? 'Cost Debit Note Updated Successfully' : 'Cost Debit Note Created successfully');
           getAllCostDebitNoteByOrgId();
           handleClear();
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Cost Invoice Creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'Cost Debit Note Creation failed');
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'Cost Invoice creation failed');
+        showToast('error', 'Cost Debit Note creation failed');
       }
     } else {
       setFieldErrors(errors);
@@ -1550,7 +1568,7 @@ const CostDebitNote = () => {
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small" variant="outlined" error={!!fieldErrors.mode}>
                     <InputLabel id="mode-label">Mode</InputLabel>
-                    <Select labelId="mode-label" label="Select Mode" name="mode" value={formData.mode || ''} onChange={handleInputChange}>
+                    <Select labelId="mode-label" label="Mode" name="mode" value={formData.mode || ''} onChange={handleInputChange}>
                       <MenuItem value="SUBMIT">SUBMIT</MenuItem>
                       <MenuItem value="EDIT">EDIT</MenuItem>
                     </Select>
@@ -1685,7 +1703,8 @@ const CostDebitNote = () => {
                       value={formData.supplierGstInCode || ''}
                       onChange={handleSelectStateChange}
                       label="Supplier GST Code"
-                      disabled={!!formData.originBill} // Disable when originBill has a value
+                      // disabled={!!formData.originBill} // Disable when originBill has a value
+                      disabled
                       error={!!fieldErrors.supplierGstInCode}
                     >
                       {originBillVo &&
@@ -1723,11 +1742,12 @@ const CostDebitNote = () => {
                   <FormControl fullWidth size="small">
                     <InputLabel id="supplierPlace">Supplier Place</InputLabel>
                     <Select
-                      labelId="supplierPlace"
+                      label="supplierPlace"
                       value={formData.supplierPlace || ''} // Ensure controlled value
                       name="supplierPlace"
                       onChange={handleSelectPlaceChange}
-                      disabled={!!formData.originBill}
+                      // disabled={!!formData.originBill}
+                      disabled
                       error={!!fieldErrors.supplierPlace}
                     >
                       {originBillVo && originBillVo.length > 0 ? (
@@ -1757,7 +1777,8 @@ const CostDebitNote = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.supplierBillNo}
                       onChange={handleInputChange}
-                      disabled={!!formData.originBill}
+                      // disabled={!!formData.originBill}
+                      disabled
                       error={!!fieldErrors.supplierBillNo}
                       helperText={fieldErrors.supplierBillNo}
                     />
@@ -1794,7 +1815,8 @@ const CostDebitNote = () => {
                       onChange={handleInputChange}
                       name="currency"
                       value={formData.currency || ''}
-                      disabled={!!formData.originBill}
+                      // disabled={!!formData.originBill}
+                      disabled
                     >
                       {originBillVo &&
                         originBillVo.map((par, index) => (
@@ -1838,7 +1860,8 @@ const CostDebitNote = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.creditDays}
                       onChange={handleInputChange}
-                      disabled={!!formData.originBill}
+                      // disabled={!!formData.originBill}
+                      disabled
                       error={!!fieldErrors.creditDays}
                       helperText={fieldErrors.creditDays}
                     />
@@ -1872,7 +1895,8 @@ const CostDebitNote = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.shipperRefNo}
                       onChange={handleInputChange}
-                      disabled={!!formData.originBill}
+                      // disabled={!!formData.originBill}
+                      disabled
                       error={!!fieldErrors.shipperRefNo}
                       helperText={fieldErrors.shipperRefNo}
                     />
@@ -1888,7 +1912,8 @@ const CostDebitNote = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.otherInfo}
                       onChange={handleInputChange}
-                      disabled={!!formData.originBill}
+                      // disabled={!!formData.originBill}
+                      disabled
                       error={!!fieldErrors.otherInfo}
                       helperText={fieldErrors.otherInfo}
                     />
@@ -1902,7 +1927,8 @@ const CostDebitNote = () => {
                       name="gstType"
                       value={formData.gstType}
                       onChange={handleInputChange}
-                      disabled={!!formData.originBill}
+                      // disabled={!!formData.originBill}
+                      disabled
                       label="GST Type"
                       error={!!fieldErrors.gstType}
                       helperText={fieldErrors.gstType}
@@ -1920,7 +1946,8 @@ const CostDebitNote = () => {
                       labelId="payment"
                       value={formData.payment}
                       onChange={handleInputChange}
-                      disabled={!!formData.originBill}
+                      // disabled={!!formData.originBill}
+                      disabled
                       label="Payment"
                       name="payment"
                       error={!!fieldErrors.payment}
@@ -1943,7 +1970,8 @@ const CostDebitNote = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.accuralid}
                       onChange={handleInputChange}
-                      disabled={!!formData.originBill}
+                      // disabled={!!formData.originBill}
+                      disabled
                       error={!!fieldErrors.accuralid}
                       helperText={fieldErrors.accuralid}
                     />
@@ -1959,7 +1987,8 @@ const CostDebitNote = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.utrRef}
                       onChange={handleInputChange}
-                      disabled={!!formData.originBill}
+                      // disabled={!!formData.originBill}
+                      disabled
                       error={!!fieldErrors.utrRef}
                       helperText={fieldErrors.utrRef}
                     />
@@ -1975,7 +2004,8 @@ const CostDebitNote = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.remarks}
                       onChange={handleInputChange}
-                      disabled={!!formData.originBill}
+                      // disabled={!!formData.originBill}
+                      disabled
                       error={!!fieldErrors.remarks}
                       helperText={fieldErrors.remarks}
                     />
@@ -2181,11 +2211,11 @@ const CostDebitNote = () => {
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
                                           </td>
-                                          {/* lcAmount */}
+                                          {/* lcAmt */}
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"
-                                              value={row.lcAmount}
+                                              value={row.lcAmt}
                                               disabled={!!formData.originBill}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
@@ -2215,22 +2245,24 @@ const CostDebitNote = () => {
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"
-                                              value={row.gstPercent}
-                                              disabled={!!formData.originBill}
-                                              style={{ whiteSpace: 'nowrap', width: '150px' }}
-                                              className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
-                                            />
-                                          </td>
-                                          {/* gst */}
-                                          <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
                                               value={row.gst}
                                               disabled={!!formData.originBill}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
                                           </td>
+
+                                          {/* gst */}
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.gstAmount}
+                                              disabled={!!formData.originBill}
+                                              style={{ whiteSpace: 'nowrap', width: '150px' }}
+                                              className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
+                                            />
+                                          </td>
+
                                         </tr>
                                       ))}
                                     </>
@@ -2261,7 +2293,8 @@ const CostDebitNote = () => {
                                             <select
                                               value={row.jobNo}
                                               style={{ width: '150px' }}
-                                              disabled={!!formData.originBill}
+                                              // disabled={!!formData.originBill}
+                                              disabled
                                               onChange={(e) => {
                                                 const selectedJobNo = e.target.value;
                                                 const selectedCurrencyData = jobNoList.find((job) => job.jobNo === selectedJobNo);
@@ -2294,7 +2327,8 @@ const CostDebitNote = () => {
                                             <select
                                               value={row.chargeCode}
                                               style={{ width: '150px' }}
-                                              disabled={!!formData.originBill}
+                                              // disabled={!!formData.originBill}
+                                              disabled
                                               onChange={(e) => handleChargeCodeChange(e, index)}
                                               className={costInvoiceErrors[index]?.chargeCode ? 'error form-control' : 'form-control'}
                                             >
@@ -2487,19 +2521,19 @@ const CostDebitNote = () => {
                                           </td>
                                           <td className="border px-2 py-2">
                                             <select
-                                              value={row.currency}
-                                              style={{ width: '150px' }}
-                                              disabled={!!formData.originBill}
+                                              value={row.currency || ""}
+                                              style={{ width: "150px" }}
+                                              disabled
                                               onChange={(e) => {
                                                 const value = e.target.value;
-                                                handleRowUpdate(index, 'currency', value);
+                                                handleRowUpdate(index, "currency", value);
                                               }}
-                                              className={costInvoiceErrors[index]?.currency ? 'error form-control' : 'form-control'}
+                                              className={costInvoiceErrors[index]?.currency ? "error form-control" : "form-control"}
                                             >
                                               <option value="">--Select--</option>
                                               {exRates &&
                                                 exRates.map((currency) => (
-                                                  <option key={currency.id} value={currency.currency}>
+                                                  <option key={currency.currency} value={currency.currency}>
                                                     {currency.currency}
                                                   </option>
                                                 ))}
@@ -2589,21 +2623,23 @@ const CostDebitNote = () => {
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"
-                                              value={row.lcAmount ? row.lcAmount.toFixed(2) : '0'}
+                                              value={row.lcAmt !== null && row.lcAmt !== undefined ? Number(row.lcAmt).toFixed(2) : '0.00'}
                                               disabled
                                               style={{ width: '100px' }}
                                               onChange={(e) => {
                                                 const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
+                                                const numericRegex = /^[0-9]*(\.[0-9]*)?$/; // Allows decimals
+
                                                 if (numericRegex.test(value)) {
                                                   setChargerCostInvoice((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, lcAmount: value } : r))
+                                                    prev.map((r) => (r.id === row.id ? { ...r, lcAmt: parseFloat(value) || 0 } : r))
                                                   );
+
                                                   setCostInvoiceErrors((prev) => {
                                                     const newErrors = [...prev];
                                                     newErrors[index] = {
                                                       ...newErrors[index],
-                                                      lcAmount: !value ? 'lcAmount is required' : ''
+                                                      lcAmt: !value ? 'lcAmt is required' : ''
                                                     };
                                                     return newErrors;
                                                   });
@@ -2612,21 +2648,21 @@ const CostDebitNote = () => {
                                                     const newErrors = [...prev];
                                                     newErrors[index] = {
                                                       ...newErrors[index],
-                                                      lcAmount: 'Only numeric characters are allowed'
+                                                      lcAmt: 'Only numeric characters are allowed'
                                                     };
                                                     return newErrors;
                                                   });
                                                 }
                                               }}
-                                              className={costInvoiceErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              className={costInvoiceErrors[index]?.lcAmt ? 'error form-control' : 'form-control'}
                                             />
-                                            {costInvoiceErrors[index]?.lcAmount && (
+                                            {costInvoiceErrors[index]?.lcAmt && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].lcAmount}
+                                                {costInvoiceErrors[index].lcAmt}
                                               </div>
                                             )}
                                           </td>
+
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"
@@ -2712,47 +2748,6 @@ const CostDebitNote = () => {
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"
-                                              value={row.gstPercent}
-                                              disabled
-                                              style={{ width: '100px' }}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
-                                                if (numericRegex.test(value)) {
-                                                  setChargerCostInvoice((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, gstPercent: value } : r))
-                                                  );
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      gstPercent: !value ? 'GST Percent is required' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                } else {
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      gstPercent: 'Only numeric characters are allowed'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              }}
-                                              className={costInvoiceErrors[index]?.gstPercent ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                            />
-                                            {costInvoiceErrors[index]?.gstPercent && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].gstPercent}
-                                              </div>
-                                            )}
-                                          </td>
-                                          <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
                                               // value={row.gst ? row.gst.toFixed(2) : '0.00'}
                                               value={row.gst ? row.gst : '0.00'}
                                               disabled
@@ -2792,6 +2787,48 @@ const CostDebitNote = () => {
                                               </div>
                                             )}
                                           </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.gstAmount}
+                                              disabled
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  setChargerCostInvoice((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, gstAmount: value } : r))
+                                                  );
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      gstAmount: !value ? 'GST Percent is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      gstAmount: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.gstAmount ? 'error form-control' : 'form-control'}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            />
+                                            {costInvoiceErrors[index]?.gstAmount && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {costInvoiceErrors[index].gstAmount}
+                                              </div>
+                                            )}
+                                          </td>
+
                                         </tr>
                                       ))}
                                     </>
@@ -2799,7 +2836,7 @@ const CostDebitNote = () => {
                                 </tbody>
                               </table>
                             </div>
-                            {showChargeDetails && chargeDetails.length > 0 && (
+                            {/* {showChargeDetails && chargeDetails.length > 0 && (
                               <tr>
                                 <td className="border px-2 py-2">
                                   <table className="table table-bordered mb-0">
@@ -2823,14 +2860,14 @@ const CostDebitNote = () => {
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.gChargeCode}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.gstPercent}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.sac}</td>
-                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.lcAmount}</td>
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.lcAmt}</td>
                                         </tr>
                                       ))}
                                     </tbody>
                                   </table>
                                 </td>
                               </tr>
-                            )}
+                            )} */}
                           </div>
                         </div>
                       </div>
@@ -2864,22 +2901,6 @@ const CostDebitNote = () => {
                           <div className="col-md-3 mb-3">
                             <FormControl fullWidth size="small">
                               <TextField
-                                label="TDS / WH %"
-                                size="small"
-                                name="tdsWithHoldingPer"
-                                type="number"
-                                disabled
-                                inputProps={{ maxLength: 30 }}
-                                value={costDebitNoteTaxPrtculDTO[index]?.tdsWithHoldingPer || ''}
-                                onChange={(e) => handleInputChange(e, 'costDebitNoteTaxPrtculDTO', index)}
-                                error={!!tdsCostErrors[index]?.tdsWithHoldingPer}
-                                helperText={tdsCostErrors[index]?.tdsWithHoldingPer || ''}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth size="small">
-                              <TextField
                                 label="Section"
                                 size="small"
                                 name="section"
@@ -2890,6 +2911,22 @@ const CostDebitNote = () => {
                                 disabled={formData.mode === 'SUBMIT' || !!formData.originBill}
                                 error={!!tdsCostErrors[index]?.section}
                                 helperText={tdsCostErrors[index]?.section}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth size="small">
+                              <TextField
+                                label="TDS / WH %"
+                                size="small"
+                                name="tdsWithHoldingPer"
+                                type="number"
+                                disabled
+                                inputProps={{ maxLength: 30 }}
+                                value={costDebitNoteTaxPrtculDTO[index]?.tdsWithHoldingPer || ''}
+                                onChange={(e) => handleInputChange(e, 'costDebitNoteTaxPrtculDTO', index)}
+                                error={!!tdsCostErrors[index]?.tdsWithHoldingPer}
+                                helperText={tdsCostErrors[index]?.tdsWithHoldingPer || ''}
                               />
                             </FormControl>
                           </div>
