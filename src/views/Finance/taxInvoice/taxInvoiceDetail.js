@@ -252,7 +252,7 @@ const TaxInvoiceDetails = () => {
           amountInWords: listValueVO.amountInWords,
           addressType: listValueVO.addressType,
           billingRemarks: listValueVO.billingRemarks,
-          amountInWords: listValueVO.amountInWords
+          // amountInWords: listValueVO.amountInWords
         });
         handleCloseModal();
 
@@ -456,7 +456,6 @@ const TaxInvoiceDetails = () => {
       invoiceDate: null,
       invoiceNo: '',
       jobNo: '',
-      orgId: orgId,
       partyCode: '',
       partyId: '',
       partyName: '',
@@ -469,7 +468,17 @@ const TaxInvoiceDetails = () => {
       stateNo: '',
       status: 'PROFORMA',
       supplierBillDate: '',
-      supplierBillNo: ''
+      supplierBillNo: '',
+      totalChargeAmountLc: '',
+      totalTaxAmountLc: '',
+      totalInvAmountLc: '',
+      roundOffAmountLc: '',
+      totalChargeAmountBc: '',
+      totalTaxAmountBc: '',
+      totalInvAmountBc: '',
+      totalTaxableAmountLc: '',
+      amountInWords:''
+      
     });
     getTaxInvoiceDocId();
     setErrors({
@@ -488,7 +497,6 @@ const TaxInvoiceDetails = () => {
       invoiceDate: '',
       invoiceNo: '',
       jobNo: '',
-      orgId: orgId,
       partyCode: '',
       partyId: '',
       partyName: '',
@@ -504,8 +512,9 @@ const TaxInvoiceDetails = () => {
       supplierBillNo: ''
     });
     setEditId('');
-    // setAddressType('');
-    // setPlaceOfSupply('');
+    setAddressType('')
+    setStateName('');
+    setPlaceOfSupply('');
     setWithdrawalsTableErrors({
       sno: '',
       chargeCode: '',
@@ -684,7 +693,6 @@ const TaxInvoiceDetails = () => {
         `/taxInvoice/getPlaceOfSupply?orgId=${orgId}&id=${partyNo ? partyNo : partyId}&stateCode=${stateCode}`
       );
       setPlaceOfSupply(response.paramObjectsMap.placeOfSupplyDetails);
-
       // setStateCode(response.paramObjectsMap.partyMasterVO.partyStateVO)
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -864,7 +872,7 @@ const TaxInvoiceDetails = () => {
       getStateName(selectedEmp.id);
       setPartyId(selectedEmp.id);
     } else {
-      console.log('No employee found with the given code:', value); // Log if no employee is found
+      console.log('No employee found with the given code:', value); 
     }
   };
 
