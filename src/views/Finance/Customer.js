@@ -1418,7 +1418,7 @@ export const Customer = () => {
                                 <th className="table-header">City</th>
                                 <th className="table-header">Business Place</th>
                                 <th className="table-header">State Reg No</th>
-                                <th className="table-header">Tax Free</th>
+                                <th className="table-header">Tax Excepted</th>
                                 <th className="table-header">Address Type</th>
                                 <th className="table-header">Address Line1</th>
                                 <th className="table-header">Address Line2</th>
@@ -1564,7 +1564,7 @@ export const Customer = () => {
                                           // Update the state with the new value for the specific row
                                           setPartyAddressData((prev) => prev.map((r) => (r.id === row.id ? { ...r, sez: isChecked } : r)));
                                         }}
-                                        sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                                        sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' }, marginLeft: '25px' }}
                                       />
                                     </div>
                                   </td>
