@@ -276,7 +276,7 @@ export const Customer = () => {
             gstIn: detail.gstIn || '',
             stateNo: detail.stateNo || '',
             contactPerson: detail.contactPerson || '',
-            contactPhoneNo: detail.contactPhoneNo || '',
+            contactPhoneNo: parseInt(detail.contactPhoneNo) || '',
             email: detail.email || '',
             stateCode: detail.stateCode || ''
           }))
@@ -295,18 +295,17 @@ export const Customer = () => {
           pincode: detail.pincode || '',
           state: detail.state || '',
           stateGstIn: detail.stateGstIn || '',
-          cityOptions: []
+          // cityOptions: []
         }));
 
-        const SalesPersonTaggingData = customer.partySalesPersonTaggingVO.map((detail) => ({
+        setPartySalesPersonTagging( customer.partySalesPersonTaggingVO.map((detail) => ({
           id: detail.id,
           salesPerson: detail.salesPerson || '',
           empCode: detail.empCode || '',
           salesBranch: detail.salesBranch || '',
           effectiveFrom: detail.effectiveFrom || '',
           effectiveTill: detail.effectiveTill || ''
-        }));
-
+        })));
         const CurrencyMappingData = customer.partyCurrencyMappingVO.map((detail) => ({
           id: detail.id,
           transCurrency: detail.transCurrency || ''
@@ -320,9 +319,10 @@ export const Customer = () => {
         }
 
         setPartyAddressData(addressData);
-        setPartySalesPersonTagging(SalesPersonTaggingData);
+        // setPartySalesPersonTagging(SalesPersonTaggingData);
         setPartyCurrencyMapping(CurrencyMappingData);
       }
+      console.log('Currency Mapping Data:', partyCurrencyMapping);
     } catch (error) {
       console.error('Error fetching PartyMaster:', error);
     }
@@ -846,7 +846,7 @@ export const Customer = () => {
       const customersStateVO = partyStateData.map((row) => ({
         email: row.email,
         contactPerson: row.contactPerson,
-        phoneNo: row.contactPhoneNo,
+        phoneNo: parseInt(row.contactPhoneNo),
         gstIn: row.gstIn,
         state: row.state,
         stateCode: row.stateCode,
