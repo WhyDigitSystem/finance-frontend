@@ -24,8 +24,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import SampleFile from '../../assets/sample-files/Sample_Format_Customer_Finance.xlsx';
-
+import SampleFile from '../../assets/sample-files/customer.xlsx'
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const Customer = () => {
