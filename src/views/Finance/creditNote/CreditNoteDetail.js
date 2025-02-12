@@ -237,10 +237,10 @@ const IrnCreditNote = () => {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const inputValue = type === 'checkbox' ? checked : value || ''; // ✅ Default to empty string if undefined
-  
+
     // Define regex for numeric fields
     const isNumeric = /^[0-9]*$/;
-  
+
     // Validation logic for numeric fields
     const numericFields = [
       'pincode',
@@ -256,7 +256,7 @@ const IrnCreditNote = () => {
       'summaryExRate',
       'totTaxAmt'
     ];
-  
+
     if (numericFields.includes(name)) {
       if (!isNumeric.test(inputValue)) {
         setFieldErrors((prevErrors) => ({
@@ -266,19 +266,19 @@ const IrnCreditNote = () => {
         return; // Prevent further form updates if invalid input
       }
     }
-  
+
     // Handle other fields
     setFormData((prevFormData) => ({
       ...prevFormData,
       [name]: inputValue
     }));
-  
+
     // Clear error when input is valid
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
       [name]: false
     }));
-  
+
     if (name === 'partyType') {
       setFormData((prevFormData) => ({
         ...prevFormData,
@@ -289,7 +289,7 @@ const IrnCreditNote = () => {
       getAllPartyName(inputValue); // Fetch all party names based on selected partyType
       return;
     }
-  
+
     if (name === 'partyName') {
       const selectedParty = allPartyName.find((party) => party.partyName === inputValue);
       setFormData((prevFormData) => ({
@@ -299,7 +299,7 @@ const IrnCreditNote = () => {
       }));
       return;
     }
-  
+
     // If the currency field is being changed, update exRate based on the selected currency's sellingExRate
     if (name === 'currency') {
       const selectedCurrency = currencies.find((currency) => currency.currency === inputValue);
@@ -310,7 +310,7 @@ const IrnCreditNote = () => {
         }));
       }
     }
-  };  
+  };
 
   // const handleInputChange = (e) => {
   //   const { name, value, type, checked } = e.target;
@@ -845,7 +845,7 @@ const IrnCreditNote = () => {
         currency: selectedBill.billCurr,
         exRate: selectedBill.billCurrRate,
         originBill: selectedBill.originBillNo,
-        originBillDate: selectedBill.docDate,  
+        originBillDate: selectedBill.docDate,
         address: selectedBill.address,
         pincode: selectedBill.pinCode,
         gstType: selectedBill.gstType,
@@ -885,7 +885,7 @@ const IrnCreditNote = () => {
           }))
         );
       }
-      console.log("orgin bill ", formData.originBillDate ,"docDate", selectedBill.docDate);
+      console.log('orgin bill ', formData.originBillDate, 'docDate', selectedBill.docDate);
     }
   };
 
@@ -935,10 +935,9 @@ const IrnCreditNote = () => {
         if (response.paramObjectsMap.irnCreditVO && response.paramObjectsMap.irnCreditVO) {
           setDocId(response.paramObjectsMap.irnCreditVO); // Extracting the actual docId
         } else {
-          console.error("Invalid response format: Missing docId");
+          console.error('Invalid response format: Missing docId');
         }
       }
-      
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -966,7 +965,7 @@ const IrnCreditNote = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.irnCreditVO);
+        setListViewData(response.paramObjectsMap.irnCreditVO.reverse());
       } else {
         console.error('API Error:', response);
       }
@@ -1084,26 +1083,26 @@ const IrnCreditNote = () => {
   const handleSave = async () => {
     const errors = {};
     const tableErrors = irnChargesData.map((row) => ({
-    //   // jobNo: !row.jobNo ? 'Job No is required' : '',
-    //   // chargeType: !row.chargeType ? 'Charge Type is required' : '',
-    //   // chargeCode: !row.chargeCode ? 'Charge Code is required' : '',
-    //   // govChargeCode: !row.govChargeCode ? 'G Charge Code is required' : '',
-    //   // ledger: !row.ledger ? 'G Charge Code is required' : '',
-    //   // chargeName: !row.chargeName ? 'Charge Name is required' : '',
-    //   // applyOn: !row.applyOn ? 'Apply On is required' : '',
-    //   // taxable: !row.taxable ? 'Apply On is required' : '',
-    //   // currency: !row.currency ? 'Currency is required' : '',
-    //   // exRate: !row.exRate ? 'Ex Rate is required' : '',
-    //   // qty: !row.qty ? 'Qty is required' : '',
+      //   // jobNo: !row.jobNo ? 'Job No is required' : '',
+      //   // chargeType: !row.chargeType ? 'Charge Type is required' : '',
+      //   // chargeCode: !row.chargeCode ? 'Charge Code is required' : '',
+      //   // govChargeCode: !row.govChargeCode ? 'G Charge Code is required' : '',
+      //   // ledger: !row.ledger ? 'G Charge Code is required' : '',
+      //   // chargeName: !row.chargeName ? 'Charge Name is required' : '',
+      //   // applyOn: !row.applyOn ? 'Apply On is required' : '',
+      //   // taxable: !row.taxable ? 'Apply On is required' : '',
+      //   // currency: !row.currency ? 'Currency is required' : '',
+      //   // exRate: !row.exRate ? 'Ex Rate is required' : '',
+      //   // qty: !row.qty ? 'Qty is required' : '',
       rate: !row.rate ? 'Rate is required' : ''
-    //   // exempted: !row.exempted ? 'Excempted is required' : '',
-    //   // fcAmount: !row.fcAmount ? 'FC Amount is required' : '',
-    //   // lcAmount: !row.lcAmount ? 'LC Amount is required' : '',
-    //   // tlcAmount: !row.tlcAmount ? 'TLC Amount is required' : '',
-    //   // billAmount: !row.billAmount ? 'Bill Amount is required' : '',
-    //   // sac: !row.sac ? 'Sac is required' : '',
-    //   // gstAmount: !row.gstAmount ? 'GST is required' : '',
-    //   // gstpercent: !row.gstpercent ? 'GST % is required' : ''
+      //   // exempted: !row.exempted ? 'Excempted is required' : '',
+      //   // fcAmount: !row.fcAmount ? 'FC Amount is required' : '',
+      //   // lcAmount: !row.lcAmount ? 'LC Amount is required' : '',
+      //   // tlcAmount: !row.tlcAmount ? 'TLC Amount is required' : '',
+      //   // billAmount: !row.billAmount ? 'Bill Amount is required' : '',
+      //   // sac: !row.sac ? 'Sac is required' : '',
+      //   // gstAmount: !row.gstAmount ? 'GST is required' : '',
+      //   // gstpercent: !row.gstpercent ? 'GST % is required' : ''
     }));
 
     let hasTableErrors = false;
@@ -1158,14 +1157,13 @@ const IrnCreditNote = () => {
     if (!formData.gstType) {
       errors.gstType = 'Tax Type is required';
     }
-console.log("Error Save", errors);
-
+    console.log('Error Save', errors);
 
     setFieldErrors(errors);
     setIrnChargesError(tableErrors);
 
     // Prevent saving if form or table errors exist
-    if (Object.keys(errors).length === 0 ) {
+    if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       const irnCreditChargesVo = irnChargesData.map((row) => ({
         ...(editId && { id: row.id }),
@@ -1219,7 +1217,7 @@ console.log("Error Save", errors);
         voucherDate: formatDate(formData.vohDate),
         voucherNo: formData.vohNo,
         bizMode: 'TAX',
-        bizType: 'B2B',
+        bizType: 'B2B'
       };
 
       try {
@@ -1256,14 +1254,14 @@ console.log("Error Save", errors);
   }, [formData.partyType]);
 
   const listViewColumns = [
-    { accessorKey: 'docId', header: 'Doc No', size: 140 },
-    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
-    { accessorKey: 'partyName', header: 'Party Name', size: 140 },
-    { accessorKey: 'partyCode', header: 'Party Code', size: 140 },
     { accessorKey: 'status', header: 'Status', size: 140 },
-    { accessorKey: 'partyType', header: 'Party Type', size: 140 },
-    { accessorKey: 'voucherNo', header: 'Voucher No', size: 140 },
-    { accessorKey: 'voucherDate', header: 'Voucher Date', size: 140 }
+    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
+    { accessorKey: 'docId', header: 'Doc No', size: 140 },
+    { accessorKey: 'partyName', header: 'Party Name', size: 140 }
+    // { accessorKey: 'partyCode', header: 'Party Code', size: 140 },
+    // { accessorKey: 'partyType', header: 'Party Type', size: 140 },
+    // { accessorKey: 'voucherNo', header: 'Voucher No', size: 140 },
+    // { accessorKey: 'voucherDate', header: 'Voucher Date', size: 140 }
   ];
 
   const GeneratePdf = (row) => {
@@ -1271,7 +1269,6 @@ console.log("Error Save", errors);
     setPdfData(row.original);
     setDownloadPdf(true);
   };
-
 
   return (
     <div>
@@ -1406,7 +1403,6 @@ console.log("Error Save", errors);
                       disabled={formData.status === 'TAX'}
                       error={!!fieldErrors.vohDate}
                       helperText={fieldErrors.vohDate ? fieldErrors.vohDate : ''}
-
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1438,7 +1434,7 @@ console.log("Error Save", errors);
                     name="partyType"
                     disabled
                     value={formData.partyType}
-                    onChange={handleInputChange} 
+                    onChange={handleInputChange}
                   >
                     {partyTypeData?.map((row) => (
                       <MenuItem key={row.id} value={row.partyType}>
@@ -1540,7 +1536,6 @@ console.log("Error Save", errors);
                     onChange={handleInputChange}
                     error={!!fieldErrors.supplierRefNo}
                     helperText={fieldErrors.supplierRefNo}
-
                   />
                 </FormControl>
               </div>
@@ -2609,7 +2604,7 @@ console.log("Error Save", errors);
                                           value={row.currency}
                                           disabled
                                           onChange={(e) => {
-                                            const value = e.target.value; 
+                                            const value = e.target.value;
                                             setIrnChargesData((prev) => prev.map((r) => (r.id === row.id ? { ...r, currency: value } : r)));
 
                                             // Recalculate fcAmount based on currency
@@ -3382,8 +3377,8 @@ console.log("Error Save", errors);
                                 value={formData.roundOff}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.roundOff}
-                              // helperText={fieldErrors.roundOff}
+                                // error={!!fieldErrors.roundOff}
+                                // helperText={fieldErrors.roundOff}
                               />
                             </FormControl>
                           </div>
@@ -3398,8 +3393,8 @@ console.log("Error Save", errors);
                                 value={formData.totChargesBillCurrAmt}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.totChargesBillCurrAmt}
-                              // helperText={fieldErrors.totChargesBillCurrAmt}
+                                // error={!!fieldErrors.totChargesBillCurrAmt}
+                                // helperText={fieldErrors.totChargesBillCurrAmt}
                               />
                             </FormControl>
                           </div>
@@ -3414,8 +3409,8 @@ console.log("Error Save", errors);
                                 value={formData.totChargesLCAmt}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.totChargesLCAmt}
-                              // helperText={fieldErrors.totChargesLCAmt}
+                                // error={!!fieldErrors.totChargesLCAmt}
+                                // helperText={fieldErrors.totChargesLCAmt}
                               />
                             </FormControl>
                           </div>
@@ -3430,8 +3425,8 @@ console.log("Error Save", errors);
                                 value={formData.totGrossBillAmt}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.totGrossBillAmt}
-                              // helperText={fieldErrors.totGrossBillAmt}
+                                // error={!!fieldErrors.totGrossBillAmt}
+                                // helperText={fieldErrors.totGrossBillAmt}
                               />
                             </FormControl>
                           </div>
@@ -3446,8 +3441,8 @@ console.log("Error Save", errors);
                                 value={formData.totGrossLCAmt}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.totGrossLCAmt}
-                              // helperText={fieldErrors.totGrossLCAmt}
+                                // error={!!fieldErrors.totGrossLCAmt}
+                                // helperText={fieldErrors.totGrossLCAmt}
                               />
                             </FormControl>
                           </div>
@@ -3462,8 +3457,8 @@ console.log("Error Save", errors);
                                 value={formData.netBillCurrAmt}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.netBillCurrAmt}
-                              // helperText={fieldErrors.netBillCurrAmt}
+                                // error={!!fieldErrors.netBillCurrAmt}
+                                // helperText={fieldErrors.netBillCurrAmt}
                               />
                             </FormControl>
                           </div>
@@ -3478,8 +3473,8 @@ console.log("Error Save", errors);
                                 value={formData.netLCAmt}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.netLCAmt}
-                              // helperText={fieldErrors.netLCAmt}
+                                // error={!!fieldErrors.netLCAmt}
+                                // helperText={fieldErrors.netLCAmt}
                               />
                             </FormControl>
                           </div>
@@ -3494,8 +3489,8 @@ console.log("Error Save", errors);
                                 value={formData.amtInWords}
                                 onChange={handleInputChange}
                                 inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.amtInWords}
-                              // helperText={fieldErrors.amtInWords}
+                                // error={!!fieldErrors.amtInWords}
+                                // helperText={fieldErrors.amtInWords}
                               />
                             </FormControl>
                           </div>

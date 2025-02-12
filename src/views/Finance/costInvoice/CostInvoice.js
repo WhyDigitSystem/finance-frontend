@@ -30,7 +30,7 @@ import CommonTable from 'views/basicMaster/CommonTable';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
 const CostInvoice = () => {
-  const [showForm, setShowForm] = useState(true);
+  const [showForm, setShowForm] = useState(false);
   const [data, setData] = useState(true);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
@@ -40,6 +40,7 @@ const CostInvoice = () => {
   const [value, setValue] = useState(0);
   const [editId, setEditId] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
+  const [listViewData, setListViewData] = useState([]);
   const [exRates, setExRates] = useState([]);
   const [partyName, setPartyName] = useState([]);
   const [partyId, setPartyId] = useState('');
@@ -51,6 +52,7 @@ const CostInvoice = () => {
   const [showChargeDetails, setShowChargeDetails] = useState(false);
   const [downloadPdf, setDownloadPdf] = useState(false);
   const [pdfData, setPdfData] = useState([]);
+  const [sectionOptions, setSectionOptions] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [chargeDetails, setChargeDetails] = useState([
@@ -290,6 +292,7 @@ const CostInvoice = () => {
     ]);
     setCostInvoiceErrors([]);
     setTdsCostErrors([]);
+    setSectionOptions([]);
     setEditId('');
     getCostInvoiceDocId();
     setShowChargeDetails(false);
@@ -343,7 +346,7 @@ const CostInvoice = () => {
       utrRef: ''
     });
     setExRates([]);
-    setStateName([]);
+    // setStateName([]);
     getAllActiveCurrency(orgId);
     setFieldErrors({
       accuralid: '',
@@ -410,6 +413,7 @@ const CostInvoice = () => {
     ]);
     setCostInvoiceErrors([]);
     setTdsCostErrors([]);
+    setSectionOptions([]);
     setEditId('');
     getCostInvoiceDocId();
     setShowChargeDetails(false);
@@ -417,9 +421,9 @@ const CostInvoice = () => {
 
   const listViewColumns = [
     { accessorKey: 'mode', header: 'Mode', size: 140 },
+    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
     { accessorKey: 'docId', header: 'Doc No', size: 140 },
-    { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 },
-    { accessorKey: 'gstType', header: 'TAX Type', size: 140 }
+    { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 }
   ];
 
   const handleOpenModalApprove = () => {
@@ -433,84 +437,6 @@ const CostInvoice = () => {
   };
 
   const handleCloseModal = () => setModalOpen(false);
-
-  const handleConfirmAction = async () => {
-    // try {
-    //   const result = await apiCalls(
-    //     'put',
-    //     `/taxInvoice/approveTaxInvoice?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}`
-    //   );
-    //   console.log('API Response:==>', result);
-    //   if (result.status === true) {
-    //     setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
-    //     showToast(
-    //       result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
-    //       result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved'
-    //         ? ' TaxInvoice Approved successfully'
-    //         : 'TaxInvoice Rejected successfully'
-    //     );
-    //     const listValueVO = result.paramObjectsMap.taxInvoiceVO;
-    //     setFormData({
-    //       docId: listValueVO.docId,
-    //       approveStatus: listValueVO.approveStatus,
-    //       approveBy: listValueVO.approveBy,
-    //       approveOn: listValueVO.approveOn,
-    //       docDate: listValueVO.docDate,
-    //       type: listValueVO.type,
-    //       partyCode: listValueVO.partyCode,
-    //       partyName: listValueVO.partyName,
-    //       partyType: listValueVO.partyType,
-    //       bizType: listValueVO.bizType,
-    //       bizMode: listValueVO.bizMode,
-    //       stateNo: listValueVO.stateNo,
-    //       stateCode: listValueVO.stateCode,
-    //       address: listValueVO.address,
-    //       addressType: listValueVO.addressType,
-    //       gstType: listValueVO.gstType,
-    //       pinCode: listValueVO.pinCode,
-    //       placeOfSupply: listValueVO.placeOfSupply,
-    //       recipientGSTIN: listValueVO.recipientGSTIN,
-    //       billCurr: listValueVO.billCurr,
-    //       status: listValueVO.status,
-    //       salesType: listValueVO.salesType,
-    //       updatedBy: listValueVO.updatedBy,
-    //       supplierBillNo: listValueVO.supplierBillNo,
-    //       supplierBillDate: listValueVO.supplierBillDate,
-    //       billCurrRate: listValueVO.billCurrRate,
-    //       exAmount: listValueVO.exAmount,
-    //       creditDays: listValueVO.creditDays,
-    //       contactPerson: listValueVO.contactPerson,
-    //       shipperInvoiceNo: listValueVO.shipperInvoiceNo,
-    //       billOfEntry: listValueVO.billOfEntry,
-    //       billMonth: listValueVO.billMonth,
-    //       invoiceNo: listValueVO.invoiceNo,
-    //       invoiceDate: listValueVO.invoiceDate,
-    //       id: listValueVO.id,
-    //       totalChargeAmountLc: listValueVO.totalChargeAmountLc,
-    //       totalChargeAmountBc: listValueVO.totalChargeAmountBc,
-    //       totalTaxAmountLc: listValueVO.totalTaxAmountLc,
-    //       totalInvAmountLc: listValueVO.totalInvAmountLc,
-    //       roundOffAmountLc: listValueVO.roundOffAmountLc,
-    //       totalChargeAmountBc: listValueVO.totalChargeAmountBc,
-    //       totalInvAmountLc: listValueVO.totalInvAmountLc,
-    //       totalInvAmountBc: listValueVO.totalInvAmountBc,
-    //       totalChargeAmountBc: listValueVO.totalChargeAmountBc,
-    //       totalTaxAmountBc: listValueVO.totalTaxAmountBc,
-    //       totalInvAmountBc: listValueVO.totalInvAmountBc,
-    //       totalTaxableAmountLc: listValueVO.totalTaxableAmountLc,
-    //       amountInWords: listValueVO.amountInWords,
-    //       billingRemarks: listValueVO.billingRemarks,
-    //       amountInWords: listValueVO.amountInWords
-    //     });
-    //     handleCloseModal();
-    //     console.log('TAX INVOICE:==>', result);
-    //   } else {
-    //     console.error('API Error:', result.data);
-    //   }
-    // } catch (error) {
-    //   console.error('Error fetching data:', error);
-    // }
-  };
 
   const calculateTotTdsWhAmnt = () => {
     const totalLcAmount = chargerCostInvoice.reduce((acc, curr) => acc + curr.lcAmount, 0);
@@ -533,10 +459,18 @@ const CostInvoice = () => {
         supplierName: defaultParty.partyName,
         supplierCode: defaultParty.partyCode
       }));
+      setPartyId(defaultParty.id);
       getStateName(defaultParty.id);
       getCurrencyAndExratesForMatchingParties(defaultParty.partyCode);
+      getCreditDaysFromVendor(defaultParty.partyCode);
       getTdsDetailsFromPartyMasterSpecialTDS(defaultParty.partyCode);
-      setPartyId(defaultParty.id);
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        supplierCode: '',
+        supplierGstIn: '',
+        supplierGstInCode: ''
+      }));
     }
   }, [partyName]);
 
@@ -574,7 +508,8 @@ const CostInvoice = () => {
       const defaultExRate = exRates[0];
       setFormData((prevData) => ({
         ...prevData,
-        currency: defaultExRate.currency.toUpperCase(),
+        currency: defaultExRate.currency,
+        // currency: defaultExRate.currency.toUpperCase(),
         exRate: defaultExRate.buyingExRate
       }));
       console.log('defaultExRate.exRate', defaultExRate.buyingExRate);
@@ -586,7 +521,8 @@ const CostInvoice = () => {
       const defaultSGST = stateName[0];
       setFormData((prevData) => ({
         ...prevData,
-        supplierGstInCode: defaultSGST.stateCode.toUpperCase(),
+        supplierGstInCode: defaultSGST.stateCode,
+        // supplierGstInCode: defaultSGST.stateCode.toUpperCase(),
         stateNo: defaultSGST.stateNo,
         supplierGstIn: defaultSGST.recipientGSTIN
       }));
@@ -594,6 +530,12 @@ const CostInvoice = () => {
       getPlaceOfSupply(defaultSGST.stateCode);
       setStateCode(defaultSGST.stateCode);
       getGSTType(defaultSGST.stateCode);
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        supplierGstIn: '',
+        supplierGstInCode: ''
+      }));
     }
   }, [stateName]);
 
@@ -696,21 +638,139 @@ const CostInvoice = () => {
     }
   };
 
+  const handleConfirmAction = async () => {
+    try {
+      const result = await apiCalls(
+        'put',
+        `/costInvoice/approveCostInvoice?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}`
+      );
+      console.log('API Response:==>', result);
+      if (result.status === true) {
+        setFormData({ ...formData, approveStatus: result.paramObjectsMap.costInvoiceVO.approveStatus });
+        showToast(
+          result.paramObjectsMap.costInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
+          result.paramObjectsMap.costInvoiceVO.approveStatus === 'Approved'
+            ? ' Cost Invoice Approved Successfully'
+            : 'Cost Invoice Rejected Successfully'
+        );
+        const listValueVO = result.paramObjectsMap.costInvoiceVO;
+        setFormData({
+          accuralid: listValueVO.accuralid,
+          actBillCurrAmt: listValueVO.actBillCurrAmt,
+          actBillLcAmt: listValueVO.actBillLcAmt,
+          address: listValueVO.address,
+          approveBy: listValueVO.approveBy,
+          approveOn: listValueVO.approveOn,
+          approveStatus: listValueVO.approveStatus,
+          creditDays: listValueVO.creditDays,
+          currency: listValueVO.currency,
+          dueDate: listValueVO.dueDate ? dayjs(listValueVO.dueDate) : dayjs(),
+          docDate: listValueVO.docDate ? dayjs(listValueVO.docDate) : dayjs(),
+          docId: listValueVO.docId,
+          exRate: listValueVO.exRate,
+          gstInputLcAmt: listValueVO.gstInputLcAmt,
+          gstType: listValueVO.gstType,
+          id: listValueVO.id,
+          mode: listValueVO.mode,
+          netBillCurrAmt: listValueVO.netBillCurrAmt,
+          netBillLcAmt: listValueVO.netBillLcAmt,
+          otherInfo: listValueVO.otherInfo,
+          payment: listValueVO.payment,
+          product: listValueVO.product,
+          purVoucherDate: listValueVO.purVoucherDate ? dayjs(listValueVO.purVoucherDate) : dayjs(),
+          purVoucherNo: listValueVO.purVoucherNo,
+          remarks: listValueVO.remarks,
+          roundOff: listValueVO.roundOff,
+          shipperRefNo: listValueVO.shipperRefNo,
+          // sumLcAmt: listValueVO.sumLcAmt,
+          supplierBillNo: listValueVO.supplierBillNo,
+          supplierCode: listValueVO.supplierCode,
+          supplierGstIn: listValueVO.supplierGstIn,
+          supplierGstInCode: listValueVO.supplierGstInCode,
+          supplierName: listValueVO.supplierName,
+          supplierPlace: listValueVO.supplierPlace,
+          supplierType: listValueVO.supplierType,
+          totChargesBillCurrAmt: listValueVO.totChargesBillCurrAmt,
+          totChargesLcAmt: listValueVO.totChargesLcAmt,
+          utrRef: listValueVO.utrRef
+        });
+        setChargerCostInvoice(
+          listValueVO.chargerCostInvoiceVO.map((row) => ({
+            id: row.id,
+            billAmt: row.billAmt,
+            chargeCode: row.chargeCode,
+            chargeLedger: row.chargeLedger,
+            chargeName: row.chargeName,
+            govChargeCode: row.govChargeCode,
+            currency: row.currency,
+            exRate: row.exRate,
+            fcAmount: row.fcAmt,
+            gst: row.gst,
+            gstPercent: row.gstpercent,
+            jobNo: row.jobNo,
+            lcAmount: row.lcAmt,
+            ledger: row.ledger,
+            qty: row.qty,
+            rate: row.rate,
+            sac: row.sac,
+            taxable: row.taxable
+          }))
+        );
+        setTdsCostInvoiceDTO(
+          listValueVO.tdsCostInvoiceVO.map((row) => ({
+            id: row.id,
+            section: row.section,
+            tdsWithHolding: row.tdsWithHolding,
+            tdsWithHoldingPer: row.tdsWithHoldingPer,
+            totTdsWhAmnt: row.totTdsWhAmnt
+          }))
+        );
+        setChargeDetails(
+          listValueVO.gstLines.map((row) => ({
+            id: row.id,
+            chargeCode: row.chargeCode,
+            chargeDesc: row.chargeName,
+            gChargeCode: row.govChargeCode,
+            gstPercent: row.gstpercent,
+            sac: row.sac,
+            lcAmount: row.lcAmt
+          }))
+        );
+        // setShowChargeDetails(false);
+        // handleCloseModal();
+        setModalOpen(false);
+        getAllCostInvoiceByOrgId();
+        console.log('TAX INVOICE:==>', result);
+      } else {
+        console.error('API Error:', result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   const getAllCostInvoiceById = async (row) => {
     console.log('first', row);
-    setShowForm(true);
+    setShowForm(false);
     try {
       const result = await apiCalls('get', `/costInvoice/getAllCostInvoiceById?id=${row.original.id}`);
 
       if (result) {
         const costVO = result.paramObjectsMap.costInvoiceVO[0];
+        setListViewData(costVO);
         setEditId(row.original.id);
         getCurrencyAndExratesForMatchingParties(costVO.supplierCode);
+        getTdsDetailsFromPartyMasterSpecialTDS(costVO.supplierCode);
+        getStateName(partyId);
+        getPlaceOfSupply(costVO.supplierGstInCode);
         setFormData({
           accuralid: costVO.accuralid,
           address: costVO.address,
           actBillCurrAmt: costVO.actBillCurrAmt,
           actBillLcAmt: costVO.actBillLcAmt,
+          approveBy: costVO.approveBy,
+          approveOn: costVO.approveOn,
+          approveStatus: costVO.approveStatus,
           branch: costVO.branch,
           branchCode: costVO.branchCode,
           client: costVO.client,
@@ -728,6 +788,7 @@ const CostInvoice = () => {
           finYear: finYear,
           gstInputLcAmt: costVO.gstInputLcAmt,
           gstType: costVO.gstType,
+          id: costVO.id,
           mode: costVO.mode,
           netBillCurrAmt: costVO.netBillCurrAmt,
           netBillLcAmt: costVO.netBillLcAmt,
@@ -766,6 +827,7 @@ const CostInvoice = () => {
             gstPercent: row.gstpercent,
             jobNo: row.jobNo,
             lcAmount: row.lcAmt,
+            ledger: row.ledger,
             qty: row.qty,
             rate: row.rate,
             sac: row.sac,
@@ -792,6 +854,7 @@ const CostInvoice = () => {
             lcAmount: row.lcAmt
           }))
         );
+        getAllSectionName(costVO.tdsCostInvoiceVO[0].tdsWithHolding);
         setShowChargeDetails(true);
         console.log('DataToEdit', costVO);
       } else {
@@ -828,14 +891,8 @@ const CostInvoice = () => {
             taxable: ''
           }
         ]);
-        setTdsCostInvoiceDTO([
-          {
-            section: '',
-            tdsWithHolding: '',
-            tdsWithHoldingPer: '',
-            totTdsWhAmnt: ''
-          }
-        ]);
+
+        setTdsCostInvoiceDTO([{ section: '', tdsWithHolding: '', tdsWithHoldingPer: '', totTdsWhAmnt: '' }]);
         setShowChargeDetails(false);
         setFormData((prevFormData) => ({
           ...prevFormData,
@@ -859,6 +916,10 @@ const CostInvoice = () => {
       }));
     } else if (fieldType === 'tdsCostInvoiceDTO') {
       setTdsCostInvoiceDTO((prevData) => prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item)));
+
+      if (name === 'tdsWithHolding') {
+        getAllSectionName(value);
+      }
     } else {
       setFormData((prevFormData) => ({
         ...prevFormData,
@@ -892,10 +953,11 @@ const CostInvoice = () => {
         supplierName: selectedEmp.partyName,
         supplierCode: selectedEmp.partyCode
       }));
+      setPartyId(selectedEmp.id);
       getStateName(selectedEmp.id);
       getCurrencyAndExratesForMatchingParties(selectedEmp.partyCode);
       getTdsDetailsFromPartyMasterSpecialTDS(selectedEmp.partyCode);
-      setPartyId(selectedEmp.id);
+      getCreditDaysFromVendor(selectedEmp.partyCode);
     } else {
       console.log('No employee found with the given code:', value);
     }
@@ -914,6 +976,18 @@ const CostInvoice = () => {
     try {
       const response = await apiCalls('get', `/costInvoice/getCurrencyAndExratesForMatchingParties?orgId=${orgId}&partyCode=${partyCode}`);
       setExRates(response.paramObjectsMap.currencyVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+
+  const getCreditDaysFromVendor = async (partyCode) => {
+    try {
+      const response = await apiCalls('get', `/costInvoice/getCreditDaysFromVendor?orgId=${orgId}&supplierCode=${partyCode}`);
+      setFormData((prev) => ({
+        ...prev,
+        creditDays: response.paramObjectsMap.creditdays[0].creditDays
+      }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -1009,6 +1083,21 @@ const CostInvoice = () => {
       }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);
+    }
+  };
+
+  const getAllSectionName = async (section) => {
+    try {
+      const response = await apiCalls('get', `master/getSectionNameFromTds?orgId=${orgId}&section=${section}`);
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setSectionOptions(response.paramObjectsMap.tdsMasterVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
   };
 
@@ -1514,12 +1603,13 @@ const CostInvoice = () => {
         finYear: finYear,
         gstType: formData.gstType,
         mode: formData.mode,
+        jobOrderNo: formData.jobOrderNo,
         orgId: orgId,
         otherInfo: formData.otherInfo,
         payment: formData.payment,
         product: formData.product,
-        purVoucherDate: dayjs(formData.purVoucherDate).format('YYYY-MM-DD'),
-        purVoucherNo: formData.purVoucherNo,
+        // purVoucherDate: dayjs(formData.purVoucherDate).format('YYYY-MM-DD'),
+        // purVoucherNo: formData.purVoucherNo,
         remarks: formData.remarks,
         shipperRefNo: formData.shipperRefNo,
         supplierBillNo: formData.supplierBillNo,
@@ -1540,8 +1630,8 @@ const CostInvoice = () => {
           showToast('success', editId ? 'Cost Invoice Updated Successfully' : 'Cost Invoice Created successfully');
           getAllCostInvoiceByOrgId();
           getPartyName(formData.supplierType);
-          getStateName();
-          getPlaceOfSupply();
+          // getStateName();
+          // getPlaceOfSupply();
           handleSaveClear();
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Cost Invoice Creation failed');
@@ -1571,19 +1661,22 @@ const CostInvoice = () => {
               {/* {formData.mode === 'SUBMIT' ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />} */}
             </div>
 
-            {editId && !showForm && (
+            {editId && !showForm && (formData.mode === 'SUBMIT' || listViewData.mode === 'SUBMIT') && (
               <>
-                {formData.approveStatus === 'Approved' ? (
+                {formData.approveStatus === 'Approved' && (
                   <Stack direction="row" spacing={2}>
                     <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
                     <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
                   </Stack>
-                ) : formData.approveStatus === 'Rejected' ? (
+                )}
+                {formData.approveStatus === 'Rejected' && (
                   <Stack direction="row" spacing={2}>
                     <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
                     <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
                   </Stack>
-                ) : (
+                )}
+                {/* {formData.mode === 'SUBMIT' && formData.approveStatus === null && ( */}
+                {listViewData.mode === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
                   <div className="d-flex" style={{ marginRight: '30px' }}>
                     <Button
                       variant="outlined"
@@ -1623,7 +1716,7 @@ const CostInvoice = () => {
               </>
             )}
           </div>
-          {showForm ? (
+          {!showForm && (
             <>
               <div className="row d-flex ml">
                 <div className="col-md-3 mb-3">
@@ -1686,7 +1779,7 @@ const CostInvoice = () => {
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField
-                      label="Pur Voucher No"
+                      label="Purchase Voucher No"
                       size="small"
                       name="purVoucherNo"
                       inputProps={{ maxLength: 30 }}
@@ -1757,7 +1850,7 @@ const CostInvoice = () => {
                       name="supplierType"
                       onChange={handleInputChange}
                       label="Supplier Type"
-                      disabled={formData.mode === 'SUBMIT'}
+                      disabled
                       error={!!fieldErrors.supplierType}
                       helperText={fieldErrors.supplierType}
                     >
@@ -1864,7 +1957,7 @@ const CostInvoice = () => {
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField
-                      label="Supplier GSTIN"
+                      label="Supplier Reg"
                       size="small"
                       name="supplierGstIn"
                       disabled
@@ -2865,21 +2958,27 @@ const CostInvoice = () => {
                           </div>
                           <div className="col-md-3 mb-3">
                             <FormControl fullWidth size="small">
-                              <TextField
-                                label="TDS%"
-                                size="small"
-                                name="tdsWithHoldingPer"
-                                type="number"
-                                disabled
-                                inputProps={{ maxLength: 30 }}
-                                value={tdsCostInvoiceDTO[index]?.tdsWithHoldingPer || ''}
+                              <InputLabel id="demo-simple-select-label">Section</InputLabel>
+                              <Select
+                                labelId="section"
+                                name="section"
+                                value={tdsCostInvoiceDTO[index]?.section || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
-                                error={!!tdsCostErrors[index]?.tdsWithHoldingPer}
-                                helperText={tdsCostErrors[index]?.tdsWithHoldingPer || ''}
-                              />
+                                disabled={formData.mode === 'SUBMIT'}
+                                label="Section"
+                                required
+                                error={!!tdsCostErrors[index]?.section}
+                              >
+                                {sectionOptions.map((section, id) => (
+                                  <MenuItem key={id} value={section.sectionName}>
+                                    {section.sectionName}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                              <FormHelperText error>{tdsCostErrors[index]?.section}</FormHelperText>
                             </FormControl>
                           </div>
-                          <div className="col-md-3 mb-3">
+                          {/* <div className="col-md-3 mb-3">
                             <FormControl fullWidth size="small">
                               <TextField
                                 label="Section"
@@ -2891,6 +2990,22 @@ const CostInvoice = () => {
                                 disabled={formData.mode === 'SUBMIT'}
                                 error={!!tdsCostErrors[index]?.section}
                                 helperText={tdsCostErrors[index]?.section}
+                              />
+                            </FormControl>
+                          </div> */}
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth size="small">
+                              <TextField
+                                label="TDS%"
+                                size="small"
+                                name="tdsWithHoldingPer"
+                                type="number"
+                                disabled
+                                inputProps={{ maxLength: 30 }}
+                                value={tdsCostInvoiceDTO[index]?.tdsWithHoldingPer || ''}
+                                onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
+                                error={!!tdsCostErrors[index]?.tdsWithHoldingPer}
+                                helperText={tdsCostErrors[index]?.tdsWithHoldingPer || ''}
                               />
                             </FormControl>
                           </div>
@@ -3028,7 +3143,8 @@ const CostInvoice = () => {
                 </Box>
               </div>
             </>
-          ) : (
+          )}
+          {showForm && (
             // <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getAllCostInvoiceById} />
             <CommonListViewTable
               data={data && data}
@@ -3044,10 +3160,11 @@ const CostInvoice = () => {
       </div>
       <ConfirmationModal
         open={modalOpen}
-        title="Tax Invoice Approval"
+        title="Cost Invoice Approval"
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={handleConfirmAction}
-        onCancel={handleCloseModal}
+        // onCancel={handleCloseModal}
+        onCancel={() => setModalOpen(false)}
       />
     </>
   );

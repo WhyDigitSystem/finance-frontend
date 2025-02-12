@@ -251,11 +251,11 @@ const TaxInvoiceDetails = () => {
           totalTaxableAmountLc: listValueVO.totalTaxableAmountLc,
           amountInWords: listValueVO.amountInWords,
           addressType: listValueVO.addressType,
-          billingRemarks: listValueVO.billingRemarks,
+          billingRemarks: listValueVO.billingRemarks
           // amountInWords: listValueVO.amountInWords
         });
         handleCloseModal();
-
+        getAllTaxInvoice();
         console.log('TAX INVOICE:==>', result);
       } else {
         console.error('API Error:', result.data);
@@ -477,8 +477,7 @@ const TaxInvoiceDetails = () => {
       totalTaxAmountBc: '',
       totalInvAmountBc: '',
       totalTaxableAmountLc: '',
-      amountInWords:''
-      
+      amountInWords: ''
     });
     getTaxInvoiceDocId();
     setErrors({
@@ -512,7 +511,7 @@ const TaxInvoiceDetails = () => {
       supplierBillNo: ''
     });
     setEditId('');
-    setAddressType('')
+    setAddressType('');
     setStateName('');
     setPlaceOfSupply('');
     setWithdrawalsTableErrors({
@@ -532,22 +531,24 @@ const TaxInvoiceDetails = () => {
       taxable: ''
     });
 
-    setWithdrawalsTableData([{
-      sno: '',
-      chargeCode: '',
-      chargeName: '',
-      chargeType: '',
-      currency: '',
-      exRate: '',
-      exempted: '',
-      govChargeCode: '',
-      GSTPercent: '',
-      ledger: '',
-      qty: '',
-      rate: '',
-      sac: '',
-      taxable: ''
-    }]);
+    setWithdrawalsTableData([
+      {
+        sno: '',
+        chargeCode: '',
+        chargeName: '',
+        chargeType: '',
+        currency: '',
+        exRate: '',
+        exempted: '',
+        govChargeCode: '',
+        GSTPercent: '',
+        ledger: '',
+        qty: '',
+        rate: '',
+        sac: '',
+        taxable: ''
+      }
+    ]);
   };
 
   const handleTabSelect = (index) => {
@@ -567,8 +568,8 @@ const TaxInvoiceDetails = () => {
         partyCode: defaultPartyName.partyCode
       }));
       getStateName(defaultPartyName.id);
-      console.log("State Code id",defaultPartyName.id);
-      
+      console.log('State Code id', defaultPartyName.id);
+
       setPartyId(defaultPartyName.id);
       console.log('defaultPartyName.partyName', defaultPartyName.partyName);
     }
@@ -585,7 +586,6 @@ const TaxInvoiceDetails = () => {
   //     }
   //   }
   // }, [stateName, formData.stateCode]);
-  
 
   useEffect(() => {
     if (stateName.length === 1) {
@@ -622,8 +622,8 @@ const TaxInvoiceDetails = () => {
         jobNo: defaultJobCardNo.jobNo
       }));
       // getAddessType(defaultPlaceOfSupply.placeOfSupply);
-    console.log("useEffect jobNo", formData.jobNo)
-    console.log("useEffect jobNo", defaultJobCardNo.jobNo)
+      console.log('useEffect jobNo', formData.jobNo);
+      console.log('useEffect jobNo', defaultJobCardNo.jobNo);
     }
   }, [jobCardNo]);
 
@@ -656,8 +656,8 @@ const TaxInvoiceDetails = () => {
   const getCreditDays = async (partyCode) => {
     try {
       const response = await apiCalls('get', `/taxInvoice/getCreditDaysFromCustomer?customerCode=${partyCode}&orgId=${orgId}`);
-      console.log("creitDays",response.paramObjectsMap.creditdays[0].creditDays);
-      
+      console.log('creitDays', response.paramObjectsMap.creditdays[0].creditDays);
+
       setFormData((prevData) => ({
         ...prevData,
         creditDays: response.paramObjectsMap.creditdays[0].creditDays
@@ -757,30 +757,29 @@ const TaxInvoiceDetails = () => {
   const getAllCurrency = async () => {
     try {
       const response = await apiCalls('get', `/taxInvoice/getCurrencyAndExrateDetails?orgId=${orgId}`);
-      
+
       if (response?.paramObjectsMap?.currencyVO) {
         setCurrencyList(response.paramObjectsMap.currencyVO);
       } else {
         setCurrencyList([]); // Set an empty array if data is missing
       }
-  
     } catch (error) {
       console.error('Error fetching currency details:', error);
       setCurrencyList([]); // Prevent undefined state
     }
   };
-  
+
   // const getAllCurrency = async () => {
   //   try {
   //     const response = await apiCalls('get', `/taxInvoice/getCurrencyAndExrateDetails?orgId=${orgId}`);
   //     const currencyList = response.paramObjectsMap.currencyVO;
-  
+
   //     setCurrencyList(currencyList);
-  
+
   //     // Automatically set default currency (first in the list)
   //     if (currencyList.length > 0) {
   //       const defaultCurrency = currencyList[0];
-  
+
   //       // setFormData((prevFormData) => ({
   //       //   ...prevFormData,
   //       //   currency: defaultCurrency.currency,
@@ -791,13 +790,13 @@ const TaxInvoiceDetails = () => {
   //         currency: false,
   //       }));
   //     }
-  
+
   //     console.log('Currency List:', currencyList);
   //   } catch (error) {
   //     console.error('Error fetching currency details:', error);
   //   }
   // };
-  
+
   // Function to handle currency selection
   // const handleCurrencyChange = (name, value) => {
   //   if (name === 'currency') {
@@ -808,14 +807,14 @@ const TaxInvoiceDetails = () => {
   //         currency: value,
   //         exRate: selectedCurrency.sellingExRate,
   //       }));
-  
+
   //       setFieldErrors((prevFieldErrors) => ({
   //         ...prevFieldErrors,
   //         currency: false,
   //       }));
   //     }
   //   }
-  // };  
+  // };
 
   const getChargeCodeDetail = async (type) => {
     try {
@@ -872,7 +871,7 @@ const TaxInvoiceDetails = () => {
       getStateName(selectedEmp.id);
       setPartyId(selectedEmp.id);
     } else {
-      console.log('No employee found with the given code:', value); 
+      console.log('No employee found with the given code:', value);
     }
   };
 
@@ -907,9 +906,9 @@ const TaxInvoiceDetails = () => {
       console.log('Selected JobOrderNo onchange:', selectedJobOrder);
       setFormData((prevData) => ({
         ...prevData,
-        jobNo: selectedJobOrder.jobNo,
+        jobNo: selectedJobOrder.jobNo
       }));
-      console.log("Onchange joborderno", formData.jobNo);
+      console.log('Onchange joborderno', formData.jobNo);
     } else {
       console.log('No JobOrderNo found with the given code:', value);
     }
@@ -1049,7 +1048,8 @@ const TaxInvoiceDetails = () => {
           shipperInvoiceNo: listValueVO.shipperInvoiceNo,
           billOfEntry: listValueVO.billOfEntry,
           invoiceNo: listValueVO.invoiceNo,
-          invoiceDate: listValueVO.invoiceDate,
+          // invoiceDate: listValueVO.invoiceDate,
+          invoiceDate: listValueVO.invoiceDate ? dayjs(listValueVO.invoiceDate) : null,
           id: listValueVO.id,
           totalChargeAmountLc: listValueVO.totalChargeAmountLc,
           totalChargeAmountBc: listValueVO.totalChargeAmountBc,
@@ -1158,8 +1158,7 @@ const TaxInvoiceDetails = () => {
       setErrors(errors);
       return;
     }
-    console.log("invoiceDate",formData.invoiceDate);
-    
+    console.log('invoiceDate', formData.invoiceDate);
 
     const detailsVo = withdrawalsTableData.map((row) => ({
       ...(editId && { id: row.id }),
@@ -1231,38 +1230,37 @@ const TaxInvoiceDetails = () => {
   };
   const handleTableInputChange = (index, field, value) => {
     const updatedTableData = [...withdrawalsTableData];
-  
+
     // Ensure value is treated as a number
     const numericValue = parseFloat(value) || 0;
-  
+
     updatedTableData[index] = {
       ...updatedTableData[index],
-      [field]: numericValue, // Update the changed field
+      [field]: numericValue // Update the changed field
     };
-  
+
     // Extract required values for calculation
     const qty = parseFloat(updatedTableData[index].qty) || 0;
     const rate = parseFloat(updatedTableData[index].rate) || 0;
     const exRate = parseFloat(updatedTableData[index].exRate) || 1; // Avoid division by zero
     const gstPercent = parseFloat(updatedTableData[index].GSTPercent) || 0;
-  
+
     // Perform calculations
     const billAmount = qty * rate;
     const lcAmount = billAmount * exRate;
     const gstAmount = (billAmount * gstPercent) / 100;
-  
+
     // Update dependent fields
     updatedTableData[index] = {
       ...updatedTableData[index],
       billAmount,
       lcAmount,
-      gst: gstAmount,
+      gst: gstAmount
     };
-  
+
     // Update state
     setWithdrawalsTableData(updatedTableData);
   };
-  
 
   return (
     <>
@@ -1715,20 +1713,18 @@ const TaxInvoiceDetails = () => {
                     // onChange={(e) => setFormData({ ...formData, billCurr: e.target.value })}
                     onChange={(e) => {
                       const selectedBillCurrency = e.target.value;
-                    
+
                       if (!currencyList || currencyList.length === 0) {
-                        console.error("Currency list is empty or undefined.");
+                        console.error('Currency list is empty or undefined.');
                         return;
                       }
-                      const selectedBillCurrencyData = currencyList.find(
-                        (currency) => currency.currency === selectedBillCurrency
-                      );
+                      const selectedBillCurrencyData = currencyList.find((currency) => currency.currency === selectedBillCurrency);
                       setFormData((prevData) => ({
                         ...prevData,
                         billCurr: selectedBillCurrency,
-                        billCurrRate: selectedBillCurrencyData?.sellingExRate || 0, // Handle missing data gracefully
+                        billCurrRate: selectedBillCurrencyData?.sellingExRate || 0 // Handle missing data gracefully
                       }));
-                    }}                                       
+                    }}
                     label="Currency"
                     required
                     error={!!errors.billCurr}
@@ -1867,7 +1863,7 @@ const TaxInvoiceDetails = () => {
                         </MenuItem>
                       ))
                     ) : (
-                      <MenuItem disabled>No Job Card no available</MenuItem> 
+                      <MenuItem disabled>No Job Card no available</MenuItem>
                     )}
                   </Select>
                   {errors.jobNo && <FormHelperText style={{ color: 'red' }}>{errors.jobNo}</FormHelperText>}
@@ -1906,9 +1902,11 @@ const TaxInvoiceDetails = () => {
                           <table className="table table-bordered">
                             <thead>
                               <tr style={{ backgroundColor: '#673AB7' }}>
-                              {formData.status !== "TAX" && (<th className="table-header" style={{ width: '68px' }}>
-                                  Action
-                                </th>)}
+                                {formData.status !== 'TAX' && (
+                                  <th className="table-header" style={{ width: '68px' }}>
+                                    Action
+                                  </th>
+                                )}
                                 <th className="table-header" style={{ width: '50px' }}>
                                   S.No
                                 </th>
@@ -1917,8 +1915,12 @@ const TaxInvoiceDetails = () => {
                                 <th className="table-header">GCharge Code</th>
                                 <th className="table-header">Charge Name</th>
                                 <th className="table-header">Taxable</th>
-                                <th className="table-header"style={{ width: '100px' }}>Qty</th>
-                                <th className="table-header"style={{ width: '100px' }}>Rate</th>
+                                <th className="table-header" style={{ width: '100px' }}>
+                                  Qty
+                                </th>
+                                <th className="table-header" style={{ width: '100px' }}>
+                                  Rate
+                                </th>
                                 <th className="table-header">Currency</th>
                                 <th className="table-header">Ex Rate</th>
                                 <th className="table-header">FC Amount</th>
@@ -1933,22 +1935,22 @@ const TaxInvoiceDetails = () => {
                               {Array.isArray(withdrawalsTableData) &&
                                 withdrawalsTableData.map((row, index) => (
                                   <tr key={row.id}>
-                                    {formData.status !== "TAX" && (
-                                    <td className="border px-2 py-2 text-center">
-                                      <ActionButton
-                                        title="Delete"
-                                        icon={DeleteIcon}
-                                        onClick={() =>
-                                          handleDeleteRow(
-                                            row.id,
-                                            withdrawalsTableData,
-                                            setWithdrawalsTableData,
-                                            withdrawalsTableErrors,
-                                            setWithdrawalsTableErrors
-                                          )
-                                        }
-                                      />
-                                    </td>
+                                    {formData.status !== 'TAX' && (
+                                      <td className="border px-2 py-2 text-center">
+                                        <ActionButton
+                                          title="Delete"
+                                          icon={DeleteIcon}
+                                          onClick={() =>
+                                            handleDeleteRow(
+                                              row.id,
+                                              withdrawalsTableData,
+                                              setWithdrawalsTableData,
+                                              withdrawalsTableErrors,
+                                              setWithdrawalsTableErrors
+                                            )
+                                          }
+                                        />
+                                      </td>
                                     )}
                                     <td className="text-center">
                                       <div className="pt-2">{index + 1}</div>
@@ -2200,7 +2202,7 @@ const TaxInvoiceDetails = () => {
                                         //     });
                                         //   }
                                         // }}
-                                        onChange={(e) => handleTableInputChange(index, "qty", e.target.value)}
+                                        onChange={(e) => handleTableInputChange(index, 'qty', e.target.value)}
                                         className={withdrawalsTableErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                         // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                       />
@@ -2243,7 +2245,7 @@ const TaxInvoiceDetails = () => {
                                         //     });
                                         //   }
                                         // }}
-                                        onChange={(e) => handleTableInputChange(index, "rate", e.target.value)}
+                                        onChange={(e) => handleTableInputChange(index, 'rate', e.target.value)}
                                         className={withdrawalsTableErrors[index]?.rate ? 'error form-control' : 'form-control'}
                                         // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                       />
