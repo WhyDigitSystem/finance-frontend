@@ -927,9 +927,9 @@ const Payment = () => {
         <div className="row d-flex">
           <Grid container spacing={2} alignItems="center">
             <div className="d-flex flex-wrap justify-content-start p-2">
-              <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+              {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
               <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
               <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
             </div>
           </Grid>

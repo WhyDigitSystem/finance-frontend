@@ -223,9 +223,9 @@ const ExRates = () => {
       <ToastContainer />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="d-flex flex-wrap justify-content-start mb-4">
-          <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+          {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
           <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
         </div>
         <div className="row d-flex">

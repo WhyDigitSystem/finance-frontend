@@ -189,7 +189,7 @@ const RolesNew = () => {
       if (response) {
         console.log('THE GETALL ROLES:', response);
 
-        setData(response.paramObjectsMap.rolesVO);
+        setData(response.paramObjectsMap.rolesVO.reverse());
       } else {
         console.error('API Error:', response);
       }
@@ -280,9 +280,9 @@ const RolesNew = () => {
 
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <div className="d-flex flex-wrap justify-content-start mb-4">
-          <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+          {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
           <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
         </div>
         {listView ? (

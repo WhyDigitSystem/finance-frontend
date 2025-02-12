@@ -137,7 +137,7 @@ const FinYear = () => {
       const result = await apiCalls('get', `commonmaster/getAllFInYearByOrgId?orgId=${orgId}`);
 
       if (result) {
-        setData(result.paramObjectsMap.financialYearVOs || []);
+        setData(result.paramObjectsMap.financialYearVOs.reverse() || []);
       } else {
         // Handle error
       }
@@ -267,9 +267,8 @@ const FinYear = () => {
       </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <div className="d-flex flex-wrap justify-content-start mb-4">
-          <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
           <ActionButton title="Save" icon={SaveIcon} onClick={handleSubmit} margin="0 10px 0 10px" />
         </div>
         {showFields ? (

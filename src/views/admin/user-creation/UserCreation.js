@@ -245,7 +245,7 @@ const UserCreation = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.userVO);
+        setListViewData(response.paramObjectsMap.userVO.reverse());
       } else {
         console.error('API Error:', response);
       }
@@ -383,7 +383,7 @@ const UserCreation = () => {
         employeeName: formData.employeeName,
         email: formData.email,
         allIndiaAcces: formData.allIndiaAccess,
-        active: formData.active === 'Active' ? true : false,
+        active: formData.active,
         orgId: orgId,
         roleAccessDTO: roleVo,
         branchAccessDTOList: branchVo
@@ -396,6 +396,7 @@ const UserCreation = () => {
           showToast('success', editId ? 'User Updated Successfully' : 'User created successfully');
           handleClear();
           getAllUsers();
+          getAllUserCreation();
           setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'User creation failed');
@@ -593,9 +594,8 @@ const UserCreation = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
           </div>
 
