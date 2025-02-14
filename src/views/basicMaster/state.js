@@ -92,46 +92,25 @@ export const State = () => {
       console.error('Error fetching data:', error);
     }
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-  //   const numericRegex = /^[0-9]*$/;
-
-  //   if (name === 'stateCode' && !codeRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else if (name === 'stateCode' && value.length > 2) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Max Lenght is 2' });
-  //   } else if (name === 'stateNo' && !numericRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else if (name === 'stateNo' && value.length > 3) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Max Lenght is 3' });
-  //   } else if (name === 'stateName' && !nameRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else {
-  //     setFormData({ ...formData, [name]: value.toUpperCase() });
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-  // };
-
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd, type } = e.target;
-    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const codeRegex = /^[a-zA-Z]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
     const numericRegex = /^[0-9]*$/;
 
     if (name === 'stateCode' && !codeRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Only Alphabets Allowed' });
     } else if (name === 'stateCode' && value.length > 2) {
       setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 2' });
     } else if (name === 'stateNo' && !numericRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Only Numerics Allowed' });
     } else if (name === 'stateNo' && value.length > 3) {
       setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 3' });
     } else if (name === 'stateName' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else {
+      setFieldErrors({ ...fieldErrors, [name]: 'Only Alphabets Allowed' });
+    } else if (name === 'stateName' && value.length > 40) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Exceeded Max Length' });
+    }  else {
       setFormData({ ...formData, [name]: value.toUpperCase() });
       setFieldErrors({ ...fieldErrors, [name]: '' });
 
@@ -168,13 +147,19 @@ export const State = () => {
     const errors = {};
     if (!formData.stateCode) {
       errors.stateCode = 'State Code is required';
+    } else if (formData.stateCode.length <= 1) {
+      errors.stateCode = 'Min Length is 2';
     }
+
     if (!formData.stateNo) {
       errors.stateNo = 'State No is required';
     }
     if (!formData.stateName) {
       errors.stateName = 'State Name is required';
+    } else if (formData.stateName.length < 4) {
+      errors.stateName = 'Min Length is 4';
     }
+
     if (!formData.country) {
       errors.country = 'Country is required';
     }
@@ -245,15 +230,15 @@ export const State = () => {
           <div className="row">
             <div className="col-md-3 mb-3">
               <TextField
-                label="State Number"
+                label="State Name"
                 variant="outlined"
                 size="small"
                 fullWidth
-                name="stateNo"
-                value={formData.stateNo}
+                name="stateName"
+                value={formData.stateName}
                 onChange={handleInputChange}
-                error={!!fieldErrors.stateNo}
-                helperText={fieldErrors.stateNo}
+                error={!!fieldErrors.stateName}
+                helperText={fieldErrors.stateName}
               />
             </div>
             <div className="col-md-3 mb-3">
@@ -271,15 +256,15 @@ export const State = () => {
             </div>
             <div className="col-md-3 mb-3">
               <TextField
-                label="State Name"
+                label="State Number"
                 variant="outlined"
                 size="small"
                 fullWidth
-                name="stateName"
-                value={formData.stateName}
+                name="stateNo"
+                value={formData.stateNo}
                 onChange={handleInputChange}
-                error={!!fieldErrors.stateName}
-                helperText={fieldErrors.stateName}
+                error={!!fieldErrors.stateNo}
+                helperText={fieldErrors.stateNo}
               />
             </div>
             <div className="col-md-3 mb-3">

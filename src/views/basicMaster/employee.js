@@ -94,49 +94,21 @@ export const Employee = () => {
       console.error('Error fetching data:', error);
     }
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value, checked } = e.target;
-  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-
-  //   if (name === 'empCode' && !codeRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else if (name === 'empName' && !nameRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else if (name === 'branch') {
-  //     const selectedBranch = branchList.find((br) => br.branch === value);
-  //     if (selectedBranch) {
-  //       setFormData((prevData) => ({
-  //         ...prevData,
-  //         branch: value,
-  //         branchCode: selectedBranch.branchCode
-  //       }));
-  //     }
-  //   } else {
-  //     setFormData({ ...formData, [name]: value.toUpperCase() });
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-  // };
-
   const handleInputChange = (e) => {
     const { name, value, checked, type, selectionStart, selectionEnd } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
-    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-    // const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Email validation regex
-  
+    const codeRegex = /^[a-zA-Z0-9- ]*$/;
     let errorMessage = '';
   
     if (name === 'empCode' && !codeRegex.test(value)) {
-      errorMessage = 'Invalid Format';
+      errorMessage = 'Only AlphaNumerics are Allowed';
+    } else if (name === 'empCode' && value.length > 10) {
+      errorMessage = 'Exceeded Max Length';
     } else if (name === 'empName' && !nameRegex.test(value)) {
-      errorMessage = 'Invalid Format';
-    } 
-    // else if (name === 'email' && !emailRegex.test(value)) {
-    //   errorMessage = 'Invalid Email Format';
-    // }
-  
-    // Set or clear error messages
+      errorMessage = 'Only Alphabets Allowed';
+    } else if (name === 'empName' && value.length > 50) {
+      errorMessage = 'Exceeded Max Length';
+    }
     if (errorMessage) {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
@@ -176,73 +148,7 @@ export const Employee = () => {
         }, 0);
       }
     }
-  };  
-
-    // const handleInputChange = (e) => {
-    //   const { name, value, checked, type, selectionStart, selectionEnd } = e.target;
-    //   const nameRegex = /^[A-Za-z ]*$/;
-    //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-    //   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-    //   let errorMessage = '';
-    //   if (name === 'empCode' && !codeRegex.test(value)) {
-    //     errorMessage = 'Invalid Format';
-    //   }
-    //   else if (name === 'empName' && !nameRegex.test(value)) {
-    //     errorMessage = 'Invalid Format';
-    //   } 
-    //   else if (name === 'email' && !emailRegex.test(value)) {
-    //     errorMessage = 'Invalid Email Format';
-    //   }
-
-    //   // Set or clear error messages
-    //   if (errorMessage) {
-    //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
-    //   } else {
-    //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
-
-    //     if (name === 'branch') {
-    //       // Handle branch selection
-    //       const selectedBranch = branchList.find((br) => br.branch === value);
-    //       if (selectedBranch) {
-    //         setFormData((prevData) => ({
-    //           ...prevData,
-    //           branch: value,
-    //           branchCode: selectedBranch.branchCode
-    //         }));
-    //       } else {
-    //         // Optionally handle cases where the branch is not found
-    //         setFormData((prevData) => ({
-    //           ...prevData,
-    //           branch: value,
-    //           branchCode: ''
-    //         }));
-    //       }
-    //     } else if (type === 'checkbox') {
-    //       // Handle checkbox inputs
-    //       setFormData((prevData) => ({ ...prevData, [name]: checked }));
-    //     } else if (type === 'text' || type === 'textarea') {
-    //       // Handle text-based inputs: convert to uppercase and maintain cursor
-    //       const upperCaseValue = value.toUpperCase();
-    //       setFormData((prevData) => ({ ...prevData, [name]: upperCaseValue }));
-    //       if(name === 'email'){
-    //         setFormData({ ...formData, [name]: value.toLowerCase() });
-    //       }
-
-    //       // Maintain cursor position
-    //       setTimeout(() => {
-    //         const inputElement = document.getElementsByName(name)[0];
-    //         if (inputElement && inputElement.setSelectionRange) {
-    //           inputElement.setSelectionRange(selectionStart, selectionEnd);
-    //         }
-    //       }, 0);
-    //     } else {
-    //       // Handle other input types (e.g., select, radio) without transformation
-    //       setFormData((prevData) => ({ ...prevData, [name]: value }));
-    //     }
-    //   }
-    // };
-
+  };
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date).format('YYYY-MM-DD');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
@@ -342,10 +248,16 @@ export const Employee = () => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!formData.empCode) {
       errors.empCode = 'Employee Code is required';
+    } else if (formData.empCode.length < 2) {
+      errors.empCode = 'Min Length is 2';
     }
+
     if (!formData.empName) {
       errors.empName = 'Employee Name is required';
+    } else if (formData.empName.length < 3) {
+      errors.empName = 'Min Length is 3';
     }
+
     if (!formData.gender) {
       errors.gender = 'Gender is required';
     }
@@ -369,13 +281,10 @@ export const Employee = () => {
     } else if (!emailRegex.test(formData.email)) {
       errors.email = 'Invalid Mail ID Format';
     }
-console.log("save",errors);
-
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       const saveFormData = {
         ...(editId && { id: editId }),
-        // active: formData.active,
         active: formData.active,
         salesFlag: formData.salesFlag,
         email: formData.email,
@@ -423,7 +332,7 @@ console.log("save",errors);
     { accessorKey: 'employeeCode', header: 'Emp Code', size: 140 },
     { accessorKey: 'employeeName', header: 'Employee', size: 140 },
     { accessorKey: 'branch', header: 'Branch', size: 140 },
-    { accessorKey: 'department', header: 'department', size: 140 },
+    { accessorKey: 'department', header: 'Department', size: 140 },
     { accessorKey: 'designation', header: 'Designation', size: 140 },
     { accessorKey: 'joiningDate', header: 'Joining Date', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
@@ -448,6 +357,19 @@ console.log("save",errors);
         ) : (
           <>
             <div className="row">
+            <div className="col-md-3 mb-3">
+                <TextField
+                  label="Name"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="empName"
+                  value={formData.empName}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.empName}
+                  helperText={fieldErrors.empName}
+                />
+              </div>
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Code"
@@ -461,20 +383,6 @@ console.log("save",errors);
                   helperText={fieldErrors.empCode}
                 />
               </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Name"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="empName"
-                  value={formData.empName}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.empName}
-                  helperText={fieldErrors.empName}
-                />
-              </div>
-
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gender}>
                   <InputLabel id="gender-label">Gender</InputLabel>
@@ -549,11 +457,9 @@ console.log("save",errors);
                       onChange={(date) => handleDateChange('dob', date)}
                       maxDate={maxDate}
                       slotProps={{
-                        textField: { size: 'small', clearable: true }
+                        textField: { size: 'small', clearable: true, error: fieldErrors.dob, helperText: fieldErrors.dob }
                       }}
                       format="DD-MM-YYYY"
-                      error={fieldErrors.dob}
-                      helperText={fieldErrors.dob && 'Required'}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -566,11 +472,9 @@ console.log("save",errors);
                       value={formData.doj ? dayjs(formData.doj, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('doj', date)}
                       slotProps={{
-                        textField: { size: 'small', clearable: true }
+                        textField: { size: 'small', clearable: true, error: fieldErrors.doj, helperText: fieldErrors.doj }
                       }}
                       format="DD-MM-YYYY"
-                      error={fieldErrors.doj}
-                      helperText={fieldErrors.doj && 'Required'}
                     />
                   </LocalizationProvider>
                 </FormControl>

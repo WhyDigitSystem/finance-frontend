@@ -52,29 +52,69 @@ export const Currency = () => {
     }
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
+  //   const nameRegex = /^[A-Za-z ]*$/;
+  //   let errorMessage = '';
+
+  //   switch (name) {
+  //     case 'currency':
+  //     case 'currencyDescription':
+  //     case 'subCurrency':
+  //       if (!nameRegex.test(value)) {
+  //         errorMessage = 'Only Alphabets Allowed  ';
+  //       }
+  //       break;
+  //     default:
+  //       break;
+  //   }
+  //   if (errorMessage) {
+  //     setFieldErrors({ ...fieldErrors, [name]: errorMessage });
+  //   } else {
+  //     setFormData((prevFormData) => ({
+  //       ...prevFormData,
+  //       [name]: name === 'active' ? checked : value.toUpperCase()
+  //     }));
+
+  //     setFieldErrors({ ...fieldErrors, [name]: '' });
+
+  //     // Preserve the cursor position for text-based inputs
+  //     if (type === 'text' || type === 'textarea') {
+  //       setTimeout(() => {
+  //         const inputElement = document.getElementsByName(name)[0];
+  //         if (inputElement && inputElement.setSelectionRange) {
+  //           inputElement.setSelectionRange(selectionStart, selectionEnd);
+  //         }
+  //       }, 0);
+  //     }
+  //   }
+  // };
+
   const handleInputChange = (e) => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
-    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-    const symbolRegex = /^[a-zA-Z₹$€]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
     let errorMessage = '';
-
+  
+    // Define max length for each field
+    const maxLengths = {
+      currency: 3,
+      currencyDescription: 50,
+      subCurrency: 20
+    };
     switch (name) {
       case 'currency':
+      case 'currencyDescription':
       case 'subCurrency':
         if (!nameRegex.test(value)) {
-          errorMessage = 'Invalid Format  ';
+          errorMessage = 'Only Alphabets Allowed';
+        } else if (value.length > maxLengths[name]) {
+          errorMessage = `Exceeded Max length`;
         }
         break;
-      // case 'currencyDescription':
-      //   if (!symbolRegex.test(value) || value.length > 1) {
-      //     errorMessage = 'Invalid Format';
-      //   }
-      //   break;
       default:
         break;
     }
-
+  
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
@@ -82,9 +122,9 @@ export const Currency = () => {
         ...prevFormData,
         [name]: name === 'active' ? checked : value.toUpperCase()
       }));
-
+  
       setFieldErrors({ ...fieldErrors, [name]: '' });
-
+  
       // Preserve the cursor position for text-based inputs
       if (type === 'text' || type === 'textarea') {
         setTimeout(() => {
@@ -96,7 +136,7 @@ export const Currency = () => {
       }
     }
   };
-
+  
   const handleClear = () => {
     setFormData({
       currency: '',
@@ -159,9 +199,18 @@ export const Currency = () => {
     const errors = {};
     if (!formData.currency) {
       errors.currency = 'Currency is required';
+    } else if (formData.currency.length <= 2) {
+      errors.currency = 'Min Length is 3';
     }
+
     if (!formData.currencyDescription) {
       errors.currencyDescription = 'Currency Description is required';
+    } else if (formData.currencyDescription.length <= 2) {
+      errors.currencyDescription = 'Min Length is 3';
+    }
+
+    if (formData.subCurrency.length <= 2) {
+      errors.subCurrency = 'Min Length is 3';
     }
     if (!formData.country) {
       errors.country = 'Country is required';

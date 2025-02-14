@@ -17,39 +17,27 @@ import CommonListViewTable from './CommonListViewTable';
 export const Country = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [isLoading, setIsLoading] = useState(false);
-  
+  const [isLoading, setIsLoading] = useState(false); 
   const [formData, setFormData] = useState({
     active: true,
     countryCode: '',
     countryName: ''
   });
   const [editId, setEditId] = useState('');
-
-  const theme = useTheme();
-  const anchorRef = useRef(null);
-
   const [fieldErrors, setFieldErrors] = useState({
     countryName: '',
     countryCode: ''
   });
   const [listView, setListView] = useState(false);
-  const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
     { accessorKey: 'countryCode', header: 'Code', size: 140 },
-    {
-      accessorKey: 'countryName',
-      header: 'Country',
-      size: 140
-    },
+    { accessorKey: 'countryName',header: 'Country',size: 140},
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
   const [listViewData, setListViewData] = useState([]);
-
   useEffect(() => {
     getAllCountries();
   }, []);
-
   const getAllCountries = async () => {
     try {
       const result = await apiCalls('get', `commonmaster/country?orgid=${orgId}`);
@@ -59,7 +47,6 @@ export const Country = () => {
       console.log('error', err);
     }
   };
-
   const getCountryById = async (row) => {
     console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
     setEditId(row.original.id);
@@ -81,31 +68,19 @@ export const Country = () => {
       console.error('Error fetching data:', error);
     }
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-
-  //   if (name === 'countryCode' && !codeRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else if (name === 'countryName' && !nameRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else {
-  //     setFormData({ ...formData, [name]: value.toUpperCase() });
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-  // };
-
   const handleInputChange = (e) => {
-    const { name, value, selectionStart, selectionEnd, type } = e.target;
-    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const { name, value, selectionStart, selectionEnd, type } = e.target; 
+    const codeRegex = /^[A-Za-z]*$/; 
     const nameRegex = /^[A-Za-z ]*$/;
 
     if (name === 'countryCode' && !codeRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Only Alphabets Allowed' });
+    } else if (name === 'countryCode' && value.length > 3) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 3' });
     } else if (name === 'countryName' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Only Alphabets Allowed' });
+    } else if (name === 'countryName' && value.length > 57) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Exceeded Max Length' });
     } else {
       setFormData({ ...formData, [name]: value.toUpperCase() });
       setFieldErrors({ ...fieldErrors, [name]: '' });
@@ -121,7 +96,6 @@ export const Country = () => {
       }
     }
   };
-
   const handleClear = () => {
     setFormData({
       countryName: '',
@@ -139,9 +113,13 @@ export const Country = () => {
     const errors = {};
     if (!formData.countryCode) {
       errors.countryCode = 'Country Code is required';
+    } else if (formData.countryCode.length <= 2) {
+        errors.countryCode = 'Min Length is 2';
     }
     if (!formData.countryName) {
       errors.countryName = 'Country is required';
+    } else if (formData.countryName.length < 4) {
+      errors.countryCode = 'Min Length is 4';
     }
 
     if (Object.keys(errors).length === 0) {
@@ -183,15 +161,6 @@ export const Country = () => {
   const handleView = () => {
     setListView(!listView);
   };
-
-  const handleClose = () => {
-    setEditMode(false);
-    setFormData({
-      country: '',
-      countryCode: ''
-    });
-  };
-
   const handleCheckboxChange = (event) => {
     setFormData({
       ...formData,

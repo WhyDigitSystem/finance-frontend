@@ -79,13 +79,15 @@ export const Designation = () => {
   };
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd, type } = e.target;
-    const codeRegex = /^[a-zA-Z0-9#_\- \/\\]*$/;
-    // const nameRegex = /^[A-Za-z - ]*$/;
-
+    const codeRegex = /^[a-zA-Z0-9- ]*$/;
     if (name === 'designationCode' && !codeRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Only Alphabets Allowed' });
+    } else if (name === 'designationCode' && value.length > 10) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Exceeded Max Length' });
     } else if (name === 'designationName' && !codeRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Only Alphabets Allowed' });
+    } else if (name === 'designationName' && value.length > 50) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Exceeded Max Length' });
     } else {
       setFormData({ ...formData, [name]: value.toUpperCase() });
       setFieldErrors({ ...fieldErrors, [name]: '' });
@@ -119,9 +121,13 @@ export const Designation = () => {
     const errors = {};
     if (!formData.designationCode) {
       errors.designationCode = 'Designation Code is required';
+    } else if (formData.designationCode.length < 2) {
+      errors.designationCode = 'Min Length is 2';
     }
     if (!formData.designationName) {
       errors.designationName = 'Designation is required';
+    } else if (formData.designationName.length <= 2) {
+      errors.designationName = 'Min Length is 3';
     }
 
     if (Object.keys(errors).length === 0) {

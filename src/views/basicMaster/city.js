@@ -67,36 +67,20 @@ export const City = () => {
       console.error('Error fetching country data:', error);
     }
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value, checked } = e.target;
-  //   const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-
-  //   if (name === 'cityCode' && !codeRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else if (name === 'cityCode' && value.length > 3) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 3' });
-  //   } else if (name === 'cityName' && !nameRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-  //   } else {
-  //     setFormData({ ...formData, [name]: name === 'active' ? checked : value.toUpperCase() });
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-  // };
-
   const handleInputChange = (e) => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
     const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
 
     if (name === 'cityCode' && !codeRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Only AlphaNumerics are Allowed' });
     } else if (name === 'cityCode' && value.length > 3) {
       setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 3' });
     } else if (name === 'cityName' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
-    } else {
+      setFieldErrors({ ...fieldErrors, [name]: 'Only Alphabets Allowed' });
+    } else if (name === 'cityName' && value.length > 40) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Exceeded Max Length' });
+    }  else {
       setFormData({
         ...formData,
         [name]: name === 'active' ? checked : value.toUpperCase()
@@ -177,10 +161,16 @@ export const City = () => {
     const errors = {};
     if (!formData.cityCode) {
       errors.cityCode = 'City Code is required';
+    } else if (formData.cityCode.length <= 1) {
+      errors.cityCode = 'Min Length is 2';
     }
+
     if (!formData.cityName) {
       errors.cityName = 'City Name is required';
+    } else if (formData.cityName.length <= 2) {
+      errors.cityName = 'Min Length is 3';
     }
+
     if (!formData.state) {
       errors.state = 'State is required';
     }
