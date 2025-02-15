@@ -21,7 +21,6 @@ const HsnSacCode = () => {
     type:'',
     code:'',
     description:'',
-    taxType:'',
     igst:'',
     cgst:'',
     sgst:''
@@ -64,7 +63,6 @@ const HsnSacCode = () => {
           type: hsnSocCodeVO.type || '',
           code: hsnSocCodeVO.code || '',
           description: hsnSocCodeVO.description || '',
-          taxType: hsnSocCodeVO.taxType || '',
           igst: hsnSocCodeVO.igst || '',
           cgst: hsnSocCodeVO.cgst || '',
           sgst: hsnSocCodeVO.sgst || '',
@@ -126,7 +124,6 @@ const HsnSacCode = () => {
       type:'',
       code:'',
       description:'',
-      taxType:'',
       igst:'',
       cgst:'',
       sgst:''
@@ -167,7 +164,6 @@ const HsnSacCode = () => {
         type: formData.type,
         code: formData.code,
         description: formData.description,
-        taxType: formData.taxType,
         igst: formData.igst ? parseInt(formData.igst) : 0,
         cgst: formData.cgst ? parseInt(formData.cgst) : 0,
         sgst: formData.sgst ? parseInt(formData.sgst) : 0,
@@ -271,28 +267,6 @@ const HsnSacCode = () => {
                 />
               </FormControl>
             </div>
-            {formData.type === 'SAC' && (
-              <>
-            <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label">
-                    Tax Type
-                  </InputLabel>
-                  <Select
-                    labelId="statusLabel"
-                    value={formData.taxType}
-                    onChange={(e) => setFormData({ ...formData, taxType: e.target.value })}
-                    label="Tax Type"
-                    error={!!fieldErrors.taxType}
-                    helperText={fieldErrors.taxType}
-                    // disabled={formData.type === 'TAX' || !editId}
-                  >
-                    <MenuItem value="INTER">INTER</MenuItem>
-                    <MenuItem value="INTRA">INTRA</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
-              {formData.taxType === 'INTER' && (
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField
@@ -312,9 +286,6 @@ const HsnSacCode = () => {
                     />
                   </FormControl>
                 </div>
-              )}
-              {formData.taxType === 'INTRA' && (
-                <>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField
@@ -353,10 +324,6 @@ const HsnSacCode = () => {
                     />
                   </FormControl>
                 </div>
-                </>
-              )}
-            </>
-            )}
             <div className="col-md-4 mb-2">
               <FormGroup>
                 <FormControlLabel control={<Checkbox checked={formData.active} onChange={handleCheckboxChange} />} label="Active" />

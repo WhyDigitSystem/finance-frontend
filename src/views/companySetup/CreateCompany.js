@@ -106,22 +106,28 @@ const CreateCompany = () => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
     const companyNameRegex = /^[A-Za-z 0-9@_\-*]*$/;
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const companyCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-
+    const companyCodeRegex = /^[a-zA-Z0-9 ]*$/;
     if (name === 'companyName' && !companyNameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Only alphabetic characters and @*_- are allowed' });
-    } else if (name === 'companyCode' && !companyCodeRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+    } else if (name === 'companyName' && value.length > 50) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Exceeded Max Length' });
+    }  else if (name === 'companyCode' && !companyCodeRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Only AlphaNumerics Allowed' });
+    } else if (name === 'companyCode' && value.length > 10) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Exceeded Max Length' });
     } else if (name === 'companyAdminName' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Only Alphabets Allowed' });
+    } else if (name === 'companyAdminName' && value.length > 50) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Exceeded Max Length' });
+    }  else if (name === 'employeeCode' && !companyCodeRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Only AlphaNumerics Allowed' });
+    } else if (name === 'employeeCode' && value.length > 10) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Exceeded Max Length' });
     } else {
       let updatedValue = value;
-
       if (name !== 'companyAdminEmail') {
         updatedValue = value.toUpperCase();
       }
-
       if (type === 'checkbox') {
         setFormData({ ...formData, [name]: checked });
       } else {
@@ -130,10 +136,7 @@ const CreateCompany = () => {
           [name]: updatedValue
         }));
       }
-
       setFieldErrors({ ...fieldErrors, [name]: '' });
-
-      // Update the cursor position after the input change only for text inputs
       if (type === 'text' || type === 'email' || type === 'textarea') {
         setTimeout(() => {
           const inputElement = document.getElementsByName(name)[0];
@@ -170,18 +173,26 @@ const CreateCompany = () => {
 
     if (!formData.companyCode) {
       errors.companyCode = 'Company Code is required';
+    } else if (formData.companyCode.length < 3) {
+      errors.companyCode = 'Min Length is 3';
     }
     if (!formData.companyName) {
       errors.companyName = 'Company is required';
+    } else if (formData.companyName.length < 3) {
+      errors.companyName = 'Min Length is 3';
     }
     if (!formData.companyAdminName) {
       errors.companyAdminName = 'Admin Name is required';
+    } else if (formData.companyAdminName.length < 3) {
+      errors.companyAdminName = 'Min Length is 3';
     }
     if (!formData.employeeCode) {
       errors.employeeCode = 'Employee Code is required';
+    } else if (formData.employeeCode.length < 3) {
+      errors.employeeCode = 'Min Length is 3';
     }
     if (!formData.companyAdminEmail) {
-      errors.companyAdminEmail = 'company Admin Email ID is required';
+      errors.companyAdminEmail = 'Company Admin Email ID is required';
     } else if (!emailRegex.test(formData.companyAdminEmail)) {
       errors.companyAdminEmail = 'Invalid MailID Format';
     }
@@ -261,8 +272,7 @@ const CreateCompany = () => {
             <CommonListViewTable
               data={listViewData}
               columns={listViewColumns}
-              // editCallback={editEmployee}
-              blockEdit={true} // DISAPLE THE MODAL IF TRUE
+              blockEdit={true}
               toEdit={getCompanyById}
             />
           </div>
@@ -293,7 +303,6 @@ const CreateCompany = () => {
                   onChange={handleInputChange}
                   error={!!fieldErrors.companyName}
                   helperText={fieldErrors.companyName}
-                  // inputRef={companyNameRef}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -324,7 +333,7 @@ const CreateCompany = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Emp Code"
+                  label="Employee Code"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -335,19 +344,6 @@ const CreateCompany = () => {
                   helperText={fieldErrors.employeeCode}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <TextField
-                  label="Password"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="companyAdminPwd"
-                  value={formData.companyAdminPwd}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.companyAdminPwd}
-                  helperText={fieldErrors.companyAdminPwd}
-                />
-              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControlLabel
                   control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
