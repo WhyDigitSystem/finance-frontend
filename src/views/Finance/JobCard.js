@@ -105,8 +105,7 @@ export const JobCard = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setAllAccountName(response.paramObjectsMap.generalJournalVO);
-        console.log('Account Name', response.paramObjectsMap.generalJournalVO);
+        setAllAccountName(response.paramObjectsMap.generalJournalVO); 
       } else {
         console.error('API Error:', response);
       }
@@ -137,13 +136,12 @@ export const JobCard = () => {
     try {
       const result = await apiCalls('get', `/transaction/getAllTmsJobCardById?id=${row.original.id}`);
       if (result) {
-        const jnVo = result.paramObjectsMap.jobCardVO[0];
+        const jnVo = result.paramObjectsMap.jobCardVO;
         console.log('DataToEdit', jnVo);
         setEditId(row.original.id);
-        // setDocId(jnVo.docId);
+        setDocId(jnVo.jobNo);
         getSalesPerson(jnVo.customer);
         setFormData({
-          docId:jnVo.docId,
           customer: jnVo.customer || '',
           salesPerson: jnVo.salesPerson || '',
           date: jnVo.date ? dayjs(jnVo.date, 'YYYY-MM-DD') : dayjs(),
@@ -170,9 +168,7 @@ export const JobCard = () => {
     }
   };
 
-  useEffect(() => {
-    console.log('docId updated:', docId);
-  }, [docId]);
+  
 
   const handleClear = async () => {
     setFormData({
@@ -212,14 +208,7 @@ export const JobCard = () => {
     setDetailsTableErrors([{ accountName: '', amount: '' }]);
     setEditId('');
 
-    // Ensure getTmsJobCardDocId updates docId
-    try {
-      await getTmsJobCardDocId();
-      console.log('DocId updated after clearing form.');
-    } catch (error) {
-      console.error('Error updating docId on clear:', error);
-    }
-
+    getTmsJobCardDocId();
     getAllCustomers();
   };
   const handleList = () => {
@@ -505,10 +494,20 @@ export const JobCard = () => {
         {showForm ? (
           <>
             <div className="row d-flex">
-              <div className="col-md-3 mb-3">
-                <TextField id="docId" label="Document No" variant="outlined" size="small" fullWidth name="docId" value={docId} disabled />
-              </div>
-
+            <div className="col-md-3 mb-3">
+                  <TextField
+                    id="docId"
+                    label="Document No"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="docId"
+                    value={docId}
+                    onChange={handleInputChange}
+                    disabled
+                    inputProps={{ maxLength: 10 }}
+                  />
+                </div>
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
@@ -867,7 +866,7 @@ export const JobCard = () => {
                                           />
                                         )}
                                         sx={{ width: 250 }}
-                                      />
+                                       />
                                     </td>
 
 
