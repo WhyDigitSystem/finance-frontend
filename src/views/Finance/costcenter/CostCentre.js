@@ -42,25 +42,24 @@ const CostCenter = () => {
 
   const handleInputChange = (e) => {
     const { name, value, checked, type } = e.target;
-
+  
     // Handle checkboxes separately
     if (type === 'checkbox') {
       setFormValues((prev) => ({
         ...prev,
         [name]: checked // Use 'checked' for checkboxes
       }));
-
       return;
     }
-
-    // Handle dropdown (Select)
-    if (name === 'dimensionType') {
+   
+    if (name === 'dimensionType' || name === 'valueDescription') {
+      const uppercasedValue = value.toUpperCase(); 
       setFormValues((prev) => ({
         ...prev,
-        [name]: value
+        [name]: uppercasedValue
       }));
-
-      if (!value) {
+  
+      if (!uppercasedValue) {
         setValidationErrors((prev) => ({
           ...prev,
           [name]: 'This field is required'
@@ -73,18 +72,16 @@ const CostCenter = () => {
       }
       return;
     }
-
-    // Convert input to uppercase
+   
     const uppercasedValue = value.toUpperCase();
-
-    // Check and restrict input for valueCode
+     
     if (name === 'valueCode') {
-      const filteredValue = uppercasedValue.replace(/[^0-9\s]/g, ''); // Allow only numbers
+      const filteredValue = uppercasedValue.replace(/[^0-9\s]/g, ''); 
       setFormValues((prev) => ({
         ...prev,
         [name]: filteredValue
       }));
-
+  
       if (uppercasedValue !== filteredValue) {
         setValidationErrors((prev) => ({
           ...prev,
@@ -103,38 +100,13 @@ const CostCenter = () => {
       }
       return;
     }
-
-    // Check and restrict input for valueDescription
-    if (name === 'valueDescription') {
-      const filteredValue = uppercasedValue.replace(/[^a-zA-Z0-9\s]/g, ''); // Alphanumeric only
-      setFormValues((prev) => ({
-        ...prev,
-        [name]: filteredValue
-      }));
-
-      if (uppercasedValue !== filteredValue) {
-        setValidationErrors((prev) => ({
-          ...prev,
-          [name]: 'Only alphabets and numbers are allowed'
-        }));
-      } else if (!filteredValue.trim()) {
-        setValidationErrors((prev) => ({
-          ...prev,
-          [name]: 'This field is required'
-        }));
-      } else {
-        setValidationErrors((prev) => {
-          const { [name]: removed, ...rest } = prev;
-          return rest;
-        });
-      }
-    }
+   
   };
-
+  
   const columns = [
     { accessorKey: 'dimensionType', header: 'Dimension Type', size: 140 },
     { accessorKey: 'valueCode', header: 'Value Code', size: 140 },
-    { accessorKey: 'valueDescription', header: 'valueDescription', size: 140 },
+    { accessorKey: 'valueDescription', header: 'Value Description', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
@@ -214,13 +186,13 @@ const CostCenter = () => {
   const validateForm = () => {
     const errors = {};
     if (!formValues.dimensionType.trim()) {
-      errors.dimensionType = 'This field is required';
+      errors.dimensionType = 'Dimension Type is required';
     }
     if (!formValues.valueCode.trim()) {
-      errors.valueCode = 'This field is required';
+      errors.valueCode = 'Value Code is required';
     }
     if (!formValues.valueDescription.trim()) {
-      errors.valueDescription = 'This field is required';
+      errors.valueDescription = 'Value Description is required';
     }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;

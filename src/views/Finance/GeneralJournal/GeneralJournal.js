@@ -2,7 +2,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
-import { FormControl, FormHelperText, InputLabel, MenuItem, Select } from '@mui/material';
+import { FormControl, FormHelperText, InputLabel, Autocomplete, MenuItem, Select } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -31,7 +31,9 @@ const GeneralJournal = () => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [value, setValue] = useState(0);
   const [editId, setEditId] = useState('');
-  const [accountNames, setAccountNames] = useState([]);
+  // const [accountNames, setAccountNames] = useState([]);
+  const [allAccountName, setAllAccountName] = useState([]);
+
   const [currencies, setCurrencies] = useState([]);
   const [formData, setFormData] = useState({
     active: true,
@@ -64,7 +66,6 @@ const GeneralJournal = () => {
   });
 
   const listViewColumns = [
-    { accessorKey: 'status', header: 'Status', size: 140 },
     { accessorKey: 'totalDebitAmount', header: 'Voucher Amount', size: 140 },
     { accessorKey: 'docId', header: 'Voucher No', size: 140 },
     { accessorKey: 'docDate', header: 'Voucher Date', size: 140 },
@@ -75,7 +76,7 @@ const GeneralJournal = () => {
   const [detailsTableData, setDetailsTableData] = useState([
     {
       id: 1,
-      accountsName: '',
+      accountName: '',
       creditAmount: '',
       debitAmount: '',
       narration: '',
@@ -85,7 +86,7 @@ const GeneralJournal = () => {
   ]);
   const [detailsTableErrors, setDetailsTableErrors] = useState([
     {
-      accountsName: '',
+      accountName: '',
       // creditAmount: '',
       // debitAmount: '',
       narration: '',
@@ -177,7 +178,7 @@ const GeneralJournal = () => {
         setDetailsTableData(
           glVO.particularsJournalVO.map((row) => ({
             id: row.id,
-            accountsName: row.accountsName,
+            accountName: row.accountsName || '', // Assign accountsName to accountName
             creditAmount: row.creditAmount,
             debitAmount: row.debitAmount,
             narration: row.narration,
@@ -185,6 +186,7 @@ const GeneralJournal = () => {
             subledgerName: row.subledgerName
           }))
         );
+        
 
         console.log('DataToEdit', glVO);
       } else {
@@ -195,16 +197,41 @@ const GeneralJournal = () => {
     }
   };
 
+  // const getAccountNameFromGroup = async () => {
+  //   try {
+  //     const response = await apiCalls('get', `/transaction/getAccountNameFromGroup?orgId=${orgId}`);
+  //     setAccountNames(response.paramObjectsMap.generalJournalVO);
+  //     console.log('generalJournalVO', response.paramObjectsMap.generalJournalVO);
+  //   } catch (error) {
+  //     console.error('Error fetching gate passes:', error);
+  //   }
+  // };
   const getAccountNameFromGroup = async () => {
     try {
       const response = await apiCalls('get', `/transaction/getAccountNameFromGroup?orgId=${orgId}`);
-      setAccountNames(response.paramObjectsMap.generalJournalVO);
-      console.log('generalJournalVO', response.paramObjectsMap.generalJournalVO);
+      console.log('API Response:', response);
+  
+      if (response.status === true) {
+        // Populating the account names
+        setAllAccountName(response.paramObjectsMap.generalJournalVO);
+        console.log('Account Name', response.paramObjectsMap.generalJournalVO);
+      } else {
+        console.error('API Error:', response);
+      }
     } catch (error) {
-      console.error('Error fetching gate passes:', error);
+      console.error('Error fetching data:', error);
     }
   };
-
+  
+  // Handler for updating account name in table data
+  const handleAccountNameChange = (event, newValue, rowId) => {
+    const value = newValue ? newValue.accountName : ''; // Get account name from selection
+    setDetailsTableData(prev =>
+      prev.map(row =>
+        row.id === rowId ? { ...row, accountName: value } : row // Update specific row
+      )
+    );
+  };
   const handleDebitChange = (e, row, index) => {
     const value = e.target.value;
 
@@ -287,7 +314,7 @@ const GeneralJournal = () => {
     getAllActiveCurrency(orgId);
     setFieldErrors({});
     setDetailsTableData([
-      { id: 1, accountsName: '', subLedgerCode: '', debitAmount: '', creditAmount: '', narration: '', subledgerName: '' }
+      { id: 1, accountName: '', subLedgerCode: '', debitAmount: '', creditAmount: '', narration: '', subledgerName: '' }
     ]);
     setDetailsTableErrors('');
     setEditId('');
@@ -313,7 +340,7 @@ const GeneralJournal = () => {
     }
     const newRow = {
       id: Date.now(),
-      accountsName: '',
+      accountName: '',
       subLedgerCode: '',
       debitAmount: '',
       creditAmount: '',
@@ -321,7 +348,7 @@ const GeneralJournal = () => {
       subledgerName: ''
     };
     setDetailsTableData([...detailsTableData, newRow]);
-    setDetailsTableErrors([...detailsTableErrors, { accountsName: '', subLedgerCode: '', subledgerName: '' }]);
+    setDetailsTableErrors([...detailsTableErrors, { accountName: '', subLedgerCode: '', subledgerName: '' }]);
   };
 
   const isLastRowEmpty = (table) => {
@@ -330,7 +357,7 @@ const GeneralJournal = () => {
 
     if (table === detailsTableData) {
       return (
-        !lastRow.accountsName ||
+        !lastRow.accountName ||
         // !lastRow.creditAmount ||
         // !lastRow.debitAmount ||
         // !lastRow.narration ||
@@ -347,7 +374,7 @@ const GeneralJournal = () => {
         const newErrors = [...prevErrors];
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
-          accountsName: !table[table.length - 1].accountsName ? 'Account Name is required' : '',
+          accountName: !table[table.length - 1].accountName ? 'Account Name is required' : '',
           // creditAmount: !table[table.length - 1].creditAmount ? 'Credit is required' : '',
           // debitAmount: !table[table.length - 1].debitAmount ? 'Debit is required' : '',
           // narration: !table[table.length - 1].narration ? 'Narration is required' : '',
@@ -402,8 +429,8 @@ const GeneralJournal = () => {
     const newTableErrors = detailsTableData.map((row) => {
       const rowErrors = {};
       if (!(row.credit || row.debit === '0' || row.debit || row.credit === '0')) {
-        if (!row.accountsName) {
-          rowErrors.accountsName = 'Account Name is required';
+        if (!row.accountName) {
+          rowErrors.accountName = 'Account Name is required';
           detailTableDataValid = false;
         }
         // if (!row.creditAmount) {
@@ -436,7 +463,7 @@ const GeneralJournal = () => {
     if (Object.keys(errors).length === 0 && detailTableDataValid) {
       const GeneralJournalVO = detailsTableData.map((row) => ({
         ...(editId && { id: row.id }),
-        accountsName: row.accountsName,
+        accountsName: row.accountName,
         creditAmount: row.creditAmount,
         debitAmount: row.debitAmount,
         narration: row.narration,
@@ -733,13 +760,13 @@ const GeneralJournal = () => {
                                       </td>
                                       {/* <td className="border px-2 py-2">
                                         <select
-                                          value={row.accountsName}
+                                          value={row.accountName}
                                           disabled={isDisabled}
                                           style={{ width: '150px' }}
-                                          className={detailsTableErrors[index]?.accountsName ? 'error form-control' : 'form-control'}
+                                          className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
                                           onChange={(e) =>
                                             setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, accountsName: e.target.value } : r))
+                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: e.target.value } : r))
                                             )
                                           }
                                         >
@@ -750,21 +777,21 @@ const GeneralJournal = () => {
                                             </option>
                                           ))}
                                         </select>
-                                        {detailsTableErrors[index]?.accountsName && (
+                                        {detailsTableErrors[index]?.accountName && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].accountsName}
+                                            {detailsTableErrors[index].accountName}
                                           </div>
                                         )}
                                       </td> */}
-                                      <td className="border px-2 py-2">
+                                      {/* <td className="border px-2 py-2">
                                         <select
-                                          value={row.accountsName || (accountNames.length === 1 ? accountNames[0].accountName : '')}
+                                          value={row.accountName || (accountNames.length === 1 ? accountNames[0].accountName : '')}
                                           disabled={isDisabled}
                                           style={{ width: '150px' }}
-                                          className={detailsTableErrors[index]?.accountsName ? 'error form-control' : 'form-control'}
+                                          className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
                                           onChange={(e) =>
                                             setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, accountsName: e.target.value } : r))
+                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: e.target.value } : r))
                                             )
                                           }
                                         >
@@ -772,8 +799,8 @@ const GeneralJournal = () => {
                                           {accountNames
                                             .filter(
                                               (item) =>
-                                                !detailsTableData.some((tableRow) => tableRow.accountsName === item.accountName) ||
-                                                row.accountsName === item.accountName
+                                                !detailsTableData.some((tableRow) => tableRow.accountName === item.accountName) ||
+                                                row.accountName === item.accountName
                                             )
                                             .map((item) => (
                                               <option key={item.accountName} value={item.accountName}>
@@ -781,12 +808,33 @@ const GeneralJournal = () => {
                                               </option>
                                             ))}
                                         </select>
-                                        {detailsTableErrors[index]?.accountsName && (
+                                        {detailsTableErrors[index]?.accountName && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].accountsName}
+                                            {detailsTableErrors[index].accountName}
                                           </div>
                                         )}
-                                      </td>
+                                      </td> */}
+                                     <td>
+  <Autocomplete
+    options={allAccountName}  // Array of account names
+    getOptionLabel={(option) => option.accountName || ''}  // Label for each option
+    groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')} // Group by first letter of account name
+    value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null} // Set the value based on accountName
+    onChange={(event, newValue) => handleAccountNameChange(event, newValue, row.id)} // Handle change
+    size="small"
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        label="Account Name"
+        variant="outlined"
+        error={!!detailsTableErrors[index]?.accountName} // Display error if any
+        helperText={detailsTableErrors[index]?.accountName} // Helper text for errors
+      />
+    )}
+    sx={{ width: 250 }}
+  />
+</td>
+
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
