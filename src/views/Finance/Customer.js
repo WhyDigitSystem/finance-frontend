@@ -25,7 +25,8 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import SampleFile from '../../assets/sample-files/customer.xlsx'
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+
 
 export const Customer = () => {
   const [stateList, setStateList] = useState([]);
@@ -35,6 +36,8 @@ export const Customer = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [uploadOpen, setUploadOpen] = useState(false);
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const gstRegex = /^[0-9A-Z]{15}$/;
   const [formData, setFormData] = useState({
     active: true,
     customerName: '',
@@ -281,21 +284,27 @@ export const Customer = () => {
           }))
         );
 
-        const addressData = customer.partyAddressVO.map((detail) => ({
-          id: detail.id,
-          addressType: detail.addressType || '',
-          addressLine1: detail.addressLine1 || '',
-          addressLine2: detail.addressLine2 || '',
-          addressLine3: detail.addressLine3 || '',
-          businessPlace: detail.businessPlace || '',
-          sez: detail.sez || '',
-          city: detail.city || '',
-          contact: detail.contact || '',
-          pincode: detail.pincode || '',
-          state: detail.state || '',
-          stateGstIn: detail.stateGstIn || '',
-          // cityOptions: []
-        }));
+        const addressData = await Promise.all(
+          customer.partyAddressVO.map(async (detail) => {
+            const cityOptions = detail.state ? await getAllActiveCitiesByState(detail.state, orgId) : [];
+            return {
+              id: detail.id,
+              addressType: detail.addressType || '',
+              addressLine1: detail.addressLine1 || '',
+              addressLine2: detail.addressLine2 || '',
+              addressLine3: detail.addressLine3 || '',
+              businessPlace: detail.businessPlace || '',
+              sez: detail.sez || '',
+              city: detail.city || '',
+              contact: detail.contact || '',
+              pincode: detail.pincode || '',
+              state: detail.state || '',
+              stateGstIn: detail.stateGstIn || '',
+              cityOptions
+            };
+          })
+        );
+
 
         setPartySalesPersonTagging(customer.partySalesPersonTaggingVO.map((detail) => ({
           id: detail.id,
@@ -345,52 +354,20 @@ export const Customer = () => {
     getAllCustomerByOrgId();
   };
 
-  // const handleInputChange = (e) => {
-  //   const { name, value, checked, type, id } = e.target;
-
-  //   let formattedValue = value;
-
-  //   if (name === "panNo" || name === "gstIn") {
-  //     formattedValue = value.toUpperCase();
-  //   }
-
-  //   const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-
-  //   if (name === "panNo" && formattedValue.length > 10) return;
-
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     [name]: type === "checkbox" ? checked : formattedValue,
-  //   }));
-
-  //   if (name === "panNo") {
-  //     if (!panRegex.test(formattedValue) && formattedValue.length === 10) {
-  //       setFieldErrors((prev) => ({
-  //         ...prev,
-  //         [name]: "Invalid PAN format (e.g., ABCDE1234F)",
-  //       }));
-  //     } else {
-  //       setFieldErrors((prev) => ({
-  //         ...prev,
-  //         [name]: "",
-  //       }));
-  //     }
-  //   }
-  // };
 
   const handleInputChange = (e) => {
     const { name, value, checked, type, selectionStart, selectionEnd } = e.target;
- 
+
     const nameRegex = /^[A-Za-z ]*$/;
     // const codeRegex = /^[a-zA-Z0-9- ]*$/;
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
     let formattedValue = value;
- 
+
     if (name === "panNo" || name === "gstIn") {
       formattedValue = value.toUpperCase();
     }
- 
+
     if (name === "panNo" && formattedValue.length > 11) return;
 
     let errorMessage = "";
@@ -419,21 +396,21 @@ export const Customer = () => {
         errorMessage = "Exceeded Maximum Length (50)";
       }
     }
- 
+
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
       [name]: errorMessage,
     }));
- 
+
     if (!errorMessage) {
       let inputValue = value;
- 
+
       if (name === "email") {
         inputValue = value.toLowerCase();
-      } 
+      }
       else if (type === "text" || type === "textarea") {
         inputValue = value.toUpperCase();
-      } 
+      }
       setFormData((prevData) => ({
         ...prevData,
         [name]: type === "checkbox" ? checked : inputValue,
@@ -1368,42 +1345,61 @@ export const Customer = () => {
                                     <input
                                       type="text"
                                       value={row.gstIn}
-                                      style={{ width: '150px' }}
                                       maxLength={15}
                                       onChange={(e) => {
                                         const value = e.target.value;
-                                        setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstIn: value } : r)));
+                                        setPartyStateData((prev) =>
+                                          prev.map((r) => (r.id === row.id ? { ...r, gstIn: value } : r))
+                                        );
                                         setPartyStateDataErrors((prev) => {
                                           const newErrors = [...prev];
-                                          newErrors[index] = { ...newErrors[index], gstIn: !value ? 'GstIn is required' : '' };
+                                          newErrors[index] = {
+                                            ...newErrors[index],
+                                            gstIn: !value ? 'GSTIN is required' : !gstRegex.test(value) ? 'GSTIN must be exactly 15 alphanumeric characters' : '',
+                                          };
                                           return newErrors;
                                         });
                                       }}
                                       className={partyStateDataErrors[index]?.gstIn ? 'error form-control' : 'form-control'}
                                     />
-                                    {partyStateDataErrors[index]?.gstIn && (
-                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].gstIn}</div>
-                                    )}
+                                    {partyStateDataErrors[index]?.gstIn && <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].gstIn}</div>}
                                   </td>
 
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
                                       value={row.contactPerson}
-                                      style={{ width: '150px' }}
+                                      maxLength="50"
                                       onChange={(e) => {
                                         const value = e.target.value;
-                                        setPartyStateData((prev) =>
-                                          prev.map((r) => (r.id === row.id ? { ...r, contactPerson: value } : r))
-                                        );
-                                        setPartyStateDataErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = {
-                                            ...newErrors[index],
-                                            contactPerson: !value ? 'Contact Person is required' : ''
-                                          };
-                                          return newErrors;
-                                        });
+
+                                        if (/^[a-zA-Z\s]*$/.test(value)) {  // Allows only letters and spaces
+                                          setPartyStateData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, contactPerson: value } : r))
+                                          );
+
+                                          setPartyStateDataErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              contactPerson: !value
+                                                ? 'Contact Person is required'
+                                                : value.length > 50
+                                                  ? 'Name should not exceed 50 characters'
+                                                  : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        } else {
+                                          setPartyStateDataErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              contactPerson: 'Only letters and spaces are allowed'
+                                            };
+                                            return newErrors;
+                                          });
+                                        }
                                       }}
                                       className={partyStateDataErrors[index]?.contactPerson ? 'error form-control' : 'form-control'}
                                     />
@@ -1411,14 +1407,17 @@ export const Customer = () => {
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].contactPerson}</div>
                                     )}
                                   </td>
+
+
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
                                       value={row.contactPhoneNo}
+                                      maxLength="10"
                                       onChange={(e) => {
                                         const value = e.target.value;
 
-                                        if (/^\d{0,10}$/.test(value)) {
+                                        if (/^\d*$/.test(value)) {
                                           setPartyStateData((prev) =>
                                             prev.map((r) => (r.id === row.id ? { ...r, contactPhoneNo: value } : r))
                                           );
@@ -1428,48 +1427,54 @@ export const Customer = () => {
                                             newErrors[index] = {
                                               ...newErrors[index],
                                               contactPhoneNo: !value
-                                                ? 'Phone is required'
+                                                ? 'Phone number is required'
                                                 : value.length !== 10
-                                                  ? 'Phone number must be exactly 10 digits'
+                                                  ? ''
                                                   : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        } else {
+                                          setPartyStateDataErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              contactPhoneNo: 'Only Numbers are Allowed'
                                             };
                                             return newErrors;
                                           });
                                         }
                                       }}
-                                      maxLength="10"
                                       className={partyStateDataErrors[index]?.contactPhoneNo ? 'error form-control' : 'form-control'}
                                     />
                                     {partyStateDataErrors[index]?.contactPhoneNo && (
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].contactPhoneNo}</div>
                                     )}
                                   </td>
+
+
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
                                       value={row.email}
-                                      style={{ width: '150px' }}
                                       onChange={(e) => {
                                         const value = e.target.value;
                                         const isValidEmail = emailRegex.test(value);
-
                                         setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, email: value } : r)));
-
                                         setPartyStateDataErrors((prev) => {
                                           const newErrors = [...prev];
                                           newErrors[index] = {
                                             ...newErrors[index],
-                                            email: !value ? 'Email is required' : !isValidEmail ? 'Invalid Email Address' : ''
+                                            email: !value ? 'Email is required' : !isValidEmail ? 'Invalid Email Address' : '',
                                           };
                                           return newErrors;
                                         });
                                       }}
                                       className={partyStateDataErrors[index]?.email ? 'error form-control' : 'form-control'}
                                     />
-                                    {partyStateDataErrors[index]?.email && (
-                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].email}</div>
-                                    )}
+                                    {partyStateDataErrors[index]?.email && <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].email}</div>}
                                   </td>
+
                                 </tr>
                               ))}
                             </tbody>
