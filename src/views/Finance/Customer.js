@@ -380,27 +380,24 @@ export const Customer = () => {
 
   const handleInputChange = (e) => {
     const { name, value, checked, type, selectionStart, selectionEnd } = e.target;
-
-    // Define validation regex patterns
+ 
     const nameRegex = /^[A-Za-z ]*$/;
     // const codeRegex = /^[a-zA-Z0-9- ]*$/;
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
     let formattedValue = value;
-
-    // Convert PAN and GST to uppercase
+ 
     if (name === "panNo" || name === "gstIn") {
       formattedValue = value.toUpperCase();
     }
-
-    // Restrict PAN length to 10 characters
-    if (name === "panNo" && formattedValue.length > 10) return;
+ 
+    if (name === "panNo" && formattedValue.length > 11) return;
 
     let errorMessage = "";
 
     // PAN validation
     if (name === "panNo") {
-      if (formattedValue.length === 10 && !panRegex.test(formattedValue)) {
+      if (formattedValue.length === 11 && !panRegex.test(formattedValue)) {
         errorMessage = "Invalid PAN format (e.g., ABCDE1234F)";
       }
     }
@@ -422,39 +419,33 @@ export const Customer = () => {
         errorMessage = "Exceeded Maximum Length (50)";
       }
     }
-
-    // Update error state
+ 
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
       [name]: errorMessage,
     }));
-
-    // Update form data if no error
+ 
     if (!errorMessage) {
       let inputValue = value;
-
-      // Convert email to lowercase
+ 
       if (name === "email") {
         inputValue = value.toLowerCase();
-      }
-      // Convert text & textarea fields to uppercase
+      } 
       else if (type === "text" || type === "textarea") {
         inputValue = value.toUpperCase();
-      }
-
-      // Update form data
+      } 
       setFormData((prevData) => ({
         ...prevData,
         [name]: type === "checkbox" ? checked : inputValue,
       }));
 
       // Maintain cursor position for smooth user experience
-      setTimeout(() => {
-        const inputElement = document.getElementsByName(name)[0];
-        if (inputElement && inputElement.setSelectionRange) {
-          inputElement.setSelectionRange(selectionStart, selectionEnd);
-        }
-      }, 0);
+      // setTimeout(() => {
+      //   const inputElement = document.getElementsByName(name)[0];
+      //   if (inputElement && inputElement.setSelectionRange) {
+      //     inputElement.setSelectionRange(selectionStart, selectionEnd);
+      //   }
+      // }, 0);
     }
   };
 
