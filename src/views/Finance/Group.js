@@ -24,6 +24,12 @@ import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
 import COASample from '../../assets/sample-files/COASample.xlsx';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
+import { FaFilePdf } from 'react-icons/fa';
+import { FaFileExcel } from 'react-icons/fa';
 
 const Group = () => {
   const theme = useTheme();
@@ -38,6 +44,7 @@ const Group = () => {
   const [editId, setEditId] = useState('');
   const [groupList, setGroupList] = useState([]);
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     active: false,
     type: '',
@@ -178,7 +185,7 @@ const Group = () => {
       const saveData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        groupName: formData.groupName,
+        groupName: formData.groupName ? formData.groupName : null,
         gstTaxFlag: formData.gstTaxFlag,
         coaList: formData.coaList,
         accountGroupName: formData.accountGroupName,
@@ -374,6 +381,125 @@ const Group = () => {
     handleBulkUploadClose();
   };
 
+  const handleExcelFileDownload = async () => {
+    try {
+      setLoading(true);
+
+      const result = await apiCalls('get', `/master/getAllGroupLedgerByOrgId?orgId=${orgId}`);
+
+      console.log('API Response:', result);
+
+      const coaData = result?.paramObjectsMap?.groupLedgerVO;
+
+      if (coaData && Array.isArray(coaData)) {
+        const filteredData = coaData
+          // .filter(({ type, active }) => type === 'Account' && active === true)
+          .filter(({ type, active }) => active === true)
+          .map(({ accountCode, accountGroupName, groupName, natureOfAccount, type }) => ({
+            accountCode,
+            accountGroupName,
+            groupName,
+            natureOfAccount,
+            type
+          }));
+
+        console.log('Filtered Data:', filteredData);
+
+        if (filteredData.length === 0) {
+          console.error('No valid data to export.');
+          setLoading(false);
+          return;
+        }
+
+        const worksheet = XLSX.utils.json_to_sheet(filteredData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        saveAs(blob, 'COA.xlsx');
+
+        console.log('Download triggered');
+      } else {
+        console.error('Invalid or empty API response.');
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      setLoading(false);
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const result = await apiCalls('get', `/master/getAllGroupLedgerByOrgId?orgId=${orgId}`);
+
+      console.log('API Response:', result);
+
+      const coaData = result?.paramObjectsMap?.groupLedgerVO;
+
+      if (coaData && Array.isArray(coaData)) {
+        // Filter only active accounts where type is "account"
+        return (
+          coaData
+            // .filter(({ type, active }) => type === 'Account' && active === true)
+            .filter(({ type, active }) => active === true)
+            .map(({ accountCode, accountGroupName, groupName, natureOfAccount, type }) => ({
+              accountCode,
+              accountGroupName,
+              groupName,
+              natureOfAccount,
+              type
+            }))
+        );
+      } else {
+        console.error('Invalid or empty API response.');
+        return [];
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return [];
+    }
+  };
+
+  const handlePDFDownload = async () => {
+    setLoading(true);
+
+    const data = await fetchData();
+    if (data.length === 0) {
+      setLoading(false);
+      alert('No active accounts available for download.');
+      return;
+    }
+
+    const doc = new jsPDF();
+    doc.text('Chart of Accounts', 14, 10);
+
+    // Define table headers
+    const tableColumn = ['Account Code', 'Account Name', 'Group Name', 'Nature of Account', 'Type'];
+    const tableRows = [];
+
+    // Add data rows
+    data.forEach(({ accountCode, accountGroupName, groupName, natureOfAccount, type }) => {
+      tableRows.push([accountCode, accountGroupName, groupName, natureOfAccount, type]);
+    });
+
+    // Generate table using autoTable
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20
+    });
+
+    // Save PDF file
+    doc.save('COA.pdf');
+
+    console.log('PDF Download triggered for active accounts');
+    setLoading(false);
+  };
+
   return (
     <>
       <div>
@@ -386,23 +512,25 @@ const Group = () => {
           <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
           <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />
           <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} />
-        </div>
-        {uploadOpen && (
-          <CommonBulkUpload
-            open={uploadOpen}
-            handleClose={handleBulkUploadClose}
-            title="Upload Files"
-            uploadText="Upload file"
-            downloadText="Sample File"
-            onSubmit={handleSubmit}
-            sampleFileDownload={COASample}
-            handleFileUpload={handleFileUpload}
-            // apiUrl={`transaction/excelUploadForBrs?branch="CHENNAI"&branchCode="MAAW"&client="CASIO"&createdBy=${loginUserName}&customer="UNI"&finYear="2024"&orgId=${orgId}`}
-            apiUrl={`master/excelUploadForGroupLedger?createdBy=${loginUserName}&orgId=${orgId}`}
-            screen="COA"
-          ></CommonBulkUpload>
-        )}
 
+          {uploadOpen && (
+            <CommonBulkUpload
+              open={uploadOpen}
+              handleClose={handleBulkUploadClose}
+              title="Upload Files"
+              uploadText="Upload file"
+              downloadText="Sample File"
+              onSubmit={handleSubmit}
+              sampleFileDownload={COASample}
+              handleFileUpload={handleFileUpload}
+              // apiUrl={`transaction/excelUploadForBrs?branch="CHENNAI"&branchCode="MAAW"&client="CASIO"&createdBy=${loginUserName}&customer="UNI"&finYear="2024"&orgId=${orgId}`}
+              apiUrl={`master/excelUploadForGroupLedger?createdBy=${loginUserName}&orgId=${orgId}`}
+              screen="COA"
+            ></CommonBulkUpload>
+          )}
+          {!showForm ? <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} /> : ''}
+          {!showForm ? <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} /> : ''}
+        </div>
         {showForm ? (
           <div className="row d-flex ">
             <div className="col-md-3 mb-3">
@@ -530,7 +658,7 @@ const Group = () => {
                   <MenuItem value="ASSET">ASSET</MenuItem>
                   <MenuItem value="LIABILITY">LIABILITY</MenuItem>
                   <MenuItem value="INCOME">INCOME</MenuItem>
-                  <MenuItem value="EXPENCE">EXPENCE</MenuItem>
+                  <MenuItem value="EXPENSE">EXPENSE</MenuItem>
                   <MenuItem value="Capital">CAPITAL</MenuItem>
                 </Select>
               </FormControl>

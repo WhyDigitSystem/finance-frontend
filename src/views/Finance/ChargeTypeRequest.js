@@ -18,6 +18,12 @@ import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
+import { FaFilePdf } from 'react-icons/fa';
+import { FaFileExcel } from 'react-icons/fa';
 
 export const ChargeTypeRequest = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -28,6 +34,7 @@ export const ChargeTypeRequest = () => {
   const [listValues, setListValues] = useState([]);
   const [serviceCode, setServiceCode] = useState([]);
   const [salesCode, setSalesCode] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [purchaseCode, setPurchaseCode] = useState([]);
   const [formData, setFormData] = useState({
     active: true,
@@ -128,6 +135,127 @@ export const ChargeTypeRequest = () => {
     } catch (error) {
       console.error('Error fetching data:', error);
     }
+  };
+
+  const handleExcelFileDownload = async () => {
+    try {
+      setLoading(true);
+
+      const result = await apiCalls('get', `/master/getAllChargeTypeRequestByOrgId?orgId=${orgId}`);
+
+      console.log('API Response:', result);
+
+      const coaData = result?.paramObjectsMap?.chargeTypeRequestVO;
+
+      if (coaData && Array.isArray(coaData)) {
+        const filteredData = coaData
+          // .filter(({ type, active }) => type === 'Account' && active === true)
+          .filter(({ type, active }) => active === true)
+          .map(({ chargeType, chargeCode, chargeDescription, gstTax, localChargeDescripition, govtSac }) => ({
+            chargeType,
+            chargeCode,
+            chargeDescription,
+            gstTax,
+            localChargeDescripition,
+            govtSac
+          }));
+
+        console.log('Filtered Data:', filteredData);
+
+        if (filteredData.length === 0) {
+          console.error('No valid data to export.');
+          setLoading(false);
+          return;
+        }
+
+        const worksheet = XLSX.utils.json_to_sheet(filteredData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        saveAs(blob, 'Charge Code.xlsx');
+
+        console.log('Download triggered');
+      } else {
+        console.error('Invalid or empty API response.');
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      setLoading(false);
+    }
+  };
+
+  const fetchData = async () => {
+    try {
+      const result = await apiCalls('get', `/master/getAllChargeTypeRequestByOrgId?orgId=${orgId}`);
+
+      console.log('API Response:', result);
+
+      const coaData = result?.paramObjectsMap?.chargeTypeRequestVO;
+
+      if (coaData && Array.isArray(coaData)) {
+        // Filter only active accounts where type is "account"
+        return (
+          coaData
+            // .filter(({ type, active }) => type === 'Account' && active === true)
+            .filter(({ type, active }) => active === true)
+            .map(({ chargeType, chargeCode, chargeDescription, gstTax, localChargeDescripition, govtSac }) => ({
+              chargeType,
+              chargeCode,
+              chargeDescription,
+              gstTax,
+              localChargeDescripition,
+              govtSac
+            }))
+        );
+      } else {
+        console.error('Invalid or empty API response.');
+        return [];
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return [];
+    }
+  };
+
+  const handlePDFDownload = async () => {
+    setLoading(true);
+
+    const data = await fetchData();
+    if (data.length === 0) {
+      setLoading(false);
+      alert('No active accounts available for download.');
+      return;
+    }
+
+    const doc = new jsPDF();
+    doc.text('Charge Code', 14, 10);
+
+    // Define table headers
+    const tableColumn = ['Charge Type', 'Charge Code', 'Charge Desc', 'GST Tax', 'Local Charge Desc', 'HSN/SAC'];
+    const tableRows = [];
+
+    // Add data rows
+    data.forEach(({ chargeType, chargeCode, chargeDescription, gstTax, localChargeDescripition, govtSac }) => {
+      tableRows.push([chargeType, chargeCode, chargeDescription, gstTax, localChargeDescripition, govtSac]);
+    });
+
+    // Generate table using autoTable
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20
+    });
+
+    // Save PDF file
+    doc.save('Charge Code.pdf');
+
+    console.log('PDF Download triggered for active accounts');
+    setLoading(false);
   };
 
   const getChargeType = async () => {
@@ -319,10 +447,10 @@ export const ChargeTypeRequest = () => {
       errors.taxable = 'Taxable is required';
       hasError = true;
     }
-    if (!formData.taxablePercentage) {
-      errors.taxablePercentage = 'Taxable Percentage is required';
-      hasError = true;
-    }
+    // if (!formData.taxablePercentage) {
+    //   errors.taxablePercentage = 'Taxable Percentage is required';
+    //   hasError = true;
+    // }
 
     if (!formData.govtSac) {
       errors.govtSac = 'Govt Sac is required';
@@ -347,7 +475,7 @@ export const ChargeTypeRequest = () => {
         ...(editId && { id: editId }),
         taxablePercentage: formData.taxablePercentage ? parseInt(formData.taxablePercentage, 10) : 0,
         chargeType: formData.chargeType,
-        chargeCode: formData.chargeCode, 
+        chargeCode: formData.chargeCode,
         chargeDescription: formData.chargeDescription,
         approved: formData.approved,
         localChargeDescripition: formData.localChargeDescripition,
@@ -398,16 +526,16 @@ export const ChargeTypeRequest = () => {
             {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} margin="0 10px 0 10px" />
+            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+            {!showForm ? <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} /> : ''}
+            {!showForm ? <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} /> : ''}
           </div>
 
           {showForm ? (
             <div className="row d-flex ml">
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.chargeType}>
-                  <InputLabel id="demo-simple-select-label">
-                    Charge Type
-                  </InputLabel>
+                  <InputLabel id="demo-simple-select-label">Charge Type</InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
@@ -434,7 +562,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label='Charge Code'
+                  label="Charge Code"
                   variant="outlined"
                   size="small"
                   name="chargeCode"
@@ -449,7 +577,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label='Charge Description'
+                  label="Charge Description"
                   variant="outlined"
                   size="small"
                   name="chargeDescription"
@@ -476,9 +604,7 @@ export const ChargeTypeRequest = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.chargeType}>
-                  <InputLabel id="demo-simple-select-label">
-                    Service Account Code
-                  </InputLabel>
+                  <InputLabel id="demo-simple-select-label">Service Account Code</InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
@@ -504,7 +630,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label='SAC Description'
+                  label="SAC Description"
                   variant="outlined"
                   size="small"
                   disabled
@@ -518,9 +644,7 @@ export const ChargeTypeRequest = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.salesAccount}>
-                  <InputLabel id="demo-simple-select-label">
-                    Sales Account
-                  </InputLabel>
+                  <InputLabel id="demo-simple-select-label">Sales Account</InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
@@ -545,9 +669,7 @@ export const ChargeTypeRequest = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.purchaseAccount}>
-                  <InputLabel id="demo-simple-select-label">
-                    Purchase Account
-                  </InputLabel>
+                  <InputLabel id="demo-simple-select-label">Purchase Account</InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
@@ -572,9 +694,7 @@ export const ChargeTypeRequest = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.taxable}>
-                  <InputLabel id="demo-simple-select-labeltax">
-                    Taxable
-                  </InputLabel>
+                  <InputLabel id="demo-simple-select-labeltax">Taxable</InputLabel>
                   <Select
                     labelId="demo-simple-select-labeltax"
                     id="demo-simple-selecttax"
@@ -594,7 +714,7 @@ export const ChargeTypeRequest = () => {
                   )}
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   id="taxable100%"
                   label='Taxable %'
@@ -608,12 +728,10 @@ export const ChargeTypeRequest = () => {
                   error={!!fieldErrors.taxablePercentage}
                   helperText={fieldErrors.taxablePercentage}
                 />
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small" error={!!fieldErrors.excempted}>
-                  <InputLabel id="demo-simple-select-label">
-                    Exempted
-                  </InputLabel>
+                  <InputLabel id="demo-simple-select-label">Exempted</InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
                     id="demo-simple-select"
@@ -637,7 +755,7 @@ export const ChargeTypeRequest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"
-                  label="Govt. SAC"
+                  label="HSN/SAC"
                   variant="outlined"
                   size="small"
                   name="govtSac"
@@ -656,7 +774,7 @@ export const ChargeTypeRequest = () => {
                   variant="outlined"
                   size="small"
                   name="gstTax"
-                  type='number'
+                  type="number"
                   value={formData.gstTax}
                   onChange={handleInputChange}
                   className="w-100"
