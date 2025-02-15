@@ -297,7 +297,7 @@ export const Customer = () => {
           // cityOptions: []
         }));
 
-        setPartySalesPersonTagging( customer.partySalesPersonTaggingVO.map((detail) => ({
+        setPartySalesPersonTagging(customer.partySalesPersonTaggingVO.map((detail) => ({
           id: detail.id,
           salesPerson: detail.salesPerson || '',
           empCode: detail.empCode || '',
@@ -345,38 +345,119 @@ export const Customer = () => {
     getAllCustomerByOrgId();
   };
 
+  // const handleInputChange = (e) => {
+  //   const { name, value, checked, type, id } = e.target;
+
+  //   let formattedValue = value;
+
+  //   if (name === "panNo" || name === "gstIn") {
+  //     formattedValue = value.toUpperCase();
+  //   }
+
+  //   const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+
+  //   if (name === "panNo" && formattedValue.length > 10) return;
+
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     [name]: type === "checkbox" ? checked : formattedValue,
+  //   }));
+
+  //   if (name === "panNo") {
+  //     if (!panRegex.test(formattedValue) && formattedValue.length === 10) {
+  //       setFieldErrors((prev) => ({
+  //         ...prev,
+  //         [name]: "Invalid PAN format (e.g., ABCDE1234F)",
+  //       }));
+  //     } else {
+  //       setFieldErrors((prev) => ({
+  //         ...prev,
+  //         [name]: "",
+  //       }));
+  //     }
+  //   }
+  // };
+
   const handleInputChange = (e) => {
-    const { name, value, checked, type, id } = e.target;
+    const { name, value, checked, type, selectionStart, selectionEnd } = e.target;
+
+    // Define validation regex patterns
+    const nameRegex = /^[A-Za-z ]*$/;
+    // const codeRegex = /^[a-zA-Z0-9- ]*$/;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
     let formattedValue = value;
 
+    // Convert PAN and GST to uppercase
     if (name === "panNo" || name === "gstIn") {
       formattedValue = value.toUpperCase();
     }
 
-    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-
+    // Restrict PAN length to 10 characters
     if (name === "panNo" && formattedValue.length > 10) return;
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : formattedValue,
-    }));
+    let errorMessage = "";
 
+    // PAN validation
     if (name === "panNo") {
-      if (!panRegex.test(formattedValue) && formattedValue.length === 10) {
-        setFieldErrors((prev) => ({
-          ...prev,
-          [name]: "Invalid PAN format (e.g., ABCDE1234F)",
-        }));
-      } else {
-        setFieldErrors((prev) => ({
-          ...prev,
-          [name]: "",
-        }));
+      if (formattedValue.length === 10 && !panRegex.test(formattedValue)) {
+        errorMessage = "Invalid PAN format (e.g., ABCDE1234F)";
       }
     }
+
+    // Customer Code validation
+    // if (name === "customerCode") {
+    //   if (!codeRegex.test(value)) {
+    //     errorMessage = "Only Alphanumeric characters and Hyphen (-) allowed";
+    //   } else if (value.length > 10) {
+    //     errorMessage = "Exceeded Maximum Length (10)";
+    //   }
+    // }
+
+    // Customer Name validation
+    if (name === "customerName") {
+      if (!nameRegex.test(value)) {
+        errorMessage = "Only Alphabets Allowed";
+      } else if (value.length > 50) {
+        errorMessage = "Exceeded Maximum Length (50)";
+      }
+    }
+
+    // Update error state
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: errorMessage,
+    }));
+
+    // Update form data if no error
+    if (!errorMessage) {
+      let inputValue = value;
+
+      // Convert email to lowercase
+      if (name === "email") {
+        inputValue = value.toLowerCase();
+      }
+      // Convert text & textarea fields to uppercase
+      else if (type === "text" || type === "textarea") {
+        inputValue = value.toUpperCase();
+      }
+
+      // Update form data
+      setFormData((prevData) => ({
+        ...prevData,
+        [name]: type === "checkbox" ? checked : inputValue,
+      }));
+
+      // Maintain cursor position for smooth user experience
+      setTimeout(() => {
+        const inputElement = document.getElementsByName(name)[0];
+        if (inputElement && inputElement.setSelectionRange) {
+          inputElement.setSelectionRange(selectionStart, selectionEnd);
+        }
+      }, 0);
+    }
   };
+
 
   const handleClear = () => {
     setEditId('');
@@ -801,6 +882,13 @@ export const Customer = () => {
 
     if (!formData.customerName) {
       errors.customerName = 'Customer Name is required';
+    } else if (formData.customerName.length < 3) {
+      errors.customerName = 'Min Length is 3';
+    }
+    if (!formData.customerCode) {
+      errors.customerCode = 'Customer Name is required';
+    } else if (formData.customerCode.length < 2) {
+      errors.customerCode = 'Min Length is 2';
     }
     setFieldErrors(errors);
 
