@@ -79,7 +79,7 @@ export const Designation = () => {
   };
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd, type } = e.target;
-    const codeRegex = /^[a-zA-Z0-9- ]*$/;
+    const codeRegex = /^[a-zA-Z- ]*$/;
     if (name === 'designationCode' && !codeRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Only Alphabets Allowed' });
     } else if (name === 'designationCode' && value.length > 10) {

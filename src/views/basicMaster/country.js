@@ -113,7 +113,7 @@ export const Country = () => {
     const errors = {};
     if (!formData.countryCode) {
       errors.countryCode = 'Country Code is required';
-    } else if (formData.countryCode.length <= 2) {
+    } else if (formData.countryCode.length < 2) {
         errors.countryCode = 'Min Length is 2';
     }
     if (!formData.countryName) {
