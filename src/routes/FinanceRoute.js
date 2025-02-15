@@ -10,6 +10,8 @@ import MultipleDocumentIdGeneration from 'views/Finance/DocumentType/multipleDoc
 import ReconcileCash from 'views/Finance/Reconcile/ReconcileCash';
 import ReconcileCorp from 'views/Finance/Reconcile/ReconcileCorp';
 import Vender from 'views/Finance/Vender';
+import UrCostInvoicegna from 'views/Finance/costInvoice/UrCostInvoicegna';
+import RCostInvoicegna from 'views/Finance/costInvoice/RCostInvoicegna';
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
 // login option 3 routing
@@ -68,6 +70,8 @@ const AdjustmentOffset = Loadable(lazy(() => import('views/Finance/AdjustmentOff
 const TaxInvoiceDetail = Loadable(lazy(() => import('views/Finance/taxInvoice/taxInvoiceDetail')));
 const CreditNoteDetail = Loadable(lazy(() => import('views/Finance/creditNote/CreditNoteDetail')));
 const CostInvoice = Loadable(lazy(() => import('views/Finance/costInvoice/CostInvoice')));
+// const RCostInvoicegna = Loadable(lazy(() => import('views/Finance/costInvoice/RCostInvoicegna')));
+// const UrCostInvoicegna = Loadable(lazy(() => import('views/Finance/costInvoice/UrCostInvoicegna')));
 const CostDebitNote = Loadable(lazy(() => import('views/Finance/costDebitNote/CostDebitNote')));
 const ListOfValues = Loadable(lazy(() => import('views/Finance/listOfValues/listOfValues')));
 const PaymentVoucher = Loadable(lazy(() => import('views/Finance/paymentVoucher/paymentVoucher')));
@@ -293,6 +297,14 @@ const FinanceRoute = {
     {
       path: '/Finance/costInvoice/CostInvoice',
       element: <CostInvoice />
+    },
+    {
+      path: '/Finance/costInvoice/RCostInvoicegna',
+      element: <RCostInvoicegna />
+    },
+    {
+      path: '/Finance/costInvoice/UrCostInvoicegna',
+      element: <UrCostInvoicegna />
     },
     {
       path: '/Finance/costDebitNote/CostDebitNote',
