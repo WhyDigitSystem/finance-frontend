@@ -47,8 +47,9 @@ const Company = () => {
     state: '',
     city: '',
     pincode: '',
-    gst: '',
+    // gst: '',
     website: '',
+    panNo: '',
     active: true
   });
 
@@ -60,7 +61,8 @@ const Company = () => {
     state: '',
     city: '',
     pincode: '',
-    gst: '',
+    // gst: '',
+    panNo: '',
     website: '',
     active: ''
   });
@@ -117,82 +119,55 @@ const Company = () => {
       console.error('Error fetching country data:', error);
     }
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
-  //   const nameRegex = /^[A-Za-z ]*$/;
-  //   const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
-  //   const numericRegex = /^[0-9]*$/;
-  //   const alphanumericRegex = /^[A-Za-z0-9]*$/;
-
-  //   if (name === 'ceo' && !nameRegex.test(value)) {
-  //     setFieldErrors({ ...fieldErrors, [name]: 'Only alphabetic characters are allowed' });
-  //   } else if (name === 'pincode') {
-  //     if (!numericRegex.test(value)) {
-  //       setFieldErrors({ ...fieldErrors, [name]: 'Only numeric characters are allowed' });
-  //     } else if (value.length > 6) {
-  //       setFieldErrors({ ...fieldErrors, [name]: 'Only 6 digits are allowed' });
-  //     } else {
-  //       setFieldErrors({ ...fieldErrors, [name]: '' });
-  //     }
-  //   } else if (name === 'gst') {
-  //     if (!alphanumericRegex.test(value)) {
-  //       setFieldErrors({ ...fieldErrors, [name]: 'Special characters are not allowed' });
-  //     } else if (value.length > 15) {
-  //       setFieldErrors({ ...fieldErrors, [name]: 'Only 15 characters are allowed' });
-  //     } else {
-  //       setFieldErrors({ ...fieldErrors, [name]: '' });
-  //     }
-  //   } else {
-  //     setFieldErrors({ ...fieldErrors, [name]: '' });
-  //   }
-
-  //   // Update the form data
-  //   if (name === 'active') {
-  //     setFormData({ ...formData, [name]: checked });
-  //   } else {
-  //     setFormData({ ...formData, [name]: value.toUpperCase() });
-  //   }
-
-  //   // Update the cursor position after the input change
-  //   if (type === 'text' || type === 'textarea' || type === 'email') {
-  //     setTimeout(() => {
-  //       const inputElement = document.getElementsByName(name)[0];
-  //       if (inputElement) {
-  //         inputElement.setSelectionRange(selectionStart, selectionEnd);
-  //       }
-  //     }, 0);
-  //   }
-  // };
-
   const handleInputChange = (e) => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
 
     // Regular expressions for validation
     const nameRegex = /^[A-Za-z ]*$/; // Allows only alphabetic characters and spaces
-    const numericRegex = /^[0-9]*$/; // Allows only numeric characters
-    const alphanumericRegex = /^[A-Za-z0-9]*$/; // Allows only alphanumeric characters
+    const numericRegex = /^[0-9]*$/;
+    const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    // const websiteRegex = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,6}(\S*)?$/;
+    // const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/
+;
 
     let error = '';
-
-    // Validation logic
+    if (name === "panNo" && value.length > 11) return;
+    if (name === "panNo") {
+      if (value.length === 11 && !panRegex.test(value)) {
+        error = "Invalid PAN Format (e.g., ABCDE1234F)";
+      }
+    }
     if (name === 'ceo') {
       if (!nameRegex.test(value)) {
-        error = 'Only alphabetic characters are allowed';
+        error = 'Only Alphabets allowed';
+      } else if (name === 'ceo' && value.length > 50) {
+        error = 'Exceeded Max Length';
+      }
+    } else if (name === 'address') {
+      if (name === 'address' && value.length > 200) {
+        error = 'Exceeded Max Length';
       }
     } else if (name === 'pincode') {
       if (!numericRegex.test(value)) {
-        error = 'Only numeric characters are allowed';
+        error = 'Only numerics allowed';
       } else if (value.length > 6) {
-        error = 'Only 6 digits are allowed';
-      }
-    } else if (name === 'gst') {
-      if (!alphanumericRegex.test(value)) {
-        error = 'Special characters are not allowed';
-      } else if (value.length > 15) {
-        error = 'Only 15 characters are allowed';
+        error = 'Only 6 digits allowed';
       }
     }
+    //  else if (name === 'gst') {
+    //   if (!gstRegex.test(value)) {
+    //     error = 'Invalid Format';
+    //   } else if (value.length > 15) {
+    //     error = 'Only 15 characters are allowed';
+    //   }
+    // }
+    //  else if (name === 'pan') {
+    //   if (!panRegex.test(value)) {
+    //     error = 'Invalid Format';
+    //   } else if (value.length > 15) {
+    //     error = 'Only 15 characters are allowed';
+    //   }
+    // }
 
     // Handle errors if validation fails
     if (error) {
@@ -257,7 +232,8 @@ const Company = () => {
           state: particularCompany.state,
           city: particularCompany.city,
           pincode: particularCompany.zip,
-          gst: particularCompany.gst,
+          panNo: particularCompany.panNo,
+          // gst: particularCompany.gst,
           website: particularCompany.webSite
         });
       } else {
@@ -273,8 +249,8 @@ const Company = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        const particularCompany = response.paramObjectsMap.companyVO[0].reverse();
-        setListViewData(response.paramObjectsMap.companyVO);
+        const particularCompany = response.paramObjectsMap.companyVO[0];
+        setListViewData(response.paramObjectsMap.companyVO.reverse());
         console.log('THE LISTVIEW COMPANY IS:', particularCompany);
 
         setFormData({ ...formData, companyCode: particularCompany.companyCode, companyName: particularCompany.companyName });
@@ -295,7 +271,8 @@ const Company = () => {
       state: '',
       city: '',
       pincode: '',
-      gst: '',
+      // gst: '',
+      panNo: '',
       website: '',
       active: true
     });
@@ -307,7 +284,8 @@ const Company = () => {
       state: '',
       city: '',
       pincode: '',
-      gst: '',
+      panNo: '',
+      // gst: '',
       website: ''
     });
     setEditId('');
@@ -317,9 +295,13 @@ const Company = () => {
     const errors = {};
     if (!formData.ceo) {
       errors.ceo = 'CEO is required';
+    } else if (formData.ceo.length < 3) {
+      errors.ceo = 'Min Length is 3';
     }
     if (!formData.address) {
       errors.address = 'Address is required';
+    } else if (formData.address.length < 5) {
+      errors.address = 'Min Length is 5';
     }
     if (!formData.country) {
       errors.country = 'Country is required';
@@ -330,10 +312,10 @@ const Company = () => {
     if (!formData.city) {
       errors.city = 'City is required';
     }
-    if (!formData.gst) {
-      errors.gst = 'GST is required';
-    } else if (formData.gst.length < 15) {
-      errors.gst = 'Invalid GST No';
+    if (!formData.panNo) {
+      errors.panNo = 'Pan No is required';
+    } else if (formData.panNo.length < 10) {
+      errors.panNo = 'Invalid Pan No';
     }
     if (formData.pincode.length < 6 && formData.pincode.length >= 1) {
       errors.pincode = 'Invalid Pincode';
@@ -351,7 +333,7 @@ const Company = () => {
         state: formData.state,
         city: formData.city,
         zip: formData.pincode,
-        gst: formData.gst,
+        panNo: formData.panNo,
         webSite: formData.website,
         active: formData.active,
         updatedBy: loginUserName
@@ -518,6 +500,19 @@ const Company = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
+                  label="Pan No"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="panNo"
+                  value={formData.panNo}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.panNo}
+                  helperText={fieldErrors.panNo}
+                />
+              </div>
+              {/* <div className="col-md-3 mb-3">
+                <TextField
                   label="GST"
                   variant="outlined"
                   size="small"
@@ -528,7 +523,7 @@ const Company = () => {
                   error={!!fieldErrors.gst}
                   helperText={fieldErrors.gst}
                 />
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Official Website"

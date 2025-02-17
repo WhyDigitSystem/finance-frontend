@@ -30,10 +30,9 @@ const FinYear = () => {
     finYear: dayjs(),
     finYearIdentifier: '',
     finYearId: '',
-    startDate: dayjs(),
-    endDate: dayjs(),
+    startDate: null,
+    endDate: null,
     closed: false,
-    // sno: '',
     active: true,
     createdBy: localStorage.getItem('userName'),
     orgId: parseInt(orgId)
@@ -54,8 +53,8 @@ const FinYear = () => {
       finYear: dayjs(),
       finYearId: '',
       finYearIdentifier: '',
-      startDate: dayjs(),
-      endDate: dayjs(),
+      startDate: null,
+      endDate: null,
       closed: false
       // sno: ''
     });
@@ -72,13 +71,13 @@ const FinYear = () => {
   };
 
   const columns = [
-    { accessorKey: 'finYear', header: 'FinYear', size: 140 },
+    { accessorKey: 'finYear', header: 'Fin Year', size: 140 },
     // { accessorKey: 'finYearId', header: 'FinYearId', size: 140 },
-    { accessorKey: 'finYearIdentifier', header: 'FinYearIdentifier', size: 140 },
+    { accessorKey: 'finYearIdentifier', header: 'Fin Year Identifier', size: 140 },
     { accessorKey: 'startDate', header: 'Start Date', size: 140 },
     { accessorKey: 'endDate', header: 'End Date', size: 140 },
     { accessorKey: 'closed', header: 'Closed', size: 140 },
-    { accessorKey: 'active', header: 'active', size: 140 }
+    { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
   useEffect(() => {
@@ -273,21 +272,6 @@ const FinYear = () => {
         </div>
         {showFields ? (
           <div className="row d-flex">
-            {/* <div className="col-md-3 mb-3">
-              <FormControl fullWidth variant="filled">
-                <TextField
-                  id="finYear"
-                  label="Fin Year"
-                  size="small"
-                  required
-                  name="finYear"
-                  value={formData.finYear}
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 30 }}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYear ? 'This field is required' : ''}</span>}
-                />
-              </FormControl>
-            </div> */}
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled" size="small" sx={{ minWidth: '120px' }}>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -301,7 +285,7 @@ const FinYear = () => {
                     }}
                     format="YYYY"
                     error={fieldErrors.finYear}
-                    helperText={fieldErrors.finYear ? 'This field is required' : ''}
+                    helperText={fieldErrors.finYear ? 'Fin Year is required' : ''}
                   />
                 </LocalizationProvider>
               </FormControl>
@@ -318,7 +302,7 @@ const FinYear = () => {
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 30 }}
                   error={fieldErrors.finYearId}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYearId ? 'Fin Year Id required' : ''}</span>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYearId ? 'Fin Year Id is required' : ''}</span>}
                 />
               </FormControl>
             </div>
@@ -333,7 +317,8 @@ const FinYear = () => {
                   name="finYearIdentifier"
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 30 }}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYearIdentifier ? 'This field is required' : ''}</span>}
+                  error={fieldErrors.finYearIdentifier}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYearIdentifier ? 'Fin Year Identifier is required' : ''}</span>}
                 />
               </FormControl>
             </div>
@@ -349,7 +334,7 @@ const FinYear = () => {
                     }}
                     format="DD-MM-YYYY"
                     error={fieldErrors.startDate}
-                    helperText={fieldErrors.startDate ? 'This field is required' : ''}
+                    helperText={fieldErrors.startDate ? 'Start Date is required' : ''}
                   />
                 </LocalizationProvider>
               </FormControl>
@@ -366,12 +351,11 @@ const FinYear = () => {
                     }}
                     format="DD-MM-YYYY"
                     error={fieldErrors.endDate}
-                    helperText={fieldErrors.endDate ? 'This field is required' : ''}
+                    helperText={fieldErrors.endDate ? 'End Date is required' : ''}
                   />
                 </LocalizationProvider>
               </FormControl>
             </div>
-
             <div className="col-md-3 mb-3 ml-4">
               <FormGroup>
                 <FormControlLabel
@@ -410,5 +394,4 @@ const FinYear = () => {
     </div>
   );
 };
-
 export default FinYear;

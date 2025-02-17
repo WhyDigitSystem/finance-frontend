@@ -636,7 +636,7 @@ const UserCreation = () => {
                     value={formData.employeeName}
                     onChange={handleInputChange}
                     disabled
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeName ? 'This field is required' : ''}</span>}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeName ? 'Employee Name is required' : ''}</span>}
                     inputProps={{ maxLength: 10 }}
                   />
                 </div>
@@ -652,7 +652,7 @@ const UserCreation = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     disabled
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.email ? 'This field is required' : ''}</span>}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.email ? 'Email is required' : ''}</span>}
                     inputProps={{ maxLength: 40 }}
                   />
                 </div>
@@ -668,7 +668,8 @@ const UserCreation = () => {
                     required
                     value={formData.userName}
                     onChange={handleInputChange}
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.userName ? 'This field is required' : ''}</span>}
+                    error=''
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.userName ? 'User Name is required' : ''}</span>}
                     inputProps={{ maxLength: 15 }}
                   />
                 </div>
