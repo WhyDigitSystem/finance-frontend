@@ -1,4 +1,5 @@
 import ClearIcon from '@mui/icons-material/Clear';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
@@ -18,12 +19,14 @@ import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
+import ChargeCodeSample from '../../assets/sample-files/ChargeCodeSample.xlsx';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { FaFilePdf } from 'react-icons/fa';
 import { FaFileExcel } from 'react-icons/fa';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
 
 export const ChargeTypeRequest = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -35,6 +38,7 @@ export const ChargeTypeRequest = () => {
   const [serviceCode, setServiceCode] = useState([]);
   const [salesCode, setSalesCode] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [purchaseCode, setPurchaseCode] = useState([]);
   const [formData, setFormData] = useState({
     active: true,
@@ -355,6 +359,23 @@ export const ChargeTypeRequest = () => {
     getAllChargeTypeRequestByOrgId();
   };
 
+  const handleBulkUploadOpen = () => {
+    setUploadOpen(true); // Open dialog
+  };
+
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false); // Close dialog
+  };
+
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
+
   const handleClear = () => {
     setFormData({
       active: true,
@@ -527,6 +548,24 @@ export const ChargeTypeRequest = () => {
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+            {showForm ? <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} /> : ''}
+
+            {uploadOpen && (
+              <CommonBulkUpload
+                open={uploadOpen}
+                handleClose={handleBulkUploadClose}
+                title="Upload Files"
+                uploadText="Upload file"
+                downloadText="Sample File"
+                onSubmit={handleSubmit}
+                sampleFileDownload={ChargeCodeSample}
+                handleFileUpload={handleFileUpload}
+                apiUrl={`master/excelUploadForChargeCode`}
+                screen="Charge Code"
+                loginUser={loginUserName}
+                orgId={orgId}
+              ></CommonBulkUpload>
+            )}
             {!showForm ? <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} /> : ''}
             {!showForm ? <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} /> : ''}
           </div>

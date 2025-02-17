@@ -24,9 +24,7 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import SampleFile from '../../assets/sample-files/customer.xlsx'
-
-
+import SampleFile from '../../assets/sample-files/customer.xlsx';
 
 export const Customer = () => {
   const [stateList, setStateList] = useState([]);
@@ -132,9 +130,9 @@ export const Customer = () => {
       prev.map((r) =>
         r.id === row.id
           ? {
-            ...r,
-            transCurrency: value
-          }
+              ...r,
+              transCurrency: value
+            }
           : r
       )
     );
@@ -305,15 +303,16 @@ export const Customer = () => {
           })
         );
 
-
-        setPartySalesPersonTagging(customer.partySalesPersonTaggingVO.map((detail) => ({
-          id: detail.id,
-          salesPerson: detail.salesPerson || '',
-          empCode: detail.empCode || '',
-          salesBranch: detail.salesBranch || '',
-          effectiveFrom: detail.effectiveFrom || '',
-          effectiveTill: detail.effectiveTill || ''
-        })));
+        setPartySalesPersonTagging(
+          customer.partySalesPersonTaggingVO.map((detail) => ({
+            id: detail.id,
+            salesPerson: detail.salesPerson || '',
+            empCode: detail.empCode || '',
+            salesBranch: detail.salesBranch || '',
+            effectiveFrom: detail.effectiveFrom || '',
+            effectiveTill: detail.effectiveTill || ''
+          }))
+        );
         const CurrencyMappingData = customer.partyCurrencyMappingVO.map((detail) => ({
           id: detail.id,
           transCurrency: detail.transCurrency || ''
@@ -354,7 +353,6 @@ export const Customer = () => {
     getAllCustomerByOrgId();
   };
 
-
   const handleInputChange = (e) => {
     const { name, value, checked, type, selectionStart, selectionEnd } = e.target;
 
@@ -364,18 +362,18 @@ export const Customer = () => {
 
     let formattedValue = value;
 
-    if (name === "panNo" || name === "gstIn") {
+    if (name === 'panNo' || name === 'gstIn') {
       formattedValue = value.toUpperCase();
     }
 
-    if (name === "panNo" && formattedValue.length > 11) return;
+    if (name === 'panNo' && formattedValue.length > 11) return;
 
-    let errorMessage = "";
+    let errorMessage = '';
 
     // PAN validation
-    if (name === "panNo") {
+    if (name === 'panNo') {
       if (formattedValue.length === 11 && !panRegex.test(formattedValue)) {
-        errorMessage = "Invalid PAN format (e.g., ABCDE1234F)";
+        errorMessage = 'Invalid PAN format (e.g., ABCDE1234F)';
       }
     }
 
@@ -389,31 +387,30 @@ export const Customer = () => {
     // }
 
     // Customer Name validation
-    if (name === "customerName") {
+    if (name === 'customerName') {
       if (!nameRegex.test(value)) {
-        errorMessage = "Only Alphabets Allowed";
+        errorMessage = 'Only Alphabets Allowed';
       } else if (value.length > 50) {
-        errorMessage = "Exceeded Maximum Length (50)";
+        errorMessage = 'Exceeded Maximum Length (50)';
       }
     }
 
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: errorMessage,
+      [name]: errorMessage
     }));
 
     if (!errorMessage) {
       let inputValue = value;
 
-      if (name === "email") {
+      if (name === 'email') {
         inputValue = value.toLowerCase();
-      }
-      else if (type === "text" || type === "textarea") {
+      } else if (type === 'text' || type === 'textarea') {
         inputValue = value.toUpperCase();
       }
       setFormData((prevData) => ({
         ...prevData,
-        [name]: type === "checkbox" ? checked : inputValue,
+        [name]: type === 'checkbox' ? checked : inputValue
       }));
 
       // Maintain cursor position for smooth user experience
@@ -425,7 +422,6 @@ export const Customer = () => {
       // }, 0);
     }
   };
-
 
   const handleClear = () => {
     setEditId('');
@@ -586,11 +582,11 @@ export const Customer = () => {
       prev.map((r) =>
         r.id === row.id
           ? {
-            ...r,
-            state: value,
-            stateCode: selectedState ? selectedState.stateCode : '',
-            stateNo: selectedState ? selectedState.stateNumber : ''
-          }
+              ...r,
+              state: value,
+              stateCode: selectedState ? selectedState.stateCode : '',
+              stateNo: selectedState ? selectedState.stateNumber : ''
+            }
           : r
       )
     );
@@ -625,10 +621,10 @@ export const Customer = () => {
       prev.map((r) =>
         r.id === row.id
           ? {
-            ...r,
-            salesPerson: selectedName,
-            empCode: selectedEmployee ? selectedEmployee.employeeCode : ''
-          }
+              ...r,
+              salesPerson: selectedName,
+              empCode: selectedEmployee ? selectedEmployee.employeeCode : ''
+            }
           : r
       )
     );
@@ -1026,8 +1022,9 @@ export const Customer = () => {
                   size="small"
                   value={formData.customerCode}
                   onChange={handleInputChange}
-                // error={fieldErrors.customerCode}
-                // helperText={fieldErrors.customerCode}
+                  disabled
+                  // error={fieldErrors.customerCode}
+                  // helperText={fieldErrors.customerCode}
                 />
               </div>
 
@@ -1055,8 +1052,8 @@ export const Customer = () => {
                   size="small"
                   value={formData.panNo}
                   onChange={handleInputChange}
-                // error={Boolean(fieldErrors.panNo)}
-                // helperText={fieldErrors.panNo}
+                  // error={Boolean(fieldErrors.panNo)}
+                  // helperText={fieldErrors.panNo}
                 />
               </div>
 
@@ -1070,8 +1067,8 @@ export const Customer = () => {
                   type="number"
                   value={formData.creditLimit}
                   onChange={handleInputChange}
-                // error={fieldErrors.creditLimit}
-                // helperText={fieldErrors.creditLimit}
+                  // error={fieldErrors.creditLimit}
+                  // helperText={fieldErrors.creditLimit}
                 />
               </div>
 
@@ -1085,8 +1082,8 @@ export const Customer = () => {
                   type="number"
                   value={formData.creditDays}
                   onChange={handleInputChange}
-                // error={fieldErrors.creditDays}
-                // helperText={fieldErrors.creditDays}
+                  // error={fieldErrors.creditDays}
+                  // helperText={fieldErrors.creditDays}
                 />
               </div>
 
@@ -1346,23 +1343,28 @@ export const Customer = () => {
                                       type="text"
                                       value={row.gstIn}
                                       maxLength={15}
+                                      style={{ width: '180px' }}
                                       onChange={(e) => {
                                         const value = e.target.value;
-                                        setPartyStateData((prev) =>
-                                          prev.map((r) => (r.id === row.id ? { ...r, gstIn: value } : r))
-                                        );
+                                        setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstIn: value } : r)));
                                         setPartyStateDataErrors((prev) => {
                                           const newErrors = [...prev];
                                           newErrors[index] = {
                                             ...newErrors[index],
-                                            gstIn: !value ? 'GSTIN is required' : !gstRegex.test(value) ? 'GSTIN must be exactly 15 alphanumeric characters' : '',
+                                            gstIn: !value
+                                              ? 'Reg No is required'
+                                              : !gstRegex.test(value)
+                                                ? 'Reg No must be exactly 15 alphanumeric characters'
+                                                : ''
                                           };
                                           return newErrors;
                                         });
                                       }}
                                       className={partyStateDataErrors[index]?.gstIn ? 'error form-control' : 'form-control'}
                                     />
-                                    {partyStateDataErrors[index]?.gstIn && <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].gstIn}</div>}
+                                    {partyStateDataErrors[index]?.gstIn && (
+                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].gstIn}</div>
+                                    )}
                                   </td>
 
                                   <td className="border px-2 py-2">
@@ -1370,10 +1372,12 @@ export const Customer = () => {
                                       type="text"
                                       value={row.contactPerson}
                                       maxLength="50"
+                                      style={{ width: '150px' }}
                                       onChange={(e) => {
                                         const value = e.target.value;
 
-                                        if (/^[a-zA-Z\s]*$/.test(value)) {  // Allows only letters and spaces
+                                        if (/^[a-zA-Z\s]*$/.test(value)) {
+                                          // Allows only letters and spaces
                                           setPartyStateData((prev) =>
                                             prev.map((r) => (r.id === row.id ? { ...r, contactPerson: value } : r))
                                           );
@@ -1408,7 +1412,6 @@ export const Customer = () => {
                                     )}
                                   </td>
 
-
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
@@ -1426,11 +1429,7 @@ export const Customer = () => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              contactPhoneNo: !value
-                                                ? 'Phone number is required'
-                                                : value.length !== 10
-                                                  ? ''
-                                                  : ''
+                                              contactPhoneNo: !value ? 'Phone number is required' : value.length !== 10 ? '' : ''
                                             };
                                             return newErrors;
                                           });
@@ -1452,11 +1451,11 @@ export const Customer = () => {
                                     )}
                                   </td>
 
-
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
                                       value={row.email}
+                                      style={{ width: '220px' }}
                                       onChange={(e) => {
                                         const value = e.target.value;
                                         const isValidEmail = emailRegex.test(value);
@@ -1465,16 +1464,17 @@ export const Customer = () => {
                                           const newErrors = [...prev];
                                           newErrors[index] = {
                                             ...newErrors[index],
-                                            email: !value ? 'Email is required' : !isValidEmail ? 'Invalid Email Address' : '',
+                                            email: !value ? 'Email is required' : !isValidEmail ? 'Invalid Email Address' : ''
                                           };
                                           return newErrors;
                                         });
                                       }}
                                       className={partyStateDataErrors[index]?.email ? 'error form-control' : 'form-control'}
                                     />
-                                    {partyStateDataErrors[index]?.email && <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].email}</div>}
+                                    {partyStateDataErrors[index]?.email && (
+                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].email}</div>
+                                    )}
                                   </td>
-
                                 </tr>
                               ))}
                             </tbody>
@@ -1501,7 +1501,7 @@ export const Customer = () => {
                                 <th className="table-header">City</th>
                                 <th className="table-header">Business Place</th>
                                 <th className="table-header">State Reg No</th>
-                                <th className="table-header">Tax Excepted</th>
+                                <th className="table-header">Tax Exempted</th>
                                 <th className="table-header">Address Type</th>
                                 <th className="table-header">Address Line1</th>
                                 <th className="table-header">Address Line2</th>
@@ -1944,10 +1944,10 @@ export const Customer = () => {
                                             prev.map((r) =>
                                               r.id === row.id
                                                 ? {
-                                                  ...r,
-                                                  effectiveFrom: date,
-                                                  effectiveTill: date > r.effectiveTill ? null : r.effectiveTill
-                                                }
+                                                    ...r,
+                                                    effectiveFrom: date,
+                                                    effectiveTill: date > r.effectiveTill ? null : r.effectiveTill
+                                                  }
                                                 : r
                                             )
                                           );

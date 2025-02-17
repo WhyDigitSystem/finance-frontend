@@ -509,9 +509,9 @@ const Group = () => {
         <div className="d-flex flex-wrap justify-content-start mb-4">
           {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleListView} />
-          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-          <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />
-          <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} />
+          {showForm ? <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} /> : ''}
+          {showForm ? <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} /> : ''}
+          {showForm ? <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} /> : ''}
 
           {uploadOpen && (
             <CommonBulkUpload
@@ -523,9 +523,10 @@ const Group = () => {
               onSubmit={handleSubmit}
               sampleFileDownload={COASample}
               handleFileUpload={handleFileUpload}
-              // apiUrl={`transaction/excelUploadForBrs?branch="CHENNAI"&branchCode="MAAW"&client="CASIO"&createdBy=${loginUserName}&customer="UNI"&finYear="2024"&orgId=${orgId}`}
-              apiUrl={`master/excelUploadForGroupLedger?createdBy=${loginUserName}&orgId=${orgId}`}
+              apiUrl={`master/excelUploadForGroupLedger`}
               screen="COA"
+              loginUser={loginUserName}
+              orgId={orgId}
             ></CommonBulkUpload>
           )}
           {!showForm ? <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} /> : ''}

@@ -48,16 +48,20 @@ export const JobCard = () => {
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
-  const [detailsTableData, setDetailsTableData] = useState([{
-    id: '',
-    accountName: '',
-    amount: ''
-  }]);
-  const [detailsTableErrors, setDetailsTableErrors] = useState([{
-    id: '',
-    accountName: '',
-    amount: ''
-  }]);
+  const [detailsTableData, setDetailsTableData] = useState([
+    {
+      id: '',
+      accountName: '',
+      amount: ''
+    }
+  ]);
+  const [detailsTableErrors, setDetailsTableErrors] = useState([
+    {
+      id: '',
+      accountName: '',
+      amount: ''
+    }
+  ]);
   const [formData, setFormData] = useState({
     customer: '',
     operationClosed: '',
@@ -72,7 +76,7 @@ export const JobCard = () => {
     profit: '',
     remarks: '',
     active: true
-  })
+  });
   const [fieldErrors, setFieldErrors] = useState({
     customer: '',
     operationClosed: '',
@@ -85,8 +89,7 @@ export const JobCard = () => {
     expense: '',
     profit: '',
     remarks: ''
-  })
-
+  });
 
   const listViewColumns = [
     { accessorKey: 'jobNo', header: 'Document No', size: 140 },
@@ -105,7 +108,7 @@ export const JobCard = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setAllAccountName(response.paramObjectsMap.generalJournalVO); 
+        setAllAccountName(response.paramObjectsMap.generalJournalVO);
       } else {
         console.error('API Error:', response);
       }
@@ -128,8 +131,6 @@ export const JobCard = () => {
     }
   };
 
-
-
   const getAllTmsJobCardById = async (row) => {
     console.log('Row selected:', row);
     setShowForm(true);
@@ -149,15 +150,15 @@ export const JobCard = () => {
           expense: jnVo.expense || '',
           profit: jnVo.profit || '',
           closed: jnVo.closedOn ? true : false,
-          remarks: jnVo.remarks || '', 
+          remarks: jnVo.remarks || '',
           closedOn: jnVo.closedOn ? dayjs(jnVo.closedOn, 'YYYY-MM-DDTHH:mm:ss') : null,
-          active: jnVo.active 
+          active: jnVo.active
         });
         setDetailsTableData(
           jnVo.costCenterJobCardVO?.map((row) => ({
             id: row.id,
             accountName: row.accountName,
-            amount: row.amount || 0,
+            amount: row.amount || 0
           })) || []
         );
       } else {
@@ -167,8 +168,6 @@ export const JobCard = () => {
       console.error('Error fetching data:', error);
     }
   };
-
-  
 
   const handleClear = async () => {
     setFormData({
@@ -183,15 +182,15 @@ export const JobCard = () => {
       profit: '',
       remarks: '',
       date: dayjs(),
-      closedOn: null,
+      closedOn: null
     });
 
     setDetailsTableData([
       {
         id: 1,
         accountsName: '',
-        amount: '',
-      },
+        amount: ''
+      }
     ]);
 
     setFieldErrors({
@@ -203,7 +202,7 @@ export const JobCard = () => {
       income: '',
       expense: '',
       profit: '',
-      remarks: '',
+      remarks: ''
     });
     setDetailsTableErrors([{ accountName: '', amount: '' }]);
     setEditId('');
@@ -244,16 +243,15 @@ export const JobCard = () => {
 
       return rowErrors;
     });
-    setFieldErrors(errors)
+    setFieldErrors(errors);
 
     setDetailsTableErrors(newTableErrors);
-
 
     if (Object.keys(errors).length === 0 && detailTableDataValid) {
       const glOpeningVO = detailsTableData.map((row) => ({
         ...(editId && { id: row.id }),
         accountName: row.accountName,
-        amount: row.amount,
+        amount: row.amount
       }));
 
       const saveFormData = {
@@ -279,9 +277,8 @@ export const JobCard = () => {
         finYear: finYear,
         financeClosed: FormDataEvent.financeClosed || false,
         operationClosed: FormDataEvent.operationClosed || false,
-        costCenterTmsJobCardDTO: glOpeningVO,
+        costCenterTmsJobCardDTO: glOpeningVO
       };
-
 
       console.log('DATA TO SAVE IS:', saveFormData);
 
@@ -301,20 +298,14 @@ export const JobCard = () => {
         showToast('error', 'Job Card creation failed');
         setIsLoading(false);
       }
-
     } else {
       setFieldErrors(errors);
     }
-  }
-
-
-
-
+  };
 
   const getAllJobCardById = async (row) => {
     console.log('first', row);
     setShowForm(true);
-
   };
 
   const handleCostTypeChange = (type) => {
@@ -331,8 +322,6 @@ export const JobCard = () => {
     setValue(newValue);
   };
 
-
-
   useEffect(() => {
     getTmsJobCardDocId();
     getAllCustomers();
@@ -346,7 +335,7 @@ export const JobCard = () => {
     const newRow = {
       id: Date.now(),
       accountName: '',
-      amount: '',
+      amount: ''
     };
     setDetailsTableData([...detailsTableData, newRow]);
     setDetailsTableErrors([...detailsTableErrors, { accountName: '', amount: '' }]);
@@ -380,15 +369,12 @@ export const JobCard = () => {
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
           accountName: !table[table.length - 1].accountName ? 'Value Code is required' : '',
-          amount: !table[table.length - 1].amount ? 'Value Desc is required' : '',
+          amount: !table[table.length - 1].amount ? 'Amount is required' : ''
         };
         return newErrors;
       });
     }
   };
-
-
-
 
   const getTmsJobCardDocId = async () => {
     try {
@@ -407,11 +393,9 @@ export const JobCard = () => {
     }
   };
 
-
   const getAllCustomers = async () => {
     try {
-      const response = await apiCalls(
-        'get', `/transaction/getAllCustomersFromPartyMaster?orgId=${orgId}`);
+      const response = await apiCalls('get', `/transaction/getAllCustomersFromPartyMaster?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -424,12 +408,9 @@ export const JobCard = () => {
     }
   };
 
-
   const getSalesPerson = async (customerName) => {
     try {
-      const response = await apiCalls(
-        'get', `/transaction/getSalesPersonFromPartyMaster?orgId=${orgId}&partyName=${customerName}`
-      );
+      const response = await apiCalls('get', `/transaction/getSalesPersonFromPartyMaster?orgId=${orgId}&partyName=${customerName}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -442,22 +423,20 @@ export const JobCard = () => {
     }
   };
 
-
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
 
     if (name === 'income' || name === 'expense' || name === 'profit') {
-
       if (isNaN(value) || value === '') {
         setFieldErrors((prev) => ({
           ...prev,
-          [name]: 'Invalid format. Only numbers are allowed.',
+          [name]: 'Invalid format. Only numbers are allowed.'
         }));
         return;
       } else {
         setFieldErrors((prev) => ({
           ...prev,
-          [name]: '', // Clear error if input is valid
+          [name]: '' // Clear error if input is valid
         }));
       }
     }
@@ -466,19 +445,17 @@ export const JobCard = () => {
       ...prevData,
       [name]: type === 'checkbox' ? checked : value,
       ...(name === 'closed' && {
-        closedOn: checked ? dayjs().format('YYYY-MM-DD HH:mm:ss') : null,
-      }),
+        closedOn: checked ? dayjs().format('YYYY-MM-DD HH:mm:ss') : null
+      })
     }));
   };
-
-
 
   // Date change handler for DatePicker
   const handleDateChange = (field, date) => {
     const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
     setFormData((prevData) => ({
       ...prevData,
-      [field]: formattedDate,
+      [field]: formattedDate
     }));
   };
 
@@ -494,20 +471,20 @@ export const JobCard = () => {
         {showForm ? (
           <>
             <div className="row d-flex">
-            <div className="col-md-3 mb-3">
-                  <TextField
-                    id="docId"
-                    label="Document No"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="docId"
-                    value={docId}
-                    onChange={handleInputChange}
-                    disabled
-                    inputProps={{ maxLength: 10 }}
-                  />
-                </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="docId"
+                  label="Document No"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="docId"
+                  value={docId}
+                  onChange={handleInputChange}
+                  disabled
+                  inputProps={{ maxLength: 10 }}
+                />
+              </div>
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
@@ -521,7 +498,7 @@ export const JobCard = () => {
                     handleInputChange({
                       target: {
                         name: 'customer',
-                        value: newValue ? newValue.partyname : '', // Adjusted to 'partyname'
+                        value: newValue ? newValue.partyname : '' // Adjusted to 'partyname'
                       }
                     });
 
@@ -558,16 +535,19 @@ export const JobCard = () => {
                   >
                     {salesPerson && salesPerson.length > 0 ? (
                       salesPerson.map((sales, index) => (
-                        <MenuItem key={index} value={sales.salesperson}>{sales.salesperson}</MenuItem>
+                        <MenuItem key={index} value={sales.salesperson}>
+                          {sales.salesperson}
+                        </MenuItem>
                       ))
                     ) : (
-                      <MenuItem value="" disabled>No sales person available</MenuItem>
+                      <MenuItem value="" disabled>
+                        No sales person available
+                      </MenuItem>
                     )}
                   </Select>
                   {fieldErrors.salesPerson && <FormHelperText>{fieldErrors.salesPerson}</FormHelperText>}
                 </FormControl>
               </div>
-
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">
@@ -673,10 +653,8 @@ export const JobCard = () => {
                     }
                     label="FinanceClosed"
                   />
-
                 </div>
               </div>
-
             </div>
 
             <div className="row d-flex">
@@ -690,11 +668,11 @@ export const JobCard = () => {
                       onChange={(date) =>
                         setFormData((prevData) => ({
                           ...prevData,
-                          closedOn: date ? date.format('YYYY-MM-DD HH:mm:ss') : null,
+                          closedOn: date ? date.format('YYYY-MM-DD HH:mm:ss') : null
                         }))
                       }
                       slotProps={{
-                        textField: { size: 'small', clearable: true },
+                        textField: { size: 'small', clearable: true }
                       }}
                       format="DD-MM-YYYY HH:mm:ss" // Format with date and time
                       disabled
@@ -719,7 +697,7 @@ export const JobCard = () => {
                   />
                 </FormGroup>
               </div>
-              <div className="col-md-3 mb-3"   style={{ margin: '0 -50px', }}>
+              <div className="col-md-3 mb-3" style={{ margin: '0 -50px' }}>
                 <FormControlLabel
                   control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
                   label="Active"
@@ -745,7 +723,6 @@ export const JobCard = () => {
                   />
                 </FormControl>
               </div>
-
             </div>
 
             <div className="row mt-2">
@@ -785,7 +762,6 @@ export const JobCard = () => {
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '200px' }}>
                                     Amount
                                   </th>
-
                                 </tr>
                               </thead>
                               <tbody>
@@ -866,9 +842,8 @@ export const JobCard = () => {
                                           />
                                         )}
                                         sx={{ width: 250 }}
-                                       />
+                                      />
                                     </td>
-
 
                                     <td className="border px-2 py-2">
                                       <input
@@ -879,14 +854,12 @@ export const JobCard = () => {
 
                                           // Allow only numeric input (digits only)
                                           if (/^\d*\.?\d*$/.test(value)) {
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, amount: value } : r))
-                                            );
+                                            setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, amount: value } : r)));
                                             setDetailsTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                amount: !value ? 'Amount is required' : '',
+                                                amount: !value ? 'Amount is required' : ''
                                               };
                                               return newErrors;
                                             });
@@ -900,8 +873,6 @@ export const JobCard = () => {
                                         </div>
                                       )}
                                     </td>
-
-
                                   </tr>
                                 ))}
                               </tbody>
@@ -923,6 +894,6 @@ export const JobCard = () => {
         <ToastComponent />
       </div>
     </>
-  )
+  );
 };
 export default JobCard;

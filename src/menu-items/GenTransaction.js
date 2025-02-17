@@ -70,7 +70,7 @@ const transactionChildren = [
   },
   {
     id: 'JobCard',
-    title: 'Job Card',
+    title: 'Card',
     type: 'item',
     url: '/finance/JobCard'
   },
