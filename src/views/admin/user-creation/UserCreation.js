@@ -77,7 +77,7 @@ const UserCreation = () => {
   });
 
   const listViewColumns = [
-    { accessorKey: 'employeeCode', header: 'EmployeeCode', size: 140 },
+    { accessorKey: 'employeeCode', header: 'Employee Code', size: 140 },
     { accessorKey: 'employeeName', header: 'Name', size: 140 },
     { accessorKey: 'userName', header: 'User Name', size: 140 },
     { accessorKey: 'email', header: 'Email', size: 140 },
@@ -636,6 +636,7 @@ const UserCreation = () => {
                     value={formData.employeeName}
                     onChange={handleInputChange}
                     disabled
+                    error={!!fieldErrors.employeeName}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.employeeName ? 'Employee Name is required' : ''}</span>}
                     inputProps={{ maxLength: 10 }}
                   />
@@ -652,6 +653,7 @@ const UserCreation = () => {
                     value={formData.email}
                     onChange={handleInputChange}
                     disabled
+                    error={!!fieldErrors.email}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.email ? 'Email is required' : ''}</span>}
                     inputProps={{ maxLength: 40 }}
                   />
@@ -659,16 +661,16 @@ const UserCreation = () => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="outlined-textarea"
-                    label="UserName"
+                    label="User Name"
                     variant="outlined"
                     size="small"
                     name="userName"
                     fullWidth
                     disabled
+                    error={!!fieldErrors.userName}
                     required
                     value={formData.userName}
                     onChange={handleInputChange}
-                    error=''
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.userName ? 'User Name is required' : ''}</span>}
                     inputProps={{ maxLength: 15 }}
                   />

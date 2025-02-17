@@ -281,11 +281,10 @@ const FinYear = () => {
                     views={['year']}
                     onChange={(date) => handleDateChange('finYear', date)}
                     slotProps={{
-                      textField: { size: 'small', clearable: true }
+                      textField: { size: 'small', clearable: true,
+                        error: fieldErrors.finYear ? 'Fin Year is required' : '', helperText: fieldErrors.finYear ? 'Fin Year is required' : '' }
                     }}
                     format="YYYY"
-                    error={fieldErrors.finYear}
-                    helperText={fieldErrors.finYear ? 'Fin Year is required' : ''}
                   />
                 </LocalizationProvider>
               </FormControl>
@@ -330,11 +329,10 @@ const FinYear = () => {
                     value={formData.startDate ? dayjs(formData.startDate) : null}
                     onChange={(date) => handleDateChange('startDate', date)}
                     slotProps={{
-                      textField: { size: 'small', clearable: true }
+                      textField: { size: 'small', clearable: true,
+                        error: fieldErrors.startDate ? 'Start Date is required' : '', helperText: fieldErrors.startDate ? 'Start Date is required' : '' }
                     }}
                     format="DD-MM-YYYY"
-                    error={fieldErrors.startDate}
-                    helperText={fieldErrors.startDate ? 'Start Date is required' : ''}
                   />
                 </LocalizationProvider>
               </FormControl>
@@ -347,11 +345,11 @@ const FinYear = () => {
                     value={formData.endDate ? dayjs(formData.endDate) : null}
                     onChange={(date) => handleDateChange('endDate', date)}
                     slotProps={{
-                      textField: { size: 'small', clearable: true }
+                      textField: { size: 'small', clearable: true,
+                        error: fieldErrors.endDate ? 'End Date is required' : '', helperText: fieldErrors.endDate ? 'End Date is required' : '' 
+                       }
                     }}
                     format="DD-MM-YYYY"
-                    error={fieldErrors.endDate}
-                    helperText={fieldErrors.endDate ? 'End Date is required' : ''}
                   />
                 </LocalizationProvider>
               </FormControl>
