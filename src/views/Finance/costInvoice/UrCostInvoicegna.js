@@ -58,104 +58,66 @@ const UrCostInvoicegna = () => {
   const [chargeDetails, setChargeDetails] = useState([
     {
       id: 1,
-      chargeDesc: '',
-      chargeCode: '',
-      gChargeCode: '',
-      gstPercent: '',
-      sac: '',
-      taxable: '',
-      lcAmount: ''
+      chargeAccount: '',
+      chargeLedger: '',
+      currency: '',
+      exRate: '',
+      gstpercent: '',
+      rate: '',
+      fcAmount: '',
+      lcAmount: '',
+      billAmt: ''
     }
   ]);
   const [formData, setFormData] = useState({
-    accuralid: '',
-    actBillCurrAmt: '',
-    actBillLcAmt: '',
+    docId: '',
+    docDate: dayjs(),
     address: '',
-    approveStatus: '',
-    approveBy: '',
-    approveOn: '',
     branch: '',
     branchCode: '',
-    client: '',
-    costInvoiceDate: null,
-    costInvoiceNo: '',
-    costType: '',
     creditDays: '',
     currency: '',
-    customer: '',
-    docDate: dayjs(),
-    docId: '',
     dueDate: null,
     exRate: '',
     finYear: '',
-    gstInputLcAmt: '',
     gstType: '',
-    ipNo: '',
-    latitude: '',
-    mode: 'EDIT',
-    netBillCurrAmt: '',
-    netBillLcAmt: '',
     otherInfo: '',
-    payment: '',
-    product: '',
-    purVoucherDate: null,
-    purVoucherNo: '',
     remarks: '',
-    roundOff: '',
     shipperRefNo: '',
+    supplierBillDate: null,
     supplierBillNo: '',
     supplierCode: '',
-    creditDays: '',
-    supplierPlace: '',
+    supplierGstIn: '',
+    supplierGstInCode: '',
     supplierName: '',
     supplierPlace: '',
-    supplierType: 'VENDOR',
-    totChargesBillCurrAmt: '',
-    totChargesLcAmt: '',
-    utrRef: ''
+    supplierType: '',
   });
 
   const [chargerCostInvoice, setChargerCostInvoice] = useState([
     {
-      chargeCode: '',
+      chargeAccount: '',
       chargeLedger: '',
-      chargeName: '',
       currency: '',
       exRate: '',
-      exempted: '',
-      govChargeCode: '',
-      gst: '',
-      gstPercent: '',
-      jobNo: '',
-      ledger: '',
-      qty: '',
+      gstpercent: '',
       rate: '',
-      sac: '',
       fcAmount: '',
       lcAmount: '',
-      taxable: ''
+      billAmt: ''
     }
   ]);
   const [costInvoiceErrors, setCostInvoiceErrors] = useState([
     {
-      chargeCode: '',
+      chargeAccount: '',
       chargeLedger: '',
-      chargeName: '',
       currency: '',
       exRate: '',
-      exempted: '',
-      govChargeCode: '',
-      gst: '',
-      gstPercent: '',
-      jobNo: '',
-      ledger: '',
-      qty: '',
+      gstpercent: '',
       rate: '',
-      sac: '',
       fcAmount: '',
       lcAmount: '',
-      taxable: ''
+      billAmt: ''
     }
   ]);
 
@@ -164,7 +126,8 @@ const UrCostInvoicegna = () => {
       section: '',
       tdsWithHolding: '',
       tdsWithHoldingPer: '',
-      totTdsWhAmnt: ''
+      totTdsWhAmnt: '',
+      FcTdsAmount: ''
     }
   ]);
 
@@ -173,113 +136,72 @@ const UrCostInvoicegna = () => {
       section: '',
       tdsWithHolding: '',
       tdsWithHoldingPer: '',
-      totTdsWhAmnt: ''
+      totTdsWhAmnt: '',
+      FcTdsAmount: ''
     }
   ]);
 
   const handleClear = () => {
     setFormData({
-      accuralid: '',
-      actBillCurrAmt: '',
-      actBillLcAmt: '',
+      docId: '',
+      docDate: dayjs(),
       address: '',
-      approveStatus: '',
-      approveBy: '',
-      approveOn: '',
       branch: '',
       branchCode: '',
-      client: '',
-      costInvoiceDate: null,
-      costInvoiceNo: '',
       creditDays: '',
       currency: '',
-      customer: '',
       dueDate: null,
-      docDate: dayjs(),
       exRate: '',
       finYear: '',
-      gstInputLcAmt: '',
       gstType: '',
-      ipNo: '',
-      latitude: '',
-      mode: 'EDIT',
-      netBillCurrAmt: '',
-      netBillLcAmt: '',
       otherInfo: '',
-      product: '',
-      payment: '',
-      purVoucherDate: null,
-      purVoucherNo: '',
       remarks: '',
-      roundOff: '',
       shipperRefNo: '',
+      supplierBillDate: null,
       supplierBillNo: '',
       supplierCode: '',
-      creditDays: '',
-      supplierPlace: '',
+      supplierGstIn: '',
+      supplierGstInCode: '',
       supplierName: '',
       supplierPlace: '',
-      supplierType: 'VENDOR',
-      totChargesBillCurrAmt: '',
-      totChargesLcAmt: '',
-      utrRef: ''
+      supplierType: '',
     });
     setExRates([]);
     setStateName([]);
     getAllActiveCurrency(orgId);
     setFieldErrors({
-      accuralid: '',
       address: '',
       branch: '',
       branchCode: '',
-      client: '',
-      costInvoiceDate: null,
-      costInvoiceNo: '',
       creditDays: '',
       currency: '',
-      customer: '',
       dueDate: null,
       exRate: '',
       finYear: '',
       gstType: '',
-      ipNo: '',
-      latitude: '',
-      mode: '',
       otherInfo: '',
-      product: '',
-      payment: '',
-      purVoucherDate: null,
-      purVoucherNo: '',
       remarks: '',
       shipperRefNo: '',
+      supplierBillDate: null,
       supplierBillNo: '',
       supplierCode: '',
-      creditDays: '',
-      supplierPlace: '',
+      supplierGstIn: '',
+      supplierGstInCode: '',
       supplierName: '',
       supplierPlace: '',
       supplierType: '',
-      utrRef: ''
     });
     setChargerCostInvoice([
       {
-        chargeCode: '',
+        chargeAccount: '',
         chargeLedger: '',
-        chargeName: '',
         currency: '',
         exRate: '',
-        exempted: '',
-        govChargeCode: '',
-        gst: '',
-        gstPercent: '',
-        jobNo: '',
-        ledger: '',
-        qty: '',
+        gstpercent: '',
         rate: '',
-        sac: '',
         fcAmount: '',
         lcAmount: '',
-        taxable: ''
+        billAmt: ''
       }
     ]);
     setTdsCostInvoiceDTO([
@@ -287,120 +209,77 @@ const UrCostInvoicegna = () => {
         section: '',
         tdsWithHolding: '',
         tdsWithHoldingPer: '',
-        totTdsWhAmnt: ''
+        totTdsWhAmnt: '',
+        FcTdsAmount: ''
       }
     ]);
     setCostInvoiceErrors([]);
     setTdsCostErrors([]);
     setSectionOptions([]);
     setEditId('');
-    getCostInvoiceDocId();
+    getUrCostInvoiceDocId();
     setShowChargeDetails(false);
   };
 
   const handleSaveClear = () => {
     setFormData({
-      accuralid: '',
-      actBillCurrAmt: '',
-      actBillLcAmt: '',
       address: '',
-      approveStatus: '',
-      approveBy: '',
-      approveOn: '',
       branch: '',
       branchCode: '',
-      client: '',
-      costInvoiceDate: null,
-      costInvoiceNo: '',
       creditDays: '',
-      // currency: '',
-      customer: '',
+      currency: '',
       dueDate: null,
-      docDate: dayjs(),
       exRate: '',
       finYear: '',
-      gstInputLcAmt: '',
-      // gstType: '',
-      ipNo: '',
-      latitude: '',
-      mode: 'EDIT',
-      netBillCurrAmt: '',
-      netBillLcAmt: '',
+      gstType: '',
       otherInfo: '',
-      product: '',
-      payment: '',
-      purVoucherDate: null,
-      purVoucherNo: '',
       remarks: '',
-      roundOff: '',
       shipperRefNo: '',
+      supplierBillDate: null,
       supplierBillNo: '',
-      // supplierCode: '',
-      // creditDays: '',
-      // supplierPlace: '',
-      // supplierName: '',
-      // supplierPlace: '',
+      supplierCode: '',
+      supplierGstIn: '',
+      supplierGstInCode: '',
+      supplierName: '',
+      supplierPlace: '',
       supplierType: 'VENDOR',
-      totChargesBillCurrAmt: '',
-      totChargesLcAmt: '',
-      utrRef: ''
     });
     setExRates([]);
     // setStateName([]);
     getAllActiveCurrency(orgId);
     setFieldErrors({
-      accuralid: '',
       address: '',
       branch: '',
       branchCode: '',
-      client: '',
-      costInvoiceDate: null,
-      costInvoiceNo: '',
       creditDays: '',
       currency: '',
-      customer: '',
       dueDate: null,
       exRate: '',
       finYear: '',
       gstType: '',
-      ipNo: '',
-      latitude: '',
-      mode: '',
       otherInfo: '',
-      product: '',
-      payment: '',
-      purVoucherDate: null,
-      purVoucherNo: '',
       remarks: '',
       shipperRefNo: '',
+      supplierBillDate: null,
       supplierBillNo: '',
       supplierCode: '',
-      creditDays: '',
-      supplierPlace: '',
+      supplierGstIn: '',
+      supplierGstInCode: '',
       supplierName: '',
       supplierPlace: '',
       supplierType: '',
-      utrRef: ''
     });
     setChargerCostInvoice([
       {
-        chargeCode: '',
+        chargeAccount: '',
         chargeLedger: '',
-        chargeName: '',
         currency: '',
         exRate: '',
-        exempted: '',
-        govChargeCode: '',
-        gst: '',
-        gstPercent: '',
-        jobNo: '',
-        ledger: '',
-        qty: '',
+        gstpercent: '',
         rate: '',
-        sac: '',
         fcAmount: '',
         lcAmount: '',
-        taxable: ''
+        billAmt: ''
       }
     ]);
     setTdsCostInvoiceDTO([
@@ -408,35 +287,22 @@ const UrCostInvoicegna = () => {
         section: '',
         tdsWithHolding: '',
         tdsWithHoldingPer: '',
-        totTdsWhAmnt: ''
+        totTdsWhAmnt: '',
+        FcTdsAmount: ''
       }
     ]);
     setCostInvoiceErrors([]);
     setTdsCostErrors([]);
     setSectionOptions([]);
     setEditId('');
-    getCostInvoiceDocId();
+    getUrCostInvoiceDocId();
     setShowChargeDetails(false);
   };
 
   const listViewColumns = [
-    { accessorKey: 'mode', header: 'Mode', size: 140 },
-    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
     { accessorKey: 'docId', header: 'Doc No', size: 140 },
     { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 }
   ];
-
-  const handleOpenModalApprove = () => {
-    setModalOpen(true);
-    setApproveStatus('Approved');
-  };
-
-  const handleOpenModalReject = () => {
-    setModalOpen(true);
-    setApproveStatus('Rejected');
-  };
-
-  const handleCloseModal = () => setModalOpen(false);
 
   const calculateTotTdsWhAmnt = () => {
     const totalLcAmount = chargerCostInvoice.reduce((acc, curr) => acc + curr.lcAmount, 0);
@@ -473,23 +339,6 @@ const UrCostInvoicegna = () => {
       }));
     }
   }, [partyName]);
-
-  // const handleSelectPlaceChange = (e) => {
-  //   const value = e.target.value;
-
-  //   const selectedEmp = placeOfSupply.find((emp) => emp.placeOfSupply === value);
-
-  //   if (selectedEmp) {
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       supplierPlace: selectedEmp.placeOfSupply
-  //     }));
-  //     getAddessType(selectedEmp.placeOfSupply);
-  //     console.log('selectedEmp.placeOfSupply', selectedEmp.placeOfSupply);
-  //   } else {
-  //     console.log('No employee found with the given code:', value);
-  //   }
-  // };
 
   useEffect(() => {
     if (placeOfSupply.length === 1) {
@@ -578,35 +427,34 @@ const UrCostInvoicegna = () => {
   };
 
   useEffect(() => {
-    getAllCostInvoiceByOrgId();
-    getCostInvoiceDocId();
-    getJobNoFromTmsJobCard();
-    getChargeDetailsFromChargeType();
+    getAllUrCostInvoiceByOrgId();
+    getUrCostInvoiceDocId();
+    // getChargeDetailsFromChargeType();
   }, []);
 
   useEffect(() => {
     getPartyName(formData.supplierType);
   }, [formData.supplierType]);
 
-  const getAllCostInvoiceByOrgId = async () => {
+  const getAllUrCostInvoiceByOrgId = async () => {
     try {
-      const result = await apiCalls('get', `/costInvoice/getAllCostInvoiceByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.costInvoiceVO.reverse() || []);
+      const result = await apiCalls('get', `/UrCostInvoiceGna/getAllUrCostInvoiceGnaByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
+      setData(result.paramObjectsMap.urCostInvoiceGnaVO.reverse() || []);
       console.log('costInvoiceVO', result);
     } catch (err) {
       console.log('error', err);
     }
   };
 
-  const getCostInvoiceDocId = async () => {
+  const getUrCostInvoiceDocId = async () => {
     try {
       const response = await apiCalls(
         'get',
-        `/costInvoice/getCostInvoiceDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
+        `/UrCostInvoiceGna/getUrCostInvoiceGnaDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
       setFormData((prevData) => ({
         ...prevData,
-        docId: response.paramObjectsMap.taxInvoiceDocId,
+        docId: response.paramObjectsMap.urCostInvoiceGnaDocId,
         docDate: dayjs()
       }));
     } catch (error) {
@@ -620,143 +468,23 @@ const UrCostInvoicegna = () => {
     setDownloadPdf(true);
   };
 
-  const getJobNoFromTmsJobCard = async () => {
-    try {
-      const response = await apiCalls('get', `/costInvoice/getJobNoFromTmsJobCard?orgId=${orgId}`);
-      setJobNoList(response.paramObjectsMap.jobNo);
-    } catch (error) {
-      console.error('Error fetching invoice:', error);
-    }
-  };
+  // const getChargeDetailsFromChargeType = async (type) => {
+  //   try {
+  //     const response = await apiCalls('get', `/costInvoice/getChargeDetailsFromChargeType?orgId=${orgId}`);
+  //     setChargeCode(response.paramObjectsMap.chargeDetails);
+  //   } catch (error) {
+  //     console.error('Error fetching gate passes:', error);
+  //   }
+  // };
 
-  const getChargeDetailsFromChargeType = async (type) => {
-    try {
-      const response = await apiCalls('get', `/costInvoice/getChargeDetailsFromChargeType?orgId=${orgId}`);
-      setChargeCode(response.paramObjectsMap.chargeDetails);
-    } catch (error) {
-      console.error('Error fetching gate passes:', error);
-    }
-  };
-
-  const handleConfirmAction = async () => {
-    try {
-      const result = await apiCalls(
-        'put',
-        `/costInvoice/approveCostInvoice?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}`
-      );
-      console.log('API Response:==>', result);
-      if (result.status === true) {
-        setFormData({ ...formData, approveStatus: result.paramObjectsMap.costInvoiceVO.approveStatus });
-        showToast(
-          result.paramObjectsMap.costInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
-          result.paramObjectsMap.costInvoiceVO.approveStatus === 'Approved'
-            ? ' Cost Invoice Approved Successfully'
-            : 'Cost Invoice Rejected Successfully'
-        );
-        const listValueVO = result.paramObjectsMap.costInvoiceVO;
-        setFormData({
-          accuralid: listValueVO.accuralid,
-          actBillCurrAmt: listValueVO.actBillCurrAmt,
-          actBillLcAmt: listValueVO.actBillLcAmt,
-          address: listValueVO.address,
-          approveBy: listValueVO.approveBy,
-          approveOn: listValueVO.approveOn,
-          approveStatus: listValueVO.approveStatus,
-          creditDays: listValueVO.creditDays,
-          currency: listValueVO.currency,
-          dueDate: listValueVO.dueDate ? dayjs(listValueVO.dueDate) : dayjs(),
-          docDate: listValueVO.docDate ? dayjs(listValueVO.docDate) : dayjs(),
-          docId: listValueVO.docId,
-          exRate: listValueVO.exRate,
-          gstInputLcAmt: listValueVO.gstInputLcAmt,
-          gstType: listValueVO.gstType,
-          id: listValueVO.id,
-          mode: listValueVO.mode,
-          netBillCurrAmt: listValueVO.netBillCurrAmt,
-          netBillLcAmt: listValueVO.netBillLcAmt,
-          otherInfo: listValueVO.otherInfo,
-          payment: listValueVO.payment,
-          product: listValueVO.product,
-          purVoucherDate: listValueVO.purVoucherDate ? dayjs(listValueVO.purVoucherDate) : dayjs(),
-          purVoucherNo: listValueVO.purVoucherNo,
-          remarks: listValueVO.remarks,
-          roundOff: listValueVO.roundOff,
-          shipperRefNo: listValueVO.shipperRefNo,
-          // sumLcAmt: listValueVO.sumLcAmt,
-          supplierBillNo: listValueVO.supplierBillNo,
-          supplierCode: listValueVO.supplierCode,
-          creditDays: listValueVO.creditDays,
-          supplierPlace: listValueVO.supplierPlace,
-          supplierName: listValueVO.supplierName,
-          supplierPlace: listValueVO.supplierPlace,
-          supplierType: listValueVO.supplierType,
-          totChargesBillCurrAmt: listValueVO.totChargesBillCurrAmt,
-          totChargesLcAmt: listValueVO.totChargesLcAmt,
-          utrRef: listValueVO.utrRef
-        });
-        setChargerCostInvoice(
-          listValueVO.chargerCostInvoiceVO.map((row) => ({
-            id: row.id,
-            billAmt: row.billAmt,
-            chargeCode: row.chargeCode,
-            chargeLedger: row.chargeLedger,
-            chargeName: row.chargeName,
-            govChargeCode: row.govChargeCode,
-            currency: row.currency,
-            exRate: row.exRate,
-            fcAmount: row.fcAmt,
-            gst: row.gst,
-            gstPercent: row.gstpercent,
-            jobNo: row.jobNo,
-            lcAmount: row.lcAmt,
-            ledger: row.ledger,
-            qty: row.qty,
-            rate: row.rate,
-            sac: row.sac,
-            taxable: row.taxable
-          }))
-        );
-        setTdsCostInvoiceDTO(
-          listValueVO.tdsCostInvoiceVO.map((row) => ({
-            id: row.id,
-            section: row.section,
-            tdsWithHolding: row.tdsWithHolding,
-            tdsWithHoldingPer: row.tdsWithHoldingPer,
-            totTdsWhAmnt: row.totTdsWhAmnt
-          }))
-        );
-        setChargeDetails(
-          listValueVO.gstLines.map((row) => ({
-            id: row.id,
-            chargeCode: row.chargeCode,
-            chargeDesc: row.chargeName,
-            gChargeCode: row.govChargeCode,
-            gstPercent: row.gstpercent,
-            sac: row.sac,
-            lcAmount: row.lcAmt
-          }))
-        );
-        // setShowChargeDetails(false);
-        // handleCloseModal();
-        setModalOpen(false);
-        getAllCostInvoiceByOrgId();
-        console.log('TAX INVOICE:==>', result);
-      } else {
-        console.error('API Error:', result.data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  const getAllCostInvoiceById = async (row) => {
+  const getAllUrCostInvoiceById = async (row) => {
     console.log('first', row);
     setShowForm(false);
     try {
-      const result = await apiCalls('get', `/costInvoice/getAllCostInvoiceById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/UrCostInvoiceGna/getUrCostInvoiceGnaById?id=${row.original.id}`);
 
       if (result) {
-        const costVO = result.paramObjectsMap.costInvoiceVO[0];
+        const costVO = result.paramObjectsMap.urCostInvoiceGnaVO;
         setListViewData(costVO);
         setEditId(row.original.id);
         getCurrencyAndExratesForMatchingParties(costVO.supplierCode);
@@ -764,8 +492,25 @@ const UrCostInvoicegna = () => {
         getStateName(partyId);
         getPlaceOfSupply(costVO.supplierPlace);
         setFormData({
+          docId: costVO.docId,
+          docDate: costVO.docDate ? dayjs(costVO.docDate) : dayjs(),
+          purVoucherNo: costVO.purVoucherNo,
+          purVoucherDate: costVO.purVoucherDate ? dayjs(costVO.purVoucherDate) : dayjs(),
+          supplierType: costVO.supplierType,
+          supplierCode: costVO.supplierCode,
+          supplierBillNo: costVO.supplierBillNo,
+          supplierBillDate: costVO.supplierBillDate ? dayjs(costVO.supplierBillDate) : dayjs(),
+          supplierPlace: costVO.supplierPlace,
+          supplierName: costVO.supplierName,
+          creditDays: costVO.creditDays,
+          dueDate: costVO.dueDate ? dayjs(costVO.dueDate) : dayjs(),
+          currency: costVO.currency,
+          exRate: costVO.exRate,
+          supplierGstIn: costVO.supplierGstIn,
+
           accuralid: costVO.accuralid,
           address: costVO.address,
+          remarks: costVO.remarks,
           actBillCurrAmt: costVO.actBillCurrAmt,
           actBillLcAmt: costVO.actBillLcAmt,
           approveBy: costVO.approveBy,
@@ -778,13 +523,13 @@ const UrCostInvoicegna = () => {
           costInvoiceNo: costVO.costInvoiceNo,
           costType: costVO.costType,
           createdBy: loginUserName,
-          creditDays: costVO.creditDays,
-          currency: costVO.currency,
+
+
           customer: costVO.customer,
-          dueDate: costVO.dueDate ? dayjs(costVO.dueDate) : dayjs(),
-          docDate: costVO.docDate ? dayjs(costVO.docDate) : dayjs(),
-          docId: costVO.docId,
-          exRate: costVO.exRate,
+
+
+
+
           finYear: finYear,
           gstInputLcAmt: costVO.gstInputLcAmt,
           gstType: costVO.gstType,
@@ -796,18 +541,17 @@ const UrCostInvoicegna = () => {
           otherInfo: costVO.otherInfo,
           payment: costVO.payment,
           product: costVO.product,
-          purVoucherDate: costVO.purVoucherDate ? dayjs(costVO.purVoucherDate) : dayjs(),
+
           purVoucherNo: costVO.purVoucherNo,
           remarks: costVO.remarks,
           roundOff: costVO.roundOff,
           shipperRefNo: costVO.shipperRefNo,
-          supplierBillNo: costVO.supplierBillNo,
-          supplierCode: costVO.supplierCode,
+
+
           creditDays: costVO.creditDays,
-          supplierPlace: costVO.supplierPlace,
-          supplierName: costVO.supplierName,
-          supplierPlace: costVO.supplierPlace,
-          supplierType: costVO.supplierType,
+
+
+
           totChargesBillCurrAmt: costVO.totChargesBillCurrAmt,
           totChargesLcAmt: costVO.totChargesLcAmt,
           utrRef: costVO.utrRef
@@ -847,7 +591,7 @@ const UrCostInvoicegna = () => {
           costVO.gstLines.map((row) => ({
             id: row.id,
             chargeCode: row.chargeCode,
-            chargeDesc: row.chargeName,
+            chargeLedger: row.chargeName,
             gChargeCode: row.govChargeCode,
             gstPercent: row.gstpercent,
             sac: row.sac,
@@ -920,7 +664,8 @@ const UrCostInvoicegna = () => {
       if (name === 'tdsWithHolding') {
         getAllSectionName(value);
       }
-    } else {
+    }
+     else {
       setFormData((prevFormData) => ({
         ...prevFormData,
         [name]: value.toUpperCase()
@@ -930,7 +675,7 @@ const UrCostInvoicegna = () => {
 
   const getPartyName = async (partType) => {
     try {
-      const response = await apiCalls('get', `/costInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=${partType}`);
+      const response = await apiCalls('get', `/UrCostInvoiceGna/getAllVendorFromPartyMaster?orgId=${orgId}&partyType=${partType}`);
       setPartyName(response.paramObjectsMap.partyMasterVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -1439,9 +1184,6 @@ const UrCostInvoicegna = () => {
     console.log('save clicked');
 
     const errors = {};
-    if (!formData.accuralid) {
-      errors.accuralid = 'Accural ID is required';
-    }
     // if (!formData.address) {
     //   errors.address = 'Address is required';
     // }
@@ -1454,9 +1196,9 @@ const UrCostInvoicegna = () => {
     // if (!formData.creditDays) {
     //   errors.creditDays = 'Credit Days is required';
     // }
-    if (!formData.currency) {
-      errors.currency = 'currency is required';
-    }
+    // if (!formData.currency) {
+    //   errors.currency = 'currency is required';
+    // }
     // if (!formData.dueDate) {
     //   errors.dueDate = 'Due Date is required';
     // }
@@ -1465,12 +1207,6 @@ const UrCostInvoicegna = () => {
     }
     if (!formData.gstType) {
       errors.gstType = 'TAX Type is required';
-    }
-    if (!formData.mode) {
-      errors.mode = 'Mode is required';
-    }
-    if (!formData.payment) {
-      errors.payment = 'Payment is required';
     }
     // if (!formData.product) {
     //   errors.product = 'Product is required';
@@ -1481,9 +1217,6 @@ const UrCostInvoicegna = () => {
     // if (!formData.purVoucherNo) {
     //   errors.purVoucherNo = 'Pur Voucher No is required';
     // }
-    if (!formData.shipperRefNo) {
-      errors.shipperRefNo = 'Shipper Ref No is required';
-    }
     if (!formData.supplierBillNo) {
       errors.supplierBillNo = 'Supplier Bill No is required';
     }
@@ -1504,9 +1237,6 @@ const UrCostInvoicegna = () => {
     // }
     if (!formData.supplierType) {
       errors.supplierType = 'Supplier Type is required';
-    }
-    if (!formData.utrRef) {
-      errors.utrRef = 'UTR Ref is required';
     }
 
     let CostInvoiceValid = true;
@@ -1559,25 +1289,16 @@ const UrCostInvoicegna = () => {
 
     if (Object.keys(errors).length === 0 && CostInvoiceValid) {
       console.log('try called');
-      const costVO = chargerCostInvoice.map((row) => ({
+      const chargesUrCostInvoiceGnaVo = chargerCostInvoice.map((row) => ({
         ...(editId && { id: row.id }),
-        chargeCode: row.chargeCode,
+        chargeAccount: row.chargeAccount,
         chargeLedger: row.chargeLedger,
-        chargeName: row.chargeName,
         currency: row.currency,
         exRate: row.exRate,
-        exempted: row.exempted,
-        govChargeCode: row.govChargeCode,
-        gst: row.gst,
-        gstPercent: row.gstPercent,
-        jobNo: row.jobNo,
-        ledger: row.ledger,
-        qty: row.qty,
+        gstpercent: row.gstpercent,
         rate: row.rate,
-        sac: row.sac,
-        taxable: row.taxable
       }));
-      const tdsVO = tdsCostInvoiceDTO.map((row) => ({
+      const tdsUrCostInvoiceGnaVo = tdsCostInvoiceDTO.map((row) => ({
         ...(editId && { id: row.id }),
         section: row.section,
         tdsWithHolding: row.tdsWithHolding,
@@ -1585,53 +1306,39 @@ const UrCostInvoicegna = () => {
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
-        accuralid: formData.accuralid,
         address: formData.address,
-        branch: branch,
-        branchCode: branchCode,
-        client: formData.client,
-        chargerCostInvoiceDTO: costVO,
-        // costInvoiceDate: dayjs(formData.costInvoiceDate).format('YYYY-MM-DD'),
-        // costInvoiceNo: formData.costInvoiceNo,
-        costType: formData.costType,
+        branch: formData.branch,
+        branchCode: formData.branchCode,
+        chargesUrCostInvoiceGnaDTO: chargesUrCostInvoiceGnaVo,
         createdBy: loginUserName,
         creditDays: formData.creditDays,
         currency: formData.currency,
-        customer: formData.customer,
-        dueDate: formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : dayjs(),
+        dueDate: formData.dueDate,
         exRate: formData.exRate,
-        finYear: finYear,
+        finYear: formData.finYear,
         gstType: formData.gstType,
-        mode: formData.mode,
-        jobOrderNo: formData.jobOrderNo,
         orgId: orgId,
         otherInfo: formData.otherInfo,
-        payment: formData.payment,
-        product: formData.product,
-        // purVoucherDate: dayjs(formData.purVoucherDate).format('YYYY-MM-DD'),
-        // purVoucherNo: formData.purVoucherNo,
         remarks: formData.remarks,
         shipperRefNo: formData.shipperRefNo,
+        supplierBillDate: formData.supplierBillDate,
         supplierBillNo: formData.supplierBillNo,
         supplierCode: formData.supplierCode,
-        creditDays: formData.creditDays,
-        supplierPlace: formData.supplierPlace,
+        supplierGstIn: formData.supplierGstIn,
+        supplierGstInCode: formData.supplierGstInCode,
         supplierName: formData.supplierName,
         supplierPlace: formData.supplierPlace,
         supplierType: formData.supplierType,
-        tdsCostInvoiceDTO: tdsVO,
-        utrRef: formData.utrRef
+        tdsUrCostInvoiceGnaDTO: tdsUrCostInvoiceGnaVo,
       };
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `/costInvoice/updateCreateCostInvoice`, saveFormData);
+        const response = await apiCalls('put', `/UrCostInvoiceGna/updateCreateUrCostInvoiceGna`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           showToast('success', editId ? 'Cost Invoice Updated Successfully' : 'Cost Invoice Created successfully');
-          getAllCostInvoiceByOrgId();
+          getAllUrCostInvoiceByOrgId();
           getPartyName(formData.supplierType);
-          // getStateName();
-          // getPlaceOfSupply();
           handleSaveClear();
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Cost Invoice Creation failed');
@@ -1660,61 +1367,6 @@ const UrCostInvoicegna = () => {
               <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
               {/* {formData.mode === 'SUBMIT' ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />} */}
             </div>
-
-            {editId && !showForm && (formData.mode === 'SUBMIT' || listViewData.mode === 'SUBMIT') && (
-              <>
-                {formData.approveStatus === 'Approved' && (
-                  <Stack direction="row" spacing={2}>
-                    <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
-                    <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
-                  </Stack>
-                )}
-                {formData.approveStatus === 'Rejected' && (
-                  <Stack direction="row" spacing={2}>
-                    <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
-                    <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
-                  </Stack>
-                )}
-                {/* {formData.mode === 'SUBMIT' && formData.approveStatus === null && ( */}
-                {listViewData.mode === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
-                  <div className="d-flex" style={{ marginRight: '30px' }}>
-                    <Button
-                      variant="outlined"
-                      startIcon={<CheckCircleIcon />}
-                      size="small"
-                      style={{
-                        borderColor: '#4CAF50',
-                        color: '#4CAF50',
-                        fontWeight: 'bold',
-                        textTransform: 'none',
-                        padding: '2px 8px',
-                        fontSize: '0.8rem',
-                        marginRight: '10px'
-                      }}
-                      onClick={handleOpenModalApprove}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      startIcon={<CancelIcon />}
-                      size="small"
-                      style={{
-                        borderColor: '#F44336',
-                        color: '#F44336',
-                        fontWeight: 'bold',
-                        textTransform: 'none',
-                        padding: '2px 8px',
-                        fontSize: '0.8rem'
-                      }}
-                      onClick={handleOpenModalReject}
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                )}
-              </>
-            )}
           </div>
           {!showForm && (
             <>
@@ -1749,32 +1401,6 @@ const UrCostInvoicegna = () => {
                     </LocalizationProvider>
                   </FormControl>
                 </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl
-                    fullWidth
-                    size="small"
-                    variant="outlined"
-                    error={!!fieldErrors.mode}
-                    disabled={formData.mode === 'SUBMIT' || !editId}
-                  >
-                    <InputLabel id="mode-label">Mode</InputLabel>
-                    <Select labelId="mode-label" label="Select Mode" name="mode" value={formData.mode} onChange={handleInputChange}>
-                      {editId && <MenuItem value="SUBMIT">SUBMIT</MenuItem>}
-                      <MenuItem value="EDIT">EDIT</MenuItem>
-                    </Select>
-                    {fieldErrors.mode && <FormHelperText style={{ color: 'red' }}>{fieldErrors.mode}</FormHelperText>}
-                  </FormControl>
-                </div>
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small" variant="outlined" error={!!fieldErrors.product}>
-                    <InputLabel id="product">Product</InputLabel>
-                    <Select labelId="product" label="Select product" name="product" value={formData.product} onChange={handleInputChange}>
-                      <MenuItem value="SO">SO</MenuItem>
-                      <MenuItem value="AO">AO</MenuItem>
-                    </Select>
-                    {fieldErrors.product && <FormHelperText style={{ color: 'red' }}>{fieldErrors.product}</FormHelperText>}
-                  </FormControl>
-                </div> */}
 
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
@@ -1810,37 +1436,6 @@ const UrCostInvoicegna = () => {
                   </FormControl>
                 </div>
 
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <TextField
-                      label="Cost Invoice No"
-                      size="small"
-                      name="costInvoiceNo"
-                      inputProps={{ maxLength: 30 }}
-                      value={formData.costInvoiceNo}
-                      onChange={handleInputChange}
-                      error={!!fieldErrors.costInvoiceNo}
-                      helperText={fieldErrors.costInvoiceNo}
-                    />
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        label="Cost Invoice Date"
-                        value={formData.costInvoiceDate}
-                        onChange={(date) => handleDateChange('costInvoiceDate', date)}
-                        slotProps={{
-                          textField: { size: 'small', clearable: true }
-                        }}
-                        format="DD-MM-YYYY"
-                      />
-                    </LocalizationProvider>
-                    {fieldErrors.costInvoiceDate && <p className="dateErrMsg">Cost Invoice Date is required</p>}
-                  </FormControl>
-                </div> */}
-
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel id="demo-simple-select-label">Supplier Type</InputLabel>
@@ -1850,7 +1445,6 @@ const UrCostInvoicegna = () => {
                       name="supplierType"
                       onChange={handleInputChange}
                       label="Supplier Type"
-                      disabled
                       error={!!fieldErrors.supplierType}
                       helperText={fieldErrors.supplierType}
                     >
@@ -1860,6 +1454,30 @@ const UrCostInvoicegna = () => {
                   </FormControl>
                 </div>
 
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <InputLabel id="demo-simple-select-label-party">Supplier Name</InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label-party"
+                      id="demo-simple-select-party"
+                      label="Supplier Name"
+                      required
+                      value={formData.supplierName || ''}
+                      onChange={handleSelectPartyChange}
+                      disabled={formData.mode === 'SUBMIT'}
+                      error={!!fieldErrors.supplierName}
+                      helperText={fieldErrors.supplierName}
+                    >
+                      {partyName &&
+                        partyName.map((par, index) => (
+                          <MenuItem key={index} value={par.partyName}>
+                            {par.partyName}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                    {fieldErrors.supplierName && <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierName}</FormHelperText>}
+                  </FormControl>
+                </div>
 
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
@@ -1907,60 +1525,8 @@ const UrCostInvoicegna = () => {
                     </LocalizationProvider>
                   </FormControl>
                 </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label-party">Supplier Name</InputLabel>
-                    <Select
-                      labelId="demo-simple-select-label-party"
-                      id="demo-simple-select-party"
-                      label="Supplier Name"
-                      required
-                      value={formData.supplierName || ''}
-                      onChange={handleSelectPartyChange}
-                      disabled={formData.mode === 'SUBMIT'}
-                      error={!!fieldErrors.supplierName}
-                      helperText={fieldErrors.supplierName}
-                    >
-                      {partyName &&
-                        partyName.map((par, index) => (
-                          <MenuItem key={index} value={par.partyName}>
-                            {par.partyName}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                    {fieldErrors.supplierName && <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierName}</FormHelperText>}
-                  </FormControl>
-                </div>
 
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label">Supplier Place</InputLabel>
-                    <Select
-                      labelId="supplierGSTCode"
-                      name="supplierPlace"
-                      // value={formData.supplierPlace}
-                      value={formData.supplierPlace || (stateName.length === 1 ? stateName[0].stateCode : '')}
-                      onChange={handleSelectStateChange}
-                      label="Supplier Place"
-                      disabled={formData.mode === 'SUBMIT'}
-                      error={!!fieldErrors.supplierPlace}
-                      helperText={fieldErrors.supplierPlace}
-                    >
-                      {stateName?.length > 0 ? (
-                        stateName.map((par, index) => (
-                          <MenuItem key={index} value={par.stateCode}>
-                            {par.stateCode}
-                          </MenuItem>
-                        ))
-                      ) : (
-                        <MenuItem disabled>No tax codes available</MenuItem>
-                      )}
-                    </Select>
-                    {fieldErrors.supplierPlace && (
-                      <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierPlace}</FormHelperText>
-                    )}
-                  </FormControl>
-                </div> */}
+
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small" error={!!fieldErrors.supplierPlace}>
                     <InputLabel id="supplierPlace-label">Supplier Place</InputLabel>
@@ -1977,7 +1543,8 @@ const UrCostInvoicegna = () => {
                     {fieldErrors.supplierPlace && <FormHelperText>{fieldErrors.supplierPlace}</FormHelperText>}
                   </FormControl>
                 </div>
-                <div className="col-md-3 mb-3">
+
+                {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField
                       label="Credit Days"
@@ -1991,65 +1558,7 @@ const UrCostInvoicegna = () => {
                       helperText={fieldErrors.creditDays}
                     />
                   </FormControl>
-                </div>
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label">Supplier Place</InputLabel>
-                    <Select
-                      labelId="supplierPlace"
-                      label="supplierPlace"
-                      value={formData.supplierPlace || (placeOfSupply.length === 1 ? placeOfSupply[0].supplierPlace : '')}
-                      name="supplierPlace"
-                      onChange={handleSelectPlaceChange}
-                      disabled={formData.mode === 'SUBMIT'}
-                      error={!!fieldErrors.supplierPlace}
-                      helperText={fieldErrors.supplierPlace}
-                    >
-                      {placeOfSupply &&
-                        placeOfSupply.map((par, index) => (
-                          <MenuItem key={index} value={par.placeOfSupply}>
-                            {par.placeOfSupply}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                    {fieldErrors.supplierPlace && <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierPlace}</FormHelperText>}
-                  </FormControl>
                 </div> */}
-
-
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <TextField
-                      label="Address"
-                      name="address"
-                      size="small"
-                      multiline
-                      disabled
-                      inputProps={{ maxLength: 30 }}
-                      value={formData.address}
-                      onChange={handleInputChange}
-                      error={!!fieldErrors.address}
-                      helperText={fieldErrors.address}
-                    />
-                  </FormControl>
-                </div>
-              
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <TextField
-                      label="ExRate"
-                      name="exRate"
-                      size="small"
-                      type="number"
-                      inputProps={{ maxLength: 30 }}
-                      value={formData.exRate}
-                      onChange={handleInputChange}
-                      disabled
-                      error={!!fieldErrors.exRate}
-                      helperText={fieldErrors.exRate}
-                    />
-                  </FormControl>
-                </div>
 
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
@@ -2084,6 +1593,100 @@ const UrCostInvoicegna = () => {
                     {fieldErrors.dueDate && <p className="dateErrMsg">Due Date is required</p>}
                   </FormControl>
                 </div>
+
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small" error={!!fieldErrors.supplierGstIn}>
+                    <InputLabel id="supplierGstIn-label">Supplier GSTIN</InputLabel>
+                    <Select
+                      labelId="supplierGstIn-label"
+                      name="supplierGstIn"
+                      value={formData.supplierGstIn || ""}
+                      onChange={handleInputChange}
+                      label="Supplier Place"
+                    >
+                      {/* <MenuItem value="INTER">MUMBAI</MenuItem>
+                      <MenuItem value="INTRA">INTRA</MenuItem> */}
+                    </Select>
+                    {fieldErrors.supplierGstIn && <FormHelperText>{fieldErrors.supplierGstIn}</FormHelperText>}
+                  </FormControl>
+                </div>
+
+                <div className="col-md-3 mb-3">
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
+                    <InputLabel id="demo-simple-select-label">{<span>Currency</span>}</InputLabel>
+                    <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      label="Currency"
+                      onChange={handleInputChange}
+                      name="currency"
+                      // value={formData.currency}
+                      value={formData.currency || (exRates.length === 1 ? exRates[0].currency : '')}
+                      disabled={formData.mode === 'SUBMIT'}
+                    >
+                      {/* {exRates &&
+                        exRates.map((item) => (
+                          <MenuItem key={item.id} value={item.currency}>
+                            {item.currency}
+                          </MenuItem>
+                        ))} */}
+                    </Select>
+                    {fieldErrors.currency && <FormHelperText style={{ color: 'red' }}>Currency is required</FormHelperText>}
+                  </FormControl>
+                </div>
+
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="ExRate"
+                      name="exRate"
+                      size="small"
+                      type="number"
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.exRate}
+                      onChange={handleInputChange}
+                      disabled
+                      error={!!fieldErrors.exRate}
+                      helperText={fieldErrors.exRate}
+                    />
+                  </FormControl>
+                </div>
+
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Address"
+                      name="address"
+                      size="small"
+                      multiline
+                      disabled
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      error={!!fieldErrors.address}
+                      helperText={fieldErrors.address}
+                    />
+                  </FormControl>
+                </div>
+
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Remarks"
+                      size="small"
+                      name="remarks"
+                      multiline
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.remarks}
+                      onChange={handleInputChange}
+                      disabled={formData.mode === 'SUBMIT'}
+                      error={!!fieldErrors.remarks}
+                      helperText={fieldErrors.remarks}
+                    />
+                  </FormControl>
+                </div>
+
+
 
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
@@ -2136,103 +1739,7 @@ const UrCostInvoicegna = () => {
                     {fieldErrors.gstType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.gstType}</FormHelperText>}
                   </FormControl>
                 </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label">Payment</InputLabel>
-                    <Select
-                      labelId="payment"
-                      value={formData.payment}
-                      onChange={handleInputChange}
-                      disabled={formData.mode === 'SUBMIT'}
-                      label="Payment"
-                      name="payment"
-                      error={!!fieldErrors.payment}
-                      helperText={fieldErrors.payment}
-                    >
-                      <MenuItem value="YETTOPAY">YET TO PAY</MenuItem>
-                      <MenuItem value="PAID">PAID</MenuItem>
-                      {/* <MenuItem value="PENDING">Pending</MenuItem> */}
-                    </Select>
-                    {fieldErrors.payment && <FormHelperText style={{ color: 'red' }}>{fieldErrors.payment}</FormHelperText>}
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <TextField
-                      label="Accrual ID"
-                      size="small"
-                      name="accuralid"
-                      multiline
-                      inputProps={{ maxLength: 30 }}
-                      value={formData.accuralid}
-                      onChange={handleInputChange}
-                      disabled={formData.mode === 'SUBMIT'}
-                      error={!!fieldErrors.accuralid}
-                      helperText={fieldErrors.accuralid}
-                    />
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <TextField
-                      label="UTR Reference"
-                      size="small"
-                      name="utrRef"
-                      multiline
-                      inputProps={{ maxLength: 30 }}
-                      value={formData.utrRef}
-                      onChange={handleInputChange}
-                      disabled={formData.mode === 'SUBMIT'}
-                      error={!!fieldErrors.utrRef}
-                      helperText={fieldErrors.utrRef}
-                    />
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <TextField
-                      label="Remarks"
-                      size="small"
-                      name="remarks"
-                      multiline
-                      inputProps={{ maxLength: 30 }}
-                      value={formData.remarks}
-                      onChange={handleInputChange}
-                      disabled={formData.mode === 'SUBMIT'}
-                      error={!!fieldErrors.remarks}
-                      helperText={fieldErrors.remarks}
-                    />
-                  </FormControl>
-                </div>
-                {/* <div className="col-md-5 mb-3">
-                  <div className="d-flex flex-row">
-                    <FormLabel className="me-3" style={{ marginTop: 10 }}>
-                      Cost Type
-                    </FormLabel>
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={formData.costType === 'Regular'}
-                          onChange={(e) => handleCostTypeChange('Regular')}
-                          name="Regular"
-                          color="primary"
-                        />
-                      }
-                      label="Regular"
-                    />
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={formData.costType === 'Accrual'}
-                          onChange={(e) => handleCostTypeChange('Accrual')}
-                          name="Accrual"
-                          color="primary"
-                        />
-                      }
-                      label="Accrual"
-                    />
-                  </div>
-                </div> */}
+
               </div>
               <div className="row mt-2">
                 <Box sx={{ width: '100%' }}>
@@ -2243,7 +1750,7 @@ const UrCostInvoicegna = () => {
                     indicatorColor="secondary"
                     aria-label="secondary tabs example"
                   >
-                    <Tab value={0} label="Charges" />
+                    <Tab value={0} label="Master/House Charges" />
                     <Tab value={1} label="TDS" />
                     <Tab value={2} label="Summary" />
                   </Tabs>
@@ -2276,21 +1783,15 @@ const UrCostInvoicegna = () => {
                                     <th className="table-header" style={{ width: '50px' }}>
                                       S.No
                                     </th>
-                                    <th className="table-header">Job No</th>
-                                    <th className="table-header">Charge Code</th>
-                                    <th className="table-header">G-Charge Code</th>
-                                    <th className="table-header">Charge Name</th>
-                                    <th className="table-header">Taxable</th>
-                                    <th className="table-header">Qty</th>
-                                    <th className="table-header">Rate</th>
+                                    <th className="table-header">Charge Ledger</th>
+                                    <th className="table-header">Charge Account</th>
                                     <th className="table-header">Currency</th>
                                     <th className="table-header">Ex Rate</th>
+                                    <th className="table-header">Rate</th>
+                                    <th className="table-header">TAX %</th>
                                     <th className="table-header">FC Amount</th>
                                     <th className="table-header">LC Amount</th>
                                     <th className="table-header">Bill Amount</th>
-                                    <th className="table-header">SAC</th>
-                                    <th className="table-header">TAX %</th>
-                                    <th className="table-header">TAX</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -2372,227 +1873,43 @@ const UrCostInvoicegna = () => {
 
                                           <td className="border px-2 py-2">
                                             <select
-                                              value={row.jobNo}
-                                              style={{ width: '180px' }}
-                                              onChange={(e) => {
-                                                const selectedJobNo = e.target.value;
-                                                const selectedCurrencyData = jobNoList.find((job) => job.jobNo === selectedJobNo);
-                                                const updatedJobNoData = [...chargerCostInvoice];
-                                                updatedJobNoData[index] = {
-                                                  ...updatedJobNoData[index],
-                                                  jobNo: selectedJobNo
-                                                };
-                                                setChargerCostInvoice(updatedJobNoData);
-                                              }}
-                                              className={costInvoiceErrors[index]?.jobNo ? 'error form-control' : 'form-control'}
-                                            >
-                                              <option value="">--Select--</option>
-                                              {jobNoList &&
-                                                jobNoList.map((job) => (
-                                                  <option key={job.id} value={job.jobNo}>
-                                                    {job.jobNo}
-                                                  </option>
-                                                ))}
-                                            </select>
-
-                                            {costInvoiceErrors[index]?.jobNo && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].jobNo}
-                                              </div>
-                                            )}
-                                          </td>
-
-                                          <td className="border px-2 py-2">
-                                            <select
-                                              value={row.chargeCode}
+                                              value={row.chargeLedger}
                                               style={{ width: '150px' }}
                                               onChange={(e) => handleChargeCodeChange(e, index)}
-                                              className={costInvoiceErrors[index]?.chargeCode ? 'error form-control' : 'form-control'}
+                                              className={costInvoiceErrors[index]?.chargeLedger ? 'error form-control' : 'form-control'}
                                             >
                                               <option value="">--Select--</option>
-                                              {chargeCode?.map((item, index) => (
+                                              {/* {chargeCode?.map((item, index) => (
                                                 <option key={index} value={item.chargeCode}>
                                                   {item.chargeCode}
                                                 </option>
-                                              ))}
+                                              ))} */}
                                             </select>
-                                            {costInvoiceErrors[index]?.chargeCode && (
+                                            {costInvoiceErrors[index]?.chargeLedger && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].chargeCode}
+                                                {costInvoiceErrors[index].chargeLedger}
                                               </div>
                                             )}
                                           </td>
                                           <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              value={row.govChargeCode}
-                                              disabled
-                                              style={{ width: '100px' }}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
-                                                if (numericRegex.test(value)) {
-                                                  setChargerCostInvoice((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, govChargeCode: value } : r))
-                                                  );
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      govChargeCode: !value ? 'GOV Charge Code is required' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                } else {
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      govChargeCode: 'Only numeric characters are allowed'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              }}
-                                              className={costInvoiceErrors[index]?.govChargeCode ? 'error form-control' : 'form-control'}
-                                            />
-                                            {costInvoiceErrors[index]?.govChargeCode && (
+                                            <select
+                                              value={row.chargeAccount}
+                                              style={{ width: '150px' }}
+                                              onChange={(e) => handleChargeCodeChange(e, index)}
+                                              className={costInvoiceErrors[index]?.chargeAccount ? 'error form-control' : 'form-control'}
+                                            >
+                                              <option value="">--Select--</option>
+                                              {/* {chargeCode?.map((item, index) => (
+                                                <option key={index} value={item.chargeCode}>
+                                                  {item.chargeCode}
+                                                </option>
+                                              ))} */}
+                                            </select>
+                                            {costInvoiceErrors[index]?.chargeAccount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].govChargeCode}
+                                                {costInvoiceErrors[index].chargeAccount}
                                               </div>
                                             )}
-                                          </td>
-
-                                          <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              value={row.chargeName}
-                                              disabled
-                                              style={{ width: '130px' }}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
-                                                if (numericRegex.test(value)) {
-                                                  setChargerCostInvoice((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, chargeName: value } : r))
-                                                  );
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      chargeName: !value ? 'chargeName is required' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                } else {
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      chargeName: 'Only numeric characters are allowed'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              }}
-                                              className={costInvoiceErrors[index]?.chargeName ? 'error form-control' : 'form-control'}
-                                            />
-                                            {costInvoiceErrors[index]?.chargeName && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].chargeName}
-                                              </div>
-                                            )}
-                                          </td>
-
-                                          <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              value={row.taxable}
-                                              disabled
-                                              style={{ width: '100px' }}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
-                                                if (numericRegex.test(value)) {
-                                                  setChargerCostInvoice((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, taxable: value } : r))
-                                                  );
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      taxable: !value ? 'taxable is required' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                } else {
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      taxable: 'Only numeric characters are allowed'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              }}
-                                              className={costInvoiceErrors[index]?.taxable ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                            />
-                                            {costInvoiceErrors[index]?.taxable && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].taxable}
-                                              </div>
-                                            )}
-                                          </td>
-                                          <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              value={row.qty}
-                                              style={{ width: '100px' }}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
-                                                if (numericRegex.test(value)) {
-                                                  handleRowUpdate(index, 'qty', value);
-                                                } else {
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      qty: 'Only numeric characters are allowed'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              }}
-                                              className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
-                                            />
-                                          </td>
-
-                                          <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              value={row.rate}
-                                              style={{ width: '100px' }}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
-                                                if (numericRegex.test(value)) {
-                                                  handleRowUpdate(index, 'rate', value);
-                                                } else {
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      rate: 'Only numeric characters are allowed'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              }}
-                                              className={costInvoiceErrors[index]?.rate ? 'error form-control' : 'form-control'}
-                                            />
                                           </td>
                                           <td className="border px-2 py-2">
                                             <select
@@ -2617,7 +1934,6 @@ const UrCostInvoicegna = () => {
                                             <input
                                               type="text"
                                               value={row.exRate}
-                                              disabled
                                               style={{ width: '100px' }}
                                               onChange={(e) => {
                                                 const value = e.target.value;
@@ -2648,6 +1964,72 @@ const UrCostInvoicegna = () => {
                                             {costInvoiceErrors[index]?.exRate && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                                 {costInvoiceErrors[index].exRate}
+                                              </div>
+                                            )}
+                                          </td>
+
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.rate}
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  handleRowUpdate(index, 'rate', value);
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      rate: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.rate ? 'error form-control' : 'form-control'}
+                                            />
+                                          </td>
+
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.gstPercent}
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  setChargerCostInvoice((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, gstPercent: value } : r))
+                                                  );
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      gstPercent: !value ? 'Tax% is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                } else {
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      gstPercent: 'Only numeric characters are allowed'
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={costInvoiceErrors[index]?.gstPercent ? 'error form-control' : 'form-control'}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            />
+                                            {costInvoiceErrors[index]?.gstPercent && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {costInvoiceErrors[index].gstPercent}
                                               </div>
                                             )}
                                           </td>
@@ -2776,105 +2158,6 @@ const UrCostInvoicegna = () => {
                                               </div>
                                             )}
                                           </td>
-                                          <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              value={row.sac}
-                                              disabled
-                                              style={{ width: '130px' }}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
-                                                if (numericRegex.test(value)) {
-                                                  setChargerCostInvoice((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, sac: value } : r))
-                                                  );
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      sac: !value ? 'sac is required' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                } else {
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      sac: 'Only numeric characters are allowed'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              }}
-                                              className={costInvoiceErrors[index]?.sac ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                            />
-                                            {costInvoiceErrors[index]?.sac && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].sac}
-                                              </div>
-                                            )}
-                                          </td>
-
-                                          <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              value={row.gstPercent ? `${parseInt(row.gstPercent)}%` : ''}
-                                              disabled
-                                              style={{ width: '100px' }}
-                                              className={costInvoiceErrors[index]?.gstPercent ? 'error form-control' : 'form-control'}
-                                            />
-                                            {costInvoiceErrors[index]?.gstPercent && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].gstPercent}
-                                              </div>
-                                            )}
-                                          </td>
-
-                                          <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              // value={row.gst ? row.gst.toFixed(2) : '0.00'}
-                                              value={row.gst ? row.gst : '0.00'}
-                                              disabled
-                                              style={{ width: '100px' }}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
-                                                if (numericRegex.test(value)) {
-                                                  setChargerCostInvoice((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, gst: value } : r))
-                                                  );
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      gst: !value ? 'TAX is required' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                } else {
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      gst: 'Only numeric characters are allowed'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              }}
-                                              className={costInvoiceErrors[index]?.gst ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                            />
-                                            {costInvoiceErrors[index]?.gst && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].gst}
-                                              </div>
-                                            )}
-                                          </td>
                                         </tr>
                                       ))}
                                     </>
@@ -2902,7 +2185,7 @@ const UrCostInvoicegna = () => {
                                         <tr key={idx}>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{idx + 1}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.chargeCode}</td>
-                                          <td style={{ width: '300px', textAlign: 'center' }}>{detail.chargeDesc}</td>
+                                          <td style={{ width: '300px', textAlign: 'center' }}>{detail.chargeLedger}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.gChargeCode}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.gstPercent}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.sac}</td>
@@ -2921,110 +2204,32 @@ const UrCostInvoicegna = () => {
                   )}
                   {value === 1 && (
                     <>
-                      {tdsCostInvoiceDTO.map((row, index) => (
-                        <div className="row mt-3">
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth size="small">
-                              <InputLabel id="demo-simple-select-label">TDS</InputLabel>
-                              <Select
-                                labelId="tds"
-                                name="tdsWithHolding"
-                                value={tdsCostInvoiceDTO[index]?.tdsWithHolding || ''}
-                                onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
-                                disabled={formData.mode === 'SUBMIT'}
-                                label="TDS"
-                                required
-                                error={!!tdsCostErrors[index]?.tdsWithHolding}
-                              >
-                                <MenuItem value="NO">NO</MenuItem>
-                                <MenuItem value="NORMAL">NORMAL</MenuItem>
-                                <MenuItem value="SPECIAL">SPECIAL</MenuItem>
-                              </Select>
-                              <FormHelperText error>{tdsCostErrors[index]?.tdsWithHolding}</FormHelperText>
-                            </FormControl>
-                          </div>
-                          {/* <div className="col-md-3 mb-3">
-                            <FormControl fullWidth size="small">
-                              <InputLabel id="demo-simple-select-label">Section</InputLabel>
-                              <Select
-                                labelId="section"
-                                name="section"
-                                value={tdsCostInvoiceDTO[index]?.section || ''}
-                                onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
-                                disabled={formData.mode === 'SUBMIT'}
-                                label="Section"
-                                required
-                                error={!!tdsCostErrors[index]?.section}
-                              >
-                                {sectionOptions.map((section, id) => (
-                                  <MenuItem key={id} value={section.sectionName}>
-                                    {section.sectionName}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                              <FormHelperText error>{tdsCostErrors[index]?.section}</FormHelperText>
-                            </FormControl>
-                          </div> */}
-                          {/* <div className="col-md-3 mb-3">
-                            <FormControl fullWidth size="small">
-                              <TextField
-                                label="Section"
-                                size="small"
-                                name="section"
-                                inputProps={{ maxLength: 30 }}
-                                value={tdsCostInvoiceDTO[index]?.section || ''}
-                                onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
-                                disabled={formData.mode === 'SUBMIT'}
-                                error={!!tdsCostErrors[index]?.section}
-                                helperText={tdsCostErrors[index]?.section}
-                              />
-                            </FormControl>
-                          </div> */}
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth size="small">
-                              <TextField
-                                label="TDS%"
-                                size="small"
-                                name="tdsWithHoldingPer"
-                                type="number"
-                                disabled
-                                inputProps={{ maxLength: 30 }}
-                                value={tdsCostInvoiceDTO[index]?.tdsWithHoldingPer || ''}
-                                onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
-                                error={!!tdsCostErrors[index]?.tdsWithHoldingPer}
-                                helperText={tdsCostErrors[index]?.tdsWithHoldingPer || ''}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth size="small">
-                              <TextField
-                                label="Total TDS Amount"
-                                size="small"
-                                name="totTdsWhAmnt"
-                                type="number"
-                                disabled
-                                inputProps={{ maxLength: 30 }}
-                                value={tdsCostInvoiceDTO[index]?.totTdsWhAmnt || ''}
-                                onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
-                                error={!!tdsCostErrors[index]?.totTdsWhAmnt}
-                                helperText={tdsCostErrors[index]?.totTdsWhAmnt}
-                              />
-                            </FormControl>
-                          </div>
-                        </div>
-                      ))}
-                    </>
-                  )}
-                  {value === 2 && (
-                    <>
                       <div className="row mt-2">
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth size="small">
+                            <InputLabel id="demo-simple-select-label">TDS/WH</InputLabel>
+                            <Select
+                              labelId="TDS/WH"
+                              name="gstType"
+                              value={formData.tdsWh}
+                              onChange={handleInputChange}
+                              disabled={formData.mode === 'SUBMIT'}
+                              label="TAX Type"
+                              error={!!fieldErrors.tdsWh}
+                              helperText={fieldErrors.tdsWh}
+                            >
+                              {/* <MenuItem value="INTER">INTER</MenuItem>
+                              <MenuItem value="INTRA">INTRA</MenuItem> */}
+                            </Select>
+                            {fieldErrors.tdsWh && <FormHelperText style={{ color: 'red' }}>{fieldErrors.tdsWh}</FormHelperText>}
+                          </FormControl>
+                        </div>
                         <div className="col-md-3 mb-3">
                           <FormControl fullWidth variant="filled">
                             <TextField
-                              label="Tot. Charge Amt.(Bill Curr)"
-                              name="totChargesBillCurrAmt"
-                              value={formData.totChargesBillCurrAmt}
+                              label="TDS/WH%"
+                              name="actBillCurrAmt"
+                              value={formData.actBillCurrAmt}
                               size="small"
                               placeholder="0.00"
                               disabled
@@ -3033,11 +2238,59 @@ const UrCostInvoicegna = () => {
                           </FormControl>
                         </div>
                         <div className="col-md-3 mb-3">
+                          <FormControl fullWidth size="small">
+                            <InputLabel id="demo-simple-select-label">Section</InputLabel>
+                            <Select
+                              labelId="Section"
+                              name="section"
+                              value={formData.section}
+                              onChange={handleInputChange}
+                              // disabled={formData.mode === 'SUBMIT'}
+                              label="TAX Type"
+                              error={!!fieldErrors.section}
+                              helperText={fieldErrors.section}
+                            >
+                              {/* <MenuItem value="INTER">INTER</MenuItem>
+                              <MenuItem value="INTRA">INTRA</MenuItem> */}
+                            </Select>
+                            {fieldErrors.section && <FormHelperText style={{ color: 'red' }}>{fieldErrors.section}</FormHelperText>}
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
                           <FormControl fullWidth variant="filled">
                             <TextField
-                              label="Act Bill Amt.(Bill Curr)"
-                              name="actBillCurrAmt"
-                              value={formData.actBillCurrAmt}
+                              label="Total TDS/WH Amt"
+                              name="totalTdsWhAmt"
+                              value={formData.totalTdsWhAmt}
+                              size="small"
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              label="FC TDS Ammount"
+                              name="FcTdsAmount"
+                              value={formData.FcTdsAmount}
+                              size="small"
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                      </div>
+                      {/* ))} */}
+                    </>
+                  )}
+                  {value === 2 && (
+                    <>
+                      <div className="row mt-2">
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              label="Tot. Charge Amt.(LC)"
+                              name="totChargesLcAmt"
+                              value={formData.totChargesLcAmt}
                               size="small"
                               placeholder="0.00"
                               disabled
@@ -3074,48 +2327,9 @@ const UrCostInvoicegna = () => {
                         <div className="col-md-3 mb-3">
                           <FormControl fullWidth variant="filled">
                             <TextField
-                              label="Net Amt.(LC)"
-                              name="netBillLcAmt"
-                              value={formData.netBillLcAmt}
-                              size="small"
-                              placeholder="0.00"
-                              disabled
-                              inputProps={{ maxLength: 30 }}
-                            />
-                          </FormControl>
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <FormControl fullWidth variant="filled">
-                            <TextField
-                              label="TAX Input Amt(LC)"
-                              name="gstInputLcAmt"
-                              value={formData.gstInputLcAmt}
-                              size="small"
-                              placeholder="0.00"
-                              disabled
-                              inputProps={{ maxLength: 30 }}
-                            />
-                          </FormControl>
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <FormControl fullWidth variant="filled">
-                            <TextField
                               label="Round Off"
                               name="roundOff"
                               value={formData.roundOff}
-                              size="small"
-                              placeholder="0.00"
-                              disabled
-                              inputProps={{ maxLength: 30 }}
-                            />
-                          </FormControl>
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <FormControl fullWidth variant="filled">
-                            <TextField
-                              label="Tot. Charge Amt.(LC)"
-                              name="totChargesLcAmt"
-                              value={formData.totChargesLcAmt}
                               size="small"
                               placeholder="0.00"
                               disabled
@@ -3137,7 +2351,7 @@ const UrCostInvoicegna = () => {
               data={data && data}
               columns={listViewColumns}
               blockEdit={true}
-              toEdit={getAllCostInvoiceById}
+              toEdit={getAllUrCostInvoiceById}
               isPdf={true}
               GeneratePdf={GeneratePdf}
             />
@@ -3145,14 +2359,6 @@ const UrCostInvoicegna = () => {
           {downloadPdf && <GeneratePdfTemp row={pdfData} />}
         </div>
       </div>
-      <ConfirmationModal
-        open={modalOpen}
-        title="Cost Invoice Approval"
-        message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
-        onConfirm={handleConfirmAction}
-        // onCancel={handleCloseModal}
-        onCancel={() => setModalOpen(false)}
-      />
     </>
   );
 };
