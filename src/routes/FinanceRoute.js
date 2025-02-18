@@ -80,6 +80,7 @@ const ARAPAdjustment = Loadable(lazy(() => import('views/Finance/APAP-Adjustment
 
 const ARadjustmentOffset = Loadable(lazy(() => import('views/Finance/AR-adjustmentOffset')));
 const PartMaster = Loadable(lazy(() => import('views/Finance/PartyMaster')));
+const CreatePartyMaster = Loadable(lazy(() => import('views/Finance/CreatePartyMaster')));
 
 const TrailBalance = Loadable(lazy(() => import('views/Finance/FinalReport/TrailBalance')));
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
@@ -113,6 +114,10 @@ const FinanceRoute = {
     {
       path: '/Finance/SetTaxRate',
       element: <SetTaxRate />
+    },
+    {
+      path: '/finance/createPartyMaster',
+      element: <CreatePartyMaster />
     },
     {
       path: '/finance/partyMaster',

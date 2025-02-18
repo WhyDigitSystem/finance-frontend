@@ -57,6 +57,12 @@ const finance = {
           url: '/finance/costcenter/CostCentre'
         },
         {
+          id: 'createPartyMaster',
+          title: 'Create Party',
+          type: 'item',
+          url: '/finance/createPartyMaster'
+        },
+        {
           id: 'partyMaster',
           title: 'Party',
           type: 'item',
