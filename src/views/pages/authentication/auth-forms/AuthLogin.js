@@ -1,4 +1,5 @@
 import Axios from 'axios';
+import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
@@ -48,6 +49,7 @@ const FirebaseLogin = ({ ...others }) => {
   const [checked, setChecked] = useState(false);
   const dispatch = useDispatch();
   const [showPassword, setShowPassword] = useState(false);
+  const [orgId, setOrgId] = useState('');
   const handleClickShowPassword = () => {
     setShowPassword(!showPassword);
   };
@@ -82,6 +84,22 @@ const FirebaseLogin = ({ ...others }) => {
     }
   };
 
+  // const getCompanyDetails = async () => {
+  //   try {
+  //     const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+
+  //     if (response.status === true) {
+  //       const particularCompany = response.paramObjectsMap.companyVO[0];
+  //       console.log('particularCompany', particularCompany);
+  //       localStorage.setItem('companyName', particularCompany.companyName);
+  //     } else {
+  //       console.error('API Error:', response);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
+
   const loginAPICall = async (values) => {
     // Prepare the user registration data
 
@@ -98,7 +116,6 @@ const FirebaseLogin = ({ ...others }) => {
 
       if (response.data.status) {
         // Handle authentication failure, display an error message, etc.
-
         console.log('Test1', userData);
         dispatch(setUser({ orgId: response.data.paramObjectsMap.userVO.orgId }));
 
@@ -118,7 +135,7 @@ const FirebaseLogin = ({ ...others }) => {
           role: row.role
         }));
         localStorage.setItem('ROLES', JSON.stringify(roles));
-
+        setOrgId(response.data.paramObjectsMap.userVO.orgId);
         // SET SCREENS
         const roleVO = response.data.paramObjectsMap.userVO.roleVO;
         let allScreensVO = [];
@@ -133,7 +150,19 @@ const FirebaseLogin = ({ ...others }) => {
         localStorage.setItem('screens', JSON.stringify(allScreensVO));
         resetForm();
         // window.location.href = "/login";
+        try {
+          const response = await apiCalls('get', `commonmaster/company/${orgId}`);
 
+          if (response.status === true) {
+            const particularCompany = response.paramObjectsMap.companyVO[0];
+            console.log('particularCompany', particularCompany);
+            localStorage.setItem('companyName', particularCompany.companyName);
+          } else {
+            console.error('commonmaster/company API Error:', response);
+          }
+        } catch (error) {
+          console.error('Error fetching data in Company Name:', error);
+        }
         navigate('/dashboard/default');
         if (checked) {
           localStorage.setItem('rememberedCredentials', JSON.stringify({ email: values.email, password: values.password }));

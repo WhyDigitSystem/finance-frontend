@@ -63,7 +63,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
       {/* <Box sx={{ flexGrow: 1 }} /> */}
 
       {/* notification & profile */}
-      <div className="mt-2" style={{ display: 'flex', alignItems: 'center' }}>
+      <div className="mt-2" style={{ display: 'flex', alignItems: 'center', justifyContent: 'end', width: 400 }}>
         <span
           style={{
             height: '11px',
@@ -75,7 +75,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
             marginBottom: '8px'
           }}
         ></span>
-        <h6>E - Books</h6>
+        <h6>{localStorage.getItem('companyName')} (E-Books)</h6>
       </div>
       <NotificationSection />
       <GlobalSection />
