@@ -25,7 +25,7 @@ export const DocumentTypeMappingMaster = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
-  const [finYrId, setFinYrId] = useState(null);
+  const [finYearId, setfinYearId] = useState(null);
   const [branchCodeId, setBranchCodeId] = useState(null);
   const [branchNameGrid, setBranchNameGrid] = useState(null);
   const [finYearGrid, setFinYearGrid] = useState(null);
@@ -34,13 +34,13 @@ export const DocumentTypeMappingMaster = () => {
 
   const [formData, setFormData] = useState({
     branchName: '',
-    finYr: ''
+    finYear: ''
   });
   const [value, setValue] = useState(0);
 
   const [fieldErrors, setFieldErrors] = useState({
     branchName: '',
-    finYr: ''
+    finYear: ''
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
@@ -115,7 +115,7 @@ export const DocumentTypeMappingMaster = () => {
     try {
       const response = await apiCalls(
         'get',
-        `/documentType/getPendingDocumentTypeMapping?branch=${branchNameGrid}&branchCode=${branchCodeId}&finYear=${finYearGrid}&finYearIdentifier=${finYrId}&orgId=${orgId}`
+        `/documentType/getPendingDocumentTypeMapping?branch=${branchNameGrid}&branchCode=${branchCodeId}&finYear=${finYearGrid}&finYearIdentifier=${finYearId}&orgId=${orgId}`
       );
 
       console.log('API Response:', response);
@@ -146,7 +146,7 @@ export const DocumentTypeMappingMaster = () => {
 
         setFormData({
           branchName: particularUser.branch,
-          finYr: particularUser.finYear,
+          finYear: particularUser.finYear,
           active: particularUser.active === 'Active' ? true : false
         });
         setFillGridData(
@@ -179,7 +179,7 @@ export const DocumentTypeMappingMaster = () => {
       if (name === 'branchName') {
         const selectedBranch = branchList.find((branch) => branch.branch === value);
         if (selectedBranch) {
-          console.log('Selected branchId:', selectedBranch.branchCode); // Log the finYrId value
+          console.log('Selected branchId:', selectedBranch.branchCode); 
           setBranchNameGrid(selectedBranch.branch);
           setBranchCodeId(selectedBranch.branchCode);
           setFormData((prevData) => ({
@@ -188,21 +188,21 @@ export const DocumentTypeMappingMaster = () => {
             // branchCode: selectedBranch.branchCode
           }));
         }
-      } else if (name === 'finYr') {
-        const selectedFinYr = finYearList.find((fin) => fin.finYear === value);
-        if (selectedFinYr) {
-          console.log('Selected FinYrId:', selectedFinYr.finYearIdentifier); // Log the finYrId value
-          setFinYearGrid(selectedFinYr.finYear);
-          setFinYrId(selectedFinYr.finYearIdentifier);
+      } else if (name === 'finYear') {
+        const selectedfinYear = finYearList.find((fin) => fin.finYear === value);
+        if (selectedfinYear) {
+          console.log('Selected finYearId:', selectedfinYear.finYearIdentifier); 
+          setFinYearGrid(selectedfinYear.finYear);
+          setfinYearId(selectedfinYear.finYearIdentifier);
           setFormData((prevData) => ({
             ...prevData,
-            finYr: selectedFinYr.finYear
-            // finYrId: selectedFinYr.finYearIdentifier
+            finYear: selectedfinYear.finYear
+            // finYearId: selectedfinYear.finYearIdentifier
           }));
           // getAllFillGrid();
         }
       }
-      const formattedValue = name === 'finYr' ? value : value.toUpperCase();
+      const formattedValue = name === 'finYear' ? value : value.toUpperCase();
 
       setFormData((prevData) => ({ ...prevData, [name]: formattedValue }));
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
@@ -212,7 +212,7 @@ export const DocumentTypeMappingMaster = () => {
   const handleClear = () => {
     setFormData({
       branchName: '',
-      finYr: '',
+      finYear: '',
       active: true
     });
     setFillGridData([]);
@@ -232,8 +232,8 @@ export const DocumentTypeMappingMaster = () => {
     if (!formData.branchName) {
       errors.branchName = 'Branch is required';
     }
-    if (!formData.finYr) {
-      errors.finYr = 'Fin Year is required';
+    if (!formData.finYear) {
+      errors.finYear = 'Fin Year is required';
     }
 
     setFieldErrors(errors);
@@ -257,8 +257,8 @@ export const DocumentTypeMappingMaster = () => {
         ...(editId && { id: editId }),
         branch: formData.branchName,
         branchCode: branchCodeId,
-        finYear: formData.finYr,
-        finYearIdentifier: finYrId,
+        finYear: formData.finYear,
+        finYearIdentifier: finYearId,
         documentTypeMappingDetailsDTO: mappingVo,
         // active: formData.active,
         orgId: orgId,
@@ -337,14 +337,14 @@ export const DocumentTypeMappingMaster = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.finYr}>
-                  <InputLabel id="finYr-label">Fin Year</InputLabel>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.finYear}>
+                  <InputLabel id="finYear-label">Fin Year</InputLabel>
                   <Select
-                    labelId="finYr-label"
-                    label="finYr"
-                    value={formData.finYr}
+                    labelId="finYear-label"
+                    label="finYear"
+                    value={formData.finYear}
                     onChange={handleInputChange}
-                    name="finYr"
+                    name="finYear"
                     disabled={isEditMode}
                   >
                     {finYearList?.map((row) => (
@@ -353,7 +353,7 @@ export const DocumentTypeMappingMaster = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.finYr && <FormHelperText>{fieldErrors.finYr}</FormHelperText>}
+                  {fieldErrors.finYear && <FormHelperText>{fieldErrors.finYear}</FormHelperText>}
                 </FormControl>
               </div>
             </div>

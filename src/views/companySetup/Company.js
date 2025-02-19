@@ -232,7 +232,8 @@ const Company = () => {
           state: particularCompany.state,
           city: particularCompany.city,
           pincode: particularCompany.zip,
-          panNo: particularCompany.panNo,
+          panNo: particularCompany.panno,
+          active: particularCompany.active === 'Active' ? true : false,
           // gst: particularCompany.gst,
           website: particularCompany.webSite
         });
@@ -333,7 +334,7 @@ const Company = () => {
         state: formData.state,
         city: formData.city,
         zip: formData.pincode,
-        panNo: formData.panNo,
+        panno: formData.panNo,
         webSite: formData.website,
         active: formData.active,
         updatedBy: loginUserName

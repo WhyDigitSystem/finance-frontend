@@ -380,7 +380,7 @@ const TdsMaster = () => {
                           </th>
                           <th className="px-2 py-2 text-white text-center">From Date</th>
                           <th className="px-2 py-2 text-white text-center">To Date</th>
-                          <th className="px-2 py-2 text-white text-center">TCS %</th>
+                          <th className="px-2 py-2 text-white text-center">TDS %</th>
                           <th className="px-2 py-2 text-white text-center">Sur %</th>
                           <th className="px-2 py-2 text-white text-center">EDS %</th>
                         </tr>

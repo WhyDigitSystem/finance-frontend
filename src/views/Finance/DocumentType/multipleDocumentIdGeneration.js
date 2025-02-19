@@ -435,7 +435,7 @@ const MultipleDocumentIdGeneration = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getAllMultipleDocumentIdById} />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={false} toEdit={getAllMultipleDocumentIdById}  />
           </div>
         ) : (
           <>

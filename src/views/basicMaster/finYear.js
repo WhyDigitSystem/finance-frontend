@@ -104,10 +104,16 @@ const FinYear = () => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
     const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
-    const numericRegex = /^[0-9]*$/;
+    const numericRegex = /^[0-9- ]*$/;
 
     if (name === 'finYearId' && !numericRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Only Numerics Allowed' });
+    } else if (name === 'finYearId' && value.length > 4) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Exceeded Max Length' });
+    } else if (name === 'finYearIdentifier' && !numericRegex.test(value)) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Only Numerics Allowed' });
+    } else if (name === 'finYearIdentifier' && value.length > 4) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Exceeded Max Length' });
     } else {
       setFormData({
         ...formData,
@@ -282,7 +288,7 @@ const FinYear = () => {
                     onChange={(date) => handleDateChange('finYear', date)}
                     slotProps={{
                       textField: { size: 'small', clearable: true,
-                        error: fieldErrors.finYear ? 'Fin Year is required' : '', helperText: fieldErrors.finYear ? 'Fin Year is required' : '' }
+                        error: fieldErrors.finYear, helperText: fieldErrors.finYear}
                     }}
                     format="YYYY"
                   />
@@ -301,7 +307,7 @@ const FinYear = () => {
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 30 }}
                   error={fieldErrors.finYearId}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYearId ? 'Fin Year Id is required' : ''}</span>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYearId}</span>}
                 />
               </FormControl>
             </div>
@@ -317,7 +323,7 @@ const FinYear = () => {
                   onChange={handleInputChange}
                   inputProps={{ maxLength: 30 }}
                   error={fieldErrors.finYearIdentifier}
-                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYearIdentifier ? 'Fin Year Identifier is required' : ''}</span>}
+                  helperText={<span style={{ color: 'red' }}>{fieldErrors.finYearIdentifier}</span>}
                 />
               </FormControl>
             </div>
@@ -330,7 +336,7 @@ const FinYear = () => {
                     onChange={(date) => handleDateChange('startDate', date)}
                     slotProps={{
                       textField: { size: 'small', clearable: true,
-                        error: fieldErrors.startDate ? 'Start Date is required' : '', helperText: fieldErrors.startDate ? 'Start Date is required' : '' }
+                        error: fieldErrors.startDate, helperText: fieldErrors.startDate }
                     }}
                     format="DD-MM-YYYY"
                   />
@@ -346,7 +352,7 @@ const FinYear = () => {
                     onChange={(date) => handleDateChange('endDate', date)}
                     slotProps={{
                       textField: { size: 'small', clearable: true,
-                        error: fieldErrors.endDate ? 'End Date is required' : '', helperText: fieldErrors.endDate ? 'End Date is required' : '' 
+                        error: fieldErrors.endDate, helperText: fieldErrors.endDate 
                        }
                     }}
                     format="DD-MM-YYYY"

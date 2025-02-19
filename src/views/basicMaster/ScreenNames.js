@@ -31,10 +31,10 @@ export const ScreenNames = () => {
   const [listView, setListView] = useState(false);
   const [editMode, setEditMode] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'screenCode', header: 'Code', size: 140 },
+    { accessorKey: 'screenCode', header: 'Screen Code', size: 140 },
     {
       accessorKey: 'screenName',
-      header: 'Screens',
+      header: 'Screen Name',
       size: 140
     },
     { accessorKey: 'active', header: 'Active', size: 140 }
@@ -79,15 +79,17 @@ export const ScreenNames = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
+    const codeRegex = /^[a-zA-Z0-9]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
 
     if (name === 'screenCode' && !codeRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Only AlphabetNumerics allowed' });
     } else if (name === 'screenCode' && value.length > 10) {
       setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 10' });
     } else if (name === 'screenName' && !nameRegex.test(value)) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Invalid Format' });
+      setFieldErrors({ ...fieldErrors, [name]: 'Only Alphabets allowed' });
+    } else if (name === 'screenName' && value.length > 30) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 30' });
     } else {
       setFormData({ ...formData, [name]: value.toUpperCase() });
       setFieldErrors({ ...fieldErrors, [name]: '' });

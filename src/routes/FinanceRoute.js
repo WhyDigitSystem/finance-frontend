@@ -3,15 +3,15 @@ import { lazy } from 'react';
 // project imports
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
-import Customer from 'views/Finance/Customer';
-import DocumentTypeMaster from 'views/Finance/DocumentType/documentType';
-import DocumentTypeMappingMaster from 'views/Finance/DocumentType/documentTypeMapping';
-import MultipleDocumentIdGeneration from 'views/Finance/DocumentType/multipleDocumentIdGeneration';
-import ReconcileCash from 'views/Finance/Reconcile/ReconcileCash';
-import ReconcileCorp from 'views/Finance/Reconcile/ReconcileCorp';
-import Vender from 'views/Finance/Vender';
-import UrCostInvoicegna from 'views/Finance/costInvoice/UrCostInvoicegna';
-import RCostInvoicegna from 'views/Finance/costInvoice/RCostInvoicegna';
+const Customer = Loadable(lazy(() => import('views/Finance/Customer')));
+const DocumentTypeMaster = Loadable(lazy(() => import('views/Finance/DocumentType/documentType')));
+const DocumentTypeMappingMaster = Loadable(lazy(() => import('views/Finance/DocumentType/documentTypeMapping')));
+const MultipleDocumentIdGeneration = Loadable(lazy(() => import( 'views/Finance/DocumentType/multipleDocumentIdGeneration')));
+const ReconcileCash = Loadable(lazy(() => import('views/Finance/Reconcile/ReconcileCash')));
+const ReconcileCorp = Loadable(lazy(() => import('views/Finance/Reconcile/ReconcileCorp')));
+const Vender = Loadable(lazy(() => import('views/Finance/Vender')));
+const UrCostInvoicegna = Loadable(lazy(() => import('views/Finance/costInvoice/UrCostInvoicegna')));
+const RCostInvoicegna = Loadable(lazy(() => import('views/Finance/costInvoice/RCostInvoicegna')));
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
 // login option 3 routing

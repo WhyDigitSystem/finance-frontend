@@ -49,8 +49,8 @@ export const DocumentTypeMaster = () => {
   });
   const [listView, setListView] = useState(false);
   const listViewColumns = [
-    { accessorKey: 'screenCode', header: 'screenCode', size: 140 },
-    { accessorKey: 'screenName', header: 'Screen', size: 140 }
+    { accessorKey: 'screenCode', header: 'Screen Code', size: 140 },
+    { accessorKey: 'screenName', header: 'Screen Name', size: 140 }
   ];
   const [listViewData, setListViewData] = useState([]);
   const [screenList, setScreenList] = useState([]);
@@ -127,65 +127,31 @@ export const DocumentTypeMaster = () => {
       console.error('Error fetching data:', error);
     }
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-
-  //   const nameRegex = /^[A-Za-z ]*$/;
-  //   const alphaNumericRegex = /^[A-Za-z0-9]*$/;
-  //   const numericRegex = /^[0-9]*$/;
-
-  //   let errorMessage = '';
-
-  //   switch (name) {
-  //     case 'docCode':
-  //       if (!alphaNumericRegex.test(value)) {
-  //         errorMessage = 'Only numeric characters are allowed';
-  //       } else if (value.length > 10) {
-  //         errorMessage = 'Invalid Format';
-  //       }
-  //       break;
-  //   }
-
-  //   if (errorMessage) {
-  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
-  //   } else {
-  //     if (name === 'screenCode') {
-  //       const selectedScreen = screenList.find((scr) => scr.screenCode === value);
-  //       if (selectedScreen) {
-  //         setFormData((prevData) => ({
-  //           ...prevData,
-  //           screenName: selectedScreen.screenName,
-  //           screenCode: selectedScreen.screenCode
-  //         }));
-  //       }
-  //     }
-
-  //     setFormData((prevData) => ({ ...prevData, [name]: value.toUpperCase() }));
-
-  //     setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
-  //   }
-  // };
-
   const handleInputChange = (e) => {
     const { name, value, type, selectionStart, selectionEnd } = e.target;
 
     const nameRegex = /^[A-Za-z ]*$/;
-    const alphaNumericRegex = /^[A-Za-z0-9]*$/;
+    const alphaNumericRegex = /^[A-Za-z0-9 ]*$/;
     const numericRegex = /^[0-9]*$/;
 
     let errorMessage = '';
 
     switch (name) {
       case 'docCode':
-        if (!alphaNumericRegex.test(value)) {
-          errorMessage = 'Only alphanumeric characters are allowed';
-        } else if (value.length > 10) {
-          errorMessage = 'Invalid Format';
+        // if (!alphaNumericRegex.test(value)) {
+        //   errorMessage = 'Only Alphanumerics allowed';
+        // } else
+         if (value.length > 10) {
+          errorMessage = 'Exceeded Max Length';
         }
         break;
-
-      // Add other cases here if needed
+      case 'desc':
+        if (!alphaNumericRegex.test(value)) {
+          errorMessage = 'Only Alphanumerics allowed';
+        } else if (value.length > 30) {
+          errorMessage = 'Exceeded Max Length';
+        }
+        break;
     }
 
     if (errorMessage) {
@@ -310,16 +276,6 @@ export const DocumentTypeMaster = () => {
 
   const handleView = () => {
     setListView(!listView);
-  };
-
-  const handleClose = () => {
-    setFormData({
-      screenCode: '',
-      screenName: '',
-      docCode: '',
-      desc: '',
-      active: true
-    });
   };
 
   return (

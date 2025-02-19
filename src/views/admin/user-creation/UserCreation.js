@@ -624,7 +624,6 @@ const UserCreation = () => {
                     {fieldErrors.employeeCode && <FormHelperText>{fieldErrors.employeeCode}</FormHelperText>}
                   </FormControl>
                 </div>
-
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="outlined-textarea-zip"
