@@ -119,7 +119,7 @@ export const Country = () => {
     if (!formData.countryName) {
       errors.countryName = 'Country is required';
     } else if (formData.countryName.length < 4) {
-      errors.countryCode = 'Min Length is 4';
+      errors.countryName = 'Min Length is 4';
     }
 
     if (Object.keys(errors).length === 0) {
