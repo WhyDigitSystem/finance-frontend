@@ -800,6 +800,10 @@ export const Vender = () => {
         section: row.section
       }));
 
+      const vendorCurrencyMappingVO = partyCurrencyMapping.map((row) => ({
+        transCurrency: row.transCurrency
+      }));
+
       const saveData = {
         ...(editId && { id: editId }),
         vendorName: formData.vendorName,
@@ -819,7 +823,8 @@ export const Vender = () => {
         orgId: orgId,
         vendorAddressDTO: vendorAddressVO,
         vendorStateDTO: vendorStateVO,
-        specialTdsDTO: specialTdsVO
+        specialTdsDTO: specialTdsVO,
+        vendorCurrencyMappingDTO: vendorCurrencyMappingVO
       };
 
       console.log('DATA TO SAVE', saveData);

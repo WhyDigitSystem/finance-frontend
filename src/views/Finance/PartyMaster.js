@@ -314,7 +314,15 @@ export const PartyMaster = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setPartyTypeData(response.paramObjectsMap.partyTypeVO);
+        const activePartType = response.paramObjectsMap.partyTypeVO
+          .filter((row) => row.active === 'Active')
+          .map(({ id, partyType, partyTypeCode, orgId }) => ({
+            id,
+            partyType,
+            partyTypeCode,
+            orgId
+          }));
+        setPartyTypeData(activePartType);
       } else {
         console.error('API Error:', response);
       }
@@ -1729,7 +1737,7 @@ export const PartyMaster = () => {
 
     if (
       Object.keys(errors).length === 0 &&
-      partyAddressDataValid 
+      partyAddressDataValid
       // && partyStateDataValid &&
       // partySpecialTDSValid &&
       // partyTdsExemptedValid &&
@@ -1796,17 +1804,13 @@ export const PartyMaster = () => {
       //   salesPerson: row.salesPerson
       // }));
       const partySalesPersonTaggingDTO = partySalesPersonTagging.map((row) => ({
-        effectiveFrom: row.effectiveFrom
-          ? dayjs(row.effectiveFrom).format('YYYY-MM-DD')
-          : null,
-        effectiveTill: row.effectiveTill
-          ? dayjs(row.effectiveTill).format('YYYY-MM-DD')
-          : null,
+        effectiveFrom: row.effectiveFrom ? dayjs(row.effectiveFrom).format('YYYY-MM-DD') : null,
+        effectiveTill: row.effectiveTill ? dayjs(row.effectiveTill).format('YYYY-MM-DD') : null,
         empCode: row.empCode,
         salesBranch: row.salesBranch,
-        salesPerson: row.salesPerson,
+        salesPerson: row.salesPerson
       }));
-      
+
       const partyTdsExemptedDTO = partyTdsExempted.map((row) => ({
         finYear: row.finYear,
         tdsExempCerti: row.tdsExempCerti,
@@ -1830,7 +1834,7 @@ export const PartyMaster = () => {
         partySalesPersonTaggingDTO,
         partyTdsExemptedDTO,
         partyPartnerTaggingDTO
-      };      
+      };
 
       // const saveData = {
       //   ...(editId && { id: editId }),
