@@ -59,7 +59,7 @@ export const Vender = () => {
 
   const listViewColumns = [
     { accessorKey: 'partyCode', header: 'Vendor Code', size: 140 },
-    { accessorKey: 'partyName', header: 'Vendr Name', size: 140 },
+    { accessorKey: 'partyName', header: 'Vendor Name', size: 140 },
     { accessorKey: 'gstIn', header: 'Reg No', size: 140 },
     { accessorKey: 'panNo', header: 'Pan No', size: 140 },
     { accessorKey: 'creditLimit', header: 'Credit Limit', size: 140 },
