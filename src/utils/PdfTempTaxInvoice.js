@@ -182,14 +182,7 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
                 <strong>Invoice Date: </strong>
                 {row.invoiceDate ? dayjs(row.invoiceDate).format('DD-MM-YYYY') : 'N/A'}
               </div>
-              <div>
-                <strong>ACK No: </strong>
-                {row.invoiceDate ? dayjs(row.invoiceDate).format('DD-MM-YYYY') : 'N/A'}
-              </div>
-              <div>
-                <strong>IRN No: </strong>
-                {row.invoiceDate ? dayjs(row.invoiceDate).format('DD-MM-YYYY') : 'N/A'}
-              </div>
+
             </div>
             {/* <div style={{ textAlign: 'left' }}>
               <div>
@@ -219,7 +212,7 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
               </div>
               <div>{row.partyName}</div>
               <div>
-                <strong>GSTIN:</strong> {row.recipientGSTIN}
+                <strong>Reg IN:</strong> {row.recipientGSTIN}
               </div>
               <div>{row.address}</div>
               <div>
@@ -329,7 +322,7 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Qty</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Rate</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>FC Amount</th>
-                <th style={{ border: '1px solid #000000', padding: '10px' }}>GST</th>
+                <th style={{ border: '1px solid #000000', padding: '10px' }}>Tax</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Amount</th>
               </tr>
             </thead>
@@ -372,14 +365,14 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
             }}
           >
             <div>
-              <strong>Remarks :</strong> {row.recipientGSTIN}
+              <strong>Remarks :</strong>
             </div>
-            <div>
+            {/* <div> 
               <strong>Shipment Ref No :</strong> {row.recipientGSTIN}
-            </div>
+            </div>*/}
           </div>
 
-          <div
+          {/*<div
             style={{
               marginBottom: '20px',
               display: 'flex',
@@ -396,7 +389,7 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
               {' '}
               <strong>Date :</strong> {row.recipientGSTIN}
             </div>
-          </div>
+          </div>*/}
           <div>
             <strong>Other Information :</strong>
           </div>
@@ -448,7 +441,7 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
               marginTop: '10%'
             }}
           >
-            Authorised Signatory
+            Authorized Signatory
           </div>
 
           {/* <!-- Footer Section --> */}
