@@ -292,7 +292,7 @@ export const Customer = () => {
               addressLine2: detail.addressLine2 || '',
               addressLine3: detail.addressLine3 || '',
               businessPlace: detail.businessPlace || '',
-              sez: detail.sez || '',
+              sez: detail.sez === 'T' ? true : false,
               city: detail.city || '',
               contact: detail.contact || '',
               pincode: detail.pincode || '',
@@ -885,7 +885,7 @@ export const Customer = () => {
         addressLane2: row.addressLine2,
         addressLane3: row.addressLine3,
         bussinesPlace: row.businessPlace,
-        sez: true,
+        sez: false,
         city: row.city,
         contact: row.contact,
         contactNo: row.contact,
@@ -1131,11 +1131,11 @@ export const Customer = () => {
                     value={formData.bussinessType}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="PROPRIETOR SHOP">PROPRIETOR SHOP</MenuItem>
-                    <MenuItem value="PARTNER SHIP">PARTNER SHIP</MenuItem>
+                    <MenuItem value="PROPRIETORSHIP">PROPRIETORSHIP</MenuItem>
+                    <MenuItem value="PARTNERSHIP">PARTNERSHIP</MenuItem>
                     <MenuItem value="PRIVATE LIMITED">PRIVATE LIMITED</MenuItem>
                     <MenuItem value="LLP">LLP</MenuItem>
-                    <MenuItem value="GOVTFIRM">GOVT.FIRM</MenuItem>
+                    <MenuItem value="GOVTFIRM">GOVT FIRM</MenuItem>
                     <MenuItem value="LIMITED">LIMITED</MenuItem>
                     <MenuItem value="NGO">NGO</MenuItem>
                   </Select>

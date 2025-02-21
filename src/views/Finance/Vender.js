@@ -197,6 +197,13 @@ export const Vender = () => {
           active: vendorData.active
         });
 
+        setPartyCurrencyMapping(
+          vendorData.partyCurrencyMappingVO.map((detail) => ({
+            id: detail.id,
+            transCurrency: detail.transCurrency || ''
+          }))
+        );
+
         setPartyStateData(
           vendorData.partyStateVO.map((vendorState) => ({
             id: vendorState.id,
