@@ -849,11 +849,11 @@ export const Customer = () => {
     } else if (formData.customerName.length < 3) {
       errors.customerName = 'Min Length is 3';
     }
-    if (!formData.customerCode) {
-      errors.customerCode = 'Customer Name is required';
-    } else if (formData.customerCode.length < 2) {
-      errors.customerCode = 'Min Length is 2';
-    }
+    // if (!formData.customerCode) {
+    //   errors.customerCode = 'Customer Name is required';
+    // } else if (formData.customerCode.length < 2) {
+    //   errors.customerCode = 'Min Length is 2';
+    // }
     setFieldErrors(errors);
 
     let partyAddressDataValid = true;

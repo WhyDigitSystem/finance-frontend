@@ -22,7 +22,7 @@ import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import { Chip, Stack } from '@mui/material';
 import ConfirmationModal from 'utils/confirmationPopup';
-import GeneratePdfTemp from 'utils/PdfTempTaxInvoice';
+import GeneratePdfTemp from 'utils/pdfTempCostInvoice';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
@@ -1439,9 +1439,9 @@ const CostInvoice = () => {
     console.log('save clicked');
 
     const errors = {};
-    if (!formData.accuralid) {
-      errors.accuralid = 'Accural ID is required';
-    }
+    // if (!formData.accuralid) {
+    //   errors.accuralid = 'Accural ID is required';
+    // }
     // if (!formData.address) {
     //   errors.address = 'Address is required';
     // }
@@ -1481,9 +1481,9 @@ const CostInvoice = () => {
     // if (!formData.purVoucherNo) {
     //   errors.purVoucherNo = 'Pur Voucher No is required';
     // }
-    if (!formData.shipperRefNo) {
-      errors.shipperRefNo = 'Shipper Ref No is required';
-    }
+    // if (!formData.shipperRefNo) {
+    //   errors.shipperRefNo = 'Shipper Ref No is required';
+    // }
     if (!formData.supplierBillNo) {
       errors.supplierBillNo = 'Supplier Bill No is required';
     }
@@ -1491,10 +1491,10 @@ const CostInvoice = () => {
       errors.supplierCode = 'Supplier Code is required';
     }
     if (!formData.supplierGstIn) {
-      errors.supplierGstIn = 'Supplier Gst In is required';
+      errors.supplierGstIn = 'Supplier Reg is required';
     }
     if (!formData.supplierGstInCode) {
-      errors.supplierGstInCode = 'Supplier GstInCode is required';
+      errors.supplierGstInCode = 'Supplier TAX Code is required';
     }
     if (!formData.supplierName) {
       errors.supplierName = 'Supplier Name is required';
@@ -1505,9 +1505,9 @@ const CostInvoice = () => {
     if (!formData.supplierType) {
       errors.supplierType = 'Supplier Type is required';
     }
-    if (!formData.utrRef) {
-      errors.utrRef = 'UTR Ref is required';
-    }
+    // if (!formData.utrRef) {
+    //   errors.utrRef = 'UTR Ref is required';
+    // }
 
     let CostInvoiceValid = true;
     const newTableErrors = chargerCostInvoice.map((row) => {
@@ -1581,7 +1581,7 @@ const CostInvoice = () => {
         ...(editId && { id: row.id }),
         section: row.section,
         tdsWithHolding: row.tdsWithHolding,
-        tdsWithHoldingPer: row.tdsWithHoldingPer
+        tdsWithHoldingPer: row.tdsWithHoldingPer ? row.tdsWithHoldingPer : 0
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
@@ -2101,7 +2101,7 @@ const CostInvoice = () => {
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField
-                      label="Shipper RefNo"
+                      label="Shipper Ref No"
                       size="small"
                       name="shipperRefNo"
                       multiline

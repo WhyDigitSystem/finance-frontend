@@ -1878,6 +1878,24 @@ const TaxInvoiceDetails = () => {
                 </FormControl>
               </div>
 
+              {/* <div className="col-md-3 mb-3">
+                <FormControl fullWidth>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Due Date"
+                      disabled={formData.status === 'TAX'}
+                      value={formData.dueDate ? dayjs(formData.dueDate) : null}
+                      onChange={(newValue) => setFormData({ ...formData, dueDate: newValue })}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                      format="DD-MM-YYYY"
+                    />
+                  </LocalizationProvider>
+                  {errors.dueDate && <p className="dateErrMsg">Due Date is required</p>}
+                </FormControl>
+              </div> */}
+
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
