@@ -398,7 +398,7 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
             }}
           >
             <div>
-              <strong>Remarks :</strong>
+              <strong>Remarks :</strong> {row.remarks}
             </div>
             {/* <div> 
               <strong>Shipment Ref No :</strong> {row.recipientGSTIN}

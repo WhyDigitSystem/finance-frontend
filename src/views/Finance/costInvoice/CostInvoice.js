@@ -105,6 +105,8 @@ const CostInvoice = () => {
     roundOff: '',
     shipperRefNo: '',
     supplierBillNo: '',
+    vid: '',
+    vdate: null,
     supplierCode: '',
     supplierGstIn: '',
     supplierGstInCode: '',
@@ -220,6 +222,8 @@ const CostInvoice = () => {
       supplierName: '',
       supplierPlace: '',
       supplierType: 'VENDOR',
+      vid: '',
+      vdate: null,
       totChargesBillCurrAmt: '',
       totChargesLcAmt: '',
       utrRef: ''
@@ -259,6 +263,8 @@ const CostInvoice = () => {
       supplierName: '',
       supplierPlace: '',
       supplierType: '',
+      vid: '',
+      vdate: null,
       utrRef: ''
     });
     setChargerCostInvoice([
@@ -341,6 +347,8 @@ const CostInvoice = () => {
       // supplierName: '',
       // supplierPlace: '',
       supplierType: 'VENDOR',
+      vid: '',
+      vdate: null,
       totChargesBillCurrAmt: '',
       totChargesLcAmt: '',
       utrRef: ''
@@ -380,6 +388,8 @@ const CostInvoice = () => {
       supplierName: '',
       supplierPlace: '',
       supplierType: '',
+      vid: '',
+      vdate: null,
       utrRef: ''
     });
     setChargerCostInvoice([
@@ -664,8 +674,8 @@ const CostInvoice = () => {
           approveStatus: listValueVO.approveStatus,
           creditDays: listValueVO.creditDays,
           currency: listValueVO.currency,
-          dueDate: listValueVO.dueDate ? dayjs(listValueVO.dueDate) : dayjs(),
-          docDate: listValueVO.docDate ? dayjs(listValueVO.docDate) : dayjs(),
+          dueDate: listValueVO.dueDate ? dayjs(listValueVO.dueDate) : null,
+          docDate: listValueVO.docDate ? dayjs(listValueVO.docDate) : null,
           docId: listValueVO.docId,
           exRate: listValueVO.exRate,
           gstInputLcAmt: listValueVO.gstInputLcAmt,
@@ -677,7 +687,7 @@ const CostInvoice = () => {
           otherInfo: listValueVO.otherInfo,
           payment: listValueVO.payment,
           product: listValueVO.product,
-          purVoucherDate: listValueVO.purVoucherDate ? dayjs(listValueVO.purVoucherDate) : dayjs(),
+          purVoucherDate: listValueVO.purVoucherDate ? dayjs(listValueVO.purVoucherDate) : null,
           purVoucherNo: listValueVO.purVoucherNo,
           remarks: listValueVO.remarks,
           roundOff: listValueVO.roundOff,
@@ -692,6 +702,8 @@ const CostInvoice = () => {
           supplierType: listValueVO.supplierType,
           totChargesBillCurrAmt: listValueVO.totChargesBillCurrAmt,
           totChargesLcAmt: listValueVO.totChargesLcAmt,
+          vid: listValueVO.vid,
+          vdate: listValueVO.vdate ? dayjs(listValueVO.vdate) : null,
           utrRef: listValueVO.utrRef
         });
         setChargerCostInvoice(
@@ -774,15 +786,15 @@ const CostInvoice = () => {
           branch: costVO.branch,
           branchCode: costVO.branchCode,
           client: costVO.client,
-          costInvoiceDate: costVO.costInvoiceDate ? dayjs(costVO.costInvoiceDate) : dayjs(),
+          costInvoiceDate: costVO.costInvoiceDate ? dayjs(costVO.costInvoiceDate) : null,
           costInvoiceNo: costVO.costInvoiceNo,
           costType: costVO.costType,
           createdBy: loginUserName,
           creditDays: costVO.creditDays,
           currency: costVO.currency,
           customer: costVO.customer,
-          dueDate: costVO.dueDate ? dayjs(costVO.dueDate) : dayjs(),
-          docDate: costVO.docDate ? dayjs(costVO.docDate) : dayjs(),
+          dueDate: costVO.dueDate ? dayjs(costVO.dueDate) : null,
+          docDate: costVO.docDate ? dayjs(costVO.docDate) : null,
           docId: costVO.docId,
           exRate: costVO.exRate,
           finYear: finYear,
@@ -796,7 +808,7 @@ const CostInvoice = () => {
           otherInfo: costVO.otherInfo,
           payment: costVO.payment,
           product: costVO.product,
-          purVoucherDate: costVO.purVoucherDate ? dayjs(costVO.purVoucherDate) : dayjs(),
+          purVoucherDate: costVO.purVoucherDate ? dayjs(costVO.purVoucherDate) : null,
           purVoucherNo: costVO.purVoucherNo,
           remarks: costVO.remarks,
           roundOff: costVO.roundOff,
@@ -810,6 +822,8 @@ const CostInvoice = () => {
           supplierType: costVO.supplierType,
           totChargesBillCurrAmt: costVO.totChargesBillCurrAmt,
           totChargesLcAmt: costVO.totChargesLcAmt,
+          vid: costVO.vid,
+          vdate: costVO.vdate ? dayjs(costVO.vdate) : null,
           utrRef: costVO.utrRef
         });
         setChargerCostInvoice(
@@ -1484,9 +1498,9 @@ const CostInvoice = () => {
     // if (!formData.shipperRefNo) {
     //   errors.shipperRefNo = 'Shipper Ref No is required';
     // }
-    if (!formData.supplierBillNo) {
-      errors.supplierBillNo = 'Supplier Bill No is required';
-    }
+    // if (!formData.supplierBillNo) {
+    //   errors.supplierBillNo = 'Supplier Bill No is required';
+    // }
     if (!formData.supplierCode) {
       errors.supplierCode = 'Supplier Code is required';
     }
@@ -1619,6 +1633,8 @@ const CostInvoice = () => {
         supplierName: formData.supplierName,
         supplierPlace: formData.supplierPlace,
         supplierType: formData.supplierType,
+        vid: formData.vid,
+        vdate: dayjs(formData.vdate).format('YYYY-MM-DD'),
         tdsCostInvoiceDTO: tdsVO,
         utrRef: formData.utrRef
       };
@@ -1927,6 +1943,38 @@ const CostInvoice = () => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
+                    <TextField
+                      label="V Id"
+                      size="small"
+                      name="vid"
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.vid}
+                      onChange={handleInputChange}
+                      disabled={editId}
+                      error={!!fieldErrors.vid}
+                      helperText={fieldErrors.vid}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="V Date"
+                        disabled={editId}
+                        value={formData.vdate}
+                        onChange={(date) => handleDateChange('vdate', date)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true }
+                        }}
+                        format="DD-MM-YYYY"
+                      />
+                    </LocalizationProvider>
+                    {fieldErrors.vdate && <p className="dateErrMsg">V Date is required</p>}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
                     <InputLabel id="demo-simple-select-label">Supplier TAX Code</InputLabel>
                     <Select
                       labelId="supplierGSTCode"
@@ -2097,7 +2145,6 @@ const CostInvoice = () => {
                     {fieldErrors.dueDate && <p className="dateErrMsg">Due Date is required</p>}
                   </FormControl>
                 </div>
-
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField

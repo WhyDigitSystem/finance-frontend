@@ -213,7 +213,7 @@ const Responsibilities = () => {
         active: formData.active,
         responsibility: formData.name,
         orgId: orgId,
-        createdby: loginUserName,
+        createdBy: loginUserName,
         screensDTO: screenVo
       };
       console.log('PERSON NAMES:', selectedScreens);

@@ -248,7 +248,7 @@ const RolesNew = () => {
         role: formData.role,
         rolesResponsibilityDTO: selectedResponsibilitiesDetails,
         orgId: orgId,
-        createdby: loginUserName
+        createdBy: loginUserName
       };
       console.log('THE SAVE FORM DATA IS:', saveFormData);
 

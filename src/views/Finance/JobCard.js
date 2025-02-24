@@ -64,6 +64,7 @@ export const JobCard = () => {
   ]);
   const [formData, setFormData] = useState({
     customer: '',
+    customerCode: '',
     operationClosed: '',
     financeClosed: '',
     date: dayjs(),
@@ -74,6 +75,8 @@ export const JobCard = () => {
     income: '',
     expense: '',
     profit: '',
+    product: '',
+    type: '',
     remarks: '',
     active: true
   });
@@ -88,12 +91,15 @@ export const JobCard = () => {
     income: '',
     expense: '',
     profit: '',
+    product: '',
+    type: '',
     remarks: ''
   });
 
   const listViewColumns = [
     { accessorKey: 'jobNo', header: 'Document No', size: 140 },
     { accessorKey: 'customer', header: 'Customer', size: 140 },
+    { accessorKey: 'product', header: 'Product', size: 140 },
     { accessorKey: 'date', header: 'Date', size: 140 },
     { accessorKey: 'closedOn', header: 'ClosedOn', size: 140 }
   ];
@@ -144,11 +150,14 @@ export const JobCard = () => {
         getSalesPerson(jnVo.customer);
         setFormData({
           customer: jnVo.customer || '',
+          customerCode: jnVo.customerCode || '',
           salesPerson: jnVo.salesPerson || '',
           date: jnVo.date ? dayjs(jnVo.date, 'YYYY-MM-DD') : dayjs(),
           income: jnVo.income || '',
           expense: jnVo.expense || '',
           profit: jnVo.profit || '',
+          product: jnVo.product || '',
+          type: jnVo.type || '',
           closed: jnVo.closedOn ? true : false,
           remarks: jnVo.remarks || '',
           closedOn: jnVo.closedOn ? dayjs(jnVo.closedOn, 'YYYY-MM-DDTHH:mm:ss') : null,
@@ -172,6 +181,7 @@ export const JobCard = () => {
   const handleClear = async () => {
     setFormData({
       customer: '',
+      customerCode: '',
       operationClosed: '',
       financeClosed: '',
       salesCategory: '',
@@ -180,6 +190,8 @@ export const JobCard = () => {
       income: '',
       expense: '',
       profit: '',
+      product: '',
+      type: '',
       remarks: '',
       date: dayjs(),
       closedOn: null
@@ -195,6 +207,7 @@ export const JobCard = () => {
 
     setFieldErrors({
       customer: '',
+      customerCode: '',
       operationClosed: '',
       financeClosed: '',
       closedOn: null,
@@ -202,6 +215,8 @@ export const JobCard = () => {
       income: '',
       expense: '',
       profit: '',
+      product: '',
+      type: '',
       remarks: ''
     });
     setDetailsTableErrors([{ accountName: '', amount: '' }]);
@@ -219,27 +234,27 @@ export const JobCard = () => {
     if (!formData.customer) {
       errors.customer = 'Customer is required';
     }
-    if (!formData.income) {
-      errors.income = 'Income is required';
-    }
-    if (!formData.expense) {
-      errors.expense = 'Expense is required';
-    }
-    if (!formData.profit) {
-      errors.profit = 'Profit is required';
-    }
+    // if (!formData.income) {
+    //   errors.income = 'Income is required';
+    // }
+    // if (!formData.expense) {
+    //   errors.expense = 'Expense is required';
+    // }
+    // if (!formData.profit) {
+    //   errors.profit = 'Profit is required';
+    // }
 
     let detailTableDataValid = true;
     const newTableErrors = detailsTableData.map((row) => {
       const rowErrors = {};
-      if (!row.accountName) {
-        rowErrors.accountName = 'Account Name is required';
-        detailTableDataValid = false;
-      }
-      if (!row.amount) {
-        rowErrors.amount = 'Amount is required';
-        detailTableDataValid = false;
-      }
+      // if (!row.accountName) {
+      //   rowErrors.accountName = 'Account Name is required';
+      //   detailTableDataValid = false;
+      // }
+      // if (!row.amount) {
+      //   rowErrors.amount = 'Amount is required';
+      //   detailTableDataValid = false;
+      // }
 
       return rowErrors;
     });
@@ -258,11 +273,14 @@ export const JobCard = () => {
         ...(editId && { id: editId }),
         active: formData.active || false,
         customer: formData.customer || '',
+        customerCode: formData.customerCode || '',
         salesPerson: formData.salesPerson || '',
         salesCategory: formData.salesCategory || '',
         income: formData.income || 0,
         expense: formData.expense || 0,
         profit: formData.profit || 0,
+        product: formData.product || '',
+        type: formData.type || '',
         remarks: formData.remarks || '',
         closed: formData.closed,
         // closedOn: formData.closedOn,
@@ -485,6 +503,43 @@ export const JobCard = () => {
                   inputProps={{ maxLength: 10 }}
                 />
               </div>
+              {/* <div className="col-md-3 mb-3">
+                <Autocomplete
+                  disablePortal
+                  options={partyList.map((option, index) => ({ ...option, key: index }))}
+                  getOptionLabel={(option) => option.partyname || ''}
+                  sx={{ width: '100%' }}
+                  size="small"
+                  value={formData.customer ? partyList.find((c) => c.partyname === formData.customer) : null}
+                  onChange={(event, newValue) => {
+                    // Handle customer selection change
+                    handleInputChange({
+                      target: {
+                        name: 'customer',
+                        value: newValue ? newValue.partyname : '' // Adjusted to 'partyname'
+                      }
+                    });
+
+                    // Call getSalesPerson with the selected customer
+                    if (newValue) {
+                      getSalesPerson(newValue.partyname); // Fetch sales persons based on customer name
+                    }
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Customer"
+                      name="customer"
+                      error={!!fieldErrors.customer}
+                      helperText={fieldErrors.customer}
+                      InputProps={{
+                        ...params.InputProps,
+                        style: { height: 40 }
+                      }}
+                    />
+                  )}
+                />
+              </div> */}
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
@@ -499,6 +554,14 @@ export const JobCard = () => {
                       target: {
                         name: 'customer',
                         value: newValue ? newValue.partyname : '' // Adjusted to 'partyname'
+                      }
+                    });
+
+                    // Set the partyCode to formData.customerCode
+                    handleInputChange({
+                      target: {
+                        name: 'customerCode',
+                        value: newValue ? newValue.partyCode : '' // Update customerCode
                       }
                     });
 
@@ -585,11 +648,39 @@ export const JobCard = () => {
               </div>
 
               <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.adjustmentType}>
+                  <InputLabel id="Product">Product</InputLabel>
+                  <Select labelId="Product-label" label="Product" value={formData.product} onChange={handleInputChange} name="product">
+                    <MenuItem value="SERVICE">SERVICE</MenuItem>
+                    <MenuItem value="PRODUCT">PRODUCT</MenuItem>
+                    <MenuItem value="PROJECT">PROJECT</MenuItem>
+                    <MenuItem value="AMC">AMC</MenuItem>
+                  </Select>
+                  {fieldErrors.product && <FormHelperText>{fieldErrors.product}</FormHelperText>}
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="type"
+                  label="Type"
+                  variant="outlined"
+                  size="small"
+                  name="type"
+                  value={formData.type}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.type}
+                  helperText={fieldErrors.type}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
                 <TextField
                   id="income"
                   label="Income"
                   variant="outlined"
                   size="small"
+                  disabled
                   name="income"
                   value={formData.income}
                   onChange={handleInputChange}
@@ -604,6 +695,7 @@ export const JobCard = () => {
                   label="Expense"
                   variant="outlined"
                   size="small"
+                  disabled
                   name="expense"
                   value={formData.expense}
                   onChange={handleInputChange}
@@ -617,6 +709,7 @@ export const JobCard = () => {
                   id="profit"
                   label="Profit"
                   variant="outlined"
+                  disabled
                   size="small"
                   name="profit"
                   value={formData.profit}

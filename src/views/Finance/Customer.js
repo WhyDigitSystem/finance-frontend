@@ -25,6 +25,12 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import SampleFile from '../../assets/sample-files/customer.xlsx';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
+import { FaFilePdf } from 'react-icons/fa';
+import { FaFileExcel } from 'react-icons/fa';
 
 export const Customer = () => {
   const [stateList, setStateList] = useState([]);
@@ -34,6 +40,7 @@ export const Customer = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [uploadOpen, setUploadOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const gstRegex = /^[0-9A-Z]{15}$/;
   const [formData, setFormData] = useState({
@@ -71,9 +78,9 @@ export const Customer = () => {
     { accessorKey: 'creditDays', header: 'Credit Days', size: 140 },
     { accessorKey: 'creditTerms', header: 'Credit Terms', size: 140 },
     { accessorKey: 'gstRegistered', header: 'Tax Registered', size: 140 },
-    { accessorKey: 'bussinessType', header: 'Bussiness Type', size: 140 },
-    { accessorKey: 'bussinessCate', header: 'Bussiness Category', size: 140 },
-    { accessorKey: 'accType', header: 'Account Type', size: 140 },
+    { accessorKey: 'bussinessType', header: 'Business Type', size: 140 },
+    { accessorKey: 'bussinessCate', header: 'Business Category', size: 140 },
+    { accessorKey: 'accountType', header: 'Account Type', size: 140 },
     { accessorKey: 'currency', header: 'Currency', size: 140 }
     // { accessorKey: 'active', header: 'Active', size: 140 }
   ];
@@ -185,6 +192,100 @@ export const Customer = () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleExcelFileDownload = async () => {
+    try {
+      setLoading(true);
+
+      const result = await apiCalls('get', `/master/getAllCustomers?orgId=${orgId}`);
+
+      console.log('API Response:', result);
+
+      const customerData = result?.paramObjectsMap?.masterVOs;
+
+      if (customerData && Array.isArray(customerData)) {
+        const filteredData = customerData.map(({ partyName, partyCode, gstIn, panNo, creditLimit }) => ({
+          partyName,
+          partyCode,
+          gstIn,
+          panNo,
+          creditLimit
+        }));
+
+        const partyStateData = customerData.flatMap(
+          ({ partyStateVO }) =>
+            partyStateVO?.map(({ state, gstIn, stateNo, contactPerson, contactPhoneNo, email }) => ({
+              state,
+              gstIn,
+              stateNo,
+              contactPerson,
+              contactPhoneNo,
+              email
+            })) || []
+        );
+
+        const partyAddressData = customerData.flatMap(
+          ({ partyAddressVO }) =>
+            partyAddressVO?.map(
+              ({ state, businessPlace, stateGstIn, city, addressType, addressLine1, addressLine2, addressLine3, pincode, contact }) => ({
+                state,
+                businessPlace,
+                stateGstIn,
+                city,
+                addressType,
+                addressLine1,
+                addressLine2,
+                addressLine3,
+                pincode,
+                contact
+              })
+            ) || []
+        );
+
+        const partySalesPersonTaggingData = customerData.flatMap(
+          ({ partySalesPersonTaggingVO }) =>
+            partySalesPersonTaggingVO?.map(({ salesPerson, empCode, salesBranch, effectiveFrom, effectiveTill }) => ({
+              salesPerson,
+              empCode,
+              salesBranch,
+              effectiveFrom,
+              effectiveTill
+            })) || []
+        );
+
+        const partyCurrencyMappingData = customerData.flatMap(
+          ({ partyCurrencyMappingVO }) =>
+            partyCurrencyMappingVO?.map(({ transCurrency }) => ({
+              transCurrency
+            })) || []
+        );
+
+        const workbook = XLSX.utils.book_new();
+
+        // Create and append worksheets
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(filteredData), 'Header Details');
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partyStateData), 'Party State');
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partyAddressData), 'Party Address');
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partySalesPersonTaggingData), 'Party Sales');
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partyCurrencyMappingData), 'Party Currency');
+
+        // Generate Excel file and trigger download
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        saveAs(blob, 'CUSTOMER.xlsx');
+
+        console.log('Download triggered');
+      } else {
+        console.error('Invalid or empty API response.');
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      setLoading(false);
     }
   };
 
@@ -991,6 +1092,8 @@ export const Customer = () => {
               orgId={orgId}
             />
           )}
+          {listView ? <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} /> : ''}
+          {/* {listView ? <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} /> : ''} */}
         </div>
         {listView ? (
           <div className="mt-4">
