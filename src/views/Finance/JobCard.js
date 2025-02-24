@@ -77,6 +77,10 @@ export const JobCard = () => {
     profit: '',
     product: '',
     type: '',
+    source: '',
+    details: '',
+    refNo: '',
+    refDate: null,
     remarks: '',
     active: true
   });
@@ -93,6 +97,10 @@ export const JobCard = () => {
     profit: '',
     product: '',
     type: '',
+    source: '',
+    details: '',
+    refNo: '',
+    refDate: null,
     remarks: ''
   });
 
@@ -158,6 +166,10 @@ export const JobCard = () => {
           profit: jnVo.profit || '',
           product: jnVo.product || '',
           type: jnVo.type || '',
+          source: jnVo.source || '',
+          details: jnVo.details || '',
+          refNo: jnVo.refNo || '',
+          refDate: jnVo.refDate ? dayjs(jnVo.refDate, 'YYYY-MM-DD') : dayjs(),
           closed: jnVo.closedOn ? true : false,
           remarks: jnVo.remarks || '',
           closedOn: jnVo.closedOn ? dayjs(jnVo.closedOn, 'YYYY-MM-DDTHH:mm:ss') : null,
@@ -192,6 +204,10 @@ export const JobCard = () => {
       profit: '',
       product: '',
       type: '',
+      source: '',
+      details: '',
+      refNo: '',
+      refDate: null,
       remarks: '',
       date: dayjs(),
       closedOn: null
@@ -217,6 +233,8 @@ export const JobCard = () => {
       profit: '',
       product: '',
       type: '',
+      refNo: '',
+      refDate: null,
       remarks: ''
     });
     setDetailsTableErrors([{ accountName: '', amount: '' }]);
@@ -282,6 +300,10 @@ export const JobCard = () => {
         product: formData.product || '',
         type: formData.type || '',
         remarks: formData.remarks || '',
+        refNo: formData.refNo || '',
+        refDate: formData.refDate ? dayjs(formData.refDate).format('YYYY-MM-DD') : null,
+        source: formData.source || '',
+        details: formData.details || '',
         closed: formData.closed,
         // closedOn: formData.closedOn,
         closedOn: formData.closedOn
@@ -492,7 +514,7 @@ export const JobCard = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   id="docId"
-                  label="Document No"
+                  label="Job No"
                   variant="outlined"
                   size="small"
                   fullWidth
@@ -503,43 +525,24 @@ export const JobCard = () => {
                   inputProps={{ maxLength: 10 }}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <Autocomplete
-                  disablePortal
-                  options={partyList.map((option, index) => ({ ...option, key: index }))}
-                  getOptionLabel={(option) => option.partyname || ''}
-                  sx={{ width: '100%' }}
-                  size="small"
-                  value={formData.customer ? partyList.find((c) => c.partyname === formData.customer) : null}
-                  onChange={(event, newValue) => {
-                    // Handle customer selection change
-                    handleInputChange({
-                      target: {
-                        name: 'customer',
-                        value: newValue ? newValue.partyname : '' // Adjusted to 'partyname'
-                      }
-                    });
 
-                    // Call getSalesPerson with the selected customer
-                    if (newValue) {
-                      getSalesPerson(newValue.partyname); // Fetch sales persons based on customer name
-                    }
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Customer"
-                      name="customer"
-                      error={!!fieldErrors.customer}
-                      helperText={fieldErrors.customer}
-                      InputProps={{
-                        ...params.InputProps,
-                        style: { height: 40 }
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled" size="small">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Date"
+                      value={formData.date ? dayjs(formData.date, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('date', date)}
+                      disabled
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
                       }}
+                      format="DD-MM-YYYY"
                     />
-                  )}
-                />
-              </div> */}
+                  </LocalizationProvider>
+                </FormControl>
+              </div>
+
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
@@ -549,25 +552,22 @@ export const JobCard = () => {
                   size="small"
                   value={formData.customer ? partyList.find((c) => c.partyname === formData.customer) : null}
                   onChange={(event, newValue) => {
-                    // Handle customer selection change
                     handleInputChange({
                       target: {
                         name: 'customer',
-                        value: newValue ? newValue.partyname : '' // Adjusted to 'partyname'
+                        value: newValue ? newValue.partyname : ''
                       }
                     });
 
-                    // Set the partyCode to formData.customerCode
                     handleInputChange({
                       target: {
                         name: 'customerCode',
-                        value: newValue ? newValue.partyCode : '' // Update customerCode
+                        value: newValue ? newValue.partyCode : ''
                       }
                     });
 
-                    // Call getSalesPerson with the selected customer
                     if (newValue) {
-                      getSalesPerson(newValue.partyname); // Fetch sales persons based on customer name
+                      getSalesPerson(newValue.partyname);
                     }
                   }}
                   renderInput={(params) => (
@@ -613,23 +613,6 @@ export const JobCard = () => {
               </div>
 
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled" size="small">
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Date"
-                      value={formData.date ? dayjs(formData.date, 'YYYY-MM-DD') : null}
-                      onChange={(date) => handleDateChange('date', date)}
-                      disabled
-                      slotProps={{
-                        textField: { size: 'small', clearable: true }
-                      }}
-                      format="DD-MM-YYYY"
-                    />
-                  </LocalizationProvider>
-                </FormControl>
-              </div>
-
-              <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.adjustmentType}>
                   <InputLabel id="salesCategory">Sales Category</InputLabel>
                   <Select
@@ -647,7 +630,7 @@ export const JobCard = () => {
                 </FormControl>
               </div>
 
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.adjustmentType}>
                   <InputLabel id="Product">Product</InputLabel>
                   <Select labelId="Product-label" label="Product" value={formData.product} onChange={handleInputChange} name="product">
@@ -655,11 +638,70 @@ export const JobCard = () => {
                     <MenuItem value="PRODUCT">PRODUCT</MenuItem>
                     <MenuItem value="PROJECT">PROJECT</MenuItem>
                     <MenuItem value="AMC">AMC</MenuItem>
+                    <MenuItem value="STAFFING">STAFFING</MenuItem>
                   </Select>
                   {fieldErrors.product && <FormHelperText>{fieldErrors.product}</FormHelperText>}
                 </FormControl>
+              </div> */}
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Ref No(PO, WO)"
+                    disabled={editId}
+                    size="small"
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.refNo}
+                    onChange={(e) => setFormData({ ...formData, refNo: e.target.value })}
+                    error={!!fieldErrors.refNo}
+                    // helperText={fieldErrors.pincode}
+                  />
+                </FormControl>
               </div>
-
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Ref Date"
+                      disabled={editId}
+                      format="DD-MM-YYYY"
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                      value={formData.refDate ? dayjs(formData.refDate) : null}
+                      onChange={(newValue) => setFormData({ ...formData, refDate: newValue })}
+                    />
+                  </LocalizationProvider>
+                  {fieldErrors.refDate && <FormHelperText style={{ color: 'red' }}>{fieldErrors.refDate}</FormHelperText>}
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="source"
+                  label="Source"
+                  variant="outlined"
+                  size="small"
+                  name="source"
+                  value={formData.source}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.source}
+                  helperText={fieldErrors.source}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="product"
+                  label="Product"
+                  variant="outlined"
+                  size="small"
+                  name="product"
+                  value={formData.product}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.product}
+                  helperText={fieldErrors.product}
+                />
+              </div>
               <div className="col-md-3 mb-3">
                 <TextField
                   id="type"
@@ -672,6 +714,20 @@ export const JobCard = () => {
                   className="w-100"
                   error={!!fieldErrors.type}
                   helperText={fieldErrors.type}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="details"
+                  label="Detail"
+                  variant="outlined"
+                  size="small"
+                  name="details"
+                  value={formData.details}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.details}
+                  helperText={fieldErrors.details}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -720,38 +776,6 @@ export const JobCard = () => {
                 />
               </div>
 
-              <div className="col-md-8 mb-3">
-                <div className="d-flex flex-row">
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={formData.costType === 'Regular'}
-                        onChange={(e) => handleCostTypeChange('Regular')}
-                        name="Regular"
-                        color="primary"
-                        disabled
-                      />
-                    }
-                    label="OperationClosed"
-                  />
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={formData.costType === 'Accrual'}
-                        onChange={(e) => handleCostTypeChange('Accrual')}
-                        name="Accrual"
-                        color="primary"
-                        disabled
-                      />
-                    }
-                    label="FinanceClosed"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="row d-flex">
-              {/* Always show DateTimePicker */}
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -774,8 +798,7 @@ export const JobCard = () => {
                 </FormControl>
               </div>
 
-              {/* Checkbox to set 'closed' state */}
-              <div className="col-md-2 mb-3 ml-4">
+              <div className="col-md-1 mb-3">
                 <FormGroup>
                   <FormControlLabel
                     control={
@@ -783,18 +806,48 @@ export const JobCard = () => {
                         checked={formData.closed}
                         onChange={handleInputChange}
                         name="closed"
-                        sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                        // sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
                       />
                     }
                     label="Closed"
                   />
                 </FormGroup>
               </div>
-              <div className="col-md-3 mb-3" style={{ margin: '0 -50px' }}>
+              <div className="col-md-2 mb-3">
                 <FormControlLabel
+                  style={{ marginLeft: 30 }}
                   control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
                   label="Active"
                 />
+              </div>
+
+              <div className="col-md-6 mb-3">
+                <div className="d-flex flex-row">
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={formData.costType === 'Regular'}
+                        onChange={(e) => handleCostTypeChange('Regular')}
+                        name="Regular"
+                        color="primary"
+                        disabled
+                      />
+                    }
+                    label="Operation Closed"
+                  />
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={formData.costType === 'Accrual'}
+                        onChange={(e) => handleCostTypeChange('Accrual')}
+                        name="Accrual"
+                        color="primary"
+                        disabled
+                      />
+                    }
+                    label="Finance Closed"
+                  />
+                </div>
               </div>
             </div>
 

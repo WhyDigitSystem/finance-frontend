@@ -62,13 +62,13 @@ export const Vender = () => {
     { accessorKey: 'partyName', header: 'Vendor Name', size: 140 },
     { accessorKey: 'gstIn', header: 'Reg No', size: 140 },
     { accessorKey: 'panNo', header: 'Pan No', size: 140 },
-    { accessorKey: 'creditLimit', header: 'Credit Limit', size: 140 },
+    // { accessorKey: 'creditLimit', header: 'Credit Limit', size: 140 },
     { accessorKey: 'creditDays', header: 'Credit Days', size: 140 },
     { accessorKey: 'creditTerms', header: 'Credit Terms', size: 140 },
     { accessorKey: 'gstRegistered', header: 'Tax Registered', size: 140 },
-    { accessorKey: 'bussinessType', header: 'Bussiness Type', size: 140 },
-    { accessorKey: 'bussinessCate', header: 'Bussiness Category', size: 140 },
-    { accessorKey: 'accType', header: 'Account Type', size: 140 }
+    { accessorKey: 'bussinessType', header: 'Business Type', size: 140 },
+    { accessorKey: 'bussinessCate', header: 'Business Category', size: 140 },
+    { accessorKey: 'accountType', header: 'Account Type', size: 140 }
     // { accessorKey: 'active', header: 'Active', size: 140 },
   ];
 
@@ -951,7 +951,7 @@ export const Vender = () => {
                 />
               </div>
 
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   id="creditLimit"
                   fullWidth
@@ -995,9 +995,9 @@ export const Vender = () => {
                     <MenuItem value="IMMEDIATE">IMMEDIATE</MenuItem>
                     <MenuItem value="CREDIT">CREDIT</MenuItem>
                   </Select>
-                  {/* {fieldErrors.creditTerms && <FormHelperText>{fieldErrors.creditTerms}</FormHelperText>} */}
+                  {fieldErrors.creditTerms && <FormHelperText>{fieldErrors.creditTerms}</FormHelperText>}
                 </FormControl>
-              </div>
+              </div> */}
 
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" fullWidth size="small">
@@ -1026,11 +1026,11 @@ export const Vender = () => {
                     value={formData.bussinessType}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value="PROPRIETOR SHOP">PROPRIETOR SHOP</MenuItem>
-                    <MenuItem value="PARTNER SHIP">PARTNER SHIP</MenuItem>
+                    <MenuItem value="PROPRIETORSHIP">PROPRIETORSHIP</MenuItem>
+                    <MenuItem value="PARTNERSHIP">PARTNERSHIP</MenuItem>
                     <MenuItem value="PRIVATE LIMITED">PRIVATE LIMITED</MenuItem>
                     <MenuItem value="LLP">LLP</MenuItem>
-                    <MenuItem value="GOVTFIRM">GOVT.FIRM</MenuItem>
+                    <MenuItem value="GOVTFIRM">GOVT FIRM</MenuItem>
                     <MenuItem value="LIMITED">LIMITED</MenuItem>
                     <MenuItem value="NGO">NGO</MenuItem>
                   </Select>
