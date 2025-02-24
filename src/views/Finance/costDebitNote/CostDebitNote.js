@@ -26,6 +26,7 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import GeneratePdfTempDN from 'utils/PdfTempDebitNote';
 
 const CostDebitNote = () => {
   const [showForm, setShowForm] = useState(false);
@@ -1577,7 +1578,7 @@ const CostDebitNote = () => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="outlined-textarea-zip"
-                    label="Document Id"
+                    label="Document No"
                     // label="Cost Invoice No"
                     variant="outlined"
                     size="small"
@@ -3107,7 +3108,7 @@ const CostDebitNote = () => {
               GeneratePdf={GeneratePdf}
             />
           )}
-          {downloadPdf && <GeneratePdfTemp row={pdfData} />}
+          {downloadPdf && <GeneratePdfTempDN row={pdfData} />}
         </div>
       </div>
       <ConfirmationModal

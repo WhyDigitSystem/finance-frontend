@@ -7,7 +7,7 @@ import { toWords } from 'number-to-words';
 import { useEffect, useState } from 'react';
 import QRCodeComponent from './QRCode';
 
-const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
+const GeneratePdfTempDN = ({ row, callBackFunction }) => {
   const [open, setOpen] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState('');
 
@@ -161,7 +161,7 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
           >
             <div>EFit Finance</div>
             <div>
-              <strong>Credit Note</strong>
+              <strong>Debit Note</strong>
             </div>
             <div>{localStorage.getItem('branch')}</div>
           </div>
@@ -179,12 +179,20 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
             <div>
               <div>
                 <strong>Invoice No:</strong>
-                {row.voucherNo}
+                {row.purVoucherNo}
               </div>
               <div>
                 <strong>Invoice Date: </strong>
-                {row.voucherDate ? dayjs(row.voucherDate).format('DD-MM-YYYY') : 'N/A'}
+                {row.purVoucherDate ? dayjs(row.purVoucherDate).format('DD-MM-YYYY') : 'N/A'}
               </div>
+              {/* <div>
+                <strong>ACK No: </strong>
+                {row.invoiceDate ? dayjs(row.invoiceDate).format('DD-MM-YYYY') : 'N/A'}
+              </div>
+              <div>
+                <strong>IRN No: </strong>
+                {row.invoiceDate ? dayjs(row.invoiceDate).format('DD-MM-YYYY') : 'N/A'}
+              </div> */}
             </div>
             {/* <div style={{ textAlign: 'left' }}>
               <div>
@@ -212,9 +220,9 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
               <div>
                 <strong>Bill To</strong>
               </div>
-              <div>{row.partyName}</div>
+              <div>{row.supplierName}</div>
               <div>
-                <strong className="mb-2">Reg IN:</strong> {row.recipientGSTIN}
+                <strong className="mb-2">Reg No:</strong> {row.supplierGstIn}
               </div>
               {/* <div>{row.address}</div> */}
               <div style={{ width: 300 }}>
@@ -224,11 +232,11 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
               </div>
             </div>
             <div style={{ textAlign: 'left' }}>
-              <div>
+              {/* <div>
                 <strong>Due date:</strong> {row.dueDate}
-              </div>
+              </div> */}
               <div>
-                <strong>Place Of Supply:</strong> {row.placeOfSupply}
+                <strong>Place Of Supply:</strong> {row.supplierPlace}
               </div>
               {/* <div>
                 <strong>GRN Date:</strong> {row.grnDate}
@@ -326,13 +334,12 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Qty</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Rate</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>FC Amount</th>
-                <th style={{ border: '1px solid #000000', padding: '10px' }}>Tax %</th>
-                <th style={{ border: '1px solid #000000', padding: '10px' }}>Tax Amount</th>
+                <th style={{ border: '1px solid #000000', padding: '10px' }}>TAX</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Amount</th>
               </tr>
             </thead>
             <tbody>
-              {row.irnCreditNoteDetailsVO?.map((item, index) => (
+              {row.costDebitChargesVO?.map((item, index) => (
                 <tr key={index} style={{ borderBottom: '1px solid #000000' }}>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.govChargeCode}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.chargeName}</td>
@@ -340,10 +347,9 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.exRate || ''}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.qty}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.rate}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.fcAmount}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.fcAmt}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.gstpercent}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.gstAmount}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.lcAmount}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.lcAmt}</td>
                 </tr>
               ))}
             </tbody>
@@ -366,7 +372,7 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
                 color: '#333'
               }}
             >
-              {row.totalChargeAmountLc}
+              {row.totChargesBillCurrAmt}
             </span>
           </div>
           <div
@@ -385,9 +391,10 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
                 color: '#333'
               }}
             >
-              {toWords(parseFloat(row.totalChargeAmountLc)).toUpperCase()}
+              {toWords(parseFloat(row.totChargesBillCurrAmt)).toUpperCase()}
             </span>
           </div>
+
           <div
             style={{
               marginBottom: '20px',
@@ -400,12 +407,12 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
             <div>
               <strong>Remarks :</strong>
             </div>
-            {/* <div> 
+            {/* <div>
               <strong>Shipment Ref No :</strong> {row.recipientGSTIN}
-            </div>*/}
+            </div> */}
           </div>
 
-          {/*<div
+          {/* <div
             style={{
               marginBottom: '20px',
               display: 'flex',
@@ -422,7 +429,7 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
               {' '}
               <strong>Date :</strong> {row.recipientGSTIN}
             </div>
-          </div>*/}
+          </div> */}
           <div>
             <strong>Other Information :</strong>
           </div>
@@ -458,7 +465,7 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
               <span style={styles2.label}>IFSC:</span> HDFC0000053
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT NO.:</span> 00530330000072
+              <span style={styles2.label}>ACCOUNT NO:</span> 00530330000072
             </p>
             <p style={styles2.item}>
               <span style={styles2.label}>ACCOUNT TYPE:</span> CURRENT ACCOUNT
@@ -518,4 +525,4 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
   );
 };
 
-export default GeneratePdfTempIRN;
+export default GeneratePdfTempDN;

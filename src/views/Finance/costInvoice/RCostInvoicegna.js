@@ -3,6 +3,7 @@ import apiCalls from 'apicall';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import { toWords } from 'number-to-words';
 import 'react-tabs/style/react-tabs.css';
 import 'react-toastify/dist/ReactToastify.css';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -36,16 +37,26 @@ const RCostInvoicegna = () => {
   const [listViewData, setListViewData] = useState([]);
   const [exRates, setExRates] = useState([]);
   const [partyName, setPartyName] = useState([]);
-  const [partyId, setPartyId] = useState('');
-  const [stateName, setStateName] = useState([]);
-  const [stateCode, setStateCode] = useState('');
-  const [placeOfSupply, setPlaceOfSupply] = useState([]);
-  const [chargeLedgerList, setchargeLedgerList] = useState([]);
-  const [chargeCode, setChargeCode] = useState([]);
+  const [showChargeDetails, setShowChargeDetails] = useState(false);
+  const [tdsList, setTDSList] = useState([]);
+  const [stateCodeList, setStateCodeList] = useState([]);
+  const [CityList, setCityList] = useState([]);
+  const [chargeACList, setChargeACList] = useState([]);
   const [downloadPdf, setDownloadPdf] = useState(false);
   const [pdfData, setPdfData] = useState([]);
   const [sectionOptions, setSectionOptions] = useState([]);
-
+  const [chargeDetails, setChargeDetails] = useState([
+    {
+      id: 1,
+      chargeDesc: '',
+      chargeCode: '',
+      gChargeCode: '',
+      gstPercent: '',
+      sac: '',
+      taxable: '',
+      lcAmount: ''
+    }
+  ]);
   const [formData, setFormData] = useState({
     docId: '',
     docDate: dayjs(),
@@ -56,7 +67,7 @@ const RCostInvoicegna = () => {
     partyCode: '',
 
     supplierGstIn: '',
-
+    stateCode: '',
     supplierPlace: '',
     address: '',
     supplierBillNo: '',
@@ -67,14 +78,14 @@ const RCostInvoicegna = () => {
     dueDate: null,
     gstType: '',
     remarks: '',
-// Summary
+    // Summary
     actBillCurrAmt: '',
     netBillCurrAmt: '',
     actLcAmt: '',
     netLcAmt: '',
     amtInWords: '',
     roundOff: '',
-    taxAmountLc: '',
+    taxAmountLc: ''
   });
 
   const [chargerCostInvoice, setChargerCostInvoice] = useState([
@@ -84,40 +95,51 @@ const RCostInvoicegna = () => {
       exRate: '',
       tdsApplicable: true,
       rate: '',
+      gstPer: '',
+      gstAmt: '',
+      fcAmount: '',
       lcAmount: '',
       billAmount: '',
-      gtaAmount: '',
+      gtaAmount: ''
     }
   ]);
   const [costInvoiceErrors, setCostInvoiceErrors] = useState([
     {
-        chargeAC: '',
-        currency: '',
-        exRate: '',
-        tdsApplicable: '',
-        rate: '',
-        lcAmount: '',
-        billAmount: '',
-        gtaAmount: '',
+      chargeAC: '',
+      currency: '',
+      exRate: '',
+      tdsApplicable: '',
+      gstPer: '',
+      gstAmt: '',
+      rate: '',
+      fcAmount: '',
+      lcAmount: '',
+      billAmount: '',
+      gtaAmount: ''
     }
   ]);
   const [tdsCostInvoiceDTO, setTdsCostInvoiceDTO] = useState([
     {
+      tds: '',
+      tdsPer: '',
       section: '',
-      tdsWithHolding: '',
-      tdsWithHoldingPer: '',
-      totTdsWhAmnt: ''
+      totalTdsAmt: '',
+      tdsPerAmt: ''
     }
   ]);
   const [tdsCostErrors, setTdsCostErrors] = useState([
     {
+      tds: '',
+      tdsPer: '',
       section: '',
-      tdsWithHolding: '',
-      tdsWithHoldingPer: '',
-      totTdsWhAmnt: ''
+      totalTdsAmt: '',
+      tdsPerAmt: ''
     }
   ]);
   const handleClear = () => {
+    setShowChargeDetails(false);
+    setCityList([]);
+    setStateCodeList([]);
     setFormData({
       docId: '',
       docDate: dayjs(),
@@ -126,9 +148,9 @@ const RCostInvoicegna = () => {
       partyType: 'VENDOR',
       partyName: '',
       partyCode: '',
-  
+
       supplierGstIn: '',
-  
+      stateCode: '',
       supplierPlace: '',
       address: '',
       supplierBillNo: '',
@@ -139,17 +161,16 @@ const RCostInvoicegna = () => {
       dueDate: null,
       gstType: '',
       remarks: '',
-  // Summary
+      // Summary
       actBillCurrAmt: '',
       netBillCurrAmt: '',
       actLcAmt: '',
       netLcAmt: '',
       amtInWords: '',
       roundOff: '',
-      taxAmountLc: '',
+      taxAmountLc: ''
     });
     setExRates([]);
-    setStateName([]);
     getAllActiveCurrency(orgId);
     setFieldErrors({
       docId: '',
@@ -159,9 +180,9 @@ const RCostInvoicegna = () => {
       partyType: '',
       partyName: '',
       partyCode: '',
-  
+
       supplierGstIn: '',
-  
+
       supplierPlace: '',
       address: '',
       supplierBillNo: '',
@@ -172,33 +193,37 @@ const RCostInvoicegna = () => {
       dueDate: null,
       gstType: '',
       remarks: '',
-  // Summary
+      // Summary
       actBillCurrAmt: '',
       netBillCurrAmt: '',
       actLcAmt: '',
       netLcAmt: '',
       amtInWords: '',
       roundOff: '',
-      taxAmountLc: '',
+      taxAmountLc: ''
     });
     setChargerCostInvoice([
       {
         chargeAC: '',
         currency: '',
         exRate: '',
-        tdsApplicable: '',
+        tdsApplicable: true,
+        gstPer: '',
+        gstAmt: '',
         rate: '',
+        fcAmount: '',
         lcAmount: '',
         billAmount: '',
-        gtaAmount: '',
+        gtaAmount: ''
       }
     ]);
     setTdsCostInvoiceDTO([
       {
         section: '',
-        tdsWithHolding: '',
-        tdsWithHoldingPer: '',
-        totTdsWhAmnt: ''
+        tds: '',
+        tdsPer: '',
+        totalTdsAmt: '',
+        tdsPerAmt: ''
       }
     ]);
     setCostInvoiceErrors([]);
@@ -212,240 +237,104 @@ const RCostInvoicegna = () => {
     setPdfData(row.original);
     setDownloadPdf(true);
   };
-
-  const handleSaveClear = () => {
-    setFormData({
-      docId: '',
-      docDate: dayjs(),
-      purVoucherNo: '',
-      purVoucherDate: null,
-      partyType: 'VENDOR',
-      partyName: '',
-      partyCode: '',
-  
-      supplierGstIn: '',
-  
-      supplierPlace: '',
-      address: '',
-      supplierBillNo: '',
-      supplierDate: null,
-      currency: '',
-      exRate: '',
-      creditDays: '',
-      dueDate: null,
-      gstType: '',
-      remarks: '',
-  // Summary
-      actBillCurrAmt: '',
-      netBillCurrAmt: '',
-      actLcAmt: '',
-      netLcAmt: '',
-      amtInWords: '',
-      roundOff: '',
-      taxAmountLc: '',
-    });
-    setExRates([]);
-    // setStateName([]);
-    getAllActiveCurrency(orgId);
-    setFieldErrors({
-      docId: '',
-      docDate: dayjs(),
-      purVoucherNo: '',
-      purVoucherDate: null,
-      partyType: '',
-      partyName: '',
-      partyCode: '',
-  
-      supplierGstIn: '',
-  
-      supplierPlace: '',
-      address: '',
-      supplierBillNo: '',
-      supplierDate: null,
-      currency: '',
-      exRate: '',
-      creditDays: '',
-      dueDate: null,
-      gstType: '',
-      remarks: '',
-  // Summary
-      actBillCurrAmt: '',
-      netBillCurrAmt: '',
-      actLcAmt: '',
-      netLcAmt: '',
-      amtInWords: '',
-      roundOff: '',
-      taxAmountLc: '',
-    });
-    setChargerCostInvoice([
-      {
-        chargeAC: '',
-        currency: '',
-        exRate: '',
-        tdsApplicable: '',
-        rate: '',
-        lcAmount: '',
-        billAmount: '',
-        gtaAmount: '',
-      }
-    ]);
-    setTdsCostInvoiceDTO([
-      {
-        section: '',
-        tdsWithHolding: '',
-        tdsWithHoldingPer: '',
-        totTdsWhAmnt: ''
-      }
-    ]);
-    setCostInvoiceErrors([]);
-    setTdsCostErrors([]);
-    setSectionOptions([]);
-    setEditId('');
-    getRCostInvoiceDocId();
-  };
-
   const listViewColumns = [
     { accessorKey: 'docId', header: 'Cost Invoice No', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 }
   ];
-  const calculateTotTdsWhAmnt = () => {
-    const totalLcAmount = chargerCostInvoice.reduce((acc, curr) => acc + curr.lcAmount, 0);
-
-    const updatedTdsCostInvoiceDTO = tdsCostInvoiceDTO.map((item) => {
-      const tdsWithHoldingPer = parseFloat(item.tdsWithHoldingPer);
-      const totTdsWhAmnt = tdsWithHoldingPer ? (totalLcAmount * tdsWithHoldingPer) / 100 : 0;
-      return { ...item, totTdsWhAmnt: totTdsWhAmnt.toFixed(2) };
-    });
-
-    setTdsCostInvoiceDTO(updatedTdsCostInvoiceDTO);
-  };
-
-  // useEffect(() => {
-  //   if (partyName.length === 1) {
-  //     const defaultParty = partyName[0];
-  //     console.log('defaultParty', defaultParty);
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       partyName: defaultParty.partyName,
-  //       partyCode: defaultParty.partyName
-  //     }));
-  //     setPartyId(defaultParty.id);
-  //     getStateName(defaultParty.id);
-  //     getCurrencyAndExratesForMatchingParties(defaultParty.partyName);
-  //     getCreditDaysFromVendor(defaultParty.partyName);
-  //     getTdsDetailsFromPartyMasterSpecialTDS(defaultParty.partyName);
-  //   } else {
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       partyCode: '',
-  //       supplierGstIn: '',
-  //       supplierGstInCode: ''
-  //     }));
-  //   }
-  // }, [partyName]);
-
-  // useEffect(() => {
-  //   if (placeOfSupply.length === 1) {
-  //     const defaultSupplierPlace = placeOfSupply[0];
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       supplierPlace: defaultSupplierPlace.placeOfSupply
-  //     }));
-  //     getAddessType(defaultSupplierPlace.placeOfSupply);
-  //     console.log('defaultSupplierPlace.supplierPlace', defaultSupplierPlace.placeOfSupply);
-  //   }
-  // }, [placeOfSupply]);
-
-  // useEffect(() => {
-  //   if (exRates.length === 1) {
-  //     const defaultExRate = exRates[0];
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       currency: defaultExRate.currency,
-  //       // currency: defaultExRate.currency.toUpperCase(),
-  //       exRate: defaultExRate.buyingExRate
-  //     }));
-  //     console.log('defaultExRate.exRate', defaultExRate.buyingExRate);
-  //   }
-  // }, [exRates]);
-
-  // useEffect(() => {
-  //   if (stateName.length === 1) {
-  //     const defaultSGST = stateName[0];
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       supplierGstInCode: defaultSGST.stateCode,
-  //       // supplierGstInCode: defaultSGST.stateCode.toUpperCase(),
-  //       stateNo: defaultSGST.stateNo,
-  //       supplierGstIn: defaultSGST.recipientGSTIN
-  //     }));
-  //     console.log('defaultSGST.supplierGstInCode', defaultSGST.stateCode);
-  //     getPlaceOfSupply(defaultSGST.stateCode);
-  //     setStateCode(defaultSGST.stateCode);
-  //     getGSTType(defaultSGST.stateCode);
-  //   } else {
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       supplierGstIn: '',
-  //       supplierGstInCode: ''
-  //     }));
-  //   }
-  // }, [stateName]);
-
   useEffect(() => {
-    calculateTotTdsWhAmnt();
-  }, [chargerCostInvoice, tdsCostInvoiceDTO.map((item) => item.tdsWithHoldingPer)]);
-
-  useEffect(() => {
-    calculateTotals();
+    if (!editId) {
+      calculateTotals();
+      calculateSummary();
+    }
   }, [chargerCostInvoice, tdsCostInvoiceDTO]);
 
   const calculateTotals = () => {
     let totalBillAmt = 0;
     let totalLcAmount = 0;
-    let totalGst = 0;
+    let totgstAmt = 0;
 
-    chargerCostInvoice.forEach((row) => {
-      totalBillAmt += parseFloat(row.billAmount || 0);
+    const updatedChargerCostInvoice = chargerCostInvoice.map((item) => ({
+      ...item,
+      gstAmt: ((item.gstPer * item.lcAmount) / 100).toFixed(2)
+    }));
+
+    updatedChargerCostInvoice.forEach((row) => {
       totalLcAmount += parseFloat(row.lcAmount || 0);
-      totalGst += parseFloat(row.gst || 0);
+      totalBillAmt += parseFloat(row.billAmount || 0);
+      totgstAmt += parseFloat(row.gstAmt || 0);
     });
 
-    const totalTds = tdsCostInvoiceDTO.reduce((acc, row) => acc + parseFloat(row.totTdsWhAmnt || 0), 0);
+    setChargerCostInvoice(updatedChargerCostInvoice);
 
-    const roundOffDifference = (Math.round(totalLcAmount) - totalLcAmount).toFixed(2);
+    const totalTds = tdsCostInvoiceDTO.reduce((acc, row) => acc + (parseFloat(row.tdsPer || 0) * totalLcAmount) / 100, 0);
 
-    const roundedLcAmount = Math.round(totalLcAmount);
+    const updatedTdsCostInvoiceDTO = tdsCostInvoiceDTO.map((item) => ({
+      ...item,
+      totalTdsAmt: ((totalLcAmount * (item.tdsPer || 0)) / 100).toFixed(2),
+      tdsPerAmt: ((totalLcAmount * (item.tdsPer || 0)) / 100).toFixed(2)
+    }));
+
+    setTdsCostInvoiceDTO(updatedTdsCostInvoiceDTO);
 
     setFormData((prev) => ({
       ...prev,
-      totChargesBillCurrAmt: totalBillAmt.toFixed(2),
-      taxAmountLc: roundedLcAmount.toFixed(2),
-      roundOff: roundOffDifference,
-      actBillCurrAmt: (totalBillAmt + totalGst).toFixed(2),
-      actBillLcAmt: (roundedLcAmount + totalGst - totalTds).toFixed(2),
-      netBillCurrAmt: (totalBillAmt + totalGst - totalTds).toFixed(2),
-      netLcAmt: (roundedLcAmount + totalGst - totalTds).toFixed(2),
-      amtInWords: totalGst.toFixed(2)
+      taxAmountLc: (totalLcAmount - totgstAmt).toFixed(2),
+      netBillCurrAmt: updatedChargerCostInvoice.some((item) => item.currency === 'INR')
+        ? (totalLcAmount - totalTds).toFixed(2)
+        : totalBillAmt.toFixed(2)
     }));
   };
 
+  const calculateSummary = () => {
+    let totalBillAmt = 0;
+    let totalLcAmount = 0;
+
+    chargerCostInvoice.forEach((row) => {
+      totalLcAmount += parseFloat(row.lcAmount || 0);
+      totalBillAmt += parseFloat(row.billAmount || 0);
+    });
+
+    const totalTds = tdsCostInvoiceDTO.reduce((acc, row) => acc + parseFloat(row.totalTdsAmt || 0), 0);
+
+    setFormData((prev) => ({
+      ...prev,
+      actBillCurrAmt: totalBillAmt.toFixed(2),
+      actLcAmt: (totalBillAmt - totalTds).toFixed(2),
+      netLcAmt: (totalLcAmount - totalTds).toFixed(2),
+      roundOff: Math.round(totalLcAmount - totalTds),
+      amtInWords: toWords(parseFloat(totalBillAmt)).toUpperCase()
+    }));
+  };
   useEffect(() => {
     getAllCostInvoiceByOrgId();
     getRCostInvoiceDocId();
-    getchargeLedgerFromTmsJobCard();
-    getChargeDetailsFromChargeType();
+    getChargeAC();
   }, []);
 
   useEffect(() => {
     getPartyName(formData.partyType);
   }, [formData.partyType]);
+  useEffect(() => {
+    getCurrencyAndExratesForMatchingParties(formData.partyCode);
+  }, [formData.partyCode]);
+  useEffect(() => {
+    if (stateCodeList.length > 0) {
+      setFormData((prev) => ({
+        ...prev,
+        stateCode: stateCodeList[0]?.stateCode || '',
+        supplierGstIn: stateCodeList[0]?.gstin || ''
+      }));
+    }
+  }, [stateCodeList]);
+
+  // useEffect(() => {
+  //   getStateCode(formData.partyCode);
+  // }, [formData.partyCode]);
 
   const getAllCostInvoiceByOrgId = async () => {
     try {
-      const result = await apiCalls('get', `/costInvoice/getAllCostInvoiceByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.costInvoiceVO.reverse() || []);
-      console.log('costInvoiceVO', result);
+      const result = await apiCalls('get', `/rCostInvoiceGna/getAllRCostInvoiceGnaByOrgId?orgId=${orgId}`);
+      setData(result.paramObjectsMap.rCostInvoiceGnaVO.reverse() || []);
     } catch (err) {
       console.log('error', err);
     }
@@ -455,108 +344,98 @@ const RCostInvoicegna = () => {
     try {
       const response = await apiCalls(
         'get',
-        `/costInvoice/getRCostInvoiceDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
+        `/rCostInvoiceGna/getRCostInvoiceGnaDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
       setFormData((prevData) => ({
         ...prevData,
-        docId: response.paramObjectsMap.taxInvoiceDocId,
-        docDate: dayjs()
+        docId: response.paramObjectsMap.rcostInvoiceGnaDocId
       }));
     } catch (error) {
       console.error('Error fetching invoice:', error);
     }
   };
-
-  const getchargeLedgerFromTmsJobCard = async () => {
-    try {
-      const response = await apiCalls('get', `/costInvoice/getchargeLedgerFromTmsJobCard?orgId=${orgId}`);
-      setchargeLedgerList(response.paramObjectsMap.chargeLedger);
-    } catch (error) {
-      console.error('Error fetching invoice:', error);
-    }
-  };
-
-  const getChargeDetailsFromChargeType = async (type) => {
-    try {
-      const response = await apiCalls('get', `/costInvoice/getChargeDetailsFromChargeType?orgId=${orgId}`);
-      setChargeCode(response.paramObjectsMap.chargeDetails);
-    } catch (error) {
-      console.error('Error fetching gate passes:', error);
-    }
-  };
   const getAllRCostInvoiceById = async (row) => {
-    console.log('first', row);
     setShowForm(false);
     try {
-      const result = await apiCalls('get', `/costInvoice/getAllRCostInvoiceById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/rCostInvoiceGna/getAllRCostInvoiceGnaById?id=${row.original.id}`);
+      console.log('Byid', result);
 
       if (result) {
-        const costVO = result.paramObjectsMap.costInvoiceVO[0];
-        setListViewData(costVO);
+        const rCostVO = result.paramObjectsMap.rCostInvoiceGnaVO[0];
+        setListViewData(rCostVO);
         setEditId(row.original.id);
-        getCurrencyAndExratesForMatchingParties(costVO.partyCode);
-        getTdsDetailsFromPartyMasterSpecialTDS(costVO.partyCode);
-        getStateName(partyId);
-        getPlaceOfSupply(costVO.supplierGstInCode);
         setFormData({
-          docId: costVO.docId,
-          docDate: costVO.docDate ? dayjs(costVO.docDate) : dayjs(),
-          purVoucherNo: costVO.purVoucherNo,
-          purVoucherDate: costVO.purVoucherDate ? dayjs(costVO.purVoucherDate) : dayjs(),
-          partyType: costVO.partyType,
-          partyName: costVO.partyName,
-          partyCode: costVO.partyCode,
-      
-          supplierGstIn: costVO.supplierGstIn,
-      
-          supplierPlace: costVO.supplierPlace,
-          address: costVO.address,
-          supplierBillNo: costVO.supplierBillNo,
-          supplierDate: costVO.supplierDate ? dayjs(costVO.supplierDate) : dayjs(),
-          currency: costVO.currency,
-          exRate: costVO.exRate,
-          creditDays: costVO.creditDays,
-          dueDate: costVO.dueDate ? dayjs(costVO.dueDate) : dayjs(),
-          gstType: costVO.gstType,
-          remarks: costVO.remarks,
-      // Summary
-          actBillCurrAmt: costVO.actBillCurrAmt,
-          netBillCurrAmt: costVO.netBillCurrAmt,
-          actLcAmt: costVO.actLcAmt,
-          netLcAmt: costVO.netLcAmt,
-          amtInWords: costVO.amtInWords,
-          roundOff: costVO.roundOff,
-          taxAmountLc: costVO.taxAmountLc,
+          docId: rCostVO.docId || '',
+          docDate: rCostVO.docDate ? dayjs(rCostVO.docDate) : null,
+          purVoucherNo: rCostVO.purVoucherNo || '',
+          purVoucherDate: rCostVO.purVoucherDate ? dayjs(rCostVO.purVoucherDate) : null,
+          partyType: rCostVO.partyType || '',
+          partyName: rCostVO.partyName || '',
+          partyCode: rCostVO.partyCode || '',
+
+          supplierGstIn: rCostVO.supplierGstIn || '',
+          stateCode: rCostVO.supplierGstInCode || '',
+          supplierPlace: rCostVO.place || '',
+          address: rCostVO.address || '',
+          supplierBillNo: rCostVO.supplierBillNo || '',
+          supplierDate: rCostVO.supplierBillDate ? dayjs(rCostVO.supplierBillDate) : null,
+          currency: rCostVO.currency || '',
+          exRate: rCostVO.exRate || '',
+          creditDays: rCostVO.creditDays || '',
+          dueDate: rCostVO.dueDate ? dayjs(rCostVO.dueDate) : null,
+          gstType: rCostVO.gstType || '',
+          remarks: rCostVO.remarks || '',
+          // Summary
+          actBillCurrAmt: rCostVO.actBillAmtBc,
+          netBillCurrAmt: rCostVO.netAmtBc,
+          actLcAmt: rCostVO.actBillAmtLc,
+          netLcAmt: rCostVO.netAmtLc,
+          amtInWords: rCostVO.amountInWords,
+          roundOff: rCostVO.roundOff,
+          taxAmountLc: rCostVO.gstAmtLc,
           createdBy: loginUserName,
           finYear: finYear,
-          orgId: orgId,
+          orgId: orgId
         });
         setChargerCostInvoice(
-          costVO.normalCharges.map((row) => ({
+          rCostVO.normalCharges.map((row) => ({
             id: row.id,
-            chargeAC: row.chargeAC,
+            chargeAC: row.chargeName,
             currency: row.currency,
             exRate: row.exRate,
             tdsApplicable: row.tdsApplicable,
             rate: row.rate,
-            lcAmount: row.lcAmount,
-            billAmount: row.billAmount,
-            gtaAmount: row.gtaAmount,
+            gstPer: row.gstPer,
+            fcAmount: row.fcAmt,
+            lcAmount: row.lcAmt,
+            billAmount: row.billAmt,
+            gtaAmount: row.gtaamount
           }))
         );
         setTdsCostInvoiceDTO(
-          costVO.tdsCostInvoiceVO.map((row) => ({
+          rCostVO.tdsRCostInvoiceGnaVO.map((row) => ({
             id: row.id,
+            tds: row.tds,
+            tdsPer: row.tdsPer,
             section: row.section,
-            tdsWithHolding: row.tdsWithHolding,
-            tdsWithHoldingPer: row.tdsWithHoldingPer,
-            totTdsWhAmnt: row.totTdsWhAmnt
+            totalTdsAmt: row.totalTdsAmt,
+            tdsPerAmt: row.tdsPerAmt
           }))
         );
-        getAllSectionName(costVO.tdsCostInvoiceVO[0].tdsWithHolding);
-        console.log('DataToEdit', costVO);
+        setChargeDetails(
+          rCostVO.gstLines.map((row) => ({
+            id: row.id,
+            // chargeCode: row.chargeCode,
+            chargeDesc: row.chargeName,
+            // gChargeCode: row.govChargeCode,
+            gstPercent: row.gstPer,
+            // sac: row.sac,
+            lcAmount: row.lcAmt
+          }))
+        );
+        setShowChargeDetails(true);
+        console.log('DataToEdit', rCostVO);
       } else {
-        // Handle erro
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -566,44 +445,7 @@ const RCostInvoicegna = () => {
   const handleInputChange = (e, fieldType, index) => {
     const { name, value } = e.target;
 
-    if (name === 'gstType') {
-      if (formData.gstType !== value) {
-        setChargerCostInvoice([
-          {
-            chargeCode: '',
-            chargeLedger: '',
-            chargeName: '',
-            currency: '',
-            exRate: '',
-            exempted: '',
-            gst: '',
-            gstPercent: '',
-            chargeLedger: '',
-            ledger: '',
-            qty: '',
-            rate: '',
-            sac: '',
-            fcAmount: '',
-            lcAmount: '',
-            taxable: ''
-          }
-        ]);
-
-        setTdsCostInvoiceDTO([{ section: '', tdsWithHolding: '', tdsWithHoldingPer: '', totTdsWhAmnt: '' }]);
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          gstType: value,
-          actBillCurrAmt: '',
-          actBillLcAmt: '',
-          amtInWords: '',
-          netBillCurrAmt: '',
-          netLcAmt: '',
-          roundOff: '',
-          totChargesBillCurrAmt: '',
-          taxAmountLc: ''
-        }));
-      }
-    } else if (name === 'currency') {
+    if (name === 'currency') {
       const selectedCurrency = exRates.find((item) => item.currency === value);
       setFormData((prevFormData) => ({
         ...prevFormData,
@@ -611,10 +453,21 @@ const RCostInvoicegna = () => {
         exRate: selectedCurrency ? selectedCurrency.buyingExRate : ''
       }));
     } else if (fieldType === 'tdsCostInvoiceDTO') {
-      setTdsCostInvoiceDTO((prevData) => prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item)));
+      setTdsCostInvoiceDTO((prevData) =>
+        Array.isArray(prevData) ? prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item)) : [{ [name]: value }]
+      );
 
-      if (name === 'tdsWithHolding') {
-        getAllSectionName(value);
+      if (name === 'tds') {
+        getSection(value);
+      } else if (name === 'section') {
+        const selectedTDS = tdsList.find((tds) => tds.sectionName === value);
+        if (selectedTDS) {
+          setTdsCostInvoiceDTO((prevData) =>
+            prevData.map((item, index) =>
+              index === 0 ? { ...item, section: selectedTDS.sectionName, tdsPer: selectedTDS.tcsPercentage } : item
+            )
+          );
+        }
       }
     } else {
       setFormData((prevFormData) => ({
@@ -623,219 +476,126 @@ const RCostInvoicegna = () => {
       }));
     }
   };
-
+  const handleSelectPartyChange = (e) => {
+    const value = e.target.value;
+    const selectedParty = partyName.find((emp) => emp.partyName === value);
+    if (selectedParty) {
+      setFormData((prevData) => ({
+        ...prevData,
+        partyName: selectedParty.partyName,
+        partyCode: selectedParty.partyCode,
+        creditDays: selectedParty.creditDays
+      }));
+      getStateCode(selectedParty.partyCode);
+      getCurrencyAndExratesForMatchingParties(selectedParty.partyCode);
+    } else {
+      console.log('No Party found with the given code:', value);
+    }
+  };
+  const handleSelectStateCode = (e) => {
+    const value = e.target.value;
+    const selectedStateCode = stateCodeList.find((stateC) => stateC.stateCode === value);
+    if (selectedStateCode) {
+      setFormData((prevData) => ({
+        ...prevData,
+        stateCode: selectedStateCode.stateCode,
+        supplierGstIn: selectedStateCode.gstin
+      }));
+    } else {
+      console.log('No State Code found with the given code:', value);
+    }
+  };
+  const handleSelectCity = (e) => {
+    const value = e.target.value;
+    const selectedCity = CityList.find((stateC) => stateC.city === value);
+    if (selectedCity) {
+      setFormData((prevData) => ({
+        ...prevData,
+        supplierPlace: selectedCity.city,
+        address: selectedCity.address
+      }));
+    } else {
+      console.log('No City found with the given code:', value);
+    }
+  };
   const getPartyName = async (partType) => {
     try {
-      const response = await apiCalls('get', `/costInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=${partType}`);
+      const response = await apiCalls('get', `/rCostInvoiceGna/getAllVendorFromPartyMaster?orgId=${orgId}&partyType=${partType}`);
       setPartyName(response.paramObjectsMap.partyMasterVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
   };
-
-  const handleSelectPartyChange = (e) => {
-    const value = e.target.value;
-
-    partyName.forEach((emp, index) => {
-      console.log(`Employee ${index}:`, emp);
-    });
-
-    const selectedEmp = partyName.find((emp) => emp.partyName === value);
-
-    if (selectedEmp) {
-      console.log('Selected Employee:', selectedEmp);
-      setFormData((prevData) => ({
-        ...prevData,
-        partyName: selectedEmp.partyName,
-        partyCode: selectedEmp.partyName
-      }));
-      setPartyId(selectedEmp.id);
-      getStateName(selectedEmp.id);
-      getCurrencyAndExratesForMatchingParties(selectedEmp.partyName);
-      getTdsDetailsFromPartyMasterSpecialTDS(selectedEmp.partyName);
-      getCreditDaysFromVendor(selectedEmp.partyName);
-    } else {
-      console.log('No employee found with the given code:', value);
-    }
-  };
-
-  const getStateName = async (partId) => {
+  const getStateCode = async (partyCode) => {
     try {
-      const response = await apiCalls('get', `/costInvoice/getPartyStateDetails?orgId=${orgId}&id=${partId}`);
-      setStateName(response.paramObjectsMap.partyStateVO);
+      const response = await apiCalls('get', `/rCostInvoiceGna/getStateFromPartyMaster?orgId=${orgId}&partyCode=${partyCode}`);
+      setStateCodeList(response.paramObjectsMap.partyMasterVO);
+      setCityList(response.paramObjectsMap.partyMasterVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
   };
-
-  const getCurrencyAndExratesForMatchingParties = async (partyName) => {
+  const getCurrencyAndExratesForMatchingParties = async (partyCode) => {
     try {
-      const response = await apiCalls('get', `/costInvoice/getCurrencyAndExratesForMatchingParties?orgId=${orgId}&partyName=${partyName}`);
+      const response = await apiCalls('get', `/costInvoice/getCurrencyAndExratesForMatchingParties?orgId=${orgId}&partyCode=${partyCode}`);
       setExRates(response.paramObjectsMap.currencyVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
   };
-
-  const getCreditDaysFromVendor = async (partyName) => {
+  const getChargeAC = async () => {
     try {
-      const response = await apiCalls('get', `/costInvoice/getCreditDaysFromVendor?orgId=${orgId}&partyCode=${partyName}`);
-      setFormData((prev) => ({
-        ...prev,
-        creditDays: response.paramObjectsMap.creditdays[0].creditDays
-      }));
+      const response = await apiCalls('get', `/rCostInvoiceGna/getChargeLedgerFromGroup?orgId=${orgId}`);
+      setChargeACList(response.paramObjectsMap.chargeCodeVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
   };
-
-  const getTdsDetailsFromPartyMasterSpecialTDS = async (partyName) => {
+  const getSection = async (tds) => {
     try {
-      const response = await apiCalls('get', `/costInvoice/getTdsDetailsFromPartyMasterSpecialTDS?orgId=${orgId}&partyName=${partyName}`);
-
-      const tdsData = response.paramObjectsMap.tds;
-      const tdsWhPercent = tdsData.length > 0 ? tdsData[0].tdsWhPercent : '';
-
-      console.log('tds', tdsWhPercent);
-      setTdsCostInvoiceDTO((prevData) =>
-        prevData.map((item, index) => (index === 0 ? { ...item, tdsWithHoldingPer: tdsWhPercent } : item))
-      );
-    } catch (error) {
-      console.error('Error fetching TDS details:', error);
-    }
-  };
-
-  const handleSelectPlaceChange = (e) => {
-    const value = e.target.value;
-
-    const selectedEmp = placeOfSupply.find((emp) => emp.placeOfSupply === value);
-
-    if (selectedEmp) {
-      setFormData((prevData) => ({
-        ...prevData,
-        supplierPlace: selectedEmp.placeOfSupply
-      }));
-      getAddessType(selectedEmp.placeOfSupply);
-      console.log('selectedEmp.placeOfSupply', selectedEmp.placeOfSupply);
-    } else {
-      console.log('No employee found with the given code:', value);
-    }
-  };
-
-  const getPlaceOfSupply = async (stateCode) => {
-    try {
-      const response = await apiCalls('get', `/costInvoice/getPlaceOfSupply?orgId=${orgId}&id=${partyId}&stateCode=${stateCode}`);
-      setPlaceOfSupply(response.paramObjectsMap.placeOfSupplyDetails);
+      const response = await apiCalls('get', `/rCostInvoiceGna/getSectionNameFromTDSMaster?orgId=${orgId}&tds=${tds}`);
+      setTDSList(response.paramObjectsMap.tdsMasterVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
   };
-
-  const getGSTType = async (stateCode) => {
-    try {
-      const response = await apiCalls('get', `/costInvoice/getGstType?orgId=${orgId}&branchCode=${branchCode}&stateCode=${stateCode}`);
-
-      setFormData((prevData) => ({
-        ...prevData,
-        gstType: response.paramObjectsMap.gstTypeDetails[0].gstType
-      }));
-    } catch (error) {
-      console.error('Error fetching gate passes:', error);
-    }
-  };
-
-  const getAddessType = async (place) => {
-    try {
-      const response = await apiCalls(
-        'get',
-        `/costInvoice/getPartyAddress?orgId=${orgId}&id=${partyId}&stateCode=${stateCode}&placeOfSupply=${place}`
-      );
-      setFormData((prevData) => ({
-        ...prevData,
-        address: response.paramObjectsMap.partyAddress[0].address
-      }));
-    } catch (error) {
-      console.error('Error fetching gate passes:', error);
-    }
-  };
-
-  const getAllSectionName = async (section) => {
-    try {
-      const response = await apiCalls('get', `master/getSectionNameFromTds?orgId=${orgId}&section=${section}`);
-      console.log('API Response:', response);
-
-      if (response.status === true) {
-        setSectionOptions(response.paramObjectsMap.tdsMasterVO);
-      } else {
-        console.error('API Error:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date);
-    console.log('formattedDate', formattedDate);
-    // const formattedDate = dayjs(date).format('YYYY-MM-DD');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
+  const calculateChargesAmt = () => {
+    if (!Array.isArray(chargerCostInvoice) || chargerCostInvoice.length === 0) return;
 
-  const handleChargeCodeChange = async (e, index) => {
-    const selectedChargeCode = e.target.value;
-    const selectedChargeCodeData = chargeCode.find((item) => item.chargeCode === selectedChargeCode);
+    const updatedCharges = chargerCostInvoice.map((item) => {
+      if (!item.exRate || !item.rate) return item;
 
-    const defaultStateValues = {
-      qty: '',
-      rate: '',
-      currency: '',
-      exRate: '',
-      sac: '',
-      gstPercent: ''
-    };
-    setChargerCostInvoice((prev) => {
-      return prev.map((row, idx) => {
-        if (idx === index) {
-          return {
-            ...row,
-            ...defaultStateValues,
-            chargeCode: selectedChargeCode,
-            gstPercent: selectedChargeCodeData ? selectedChargeCodeData.GSTPercent : defaultStateValues.gstPercent,
-            ccFeeApplicable: selectedChargeCodeData ? selectedChargeCodeData.ccFeeApplicable : '',
-            chargeName: selectedChargeCodeData ? selectedChargeCodeData.chargeName : '',
-            exempted: selectedChargeCodeData ? selectedChargeCodeData.exempted : '',
-            ledger: selectedChargeCodeData ? selectedChargeCodeData.ledger : '',
-            sac: selectedChargeCodeData ? selectedChargeCodeData.sac : defaultStateValues.sac,
-            taxable: selectedChargeCodeData ? selectedChargeCodeData.taxable : ''
-          };
-        }
-        return row;
-      });
+      const lcamt = parseFloat(item.exRate) * parseFloat(item.rate);
+      const billamt = parseFloat(item.exRate) * parseFloat(item.rate);
+      let fcamt = item.currency === 'INR' ? 0 : parseFloat(item.rate);
+      return { ...item, lcAmount: lcamt, fcAmount: fcamt, billAmount: billamt };
     });
+    setChargerCostInvoice(updatedCharges);
   };
+
   const handleRowUpdate = async (index, field, value) => {
     setChargerCostInvoice((prev) => {
       return prev.map((row, idx) => {
         if (idx === index) {
           const updatedRow = { ...row, [field]: value };
-
-          const qty = Number(updatedRow.qty) || 0;
           const rate = Number(updatedRow.rate) || 0;
           const selectedCurrencyData = exRates.find((currency) => currency.currency === updatedRow.currency);
           const exRate = selectedCurrencyData?.buyingExRate || 1;
-
-          const fcAmount = updatedRow.currency === 'INR' ? 0 : qty * rate;
-          const lcAmount = qty * rate * exRate;
-          const billAmt = lcAmount / exRate;
-          const gst = (lcAmount * (updatedRow.gstPercent || 0)) / 100;
+          const fcAmount = updatedRow.currency === 'INR' ? 0 : rate;
+          const lcAmount = rate * exRate;
+          const billAmount = rate * exRate;
 
           return {
             ...updatedRow,
+            // rate,
             exRate,
             fcAmount,
             lcAmount,
-            billAmt,
-            gst
+            billAmount
           };
         }
         return row;
@@ -863,10 +623,12 @@ const RCostInvoicegna = () => {
       currency: '',
       exRate: '',
       tdsApplicable: true,
+      gstPer: '',
       rate: '',
+      fcAmount: '',
       lcAmount: '',
       billAmount: '',
-      gtaAmount: '',
+      gtaAmount: ''
     };
     setChargerCostInvoice([...chargerCostInvoice, newRow]);
     setCostInvoiceErrors([
@@ -876,10 +638,12 @@ const RCostInvoicegna = () => {
         currency: '',
         exRate: '',
         tdsApplicable: '',
+        gstPer: '',
         rate: '',
+        fcAmount: '',
         lcAmount: '',
         billAmount: '',
-        gtaAmount: '',
+        gtaAmount: ''
       }
     ]);
   };
@@ -894,6 +658,7 @@ const RCostInvoicegna = () => {
         !lastRow.currency ||
         !lastRow.exRate ||
         !lastRow.tdsApplicable ||
+        !lastRow.gstPer ||
         !lastRow.rate ||
         !lastRow.lcAmount ||
         !lastRow.billAmount ||
@@ -916,7 +681,6 @@ const RCostInvoicegna = () => {
           lcAmount: !table[table.length - 1].lcAmount ? 'LC Amount is required' : '',
           billAmount: !table[table.length - 1].billAmount ? 'Bll Amount is required' : '',
           gtaAmount: !table[table.length - 1].gtaAmount ? 'GTA Amount is required' : ''
-          
         };
         return newErrors;
       });
@@ -979,8 +743,8 @@ const RCostInvoicegna = () => {
         rowErrors.section = 'Section is required';
         tdsValid = false;
       }
-      if (!row.tdsWithHolding) {
-        rowErrors.tdsWithHolding = 'Tds With Holding is required';
+      if (!row.tds) {
+        rowErrors.tds = 'Tds With Holding is required';
         tdsValid = false;
       }
 
@@ -991,23 +755,21 @@ const RCostInvoicegna = () => {
     setTdsCostErrors(tdsTableErrors);
 
     if (Object.keys(errors).length === 0 && CostInvoiceValid) {
-      console.log('try called');
-      const costVO = chargerCostInvoice.map((row) => ({
+      const rCostVO = chargerCostInvoice.map((row) => ({
         ...(editId && { id: row.id }),
-        chargeAC: row.chargeAC,
-        currency: row.currency,
-        exRate: row.exRate,
-        tdsApplicable: row.tdsApplicable,
-        rate: row.rate,
-        lcAmount: row.lcAmount,
-        billAmount: row.billAmount,
-        gtaAmount: row.gtaAmount,
+        chargeName: row.chargeAC,
+        currency: row.currency || '',
+        exRate: parseInt(row.exRate),
+        gstPer: parseInt(row.gstPer),
+        gtaamount: parseInt(row.gtaAmount),
+        rate: parseInt(row.rate),
+        tdsApplicable: row.tdsApplicable
       }));
       const tdsVO = tdsCostInvoiceDTO.map((row) => ({
         ...(editId && { id: row.id }),
         section: row.section,
-        tdsWithHolding: row.tdsWithHolding,
-        tdsWithHoldingPer: row.tdsWithHoldingPer
+        tds: row.tds,
+        tdsPer: parseInt(row.tdsPer)
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
@@ -1016,49 +778,38 @@ const RCostInvoicegna = () => {
         finYear: finYear,
         branch: branch,
         orgId: orgId,
-        docId: formData.docId,
-        docDate: formData.docDate,
-        purVoucherNo: formData.purVoucherNo,
+        tdsRCostInvoiceGnaDTO: tdsVO,
+        chargeRCostInvoiceGnaDTO: rCostVO,
+        creditDays: formData.creditDays,
+        currency: formData.currency,
+        dueDate: formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : null,
+        exRate: parseInt(formData.exRate),
+        gstType: formData.gstType,
         partyType: formData.partyType,
         partyName: formData.partyName,
         partyCode: formData.partyCode,
-        supplierGstIn: formData.supplierGstIn,
-        supplierPlace: formData.supplierPlace,
-        supplierBillNo: formData.supplierBillNo,
-        address: formData.address,
-        currency: formData.currency,
-        exRate: formData.exRate,
-        creditDays: formData.creditDays,
-        gstType: formData.gstType,
+        place: formData.supplierPlace,
         remarks: formData.remarks,
-        actBillCurrAmt: formData.actBillCurrAmt,
-        netBillCurrAmt: formData.netBillCurrAmt,
-        actLcAmt: formData.actLcAmt,
-        netLcAmt: formData.netLcAmt,
-        amtInWords: formData.amtInWords,
-        roundOff: formData.roundOff,
-        taxAmountLc: formData.taxAmountLc,
-        dueDate: formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : dayjs(),
-        supplierDate: formData.supplierDate ? dayjs(formData.supplierDate, 'YYYY-MM-DD') : dayjs(),
-        purVoucherDate : formData.purVoucherDate  ? dayjs(formData.purVoucherDate , 'YYYY-MM-DD') : dayjs(),
+        supplierBillNo: formData.supplierBillNo,
+        supplierBillDate: formData.supplierDate ? dayjs(formData.supplierDate, 'YYYY-MM-DD') : null,
+        supplierGstIn: formData.supplierGstIn,
+        supplierGstInCode: formData.stateCode,
+        address: formData.address,
+        active: true
       };
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `/costInvoice/updateCreateCostInvoice`, saveFormData);
+        const response = await apiCalls('put', `/rCostInvoiceGna/updateCreateRCostInvoiceGna`, saveFormData);
         if (response.status === true) {
-          console.log('Response:', response);
-          showToast('success', editId ? 'Cost Invoice Updated Successfully' : 'Cost Invoice Created successfully');
+          showToast('success', editId ? 'Registered Cost Invoice Updated Successfully' : 'Registered Cost Invoice Created successfully');
           getAllCostInvoiceByOrgId();
-          getPartyName(formData.partyType);
-          // getStateName();
-          // getPlaceOfSupply();
-          handleSaveClear();
+          handleClear();
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Cost Invoice Creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'Registered Cost Invoice Creation failed');
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'Cost Invoice creation failed');
+        showToast('error', 'Registered Cost Invoice creation failed');
       }
     } else {
       setFieldErrors(errors);
@@ -1143,38 +894,6 @@ const RCostInvoicegna = () => {
                     {fieldErrors.purVoucherDate && <p className="dateErrMsg">Pur Voucher Date is required</p>}
                   </FormControl>
                 </div>
-
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <TextField
-                      label="Cost Invoice No"
-                      size="small"
-                      name="costInvoiceNo"
-                      inputProps={{ maxLength: 30 }}
-                      value={formData.costInvoiceNo}
-                      onChange={handleInputChange}
-                      error={!!fieldErrors.costInvoiceNo}
-                      helperText={fieldErrors.costInvoiceNo}
-                    />
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        label="Cost Invoice Date"
-                        value={formData.costInvoiceDate}
-                        onChange={(date) => handleDateChange('costInvoiceDate', date)}
-                        slotProps={{
-                          textField: { size: 'small', clearable: true }
-                        }}
-                        format="DD-MM-YYYY"
-                      />
-                    </LocalizationProvider>
-                    {fieldErrors.costInvoiceDate && <p className="dateErrMsg">Cost Invoice Date is required</p>}
-                  </FormControl>
-                </div> */}
-
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel id="demo-simple-select-label">Party Type</InputLabel>
@@ -1202,8 +921,8 @@ const RCostInvoicegna = () => {
                       label="Party Name"
                       onChange={handleSelectPartyChange}
                       name="partyName"
-                      value={formData.partyName || (partyName.length === 1 ? partyName[0].partyName : '')}
-                      
+                      value={formData.partyName}
+                      // (partyName.length === 1 ? partyName[0].partyName : '')
                     >
                       {partyName &&
                         partyName.map((item) => (
@@ -1215,7 +934,6 @@ const RCostInvoicegna = () => {
                     {fieldErrors.partyName && <FormHelperText style={{ color: 'red' }}>Party Name is required</FormHelperText>}
                   </FormControl>
                 </div>
-
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField
@@ -1229,6 +947,49 @@ const RCostInvoicegna = () => {
                       error={!!fieldErrors.partyCode}
                       helperText={fieldErrors.partyCode}
                     />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.stateCode}>
+                    <InputLabel id="demo-simple-select-label">{<span>State Code</span>}</InputLabel>
+                    {/* <Select
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      label="State Code"
+                      onChange={handleSelectStateCode}
+                      name="stateCode"
+                      value={formData.stateCode}
+                      // || (stateCodeList.length === 1 ? stateCodeList[0].stateCode : '')
+                    >
+                      {stateCodeList &&
+                        stateCodeList.map((item) => (
+                          <MenuItem key={item.id} value={item.stateCode}>
+                            {item.stateCode}
+                          </MenuItem>
+                        ))}
+                    </Select> */}
+                    <Select
+                      labelId="stateCode"
+                      label="State Code"
+                      name="stateCode"
+                      value={stateCodeList.some((state) => state.stateCode === formData.stateCode) ? formData.stateCode : ''} // Ensures only valid values
+                      onChange={handleSelectStateCode}
+                      error={!!fieldErrors.stateCode}
+                    >
+                      {stateCodeList.length > 0 ? (
+                        stateCodeList.map((state) => (
+                          <MenuItem key={state.id} value={state.stateCode}>
+                            {state.stateCode}
+                          </MenuItem>
+                        ))
+                      ) : (
+                        <MenuItem value="" disabled>
+                          No States Available
+                        </MenuItem>
+                      )}
+                    </Select>
+
+                    {fieldErrors.stateCode && <FormHelperText style={{ color: 'red' }}>State Code is required</FormHelperText>}
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
@@ -1252,17 +1013,17 @@ const RCostInvoicegna = () => {
                     <Select
                       labelId="supplierPlace"
                       label="supplierPlace"
-                      value={formData.supplierPlace || (placeOfSupply.length === 1 ? placeOfSupply[0].supplierPlace : '')}
+                      value={formData.supplierPlace}
+                      // || (CityList.length === 1 ? CityList[0].city : '')
                       name="supplierPlace"
-                      onChange={handleSelectPlaceChange}
-                      
+                      onChange={handleSelectCity}
                       error={!!fieldErrors.supplierPlace}
                       helperText={fieldErrors.supplierPlace}
                     >
-                      {placeOfSupply &&
-                        placeOfSupply.map((par, index) => (
-                          <MenuItem key={index} value={par.placeOfSupply}>
-                            {par.placeOfSupply}
+                      {CityList &&
+                        CityList.map((par, index) => (
+                          <MenuItem key={index} value={par.city}>
+                            {par.city}
                           </MenuItem>
                         ))}
                     </Select>
@@ -1294,7 +1055,6 @@ const RCostInvoicegna = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.supplierBillNo}
                       onChange={handleInputChange}
-                      
                       error={!!fieldErrors.supplierBillNo}
                       helperText={fieldErrors.supplierBillNo}
                     />
@@ -1305,7 +1065,6 @@ const RCostInvoicegna = () => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         label="Supplier Date"
-                        disabled
                         value={formData.supplierDate}
                         onChange={(date) => handleDateChange('supplierDate', date)}
                         slotProps={{
@@ -1314,7 +1073,7 @@ const RCostInvoicegna = () => {
                         format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
-                    {fieldErrors.supplierDate && <p className="dateErrMsg">Due Date is required</p>}
+                    {fieldErrors.supplierDate && <p className="dateErrMsg">Supplier Date is required</p>}
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
@@ -1326,9 +1085,8 @@ const RCostInvoicegna = () => {
                       label="Currency"
                       onChange={handleInputChange}
                       name="currency"
-                      // value={formData.currency}
-                      value={formData.currency || (exRates.length === 1 ? exRates[0].currency : '')}
-                      
+                      value={formData.currency}
+                      // || (exRates.length === 1 ? exRates[0].currency : '')
                     >
                       {exRates &&
                         exRates.map((item) => (
@@ -1378,7 +1136,6 @@ const RCostInvoicegna = () => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         label="Due Date"
-                        disabled
                         value={formData.dueDate}
                         onChange={(date) => handleDateChange('dueDate', date)}
                         slotProps={{
@@ -1394,14 +1151,7 @@ const RCostInvoicegna = () => {
                   {/* <FormControl fullWidth size="small"> */}
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gstType}>
                     <InputLabel id="demo-simple-select-label">Tax Type</InputLabel>
-                    <Select
-                      labelId="gstType"
-                      name="gstType"
-                      value={formData.gstType}
-                      onChange={handleInputChange}
-                      
-                      label="TAX Type"
-                    >
+                    <Select labelId="gstType" name="gstType" value={formData.gstType} onChange={handleInputChange} label="TAX Type">
                       <MenuItem value="INTER">INTER</MenuItem>
                       <MenuItem value="INTRA">INTRA</MenuItem>
                     </Select>
@@ -1418,7 +1168,6 @@ const RCostInvoicegna = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.remarks}
                       onChange={handleInputChange}
-                      
                       error={!!fieldErrors.remarks}
                       helperText={fieldErrors.remarks}
                     />
@@ -1443,21 +1192,20 @@ const RCostInvoicegna = () => {
                   {value === 0 && (
                     <>
                       <div className="row d-flex ml">
-                      
-                          <div className="mb-1">
-                            <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                            {/* <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} /> */}
-                          </div>
-                       
+                        <div className="mb-1">
+                          <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                          {/* <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} /> */}
+                        </div>
+
                         <div className="row mt-2">
                           <div className="col-lg-12">
                             <div className="table-responsive mb-3">
                               <table className="table table-bordered ">
                                 <thead>
                                   <tr style={{ backgroundColor: '#673AB7' }}>
-                                      <th className="table-header" style={{ width: '68px' }}>
-                                        Action
-                                      </th>
+                                    <th className="table-header" style={{ width: '68px' }}>
+                                      Action
+                                    </th>
                                     <th className="table-header" style={{ width: '50px' }}>
                                       S.No
                                     </th>
@@ -1466,303 +1214,394 @@ const RCostInvoicegna = () => {
                                     <th className="table-header">Currency</th>
                                     <th className="table-header">Ex Rate</th>
                                     <th className="table-header">Rate</th>
-                                    {/* <th className="table-header">FC Amount</th> */}
+                                    <th className="table-header">Tax Percentage</th>
+                                    <th className="table-header">FC Amount</th>
                                     <th className="table-header">LC Amount</th>
                                     <th className="table-header">Bill Amount</th>
                                     <th className="table-header">GTA Amount</th>
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  
-                                    <>
-                                      {chargerCostInvoice.map((row, index) => (
-                                        <tr key={row.id}>
-                                          <td className="border px-2 py-2 text-center">
-                                            <ActionButton
-                                              title="Delete"
-                                              icon={DeleteIcon}
-                                              onClick={() =>
-                                                handleDeleteRow(
-                                                  row.id,
-                                                  chargerCostInvoice,
-                                                  setChargerCostInvoice,
-                                                  costInvoiceErrors,
-                                                  setCostInvoiceErrors
-                                                )
+                                  <>
+                                    {chargerCostInvoice.map((row, index) => (
+                                      <tr key={row.id}>
+                                        <td className="border px-2 py-2 text-center">
+                                          <ActionButton
+                                            title="Delete"
+                                            icon={DeleteIcon}
+                                            onClick={() =>
+                                              handleDeleteRow(
+                                                row.id,
+                                                chargerCostInvoice,
+                                                setChargerCostInvoice,
+                                                costInvoiceErrors,
+                                                setCostInvoiceErrors
+                                              )
+                                            }
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <div className="pt-2">{index + 1}</div>
+                                        </td>
+
+                                        <td className="border px-2 py-2">
+                                          <select
+                                            value={row.chargeAC}
+                                            style={{ width: '180px' }}
+                                            onChange={(e) => {
+                                              const selectedchargeLedger = e.target.value;
+                                              const updatedchargeLedgerData = [...chargerCostInvoice];
+                                              updatedchargeLedgerData[index] = {
+                                                ...updatedchargeLedgerData[index],
+                                                chargeAC: selectedchargeLedger
+                                              };
+                                              setChargerCostInvoice(updatedchargeLedgerData);
+                                            }}
+                                            className={costInvoiceErrors[index]?.chargeAC ? 'error form-control' : 'form-control'}
+                                          >
+                                            <option value="">--Select--</option>
+                                            {chargeACList &&
+                                              chargeACList.map((job) => (
+                                                <option key={job.id} value={job.chargeLedger}>
+                                                  {job.chargeLedger}
+                                                </option>
+                                              ))}
+                                          </select>
+
+                                          {costInvoiceErrors[index]?.chargeAC && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {costInvoiceErrors[index].chargeAC}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2 text-center">
+                                          <FormControlLabel
+                                            control={
+                                              <Checkbox
+                                                className="ms-2 pb-0 pt-1"
+                                                checked={row.tdsApplicable}
+                                                onChange={(e) => {
+                                                  const isChecked = e.target.checked;
+
+                                                  setChargerCostInvoice((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, tdsApplicable: isChecked } : r))
+                                                  );
+                                                }}
+                                                name="tdsApplicable"
+                                                color="primary"
+                                              />
+                                            }
+                                            sx={{
+                                              '& .MuiSvgIcon-root': { color: '#5e35b1' }
+                                            }}
+                                          />
+                                          {costInvoiceErrors[index]?.tdsApplicable && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {costInvoiceErrors[index].tdsApplicable}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <select
+                                            value={row.currency}
+                                            style={{ width: '150px' }}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              handleRowUpdate(index, 'currency', value);
+                                            }}
+                                            className={costInvoiceErrors[index]?.currency ? 'error form-control' : 'form-control'}
+                                          >
+                                            <option value="">--Select--</option>
+                                            {exRates &&
+                                              exRates.map((currency) => (
+                                                <option key={currency.id} value={currency.currency}>
+                                                  {currency.currency}
+                                                </option>
+                                              ))}
+                                          </select>
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="number"
+                                            value={row.exRate}
+                                            disabled
+                                            style={{ width: '100px' }}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const numericRegex = /^[0-9]*$/;
+                                              if (numericRegex.test(value)) {
+                                                setChargerCostInvoice((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r))
+                                                );
+                                                setCostInvoiceErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = { ...newErrors[index], exRate: !value ? 'exRate is required' : '' };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setCostInvoiceErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    exRate: 'Only numeric characters are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
                                               }
-                                            />
-                                          </td>
-                                          <td className="text-center">
-                                            <div className="pt-2">{index + 1}</div>
-                                          </td>
-
-                                          <td className="border px-2 py-2">
-                                            <select
-                                              value={row.chargeLedger}
-                                              style={{ width: '180px' }}
-                                              onChange={(e) => {
-                                                const selectedchargeLedger = e.target.value;
-                                                const selectedCurrencyData = chargeLedgerList.find((job) => job.chargeLedger === selectedchargeLedger);
-                                                const updatedchargeLedgerData = [...chargerCostInvoice];
-                                                updatedchargeLedgerData[index] = {
-                                                  ...updatedchargeLedgerData[index],
-                                                  chargeLedger: selectedchargeLedger
-                                                };
-                                                setChargerCostInvoice(updatedchargeLedgerData);
-                                              }}
-                                              className={costInvoiceErrors[index]?.chargeLedger ? 'error form-control' : 'form-control'}
-                                            >
-                                              <option value="">--Select--</option>
-                                              {chargeLedgerList &&
-                                                chargeLedgerList.map((job) => (
-                                                  <option key={job.id} value={job.chargeLedger}>
-                                                    {job.chargeLedger}
-                                                  </option>
-                                                ))}
-                                            </select>
-
-                                            {costInvoiceErrors[index]?.chargeLedger && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].chargeLedger}
-                                              </div>
-                                            )}
-                                          </td>
-                                          <td className="border px-2 py-2 text-center">
-                                            <FormControlLabel
-                                              control={
-                                                <Checkbox
-                                                  className="ms-2 pb-0 pt-1"
-                                                  checked={row.tdsApplicable}
-                                                  onChange={(e) => {
-                                                    const isChecked = e.target.checked;
-
-                                                    setChargerCostInvoice((prev) =>
-                                                      prev.map((r) => (r.id === row.id ? { ...r, tdsApplicable: isChecked } : r))
-                                                    );
-                                                  }}
-                                                  name="tdsApplicable"
-                                                  color="primary"
-                                                />
+                                            }}
+                                            className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
+                                          />
+                                          {costInvoiceErrors[index]?.exRate && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {costInvoiceErrors[index].exRate}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="number"
+                                            value={row.rate}
+                                            style={{ width: '100px' }}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const numericRegex = /^[0-9]*$/;
+                                              if (numericRegex.test(value)) {
+                                                handleRowUpdate(index, 'rate', value);
+                                              } else {
+                                                setCostInvoiceErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    rate: 'Only numeric characters are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
                                               }
-                                              // label="tdsApplicable"
-                                              sx={{
-                                                '& .MuiSvgIcon-root': { color: '#5e35b1' }
-                                              }}
-                                            />
-                                            {costInvoiceErrors[index]?.tdsApplicable && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].tdsApplicable}
-                                              </div>
-                                            )}
-                                          </td>
-                                          <td className="border px-2 py-2">
-                                            <select
-                                              value={row.currency}
-                                              style={{ width: '150px' }}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                handleRowUpdate(index, 'currency', value);
-                                              }}
-                                              className={costInvoiceErrors[index]?.currency ? 'error form-control' : 'form-control'}
-                                            >
-                                              <option value="">--Select--</option>
-                                              {exRates &&
-                                                exRates.map((currency) => (
-                                                  <option key={currency.id} value={currency.currency}>
-                                                    {currency.currency}
-                                                  </option>
-                                                ))}
-                                            </select>
-                                          </td>
-                                          <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              value={row.exRate}
-                                              disabled
-                                              style={{ width: '100px' }}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
-                                                if (numericRegex.test(value)) {
-                                                  setChargerCostInvoice((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r))
-                                                  );
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = { ...newErrors[index], exRate: !value ? 'exRate is required' : '' };
-                                                    return newErrors;
-                                                  });
-                                                } else {
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      exRate: 'Only numeric characters are allowed'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              }}
-                                              className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                            />
-                                            {costInvoiceErrors[index]?.exRate && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].exRate}
-                                              </div>
-                                            )}
-                                          </td>
-                                          <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              value={row.rate}
-                                              style={{ width: '100px' }}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
-                                                if (numericRegex.test(value)) {
-                                                  handleRowUpdate(index, 'rate', value);
-                                                } else {
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      rate: 'Only numeric characters are allowed'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              }}
-                                              className={costInvoiceErrors[index]?.rate ? 'error form-control' : 'form-control'}
-                                            />
-                                          </td>
-                                          <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              value={row.lcAmount ? row.lcAmount.toFixed(2) : '0'}
-                                              disabled
-                                              style={{ width: '100px' }}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
-                                                if (numericRegex.test(value)) {
-                                                  setChargerCostInvoice((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, lcAmount: value } : r))
-                                                  );
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      lcAmount: !value ? 'lcAmount is required' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                } else {
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      lcAmount: 'Only numeric characters are allowed'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              }}
-                                              className={costInvoiceErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                            />
-                                            {costInvoiceErrors[index]?.lcAmount && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].lcAmount}
-                                              </div>
-                                            )}
-                                          </td>
-                                          <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              value={row.billAmt ? row.billAmt.toFixed(2) : '0.00'}
-                                              disabled
-                                              style={{ width: '100px' }}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
-                                                if (numericRegex.test(value)) {
-                                                  setChargerCostInvoice((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, billAmt: value } : r))
-                                                  );
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      billAmt: !value ? 'Settled is required' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                } else {
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      billAmt: 'Only numeric characters are allowed'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              }}
-                                              className={costInvoiceErrors[index]?.billAmt ? 'error form-control' : 'form-control'}
-                                            />
-                                            {costInvoiceErrors[index]?.billAmt && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].billAmt}
-                                              </div>
-                                            )}
-                                          </td>
-                                          <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              value={row.gtaAmt ? row.gtaAmt : '0.00'}
-                                              style={{ width: '100px' }}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
-                                                if (numericRegex.test(value)) {
-                                                  setChargerCostInvoice((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, gtaAmt: value } : r))
-                                                  );
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      gtaAmt: !value ? 'TAX is required' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                } else {
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      gtaAmt: 'Only numeric characters are allowed'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              }}
-                                              className={costInvoiceErrors[index]?.gtaAmt ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
-                                            />
-                                            {costInvoiceErrors[index]?.gtaAmt && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].gtaAmt}
-                                              </div>
-                                            )}
-                                          </td>
-                                        </tr>
-                                      ))}
-                                    </>
+                                            }}
+                                            className={costInvoiceErrors[index]?.rate ? 'error form-control' : 'form-control'}
+                                          />
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="number"
+                                            value={row.gstPer}
+                                            style={{ width: '100px' }}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const numericRegex = /^[0-9]*$/;
+                                              if (numericRegex.test(value)) {
+                                                handleRowUpdate(index, 'gstPer', value);
+                                              } else {
+                                                setCostInvoiceErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    gstPer: 'Only numeric characters are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={costInvoiceErrors[index]?.gstPer ? 'error form-control' : 'form-control'}
+                                          />
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="number"
+                                            value={row.fcAmount ? row.fcAmount : '0'}
+                                            disabled
+                                            style={{ width: '100px' }}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const numericRegex = /^[0-9]*$/;
+                                              if (numericRegex.test(value)) {
+                                                setChargerCostInvoice((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, fcAmount: value } : r))
+                                                );
+                                                setCostInvoiceErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    fcAmount: !value ? 'fcAmount is required' : ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setCostInvoiceErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    fcAmount: 'Only numeric characters are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={costInvoiceErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
+                                          />
+                                          {costInvoiceErrors[index]?.fcAmount && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {costInvoiceErrors[index].fcAmount}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="number"
+                                            value={row.lcAmount ? row.lcAmount : '0'}
+                                            disabled
+                                            style={{ width: '100px' }}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const numericRegex = /^[0-9]*$/;
+                                              if (numericRegex.test(value)) {
+                                                setChargerCostInvoice((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, lcAmount: value } : r))
+                                                );
+                                                setCostInvoiceErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    lcAmount: !value ? 'lcAmount is required' : ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setCostInvoiceErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    lcAmount: 'Only numeric characters are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={costInvoiceErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
+                                          />
+                                          {costInvoiceErrors[index]?.lcAmount && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {costInvoiceErrors[index].lcAmount}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="number"
+                                            value={row.billAmount ? row.billAmount : ''}
+                                            disabled
+                                            style={{ width: '100px' }}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const numericRegex = /^[0-9]*$/;
+                                              if (numericRegex.test(value)) {
+                                                setChargerCostInvoice((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, billAmount: value } : r))
+                                                );
+                                                setCostInvoiceErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    billAmount: !value ? 'Bill Amount is required' : ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setCostInvoiceErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    billAmount: 'Only numeric characters are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={costInvoiceErrors[index]?.billAmount ? 'error form-control' : 'form-control'}
+                                          />
+                                          {costInvoiceErrors[index]?.billAmount && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {costInvoiceErrors[index].billAmount}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.gtaAmount ? row.gtaAmount : ''}
+                                            style={{ width: '100px' }}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const numericRegex = /^[0-9]*$/;
+                                              if (numericRegex.test(value)) {
+                                                setChargerCostInvoice((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, gtaAmount: value } : r))
+                                                );
+                                                setCostInvoiceErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    gtaAmount: !value ? 'GTA Amt is required' : ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setCostInvoiceErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    gtaAmount: 'Only numeric characters are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={costInvoiceErrors[index]?.gtaAmount ? 'error form-control' : 'form-control'}
+                                          />
+                                          {costInvoiceErrors[index]?.gtaAmount && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {costInvoiceErrors[index].gtaAmount}
+                                            </div>
+                                          )}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </>
                                 </tbody>
                               </table>
                             </div>
+                            {showChargeDetails && chargeDetails.length > 0 && (
+                              <tr>
+                                <td className="border px-2 py-2">
+                                  <table className="table table-bordered mb-0">
+                                    <thead>
+                                      <tr>
+                                        <th style={{ textAlign: 'center' }}>S No</th>
+                                        {/* <th style={{ textAlign: 'center' }}>Tax Code</th> */}
+                                        <th style={{ textAlign: 'center' }}>Tax Desc</th>
+                                        {/* <th style={{ textAlign: 'center' }}>G-Tax Code</th> */}
+                                        <th style={{ textAlign: 'center' }}>TAX %</th>
+                                        {/* <th style={{ textAlign: 'center' }}>SAC</th> */}
+                                        <th style={{ textAlign: 'center' }}>LC Amount</th>
+                                      </tr>
+                                    </thead>
+                                    <tbody>
+                                      {chargeDetails.map((detail, idx) => (
+                                        <tr key={idx}>
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{idx + 1}</td>
+                                          {/* <td style={{ width: '150px', textAlign: 'center' }}>{detail.chargeCode}</td> */}
+                                          <td style={{ width: '300px', textAlign: 'center' }}>{detail.chargeDesc}</td>
+                                          {/* <td style={{ width: '150px', textAlign: 'center' }}>{detail.gChargeCode}</td> */}
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.gstPercent}</td>
+                                          {/* <td style={{ width: '150px', textAlign: 'center' }}>{detail.sac}</td> */}
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.lcAmount}</td>
+                                        </tr>
+                                      ))}
+                                    </tbody>
+                                  </table>
+                                </td>
+                              </tr>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -1777,19 +1616,18 @@ const RCostInvoicegna = () => {
                               <InputLabel id="demo-simple-select-label">TDS</InputLabel>
                               <Select
                                 labelId="tds"
-                                name="tdsWithHolding"
-                                value={tdsCostInvoiceDTO[index]?.tdsWithHolding || ''}
+                                name="tds"
+                                value={tdsCostInvoiceDTO[index]?.tds || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
-                                
                                 label="TDS"
                                 required
-                                error={!!tdsCostErrors[index]?.tdsWithHolding}
+                                error={!!tdsCostErrors[index]?.tds}
                               >
                                 <MenuItem value="NO">NO</MenuItem>
                                 <MenuItem value="NORMAL">NORMAL</MenuItem>
                                 <MenuItem value="SPECIAL">SPECIAL</MenuItem>
                               </Select>
-                              <FormHelperText error>{tdsCostErrors[index]?.tdsWithHolding}</FormHelperText>
+                              <FormHelperText error>{tdsCostErrors[index]?.tds}</FormHelperText>
                             </FormControl>
                           </div>
                           <div className="col-md-3 mb-3">
@@ -1800,12 +1638,11 @@ const RCostInvoicegna = () => {
                                 name="section"
                                 value={tdsCostInvoiceDTO[index]?.section || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
-                                
                                 label="Section"
                                 required
                                 error={!!tdsCostErrors[index]?.section}
                               >
-                                {sectionOptions.map((section, id) => (
+                                {tdsList.map((section, id) => (
                                   <MenuItem key={id} value={section.sectionName}>
                                     {section.sectionName}
                                   </MenuItem>
@@ -1819,14 +1656,14 @@ const RCostInvoicegna = () => {
                               <TextField
                                 label="TDS%"
                                 size="small"
-                                name="tdsWithHoldingPer"
+                                name="tdsPer"
                                 type="number"
                                 disabled
                                 inputProps={{ maxLength: 30 }}
-                                value={tdsCostInvoiceDTO[index]?.tdsWithHoldingPer || ''}
+                                value={tdsCostInvoiceDTO[index]?.tdsPer || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
-                                error={!!tdsCostErrors[index]?.tdsWithHoldingPer}
-                                helperText={tdsCostErrors[index]?.tdsWithHoldingPer || ''}
+                                error={!!tdsCostErrors[index]?.tdsPer}
+                                helperText={tdsCostErrors[index]?.tdsPer || ''}
                               />
                             </FormControl>
                           </div>
@@ -1835,14 +1672,30 @@ const RCostInvoicegna = () => {
                               <TextField
                                 label="Total TDS Amount"
                                 size="small"
-                                name="totTdsWhAmnt"
+                                name="totalTdsAmt"
                                 type="number"
                                 disabled
                                 inputProps={{ maxLength: 30 }}
-                                value={tdsCostInvoiceDTO[index]?.totTdsWhAmnt || ''}
+                                value={tdsCostInvoiceDTO[index]?.totalTdsAmt || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
-                                error={!!tdsCostErrors[index]?.totTdsWhAmnt}
-                                helperText={tdsCostErrors[index]?.totTdsWhAmnt}
+                                error={!!tdsCostErrors[index]?.totalTdsAmt}
+                                helperText={tdsCostErrors[index]?.totalTdsAmt}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth size="small">
+                              <TextField
+                                label="TDS Percentage Amount"
+                                size="small"
+                                name="tdsPerAmt"
+                                type="number"
+                                disabled
+                                inputProps={{ maxLength: 30 }}
+                                value={tdsCostInvoiceDTO[index]?.tdsPerAmt || ''}
+                                onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
+                                error={!!tdsCostErrors[index]?.tdsPerAmt}
+                                helperText={tdsCostErrors[index]?.tdsPerAmt}
                               />
                             </FormControl>
                           </div>
@@ -1883,8 +1736,8 @@ const RCostInvoicegna = () => {
                           <FormControl fullWidth variant="filled">
                             <TextField
                               label="Act Bill Amt.(LC)"
-                              name="actBillLcAmt"
-                              value={formData.actBillLcAmt}
+                              name="actLcAmt"
+                              value={formData.actLcAmt}
                               size="small"
                               placeholder="0.00"
                               disabled
