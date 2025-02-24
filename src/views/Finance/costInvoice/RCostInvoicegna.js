@@ -40,7 +40,7 @@ const RCostInvoicegna = () => {
   const [showChargeDetails, setShowChargeDetails] = useState(false);
   const [tdsList, setTDSList] = useState([]);
   const [stateCodeList, setStateCodeList] = useState([]);
-  const [CityList, setCityList] = useState([]);
+  const [cityList, setCityList] = useState([]);
   const [chargeACList, setChargeACList] = useState([]);
   const [downloadPdf, setDownloadPdf] = useState(false);
   const [pdfData, setPdfData] = useState([]);
@@ -87,7 +87,9 @@ const RCostInvoicegna = () => {
     roundOff: '',
     taxAmountLc: ''
   });
-
+  const supplierDate = dayjs(formData.supplierDate);
+const creditDays = formData.creditDays || 0;      
+const minDate = supplierDate.add(creditDays, 'days');
   const [chargerCostInvoice, setChargerCostInvoice] = useState([
     {
       chargeAC: '',
@@ -288,20 +290,19 @@ const RCostInvoicegna = () => {
   const calculateSummary = () => {
     let totalBillAmt = 0;
     let totalLcAmount = 0;
-
     chargerCostInvoice.forEach((row) => {
       totalLcAmount += parseFloat(row.lcAmount || 0);
       totalBillAmt += parseFloat(row.billAmount || 0);
     });
-
     const totalTds = tdsCostInvoiceDTO.reduce((acc, row) => acc + parseFloat(row.totalTdsAmt || 0), 0);
+    const roundedValue = Math.round(totalLcAmount - totalTds);
 
     setFormData((prev) => ({
       ...prev,
       actBillCurrAmt: totalBillAmt.toFixed(2),
       actLcAmt: (totalBillAmt - totalTds).toFixed(2),
       netLcAmt: (totalLcAmount - totalTds).toFixed(2),
-      roundOff: Math.round(totalLcAmount - totalTds),
+      roundOff: (roundedValue - (totalLcAmount - totalTds)).toFixed(2),
       amtInWords: toWords(parseFloat(totalBillAmt)).toUpperCase()
     }));
   };
@@ -318,6 +319,9 @@ const RCostInvoicegna = () => {
     getCurrencyAndExratesForMatchingParties(formData.partyCode);
   }, [formData.partyCode]);
   useEffect(() => {
+    getStateCode(formData.partyCode);
+  }, [formData.partyCode]);
+  useEffect(() => {
     if (stateCodeList.length > 0) {
       setFormData((prev) => ({
         ...prev,
@@ -326,6 +330,15 @@ const RCostInvoicegna = () => {
       }));
     }
   }, [stateCodeList]);
+  // useEffect(() => {
+  //   if (cityList.length === 1) {
+  //     setFormData((prev) => ({
+  //       ...prev,
+  //       supplierPlace: cityList.city,
+  //       address: cityList.address
+  //     }));
+  //   }
+  // }, [cityList]);
 
   // useEffect(() => {
   //   getStateCode(formData.partyCode);
@@ -487,7 +500,7 @@ const RCostInvoicegna = () => {
         creditDays: selectedParty.creditDays
       }));
       getStateCode(selectedParty.partyCode);
-      getCurrencyAndExratesForMatchingParties(selectedParty.partyCode);
+      // getCurrencyAndExratesForMatchingParties(selectedParty.partyCode);
     } else {
       console.log('No Party found with the given code:', value);
     }
@@ -507,7 +520,7 @@ const RCostInvoicegna = () => {
   };
   const handleSelectCity = (e) => {
     const value = e.target.value;
-    const selectedCity = CityList.find((stateC) => stateC.city === value);
+    const selectedCity = cityList.find((stateC) => stateC.city === value);
     if (selectedCity) {
       setFormData((prevData) => ({
         ...prevData,
@@ -560,9 +573,14 @@ const RCostInvoicegna = () => {
     }
   };
   const handleDateChange = (field, date) => {
-    const formattedDate = dayjs(date);
+    const formattedDate = dayjs(date).format('YYYY-MM-DD');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
+  // const handleDateChange = (field, date) => {
+  //   const formattedDate = dayjs(date).format('DD-MM-YYYY');
+  //   setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+  // };
+  
   const calculateChargesAmt = () => {
     if (!Array.isArray(chargerCostInvoice) || chargerCostInvoice.length === 0) return;
 
@@ -782,7 +800,7 @@ const RCostInvoicegna = () => {
         chargeRCostInvoiceGnaDTO: rCostVO,
         creditDays: formData.creditDays,
         currency: formData.currency,
-        dueDate: formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : null,
+        dueDate: formData.dueDate,
         exRate: parseInt(formData.exRate),
         gstType: formData.gstType,
         partyType: formData.partyType,
@@ -791,7 +809,7 @@ const RCostInvoicegna = () => {
         place: formData.supplierPlace,
         remarks: formData.remarks,
         supplierBillNo: formData.supplierBillNo,
-        supplierBillDate: formData.supplierDate ? dayjs(formData.supplierDate, 'YYYY-MM-DD') : null,
+        supplierBillDate: formData.supplierDate,
         supplierGstIn: formData.supplierGstIn,
         supplierGstInCode: formData.stateCode,
         address: formData.address,
@@ -1014,14 +1032,14 @@ const RCostInvoicegna = () => {
                       labelId="supplierPlace"
                       label="supplierPlace"
                       value={formData.supplierPlace}
-                      // || (CityList.length === 1 ? CityList[0].city : '')
+                      //  || (cityList.length === 1 ? cityList[0].city : '')
                       name="supplierPlace"
                       onChange={handleSelectCity}
                       error={!!fieldErrors.supplierPlace}
                       helperText={fieldErrors.supplierPlace}
                     >
-                      {CityList &&
-                        CityList.map((par, index) => (
+                      {cityList &&
+                        cityList.map((par, index) => (
                           <MenuItem key={index} value={par.city}>
                             {par.city}
                           </MenuItem>
@@ -1060,22 +1078,21 @@ const RCostInvoicegna = () => {
                     />
                   </FormControl>
                 </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        label="Supplier Date"
-                        value={formData.supplierDate}
-                        onChange={(date) => handleDateChange('supplierDate', date)}
-                        slotProps={{
-                          textField: { size: 'small', clearable: true }
-                        }}
-                        format="DD-MM-YYYY"
-                      />
-                    </LocalizationProvider>
-                    {fieldErrors.supplierDate && <p className="dateErrMsg">Supplier Date is required</p>}
-                  </FormControl>
-                </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled" size="small">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Supplier Date"
+                      value={formData.supplierDate ? dayjs(formData.supplierDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('supplierDate', date)}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true, error: fieldErrors.supplierDate, helperText: fieldErrors.supplierDate }
+                      }}
+                      format="DD-MM-YYYY"
+                    />
+                  </LocalizationProvider>
+                </FormControl>
+              </div>
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
                     <InputLabel id="demo-simple-select-label">{<span>Currency</span>}</InputLabel>
@@ -1131,22 +1148,22 @@ const RCostInvoicegna = () => {
                     />
                   </FormControl>
                 </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        label="Due Date"
-                        value={formData.dueDate}
-                        onChange={(date) => handleDateChange('dueDate', date)}
-                        slotProps={{
-                          textField: { size: 'small', clearable: true }
-                        }}
-                        format="DD-MM-YYYY"
-                      />
-                    </LocalizationProvider>
-                    {fieldErrors.dueDate && <p className="dateErrMsg">Due Date is required</p>}
-                  </FormControl>
-                </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled" size="small">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Due Date"
+                      value={formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('dueDate', date)}
+                      minDate={minDate}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true, error: fieldErrors.dueDate, helperText: fieldErrors.dueDate }
+                      }}
+                      format="DD-MM-YYYY"
+                    />
+                  </LocalizationProvider>
+                </FormControl>
+              </div>
                 <div className="col-md-3 mb-3">
                   {/* <FormControl fullWidth size="small"> */}
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gstType}>
