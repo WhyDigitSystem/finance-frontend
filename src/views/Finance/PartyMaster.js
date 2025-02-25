@@ -24,6 +24,12 @@ import ActionButton from 'utils/ActionButton';
 import { getAllActiveCitiesByState, getAllActiveCountries, getAllActiveCurrency, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
+import { FaFilePdf } from 'react-icons/fa';
+import { FaFileExcel } from 'react-icons/fa';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -33,11 +39,13 @@ export const PartyMaster = () => {
   const [stateList, setStateList] = useState([]);
   const [cityList, setCityList] = useState([]);
   const [editId, setEditId] = useState('');
+  const [loading, setLoading] = useState(false);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [companyName, setCompanyName] = useState(localStorage.getItem('companyName'));
   const [formData, setFormData] = useState({
     accountName: '',
     accountNo: '',
@@ -193,7 +201,7 @@ export const PartyMaster = () => {
 
   useEffect(() => {
     if (formData.partyType) {
-      getPartyCodeByOrgIdAndPartyType();
+      getPartyCodeByOrgIdAndPartyType(formData.partyType);
     }
   }, [formData.partyType]);
 
@@ -299,7 +307,7 @@ export const PartyMaster = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.partyMasterVO);
+        setListViewData(response.paramObjectsMap.partyMasterVO.reverse());
       } else {
         console.error('API Error:', response);
       }
@@ -331,9 +339,202 @@ export const PartyMaster = () => {
     }
   };
 
-  const getPartyCodeByOrgIdAndPartyType = async () => {
+  const handleExcelFileDownload = async () => {
     try {
-      const response = await apiCalls('get', `master/getPartyCodeByOrgIdAndPartyType?orgid=${orgId}&partytype=${formData.partyType}`);
+      setLoading(true);
+
+      const response = await apiCalls('get', `master/getPartyMasterByOrgId?orgId=${orgId}`);
+      const data = response?.paramObjectsMap?.partyMasterVO;
+
+      console.log('HandleExcelFileDownload PartyMaster', data);
+
+      if (!data || !Array.isArray(data)) {
+        console.error('No valid data received');
+        setLoading(false);
+        return;
+      }
+
+      const headerData = data.map((party) => ({
+        partyType: party.partyType,
+        partyCode: party.partyCode,
+        partyName: party.partyName,
+        gstPartyName: party.gstPartyName,
+        customerType: party.customerType,
+        agentName: party.agentName,
+        accountType: party.accountType,
+        bussinessType: party.bussinessType,
+        carrierCode: party.carrierCode,
+        supplierType: party.supplierType,
+        salesPerson: party.salesPerson,
+        customerCoord: party.customerCoord,
+        gstRegistered: party.gstRegistered,
+        gstIn: party.gstIn,
+        creditLimit: party.creditLimit,
+        creditDays: party.creditDays,
+        panNo: party.panNo,
+        controllingOff: party.controllingOff,
+        currency: party.currency,
+        panName: party.panName,
+        airwayBillNo: party.airwayBillNo,
+        airLineCode: party.airLineCode,
+        tanNo: party.tanNo,
+        bussinessCate: party.bussinessCate,
+        country: party.country,
+        caf: party.caf,
+        remarks: party.remarks,
+        compoundScheme: party.compoundScheme,
+        psuGovOrg: party.psuGovOrg,
+        nameOfBank: party.nameOfBank,
+        addressBank: party.addressBank,
+        accountNo: party.accountNo,
+        accType: party.accType,
+        branch: party.branch,
+        branchCode: party.branchCode,
+        createdBy: party.createdBy,
+        updatedBy: party.updatedBy,
+        // cancel: party.cancel,
+        // cancelRemarks: party.cancelRemarks,
+        finYear: party.finYear,
+        // screenCode: party.screenCode,
+        // screenName: party.screenName,
+        // orgId: party.orgId,
+        creditTerms: party.creditTerms,
+        swift: party.swift,
+        ifscCode: party.ifscCode,
+        active: party.active
+      }));
+
+      const partyStateData = data.flatMap(
+        ({ partyStateVO }) =>
+          partyStateVO?.map(({ state, gstIn, stateNo, contactPerson, contactPhoneNo, email }) => ({
+            state,
+            gstIn,
+            stateNo,
+            contactPerson,
+            contactPhoneNo,
+            email
+          })) || []
+      );
+
+      const partyAddressData = data.flatMap(
+        ({ partyAddressVO }) =>
+          partyAddressVO?.map(
+            ({ state, businessPlace, stateGstIn, city, addressType, addressLine1, addressLine2, addressLine3, pincode, contact }) => ({
+              state,
+              businessPlace,
+              stateGstIn,
+              city,
+              addressType,
+              addressLine1,
+              addressLine2,
+              addressLine3,
+              pincode,
+              contact
+            })
+          ) || []
+      );
+
+      const partyDetailsOfDirectorsData = data.flatMap(
+        ({ partyDetailsOfDirectorsVO }) =>
+          partyDetailsOfDirectorsVO?.map(({ name, designation, phone, email }) => ({
+            name,
+            designation,
+            phone,
+            email
+          })) || []
+      );
+
+      const partySpecialTDSData = data.flatMap(
+        ({ partySpecialTDSVO }) =>
+          partySpecialTDSVO?.map(({ section, tdsWithSec, rateFrom, rateTo, tdsWithPer, surchargePer, edPercentage, tdsCertifiNo }) => ({
+            section,
+            tdsWithSec,
+            rateFrom,
+            rateTo,
+            tdsWithPer,
+            surchargePer,
+            edPercentage,
+            tdsCertifiNo
+          })) || []
+      );
+
+      const partyCurrencyMappingData = data.flatMap(
+        ({ partyCurrencyMappingVO }) =>
+          partyCurrencyMappingVO?.map(({ transCurrency }) => ({
+            transCurrency
+          })) || []
+      );
+
+      const partySalesPersonTaggingData = data.flatMap(
+        ({ partySalesPersonTaggingVO }) =>
+          partySalesPersonTaggingVO?.map(({ salesPerson, empCode, salesBranch, effectiveFrom, effectiveTill }) => ({
+            salesPerson,
+            empCode,
+            salesBranch,
+            effectiveFrom,
+            effectiveTill
+          })) || []
+      );
+
+      const partyTdsExemptedData = data.flatMap(
+        ({ partyTdsExemptedVO }) =>
+          partyTdsExemptedVO?.map(({ tdsExempCerti, value, finYear }) => ({
+            tdsExempCerti,
+            value,
+            finYear
+          })) || []
+      );
+
+      const partyPartnerTaggingData = data.flatMap(
+        ({ partyPartnerTaggingVO }) =>
+          partyPartnerTaggingVO?.map(({ partnerName }) => ({
+            partnerName
+          })) || []
+      );
+
+      const partyVendorEvaluationData = data.flatMap(({ partyVendorEvaluationVO }) =>
+        partyVendorEvaluationVO
+          ? [
+              {
+                boughVendor: partyVendorEvaluationVO.boughVendor,
+                basicVenSelected: partyVendorEvaluationVO.basicVenSelected,
+                justification: partyVendorEvaluationVO.justification,
+                slaPoints: partyVendorEvaluationVO.slaPoints,
+                commAgreedTerm: partyVendorEvaluationVO.commAgreedTerm
+              }
+            ]
+          : []
+      );
+
+      const workbook = XLSX.utils.book_new();
+
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(headerData), 'Header Details');
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partyStateData), 'Party State');
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partyAddressData), 'Party Address');
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partyDetailsOfDirectorsData), 'Party Directors');
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partySpecialTDSData), 'Party Special TDS');
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partyCurrencyMappingData), 'Party Currency');
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partySalesPersonTaggingData), 'Party Sales');
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partyTdsExemptedData), 'Party TDS Exempted');
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partyPartnerTaggingData), 'Party Partner Tagging');
+      XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partyVendorEvaluationData), 'Party Vendor Evaluation');
+
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+      saveAs(blob, `PartyMaster_${companyName}.xlsx`);
+
+      console.log('Download triggered');
+      setLoading(false);
+    } catch (error) {
+      console.error('Error downloading PartyMaster file:', error);
+      setLoading(false);
+    }
+  };
+
+  const getPartyCodeByOrgIdAndPartyType = async (partyType) => {
+    try {
+      const response = await apiCalls('get', `master/getPartyCodeByOrgIdAndPartyType?orgid=${orgId}&partytype=${partyType}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -403,13 +604,21 @@ export const PartyMaster = () => {
           supplierType: particularMaster.supplierType,
           swift: particularMaster.swift,
           tanNo: particularMaster.tanNo,
-          partyVendorEvaluationDTO: {
-            commAgreedTerm: particularMaster.partyVendorEvaluationVO.commAgreedTerm || '',
-            justification: particularMaster.partyVendorEvaluationVO.justification || '',
-            slaPoints: particularMaster.partyVendorEvaluationVO.slaPoints || '',
-            basicVenSelected: particularMaster.partyVendorEvaluationVO.basicVenSelected || '',
-            boughVendor: particularMaster.partyVendorEvaluationVO.boughVendor || ''
-          }
+          partyVendorEvaluationDTO: particularMaster.partyVendorEvaluationVO
+            ? {
+                commAgreedTerm: particularMaster.partyVendorEvaluationVO.commAgreedTerm || '',
+                justification: particularMaster.partyVendorEvaluationVO.justification || '',
+                slaPoints: particularMaster.partyVendorEvaluationVO.slaPoints || '',
+                basicVenSelected: particularMaster.partyVendorEvaluationVO.basicVenSelected || '',
+                boughVendor: particularMaster.partyVendorEvaluationVO.boughVendor || ''
+              }
+            : {
+                commAgreedTerm: '',
+                justification: '',
+                slaPoints: '',
+                basicVenSelected: '',
+                boughVendor: ''
+              }
         });
 
         setPartyStateData(
@@ -510,6 +719,167 @@ export const PartyMaster = () => {
       console.error('Error fetching PartyMaster:', error);
     }
   };
+
+  // const getPartyMasterById = async (row) => {
+  //   console.log('THE SELECTED getPartyMasterById IS:', row.original.id);
+  //   setEditId(row.original.id);
+  //   try {
+  //     const response = await apiCalls('get', `master/getPartyMasterById?id=${row.original.id}`);
+  //     console.log('API Response:', response);
+  //     if (response.status === true) {
+  //       setListView(false);
+  //       const particularMaster = response.paramObjectsMap.partyMasterVO[0];
+  //       console.log('THE PARTICULAR CUSTOMER IS:', particularMaster);
+  //       getPartyCodeByOrgIdAndPartyType(particularMaster.partyType);
+  //       setFormData({
+  //         ...formData,
+  //         accountName: particularMaster.accountName,
+  //         accountNo: particularMaster.accountNo || '',
+  //         accType: particularMaster.accType,
+  //         creditTerms: particularMaster.creditTerms,
+  //         accountType: particularMaster.accountType,
+  //         active: particularMaster.active === 'Active',
+  //         addressOfBranch: particularMaster.addressOfBranch,
+  //         agentName: particularMaster.agentName,
+  //         airwayBillNo: particularMaster.airwayBillNo,
+  //         airLineCode: particularMaster.airLineCode,
+  //         addressBank: particularMaster.addressBank,
+  //         bussinessCate: particularMaster.bussinessCate,
+  //         bussinessType: particularMaster.bussinessType,
+  //         caf: particularMaster.caf,
+  //         carrierCode: particularMaster.carrierCode,
+  //         company: particularMaster.company,
+  //         compoundScheme: particularMaster.compoundScheme,
+  //         controllingOff: particularMaster.controllingOff,
+  //         country: particularMaster.country,
+  //         creditDays: particularMaster.creditDays,
+  //         creditLimit: particularMaster.creditLimit,
+  //         currency: particularMaster.currency,
+  //         customerCategory: particularMaster.customerCategory,
+  //         customerCoord: particularMaster.customerCoord,
+  //         customerType: particularMaster.customerType,
+  //         gstIn: particularMaster.gstIn,
+  //         gstPartyName: particularMaster.gstPartyName,
+  //         gstRegistered: particularMaster.gstRegistered,
+  //         ifscCode: particularMaster.ifscCode,
+  //         nameOfBank: particularMaster.nameOfBank,
+  //         panName: particularMaster.panName,
+  //         panNo: particularMaster.panNo,
+  //         partyCode: particularMaster.partyCode,
+  //         partyName: particularMaster.partyName,
+  //         partyType: particularMaster.partyType,
+  //         psuGovOrg: particularMaster.psuGovOrg,
+  //         salesPerson: particularMaster.salesPerson,
+  //         supplierType: particularMaster.supplierType,
+  //         swift: particularMaster.swift,
+  //         tanNo: particularMaster.tanNo,
+  //         partyVendorEvaluationDTO: {
+  //           commAgreedTerm: particularMaster.partyVendorEvaluationVO.commAgreedTerm || '',
+  //           justification: particularMaster.partyVendorEvaluationVO.justification || '',
+  //           slaPoints: particularMaster.partyVendorEvaluationVO.slaPoints || '',
+  //           basicVenSelected: particularMaster.partyVendorEvaluationVO.basicVenSelected || '',
+  //           boughVendor: particularMaster.partyVendorEvaluationVO.boughVendor || ''
+  //         }
+  //       });
+
+  //       setPartyStateData(
+  //         particularMaster.partyStateVO.map((detail) => ({
+  //           id: detail.id,
+  //           state: detail.state || '',
+  //           gstIn: detail.gstIn || '',
+  //           stateNo: detail.stateNo || '',
+  //           contactPerson: detail.contactPerson || '',
+  //           contactPhoneNo: detail.contactPhoneNo || '',
+  //           email: detail.email || '',
+  //           stateCode: detail.stateCode || ''
+  //         }))
+  //       );
+
+  //       setPartyAddressData(
+  //         particularMaster.partyAddressVO.map((detail) => ({
+  //           id: detail.id,
+  //           addressType: detail.addressType || '',
+  //           addressLine1: detail.addressLine1 || '',
+  //           addressLine2: detail.addressLine2 || '',
+  //           addressLine3: detail.addressLine3 || '',
+  //           businessPlace: detail.businessPlace || '',
+  //           city: detail.city || '',
+  //           contact: detail.contact || '',
+  //           pincode: detail.pincode || '',
+  //           state: detail.state || '',
+  //           stateGstIn: detail.stateGstIn || ''
+  //         }))
+  //       );
+
+  //       setPartyDetailsOfDirectors(
+  //         particularMaster.partyDetailsOfDirectorsVO.map((detail) => ({
+  //           id: detail.id,
+  //           name: detail.name || '',
+  //           designation: detail.designation || '',
+  //           phone: detail.phone || '',
+  //           email: detail.email || ''
+  //         }))
+  //       );
+
+  //       setPartySpecialTDS(
+  //         particularMaster.partySpecialTDSVO.map((detail) => ({
+  //           id: detail.id,
+  //           tdsWithSec: detail.tdsWithSec || '',
+  //           rateFrom: detail.rateFrom || '',
+  //           rateTo: detail.rateTo || '',
+  //           tdsWithPer: detail.tdsWithPer || '',
+  //           surchargePer: detail.surchargePer || '',
+  //           edPercentage: detail.edPercentage || '',
+  //           tdsCertifiNo: detail.tdsCertifiNo || ''
+  //         }))
+  //       );
+
+  //       setPartyChargesExemption(
+  //         particularMaster.partyChargesExemptionVO.map((detail) => ({
+  //           id: detail.id,
+  //           tdsWithSec: detail.tdsWithSec || '',
+  //           charges: detail.charges || ''
+  //         }))
+  //       );
+
+  //       setPartyCurrencyMapping(
+  //         particularMaster.partyCurrencyMappingVO.map((detail) => ({
+  //           id: detail.id,
+  //           transCurrency: detail.transCurrency || ''
+  //         }))
+  //       );
+
+  //       setPartySalesPersonTagging(
+  //         particularMaster.partySalesPersonTaggingVO.map((detail) => ({
+  //           id: detail.id,
+  //           salesPerson: detail.salesPerson || '',
+  //           empCode: detail.empCode || '',
+  //           salesBranch: detail.salesBranch || '',
+  //           effectiveFrom: detail.effectiveFrom || '',
+  //           effectiveTill: detail.effectiveTill || ''
+  //         }))
+  //       );
+
+  //       setPartyTdsExempted(
+  //         particularMaster.partyTdsExemptedVO.map((detail) => ({
+  //           id: detail.id,
+  //           tdsExempCerti: detail.tdsExempCerti || '',
+  //           value: detail.value || '',
+  //           finYear: detail.finYear || ''
+  //         }))
+  //       );
+
+  //       setPartyPartnerTagging(
+  //         particularMaster.partyPartnerTaggingVO.map((detail) => ({
+  //           id: detail.id,
+  //           partnerName: detail.partnerName || ''
+  //         }))
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching PartyMaster:', error);
+  //   }
+  // };
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -1881,7 +2251,8 @@ export const PartyMaster = () => {
           {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
           <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-          <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} margin="0 10px 0 10px" />
+          <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} margin="10px" />
+          {listView ? <ActionButton icon={FaFileExcel} title="Excel Download" className="mr-2" onClick={handleExcelFileDownload} /> : ''}
         </div>
         {listView ? (
           <div className="mt-4">
