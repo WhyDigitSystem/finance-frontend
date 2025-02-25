@@ -15,6 +15,14 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
+import COASample from '../../assets/sample-files/COASample.xlsx';
+import { FaFileExcel } from 'react-icons/fa';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { FaFilePdf } from 'react-icons/fa';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 export const Employee = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -22,6 +30,9 @@ export const Employee = () => {
   const [branchList, setBranchList] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [showForm, setShowForm] = useState(true);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     empCode: '',
@@ -35,7 +46,7 @@ export const Employee = () => {
     doj: null,
     active: true,
     salesFlag: true,
-    email:''
+    email: ''
   });
 
   const theme = useTheme();
@@ -51,7 +62,7 @@ export const Employee = () => {
     designation: '',
     dob: '',
     doj: '',
-    email:''
+    email: ''
   });
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
@@ -94,12 +105,49 @@ export const Employee = () => {
       console.error('Error fetching data:', error);
     }
   };
+
+  const handleExcelFileDownload = () => {
+    console.log("Downloading Employee Excel...");  // Debugging step
+    console.log("List View Data:", listViewData); // Check if data exists
+
+    if (!listViewData || listViewData.length === 0) {
+      showToast('error', 'No employee data available to download');
+      return;
+    }
+
+    try {
+      // Extracting employee-specific fields
+      const filteredData = listViewData.map(({ employeeCode, employeeName, branch, department, designation, joiningDate, active }) => ({
+        'Employee Code': employeeCode,
+        'Employee Name': employeeName,
+        'Branch': branch,
+        'Department': department,
+        'Designation': designation,
+        'Joining Date': joiningDate,
+        'Active': (active === true || active === 'Active') ? 'Yes' : 'No'
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(filteredData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Employee_List');
+
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+      saveAs(blob, 'Employee_List.xlsx');
+      showToast('success', 'Employee Excel file downloaded successfully');
+    } catch (error) {
+      console.error('Error generating Employee Excel:', error);
+      showToast('error', 'Failed to generate Employee Excel');
+    }
+  };
+
   const handleInputChange = (e) => {
     const { name, value, checked, type, selectionStart, selectionEnd } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
     const codeRegex = /^[a-zA-Z0-9- ]*$/;
     let errorMessage = '';
-  
+
     if (name === 'empCode' && !codeRegex.test(value)) {
       errorMessage = 'Only AlphaNumerics are Allowed';
     } else if (name === 'empCode' && value.length > 10) {
@@ -113,7 +161,7 @@ export const Employee = () => {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: errorMessage }));
     } else {
       setFieldErrors((prevErrors) => ({ ...prevErrors, [name]: '' }));
-  
+
       // Branch-specific logic
       if (name === 'branch') {
         const selectedBranch = branchList.find((br) => br.branch === value);
@@ -128,7 +176,7 @@ export const Employee = () => {
       } else {
         // Handle text or textarea
         let inputValue = value;
-  
+
         if (name === 'email') {
           // Store email in lowercase
           inputValue = value.toLowerCase();
@@ -136,9 +184,9 @@ export const Employee = () => {
           // Convert other inputs to uppercase
           inputValue = value.toUpperCase();
         }
-  
+
         setFormData((prevData) => ({ ...prevData, [name]: inputValue }));
-  
+
         // Maintain cursor position for seamless typing
         setTimeout(() => {
           const inputElement = document.getElementsByName(name)[0];
@@ -168,7 +216,7 @@ export const Employee = () => {
       dob: null,
       doj: null,
       active: true,
-      email:''
+      email: ''
     });
     setFieldErrors({
       empCode: '',
@@ -180,7 +228,7 @@ export const Employee = () => {
       designation: '',
       dob: '',
       doj: '',
-      email:''
+      email: ''
     });
   };
 
@@ -338,6 +386,68 @@ export const Employee = () => {
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
 
+
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false); // Close dialog
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
+
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+
+  const handlePDFDownload = async () => {
+    setLoading(true);
+
+    if (!listViewData || listViewData.length === 0) {
+      showToast('error', 'No employee data available to download');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const doc = new jsPDF();
+      doc.text('Employee List', 14, 10);
+
+      // Define table headers for Employee List
+      const tableColumn = ['Employee Code', 'Employee Name', 'Branch', 'Department', 'Designation', 'Joining Date', 'Active'];
+      const tableRows = [];
+
+      // Format data for the PDF table
+      listViewData.forEach(({ employeeCode, employeeName, branch, department, designation, joiningDate, active }) => {
+        tableRows.push([
+          employeeCode,
+          employeeName,
+          branch,
+          department,
+          designation,
+          joiningDate,
+          (active === true || active === 'Active') ? 'Yes' : 'No'
+        ]);
+      });
+
+      // Generate the table inside the PDF
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 20,
+      });
+
+      doc.save('Employee_List.pdf');
+      showToast('success', 'Employee PDF downloaded successfully');
+    } catch (error) {
+      console.error('Error generating Employee PDF:', error);
+      showToast('error', 'Failed to generate Employee PDF');
+    }
+
+    setLoading(false);
+  };
+
+
   return (
     <>
       <div>{/* <ToastContainer /> */}</div>
@@ -348,6 +458,30 @@ export const Employee = () => {
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
+            {uploadOpen && (
+              <CommonBulkUpload
+                open={uploadOpen}
+                handleClose={handleBulkUploadClose}
+                title="Upload Files"
+                uploadText="Upload file"
+                downloadText="Sample File"
+                onSubmit={handleSubmit}
+                sampleFileDownload={COASample}
+                handleFileUpload={handleFileUpload}
+                apiUrl={`master/excelUploadForGroupLedger`}
+                screen="COA"
+                loginUser={loginUserName}
+                orgId={orgId}
+              ></CommonBulkUpload>
+            )}
+            {/* <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} />
+            <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} /> */}
+            {listView && (
+              < div className='ps-2'>
+                <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} />
+                <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} />
+              </div>
+            )}
           </div>
         </div>
         {listView ? (
@@ -357,7 +491,7 @@ export const Employee = () => {
         ) : (
           <>
             <div className="row">
-            <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-3">
                 <TextField
                   label="Name"
                   variant="outlined"
@@ -416,7 +550,7 @@ export const Employee = () => {
                     value={formData.department}
                     onChange={handleInputChange}
                     name="department"
-                    // disabled={isEditMode}
+                  // disabled={isEditMode}
                   >
                     {departmentList?.map((row) => (
                       <MenuItem key={row.id} value={row.departmentName}>
@@ -437,7 +571,7 @@ export const Employee = () => {
                     value={formData.designation}
                     onChange={handleInputChange}
                     name="designation"
-                    // disabled={isEditMode}
+                  // disabled={isEditMode}
                   >
                     {designationList?.map((row) => (
                       <MenuItem key={row.id} value={row.designationName}>

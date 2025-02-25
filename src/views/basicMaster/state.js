@@ -12,11 +12,22 @@ import ActionButton from 'utils/ActionButton';
 import { getAllActiveCountries } from 'utils/CommonFunctions';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from './CommonListViewTable';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
+import COASample from '../../assets/sample-files/COASample.xlsx';
+import { FaFileExcel } from 'react-icons/fa';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { FaFilePdf } from 'react-icons/fa';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 export const State = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
+  const [showForm, setShowForm] = useState(true);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     active: true,
     stateCode: '',
@@ -70,6 +81,39 @@ export const State = () => {
     }
   };
 
+  const handleExcelFileDownload = () => {
+    console.log("Downloading Excel...");  // Debugging step
+    console.log("List View Data:", listViewData); // Check if data exists
+
+    if (!listViewData || listViewData.length === 0) {
+      showToast('error', 'No data available to download');
+      return;
+    }
+
+    try {
+      const filteredData = listViewData.map(({ stateCode, stateName, stateNumber, country, active }) => ({
+        'State Code': stateCode,
+        'State Name': stateName,
+        'State Number': stateNumber,
+        'Country': country,
+        'Active': (active === true || active === 'Active') ? 'Yes' : 'No'
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(filteredData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'States');
+
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+      saveAs(blob, 'State_List.xlsx');
+      showToast('success', 'Excel file downloaded successfully');
+    } catch (error) {
+      console.error('Error generating Excel:', error);
+      showToast('error', 'Failed to generate Excel');
+    }
+  };
+
   const getStateById = async (row) => {
     setEditId(row.original.id);
     try {
@@ -110,7 +154,7 @@ export const State = () => {
       setFieldErrors({ ...fieldErrors, [name]: 'Only Alphabets Allowed' });
     } else if (name === 'stateName' && value.length > 40) {
       setFieldErrors({ ...fieldErrors, [name]: 'Exceeded Max Length' });
-    }  else {
+    } else {
       setFormData({ ...formData, [name]: value.toUpperCase() });
       setFieldErrors({ ...fieldErrors, [name]: '' });
 
@@ -210,6 +254,61 @@ export const State = () => {
     });
   };
 
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false); // Close dialog
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
+
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+
+  const handlePDFDownload = async () => {
+    setLoading(true);
+
+    if (!listViewData || listViewData.length === 0) {
+      showToast('error', 'No data available to download');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const doc = new jsPDF();
+      doc.text('State List', 14, 10);
+
+      const tableColumn = ['State Code', 'State Name', 'State Number', 'Country', 'Active'];
+      const tableRows = [];
+
+      listViewData.forEach(({ stateCode, stateName, stateNumber, country, active }) => {
+        tableRows.push([
+          stateCode,
+          stateName,
+          stateNumber,
+          country,
+          (active === true || active === 'Active') ? 'Yes' : 'No'
+        ]);
+      });
+
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 20,
+      });
+
+      doc.save('State_List.pdf');
+      showToast('success', 'PDF downloaded successfully');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      showToast('error', 'Failed to generate PDF');
+    }
+
+    setLoading(false);
+  };
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -219,6 +318,31 @@ export const State = () => {
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" />
+
+            {uploadOpen && (
+              <CommonBulkUpload
+                open={uploadOpen}
+                handleClose={handleBulkUploadClose}
+                title="Upload Files"
+                uploadText="Upload file"
+                downloadText="Sample File"
+                onSubmit={handleSubmit}
+                sampleFileDownload={COASample}
+                handleFileUpload={handleFileUpload}
+                apiUrl={`master/excelUploadForGroupLedger`}
+                screen="COA"
+                loginUser={loginUserName}
+                orgId={orgId}
+              ></CommonBulkUpload>
+            )}
+            {/* <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} />
+            <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} /> */}
+            {listView && (
+              <div className='ps-2'>
+                <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} />
+                <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} />
+              </div>
+            )}
           </div>
         </div>
 

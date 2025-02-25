@@ -14,6 +14,14 @@ import ActionButton from 'utils/ActionButton';
 import { getAllActiveCountries } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
+import COASample from '../../assets/sample-files/COASample.xlsx';
+import { FaFileExcel } from 'react-icons/fa';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { FaFilePdf } from 'react-icons/fa';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 export const Currency = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -21,6 +29,9 @@ export const Currency = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [countryList, setCountryList] = useState([]);
+  const [showForm, setShowForm] = useState(true);
+  const [uploadOpen, setUploadOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
     currency: '',
@@ -94,7 +105,7 @@ export const Currency = () => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
     const nameRegex = /^[A-Za-z ]*$/;
     let errorMessage = '';
-  
+
     // Define max length for each field
     const maxLengths = {
       currency: 3,
@@ -114,7 +125,7 @@ export const Currency = () => {
       default:
         break;
     }
-  
+
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
@@ -122,9 +133,9 @@ export const Currency = () => {
         ...prevFormData,
         [name]: name === 'active' ? checked : value.toUpperCase()
       }));
-  
+
       setFieldErrors({ ...fieldErrors, [name]: '' });
-  
+
       // Preserve the cursor position for text-based inputs
       if (type === 'text' || type === 'textarea') {
         setTimeout(() => {
@@ -136,7 +147,7 @@ export const Currency = () => {
       }
     }
   };
-  
+
   const handleClear = () => {
     setFormData({
       currency: '',
@@ -153,6 +164,97 @@ export const Currency = () => {
     });
     setEditId('');
   };
+
+  const handleExcelFileDownload = () => {
+    console.log("Downloading Excel...");  // Debugging step
+    console.log("List View Data:", listViewData); // Check if data exists
+
+    if (!listViewData || listViewData.length === 0) {
+      showToast('error', 'No data available to download');
+      return;
+    }
+
+    try {
+      const filteredData = listViewData.map(({ currency, currencyDescription, country, active }) => ({
+        'Currency': currency,
+        'Currency Description': currencyDescription,
+        'Country': country,
+        'Active': (active === true || active === 'Active') ? 'Yes' : 'No'
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(filteredData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Currencies');
+
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+      saveAs(blob, 'Currency_List.xlsx');
+      showToast('success', 'Excel file downloaded successfully');
+    } catch (error) {
+      console.error('Error generating Excel:', error);
+      showToast('error', 'Failed to generate Excel');
+    }
+  };
+
+
+
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false); // Close dialog
+  };
+
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
+
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+
+  const handlePDFDownload = async () => {
+    setLoading(true);
+
+    if (!listViewData || listViewData.length === 0) {
+      showToast('error', 'No currency data available to download');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const doc = new jsPDF();
+      doc.text('Currency List', 14, 10);
+
+      const tableColumn = ['Currency', 'Currency Description', 'Country', 'Active'];
+      const tableRows = [];
+
+      listViewData.forEach(({ currency, currencyDescription, country, active }) => {
+        tableRows.push([
+          currency,
+          currencyDescription,
+          country,
+          active === true || active === 'Active' ? 'Yes' : 'No', // Ensuring Active status is shown correctly
+        ]);
+      });
+
+      doc.autoTable({
+        head: [tableColumn],
+        body: tableRows,
+        startY: 20,
+      });
+
+      doc.save('Currency_List.pdf');
+      showToast('success', 'Currency List PDF downloaded successfully');
+    } catch (error) {
+      console.error('Error generating Currency List PDF:', error);
+      showToast('error', 'Failed to generate Currency List PDF');
+    }
+
+    setLoading(false);
+  };
+
+
+
 
   const getAllCurrencies = async () => {
     try {
@@ -273,6 +375,30 @@ export const Currency = () => {
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} margin="0 10px 0 10px" />
+            {uploadOpen && (
+              <CommonBulkUpload
+                open={uploadOpen}
+                handleClose={handleBulkUploadClose}
+                title="Upload Files"
+                uploadText="Upload file"
+                downloadText="Sample File"
+                onSubmit={handleSubmit}
+                sampleFileDownload={COASample}
+                handleFileUpload={handleFileUpload}
+                apiUrl={`master/excelUploadForGroupLedger`}
+                screen="COA"
+                loginUser={loginUserName}
+                orgId={orgId}
+              ></CommonBulkUpload>
+            )}
+            {/* <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} />
+            <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} /> */}
+            {listView && (
+              <div className='ps-2'>
+                <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} />
+                <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} />
+              </div>
+            )}
           </div>
         </div>
         {listView ? (
