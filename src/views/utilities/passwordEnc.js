@@ -2,8 +2,8 @@ import CryptoJS from 'crypto-js';
 import React from 'react';
 
 export const encryptPassword = (password) => {
-  console.log('Password', password);
-  console.log(CryptoJS);
+  // console.log('Password', password);
+  // console.log(CryptoJS);
   let rkEncryptionKey = CryptoJS.enc.Base64.parse(process.env.REACT_APP_ENC_KEY);
   let rkEncryptionIv = CryptoJS.enc.Base64.parse(process.env.REACT_APP_ENC_IV);
   let utf8Stringified = CryptoJS.enc.Utf8.parse(password);

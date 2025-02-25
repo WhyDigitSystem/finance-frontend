@@ -94,7 +94,7 @@ const GlobalSection = () => {
 
     setBranchValue(branchcode);
 
-    getCustomer(branchcode);
+    // getCustomer(branchcode);
   };
   const getAccessBranch = async () => {
     try {
@@ -116,42 +116,42 @@ const GlobalSection = () => {
     }
   };
 
-  const getCustomer = async (branchcode) => {
-    const formData = {
-      branchcode: branchcode,
-      orgid: orgId,
-      userName: userName
-    };
+  // const getCustomer = async (branchcode) => {
+  //   const formData = {
+  //     branchcode: branchcode,
+  //     orgid: orgId,
+  //     userName: userName
+  //   };
 
-    const queryParams = new URLSearchParams(formData).toString();
+  //   const queryParams = new URLSearchParams(formData).toString();
 
-    try {
-      const result = await apiCalls('get', `GlobalParam/globalparamCustomerByUserName?${queryParams}`);
-      setCustomerVO(result.paramObjectsMap.GlopalParameterCustomer);
-      console.log('Test', result);
-    } catch (err) {
-      console.log('error', err);
-    }
-  };
+  //   try {
+  //     const result = await apiCalls('get', `GlobalParam/globalparamCustomerByUserName?${queryParams}`);
+  //     setCustomerVO(result.paramObjectsMap.GlopalParameterCustomer);
+  //     console.log('Test', result);
+  //   } catch (err) {
+  //     console.log('error', err);
+  //   }
+  // };
 
-  const getClient = async (customer, branchCode) => {
-    const formData = {
-      branchcode: branchCode,
-      orgid: orgId,
-      userName: userName,
-      customer: customer
-    };
+  // const getClient = async (customer, branchCode) => {
+  //   const formData = {
+  //     branchcode: branchCode,
+  //     orgid: orgId,
+  //     userName: userName,
+  //     customer: customer
+  //   };
 
-    const queryParams = new URLSearchParams(formData).toString();
+  //   const queryParams = new URLSearchParams(formData).toString();
 
-    try {
-      const result = await apiCalls('get', `GlobalParam/globalparamClientByUserName?${queryParams}`);
-      setClientVO(result.paramObjectsMap.GlopalParameterClient);
-      console.log('Test', result);
-    } catch (err) {
-      console.log('error', err);
-    }
-  };
+  //   try {
+  //     const result = await apiCalls('get', `GlobalParam/globalparamClientByUserName?${queryParams}`);
+  //     setClientVO(result.paramObjectsMap.GlopalParameterClient);
+  //     console.log('Test', result);
+  //   } catch (err) {
+  //     console.log('error', err);
+  //   }
+  // };
 
   const getGlobalParameter = async () => {
     try {
@@ -159,22 +159,22 @@ const GlobalSection = () => {
       const globalParameterVO = result.paramObjectsMap.globalParam;
       setGlobalParameter(globalParameterVO);
       // setCustomerValue(globalParameterVO.customer);
-      setClientValue(globalParameterVO.client);
+      // setClientValue(globalParameterVO.client);
       setFinYearValue(globalParameterVO.finYear);
       // setWarehouseValue(globalParameterVO.warehouse);
       setBranchValue(globalParameterVO.branchcode);
       setBranchName(globalParameterVO.branch);
       console.log('Test', result);
 
-      localStorage.setItem('customer', globalParameterVO.customer);
-      localStorage.setItem('client', globalParameterVO.client);
+      // localStorage.setItem('customer', globalParameterVO.customer);
+      // localStorage.setItem('client', globalParameterVO.client);
       localStorage.setItem('finYear', globalParameterVO.finYear);
-      localStorage.setItem('warehouse', globalParameterVO.warehouse);
+      // localStorage.setItem('warehouse', globalParameterVO.warehouse);
       localStorage.setItem('branchcode', globalParameterVO.branchcode);
       localStorage.setItem('branch', globalParameterVO.branch);
 
-      getCustomer(globalParameterVO.branchcode);
-      getClient(globalParameterVO.customer, globalParameterVO.branchcode);
+      // getCustomer(globalParameterVO.branchcode);
+      // getClient(globalParameterVO.customer, globalParameterVO.branchcode);
       // getWareHouse(globalParameterVO.branchcode);
     } catch (err) {
       console.log('error', err);
@@ -192,7 +192,7 @@ const GlobalSection = () => {
     };
     try {
       const result = await apiCalls('put', `GlobalParam/globalparam`, formData);
-      showToast('success', 'Global Parameter updated succesfully');
+      showToast('success', 'Global Parameter updated successfully');
       // setOpen(false);
       console.log('Test', result);
     } catch (err) {
@@ -216,16 +216,16 @@ const GlobalSection = () => {
     setFinYearValue(event.target.value);
   };
 
-  const handleClientChange = (event) => {
-    setClientValue(event.target.value);
-    // getWareHouse(selectedBranch.branchcode);
-  };
+  // const handleClientChange = (event) => {
+  // setClientValue(event.target.value);
+  // getWareHouse(selectedBranch.branchcode);
+  // };
 
-  const handleCustomerChange = (event) => {
-    setCustomerValue(event.target.value);
+  // const handleCustomerChange = (event) => {
+  //   setCustomerValue(event.target.value);
 
-    getClient(event.target.value, selectedBranch.branchcode);
-  };
+  //   getClient(event.target.value, selectedBranch.branchcode);
+  // };
 
   // const handleWarehouseChange = (event) => {
   //   setWarehouseValue(event.target.value);

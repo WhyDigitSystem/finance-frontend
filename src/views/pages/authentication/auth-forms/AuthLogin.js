@@ -84,25 +84,7 @@ const FirebaseLogin = ({ ...others }) => {
     }
   };
 
-  // const getCompanyDetails = async () => {
-  //   try {
-  //     const response = await apiCalls('get', `commonmaster/company/${orgId}`);
-
-  //     if (response.status === true) {
-  //       const particularCompany = response.paramObjectsMap.companyVO[0];
-  //       console.log('particularCompany', particularCompany);
-  //       localStorage.setItem('companyName', particularCompany.companyName);
-  //     } else {
-  //       console.error('API Error:', response);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
-
   const loginAPICall = async (values) => {
-    // Prepare the user registration data
-
     const userData = {
       password: encryptPassword(values.password),
       userName: values.email
@@ -115,31 +97,26 @@ const FirebaseLogin = ({ ...others }) => {
       });
 
       if (response.data.status) {
-        // Handle authentication failure, display an error message, etc.
-        console.log('Test1', userData);
-        dispatch(setUser({ orgId: response.data.paramObjectsMap.userVO.orgId }));
+        const userVO = response.data.paramObjectsMap.userVO;
 
-        localStorage.setItem('orgId', response.data.paramObjectsMap.userVO.orgId); // Replace with the actual token
-        localStorage.setItem('userId', response.data.paramObjectsMap.userVO.usersId);
-        localStorage.setItem('token', response.data.paramObjectsMap.userVO.token);
-        localStorage.setItem('tokenId', response.data.paramObjectsMap.userVO.tokenId);
-        localStorage.setItem('userName', response.data.paramObjectsMap.userVO.userName);
-        localStorage.setItem('userType', response.data.paramObjectsMap.userVO.userType);
+        dispatch(setUser({ orgId: userVO.orgId }));
+        localStorage.setItem('orgId', userVO.orgId);
+        localStorage.setItem('userId', userVO.usersId);
+        localStorage.setItem('token', userVO.token);
+        localStorage.setItem('tokenId', userVO.tokenId);
+        localStorage.setItem('userName', userVO.userName);
+        localStorage.setItem('userType', userVO.userType);
         localStorage.setItem('LoginMessage', true);
-        const userRole = response.data.paramObjectsMap.userVO.roleVO;
+
+        const userRole = userVO.roleVO;
         localStorage.setItem('ROLE', userRole);
         dispatch(setUserRole(userRole));
 
-        const userRoleVO = response.data.paramObjectsMap.userVO.roleVO;
-        const roles = userRoleVO.map((row) => ({
-          role: row.role
-        }));
+        const roles = userRole.map((row) => ({ role: row.role }));
         localStorage.setItem('ROLES', JSON.stringify(roles));
-        setOrgId(response.data.paramObjectsMap.userVO.orgId);
-        // SET SCREENS
-        const roleVO = response.data.paramObjectsMap.userVO.roleVO;
+
         let allScreensVO = [];
-        roleVO.forEach((roleObj) => {
+        userVO.roleVO.forEach((roleObj) => {
           roleObj.responsibilityVO.forEach((responsibility) => {
             if (responsibility.screensVO) {
               allScreensVO = allScreensVO.concat(responsibility.screensVO);
@@ -149,16 +126,16 @@ const FirebaseLogin = ({ ...others }) => {
         allScreensVO = [...new Set(allScreensVO)];
         localStorage.setItem('screens', JSON.stringify(allScreensVO));
         resetForm();
-        // window.location.href = "/login";
-        try {
-          const response = await apiCalls('get', `commonmaster/company/${orgId}`);
 
-          if (response.status === true) {
-            const particularCompany = response.paramObjectsMap.companyVO[0];
+        try {
+          const companyResponse = await apiCalls('get', `commonmaster/company/${userVO.orgId}`);
+
+          if (companyResponse.status === true) {
+            const particularCompany = companyResponse.paramObjectsMap.companyVO[0];
             console.log('particularCompany', particularCompany);
             localStorage.setItem('companyName', particularCompany.companyName);
           } else {
-            console.error('commonmaster/company API Error:', response);
+            console.error('commonmaster/company API Error:', companyResponse);
           }
         } catch (error) {
           console.error('Error fetching data in Company Name:', error);
@@ -167,21 +144,13 @@ const FirebaseLogin = ({ ...others }) => {
         if (checked) {
           localStorage.setItem('rememberedCredentials', JSON.stringify({ email: values.email, password: values.password }));
         } else {
-          // Clear stored credentials if "Remember Me" is unchecked
           localStorage.removeItem('rememberedCredentials');
         }
       } else {
-        // Successful registration, perform actions like storing tokens and redirecting
         toast.error(response.data.paramObjectsMap.errorMessage, {
           autoClose: 2000,
           theme: 'colored'
         });
-        // setTimeout(() => {
-        //   toast.success(response.data.paramObjectsMap.message, {
-        //     autoClose: 2000,
-        //     theme: 'colored'
-        //   });
-        // }, 2000);
       }
     } catch (error) {
       toast.error('Network Error', {
