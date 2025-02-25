@@ -23,6 +23,12 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import SampleFile from '../../assets/sample-files/vendor.xlsx';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
+import { FaFilePdf } from 'react-icons/fa';
+import { FaFileExcel } from 'react-icons/fa';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -52,6 +58,7 @@ export const Vender = () => {
   const [listView, setListView] = useState(false);
   const [currencyExRates, setCurrencyExRates] = useState([]);
   const [listViewData, setListViewData] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [tabValue, setTabValue] = useState(0);
   const handleChangeTab = (event, newValue) => {
     setTabValue(newValue);
@@ -110,6 +117,99 @@ export const Vender = () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleExcelFileDownload = async () => {
+    try {
+      setLoading(true);
+
+      const result = await apiCalls('get', `/master/getAllVendors?orgId=${orgId}`);
+
+      console.log('API Response:', result);
+
+      const vendorData = result?.paramObjectsMap?.customersVO;
+
+      if (vendorData && Array.isArray(vendorData)) {
+        const filteredData = vendorData.map(({ partyName, partyCode, gstIn, panNo }) => ({
+          partyName,
+          partyCode,
+          gstIn,
+          panNo
+        }));
+
+        const partyStateData = vendorData.flatMap(
+          ({ partyStateVO }) =>
+            partyStateVO?.map(({ state, gstIn, stateNo, contactPerson, contactPhoneNo, email }) => ({
+              state,
+              gstIn,
+              stateNo,
+              contactPerson,
+              contactPhoneNo,
+              email
+            })) || []
+        );
+
+        const partyAddressData = vendorData.flatMap(
+          ({ partyAddressVO }) =>
+            partyAddressVO?.map(
+              ({ state, businessPlace, stateGstIn, city, addressType, addressLine1, addressLine2, addressLine3, pincode, contact }) => ({
+                state,
+                businessPlace,
+                stateGstIn,
+                city,
+                addressType,
+                addressLine1,
+                addressLine2,
+                addressLine3,
+                pincode,
+                contact
+              })
+            ) || []
+        );
+
+        const partySalesPersonTaggingData = vendorData.flatMap(
+          ({ partySalesPersonTaggingVO }) =>
+            partySalesPersonTaggingVO?.map(({ salesPerson, empCode, salesBranch, effectiveFrom, effectiveTill }) => ({
+              salesPerson,
+              empCode,
+              salesBranch,
+              effectiveFrom,
+              effectiveTill
+            })) || []
+        );
+
+        const partyCurrencyMappingData = vendorData.flatMap(
+          ({ partyCurrencyMappingVO }) =>
+            partyCurrencyMappingVO?.map(({ transCurrency }) => ({
+              transCurrency
+            })) || []
+        );
+
+        const workbook = XLSX.utils.book_new();
+
+        // Create and append worksheets
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(filteredData), 'Header Details');
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partyStateData), 'Party State');
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partyAddressData), 'Party Address');
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partySalesPersonTaggingData), 'Party Sales');
+        XLSX.utils.book_append_sheet(workbook, XLSX.utils.json_to_sheet(partyCurrencyMappingData), 'Party Currency');
+
+        // Generate Excel file and trigger download
+        const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+        const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+        saveAs(blob, 'VENDOR.xlsx');
+
+        console.log('Download triggered');
+      } else {
+        console.error('Invalid or empty API response.');
+      }
+
+      setLoading(false);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      setLoading(false);
     }
   };
 
@@ -885,6 +985,7 @@ export const Vender = () => {
               orgId={orgId}
             />
           )}
+          {listView ? <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} /> : ''}
         </div>
         {listView ? (
           <div className="mt-4">
