@@ -620,18 +620,24 @@ export const Vender = () => {
       return newErrors;
     });
   };
-
   const getAvailableStates = (currentRowId) => {
     if (!Array.isArray(stateList)) {
       console.error('stateList is not an array:', stateList);
       return [];
     }
-    return stateList.map((state) => ({
-      id: state.id,
-      stateName: state.stateName
-    }));
+    const selectedStates = new Set(
+      partyStateData
+        .filter((row) => row.id !== currentRowId)
+        .map((row) => row.state) 
+    );
+  
+    return stateList
+      .filter((state) => !selectedStates.has(state.stateName))
+      .map((state) => ({
+        id: state.id,
+        stateName: state.stateName,
+      }));
   };
-
   const [partyStateData, setPartyStateData] = useState([
     {
       id: 1,
@@ -1022,84 +1028,6 @@ export const Vender = () => {
                   // helperText={fieldErrors.vendorCode}
                 />
               </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="gstIn"
-                  fullWidth
-                  name="gstIn"
-                  label="Reg No"
-                  size="small"
-                  value={formData.gstIn}
-                  onChange={handleInputChange}
-                  error={fieldErrors.gstIn}
-                  helperText={fieldErrors.gstIn}
-                  inputProps={{ maxLength: 15 }}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="panNo"
-                  fullWidth
-                  name="panNo"
-                  label="PAN No"
-                  size="small"
-                  value={formData.panNo}
-                  onChange={handleInputChange}
-                  // error={fieldErrors.panNo}
-                  // helperText={fieldErrors.panNo}
-                />
-              </div>
-
-              {/* <div className="col-md-3 mb-3">
-                <TextField
-                  id="creditLimit"
-                  fullWidth
-                  name="creditLimit"
-                  label="Credit Limit"
-                  size="small"
-                  type="number"
-                  value={formData.creditLimit}
-                  onChange={handleInputChange}
-                  // error={fieldErrors.creditLimit}
-                  // helperText={fieldErrors.creditLimit}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="creditDays"
-                  fullWidth
-                  name="creditDays"
-                  label="Credit Days"
-                  size="small"
-                  type="number"
-                  value={formData.creditDays}
-                  onChange={handleInputChange}
-                  // error={fieldErrors.creditDays}
-                  // helperText={fieldErrors.creditDays}
-                />
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControl variant="outlined" fullWidth size="small">
-                  <InputLabel id="creditTerms">Credit Terms</InputLabel>
-                  <Select
-                    labelId="creditTerms"
-                    label="Credit Terms"
-                    name="creditTerms"
-                    value={formData.creditTerms}
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="PREPAID">PREPAID</MenuItem>
-                    <MenuItem value="IMMEDIATE">IMMEDIATE</MenuItem>
-                    <MenuItem value="CREDIT">CREDIT</MenuItem>
-                  </Select>
-                  {fieldErrors.creditTerms && <FormHelperText>{fieldErrors.creditTerms}</FormHelperText>}
-                </FormControl>
-              </div> */}
-
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" fullWidth size="small">
                   <InputLabel id="gstRegistered">Tax Registered</InputLabel>
@@ -1116,7 +1044,33 @@ export const Vender = () => {
                   {/* {fieldErrors.gstRegistered && <FormHelperText>{fieldErrors.gstRegistered}</FormHelperText>} */}
                 </FormControl>
               </div>
-
+              {formData.gstRegistered === 'YES'&&
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="gstIn"
+                  fullWidth
+                  name="gstIn"
+                  label="Reg No"
+                  size="small"
+                  value={formData.gstIn}
+                  onChange={handleInputChange}
+                  error={fieldErrors.gstIn}
+                  helperText={fieldErrors.gstIn}
+                  inputProps={{ maxLength: 15 }}
+                />
+              </div>
+              }
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="panNo"
+                  fullWidth
+                  name="panNo"
+                  label="PAN No"
+                  size="small"
+                  value={formData.panNo}
+                  onChange={handleInputChange}
+                />
+              </div>
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.bussinessType}>
                   <InputLabel id="bussinessType">Business Type</InputLabel>
@@ -1203,7 +1157,7 @@ export const Vender = () => {
                                 <th className="table-header">State</th>
                                 <th className="table-header">State Code</th>
                                 <th className="table-header">State No</th>
-                                <th className="table-header">Reg No</th>
+                                {formData.gstRegistered === 'YES' &&<th className="table-header">Reg No</th>}
                                 <th className="table-header">Contact Person</th>
                                 <th className="table-header">Contact Phone No</th>
                                 <th className="table-header">Contact Email</th>
@@ -1302,7 +1256,7 @@ export const Vender = () => {
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].stateNo}</div>
                                     )}
                                   </td>
-
+                                  {formData.gstRegistered === 'YES' &&
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
@@ -1314,7 +1268,7 @@ export const Vender = () => {
                                         setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstIn: value } : r)));
                                         setPartyStateDataErrors((prev) => {
                                           const newErrors = [...prev];
-                                          newErrors[index] = { ...newErrors[index], gstIn: !value ? 'GstIn is required' : '' };
+                                          newErrors[index] = { ...newErrors[index], gstIn: !value ? 'Reg No is required' : '' };
                                           return newErrors;
                                         });
                                       }}
@@ -1324,7 +1278,7 @@ export const Vender = () => {
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].gstIn}</div>
                                     )}
                                   </td>
-
+                                  }
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
@@ -1434,7 +1388,7 @@ export const Vender = () => {
                                 <th className="table-header">State</th>
                                 <th className="table-header">City</th>
                                 <th className="table-header">Business Place</th>
-                                <th className="table-header">State Reg No</th>
+                                {formData.gstRegistered === 'YES'&&<th className="table-header">State Reg No</th>}
                                 <th className="table-header">Address Type</th>
                                 <th className="table-header">Address Line1</th>
                                 <th className="table-header">Address Line2</th>
@@ -1545,7 +1499,7 @@ export const Vender = () => {
                                       </div>
                                     )}
                                   </td>
-
+                                  {formData.gstRegistered === 'YES'&&
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
@@ -1567,7 +1521,7 @@ export const Vender = () => {
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].stateGstIn}</div>
                                     )}
                                   </td>
-
+                                  }
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"

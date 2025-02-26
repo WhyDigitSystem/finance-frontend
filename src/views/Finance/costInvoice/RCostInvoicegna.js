@@ -44,7 +44,6 @@ const RCostInvoicegna = () => {
   const [chargeACList, setChargeACList] = useState([]);
   const [downloadPdf, setDownloadPdf] = useState(false);
   const [pdfData, setPdfData] = useState([]);
-  const [sectionOptions, setSectionOptions] = useState([]);
   const [chargeDetails, setChargeDetails] = useState([
     {
       id: 1,
@@ -88,8 +87,8 @@ const RCostInvoicegna = () => {
     taxAmountLc: ''
   });
   const supplierDate = dayjs(formData.supplierDate);
-const creditDays = formData.creditDays || 0;      
-const minDate = supplierDate.add(creditDays, 'days');
+  const creditDays = formData.creditDays || 0;      
+  const minDate = supplierDate.add(creditDays, 'days');
   const [chargerCostInvoice, setChargerCostInvoice] = useState([
     {
       chargeAC: '',
@@ -230,7 +229,6 @@ const minDate = supplierDate.add(creditDays, 'days');
     ]);
     setCostInvoiceErrors([]);
     setTdsCostErrors([]);
-    setSectionOptions([]);
     setEditId('');
     getRCostInvoiceDocId();
   };
@@ -240,7 +238,7 @@ const minDate = supplierDate.add(creditDays, 'days');
     setDownloadPdf(true);
   };
   const listViewColumns = [
-    { accessorKey: 'docId', header: 'Cost Invoice No', size: 140 },
+    { accessorKey: 'docId', header: 'R Cost Invoice No', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 }
   ];
   useEffect(() => {
@@ -512,8 +510,10 @@ const minDate = supplierDate.add(creditDays, 'days');
       setFormData((prevData) => ({
         ...prevData,
         stateCode: selectedStateCode.stateCode,
+        // state: selectedStateCode.state,
         supplierGstIn: selectedStateCode.gstin
       }));
+      getCityName(formData.partyCode,selectedStateCode.state)
     } else {
       console.log('No State Code found with the given code:', value);
     }
@@ -542,7 +542,17 @@ const minDate = supplierDate.add(creditDays, 'days');
   const getStateCode = async (partyCode) => {
     try {
       const response = await apiCalls('get', `/rCostInvoiceGna/getStateFromPartyMaster?orgId=${orgId}&partyCode=${partyCode}`);
-      setStateCodeList(response.paramObjectsMap.partyMasterVO);
+      const uniqueStateCodes = Array.from(
+        new Map(response.paramObjectsMap.partyMasterVO.map((state) => [state.stateCode, state])).values()
+      );
+      setStateCodeList(uniqueStateCodes);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+  const getCityName = async (partyCode, state) => {
+    try {
+      const response = await apiCalls('get', `/rCostInvoiceGna/getCityFromPartyMaster?orgId=${orgId}&partyCode=${partyCode}&state=${state}`);
       setCityList(response.paramObjectsMap.partyMasterVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -576,10 +586,6 @@ const minDate = supplierDate.add(creditDays, 'days');
     const formattedDate = dayjs(date).format('YYYY-MM-DD');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
-  // const handleDateChange = (field, date) => {
-  //   const formattedDate = dayjs(date).format('DD-MM-YYYY');
-  //   setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
-  // };
   
   const calculateChargesAmt = () => {
     if (!Array.isArray(chargerCostInvoice) || chargerCostInvoice.length === 0) return;
@@ -854,7 +860,7 @@ const minDate = supplierDate.add(creditDays, 'days');
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="outlined-textarea-zip"
-                    label="Cost Invoice No"
+                    label="R Cost Invoice No"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -970,22 +976,6 @@ const minDate = supplierDate.add(creditDays, 'days');
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.stateCode}>
                     <InputLabel id="demo-simple-select-label">{<span>State Code</span>}</InputLabel>
-                    {/* <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      label="State Code"
-                      onChange={handleSelectStateCode}
-                      name="stateCode"
-                      value={formData.stateCode}
-                      // || (stateCodeList.length === 1 ? stateCodeList[0].stateCode : '')
-                    >
-                      {stateCodeList &&
-                        stateCodeList.map((item) => (
-                          <MenuItem key={item.id} value={item.stateCode}>
-                            {item.stateCode}
-                          </MenuItem>
-                        ))}
-                    </Select> */}
                     <Select
                       labelId="stateCode"
                       label="State Code"
@@ -1148,27 +1138,27 @@ const minDate = supplierDate.add(creditDays, 'days');
                     />
                   </FormControl>
                 </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled" size="small">
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Due Date"
-                      value={formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : null}
-                      onChange={(date) => handleDateChange('dueDate', date)}
-                      minDate={minDate}
-                      slotProps={{
-                        textField: { size: 'small', clearable: true, error: fieldErrors.dueDate, helperText: fieldErrors.dueDate }
-                      }}
-                      format="DD-MM-YYYY"
-                    />
-                  </LocalizationProvider>
-                </FormControl>
-              </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled" size="small">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="Due Date"
+                        value={formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : null}
+                        onChange={(date) => handleDateChange('dueDate', date)}
+                        minDate={minDate}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true, error: fieldErrors.dueDate, helperText: fieldErrors.dueDate }
+                        }}
+                        format="DD-MM-YYYY"
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
                 <div className="col-md-3 mb-3">
                   {/* <FormControl fullWidth size="small"> */}
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gstType}>
                     <InputLabel id="demo-simple-select-label">Tax Type</InputLabel>
-                    <Select labelId="gstType" name="gstType" value={formData.gstType} onChange={handleInputChange} label="TAX Type">
+                    <Select labelId="gstType" name="gstType" value={formData.gstType} onChange={handleInputChange} label="Tax Type">
                       <MenuItem value="INTER">INTER</MenuItem>
                       <MenuItem value="INTRA">INTRA</MenuItem>
                     </Select>
