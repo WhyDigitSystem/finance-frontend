@@ -68,7 +68,7 @@ export const JobCard = () => {
     operationClosed: '',
     financeClosed: '',
     date: dayjs(),
-    salesCategory: '',
+    salesCategory: 'MANAGEMENT',
     salesPerson: '',
     closedOn: null,
     closed: false,
@@ -196,7 +196,7 @@ export const JobCard = () => {
       customerCode: '',
       operationClosed: '',
       financeClosed: '',
-      salesCategory: '',
+      salesCategory: 'MANAGEMENT',
       salesPerson: '',
       closed: false,
       income: '',
@@ -613,7 +613,7 @@ export const JobCard = () => {
               </div>
 
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.adjustmentType}>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.salesCategory}>
                   <InputLabel id="salesCategory">Sales Category</InputLabel>
                   <Select
                     labelId="AdjustmentType-label"
@@ -623,10 +623,10 @@ export const JobCard = () => {
                     name="salesCategory"
                     disabled
                   >
-                    <MenuItem value="GENERAL">GENERAL</MenuItem>
-                    <MenuItem value="EXPENSE">EXPENSE</MenuItem>
+                    <MenuItem value="MANAGEMENT">MANAGEMENT</MenuItem>
+                    {/* <MenuItem value="EXPENSE">EXPENSE</MenuItem> */}
                   </Select>
-                  {fieldErrors.adjustmentType && <FormHelperText>{fieldErrors.adjustmentType}</FormHelperText>}
+                  {fieldErrors.salesCategory && <FormHelperText>{fieldErrors.salesCategory}</FormHelperText>}
                 </FormControl>
               </div>
 

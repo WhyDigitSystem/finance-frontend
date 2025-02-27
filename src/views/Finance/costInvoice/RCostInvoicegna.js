@@ -48,11 +48,10 @@ const RCostInvoicegna = () => {
     {
       id: 1,
       chargeDesc: '',
-      chargeCode: '',
-      gChargeCode: '',
+      currency: '',
       gstPercent: '',
-      sac: '',
-      taxable: '',
+      gstAmt: '',
+      billAmt: '',
       lcAmount: ''
     }
   ]);
@@ -64,7 +63,8 @@ const RCostInvoicegna = () => {
     partyType: 'VENDOR',
     partyName: '',
     partyCode: '',
-
+    vid: '',
+    vdate: null,
     supplierGstIn: '',
     stateCode: '',
     supplierPlace: '',
@@ -149,7 +149,8 @@ const RCostInvoicegna = () => {
       partyType: 'VENDOR',
       partyName: '',
       partyCode: '',
-
+      vid: '',
+      vdate: null,
       supplierGstIn: '',
       stateCode: '',
       supplierPlace: '',
@@ -181,7 +182,8 @@ const RCostInvoicegna = () => {
       partyType: '',
       partyName: '',
       partyCode: '',
-
+      vid: '',
+      vdate: null,
       supplierGstIn: '',
 
       supplierPlace: '',
@@ -273,18 +275,16 @@ const RCostInvoicegna = () => {
       totalTdsAmt: ((totalLcAmount * (item.tdsPer || 0)) / 100).toFixed(2),
       tdsPerAmt: ((totalLcAmount * (item.tdsPer || 0)) / 100).toFixed(2)
     }));
-
     setTdsCostInvoiceDTO(updatedTdsCostInvoiceDTO);
-
     setFormData((prev) => ({
       ...prev,
       taxAmountLc: (totalLcAmount - totgstAmt).toFixed(2),
       netBillCurrAmt: updatedChargerCostInvoice.some((item) => item.currency === 'INR')
         ? (totalLcAmount - totalTds).toFixed(2)
-        : totalBillAmt.toFixed(2)
+        : totalBillAmt.toFixed(2),
+        roundOff: parseFloat(totalBillAmt - totalTds) - parseInt(totalBillAmt - totalTds)
     }));
   };
-
   const calculateSummary = () => {
     let totalBillAmt = 0;
     let totalLcAmount = 0;
@@ -293,14 +293,13 @@ const RCostInvoicegna = () => {
       totalBillAmt += parseFloat(row.billAmount || 0);
     });
     const totalTds = tdsCostInvoiceDTO.reduce((acc, row) => acc + parseFloat(row.totalTdsAmt || 0), 0);
-    const roundedValue = Math.round(totalLcAmount - totalTds);
-
+    // const roundedValue = Math.round(totalLcAmount - totalTds);
     setFormData((prev) => ({
       ...prev,
       actBillCurrAmt: totalBillAmt.toFixed(2),
       actLcAmt: (totalBillAmt - totalTds).toFixed(2),
       netLcAmt: (totalLcAmount - totalTds).toFixed(2),
-      roundOff: (roundedValue - (totalLcAmount - totalTds)).toFixed(2),
+      // roundOff: (roundedValue - (totalLcAmount - totalTds)).toFixed(2),
       amtInWords: toWords(parseFloat(totalBillAmt)).toUpperCase()
     }));
   };
@@ -383,7 +382,8 @@ const RCostInvoicegna = () => {
           partyType: rCostVO.partyType || '',
           partyName: rCostVO.partyName || '',
           partyCode: rCostVO.partyCode || '',
-
+          vid: rCostVO.vid,
+          vdate: rCostVO.vdate ? dayjs(rCostVO.vdate) : null,
           supplierGstIn: rCostVO.supplierGstIn || '',
           stateCode: rCostVO.supplierGstInCode || '',
           supplierPlace: rCostVO.place || '',
@@ -436,11 +436,11 @@ const RCostInvoicegna = () => {
         setChargeDetails(
           rCostVO.gstLines.map((row) => ({
             id: row.id,
-            // chargeCode: row.chargeCode,
+            currency: row.currency,
             chargeDesc: row.chargeName,
-            // gChargeCode: row.govChargeCode,
+            gstAmt: row.gstAmt,
             gstPercent: row.gstPer,
-            // sac: row.sac,
+            billAmt: row.billAmt,
             lcAmount: row.lcAmt
           }))
         );
@@ -804,6 +804,8 @@ const RCostInvoicegna = () => {
         orgId: orgId,
         tdsRCostInvoiceGnaDTO: tdsVO,
         chargeRCostInvoiceGnaDTO: rCostVO,
+        vid: formData.vid,
+        vdate: dayjs(formData.vdate).format('YYYY-MM-DD'),
         creditDays: formData.creditDays,
         currency: formData.currency,
         dueDate: formData.dueDate,
@@ -971,6 +973,38 @@ const RCostInvoicegna = () => {
                       error={!!fieldErrors.partyCode}
                       helperText={fieldErrors.partyCode}
                     />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="V Id"
+                      size="small"
+                      name="vid"
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.vid}
+                      onChange={handleInputChange}
+                      disabled={editId}
+                      error={!!fieldErrors.vid}
+                      helperText={fieldErrors.vid}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="V Date"
+                        disabled={editId}
+                        value={formData.vdate}
+                        onChange={(date) => handleDateChange('vdate', date)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true }
+                        }}
+                        format="DD-MM-YYYY"
+                      />
+                    </LocalizationProvider>
+                    {fieldErrors.vdate && <p className="dateErrMsg">V Date is required</p>}
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
@@ -1584,11 +1618,11 @@ const RCostInvoicegna = () => {
                                     <thead>
                                       <tr>
                                         <th style={{ textAlign: 'center' }}>S No</th>
-                                        {/* <th style={{ textAlign: 'center' }}>Tax Code</th> */}
                                         <th style={{ textAlign: 'center' }}>Tax Desc</th>
-                                        {/* <th style={{ textAlign: 'center' }}>G-Tax Code</th> */}
+                                        <th style={{ textAlign: 'center' }}>Currency</th>
                                         <th style={{ textAlign: 'center' }}>TAX %</th>
-                                        {/* <th style={{ textAlign: 'center' }}>SAC</th> */}
+                                        <th style={{ textAlign: 'center' }}>Tax Amount</th>
+                                        <th style={{ textAlign: 'center' }}>Bill Amount</th>
                                         <th style={{ textAlign: 'center' }}>LC Amount</th>
                                       </tr>
                                     </thead>
@@ -1596,11 +1630,11 @@ const RCostInvoicegna = () => {
                                       {chargeDetails.map((detail, idx) => (
                                         <tr key={idx}>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{idx + 1}</td>
-                                          {/* <td style={{ width: '150px', textAlign: 'center' }}>{detail.chargeCode}</td> */}
                                           <td style={{ width: '300px', textAlign: 'center' }}>{detail.chargeDesc}</td>
-                                          {/* <td style={{ width: '150px', textAlign: 'center' }}>{detail.gChargeCode}</td> */}
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.currency}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.gstPercent}</td>
-                                          {/* <td style={{ width: '150px', textAlign: 'center' }}>{detail.sac}</td> */}
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.gstAmt}</td>
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.billAmt}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.lcAmount}</td>
                                         </tr>
                                       ))}

@@ -6,7 +6,6 @@ import dayjs from 'dayjs';
 import 'react-tabs/style/react-tabs.css';
 import 'react-toastify/dist/ReactToastify.css';
 import ClearIcon from '@mui/icons-material/Clear';
-import { toWords } from 'number-to-words';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import { FormControl, FormHelperText, Checkbox, FormControlLabel, FormLabel, InputLabel, MenuItem, Select } from '@mui/material';
@@ -42,7 +41,6 @@ const UrCostInvoicegna = () => {
   const [showChargeDetails, setShowChargeDetails] = useState(false);
   const [downloadPdf, setDownloadPdf] = useState(false);
   const [pdfData, setPdfData] = useState([]);
-  const [sectionOptions, setSectionOptions] = useState([]);
   const [stateCodeList, setStateCodeList] = useState([]);
   const [tdsList, setTDSList] = useState([]);
   const [chargeDetails, setChargeDetails] = useState([
@@ -72,12 +70,14 @@ const UrCostInvoicegna = () => {
     gstType: '',
     otherInfo: '',
     remarks: '',
+    vid: '',
+    vdate: null,
     shipperRefNo: '',
     supplierBillDate: null,
     supplierBillNo: '',
     supplierCode: '',
     supplierGstIn: '',
-    supplierGstInCode: '',
+    stateCode: '',
     supplierName: '',
     supplierPlace: '',
     supplierType: 'VENDOR',
@@ -164,7 +164,7 @@ const UrCostInvoicegna = () => {
       supplierBillNo: '',
       supplierCode: '',
       supplierGstIn: '',
-      supplierGstInCode: '',
+      stateCode: '',
       supplierName: '',
       supplierPlace: '',
       supplierType: 'VENDOR',
@@ -174,7 +174,9 @@ const UrCostInvoicegna = () => {
       roundOff:'',
       gstAmt:'',
       input:'',
-      output:''
+      output:'',
+      vid: '',
+      vdate: null,
     });
     setExRates([]);
     getAllActiveCurrency(orgId);
@@ -195,7 +197,7 @@ const UrCostInvoicegna = () => {
       supplierBillNo: '',
       supplierCode: '',
       supplierGstIn: '',
-      supplierGstInCode: '',
+      stateCode: '',
       supplierName: '',
       supplierPlace: '',
       supplierType: '',
@@ -205,7 +207,9 @@ const UrCostInvoicegna = () => {
       roundOff:'',
       gstAmt:'',
       input:'',
-      output:''
+      output:'',
+      vid: '',
+      vdate: null,
     });
     setChargerCostInvoice([
       {
@@ -236,84 +240,6 @@ const UrCostInvoicegna = () => {
     getUrCostInvoiceDocId();
     setShowChargeDetails(false);
   };
-
-  // const handleSaveClear = () => {
-  //   setFormData({
-  //     address: '',
-  //     branch: '',
-  //     branchCode: '',
-  //     creditDays: '',
-  //     currency: '',
-  //     dueDate: null,
-  //     exRate: '',
-  //     finYear: '',
-  //     gstType: '',
-  //     otherInfo: '',
-  //     remarks: '',
-  //     shipperRefNo: '',
-  //     supplierBillDate: null,
-  //     supplierBillNo: '',
-  //     supplierCode: '',
-  //     supplierGstIn: '',
-  //     supplierGstInCode: '',
-  //     supplierName: '',
-  //     supplierPlace: '',
-  //     supplierType: 'VENDOR',
-  //   });
-  //   setExRates([]);
-  //   getAllActiveCurrency(orgId);
-  //   setFieldErrors({
-  //     address: '',
-  //     branch: '',
-  //     branchCode: '',
-  //     creditDays: '',
-  //     currency: '',
-  //     dueDate: null,
-  //     exRate: '',
-  //     finYear: '',
-  //     gstType: '',
-  //     otherInfo: '',
-  //     remarks: '',
-  //     shipperRefNo: '',
-  //     supplierBillDate: null,
-  //     supplierBillNo: '',
-  //     supplierCode: '',
-  //     supplierGstIn: '',
-  //     supplierGstInCode: '',
-  //     supplierName: '',
-  //     supplierPlace: '',
-  //     supplierType: '',
-  //   });
-  //   setChargerCostInvoice([
-  //     {
-  //       chargeAccount: '',
-  //       chargeLedger: '',
-  //       currency: '',
-  //       exRate: '',
-  //       gstPercent: '',
-  //       rate: '',
-  //       fcAmount: '',
-  //       lcAmount: '',
-  //       billAmt: ''
-  //     }
-  //   ]);
-  //   setTdsCostInvoiceDTO([
-  //     {
-  //       section: '',
-  //       tdsWithHolding: '',
-  //       tdsWithHoldingPer: '',
-  //       totalTdsAmt: '',
-  //       tdsPercentageAmount: ''
-  //     }
-  //   ]);
-  //   setCostInvoiceErrors([]);
-  //   setTdsCostErrors([]);
-  //   setSectionOptions([]);
-  //   setEditId('');
-  //   getUrCostInvoiceDocId();
-  //   setShowChargeDetails(false);
-  // };
-
   const listViewColumns = [
     { accessorKey: 'docId', header: 'Doc No', size: 140 },
     { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 }
@@ -328,6 +254,15 @@ const UrCostInvoicegna = () => {
   useEffect(() => {
     getPartyName(formData.supplierType);
   }, [formData.supplierType]);
+  useEffect(() => {
+    getStateCode(formData.supplierCode);
+  }, [formData.supplierCode]);
+  useEffect(() => {
+    getCityName(formData.supplierCode,formData.state);
+  }, [formData.supplierCode,formData.state]);
+  useEffect(() => {
+    getSection(tdsCostInvoiceDTO.tds);
+  }, [tdsCostInvoiceDTO.tds]);
 
   const getAllUrCostInvoiceByOrgId = async () => {
     try {
@@ -365,115 +300,87 @@ const UrCostInvoicegna = () => {
       const result = await apiCalls('get', `/UrCostInvoiceGna/getUrCostInvoiceGnaById?id=${row.original.id}`);
 
       if (result) {
-        const costVO = result.paramObjectsMap.urCostInvoiceGnaVO;
+        const costVO = result.paramObjectsMap.urCostInvoiceGnaVO[0];
         setListViewData(costVO);
         setEditId(row.original.id);
         // getCurrencyAndExratesForMatchingParties(costVO.supplierCode);
         getTdsDetailsFromPartyMasterSpecialTDS(costVO.supplierCode);
+        setShowChargeDetails(true);
         setFormData({
-          docId: costVO.docId,
-          docDate: costVO.docDate ? dayjs(costVO.docDate) : dayjs(),
-          purVoucherNo: costVO.purVoucherNo,
-          purVoucherDate: costVO.purVoucherDate ? dayjs(costVO.purVoucherDate) : dayjs(),
-          supplierType: costVO.supplierType,
-          supplierCode: costVO.supplierCode,
-          supplierBillNo: costVO.supplierBillNo,
-          supplierBillDate: costVO.supplierBillDate ? dayjs(costVO.supplierBillDate) : dayjs(),
-          supplierPlace: costVO.supplierPlace,
-          supplierName: costVO.supplierName,
+          dueDate: costVO.dueDate ? dayjs(costVO.dueDate) : null,
+          supplierBillDate: costVO.supplierBillDate ? dayjs(costVO.supplierBillDate) : null,
+          purVoucherDate: costVO.purVoucherDate ? dayjs(costVO.purVoucherDate) : null,
+          docId:costVO.docId,
+          docDate: costVO.docDate ? dayjs(costVO.docDate) : null,
+          purVoucherNo:costVO.purVoucherNo,
+          address: costVO.address,
           creditDays: costVO.creditDays,
-          dueDate: costVO.dueDate ? dayjs(costVO.dueDate) : dayjs(),
           currency: costVO.currency,
           exRate: costVO.exRate,
-          supplierGstIn: costVO.supplierGstIn,
-
-          accuralid: costVO.accuralid,
-          address: costVO.address,
-          remarks: costVO.remarks,
-          actBillCurrAmt: costVO.actBillCurrAmt,
-          actBillLcAmt: costVO.actBillLcAmt,
-          approveBy: costVO.approveBy,
-          approveOn: costVO.approveOn,
-          approveStatus: costVO.approveStatus,
-          branch: costVO.branch,
-          branchCode: costVO.branchCode,
-          client: costVO.client,
-          costInvoiceDate: costVO.costInvoiceDate ? dayjs(costVO.costInvoiceDate) : dayjs(),
-          costInvoiceNo: costVO.costInvoiceNo,
-          costType: costVO.costType,
-          createdBy: loginUserName,
-          customer: costVO.customer,
-          finYear: finYear,
-          gstInputLcAmt: costVO.gstInputLcAmt,
           gstType: costVO.gstType,
-          id: costVO.id,
-          mode: costVO.mode,
-          netBillCurrAmt: costVO.netBillCurrAmt,
-          netBillLcAmt: costVO.netBillLcAmt,
-          orgId: orgId,
           otherInfo: costVO.otherInfo,
-          payment: costVO.payment,
-          product: costVO.product,
-
-          purVoucherNo: costVO.purVoucherNo,
           remarks: costVO.remarks,
-          roundOff: costVO.roundOff,
           shipperRefNo: costVO.shipperRefNo,
-
-
-          creditDays: costVO.creditDays,
-
-
-
-          totChargesBillCurrAmt: costVO.totChargesBillCurrAmt,
-          totChargesLcAmt: costVO.totChargesLcAmt,
-          utrRef: costVO.utrRef
+          supplierBillNo: costVO.supplierBillNo,
+          supplierCode: costVO.supplierCode,
+          supplierGstIn: costVO.supplierGstIn,
+          stateCode: costVO.supplierGstInCode,
+          supplierName: costVO.supplierName,
+          supplierPlace: costVO.supplierPlace,
+          supplierType: costVO.supplierType,
+          orgId:orgId,
+          updatedBy: loginUserName,
+          createdBy:loginUserName,
+          // branch: branch,
+          // branchCode: branchCode,
+          finYear: finYear,
+          totalChargeAmtlc:costVO.totChargeAmtLc,
+          netAmtBillCurr:costVO.netamountBillCurr,
+          actBillAmtLc:costVO.actBillAmtLc,
+          roundOff:costVO.roundOff,
+          input:costVO.input,
+          output: costVO.output,
+          vid: costVO.vid,
+          vdate: costVO.vdate ? dayjs(costVO.vdate) : null,
         });
         setChargerCostInvoice(
           costVO.normalCharges.map((row) => ({
             id: row.id,
-            billAmt: row.billAmt,
-            chargeCode: row.chargeCode,
             chargeLedger: row.chargeLedger,
-            chargeName: row.chargeName,
-            govChargeCode: row.govChargeCode,
+            chargeAccount: row.chargeAccount,
             currency: row.currency,
             exRate: row.exRate,
-            fcAmount: row.fcAmt,
-            gst: row.gst,
-            gstPercent: row.gstPercent,
-            jobNo: row.jobNo,
-            lcAmount: row.lcAmt,
-            ledger: row.ledger,
-            qty: row.qty,
             rate: row.rate,
-            sac: row.sac,
-            taxable: row.taxable
+            gstPercent: row.gstpercent,
+            fcAmount: row.fcAmount,
+            lcAmount: row.lcAmount,
+            billAmt: row.billAmount
           }))
         );
         setTdsCostInvoiceDTO(
-          costVO.tdsCostInvoiceVO.map((row) => ({
+          costVO.tdsUrCostInvoiceGnaVO.map((row) => ({
             id: row.id,
-            tds: row.tds,
-            tdsPer: row.tdsPer,
+            tds: row.tdsWithHolding,
+            tdsPer: row.tdsWithHoldingPer,
             section: row.section,
-            totalTdsAmt: row.totalTdsAmt,
-            tdsPerAmt: row.tdsPerAmt
+            totalTdsAmt: row.totTdsWithAmt,
+            tdsPerAmt: row.fcTdsAmt
           }))
         );
         setChargeDetails(
           costVO.gstLines.map((row) => ({
             id: row.id,
-            // chargeCode: row.chargeCode,
-            chargeLedger: row.chargeName,
-            // gChargeCode: row.govChargeCode,
-            gstPercent: row.gstPercent,
-            // sac: row.sac,
-            lcAmount: row.lcAmt
+            chargeLedger: row.chargeLedger,
+            chargeAccount: row.chargeAccount,
+            currency: row.currency,
+            gstPercent: row.gstpercent,
+            // gstPercent: row.gstPercent,
+            billAmt: row.billAmount,
+            lcAmount: row.lcAmount
           }))
         );
         getSection(costVO.tdsCostInvoiceVO[0].tdsWithHolding);
-        setShowChargeDetails(true);
+        
         console.log('DataToEdit', costVO);
       } else {
         // Handle erro
@@ -510,7 +417,7 @@ const UrCostInvoicegna = () => {
           }
         ]);
         setTdsCostInvoiceDTO([{ section: '', tdsWithHolding: '', tdsWithHoldingPer: '', totalTdsAmt: '' }]);
-        setShowChargeDetails(false);
+        // setShowChargeDetails(false);
         setFormData((prevFormData) => ({
           ...prevFormData,
           gstType: value,
@@ -636,10 +543,17 @@ const UrCostInvoicegna = () => {
       console.error('Error fetching gate passes:', error);
     }
   };
+  // const handleDateChange = (field, date) => {
+  //   const formattedDate = dayjs(date).format('YYYY-MM-DD');
+  //   setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+  // };
   const handleDateChange = (field, date) => {
-    const formattedDate = dayjs(date).format('YYYY-MM-DD');
-    setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+    setFormData((prevData) => ({
+      ...prevData,
+      [field]: date ? dayjs(date).format('YYYY-MM-DD') : null,
+    }));
   };
+  
   const handleChargeCodeChange = async (e, index) => {
     const selectedChargeCode = e.target.value;
     const selectedChargeCodeData = chargeLedgerList.find((item) => item.chargeLedger === selectedChargeCode);
@@ -653,7 +567,7 @@ const UrCostInvoicegna = () => {
       gstPercent: ''
     };
 
-    setShowChargeDetails(false);
+    // setShowChargeDetails(false);
 
     setChargerCostInvoice((prev) => {
       return prev.map((row, idx) => {
@@ -720,45 +634,31 @@ const UrCostInvoicegna = () => {
     }
     const newRow = {
       id: Date.now(),
-      chargeCode: '',
       chargeLedger: '',
-      chargeName: '',
+      chargeAccount: '',
       currency: '',
       exRate: '',
-      exempted: '',
-      govChargeCode: '',
-      gst: '',
-      gstPercent: '',
-      jobNo: '',
-      ledger: '',
-      qty: '',
       rate: '',
-      sac: '',
+      gstPercent: '',
+      gstAmount: '',
       fcAmount: '',
       lcAmount: '',
-      taxable: ''
+      billAmt: ''
     };
     setChargerCostInvoice([...chargerCostInvoice, newRow]);
     setCostInvoiceErrors([
       ...costInvoiceErrors,
       {
-        chargeCode: '',
         chargeLedger: '',
-        chargeName: '',
+        chargeAccount: '',
         currency: '',
         exRate: '',
-        exempted: '',
-        govChargeCode: '',
-        gst: '',
-        gstPercent: '',
-        jobNo: '',
-        ledger: '',
-        qty: '',
         rate: '',
-        sac: '',
+        gstPercent: '',
+        gstAmount: '',
         fcAmount: '',
         lcAmount: '',
-        taxable: ''
+        billAmt: ''
       }
     ]);
   };
@@ -769,17 +669,17 @@ const UrCostInvoicegna = () => {
 
     if (table === chargerCostInvoice) {
       return (
-        !lastRow.chargeCode ||
-        // !lastRow.chargeLedger ||
+        // !lastRow.chargeCode ||
+        !lastRow.chargeLedger ||
         // !lastRow.chargeName ||
         !lastRow.currency ||
-        // !lastRow.exRate ||
+        !lastRow.exRate ||
         // !lastRow.fcAmt ||
         // !lastRow.sac ||
         // !lastRow.gst ||
         // !lastRow.houseNo ||
-        !lastRow.jobNo ||
-        !lastRow.qty ||
+        // !lastRow.jobNo ||
+        // !lastRow.qty ||
         !lastRow.rate
         // !lastRow.lcAmt ||
         // !lastRow.subJobNo
@@ -794,16 +694,16 @@ const UrCostInvoicegna = () => {
         const newErrors = [...prevErrors];
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
-          jobNo: !table[table.length - 1].jobNo ? 'Job No is required' : '',
-          chargeCode: !table[table.length - 1].chargeCode ? 'Charge Code is required' : '',
-          // chargeLedger: !table[table.length - 1].chargeLedger ? 'Charge Ledger is required' : '',
+          // jobNo: !table[table.length - 1].jobNo ? 'Job No is required' : '',
+          // chargeCode: !table[table.length - 1].chargeCode ? 'Charge Code is required' : '',
+          chargeLedger: !table[table.length - 1].chargeLedger ? 'Charge Ledger is required' : '',
           // chargeName: !table[table.length - 1].chargeName ? 'Charge Name is required' : '',
           currency: !table[table.length - 1].currency ? 'Currency is required' : '',
-          // exRate: !table[table.length - 1].exRate ? 'EX Rate is required' : '',
+          exRate: !table[table.length - 1].exRate ? 'Ex Rate is required' : '',
           // fcAmt: !table[table.length - 1].fcAmt ? 'FC Amt is required' : '',
           // sac: !table[table.length - 1].sac ? 'SAC is required' : '',
           // gst: !table[table.length - 1].gst ? 'TAX is required' : '',
-          qty: !table[table.length - 1].qty ? 'Qty is required' : '',
+          // qty: !table[table.length - 1].qty ? 'Qty is required' : '',
           rate: !table[table.length - 1].rate ? 'Rate is required' : ''
         };
         return newErrors;
@@ -828,24 +728,6 @@ const UrCostInvoicegna = () => {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-  // const handleSelectStateCode = (e) => {
-  //   const value = e.target.value;
-  //   const selectedStateCode = stateCodeList.find((stateC) => stateC.stateCode === value);
-  //   const gstIn = '';
-  //   if (selectedStateCode.gstin === "" || selectedStateCode.gstin === null) {
-  //         gstIn = 'UNREGISTERED'
-  //   }
-  //   if (selectedStateCode) {
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       stateCode: selectedStateCode.stateCode,
-  //       supplierGstIn: gstIn
-  //     }));
-  //   } else {
-  //     console.log('No State Code found with the given code:', value);
-  //   }
-  // };
-
   const handleSelectStateCode = (e) => {
     const value = e.target.value;
   
@@ -864,6 +746,7 @@ const UrCostInvoicegna = () => {
       setFormData((prevData) => ({
         ...prevData,
         stateCode: selectedStateCode.stateCode,
+        state: selectedStateCode.state,
         supplierGstIn: gstIn,
       }));
       getCityName(formData.supplierCode,selectedStateCode.state)
@@ -1055,7 +938,7 @@ const UrCostInvoicegna = () => {
         address: formData.address,
         supplierPlace: formData.supplierPlace,
         supplierGstIn: formData.supplierGstIn,
-        supplierGstInCode: formData.supplierGstInCode,
+        supplierGstInCode: formData.stateCode,
         supplierCode: formData.supplierCode,
         supplierName: formData.supplierName,
         supplierType: formData.supplierType,
@@ -1120,9 +1003,9 @@ const UrCostInvoicegna = () => {
                   <FormControl fullWidth variant="filled" size="small">
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
-                        // label="Document Date"
                         label="Date"
-                        value={formData.docDate}
+                        value={formData.docDate || null}
+                        onChange={(date) => handleDateChange('docDate', date)}
                         disabled
                         slotProps={{
                           textField: { size: 'small', clearable: true }
@@ -1222,13 +1105,45 @@ const UrCostInvoicegna = () => {
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="V Id"
+                      size="small"
+                      name="vid"
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.vid}
+                      onChange={handleInputChange}
+                      disabled={editId}
+                      error={!!fieldErrors.vid}
+                      helperText={fieldErrors.vid}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="V Date"
+                        disabled={editId}
+                        value={formData.vdate}
+                        onChange={(date) => handleDateChange('vdate', date)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true }
+                        }}
+                        format="DD-MM-YYYY"
+                      />
+                    </LocalizationProvider>
+                    {fieldErrors.vdate && <p className="dateErrMsg">V Date is required</p>}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.stateCode}>
                     <InputLabel id="demo-simple-select-label">{<span>State Code</span>}</InputLabel>
                     <Select
                       labelId="stateCode"
                       label="State Code"
                       name="stateCode"
-                      value={stateCodeList.some((state) => state.stateCode === formData.supplierGstInCode) ? formData.supplierGstInCode : ''} // Ensures only valid values
+                      value={stateCodeList.some((state) => state.stateCode === formData.stateCode) ? formData.stateCode : ''} // Ensures only valid values
                       onChange={handleSelectStateCode}
                       error={!!fieldErrors.stateCode}
                     >
@@ -1251,7 +1166,7 @@ const UrCostInvoicegna = () => {
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField
-                      label="Supplier GstIn"
+                      label="Supplier Reg No"
                       name="supplierGstIn"
                       size="small"
                       multiline
@@ -1842,24 +1757,24 @@ const UrCostInvoicegna = () => {
                                     <thead>
                                       <tr>
                                         <th style={{ textAlign: 'center' }}>S No</th>
-                                        {/* <th style={{ textAlign: 'center' }}>Tax Code</th> */}
                                         <th style={{ textAlign: 'center' }}>Tax Desc</th>
-                                        {/* <th style={{ textAlign: 'center' }}>G-Tax Code</th> */}
+                                        <th style={{ textAlign: 'center' }}>Tax Code</th>
+                                        <th style={{ textAlign: 'center' }}>Currency</th>
                                         <th style={{ textAlign: 'center' }}>TAX %</th>
-                                        {/* <th style={{ textAlign: 'center' }}>SAC</th> */}
                                         <th style={{ textAlign: 'center' }}>LC Amount</th>
+                                        <th style={{ textAlign: 'center' }}>Bill Amount</th>
                                       </tr>
                                     </thead>
                                     <tbody>
                                       {chargeDetails.map((detail, idx) => (
                                         <tr key={idx}>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{idx + 1}</td>
-                                          {/* <td style={{ width: '150px', textAlign: 'center' }}>{detail.chargeCode}</td> */}
                                           <td style={{ width: '300px', textAlign: 'center' }}>{detail.chargeLedger}</td>
-                                          {/* <td style={{ width: '150px', textAlign: 'center' }}>{detail.gChargeCode}</td> */}
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.chargeAccount}</td>
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.currency}</td>
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.gstPercent}</td>
-                                          {/* <td style={{ width: '150px', textAlign: 'center' }}>{detail.sac}</td> */}
                                           <td style={{ width: '150px', textAlign: 'center' }}>{detail.lcAmount}</td>
+                                          <td style={{ width: '150px', textAlign: 'center' }}>{detail.billAmt}</td>
                                         </tr>
                                       ))}
                                     </tbody>
