@@ -1125,7 +1125,7 @@ const UrCostInvoicegna = () => {
                       <DatePicker
                         label="V Date"
                         disabled={editId}
-                        value={formData.vdate}
+                        value={formData.vdate ? dayjs(formData.vdate, 'YYYY-MM-DD') : null}
                         onChange={(date) => handleDateChange('vdate', date)}
                         slotProps={{
                           textField: { size: 'small', clearable: true }

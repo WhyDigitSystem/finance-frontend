@@ -261,7 +261,7 @@ const HsnSacCode = () => {
                   size="small"
                   value={formData.description}
                   onChange={handleInputChange}
-                  inputProps={{ maxLength: 30 }}
+                  inputProps={{ maxLength: 100 }}
                   error={!!fieldErrors.description}
                   helperText={fieldErrors.description}
                 />

@@ -160,6 +160,7 @@ export const JobCard = () => {
           customer: jnVo.customer || '',
           customerCode: jnVo.customerCode || '',
           salesPerson: jnVo.salesPerson || '',
+          salesCategory: jnVo.salesCategory || '',
           date: jnVo.date ? dayjs(jnVo.date, 'YYYY-MM-DD') : dayjs(),
           income: jnVo.income || '',
           expense: jnVo.expense || '',

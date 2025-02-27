@@ -178,22 +178,22 @@ const RCostInvoicegna = () => {
       docId: '',
       docDate: dayjs(),
       purVoucherNo: '',
-      purVoucherDate: null,
+      purVoucherDate: '',
       partyType: '',
       partyName: '',
       partyCode: '',
       vid: '',
-      vdate: null,
+      vdate: '',
       supplierGstIn: '',
 
       supplierPlace: '',
       address: '',
       supplierBillNo: '',
-      supplierDate: null,
+      supplierDate: '',
       currency: '',
       exRate: '',
       creditDays: '',
-      dueDate: null,
+      dueDate: '',
       gstType: '',
       remarks: '',
       // Summary
@@ -878,6 +878,7 @@ const RCostInvoicegna = () => {
                       <DatePicker
                         label="Date"
                         value={formData.docDate}
+                        onChange={(date) => handleDateChange('docDate', date)}
                         disabled
                         slotProps={{
                           textField: { size: 'small', clearable: true }
@@ -917,7 +918,7 @@ const RCostInvoicegna = () => {
                         format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
-                    {fieldErrors.purVoucherDate && <p className="dateErrMsg">Pur Voucher Date is required</p>}
+                    {/* {fieldErrors.purVoucherDate && <p className="dateErrMsg">Pur Voucher Date is required</p>} */}
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
@@ -996,7 +997,7 @@ const RCostInvoicegna = () => {
                       <DatePicker
                         label="V Date"
                         disabled={editId}
-                        value={formData.vdate}
+                        value={formData.vdate ? dayjs(formData.vdate, 'YYYY-MM-DD') : null}
                         onChange={(date) => handleDateChange('vdate', date)}
                         slotProps={{
                           textField: { size: 'small', clearable: true }
@@ -1004,7 +1005,7 @@ const RCostInvoicegna = () => {
                         format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
-                    {fieldErrors.vdate && <p className="dateErrMsg">V Date is required</p>}
+                    {/* {fieldErrors.vdate && <p className="dateErrMsg">V Date is required</p>} */}
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
