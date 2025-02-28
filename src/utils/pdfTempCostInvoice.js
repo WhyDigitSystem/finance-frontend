@@ -7,7 +7,7 @@ import { toWords } from 'number-to-words';
 import { useEffect, useState } from 'react';
 import QRCodeComponent from './QRCode';
 
-const GeneratePdfTemp = ({ row, callBackFunction }) => {
+const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   const [open, setOpen] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState('');
 
@@ -100,8 +100,8 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
       const pdf = new jsPDF();
       pdf.addImage(imgData, 'PNG', 0, 0);
       pdf.save(`Tax-Invoice_${row.docId}.pdf`);
-
-      handleClose();
+      modalClose();
+      // handleClose();
     } else {
       console.error("Element not found: 'pdf-content'");
     }
@@ -517,7 +517,7 @@ const GeneratePdfTemp = ({ row, callBackFunction }) => {
         <Button onClick={handleDownloadPdf} color="primary" variant="contained" startIcon={<DownloadIcon />}>
           PDF
         </Button>
-        <Button onClick={handleClose} color="secondary">
+        <Button onClick={modalClose} color="secondary">
           Close
         </Button>
       </DialogActions>

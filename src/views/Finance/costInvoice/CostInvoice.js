@@ -3202,7 +3202,7 @@ const CostInvoice = () => {
               GeneratePdf={GeneratePdf}
             />
           )}
-          {downloadPdf && <GeneratePdfTemp row={pdfData} />}
+          {downloadPdf && <GeneratePdfTemp row={pdfData} modalClose={() => setDownloadPdf(false)} />}
         </div>
       </div>
       <ConfirmationModal
