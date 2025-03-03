@@ -34,16 +34,16 @@ const ap = {
           url: '/finance/costDebitNote/CostDebitNote'
         },
         {
-          id: 'costInvoicegna',
+          id: 'rcostInvoicegna',
           title: 'R Cost Invoice',
           type: 'item',
-          url: '/finance/costInvoice/RCostInvoicegna'
+          url: '/finance/RCostInvoicegna/RCostInvoicegna'
         },
         {
           id: 'urcostInvoicegna',
           title: 'UR Cost Invoice',
           type: 'item',
-          url: '/finance/costInvoice/UrCostInvoicegna'
+          url: '/finance/UrCostInvoicegna/UrCostInvoicegna'
         },
         {
           id: 'apBill',

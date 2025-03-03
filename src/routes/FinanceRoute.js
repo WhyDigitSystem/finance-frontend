@@ -304,11 +304,11 @@ const FinanceRoute = {
       element: <CostInvoice />
     },
     {
-      path: '/Finance/costInvoice/RCostInvoicegna',
+      path: '/Finance/RCostInvoicegna/RCostInvoicegna',
       element: <RCostInvoicegna />
     },
     {
-      path: '/Finance/costInvoice/UrCostInvoicegna',
+      path: '/Finance/UrCostInvoicegna/UrCostInvoicegna',
       element: <UrCostInvoicegna />
     },
     {

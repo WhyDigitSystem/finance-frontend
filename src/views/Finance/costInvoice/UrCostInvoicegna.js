@@ -34,7 +34,7 @@ const UrCostInvoicegna = () => {
   const [editId, setEditId] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [listViewData, setListViewData] = useState([]);
-  const [exRates, setExRates] = useState([]);
+  const [currency, setCurrency] = useState([]);
   const [partyName, setPartyName] = useState([]);
   const [chargeLedgerList, setChargeLedgerList] = useState([]);
   const [cityList, setCityList] = useState([]);
@@ -178,7 +178,7 @@ const UrCostInvoicegna = () => {
       vid: '',
       vdate: null,
     });
-    setExRates([]);
+    setCurrency([]);
     getAllActiveCurrency(orgId);
     setFieldErrors({
       address: '',
@@ -257,9 +257,9 @@ const UrCostInvoicegna = () => {
   useEffect(() => {
     getStateCode(formData.supplierCode);
   }, [formData.supplierCode]);
-  useEffect(() => {
-    getCityName(formData.supplierCode,formData.state);
-  }, [formData.supplierCode,formData.state]);
+  // useEffect(() => {
+  //   getCityName(formData.supplierCode,formData.state);
+  // }, [formData.supplierCode,formData.state]);
   useEffect(() => {
     getSection(tdsCostInvoiceDTO.tds);
   }, [tdsCostInvoiceDTO.tds]);
@@ -303,7 +303,8 @@ const UrCostInvoicegna = () => {
         const costVO = result.paramObjectsMap.urCostInvoiceGnaVO[0];
         setListViewData(costVO);
         setEditId(row.original.id);
-        // getCurrencyAndExratesForMatchingParties(costVO.supplierCode);
+        getCityName(costVO.supplierCode,costVO.state);
+        getCurrencyAndExratesForMatchingParties(costVO.supplierCode);
         getTdsDetailsFromPartyMasterSpecialTDS(costVO.supplierCode);
         setShowChargeDetails(true);
         setFormData({
@@ -432,7 +433,7 @@ const UrCostInvoicegna = () => {
         }));
       }
     } else if (name === 'currency') {
-      const selectedCurrency = exRates.find((item) => item.currency === value);
+      const selectedCurrency = currency.find((item) => item.currency === value);
       setFormData((prevFormData) => ({
         ...prevFormData,
         [name]: value.toUpperCase(),
@@ -515,7 +516,7 @@ const UrCostInvoicegna = () => {
   const getCurrencyAndExratesForMatchingParties = async (partyCode) => {
     try {
       const response = await apiCalls('get', `/costInvoice/getCurrencyAndExratesForMatchingParties?orgId=${orgId}&partyCode=${partyCode}`);
-      setExRates(response.paramObjectsMap.currencyVO);
+      setCurrency(response.paramObjectsMap.currencyVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -543,10 +544,6 @@ const UrCostInvoicegna = () => {
       console.error('Error fetching gate passes:', error);
     }
   };
-  // const handleDateChange = (field, date) => {
-  //   const formattedDate = dayjs(date).format('YYYY-MM-DD');
-  //   setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
-  // };
   const handleDateChange = (field, date) => {
     setFormData((prevData) => ({
       ...prevData,
@@ -557,47 +554,52 @@ const UrCostInvoicegna = () => {
   const handleChargeCodeChange = async (e, index) => {
     const selectedChargeCode = e.target.value;
     const selectedChargeCodeData = chargeLedgerList.find((item) => item.chargeLedger === selectedChargeCode);
-
+  
+    // Fields to reset for the selected charge row
     const defaultStateValues = {
       qty: '',
       rate: '',
       currency: '',
       exRate: '',
       sac: '',
-      gstPercent: ''
+      gstPercent: '',
+      gstAmount: '',
+      fcAmount: '',
+      lcAmount: '',
+      billAmt: '',
     };
-
-    // setShowChargeDetails(false);
-
-    setChargerCostInvoice((prev) => {
-      return prev.map((row, idx) => {
-        if (idx === index) {
-          return {
-            ...row,
-            ...defaultStateValues,
-            chargeLedger: selectedChargeCode,
-            chargeAccount: selectedChargeCode,
-            // gstPercent: selectedChargeCodeData ? selectedChargeCodeData.GSTPercent : defaultStateValues.gstPercent,
-            // ccFeeApplicable: selectedChargeCodeData ? selectedChargeCodeData.ccFeeApplicable : '',
-            // chargeName: selectedChargeCodeData ? selectedChargeCodeData.chargeName : '',
-            // exempted: selectedChargeCodeData ? selectedChargeCodeData.exempted : '',
-            // govChargeCode: selectedChargeCodeData ? selectedChargeCodeData.govChargeCode : '',
-            // ledger: selectedChargeCodeData ? selectedChargeCodeData.ledger : '',
-            // sac: selectedChargeCodeData ? selectedChargeCodeData.sac : defaultStateValues.sac,
-            // taxable: selectedChargeCodeData ? selectedChargeCodeData.taxable : ''
-          };
-        }
-        return row;
-      });
-    });
+  
+    // Ensure chargerCostInvoice is updated correctly
+    setChargerCostInvoice((prev) =>
+      prev.map((row, idx) =>
+        idx === index
+          ? {
+              ...row,
+              ...defaultStateValues,
+              chargeLedger: selectedChargeCode,
+              chargeAccount: selectedChargeCode,
+            }
+          : row
+      )
+    );
+  
+    // Clear summary-related fields in formData
+    setFormData((prevData) => ({
+      ...prevData,
+      totalChargeAmtlc: '',
+      netAmtBillCurr: '',
+      actBillAmtLc: '',
+      roundOff: '',
+    }));
   };
+  
   const handleRowUpdate = async (index, field, value) => {
     setChargerCostInvoice((prev) => {
       return prev.map((row, idx) => {
         if (idx === index) {
           const updatedRow = { ...row, [field]: value };
           const rate = Number(updatedRow.rate) || 0;
-          const selectedCurrencyData = exRates.find((currency) => currency.currency === updatedRow.currency);
+          const selectedCurrencyData = currency.find((currency) => currency.currency === updatedRow.currency);
           const exRate = selectedCurrencyData?.buyingExRate || 1;
           const fcAmount = updatedRow.currency === 'INR' ? 0 : rate;
           const lcAmount = rate * exRate;
@@ -925,6 +927,8 @@ const UrCostInvoicegna = () => {
         createdBy: loginUserName,
         finYear: finYear,
         orgId: orgId,
+        vid: formData.vid,
+        vdate: dayjs(formData.vdate).format('YYYY-MM-DD'),
         shipperRefNo: formData.shipperRefNo,
         otherInfo: formData.otherInfo,
         remarks: formData.remarks,
@@ -939,6 +943,7 @@ const UrCostInvoicegna = () => {
         supplierPlace: formData.supplierPlace,
         supplierGstIn: formData.supplierGstIn,
         supplierGstInCode: formData.stateCode,
+        supplierState: formData.state,
         supplierCode: formData.supplierCode,
         supplierName: formData.supplierName,
         supplierType: formData.supplierType,
@@ -1289,10 +1294,10 @@ const UrCostInvoicegna = () => {
                       name="currency"
                       // value={formData.currency}
                       value={formData.currency}
-                      // || (exRates.length === 1 ? exRates[0].currency : '')
+                      // || (currency.length === 1 ? currency[0].currency : '')
                     >
-                      {exRates &&
-                        exRates.map((item) => (
+                      {currency &&
+                        currency.map((item) => (
                           <MenuItem key={item.id} value={item.currency}>
                             {item.currency}
                           </MenuItem>
@@ -1506,8 +1511,8 @@ const UrCostInvoicegna = () => {
                                               className={costInvoiceErrors[index]?.currency ? 'error form-control' : 'form-control'}
                                             >
                                               <option value="">--Select--</option>
-                                              {exRates &&
-                                                exRates.map((currency) => (
+                                              {currency &&
+                                                currency.map((currency) => (
                                                   <option key={currency.id} value={currency.currency}>
                                                     {currency.currency}
                                                   </option>

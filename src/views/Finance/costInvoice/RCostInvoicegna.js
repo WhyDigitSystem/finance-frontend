@@ -42,8 +42,8 @@ const RCostInvoicegna = () => {
   const [stateCodeList, setStateCodeList] = useState([]);
   const [cityList, setCityList] = useState([]);
   const [chargeACList, setChargeACList] = useState([]);
-  const [downloadPdf, setDownloadPdf] = useState(false);
-  const [pdfData, setPdfData] = useState([]);
+  // const [downloadPdf, setDownloadPdf] = useState(false);
+  // const [pdfData, setPdfData] = useState([]);
   const [chargeDetails, setChargeDetails] = useState([
     {
       id: 1,
@@ -234,11 +234,11 @@ const RCostInvoicegna = () => {
     setEditId('');
     getRCostInvoiceDocId();
   };
-  const GeneratePdf = (row) => {
-    console.log('PDF-Data =>', row.original);
-    setPdfData(row.original);
-    setDownloadPdf(true);
-  };
+  // const GeneratePdf = (row) => {
+  //   console.log('PDF-Data =>', row.original);
+  //   setPdfData(row.original);
+  //   setDownloadPdf(true);
+  // };
   const listViewColumns = [
     { accessorKey: 'docId', header: 'R Cost Invoice No', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 }
@@ -841,6 +841,34 @@ const RCostInvoicegna = () => {
       setFieldErrors(errors);
     }
   };
+  const handleTypeChange = (event) => {
+    const newType = event.target.value;
+    setChargerCostInvoice([{
+      sno: '',
+      chargeAC: newType,
+      currency: '',
+      exRate: '',
+      tdsApplicable: true,
+      rate: '',
+      gstPer: '',
+      gstAmt: '',
+      fcAmount: '',
+      lcAmount: '',
+      billAmount: '',
+      gtaAmount: ''
+    }]);
+    // Clear formData (summary section)
+    setFormData((prevData) => ({
+      ...prevData,
+      actBillCurrAmt: '',
+      netBillCurrAmt: '',
+      actLcAmt: '',
+      netLcAmt: '',
+      amtInWords: '',
+      roundOff: '',
+      taxAmountLc: '',
+    }));
+  };
 
   return (
     <>
@@ -1290,15 +1318,16 @@ const RCostInvoicegna = () => {
                                           <select
                                             value={row.chargeAC}
                                             style={{ width: '180px' }}
-                                            onChange={(e) => {
-                                              const selectedchargeLedger = e.target.value;
-                                              const updatedchargeLedgerData = [...chargerCostInvoice];
-                                              updatedchargeLedgerData[index] = {
-                                                ...updatedchargeLedgerData[index],
-                                                chargeAC: selectedchargeLedger
-                                              };
-                                              setChargerCostInvoice(updatedchargeLedgerData);
-                                            }}
+                                            onChange={handleTypeChange}
+                                            // onChange={(e) => {
+                                            //   const selectedchargeLedger = e.target.value;
+                                            //   const updatedchargeLedgerData = [...chargerCostInvoice];
+                                            //   updatedchargeLedgerData[index] = {
+                                            //     ...updatedchargeLedgerData[index],
+                                            //     chargeAC: selectedchargeLedger
+                                            //   };
+                                            //   setChargerCostInvoice(updatedchargeLedgerData);
+                                            // }}
                                             className={costInvoiceErrors[index]?.chargeAC ? 'error form-control' : 'form-control'}
                                           >
                                             <option value="">--Select--</option>
@@ -1851,11 +1880,11 @@ const RCostInvoicegna = () => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllRCostInvoiceById}
-              isPdf={true}
-              GeneratePdf={GeneratePdf}
+              isPdf={false}
+              // GeneratePdf={GeneratePdf}
             />
           )}
-          {downloadPdf && <GeneratePdfTemp row={pdfData} />}
+          {/* {downloadPdf && <GeneratePdfTemp row={pdfData} />} */}
         </div>
       </div>
     </>
