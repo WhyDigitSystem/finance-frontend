@@ -39,7 +39,7 @@ const TaxInvoiceDetails = () => {
   const [listViewData, setListViewData] = useState([]);
   const [placeOfSupply, setPlaceOfSupply] = useState([]);
   const [addressType, setAddressType] = useState([]);
-  const [chargeType, setChargeType] = useState([]);
+  const [chargeType,  setChargeType] = useState([]);
   const [chargeCode, setChargeCode] = useState([]);
   const [currencyList, setCurrencyList] = useState([]);
   const [jobCardNo, setJobCardNo] = useState([]);
@@ -1409,6 +1409,50 @@ const TaxInvoiceDetails = () => {
     setWithdrawalsTableData(updatedTableData);
   };
 
+  const handleTypeChange = (event) => {
+    const newType = event.target.value;
+  
+    // Clear withdrawalsTableData (table values)
+    setWithdrawalsTableData([{
+      sno: '',
+      chargeCode: '',
+      chargeName: '',
+      currency: '',
+      exRate: '',
+      exempted: '',
+      govChargeCode: '',
+      GSTPercent: '',
+      ledger: '',
+      qty: '',
+      rate: '',
+      sac: '',
+      taxable: '',
+      chargeType: newType,
+    }]);
+    getChargeCodeDetail(newType);
+    // Clear formData (summary section)
+    setFormData((prevData) => ({
+      ...prevData,
+      totalChargeAmountLc: '',
+      totalTaxAmountLc: '',
+      totalInvAmountLc: '',
+      roundOffAmountLc: '',
+      totalChargeAmountBc: '',
+      totalTaxAmountBc: '',
+      totalInvAmountBc: '',
+      totalTaxableAmountLc: '',
+      amountInWords: '',
+      gstType: '',
+      invoiceDate: null,
+    }));
+  
+    // Update the type value
+    // setWithdrawalsTableData((prevData) => ({
+    //   ...prevData,
+    //   chargeType: newType,
+    // }));
+  };
+  
   return (
     <>
       <ToastComponent />
@@ -2173,21 +2217,7 @@ const TaxInvoiceDetails = () => {
                                       value={row.chargeType}
                                       style={{ width: '150px' }}
                                       disabled={formData.status === 'TAX'}
-                                      onChange={(e) => {
-                                        const selectedCurrency = e.target.value;
-                                        const selectedCurrencyData = chargeType.find(
-                                          (currency) => currency.chargeType === selectedCurrency
-                                        );
-
-                                        const updatedCurrencyData = [...withdrawalsTableData];
-                                        updatedCurrencyData[index] = {
-                                          ...updatedCurrencyData[index],
-                                          chargeType: selectedCurrency
-                                        };
-
-                                        setWithdrawalsTableData(updatedCurrencyData);
-                                        getChargeCodeDetail(e.target.value);
-                                      }}
+                                      onChange={handleTypeChange}
                                       className={withdrawalsTableErrors[index]?.chargeType ? 'error form-control' : 'form-control'}
                                     >
                                       <option value="">--Select--</option>
@@ -2309,7 +2339,7 @@ const TaxInvoiceDetails = () => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              chargeName: !value ? 'chargeName is required' : ''
+                                              chargeName: !value ? 'charge Name is required' : ''
                                             };
                                             return newErrors;
                                           });
@@ -2350,7 +2380,7 @@ const TaxInvoiceDetails = () => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              taxable: !value ? 'taxable is required' : ''
+                                              taxable: !value ? 'Taxable is required' : ''
                                             };
                                             return newErrors;
                                           });
@@ -2641,7 +2671,7 @@ const TaxInvoiceDetails = () => {
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
-                                      value={row.billAmount ? row.billAmount : '0.00'}
+                                      value={row.billAmount ? row.billAmount : '0'}
                                       disabled
                                       style={{ width: '100px' }}
                                       onChange={(e) => {
@@ -2760,7 +2790,7 @@ const TaxInvoiceDetails = () => {
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
-                                      value={row.gst ? row.gst : '0.00'}
+                                      value={row.gst ? row.gst : '0'}
                                       disabled
                                       style={{ width: '100px' }}
                                       onChange={(e) => {
