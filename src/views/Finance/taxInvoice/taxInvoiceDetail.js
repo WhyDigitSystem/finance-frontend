@@ -39,7 +39,7 @@ const TaxInvoiceDetails = () => {
   const [listViewData, setListViewData] = useState([]);
   const [placeOfSupply, setPlaceOfSupply] = useState([]);
   const [addressType, setAddressType] = useState([]);
-  const [chargeType,  setChargeType] = useState([]);
+  const [chargeType, setChargeType] = useState([]);
   const [chargeCode, setChargeCode] = useState([]);
   const [currencyList, setCurrencyList] = useState([]);
   const [jobCardNo, setJobCardNo] = useState([]);
@@ -710,6 +710,18 @@ const TaxInvoiceDetails = () => {
       console.log('defaultPartyName.partyName', defaultPartyName.partyName);
     }
   }, [partyName]);
+
+  useEffect(() => {
+    if (currencyList.length === 1) {
+      const defaultCurrency = currencyList[0];
+      setFormData((prevData) => ({
+        ...prevData,
+        billCurr: defaultCurrency.currency,
+        billCurrRate: defaultCurrency.sellingExRate
+      }));
+      console.log('defaultCurrency.currency', defaultCurrency.currency);
+    }
+  }, [currencyList]);
 
   // useEffect(() => {
   //   if (stateName.length > 0 && formData.stateCode) {
@@ -1411,24 +1423,26 @@ const TaxInvoiceDetails = () => {
 
   const handleTypeChange = (event) => {
     const newType = event.target.value;
-  
+
     // Clear withdrawalsTableData (table values)
-    setWithdrawalsTableData([{
-      sno: '',
-      chargeCode: '',
-      chargeName: '',
-      currency: '',
-      exRate: '',
-      exempted: '',
-      govChargeCode: '',
-      GSTPercent: '',
-      ledger: '',
-      qty: '',
-      rate: '',
-      sac: '',
-      taxable: '',
-      chargeType: newType,
-    }]);
+    setWithdrawalsTableData([
+      {
+        sno: '',
+        chargeCode: '',
+        chargeName: '',
+        currency: '',
+        exRate: '',
+        exempted: '',
+        govChargeCode: '',
+        GSTPercent: '',
+        ledger: '',
+        qty: '',
+        rate: '',
+        sac: '',
+        taxable: '',
+        chargeType: newType
+      }
+    ]);
     getChargeCodeDetail(newType);
     // Clear formData (summary section)
     setFormData((prevData) => ({
@@ -1443,16 +1457,16 @@ const TaxInvoiceDetails = () => {
       totalTaxableAmountLc: '',
       amountInWords: '',
       gstType: '',
-      invoiceDate: null,
+      invoiceDate: null
     }));
-  
+
     // Update the type value
     // setWithdrawalsTableData((prevData) => ({
     //   ...prevData,
     //   chargeType: newType,
     // }));
   };
-  
+
   return (
     <>
       <ToastComponent />
