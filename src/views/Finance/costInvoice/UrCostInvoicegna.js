@@ -257,13 +257,6 @@ state:'',
   useEffect(() => {
     getStateCode(formData.supplierCode);
   }, [formData.supplierCode]);
-  // useEffect(() => {
-  //   getCityName(formData.supplierCode,formData.state);
-  // }, [formData]);
-  useEffect(() => {
-    getSection(tdsCostInvoiceDTO.tds);
-  }, [tdsCostInvoiceDTO.tds]);
-
   const getAllUrCostInvoiceByOrgId = async () => {
     try {
       const result = await apiCalls('get', `/UrCostInvoiceGna/getAllUrCostInvoiceGnaByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
@@ -304,8 +297,10 @@ state:'',
         setListViewData(costVO);
         setEditId(row.original.id);
         getCityName(costVO.supplierCode,costVO.state);
+        getSection(costVO.tdsUrCostInvoiceGnaVO[0].tdsWithHolding);
+        console.log("Section",costVO.tdsUrCostInvoiceGnaVO);
         getCurrencyAndExratesForMatchingParties(costVO.supplierCode);
-        getTdsDetailsFromPartyMasterSpecialTDS(costVO.supplierCode);
+        // getTdsDetailsFromPartyMasterSpecialTDS(costVO.supplierCode);
         setShowChargeDetails(true);
         setFormData({
           dueDate: costVO.dueDate ? dayjs(costVO.dueDate) : null,
@@ -381,8 +376,6 @@ state:'',
             lcAmount: row.lcAmount
           }))
         );
-        getSection(costVO.tdsCostInvoiceVO[0].tdsWithHolding);
-        
         console.log('DataToEdit', costVO);
       } else {
         // Handle erro
@@ -445,12 +438,16 @@ state:'',
 
       if (name === 'tds') {
         getSection(value);
-      } else if (name === 'section') {
-        const selectedTDS = tdsList.find((tds) => tds.sectionName === value);
+      } 
+      if (name === 'section') {
+        const selectedTDS = tdsList.find((tds) => tds.section === value);
         if (selectedTDS) {
           setTdsCostInvoiceDTO((prevData) =>
             prevData.map((item, index) =>
-              index === 0 ? { ...item, section: selectedTDS.sectionName, tdsPer: selectedTDS.tcsPercentage } : item
+              index === 0 ? { ...item, 
+                section: selectedTDS.sectionName,
+                tdsPer: selectedTDS.tcsPercentage,
+              } : item
             )
           );
         }
@@ -488,7 +485,7 @@ state:'',
       }));
       getStateCode(selectedParty.partyCode);
       getCurrencyAndExratesForMatchingParties(selectedParty.partyCode);
-      getTdsDetailsFromPartyMasterSpecialTDS(selectedParty.partyCode);
+      // getTdsDetailsFromPartyMasterSpecialTDS(selectedParty.partyCode);
     } else {
       console.log('No Party found with the given code:', value);
     }
@@ -524,25 +521,11 @@ state:'',
       console.error('Error fetching gate passes:', error);
     }
   };
-  const getTdsDetailsFromPartyMasterSpecialTDS = async (partyCode) => {
-    try {
-      const response = await apiCalls('get', `/costInvoice/getTdsDetailsFromPartyMasterSpecialTDS?orgId=${orgId}&partyCode=${partyCode}`);
-
-      const tdsData = response.paramObjectsMap.tds;
-      const tdsWhPercent = tdsData.length > 0 ? tdsData[0].tdsWhPercent : '';
-
-      console.log('tds', tdsWhPercent);
-      setTdsCostInvoiceDTO((prevData) =>
-        prevData.map((item, index) => (index === 0 ? { ...item, tdsWithHoldingPer: tdsWhPercent } : item))
-      );
-    } catch (error) {
-      console.error('Error fetching TDS details:', error);
-    }
-  };
   const getSection = async (tds) => {
     try {
       const response = await apiCalls('get', `/rCostInvoiceGna/getSectionNameFromTDSMaster?orgId=${orgId}&tds=${tds}`);
       setTDSList(response.paramObjectsMap.tdsMasterVO);
+      console.log(response.paramObjectsMap.tdsMasterVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
