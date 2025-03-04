@@ -81,7 +81,7 @@ const UrCostInvoicegna = () => {
     supplierName: '',
     supplierPlace: '',
     supplierType: 'VENDOR',
-
+state:'',
     totalChargeAmtlc:'',
     netAmtBillCurr:'',
     actBillAmtLc:'',
@@ -259,7 +259,7 @@ const UrCostInvoicegna = () => {
   }, [formData.supplierCode]);
   // useEffect(() => {
   //   getCityName(formData.supplierCode,formData.state);
-  // }, [formData.supplierCode,formData.state]);
+  // }, [formData]);
   useEffect(() => {
     getSection(tdsCostInvoiceDTO.tds);
   }, [tdsCostInvoiceDTO.tds]);
@@ -326,6 +326,7 @@ const UrCostInvoicegna = () => {
           supplierCode: costVO.supplierCode,
           supplierGstIn: costVO.supplierGstIn,
           stateCode: costVO.supplierGstInCode,
+          state: costVO.state,
           supplierName: costVO.supplierName,
           supplierPlace: costVO.supplierPlace,
           supplierType: costVO.supplierType,
@@ -458,7 +459,7 @@ const UrCostInvoicegna = () => {
      else {
       setFormData((prevFormData) => ({
         ...prevFormData,
-        [name]: value.toUpperCase()
+        [name]: value
       }));
     }
   };
@@ -474,6 +475,7 @@ const UrCostInvoicegna = () => {
 
   const handleSelectPartyChange = (e) => {
     const value = e.target.value;
+    // const selectedParty = partyName.find((emp) => emp.partyName.toUpperCase() === value.toUpperCase());
     const selectedParty = partyName.find((emp) => emp.partyName === value);
 
     if (selectedParty) {
@@ -508,6 +510,7 @@ const UrCostInvoicegna = () => {
     try {
       const response = await apiCalls('get', `/rCostInvoiceGna/getCityFromPartyMaster?orgId=${orgId}&partyCode=${partyCode}&state=${state}`);
       setCityList(response.paramObjectsMap.partyMasterVO);
+      console.log(response.paramObjectsMap.partyMasterVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -943,7 +946,7 @@ const UrCostInvoicegna = () => {
         supplierPlace: formData.supplierPlace,
         supplierGstIn: formData.supplierGstIn,
         supplierGstInCode: formData.stateCode,
-        supplierState: formData.state,
+        state: formData.state,
         supplierCode: formData.supplierCode,
         supplierName: formData.supplierName,
         supplierType: formData.supplierType,
@@ -1188,7 +1191,7 @@ const UrCostInvoicegna = () => {
                   <FormControl fullWidth size="small" error={!!fieldErrors.supplierPlace}>
                     <InputLabel id="demo-simple-select-label">Supplier Place</InputLabel>
                     <Select
-                      labelId="supplierPlace"
+                      // labelId="supplierPlace"
                       label="supplierPlace"
                       value={formData.supplierPlace}
                       //  || (cityList.length === 1 ? cityList[0].city : '')
