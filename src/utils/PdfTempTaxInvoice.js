@@ -352,58 +352,65 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
           {/* <!-- Total Section --> */}
           <div
             style={{
-              textAlign: 'right',
+              // textAlign: 'right',
               fontWeight: 'bold',
               fontSize: '14px',
               color: '#333'
             }}
+            className="d-flex justify-content-between mb-2"
           >
-            Total:{' '}
-            <span
+            <div
               style={{
-                fontWeight: 'normal',
+                textAlign: 'right',
+                fontWeight: 'bold',
                 fontSize: '14px',
                 color: '#333'
               }}
             >
-              {row.totalInvAmountLc}
-            </span>
-          </div>
-          <div
-            style={{
-              textAlign: 'right',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              color: '#333'
-            }}
-          >
-            Amount in words:{' '}
-            <span
-              style={{
-                fontWeight: 'normal',
-                fontSize: '14px',
-                color: '#333'
-              }}
-            >
-              {toWords(parseFloat(row.totalInvAmountLc)).toUpperCase()}
-            </span>
-          </div>
-          <div
-            style={{
-              marginBottom: '20px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: '14px',
-              color: '#555'
-            }}
-          >
-            <div>
-              <strong>Remarks :</strong> {row.remarks}
+              Amount in words:{' '}
+              <span
+                style={{
+                  fontWeight: 'normal',
+                  fontSize: '14px',
+                  color: '#333'
+                }}
+              >
+                {toWords(parseFloat(row.totalInvAmountLc)).toUpperCase()}
+              </span>
             </div>
-            {/* <div> 
+            <div>
+              Total:{' '}
+              <span
+                style={{
+                  fontWeight: 'normal',
+                  fontSize: '14px',
+                  color: '#333'
+                }}
+              >
+                {row.totalInvAmountLc}
+              </span>
+            </div>
+          </div>
+          {row.remarks ? (
+            <div
+              style={{
+                marginBottom: '10px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '14px',
+                color: '#555'
+              }}
+            >
+              <div>
+                <strong>Remarks :</strong> {row.remarks}
+              </div>
+              {/* <div> 
               <strong>Shipment Ref No :</strong> {row.recipientGSTIN}
             </div>*/}
-          </div>
+            </div>
+          ) : (
+            ''
+          )}
 
           {/*<div
             style={{
@@ -422,11 +429,11 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               {' '}
               <strong>Date :</strong> {row.recipientGSTIN}
             </div>
-          </div>*/}
+          </div>
           <div>
             <strong>Other Information :</strong>
           </div>
-          <br></br>
+          <br></br>*/}
 
           <div style={{ fontSize: '12px' }}>
             <strong>Terms And Conditions :</strong>
