@@ -16,7 +16,11 @@ import ToastComponent, { showToast } from 'utils/toast-component';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
-import GeneratePdfTemp from 'utils/PdfTempTaxInvoice';
+import { Chip, Stack } from '@mui/material';
+import CancelIcon from '@mui/icons-material/Cancel';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import Button from '@mui/material/Button';
+import ConfirmationModal from 'utils/confirmationPopup';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
@@ -42,6 +46,9 @@ const RCostInvoicegna = () => {
   const [stateCodeList, setStateCodeList] = useState([]);
   const [cityList, setCityList] = useState([]);
   const [chargeACList, setChargeACList] = useState([]);
+  const [addressTypeList, setAddressTypeList] = useState([]);
+  const [approveStatus, setApproveStatus] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
   // const [downloadPdf, setDownloadPdf] = useState(false);
   // const [pdfData, setPdfData] = useState([]);
   const [chargeDetails, setChargeDetails] = useState([
@@ -60,6 +67,9 @@ const RCostInvoicegna = () => {
     docDate: dayjs(),
     purVoucherNo: '',
     purVoucherDate: null,
+    approveStatus: '',
+    approveBy: '',
+    approveOn: '',
     partyType: 'VENDOR',
     partyName: '',
     partyCode: '',
@@ -71,6 +81,10 @@ const RCostInvoicegna = () => {
     address: '',
     supplierBillNo: '',
     supplierDate: null,
+    state:'',
+    mode: 'EDIT',
+    addressType:'',
+    id:'',
     currency: '',
     exRate: '',
     creditDays: '',
@@ -144,11 +158,17 @@ const RCostInvoicegna = () => {
     setFormData({
       docId: '',
       docDate: dayjs(),
+      id:'',
+      approveStatus: '',
+      approveBy: '',
+      approveOn: '',
       purVoucherNo: '',
       purVoucherDate: null,
       partyType: 'VENDOR',
       partyName: '',
       partyCode: '',
+      mode: 'EDIT',
+      addressType:'',
       vid: '',
       vdate: null,
       supplierGstIn: '',
@@ -163,6 +183,7 @@ const RCostInvoicegna = () => {
       dueDate: null,
       gstType: '',
       remarks: '',
+      state:'',
       // Summary
       actBillCurrAmt: '',
       netBillCurrAmt: '',
@@ -183,9 +204,12 @@ const RCostInvoicegna = () => {
       partyName: '',
       partyCode: '',
       vid: '',
+      approveBy: '',
       vdate: '',
       supplierGstIn: '',
-
+      state:'',
+      addressType:'',
+      mode:'',
       supplierPlace: '',
       address: '',
       supplierBillNo: '',
@@ -240,9 +264,122 @@ const RCostInvoicegna = () => {
   //   setDownloadPdf(true);
   // };
   const listViewColumns = [
+    { accessorKey: 'mode', header: 'Mode', size: 140 },
+    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
     { accessorKey: 'docId', header: 'R Cost Invoice No', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 }
   ];
+  const handleOpenModalApprove = () => {
+    setModalOpen(true);
+    setApproveStatus('Approved');
+  };
+
+  const handleOpenModalReject = () => {
+    setModalOpen(true);
+    setApproveStatus('Rejected');
+  };
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+
+  const handleConfirmAction = async () => {
+    try {
+      const result = await apiCalls(
+        'put',
+        `/rCostInvoiceGna/approveRCostInvoiceGna?action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}&orgId=${orgId}`
+      );
+      console.log('API Response:==>', result);
+      if (result.status === true) {
+        setFormData({ ...formData, approveStatus: result.paramObjectsMap.rCostInvoiceGnaVO.approveStatus });
+        const rCostVO = result.paramObjectsMap.rCostInvoiceGnaVO;
+        setFormData({
+          approveBy: rCostVO.approveBy,
+          approveOn: rCostVO.approveOn,
+          approveStatus: rCostVO.approveStatus,
+          id: rCostVO.id,
+          docId: rCostVO.docId || '',
+          docDate: rCostVO.docDate ? dayjs(rCostVO.docDate) : null,
+          purVoucherNo: rCostVO.purVoucherNo || '',
+          purVoucherDate: rCostVO.purVoucherDate ? dayjs(rCostVO.purVoucherDate) : null,
+          partyType: rCostVO.partyType || '',
+          partyCode: rCostVO.partyCode || '',
+          partyName: rCostVO.partyName || '',
+          supplierBillNo: rCostVO.supplierBillNo || '',
+          supplierDate: rCostVO.supplierBillDate ? dayjs(rCostVO.supplierBillDate) : null,
+          creditDays: rCostVO.creditDays || '',
+          dueDate: rCostVO.dueDate ? dayjs(rCostVO.dueDate) : null,
+          supplierGstIn: rCostVO.supplierGstIn || '',
+          stateCode: rCostVO.supplierGstInCode || '',
+          currency: rCostVO.currency || '',
+          exRate: rCostVO.exRate || '',
+          supplierPlace: rCostVO.place || '',
+          address: rCostVO.address || '',
+          remarks: rCostVO.remarks || '',
+          gstType: rCostVO.gstType || '',
+          mode: rCostVO.mode || '',
+          addressType: rCostVO.addressType || '',
+          state: rCostVO.state || '',
+          vid: rCostVO.vid,
+          vdate: rCostVO.vdate ? dayjs(rCostVO.vdate) : null,
+          // Summary
+          actBillCurrAmt: rCostVO.actBillAmtBc,
+          netBillCurrAmt: rCostVO.netAmtBc,
+          actLcAmt: rCostVO.actBillAmtLc,
+          netLcAmt: rCostVO.netAmtLc,
+          amtInWords: rCostVO.amountInWords,
+          roundOff: rCostVO.roundOff,
+          taxAmountLc: rCostVO.gstAmtLc,
+          createdBy: rCostVO.createdBy,
+          branch: rCostVO.branch,
+          branchCode: rCostVO.branchCode,
+          updatedBy: rCostVO.updatedBy,
+          finYear: rCostVO.finYear,
+          orgId: rCostVO.orgId
+        });
+        setChargerCostInvoice(
+          rCostVO.chargeRCostInvoiceGnaVO.map((row) => ({
+            id: row.id,
+            chargeAC: row.chargeName,
+            tdsApplicable: row.tdsApplicable,
+            currency: row.currency,
+            exRate: row.exRate,
+            rate: row.rate,
+            gstPer: row.gstPer,
+            fcAmount: row.fcAmt,
+            lcAmount: row.lcAmt,
+            billAmount: row.billAmt,
+            gtaAmount: row.gtaamount
+          }))
+        );
+        setTdsCostInvoiceDTO(
+          rCostVO.tdsRCostInvoiceGnaVO.map((row) => ({
+            id: row.id,
+            tds: row.tds,
+            tdsPer: row.tdsPer,
+            section: row.section,
+            totalTdsAmt: row.totalTdsAmt,
+            tdsPerAmt: row.tdsPerAmt
+          }))
+        );
+        showToast(
+          result.paramObjectsMap.rCostInvoiceGnaVO.approveStatus === 'Approved' ? 'success' : 'error',
+          result.paramObjectsMap.rCostInvoiceGnaVO.approveStatus === 'Approved'
+            ? 'Registered Cost Invoice Approved Successfully'
+            : 'Registered Cost Invoice Rejected Successfully'
+        );
+        setShowChargeDetails(false);
+        setModalOpen(false);
+        getAllCostInvoiceByOrgId();
+        console.log('R COST INVOICE:==>', result);
+      } else {
+        console.error('API Error:', result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      showToast('error', 'Something went wrong!');
+      setModalOpen(false);
+    }
+  };
   useEffect(() => {
     if (!editId) {
       calculateTotals();
@@ -319,7 +456,7 @@ const RCostInvoicegna = () => {
     getStateCode(formData.partyCode);
   }, [formData.partyCode]);
   useEffect(() => {
-    if (stateCodeList.length > 0) {
+    if (stateCodeList.length <= 0) {
       setFormData((prev) => ({
         ...prev,
         stateCode: stateCodeList[0]?.stateCode || '',
@@ -327,20 +464,6 @@ const RCostInvoicegna = () => {
       }));
     }
   }, [stateCodeList]);
-  // useEffect(() => {
-  //   if (cityList.length === 1) {
-  //     setFormData((prev) => ({
-  //       ...prev,
-  //       supplierPlace: cityList.city,
-  //       address: cityList.address
-  //     }));
-  //   }
-  // }, [cityList]);
-
-  // useEffect(() => {
-  //   getStateCode(formData.partyCode);
-  // }, [formData.partyCode]);
-
   const getAllCostInvoiceByOrgId = async () => {
     try {
       const result = await apiCalls('get', `/rCostInvoiceGna/getAllRCostInvoiceGnaByOrgId?orgId=${orgId}`);
@@ -373,8 +496,15 @@ const RCostInvoicegna = () => {
       if (result) {
         const rCostVO = result.paramObjectsMap.rCostInvoiceGnaVO[0];
         setListViewData(rCostVO);
+        console.log(listViewData.mode);
         setEditId(row.original.id);
+        getCityName(rCostVO.partyCode,rCostVO.state,rCostVO.addressType);
+        getAddressType(rCostVO.partyCode,rCostVO.state);
+        getSection(rCostVO.tdsRCostInvoiceGnaVO[0].tds);
         setFormData({
+          approveStatus: rCostVO.approveStatus,
+          approveBy: rCostVO.approveBy,
+          approveOn: rCostVO.approveOn,
           docId: rCostVO.docId || '',
           docDate: rCostVO.docDate ? dayjs(rCostVO.docDate) : null,
           purVoucherNo: rCostVO.purVoucherNo || '',
@@ -385,6 +515,10 @@ const RCostInvoicegna = () => {
           vid: rCostVO.vid,
           vdate: rCostVO.vdate ? dayjs(rCostVO.vdate) : null,
           supplierGstIn: rCostVO.supplierGstIn || '',
+          addressType: rCostVO.addressType || '',
+          mode: rCostVO.mode || '',
+          id: rCostVO.id,
+          state: rCostVO.state || '',
           stateCode: rCostVO.supplierGstInCode || '',
           supplierPlace: rCostVO.place || '',
           address: rCostVO.address || '',
@@ -506,15 +640,23 @@ const RCostInvoicegna = () => {
   const handleSelectStateCode = (e) => {
     const value = e.target.value;
     const selectedStateCode = stateCodeList.find((stateC) => stateC.stateCode === value);
+    const selectedAddressType = addressTypeList.find((type) => type.addressType === value);
     if (selectedStateCode) {
       setFormData((prevData) => ({
         ...prevData,
         stateCode: selectedStateCode.stateCode,
-        // state: selectedStateCode.state,
+        state: selectedStateCode.state,
         supplierGstIn: selectedStateCode.gstin
       }));
-      getCityName(formData.partyCode,selectedStateCode.state)
-    } else {
+      getAddressType(formData.partyCode,selectedStateCode.state)
+    } else if (selectedAddressType) {
+      setFormData((prevData) => ({
+        ...prevData,
+        addressType: selectedAddressType.addressType
+      }));
+      getCityName(formData.partyCode,formData.state,selectedAddressType.addressType)
+    }
+     else {
       console.log('No State Code found with the given code:', value);
     }
   };
@@ -550,10 +692,20 @@ const RCostInvoicegna = () => {
       console.error('Error fetching gate passes:', error);
     }
   };
-  const getCityName = async (partyCode, state) => {
+  const getCityName = async (partyCode,state,type) => {
     try {
-      const response = await apiCalls('get', `/rCostInvoiceGna/getCityFromPartyMaster?orgId=${orgId}&partyCode=${partyCode}&state=${state}`);
+      const response = await apiCalls('get', `/rCostInvoiceGna/getCityFromPartyMaster?addressType=${type}&orgId=${orgId}&partyCode=${partyCode}&state=${state}`);
       setCityList(response.paramObjectsMap.partyMasterVO);
+      console.log(response.paramObjectsMap.partyMasterVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+  const getAddressType = async (partyCode, state) => {
+    try {
+      const response = await apiCalls('get', `/rCostInvoiceGna/findByAddressTypeFromPartyAddress?orgId=${orgId}&partyCode=${partyCode}&state=${state}`);
+      setAddressTypeList(response.paramObjectsMap.partyMasterVO);
+      console.log(response.paramObjectsMap.partyMasterVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -805,8 +957,8 @@ const RCostInvoicegna = () => {
         tdsRCostInvoiceGnaDTO: tdsVO,
         chargeRCostInvoiceGnaDTO: rCostVO,
         vid: formData.vid,
-        vdate: dayjs(formData.vdate).format('YYYY-MM-DD'),
-        creditDays: formData.creditDays,
+        vdate: formData.vdate,
+        creditDays: parseInt(formData.creditDays) || 0,
         currency: formData.currency,
         dueDate: formData.dueDate,
         exRate: parseInt(formData.exRate),
@@ -814,6 +966,7 @@ const RCostInvoicegna = () => {
         partyType: formData.partyType,
         partyName: formData.partyName,
         partyCode: formData.partyCode,
+        state: formData.state,
         place: formData.supplierPlace,
         remarks: formData.remarks,
         supplierBillNo: formData.supplierBillNo,
@@ -821,6 +974,8 @@ const RCostInvoicegna = () => {
         supplierGstIn: formData.supplierGstIn,
         supplierGstInCode: formData.stateCode,
         address: formData.address,
+        addressType: formData.addressType,
+        mode: formData.mode,
         active: true
       };
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -841,34 +996,61 @@ const RCostInvoicegna = () => {
       setFieldErrors(errors);
     }
   };
-  const handleTypeChange = (event) => {
+  const handleTypeChange = (event, index) => {
     const newType = event.target.value;
-    setChargerCostInvoice([{
-      sno: '',
-      chargeAC: newType,
-      currency: '',
-      exRate: '',
-      tdsApplicable: true,
-      rate: '',
-      gstPer: '',
-      gstAmt: '',
-      fcAmount: '',
-      lcAmount: '',
-      billAmount: '',
-      gtaAmount: ''
-    }]);
-    // Clear formData (summary section)
-    setFormData((prevData) => ({
-      ...prevData,
-      actBillCurrAmt: '',
-      netBillCurrAmt: '',
-      actLcAmt: '',
-      netLcAmt: '',
-      amtInWords: '',
-      roundOff: '',
-      taxAmountLc: '',
-    }));
+  
+    setChargerCostInvoice((prev) =>
+      prev.map((row, idx) => {
+        if (idx === index) {
+          return {
+            ...row,
+            chargeAC: newType,
+            currency: '',
+            exRate: '',
+            tdsApplicable: true,
+            rate: '',
+            gstPer: '',
+            gstAmt: '',
+            fcAmount: '',
+            lcAmount: '',
+            billAmount: '',
+            gtaAmount: '',
+          };
+        }
+        return row;
+      })
+    );
+    
   };
+  
+  // const handleTypeChange = (event) => {
+  //   const newType = event.target.value;
+  //   setChargerCostInvoice([{
+  //     sno: '',
+  //     chargeAC: newType,
+  //     currency: '',
+  //     exRate: '',
+  //     tdsApplicable: true,
+  //     rate: '',
+  //     gstPer: '',
+  //     gstAmt: '',
+  //     fcAmount: '',
+  //     lcAmount: '',
+  //     billAmount: '',
+  //     gtaAmount: ''
+  //   }]);
+  //   // Clear formData (summary section)
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     actBillCurrAmt: '',
+  //     netBillCurrAmt: '',
+  //     actLcAmt: '',
+  //     netLcAmt: '',
+  //     amtInWords: '',
+  //     roundOff: '',
+  //     taxAmountLc: '',
+  //   }));
+  // };
 
   return (
     <>
@@ -883,6 +1065,61 @@ const RCostInvoicegna = () => {
               <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
               <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
             </div>
+            {editId && !showForm && (formData.mode === 'SUBMIT') && (
+              //  || listViewData.mode === 'SUBMIT'
+              <>
+                {formData.approveStatus === 'Approved' && (
+                  <Stack direction="row" spacing={2}>
+                    <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
+                    <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
+                  </Stack>
+                )}
+                {formData.approveStatus === 'Rejected' && (
+                  <Stack direction="row" spacing={2}>
+                    <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
+                    <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
+                  </Stack>
+                )}
+                {/* {formData.mode === 'SUBMIT' && formData.approveStatus === null && ( */}
+                {listViewData.mode === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                  <div className="d-flex" style={{ marginRight: '30px' }}>
+                    <Button
+                      variant="outlined"
+                      startIcon={<CheckCircleIcon />}
+                      size="small"
+                      style={{
+                        borderColor: '#4CAF50',
+                        color: '#4CAF50',
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        padding: '2px 8px',
+                        fontSize: '0.8rem',
+                        marginRight: '10px'
+                      }}
+                      onClick={handleOpenModalApprove}
+                    >
+                      Approve
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      startIcon={<CancelIcon />}
+                      size="small"
+                      style={{
+                        borderColor: '#F44336',
+                        color: '#F44336',
+                        fontWeight: 'bold',
+                        textTransform: 'none',
+                        padding: '2px 8px',
+                        fontSize: '0.8rem'
+                      }}
+                      onClick={handleOpenModalReject}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
           </div>
           {!showForm && (
             <>
@@ -931,7 +1168,6 @@ const RCostInvoicegna = () => {
                     />
                   </FormControl>
                 </div>
-
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -947,6 +1183,22 @@ const RCostInvoicegna = () => {
                       />
                     </LocalizationProvider>
                     {/* {fieldErrors.purVoucherDate && <p className="dateErrMsg">Pur Voucher Date is required</p>} */}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl
+                    fullWidth
+                    size="small"
+                    variant="outlined"
+                    error={!!fieldErrors.mode}
+                    disabled={formData.mode === 'SUBMIT'}
+                  >
+                    <InputLabel id="mode-label">Mode</InputLabel>
+                    <Select label="Mode" name="mode" value={formData.mode} onChange={handleInputChange}>
+                      {editId && <MenuItem value="SUBMIT">SUBMIT</MenuItem>}
+                      <MenuItem value="EDIT">EDIT</MenuItem>
+                    </Select>
+                    {fieldErrors.mode && <FormHelperText style={{ color: 'red' }}>{fieldErrors.mode}</FormHelperText>}
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
@@ -974,6 +1226,7 @@ const RCostInvoicegna = () => {
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
                       label="Party Name"
+                      disabled={formData.mode === 'SUBMIT'}
                       onChange={handleSelectPartyChange}
                       name="partyName"
                       value={formData.partyName}
@@ -1010,10 +1263,11 @@ const RCostInvoicegna = () => {
                       label="V Id"
                       size="small"
                       name="vid"
+                      disabled={formData.mode === 'SUBMIT'}
                       inputProps={{ maxLength: 30 }}
                       value={formData.vid}
                       onChange={handleInputChange}
-                      disabled={editId}
+                      // disabled={editId}
                       error={!!fieldErrors.vid}
                       helperText={fieldErrors.vid}
                     />
@@ -1024,7 +1278,7 @@ const RCostInvoicegna = () => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         label="V Date"
-                        disabled={editId}
+                        disabled={formData.mode === 'SUBMIT'}
                         value={formData.vdate ? dayjs(formData.vdate, 'YYYY-MM-DD') : null}
                         onChange={(date) => handleDateChange('vdate', date)}
                         slotProps={{
@@ -1043,7 +1297,8 @@ const RCostInvoicegna = () => {
                       labelId="stateCode"
                       label="State Code"
                       name="stateCode"
-                      value={stateCodeList.some((state) => state.stateCode === formData.stateCode) ? formData.stateCode : ''} // Ensures only valid values
+                      disabled={formData.mode === 'SUBMIT'}
+                      value={stateCodeList.some((state) => state.stateCode === formData.stateCode) ? formData.stateCode : ''} 
                       onChange={handleSelectStateCode}
                       error={!!fieldErrors.stateCode}
                     >
@@ -1080,6 +1335,30 @@ const RCostInvoicegna = () => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
+                    <InputLabel id="demo-simple-select-label">Address Type</InputLabel>
+                    <Select
+                      labelId="addressType"
+                      label="addressType"
+                      value={formData.addressType}
+                      //  || (cityList.length === 1 ? cityList[0].city : '')
+                      name="addressType"
+                      onChange={handleSelectStateCode}
+                      disabled={formData.mode === 'SUBMIT'}
+                      error={!!fieldErrors.addressType}
+                      helperText={fieldErrors.addressType}
+                    >
+                      {addressTypeList &&
+                        addressTypeList.map((par, index) => (
+                          <MenuItem key={index} value={par.addressType}>
+                            {par.addressType}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                    {fieldErrors.addressType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.addressType}</FormHelperText>}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
                     <InputLabel id="demo-simple-select-label">Supplier Place</InputLabel>
                     <Select
                       labelId="supplierPlace"
@@ -1088,6 +1367,7 @@ const RCostInvoicegna = () => {
                       //  || (cityList.length === 1 ? cityList[0].city : '')
                       name="supplierPlace"
                       onChange={handleSelectCity}
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.supplierPlace}
                       helperText={fieldErrors.supplierPlace}
                     >
@@ -1126,6 +1406,7 @@ const RCostInvoicegna = () => {
                       inputProps={{ maxLength: 30 }}
                       value={formData.supplierBillNo}
                       onChange={handleInputChange}
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.supplierBillNo}
                       helperText={fieldErrors.supplierBillNo}
                     />
@@ -1136,6 +1417,7 @@ const RCostInvoicegna = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Supplier Date"
+                      disabled={formData.mode === 'SUBMIT'}
                       value={formData.supplierDate ? dayjs(formData.supplierDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('supplierDate', date)}
                       slotProps={{
@@ -1156,6 +1438,7 @@ const RCostInvoicegna = () => {
                       onChange={handleInputChange}
                       name="currency"
                       value={formData.currency}
+                      disabled={formData.mode === 'SUBMIT'}
                       // || (exRates.length === 1 ? exRates[0].currency : '')
                     >
                       {exRates &&
@@ -1213,6 +1496,7 @@ const RCostInvoicegna = () => {
                           textField: { size: 'small', clearable: true, error: fieldErrors.dueDate, helperText: fieldErrors.dueDate }
                         }}
                         format="DD-MM-YYYY"
+                        disabled={formData.mode === 'SUBMIT'}
                       />
                     </LocalizationProvider>
                   </FormControl>
@@ -1221,7 +1505,7 @@ const RCostInvoicegna = () => {
                   {/* <FormControl fullWidth size="small"> */}
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gstType}>
                     <InputLabel id="demo-simple-select-label">Tax Type</InputLabel>
-                    <Select labelId="gstType" name="gstType" value={formData.gstType} onChange={handleInputChange} label="Tax Type">
+                    <Select labelId="gstType" name="gstType" value={formData.gstType} onChange={handleInputChange} label="Tax Type" disabled={formData.mode === 'SUBMIT' || editId}>
                       <MenuItem value="INTER">INTER</MenuItem>
                       <MenuItem value="INTRA">INTRA</MenuItem>
                     </Select>
@@ -1234,6 +1518,7 @@ const RCostInvoicegna = () => {
                       label="Remarks"
                       size="small"
                       name="remarks"
+                      disabled={formData.mode === 'SUBMIT' || editId}
                       multiline
                       inputProps={{ maxLength: 30 }}
                       value={formData.remarks}
@@ -1262,20 +1547,27 @@ const RCostInvoicegna = () => {
                   {value === 0 && (
                     <>
                       <div className="row d-flex ml">
-                        <div className="mb-1">
-                          <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                          {/* <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} /> */}
-                        </div>
-
+                      {formData.mode === 'SUBMIT' ? (
+                          ''
+                        ) : (
+                          <div className="mb-1">
+                            <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                            {/* <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} /> */}
+                          </div>
+                        )}
                         <div className="row mt-2">
                           <div className="col-lg-12">
                             <div className="table-responsive mb-3">
                               <table className="table table-bordered ">
                                 <thead>
                                   <tr style={{ backgroundColor: '#673AB7' }}>
-                                    <th className="table-header" style={{ width: '68px' }}>
-                                      Action
-                                    </th>
+                                  {formData.mode === 'SUBMIT' ? (
+                                      ''
+                                    ) : (
+                                      <th className="table-header" style={{ width: '68px' }}>
+                                        Action
+                                      </th>
+                                     )}
                                     <th className="table-header" style={{ width: '50px' }}>
                                       S.No
                                     </th>
@@ -1292,6 +1584,70 @@ const RCostInvoicegna = () => {
                                   </tr>
                                 </thead>
                                 <tbody>
+                                {formData.mode === 'SUBMIT' ? (
+                                    <>
+                                      {chargerCostInvoice.map((row, index) => (
+                                        <tr key={row.id}>
+                                          <td className="text-center">{index + 1}</td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.chargeAC}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center">
+                                          <FormControlLabel
+                                            control={
+                                              <Checkbox
+                                                className="ms-2 pb-0 pt-1"
+                                                checked={row.tdsApplicable}
+                                                disabled
+                                                onChange={(e) => {
+                                                  const isChecked = e.target.checked;
+
+                                                  setChargerCostInvoice((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, tdsApplicable: isChecked } : r))
+                                                  );
+                                                }}
+                                                name="tdsApplicable"
+                                                color="primary"
+                                              />
+                                            }
+                                            sx={{
+                                              '& .MuiSvgIcon-root': { color: '#5e35b1' }
+                                            }}
+                                          />
+                                          {costInvoiceErrors[index]?.tdsApplicable && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {costInvoiceErrors[index].tdsApplicable}
+                                            </div>
+                                          )}
+                                        </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.currency}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.exRate}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.rate}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.gstPer}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.fcAmount}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.lcAmount}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.billAmount}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.gtaAmount}
+                                          </td>
+                                        </tr>
+                                      ))}
+                                    </>
+                                  ) : (
                                   <>
                                     {chargerCostInvoice.map((row, index) => (
                                       <tr key={row.id}>
@@ -1318,7 +1674,7 @@ const RCostInvoicegna = () => {
                                           <select
                                             value={row.chargeAC}
                                             style={{ width: '180px' }}
-                                            onChange={handleTypeChange}
+                                            onChange={(e) => handleTypeChange(e, index)} 
                                             // onChange={(e) => {
                                             //   const selectedchargeLedger = e.target.value;
                                             //   const updatedchargeLedgerData = [...chargerCostInvoice];
@@ -1638,6 +1994,7 @@ const RCostInvoicegna = () => {
                                       </tr>
                                     ))}
                                   </>
+                                )}
                                 </tbody>
                               </table>
                             </div>
@@ -1688,6 +2045,7 @@ const RCostInvoicegna = () => {
                               <Select
                                 labelId="tds"
                                 name="tds"
+                                disabled={formData.mode === 'SUBMIT'}
                                 value={tdsCostInvoiceDTO[index]?.tds || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
                                 label="TDS"
@@ -1707,6 +2065,7 @@ const RCostInvoicegna = () => {
                               <Select
                                 labelId="section"
                                 name="section"
+                                disabled={formData.mode === 'SUBMIT'}
                                 value={tdsCostInvoiceDTO[index]?.section || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
                                 label="Section"
@@ -1875,18 +2234,26 @@ const RCostInvoicegna = () => {
             </>
           )}
           {showForm && (
-            <CommonListViewTable
+            <CommonTable
               data={data && data}
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllRCostInvoiceById}
-              isPdf={false}
+              // isPdf={false}
               // GeneratePdf={GeneratePdf}
             />
           )}
           {/* {downloadPdf && <GeneratePdfTemp row={pdfData} />} */}
         </div>
       </div>
+      <ConfirmationModal
+        open={modalOpen}
+        title="Registered Cost Invoice Approval"
+        message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
+        onConfirm={handleConfirmAction}
+        onCancel={handleCloseModal}
+        // onCancel={() => setModalOpen(false)}
+      />
     </>
   );
 };
