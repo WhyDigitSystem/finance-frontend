@@ -4,7 +4,6 @@ import Box from '@mui/material/Box';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
 import { Avatar, ButtonBase, FormHelperText, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -14,6 +13,8 @@ import TextField from '@mui/material/TextField';
 import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
 import axios from 'axios';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useRef, useState, useMemo, useEffect } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
@@ -37,7 +38,7 @@ const Company = () => {
   const [stateList, setStateList] = useState([]);
   const [cityList, setCityList] = useState([]);
   const [editId, setEditId] = useState('');
-
+  const [value, setValue] = useState(0);
   const [formData, setFormData] = useState({
     companyCode: '',
     companyName: '',
@@ -52,7 +53,6 @@ const Company = () => {
     panNo: '',
     active: true
   });
-
   const [fieldErrors, setFieldErrors] = useState({
     companyCode: '',
     ceo: '',
@@ -66,6 +66,107 @@ const Company = () => {
     website: '',
     active: ''
   });
+    const [detailsTableData, setDetailsTableData] = useState([
+      {
+        id: 1,
+        beneficiaryName: '',
+        accountNo: '',
+        bankName: '',
+        accountCode: '',
+        branch: '',
+        ifsc: '',
+        accountType: '',
+        primaryAccount: 'true'
+      }
+    ]);
+    const [detailsTableErrors, setDetailsTableErrors] = useState([
+      {
+        beneficiaryName: '',
+        accountNo: '',
+        bankName: '',
+        accountCode: '',
+        branch: '',
+        ifsc: '',
+        accountType: '',
+        primaryAccount: ''
+      }
+    ]);
+    const handleChange = (event, newValue) => {
+      setValue(newValue);
+    };
+    const handleAddRow = () => {
+      if (isLastRowEmpty(detailsTableData)) {
+        displayRowError(detailsTableData);
+        return;
+      }
+      const newRow = {
+        id: Date.now(),
+        beneficiaryName: '',
+        accountNo: '',
+        bankName: '',
+        accountCode: '',
+        branch: '',
+        ifsc: '',
+        accountType: '',
+        primaryAccount: 'true'
+      };
+      setDetailsTableData([...detailsTableData, newRow]);
+      setDetailsTableErrors([...detailsTableErrors, { 
+        beneficiaryName: '',
+        accountNo: '',
+        bankName: '',
+        accountCode: '',
+        branch: '',
+        ifsc: '',
+        accountType: '',
+        primaryAccount: 'true' 
+      }]);
+    };
+    const isLastRowEmpty = (table) => {
+      const lastRow = table[table.length - 1];
+      if (!lastRow) return false;
+  
+      if (table === detailsTableData) {
+        return !lastRow.beneficiaryName || 
+        !lastRow.accountNo || 
+        !lastRow.bankName ||
+        !lastRow.accountCode || 
+        !lastRow.branch || 
+        !lastRow.ifsc || 
+        !lastRow.accountType;
+      }
+      return false;
+    };
+  
+    const displayRowError = (table) => {
+      if (table === detailsTableData) {
+        setDetailsTableErrors((prevErrors) => {
+          const newErrors = [...prevErrors];
+          newErrors[table.length - 1] = {
+            ...newErrors[table.length - 1],
+            beneficiaryName: !table[table.length - 1].beneficiaryName ? 'Beneficiary Name is required' : '',
+            accountNo: !table[table.length - 1].accountNo ? 'Account No is required' : '',
+            bankName: !table[table.length - 1].bankName ? 'Bank Name is required' : '',
+            accountCode: !table[table.length - 1].accountCode ? 'Account Code is required' : '',
+            branch: !table[table.length - 1].branch ? 'Branch is required' : '',
+            ifsc: !table[table.length - 1].ifsc ? 'IFSC is required' : '',
+            accountType: !table[table.length - 1].accountType ? 'Account Type is required' : '',
+          };
+          return newErrors;
+        });
+      }
+    };
+  
+    const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
+      const rowIndex = table.findIndex((row) => row.id === id);
+      // If the row exists, proceed to delete
+      if (rowIndex !== -1) {
+        const updatedData = table.filter((row) => row.id !== id);
+        const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
+        setTable(updatedData);
+        setErrorTable(updatedErrors);
+      }
+    };
   const [listView, setListView] = useState(false);
   const listViewColumns = [
     { accessorKey: 'companyCode', header: 'Company Code', size: 140 },
@@ -237,6 +338,20 @@ const Company = () => {
           // gst: particularCompany.gst,
           website: particularCompany.webSite
         });
+        setDetailsTableData(
+          particularCompany.bankDetailsVO.map((com) => ({
+            id: com.id,
+            accountCode: com.accountCode,
+            accountNo: com.accountNo,
+            accountType: com.accountType,
+            bankName: com.bankName,
+            beneficiaryName: com.beneficiaryName,
+            branch: com.branch,
+            ifsc: com.ifsc,
+            primaryAccount: com.primaryAccount === 'true' || com.primaryAccount === true
+          
+          }))
+        );
       } else {
         console.error('API Error:', response);
       }
@@ -289,6 +404,20 @@ const Company = () => {
       // gst: '',
       website: ''
     });
+    setDetailsTableData([
+      {
+        id: 1,
+        beneficiaryName: '',
+        accountNo: '',
+        bankName: '',
+        accountCode: '',
+        branch: '',
+        ifsc: '',
+        accountType: '',
+        primaryAccount: 'true'
+      }
+    ]);
+    setDetailsTableErrors('');
     setEditId('');
   };
 
@@ -324,6 +453,18 @@ const Company = () => {
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
+
+      const detailsVo = detailsTableData.map((row) => ({
+        ...(editId && { id: row.id }),
+        accountCode: row.accountCode,
+        accountNo: parseInt(row.accountNo),
+        accountType: row.accountType,
+        bankName: row.bankName,
+        beneficiaryName: row.beneficiaryName,
+        branch: row.branch,
+        ifsc: row.ifsc,
+        primaryAccount: row.primaryAccount === 'true' || row.primaryAccount === true
+      }));
       const saveFormData = {
         id: orgId,
         companyCode: formData.companyCode,
@@ -337,7 +478,8 @@ const Company = () => {
         panno: formData.panNo,
         webSite: formData.website,
         active: formData.active,
-        updatedBy: loginUserName
+        updatedBy: loginUserName,
+        bankDetailsDTO: detailsVo,
       };
       console.log('THE SAVE FORM DATA IS:', saveFormData);
 
@@ -544,6 +686,284 @@ const Company = () => {
                   label="Active"
                 />
               </div>
+            </div>
+            <div className="row mt-2">
+              <Box sx={{ width: '100%' }}>
+                <Tabs
+                  value={value}
+                  onChange={handleChange}
+                  textColor="secondary"
+                  indicatorColor="secondary"
+                  aria-label="secondary tabs example"
+                >
+                  <Tab value={0} label="Details" />
+                </Tabs>
+              </Box>
+              <Box sx={{ padding: 2 }}>
+                {value === 0 && (
+                  <>
+                    <div className="row d-flex ml">
+                      <div className="mb-1">
+                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                      </div>
+                      <div className="row mt-2">
+                        <div className="col-lg-14">
+                          <div className="table-responsive">
+                            <table className="table table-bordered ">
+                              <thead>
+                              <tr style={{ backgroundColor: '#673AB7' }}>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '60px' }}>
+                                  S.No
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '180px' }}>
+                                  Beneficiary Name
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '220px' }}>
+                                  Account No
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '180px' }}>
+                                  Bank Name
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '220px' }}>
+                                  Account Code
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '180px' }}>
+                                  Branch
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '220px' }}>
+                                  IFSC
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '180px' }}>
+                                  Account Type
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
+                                  Primary Account
+                                </th>
+                              </tr>
+
+                              </thead>
+                              <tbody>
+                                {detailsTableData.map((row, index) => (
+                                  <tr key={row.id}>
+                                    <td className="text-center">
+                                      <div className="pt-2">{index + 1}</div>
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.beneficiaryName}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setDetailsTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, beneficiaryName: value } : r))
+                                          );
+                                          setDetailsTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              beneficiaryName: !value ? 'Beneficiary Name is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={detailsTableErrors[index]?.beneficiaryName ? 'error form-control' : 'form-control'}
+                                      />
+                                      {detailsTableErrors[index]?.beneficiaryName && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {detailsTableErrors[index].beneficiaryName}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.accountNo}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setDetailsTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, accountNo: value } : r))
+                                          );
+                                          setDetailsTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              accountNo: !value ? 'Account No is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={detailsTableErrors[index]?.accountNo ? 'error form-control' : 'form-control'}
+                                      />
+                                      {detailsTableErrors[index]?.accountNo && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {detailsTableErrors[index].accountNo}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.bankName}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setDetailsTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, bankName: value } : r))
+                                          );
+                                          setDetailsTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              bankName: !value ? 'Bank Name is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={detailsTableErrors[index]?.bankName ? 'error form-control' : 'form-control'}
+                                      />
+                                      {detailsTableErrors[index]?.bankName && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {detailsTableErrors[index].bankName}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.accountCode}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setDetailsTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, accountCode: value } : r))
+                                          );
+                                          setDetailsTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              accountCode: !value ? 'Account Code is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={detailsTableErrors[index]?.accountCode ? 'error form-control' : 'form-control'}
+                                      />
+                                      {detailsTableErrors[index]?.accountCode && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {detailsTableErrors[index].accountCode}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.branch}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setDetailsTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, branch: value } : r))
+                                          );
+                                          setDetailsTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              branch: !value ? 'Branch is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={detailsTableErrors[index]?.branch ? 'error form-control' : 'form-control'}
+                                      />
+                                      {detailsTableErrors[index]?.branch && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {detailsTableErrors[index].branch}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.ifsc}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setDetailsTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, ifsc: value } : r))
+                                          );
+                                          setDetailsTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              ifsc: !value ? 'IFSC is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={detailsTableErrors[index]?.ifsc ? 'error form-control' : 'form-control'}
+                                      />
+                                      {detailsTableErrors[index]?.ifsc && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {detailsTableErrors[index].ifsc}
+                                        </div>
+                                      )}
+                                    </td>
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.accountType}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setDetailsTableData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, accountType: value } : r))
+                                          );
+                                          setDetailsTableErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              accountType: !value ? 'Account Type is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={detailsTableErrors[index]?.accountType ? 'error form-control' : 'form-control'}
+                                      />
+                                      {detailsTableErrors[index]?.accountType && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {detailsTableErrors[index].accountType}
+                                        </div>
+                                      )}
+                                    </td>                                    
+                                    <td className="border px-2 py-2 text-center">
+                                      <FormControlLabel
+                                        control={
+                                          <Checkbox
+                                            className="ms-2 pb-0 pt-1"
+                                            checked={row.primaryAccount}
+                                            onChange={(e) => {
+                                              const isChecked = e.target.checked;
+
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, primaryAccount: isChecked } : r))
+                                              );
+                                            }}
+                                            name="primaryAccount"
+                                            color="primary"
+                                          />
+                                        }
+                                        // label="primaryAccount"
+                                        sx={{
+                                          '& .MuiSvgIcon-root': { color: '#5e35b1' }
+                                        }}
+                                      />
+                                    </td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </Box>
             </div>
           </>
         )}
