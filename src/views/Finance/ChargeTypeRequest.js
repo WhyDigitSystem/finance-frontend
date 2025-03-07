@@ -53,6 +53,7 @@ export const ChargeTypeRequest = () => {
     purchaseAccount: '',
     taxable: '',
     taxablePercentage: '',
+    product: '',
     govtSac: '',
     excempted: '',
     orgId: orgId,
@@ -75,6 +76,7 @@ export const ChargeTypeRequest = () => {
     purchaseAccount: '',
     taxable: '',
     taxablePercentage: '',
+    product: '',
     govtSac: '',
     excempted: '',
     gstTax: '',
@@ -328,6 +330,7 @@ export const ChargeTypeRequest = () => {
           taxable: chargeTypeRequestVO.taxable || '',
           taxablePercentage: chargeTypeRequestVO.taxablePercentage || '',
           id: chargeTypeRequestVO.id || 0,
+          product: chargeTypeRequestVO.product || '',
           govtSac: chargeTypeRequestVO.govtSac || '',
           excempted: chargeTypeRequestVO.excempted || '',
           orgId: chargeTypeRequestVO.orgId || orgId,
@@ -390,6 +393,7 @@ export const ChargeTypeRequest = () => {
       purchaseAccount: '',
       taxable: '',
       taxablePercentage: '',
+      product: '',
       govtSac: '',
       excempted: '',
       orgId: orgId,
@@ -414,6 +418,7 @@ export const ChargeTypeRequest = () => {
       purchaseAccount: '',
       taxable: '',
       taxablePercentage: '',
+      product: '',
       govtSac: '',
       excempted: '',
       gstTax: '',
@@ -505,6 +510,7 @@ export const ChargeTypeRequest = () => {
         salesAccount: formData.salesAccount,
         purchaseAccount: formData.purchaseAccount,
         taxable: formData.taxable,
+        product: formData.product,
         govtSac: formData.govtSac,
         excempted: formData.excempted,
         gstTax: formData.gstTax,
@@ -789,6 +795,21 @@ export const ChargeTypeRequest = () => {
                     </p>
                   )}
                 </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="outlined-textarea"
+                  label="Product"
+                  variant="outlined"
+                  size="small"
+                  name="product"
+                  value={formData.product}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.product}
+                  helperText={fieldErrors.product}
+                />
               </div>
 
               <div className="col-md-3 mb-3">

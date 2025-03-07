@@ -40,7 +40,8 @@ const TaxInvoiceDetails = () => {
   const [placeOfSupply, setPlaceOfSupply] = useState([]);
   const [addressType, setAddressType] = useState([]);
   const [chargeType, setChargeType] = useState([]);
-  const [chargeCode, setChargeCode] = useState([]);
+  const [chargeCodeList, setChargeCodeList] = useState([]);
+  const [chargeCodeCache, setChargeCodeCache] = useState(new Map());
   const [currencyList, setCurrencyList] = useState([]);
   const [partyCurrencyList, setPartyCurrencyList] = useState([]);
   const [jobCardNo, setJobCardNo] = useState([]);
@@ -539,6 +540,8 @@ const TaxInvoiceDetails = () => {
     setStateName('');
     setPlaceOfSupply('');
     setJobCardNo([]);
+    setChargeCodeList([]);
+    setChargeCodeCache([]);
     setPartyCurrencyList([]);
     setWithdrawalsTableErrors({
       sno: '',
@@ -1012,15 +1015,65 @@ const TaxInvoiceDetails = () => {
   //     }
   //   }
   // };
+  const getChargeCodeDetail = async (type, rowIndex) => {
+    // Check if chargeCodeList for the type is already cached
+    if (chargeCodeCache.has(type)) {
+      // Update only the specific row's chargeCodeList
+      setChargeCodeList((prevLists) => {
+        const updatedLists = [...prevLists];
+        updatedLists[rowIndex] = chargeCodeCache.get(type);
+        return updatedLists;
+      });
+      return;
+    }
 
-  const getChargeCodeDetail = async (type) => {
     try {
       const response = await apiCalls('get', `/taxInvoice/getChargeCodeDetailsByChargeType?orgId=${orgId}&chargeType=${type}`);
-      setChargeCode(response.paramObjectsMap.chargeCodeVO);
+      const chargeCodes = response.paramObjectsMap.chargeCodeVO || [];
+
+      // Cache the response for future use
+      setChargeCodeCache((prevCache) => new Map(prevCache).set(type, chargeCodes));
+
+      // Update only the specific row's chargeCodeList
+      setChargeCodeList((prevLists) => {
+        const updatedLists = [...prevLists];
+        updatedLists[rowIndex] = chargeCodes;
+        return updatedLists;
+      });
     } catch (error) {
-      console.error('Error fetching gate passes:', error);
+      console.error('Error fetching charge codes:', error);
     }
   };
+
+  // const getChargeCodeDetail = async (type) => {
+  //   // Check if chargeCodeList for the type is already cached
+  //   if (chargeCodeCache.has(type)) {
+  //     setChargeCodeList(chargeCodeCache.get(type)); // Use cached data if available
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await apiCalls('get', `/taxInvoice/getChargeCodeDetailsByChargeType?orgId=${orgId}&chargeType=${type}`);
+  //     const chargeCodes = response.paramObjectsMap.chargeCodeVO || [];
+
+  //     // Cache the response for future use
+  //     setChargeCodeCache((prevCache) => new Map(prevCache).set(type, chargeCodes));
+
+  //     // Set chargeCodeList for current selection
+  //     setChargeCodeList(chargeCodes);
+  //   } catch (error) {
+  //     console.error('Error fetching charge codes:', error);
+  //   }
+  // };
+
+  // const getChargeCodeDetail = async (type) => {
+  //   try {
+  //     const response = await apiCalls('get', `/taxInvoice/getChargeCodeDetailsByChargeType?orgId=${orgId}&chargeType=${type}`);
+  //     setChargeCodeList(response.paramObjectsMap.chargeCodeVO);
+  //   } catch (error) {
+  //     console.error('Error fetching gate passes:', error);
+  //   }
+  // };
   const calculateTotals = (rows, setFormData) => {
     const totalChargeAmountLc = rows.reduce((sum, row) => sum + parseFloat(row.lcAmount || 0), 0);
     const totalTaxAmountLc = rows.reduce((sum, row) => sum + parseFloat(row.gst || 0), 0);
@@ -1475,51 +1528,75 @@ const TaxInvoiceDetails = () => {
     setWithdrawalsTableData(updatedTableData);
   };
 
-  const handleTypeChange = (event) => {
-    const newType = event.target.value;
-
-    // Clear withdrawalsTableData (table values)
-    setWithdrawalsTableData([
-      {
-        sno: '',
-        chargeCode: '',
-        chargeName: '',
-        currency: '',
-        exRate: '',
-        exempted: '',
-        govChargeCode: '',
-        GSTPercent: '',
-        ledger: '',
-        qty: '',
-        rate: '',
-        sac: '',
-        taxable: '',
-        chargeType: newType
-      }
-    ]);
-    getChargeCodeDetail(newType);
-    // Clear formData (summary section)
-    setFormData((prevData) => ({
-      ...prevData,
-      totalChargeAmountLc: '',
-      totalTaxAmountLc: '',
-      totalInvAmountLc: '',
-      roundOffAmountLc: '',
-      totalChargeAmountBc: '',
-      totalTaxAmountBc: '',
-      totalInvAmountBc: '',
-      totalTaxableAmountLc: '',
-      amountInWords: '',
-      gstType: '',
-      invoiceDate: null
-    }));
-
-    // Update the type value
-    // setWithdrawalsTableData((prevData) => ({
-    //   ...prevData,
-    //   chargeType: newType,
-    // }));
+  const handleTypeChange = (e, index) => {
+    const { value } = e.target;
+    const updatedData = [...withdrawalsTableData];
+    updatedData[index] = {
+      ...updatedData[index],
+      chargeType: value,
+      chargeCode: '', // Clear chargeCode when chargeType changes
+      GSTPercent: '',
+      ccFeeApplicable: '',
+      chargeName: '',
+      exempted: '',
+      govChargeCode: '',
+      ledger: '',
+      sac: '',
+      taxable: '',
+      qty: '',
+      rate: '',
+      billAmount: '',
+      lcAmount: ''
+    };
+    setWithdrawalsTableData(updatedData);
+    getChargeCodeDetail(value, index); // Pass row index
   };
+
+  // const handleTypeChange = (event) => {
+  //   const newType = event.target.value;
+
+  //   // Clear withdrawalsTableData (table values)
+  //   setWithdrawalsTableData([
+  //     {
+  //       sno: '',
+  //       chargeCode: '',
+  //       chargeName: '',
+  //       currency: '',
+  //       exRate: '',
+  //       exempted: '',
+  //       govChargeCode: '',
+  //       GSTPercent: '',
+  //       ledger: '',
+  //       qty: '',
+  //       rate: '',
+  //       sac: '',
+  //       taxable: '',
+  //       chargeType: newType
+  //     }
+  //   ]);
+  //   getChargeCodeDetail(newType);
+  //   // Clear formData (summary section)
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     totalChargeAmountLc: '',
+  //     totalTaxAmountLc: '',
+  //     totalInvAmountLc: '',
+  //     roundOffAmountLc: '',
+  //     totalChargeAmountBc: '',
+  //     totalTaxAmountBc: '',
+  //     totalInvAmountBc: '',
+  //     totalTaxableAmountLc: '',
+  //     amountInWords: '',
+  //     gstType: '',
+  //     invoiceDate: null
+  //   }));
+
+  //   // Update the type value
+  //   // setWithdrawalsTableData((prevData) => ({
+  //   //   ...prevData,
+  //   //   chargeType: newType,
+  //   // }));
+  // };
 
   return (
     <>
@@ -2082,7 +2159,7 @@ const TaxInvoiceDetails = () => {
                 </FormControl>
               </div>
 
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
                     label="Shipper Invoice No"
@@ -2112,7 +2189,7 @@ const TaxInvoiceDetails = () => {
                     // helperText={errors.pincode}
                   />
                 </FormControl>
-              </div>
+              </div> */}
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
@@ -2280,11 +2357,26 @@ const TaxInvoiceDetails = () => {
                                   </td>
 
                                   <td className="border px-2 py-2">
-                                    <select
+                                    {/* <select
                                       value={row.chargeType}
                                       style={{ width: '150px' }}
                                       disabled={formData.status === 'TAX'}
                                       onChange={handleTypeChange}
+                                      className={withdrawalsTableErrors[index]?.chargeType ? 'error form-control' : 'form-control'}
+                                    >
+                                      <option value="">--Select--</option>
+                                      {chargeType &&
+                                        chargeType.map((currency) => (
+                                          <option key={currency.id} value={currency.chargeType}>
+                                            {currency.chargeType}
+                                          </option>
+                                        ))}
+                                    </select> */}
+                                    <select
+                                      value={row.chargeType}
+                                      style={{ width: '150px' }}
+                                      disabled={formData.status === 'TAX'}
+                                      onChange={(e) => handleTypeChange(e, index)}
                                       className={withdrawalsTableErrors[index]?.chargeType ? 'error form-control' : 'form-control'}
                                     >
                                       <option value="">--Select--</option>
@@ -2310,7 +2402,52 @@ const TaxInvoiceDetails = () => {
                                       disabled={formData.status === 'TAX'}
                                       onChange={(e) => {
                                         const selectedCurrency = e.target.value;
-                                        const selectedCurrencyData = chargeCode.find(
+                                        const selectedCurrencyData = chargeCodeList[index]?.find(
+                                          (currency) => currency.chargeCode === selectedCurrency
+                                        );
+                                        const updatedCurrencyData = [...withdrawalsTableData];
+                                        updatedCurrencyData[index] = {
+                                          ...updatedCurrencyData[index],
+                                          chargeCode: selectedCurrency,
+                                          GSTPercent: selectedCurrencyData?.GSTPercent || '',
+                                          ccFeeApplicable: selectedCurrencyData?.ccFeeApplicable || '',
+                                          chargeName: selectedCurrencyData?.chargeName || '',
+                                          exempted: selectedCurrencyData?.exempted || '',
+                                          govChargeCode: selectedCurrencyData?.govChargeCode || '',
+                                          ledger: selectedCurrencyData?.ledger || '',
+                                          sac: selectedCurrencyData?.sac || '',
+                                          taxable: selectedCurrencyData?.taxable || '',
+                                          qty: '',
+                                          rate: '',
+                                          billAmount: '',
+                                          lcAmount: ''
+                                        };
+                                        setWithdrawalsTableData(updatedCurrencyData);
+                                      }}
+                                      className={withdrawalsTableErrors[index]?.chargeCode ? 'error form-control' : 'form-control'}
+                                    >
+                                      <option value="">--Select--</option>
+                                      {chargeCodeList[index]?.map((currency, idx) => (
+                                        <option key={idx} value={currency.chargeCode}>
+                                          {currency.chargeCode}
+                                        </option>
+                                      ))}
+                                    </select>
+                                    {withdrawalsTableErrors[index]?.chargeCode && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {withdrawalsTableErrors[index].chargeCode}
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  {/* <td className="border px-2 py-2">
+                                    <select
+                                      value={row.chargeCode}
+                                      style={{ width: '150px' }}
+                                      disabled={formData.status === 'TAX'}
+                                      onChange={(e) => {
+                                        const selectedCurrency = e.target.value;
+                                        const selectedCurrencyData = chargeCodeList.find(
                                           (currency) => currency.chargeCode === selectedCurrency
                                         );
                                         const updatedCurrencyData = [...withdrawalsTableData];
@@ -2336,7 +2473,7 @@ const TaxInvoiceDetails = () => {
                                       className={withdrawalsTableErrors[index]?.chargeCode ? 'error form-control' : 'form-control'}
                                     >
                                       <option value="">--Select--</option>
-                                      {chargeCode?.map((currency, index) => (
+                                      {chargeCodeList?.map((currency, index) => (
                                         <option key={index} value={currency.chargeCode}>
                                           {currency.chargeCode}
                                         </option>
@@ -2348,7 +2485,7 @@ const TaxInvoiceDetails = () => {
                                       </div>
                                     )}
                                   </td>
-                                  {/* <td className="border px-2 py-2">
+                                  <td className="border px-2 py-2">
                                     <input
                                       type="text"
                                       value={row.govChargeCode}

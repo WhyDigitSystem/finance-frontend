@@ -6,10 +6,13 @@ import jsPDF from 'jspdf';
 import { toWords } from 'number-to-words';
 import { useEffect, useState } from 'react';
 import QRCodeComponent from './QRCode';
+import apiCalls from 'apicall';
 
 const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   const [open, setOpen] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState('');
+  const [bankDetails, setBankDetails] = useState([]);
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
 
   const styles = {
     container: {
@@ -111,6 +114,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   useEffect(() => {
     if (row) {
       handleOpen();
+      getBankDetailsByOrgId();
     }
     console.log('RowData =>', row);
 
@@ -124,6 +128,16 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     const formattedTime = now.toLocaleTimeString('en-GB'); // Format time as HH:MM:SS
     setCurrentDateTime(`${formattedDate} ${formattedTime}`);
   }, [row, callBackFunction]);
+
+  const getBankDetailsByOrgId = async () => {
+    try {
+      const response = await apiCalls('get', `/commonmaster/getBankDetailsByOrgId?orgId=${orgId}`);
+      setBankDetails(response.paramObjectsMap.bankDetailsVO[0]);
+      console.log('setBankDetails =>', response.paramObjectsMap.bankDetailsVO);
+    } catch (error) {
+      console.error('Error fetching invoice:', error);
+    }
+  };
 
   return (
     <Dialog
@@ -159,7 +173,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               color: '#333'
             }}
           >
-            <div>EFit Finance</div>
+            <div>{localStorage.getItem('companyName')}</div>
             <div>
               <strong>Cost Invoice</strong>
             </div>
@@ -327,7 +341,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             <thead>
               <tr style={{ backgroundColor: '#673ab7', color: '#fff' }}>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>HSN/SAC</th>
-                <th style={{ border: '1px solid #000000', padding: '10px' }}>Details</th>
+                <th style={{ border: '1px solid #000000', padding: '10px' }}>Description</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Cur</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Ex.Rt</th>
                 {/* <th style={{ border: '1px solid #000000', padding: '10px' }}>Apply On</th> */}
@@ -342,7 +356,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               {row.chargerCostInvoiceVO?.map((item, index) => (
                 <tr key={index} style={{ borderBottom: '1px solid #000000' }}>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.govChargeCode}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.chargeName}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.description}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.currency}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.exRate || ''}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.qty}</td>
@@ -449,32 +463,32 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 INDIA OF WHICH WE ARE MEMBERS, COPIES OF STANDARD TRADING CONDITIONS ARE AVAILABLE ON REQUEST.
               </li>
               <li>INTEREST WILL BE CHARGED @ 16% PER ANNUM FOR ALL PAYMENT RECEIVED ON OR AFTER DUE DATE AS MENTIONED ABOVE.</li>
-              <li>CHEQUE / DD SHOULD BE IN FAVOUR OF XYZ LOGISTICS PRIVATE LIMITED.</li>
+              <li>CHEQUE / DD SHOULD BE IN FAVOUR OF {localStorage.getItem('companyName')}.</li>
             </ol>
           </div>
 
           <div style={styles2.container}>
             <h6 style={styles2.heading}>Bank Details:</h6>
             <p style={styles2.item}>
-              <span style={styles2.label}>BANK NAME:</span> HDFC BANK LIMITED
+              <span style={styles2.label}>BANK NAME:</span> {bankDetails.bankName}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT CODE:</span> XYZ
+              <span style={styles2.label}>ACCOUNT CODE:</span> {bankDetails.accountCode}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>BENEFICIARY NAME:</span> XYZ LOGISTICS PVT LTD
+              <span style={styles2.label}>BENEFICIARY NAME:</span> {bankDetails.beneficiaryName}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>BRANCH:</span> KORAMANGALA, BENGALURU
+              <span style={styles2.label}>BRANCH:</span> {bankDetails.branch}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>IFSC:</span> HDFC0000053
+              <span style={styles2.label}>IFSC:</span> {bankDetails.ifsc}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT NO:</span> 00530330000072
+              <span style={styles2.label}>ACCOUNT NO:</span> {bankDetails.accountNo}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT TYPE:</span> CURRENT ACCOUNT
+              <span style={styles2.label}>ACCOUNT TYPE:</span> {bankDetails.accountType}
             </p>
           </div>
 

@@ -301,7 +301,7 @@ const Group = () => {
 
   const columns = [
     { accessorKey: 'groupName', header: 'Group Name', size: 140 },
-    { accessorKey: 'id', header: 'Account Code', size: 140 },
+    { accessorKey: 'accountCode', header: 'Account Code', size: 140 },
     { accessorKey: 'coaList', header: 'COA List', size: 100 },
     { accessorKey: 'accountGroupName', header: 'Account/Groupname', size: 100 },
     { accessorKey: 'type', header: 'Type', size: 100 },

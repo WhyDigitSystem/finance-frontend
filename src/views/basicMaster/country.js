@@ -60,11 +60,9 @@ export const Country = () => {
     }
   };
 
-
-
   const handleExcelFileDownload = () => {
-    console.log("Downloading Excel...");  // Debugging step
-    console.log("List View Data:", listViewData); // Check if data exists
+    console.log('Downloading Excel...'); // Debugging step
+    console.log('List View Data:', listViewData); // Check if data exists
 
     if (!listViewData || listViewData.length === 0) {
       showToast('error', 'No data available to download');
@@ -76,7 +74,7 @@ export const Country = () => {
       const filteredData = listViewData.map(({ countryCode, countryName, active }) => ({
         'Country Code': countryCode,
         'Country Name': countryName,
-        'Active': (active === true || active === 'Active') ? 'Yes' : 'No' // ✅ Fix applied here
+        Active: active === true || active === 'Active' ? 'Yes' : 'No' // ✅ Fix applied here
       }));
 
       // Create a worksheet and a workbook
@@ -96,8 +94,6 @@ export const Country = () => {
     }
   };
 
-
-
   const getCountryById = async (row) => {
     console.log('THE SELECTED COUNTRY ID IS:', row.original.id);
     setEditId(row.original.id);
@@ -109,7 +105,7 @@ export const Country = () => {
         setFormData({
           countryCode: particularCountry.countryCode,
           countryName: particularCountry.countryName,
-          active: particularCountry.active  // Ensure this is a boolean
+          active: particularCountry.active === 'Active' ? true : false
         });
         setListView(false);
       } else {
@@ -119,8 +115,6 @@ export const Country = () => {
       console.error('Error fetching data:', error);
     }
   };
-
-
 
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd, type } = e.target;
@@ -212,7 +206,6 @@ export const Country = () => {
     }
   };
 
-
   const handleView = () => {
     setListView(!listView);
   };
@@ -237,7 +230,6 @@ export const Country = () => {
     }));
   };
 
-
   const handlePDFDownload = async () => {
     setLoading(true);
 
@@ -260,7 +252,7 @@ export const Country = () => {
         tableRows.push([
           countryCode,
           countryName,
-          (active === true || active === 'Active') ? 'Yes' : 'No'  // ✅ Fix applied here
+          active === true || active === 'Active' ? 'Yes' : 'No' // ✅ Fix applied here
         ]);
       });
 
@@ -268,7 +260,7 @@ export const Country = () => {
       doc.autoTable({
         head: [tableColumn],
         body: tableRows,
-        startY: 20,
+        startY: 20
       });
 
       // Save PDF file
@@ -284,7 +276,6 @@ export const Country = () => {
     setLoading(false);
   };
 
-
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -293,7 +284,13 @@ export const Country = () => {
             {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={() => handleSave()} margin="0 10px 0 10px" /> &nbsp;{' '}
+            <ActionButton
+              title="Save"
+              icon={SaveIcon}
+              isLoading={isLoading}
+              onClick={() => handleSave()}
+              margin="0 10px 0 10px"
+            /> &nbsp;{' '}
             {uploadOpen && (
               <CommonBulkUpload
                 open={uploadOpen}
@@ -313,12 +310,11 @@ export const Country = () => {
             {/* <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} />
             <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} /> */}
             {listView && (
-              <div className='ps-2'>
+              <div className="ps-2">
                 <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} />
                 <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} />
               </div>
             )}
-
           </div>
         </div>
         {listView ? (

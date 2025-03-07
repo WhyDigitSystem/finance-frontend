@@ -44,7 +44,7 @@ const TdsMaster = () => {
     setFormValues((prev) => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value.toUpperCase(),
-      [id]: type === 'checkbox' ? checked : value.toUpperCase(),
+      [id]: type === 'checkbox' ? checked : value.toUpperCase()
     }));
 
     setValidationErrors({ ...validationErrors, [name]: '' });
@@ -87,20 +87,15 @@ const TdsMaster = () => {
     };
 
     setTdsTableData((prevData) => [...prevData, newRow]);
-    setTdsTableErrors((prevErrors) => [
-      ...prevErrors,
-      { fromDate: null, toDate: null, tcs: '', sur: '', eds: '' }
-    ]);
+    setTdsTableErrors((prevErrors) => [...prevErrors, { fromDate: null, toDate: null, tcs: '', sur: '', eds: '' }]);
   };
-
 
   const isLastRowEmpty = (table) => {
     const lastRow = table[table.length - 1];
     if (!lastRow) return false;
 
-    return (!lastRow.fromDate || !lastRow.toDate || !lastRow.tcs || !lastRow.sur || !lastRow.eds);
+    return !lastRow.fromDate || !lastRow.toDate || !lastRow.tcs || !lastRow.sur || !lastRow.eds;
   };
-
 
   const displayRowError = (table) => {
     setTdsTableErrors((prevErrors) => {
@@ -122,7 +117,6 @@ const TdsMaster = () => {
       return newErrors;
     });
   };
-
 
   const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
     const rowIndex = table.findIndex((row) => row.id === id);
@@ -299,8 +293,6 @@ const TdsMaster = () => {
     setShowForm(!showForm);
   };
 
-
-
   return (
     <div>
       <ToastComponent />
@@ -317,13 +309,7 @@ const TdsMaster = () => {
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" fullWidth size="small" error={!!validationErrors.section}>
                   <InputLabel id="section">Section</InputLabel>
-                  <Select
-                    labelId="section"
-                    label="Section"
-                    name="section"
-                    value={formValues.section}
-                    onChange={handleInputChange}
-                  >
+                  <Select labelId="section" label="Section" name="section" value={formValues.section} onChange={handleInputChange}>
                     <MenuItem value="NO">NO</MenuItem>
                     <MenuItem value="NORMAL">NORMAL</MenuItem>
                     <MenuItem value="SPECIAL">SPECIAL</MenuItem>
@@ -339,7 +325,7 @@ const TdsMaster = () => {
                     size="small"
                     value={formValues.sectionName}
                     onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
+                    inputProps={{ maxLength: 100 }}
                     error={!!validationErrors.sectionName}
                     helperText={validationErrors.sectionName}
                   />
@@ -417,16 +403,14 @@ const TdsMaster = () => {
                                     onChange={(newValue) => {
                                       setTdsTableData((prev) =>
                                         prev.map((r) =>
-                                          r.id === row.id
-                                            ? { ...r, fromDate: newValue ? newValue.format('YYYY-MM-DD') : null }
-                                            : r
+                                          r.id === row.id ? { ...r, fromDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
                                         )
                                       );
                                       setTdsTableErrors((prev) => {
                                         const newErrors = [...prev];
                                         newErrors[index] = {
                                           ...newErrors[index],
-                                          fromDate: !newValue ? 'From Date is required' : '',
+                                          fromDate: !newValue ? 'From Date is required' : ''
                                         };
                                         return newErrors;
                                       });
@@ -434,9 +418,7 @@ const TdsMaster = () => {
                                     renderInput={(params) => (
                                       <TextField
                                         {...params}
-                                        className={
-                                          tdsTableErrors[index]?.fromDate ? 'error form-control' : 'form-control'
-                                        }
+                                        className={tdsTableErrors[index]?.fromDate ? 'error form-control' : 'form-control'}
                                       />
                                     )}
                                     minDate={dayjs()}
@@ -448,7 +430,6 @@ const TdsMaster = () => {
                                   </div>
                                 )}
                               </td>
-
 
                               <td className="border px-2 py-2">
                                 <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -467,16 +448,14 @@ const TdsMaster = () => {
                                     onChange={(newValue) => {
                                       setTdsTableData((prev) =>
                                         prev.map((r) =>
-                                          r.id === row.id
-                                            ? { ...r, toDate: newValue ? newValue.format('YYYY-MM-DD') : null }
-                                            : r
+                                          r.id === row.id ? { ...r, toDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
                                         )
                                       );
                                       setTdsTableErrors((prev) => {
                                         const newErrors = [...prev];
                                         newErrors[index] = {
                                           ...newErrors[index],
-                                          toDate: !newValue ? 'To Date is required' : '',
+                                          toDate: !newValue ? 'To Date is required' : ''
                                         };
                                         return newErrors;
                                       });
@@ -485,11 +464,7 @@ const TdsMaster = () => {
                                       <TextField
                                         {...params}
                                         // size="small"
-                                        className={
-                                          tdsTableErrors[index]?.toDate
-                                            ? 'error form-control'
-                                            : 'form-control'
-                                        }
+                                        className={tdsTableErrors[index]?.toDate ? 'error form-control' : 'form-control'}
                                       />
                                     )}
                                     minDate={row.toDate ? dayjs(row.toDate) : dayjs()}
@@ -556,7 +531,7 @@ const TdsMaster = () => {
                                     }
                                   }}
                                   className={tdsTableErrors[index]?.sur ? 'error form-control' : 'form-control'}
-                                // onKeyDown={(e) => handleKeyDown(e, row, tdsTableData)}
+                                  // onKeyDown={(e) => handleKeyDown(e, row, tdsTableData)}
                                 />
                                 {tdsTableErrors[index]?.sur && (
                                   <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>

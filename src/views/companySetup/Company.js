@@ -66,9 +66,54 @@ const Company = () => {
     website: '',
     active: ''
   });
-    const [detailsTableData, setDetailsTableData] = useState([
+  const [detailsTableData, setDetailsTableData] = useState([
+    {
+      id: 1,
+      beneficiaryName: '',
+      accountNo: '',
+      bankName: '',
+      accountCode: '',
+      branch: '',
+      ifsc: '',
+      accountType: '',
+      primaryAccount: 'true'
+    }
+  ]);
+  const [detailsTableErrors, setDetailsTableErrors] = useState([
+    {
+      beneficiaryName: '',
+      accountNo: '',
+      bankName: '',
+      accountCode: '',
+      branch: '',
+      ifsc: '',
+      accountType: '',
+      primaryAccount: ''
+    }
+  ]);
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+  const handleAddRow = () => {
+    if (isLastRowEmpty(detailsTableData)) {
+      displayRowError(detailsTableData);
+      return;
+    }
+    const newRow = {
+      id: Date.now(),
+      beneficiaryName: '',
+      accountNo: '',
+      bankName: '',
+      accountCode: '',
+      branch: '',
+      ifsc: '',
+      accountType: '',
+      primaryAccount: 'true'
+    };
+    setDetailsTableData([...detailsTableData, newRow]);
+    setDetailsTableErrors([
+      ...detailsTableErrors,
       {
-        id: 1,
         beneficiaryName: '',
         accountNo: '',
         bankName: '',
@@ -79,94 +124,54 @@ const Company = () => {
         primaryAccount: 'true'
       }
     ]);
-    const [detailsTableErrors, setDetailsTableErrors] = useState([
-      {
-        beneficiaryName: '',
-        accountNo: '',
-        bankName: '',
-        accountCode: '',
-        branch: '',
-        ifsc: '',
-        accountType: '',
-        primaryAccount: ''
-      }
-    ]);
-    const handleChange = (event, newValue) => {
-      setValue(newValue);
-    };
-    const handleAddRow = () => {
-      if (isLastRowEmpty(detailsTableData)) {
-        displayRowError(detailsTableData);
-        return;
-      }
-      const newRow = {
-        id: Date.now(),
-        beneficiaryName: '',
-        accountNo: '',
-        bankName: '',
-        accountCode: '',
-        branch: '',
-        ifsc: '',
-        accountType: '',
-        primaryAccount: 'true'
-      };
-      setDetailsTableData([...detailsTableData, newRow]);
-      setDetailsTableErrors([...detailsTableErrors, { 
-        beneficiaryName: '',
-        accountNo: '',
-        bankName: '',
-        accountCode: '',
-        branch: '',
-        ifsc: '',
-        accountType: '',
-        primaryAccount: 'true' 
-      }]);
-    };
-    const isLastRowEmpty = (table) => {
-      const lastRow = table[table.length - 1];
-      if (!lastRow) return false;
-  
-      if (table === detailsTableData) {
-        return !lastRow.beneficiaryName || 
-        !lastRow.accountNo || 
+  };
+  const isLastRowEmpty = (table) => {
+    const lastRow = table[table.length - 1];
+    if (!lastRow) return false;
+
+    if (table === detailsTableData) {
+      return (
+        !lastRow.beneficiaryName ||
+        !lastRow.accountNo ||
         !lastRow.bankName ||
-        !lastRow.accountCode || 
-        !lastRow.branch || 
-        !lastRow.ifsc || 
-        !lastRow.accountType;
-      }
-      return false;
-    };
-  
-    const displayRowError = (table) => {
-      if (table === detailsTableData) {
-        setDetailsTableErrors((prevErrors) => {
-          const newErrors = [...prevErrors];
-          newErrors[table.length - 1] = {
-            ...newErrors[table.length - 1],
-            beneficiaryName: !table[table.length - 1].beneficiaryName ? 'Beneficiary Name is required' : '',
-            accountNo: !table[table.length - 1].accountNo ? 'Account No is required' : '',
-            bankName: !table[table.length - 1].bankName ? 'Bank Name is required' : '',
-            accountCode: !table[table.length - 1].accountCode ? 'Account Code is required' : '',
-            branch: !table[table.length - 1].branch ? 'Branch is required' : '',
-            ifsc: !table[table.length - 1].ifsc ? 'IFSC is required' : '',
-            accountType: !table[table.length - 1].accountType ? 'Account Type is required' : '',
-          };
-          return newErrors;
-        });
-      }
-    };
-  
-    const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
-      const rowIndex = table.findIndex((row) => row.id === id);
-      // If the row exists, proceed to delete
-      if (rowIndex !== -1) {
-        const updatedData = table.filter((row) => row.id !== id);
-        const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
-        setTable(updatedData);
-        setErrorTable(updatedErrors);
-      }
-    };
+        !lastRow.accountCode ||
+        !lastRow.branch ||
+        !lastRow.ifsc ||
+        !lastRow.accountType
+      );
+    }
+    return false;
+  };
+
+  const displayRowError = (table) => {
+    if (table === detailsTableData) {
+      setDetailsTableErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          beneficiaryName: !table[table.length - 1].beneficiaryName ? 'Beneficiary Name is required' : '',
+          accountNo: !table[table.length - 1].accountNo ? 'Account No is required' : '',
+          bankName: !table[table.length - 1].bankName ? 'Bank Name is required' : '',
+          accountCode: !table[table.length - 1].accountCode ? 'Account Code is required' : '',
+          branch: !table[table.length - 1].branch ? 'Branch is required' : '',
+          ifsc: !table[table.length - 1].ifsc ? 'IFSC is required' : '',
+          accountType: !table[table.length - 1].accountType ? 'Account Type is required' : ''
+        };
+        return newErrors;
+      });
+    }
+  };
+
+  const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
+    const rowIndex = table.findIndex((row) => row.id === id);
+    // If the row exists, proceed to delete
+    if (rowIndex !== -1) {
+      const updatedData = table.filter((row) => row.id !== id);
+      const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
+      setTable(updatedData);
+      setErrorTable(updatedErrors);
+    }
+  };
   const [listView, setListView] = useState(false);
   const listViewColumns = [
     { accessorKey: 'companyCode', header: 'Company Code', size: 140 },
@@ -229,13 +234,11 @@ const Company = () => {
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
     // const websiteRegex = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,6}(\S*)?$/;
     // const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/
-;
-
     let error = '';
-    if (name === "panNo" && value.length > 11) return;
-    if (name === "panNo") {
+    if (name === 'panNo' && value.length > 11) return;
+    if (name === 'panNo') {
       if (value.length === 11 && !panRegex.test(value)) {
-        error = "Invalid PAN Format (e.g., ABCDE1234F)";
+        error = 'Invalid PAN Format (e.g., ABCDE1234F)';
       }
     }
     if (name === 'ceo') {
@@ -349,7 +352,6 @@ const Company = () => {
             branch: com.branch,
             ifsc: com.ifsc,
             primaryAccount: com.primaryAccount === 'true' || com.primaryAccount === true
-          
           }))
         );
       } else {
@@ -479,7 +481,7 @@ const Company = () => {
         webSite: formData.website,
         active: formData.active,
         updatedBy: loginUserName,
-        bankDetailsDTO: detailsVo,
+        bankDetailsDTO: detailsVo
       };
       console.log('THE SAVE FORM DATA IS:', saveFormData);
 
@@ -711,36 +713,35 @@ const Company = () => {
                           <div className="table-responsive">
                             <table className="table table-bordered ">
                               <thead>
-                              <tr style={{ backgroundColor: '#673AB7' }}>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '60px' }}>
-                                  S.No
-                                </th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '180px' }}>
-                                  Beneficiary Name
-                                </th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '220px' }}>
-                                  Account No
-                                </th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '180px' }}>
-                                  Bank Name
-                                </th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '220px' }}>
-                                  Account Code
-                                </th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '180px' }}>
-                                  Branch
-                                </th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '220px' }}>
-                                  IFSC
-                                </th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '180px' }}>
-                                  Account Type
-                                </th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
-                                  Primary Account
-                                </th>
-                              </tr>
-
+                                <tr style={{ backgroundColor: '#673AB7' }}>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '60px' }}>
+                                    S.No
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '600px' }}>
+                                    Beneficiary Name
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '600px' }}>
+                                    Account No
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '800px' }}>
+                                    Bank Name
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '600px' }}>
+                                    Account Code
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '600px' }}>
+                                    Branch
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '600px' }}>
+                                    IFSC
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '600px' }}>
+                                    Account Type
+                                  </th>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
+                                    Primary Account
+                                  </th>
+                                </tr>
                               </thead>
                               <tbody>
                                 {detailsTableData.map((row, index) => (
@@ -752,6 +753,7 @@ const Company = () => {
                                       <input
                                         type="text"
                                         value={row.beneficiaryName}
+                                        style={{ width: 200 }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setDetailsTableData((prev) =>
@@ -778,6 +780,7 @@ const Company = () => {
                                       <input
                                         type="text"
                                         value={row.accountNo}
+                                        style={{ width: 200 }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setDetailsTableData((prev) =>
@@ -804,11 +807,10 @@ const Company = () => {
                                       <input
                                         type="text"
                                         value={row.bankName}
+                                        style={{ width: 400 }}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, bankName: value } : r))
-                                          );
+                                          setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, bankName: value } : r)));
                                           setDetailsTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
@@ -830,6 +832,7 @@ const Company = () => {
                                       <input
                                         type="text"
                                         value={row.accountCode}
+                                        style={{ width: 200 }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setDetailsTableData((prev) =>
@@ -856,11 +859,10 @@ const Company = () => {
                                       <input
                                         type="text"
                                         value={row.branch}
+                                        style={{ width: 200 }}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, branch: value } : r))
-                                          );
+                                          setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, branch: value } : r)));
                                           setDetailsTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
@@ -882,11 +884,10 @@ const Company = () => {
                                       <input
                                         type="text"
                                         value={row.ifsc}
+                                        style={{ width: 200 }}
                                         onChange={(e) => {
                                           const value = e.target.value;
-                                          setDetailsTableData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, ifsc: value } : r))
-                                          );
+                                          setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, ifsc: value } : r)));
                                           setDetailsTableErrors((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
@@ -908,6 +909,7 @@ const Company = () => {
                                       <input
                                         type="text"
                                         value={row.accountType}
+                                        style={{ width: 200 }}
                                         onChange={(e) => {
                                           const value = e.target.value;
                                           setDetailsTableData((prev) =>
@@ -929,13 +931,14 @@ const Company = () => {
                                           {detailsTableErrors[index].accountType}
                                         </div>
                                       )}
-                                    </td>                                    
+                                    </td>
                                     <td className="border px-2 py-2 text-center">
                                       <FormControlLabel
                                         control={
                                           <Checkbox
                                             className="ms-2 pb-0 pt-1"
                                             checked={row.primaryAccount}
+                                            style={{ width: 200 }}
                                             onChange={(e) => {
                                               const isChecked = e.target.checked;
 
