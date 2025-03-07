@@ -8,6 +8,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import { TabContext } from '@mui/lab';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
+import { toWords } from 'number-to-words';
 import { Autocomplete, Chip, FormHelperText, Stack } from '@mui/material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -60,6 +61,7 @@ const IrnCreditNote = () => {
   const [approveStatus, setApproveStatus] = useState('');
   const [formData, setFormData] = useState({
     vohNo: '',
+    dueDate: null,
     vohDate: null,
     approveStatus: '',
     approveBy: '',
@@ -69,7 +71,7 @@ const IrnCreditNote = () => {
     originBill: '',
     partyCode: '',
     supplierRefNo: '',
-    jobOrderNo: '',
+    jobNo: '',
     supplierRefDate: null,
     originBillDate: null,
     // currentDate: dayjs(),
@@ -96,22 +98,24 @@ const IrnCreditNote = () => {
     recipientGSTIN: '',
     placeOfSupply: '',
     addressType: '',
-    roundOff: '',
-    totChargesBillCurrAmt: '',
-    totChargesLCAmt: '',
-    totGrossBillAmt: '',
-    totGrossLCAmt: '',
-    netBillCurrAmt: '',
-    netLCAmt: '',
+    totalChargeAmountLc:'',
+    totalTaxAmountLc:'',
+    totalInvAmountLc:'',
+    roundOffAmountLc:'',
+    totalChargeAmountBc:'',
+    totalTaxAmountBc:'',
+    totalInvAmountBc:'',
+    totalTaxableAmountLc:'',
+    amountInWords:'',
+    billingRemarks:'',
     summaryExRate: '',
     amtInWords: '',
     docId: '',
-    totTaxAmt: ''
   });
 
   const [fieldErrors, setFieldErrors] = useState({
     vohNo: '',
-    jobOrderNo: '',
+    jobNo: '',
     vohDate: null,
     partyType: '',
     partyName: '',
@@ -143,25 +147,28 @@ const IrnCreditNote = () => {
     recipientGSTIN: '',
     placeOfSupply: '',
     addressType: '',
-    roundOff: '',
-    totChargesBillCurrAmt: '',
-    totChargesLCAmt: '',
-    totGrossBillAmt: '',
-    totGrossLCAmt: '',
-    netBillCurrAmt: '',
-    netLCAmt: '',
+    totalChargeAmountLc:'',
+    totalTaxAmountLc:'',
+    totalInvAmountLc:'',
+    roundOffAmountLc:'',
+    totalChargeAmountBc:'',
+    totalTaxAmountBc:'',
+    totalInvAmountBc:'',
+    totalTaxableAmountLc:'',
+    amountInWords:'',
+    billingRemarks:'',
     summaryExRate: '',
-    amtInWords: '',
     totTaxAmt: ''
   });
 
   const [irnChargesData, setIrnChargesData] = useState([
     {
       id: 1,
-      jobOrderNo: '',
+      jobNo: '',
       chargeType: '',
       chargeCode: '',
-      govChargeCode: '',
+      // govChargeCode: '',
+      description: '',
       ledger: '',
       chargeName: '',
       taxable: '',
@@ -186,7 +193,8 @@ const IrnCreditNote = () => {
       // jobNo: '',
       chargeType: '',
       chargeCode: '',
-      govChargeCode: '',
+      // govChargeCode: '',
+      description: '',
       ledger: '',
       chargeName: '',
       taxable: '',
@@ -246,15 +254,17 @@ const IrnCreditNote = () => {
       'pincode',
       'creditDays',
       'exRate',
-      'netBillCurrAmt',
-      'netLCAmt',
-      'roundOff',
-      'totChargesBillCurrAmt',
-      'totChargesLCAmt',
-      'totGrossBillAmt',
-      'totGrossLCAmt',
       'summaryExRate',
-      'totTaxAmt'
+      'totalChargeAmountLc',
+      'totalTaxAmountLc',
+      'totalInvAmountLc',
+      'roundOffAmountLc',
+      'totalChargeAmountBc',
+      'totalTaxAmountBc',
+      'totalInvAmountBc',
+      'totalTaxableAmountLc',
+      'amountInWords',
+      'billingRemarks',
     ];
 
     if (numericFields.includes(name)) {
@@ -311,74 +321,6 @@ const IrnCreditNote = () => {
       }
     }
   };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value, type, checked } = e.target;
-  //   const inputValue = type === 'checkbox' ? checked : value || '';
-
-  //   // Define regex for numeric fields
-  //   const isNumeric = /^[0-9]*$/;
-
-  //   // Validation logic for numeric fields
-  //   const numericFields = [
-  //     'pincode',
-  //     'creditDays',
-  //     // 'currentDateValue',
-  //     'exRate',
-  //     'netBillCurrAmt',
-  //     'netLCAmt',
-  //     'roundOff',
-  //     'totChargesBillCurrAmt',
-  //     'totChargesLCAmt',
-  //     'totGrossBillAmt',
-  //     'totGrossLCAmt',
-  //     'summaryExRate',
-  //     'totTaxAmt'
-  //   ]; // Add other numeric fields if needed
-  //   if (numericFields.includes(name)) {
-  //     if (!isNumeric.test(value)) {
-  //       setFieldErrors({
-  //         ...fieldErrors,
-  //         [name]: 'Only numbers are allowed'
-  //       });
-  //       return; // Prevent further form updates if invalid input
-  //     }
-  //   }
-
-  //   // Handle other fields
-  //   setFormData({ ...formData, [name]: inputValue });
-
-  //   // Clear error when input is valid
-  //   setFieldErrors({ ...fieldErrors, [name]: false });
-
-  //   if (name === 'partyType') {
-  //     setFormData({ ...formData, partyType: inputValue, partyName: '', partyCode: '' });
-  //     getAllPartyName(inputValue); // Fetch all party names based on selected partyType
-  //     return;
-  //   }
-
-  //   if (name === 'partyName') {
-  //     const selectedParty = allPartyName.find((party) => party.partyName === value);
-  //     setFormData({
-  //       ...formData,
-  //       partyName: value,
-  //       partyCode: selectedParty ? selectedParty.partyCode : ''
-  //     });
-  //     return;
-  //   }
-
-  //   // If the currency field is being changed, update exRate based on the selected currency's sellingExRate
-  //   if (name === 'currency') {
-  //     const selectedCurrency = currencies.find((currency) => currency.currency === value);
-  //     if (selectedCurrency) {
-  //       setFormData((prevFormData) => ({
-  //         ...prevFormData,
-  //         exRate: selectedCurrency ? selectedCurrency.sellingExRate : ''
-  //       }));
-  //     }
-  //   }
-  // };
-
   const handleDateChange = (name, date) => {
     setFormData({ ...formData, [name]: date });
     setFieldErrors({ ...fieldErrors, [name]: false });
@@ -387,6 +329,7 @@ const IrnCreditNote = () => {
   const handleClear = () => {
     setFormData({
       vohNo: '',
+      jobNo:'',
       vohDate: null,
       partyType: 'CUSTOMER',
       partyName: '',
@@ -418,20 +361,22 @@ const IrnCreditNote = () => {
       recipientGSTIN: '',
       placeOfSupply: '',
       addressType: '',
-      roundOff: '',
-      totChargesBillCurrAmt: '',
-      totChargesLCAmt: '',
-      totGrossBillAmt: '',
-      totGrossLCAmt: '',
-      netBillCurrAmt: '',
-      netLCAmt: '',
+      totalChargeAmountLc:'',
+      totalTaxAmountLc:'',
+      totalInvAmountLc:'',
+      roundOffAmountLc:'',
+      totalChargeAmountBc:'',
+      totalTaxAmountBc:'',
+      totalInvAmountBc:'',
+      totalTaxableAmountLc:'',
+      amountInWords:'',
+      billingRemarks:'',
       summaryExRate: '',
-      amtInWords: '',
-      totTaxAmt: ''
     });
 
     setFieldErrors({
       vohNo: '',
+      jobNo:'',
       vohDate: null,
       partyType: '',
       partyName: '',
@@ -463,16 +408,17 @@ const IrnCreditNote = () => {
       recipientGSTIN: '',
       placeOfSupply: '',
       addressType: '',
-      roundOff: '',
-      totChargesBillCurrAmt: '',
-      totChargesLCAmt: '',
-      totGrossBillAmt: '',
-      totGrossLCAmt: '',
-      netBillCurrAmt: '',
-      netLCAmt: '',
+      totalChargeAmountLc:'',
+      totalTaxAmountLc:'',
+      totalInvAmountLc:'',
+      roundOffAmountLc:'',
+      totalChargeAmountBc:'',
+      totalTaxAmountBc:'',
+      totalInvAmountBc:'',
+      totalTaxableAmountLc:'',
+      amountInWords:'',
+      billingRemarks:'',
       summaryExRate: '',
-      amtInWords: '',
-      totTaxAmt: ''
     });
 
     setIrnChargesData([
@@ -481,7 +427,8 @@ const IrnCreditNote = () => {
         // jobNo: '',
         chargeType: '',
         chargeCode: '',
-        govChargeCode: '',
+        // govChargeCode: '',
+        description: '',
         ledger: '',
         chargeName: '',
         taxable: '',
@@ -594,18 +541,13 @@ const IrnCreditNote = () => {
           totalChargeAmountLc: listValueVO.totalChargeAmountLc,
           totalChargeAmountBc: listValueVO.totalChargeAmountBc,
           totalTaxAmountLc: listValueVO.totalTaxAmountLc,
-          totalInvAmountLc: listValueVO.totalInvAmountLc,
           roundOffAmountLc: listValueVO.roundOffAmountLc,
-          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
           totalInvAmountLc: listValueVO.totalInvAmountLc,
           totalInvAmountBc: listValueVO.totalInvAmountBc,
-          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
           totalTaxAmountBc: listValueVO.totalTaxAmountBc,
-          totalInvAmountBc: listValueVO.totalInvAmountBc,
           totalTaxableAmountLc: listValueVO.totalTaxableAmountLc,
           amountInWords: listValueVO.amountInWords,
-          billingRemarks: listValueVO.billingRemarks,
-          amountInWords: listValueVO.amountInWords
+          billingRemarks: listValueVO.billingRemarks
         });
         handleCloseModal();
         getAllIrnCredit();
@@ -617,126 +559,6 @@ const IrnCreditNote = () => {
       console.error('Error fetching data:', error);
     }
   };
-
-  // const handleAddRow = () => {
-  //   if (isLastRowEmpty(irnChargesData)) {
-  //     displayRowError(irnChargesData);
-  //     return;
-  //   }
-
-  //   const newRow = {
-  //     id: Date.now(),
-  //     // jobNo: '',
-  //     chargeType: '',
-  //     chargeCode: '',
-  //     govChargeCode: '',
-  //     ledger: '',
-  //     chargeName: '',
-  //     taxable: true,
-  //     // applyOn: '',
-  //     qty: '',
-  //     rate: '',
-  //     currency: '',
-  //     exRate: '',
-  //     exempted: true,
-  //     fcAmount: '',
-  //     lcAmount: '',
-  //     tlcAmount: '',
-  //     billAmount: '',
-  //     sac: '',
-  //     gstAmount: '',
-  //     gstpercent: ''
-  //   };
-
-  //   setIrnChargesData([...irnChargesData, newRow]);
-  //   setIrnChargesError([
-  //     ...irnChargesError,
-  //     {
-  //       // id: 1,
-  //       // jobNo: '',
-  //       chargeType: '',
-  //       chargeCode: '',
-  //       govChargeCode: '',
-  //       ledger: '',
-  //       chargeName: '',
-  //       taxable: true,
-  //       // applyOn: '',
-  //       qty: '',
-  //       rate: '',
-  //       currency: '',
-  //       exRate: '',
-  //       exempted: true,
-  //       fcAmount: '',
-  //       lcAmount: '',
-  //       tlcAmount: '',
-  //       billAmount: '',
-  //       sac: '',
-  //       gstAmount: '',
-  //       gstpercent: ''
-  //     }
-  //   ]);
-  // };
-
-  // const isLastRowEmpty = (table) => {
-  //   const lastRow = table[table.length - 1];
-  //   if (!lastRow) return false;
-
-  //   if (table === irnChargesData) {
-  //     return (
-  //       !lastRow.jobNo ||
-  //       !lastRow.chargeType ||
-  //       !lastRow.chargeCode ||
-  //       !lastRow.govChargeCode ||
-  //       !lastRow.ledger ||
-  //       !lastRow.chargeName ||
-  //       // !lastRow.applyOn ||
-  //       !lastRow.taxable ||
-  //       !lastRow.qty ||
-  //       !lastRow.rate ||
-  //       !lastRow.currency ||
-  //       !lastRow.exRate ||
-  //       // !lastRow.exempted ||
-  //       !lastRow.fcAmount ||
-  //       !lastRow.lcAmount ||
-  //       !lastRow.tlcAmount ||
-  //       !lastRow.billAmount ||
-  //       !lastRow.gstAmount ||
-  //       !lastRow.gstpercent
-  //     );
-  //   }
-  //   return false;
-  // };
-
-  // const displayRowError = (table) => {
-  //   if (table === irnChargesData) {
-  //     setIrnChargesError((prevErrors) => {
-  //       const newErrors = [...prevErrors];
-  //       newErrors[table.length - 1] = {
-  //         ...newErrors[table.length - 1],
-  //         // jobNo: !table[table.length - 1].jobNo ? 'Job No is required' : '',
-  //         chargeType: !table[table.length - 1].chargeType ? 'Charge Code is required' : '',
-  //         chargeCode: !table[table.length - 1].chargeCode ? 'Charge Code is required' : '',
-  //         govChargeCode: !table[table.length - 1].govChargeCode ? 'G Charge Code is required' : '',
-  //         ledger: !table[table.length - 1].ledger ? 'G Charge Code is required' : '',
-  //         chargeName: !table[table.length - 1].chargeName ? 'Charge Name is required' : '',
-  //         // applyOn: !table[table.length - 1].applyOn ? 'Apply On is required' : '',
-  //         qty: !table[table.length - 1].qty ? 'Rate is required' : '',
-  //         rate: !table[table.length - 1].rate ? 'Rate is required' : '',
-  //         currency: !table[table.length - 1].currency ? 'Currency is required' : '',
-  //         exRate: !table[table.length - 1].exRate ? 'Ex Rate is required' : '',
-  //         // exempted: !table[table.length - 1].exempted ? 'Excempted is required' : '',
-  //         fcAmount: !table[table.length - 1].fcAmount ? 'FC Amount is required' : '',
-  //         lcAmount: !table[table.length - 1].lcAmount ? 'LC Amount Amount is required' : '',
-  //         tlcAmount: !table[table.length - 1].tlcAmount ? 'TLC Amount is required' : '',
-  //         billAmount: !table[table.length - 1].billAmount ? 'Bill Amount is required' : '',
-  //         gstAmount: !table[table.length - 1].gstAmount ? 'GST is required' : '',
-  //         gstpercent: !table[table.length - 1].gstpercent ? 'GST % is required' : ''
-  //       };
-  //       return newErrors;
-  //     });
-  //   }
-  // };
-
   const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
     const rowIndex = table.findIndex((row) => row.id === id);
     // If the row exists, proceed to delete
@@ -747,69 +569,6 @@ const IrnCreditNote = () => {
       setErrorTable(updatedErrors);
     }
   };
-
-  // const handleGstAddRow = () => {
-  //   if (isGstLastRowEmpty(irnGstData)) {
-  //     displayGstRowError(irnGstData);
-  //     return;
-  //   }
-  //   const newGstRow = {
-  //     id: Date.now(),
-  //     chargeAcc: '',
-  //     subLodgerCode: '',
-  //     crBillAmt: '',
-  //     crLCAmt: null,
-  //     gstRemarks: '',
-  //     dbillAmt: '',
-  //     dblcamt: ''
-  //   };
-
-  //   setIrnGstData([...irnGstData, newGstRow]);
-
-  //   setIrnGstError([
-  //     ...irnGstError,
-  //     {
-  //       chargeAcc: '',
-  //       subLodgerCode: '',
-  //       crBillAmt: '',
-  //       crLCAmt: null,
-  //       gstRemarks: '',
-  //       dbillAmt: '',
-  //       dblcamt: ''
-  //     }
-  //   ]);
-  // };
-
-  // const isGstLastRowEmpty = (table) => {
-  //   const lastRow = table[table.length - 1];
-  //   if (!lastRow) return false;
-
-  //   if (table === irnGstData) {
-  //     return (
-  //       !lastRow.chargeAcc || !lastRow.subLodgerCode || !lastRow.dbillAmt || !lastRow.crBillAmt || !lastRow.dblcamt || !lastRow.crLCAmt
-  //     );
-  //   }
-  //   return false;
-  // };
-
-  // const displayGstRowError = (table) => {
-  //   if (table === irnGstData) {
-  //     setIrnGstError((prevErrors) => {
-  //       const newErrors = [...prevErrors];
-  //       newErrors[table.length - 1] = {
-  //         ...newErrors[table.length - 1],
-  //         chargeAcc: !table[table.length - 1].chargeAcc ? 'Charge Account is required' : '',
-  //         subLodgerCode: !table[table.length - 1].subLodgerCode ? 'Sub Ledger Code is required' : '',
-  //         dbillAmt: !table[table.length - 1].dbillAmt ? 'D Bill Amount is required' : '',
-  //         crBillAmt: !table[table.length - 1].crBillAmt ? 'CR Bill Amount is required' : '',
-  //         dblcamt: !table[table.length - 1].dblcamt ? 'DB LC Amount is required' : '',
-  //         crLCAmt: !table[table.length - 1].crLCAmt ? 'CR LC Amount is required' : ''
-  //         // remarks: !table[table.length - 1].remarks ? 'Remarks is required' : ''
-  //       };
-  //       return newErrors;
-  //     });
-  //   }
-  // };
 
   const handleDeleteRow1 = (id, table, setTable, errorTable, setErrorTable) => {
     const rowIndex = table.findIndex((row) => row.id === id);
@@ -843,7 +602,7 @@ const IrnCreditNote = () => {
         ...prev,
         creditDays: selectedBill.creditDays,
         currency: selectedBill.billCurr,
-        exRate: selectedBill.billCurrRate,
+        exRate: parseFloat(selectedBill.billCurrRate),
         originBill: selectedBill.originBillNo,
         originBillDate: selectedBill.docDate,
         address: selectedBill.address,
@@ -855,9 +614,20 @@ const IrnCreditNote = () => {
         placeOfSupply: selectedBill.placeOfSupply,
         addressType: selectedBill.addressType,
         shipRefNo: selectedBill.shipperInvoiceNo,
-        jobOrderNo: selectedBill.jobOrderNo,
+        jobNo: selectedBill.jobOrderNo,
         supplierRefNo: selectedBill.invoiceNo,
-        supplierRefDate: selectedBill.invoiceDate
+        supplierRefDate: selectedBill.invoiceDate,
+        dueDate: selectedBill.dueDate,
+        totalChargeAmountLc: selectedBill.totalChargeAmountLc,
+        totalChargeAmountBc: selectedBill.totalChargeAmountBc,
+        totalTaxAmountLc: selectedBill.totalTaxAmountLc,
+        roundOffAmountLc: selectedBill.roundOffAmountLc,
+        totalInvAmountLc: selectedBill.totalInvAmountLc,
+        totalInvAmountBc: selectedBill.totalInvAmountBc,
+        totalTaxAmountBc: selectedBill.totalTaxAmountBc,
+        totalTaxableAmountLc: selectedBill.totalTaxableAmountLc,
+        amountInWords: selectedBill.amountInWords,
+        billingRemarks: selectedBill.billingRemarks
       }));
       if (selectedBill.taxInvoiceDetailsVO) {
         setIrnChargesData(
@@ -865,21 +635,22 @@ const IrnCreditNote = () => {
             id: item.id,
             chargeType: item.chargeType,
             chargeCode: item.chargeCode,
-            govChargeCode: item.govChargeCode,
+            // govChargeCode: item.govChargeCode,
+            description: item.description,
             ledger: item.ledger,
             chargeName: item.chargeName,
             taxable: item.taxable,
-            qty: item.qty,
-            rate: item.rate,
+            qty: parseFloat(item.qty).toFixed(2),
+            rate: parseFloat(item.rate).toFixed(2),
             currency: item.currency,
-            exRate: item.exRate,
+            exRate: parseFloat(item.exRate).toFixed(2),
             exempted: item.exempted,
-            fcAmount: item.fcAmount,
-            lcAmount: item.lcAmount,
+            fcAmount: parseFloat(item.fcAmount).toFixed(2),
+            lcAmount: parseFloat(item.lcAmount).toFixed(2),
             tlcAmount: item.tlcAmount,
-            billAmount: item.billAmount,
+            billAmount: parseFloat(item.billAmount).toFixed(2),
             sac: item.sac,
-            gstAmount: item.gstAmount,
+            gstAmount: parseFloat(item.gstAmount).toFixed(2),
             gstpercent: item.gstpercent
             // Map other fields as needed
           }))
@@ -986,7 +757,7 @@ const IrnCreditNote = () => {
         setListViewById(response.paramObjectsMap.irnCreditVO[0]);
         setDocId(irnCreditNoteVO.docId);
         setFormData({
-          jobOrderNo: irnCreditNoteVO.jobNo,
+          jobNo: irnCreditNoteVO.jobNo,
           partyName: irnCreditNoteVO.partyName,
           partyCode: irnCreditNoteVO.partyCode,
           partyType: irnCreditNoteVO.partyType,
@@ -1012,18 +783,22 @@ const IrnCreditNote = () => {
           // exAmount: irnCreditNoteVO.exAmount,
           creditDays: irnCreditNoteVO.creditDays,
           shipRefNo: irnCreditNoteVO.shipperRefNo,
+          id: irnCreditNoteVO.id,
+          // dueDate: irnCreditNoteVO.dueDate,
           // billingMonth: irnCreditNoteVO.billMonth,
           // salesType: irnCreditNoteVO.salesType,
           creditRemarks: irnCreditNoteVO.creditRemarks,
-          roundOff: irnCreditNoteVO.roundOffAmountLc,
-          totChargesBillCurrAmt: irnCreditNoteVO.totalChargeAmountBc,
-          totChargesLCAmt: irnCreditNoteVO.totalChargeAmountLc,
-          totGrossBillAmt: irnCreditNoteVO.totalInvAmountBc,
-          totGrossLCAmt: irnCreditNoteVO.totalInvAmountLc,
-          netBillCurrAmt: irnCreditNoteVO.netBillCurrAmt,
-          netLCAmt: irnCreditNoteVO.netLCAmt,
-          id: irnCreditNoteVO.id,
-          amtInWords: irnCreditNoteVO.amountInWords
+          supplierRefDate: irnCreditNoteVO.invoiceDate,
+          totalChargeAmountLc: irnCreditNoteVO.totalChargeAmountLc,
+          totalChargeAmountBc: irnCreditNoteVO.totalChargeAmountBc,
+          totalTaxAmountLc: irnCreditNoteVO.totalTaxAmountLc,
+          roundOffAmountLc: irnCreditNoteVO.roundOffAmountLc,
+          totalInvAmountLc: irnCreditNoteVO.totalInvAmountLc,
+          totalInvAmountBc: irnCreditNoteVO.totalInvAmountBc,
+          totalTaxAmountBc: irnCreditNoteVO.totalTaxAmountBc,
+          totalTaxableAmountLc: irnCreditNoteVO.totalTaxableAmountLc,
+          amountInWords: irnCreditNoteVO.amountInWords,
+          billingRemarks: irnCreditNoteVO.billingRemarks
           // summaryExRate: irnCreditNoteVO.summaryExRate,
           // totTaxAmt: irnCreditNoteVO.totTaxAmt
         });
@@ -1033,7 +808,8 @@ const IrnCreditNote = () => {
             // jobNo: invoiceData.jobNo,
             chargeType: invoiceData.chargeType,
             chargeCode: invoiceData.chargeCode,
-            govChargeCode: invoiceData.govChargeCode,
+            description: invoiceData.description,
+            // govChargeCode: invoiceData.govChargeCode,
             ledger: invoiceData.ledger,
             chargeName: invoiceData.chargeName,
             taxable: invoiceData.taxable,
@@ -1083,26 +859,7 @@ const IrnCreditNote = () => {
   const handleSave = async () => {
     const errors = {};
     const tableErrors = irnChargesData.map((row) => ({
-      //   // jobNo: !row.jobNo ? 'Job No is required' : '',
-      //   // chargeType: !row.chargeType ? 'Charge Type is required' : '',
-      //   // chargeCode: !row.chargeCode ? 'Charge Code is required' : '',
-      //   // govChargeCode: !row.govChargeCode ? 'G Charge Code is required' : '',
-      //   // ledger: !row.ledger ? 'G Charge Code is required' : '',
-      //   // chargeName: !row.chargeName ? 'Charge Name is required' : '',
-      //   // applyOn: !row.applyOn ? 'Apply On is required' : '',
-      //   // taxable: !row.taxable ? 'Apply On is required' : '',
-      //   // currency: !row.currency ? 'Currency is required' : '',
-      //   // exRate: !row.exRate ? 'Ex Rate is required' : '',
-      //   // qty: !row.qty ? 'Qty is required' : '',
       rate: !row.rate ? 'Rate is required' : ''
-      //   // exempted: !row.exempted ? 'Excempted is required' : '',
-      //   // fcAmount: !row.fcAmount ? 'FC Amount is required' : '',
-      //   // lcAmount: !row.lcAmount ? 'LC Amount is required' : '',
-      //   // tlcAmount: !row.tlcAmount ? 'TLC Amount is required' : '',
-      //   // billAmount: !row.billAmount ? 'Bill Amount is required' : '',
-      //   // sac: !row.sac ? 'Sac is required' : '',
-      //   // gstAmount: !row.gstAmount ? 'GST is required' : '',
-      //   // gstpercent: !row.gstpercent ? 'GST % is required' : ''
     }));
 
     let hasTableErrors = false;
@@ -1121,12 +878,12 @@ const IrnCreditNote = () => {
     if (!formData.partyType) {
       errors.partyType = 'Party Type is required';
     }
-    if (!formData.currency) {
-      errors.currency = 'Currency is required';
-    }
-    if (!formData.exRate) {
-      errors.exRate = 'Ex Rate is required';
-    }
+    // if (!formData.currency) {
+    //   errors.currency = 'Currency is required';
+    // }
+    // if (!formData.exRate) {
+    //   errors.exRate = 'Ex Rate is required';
+    // }
     if (!formData.status) {
       errors.status = 'Status is required';
     }
@@ -1151,9 +908,9 @@ const IrnCreditNote = () => {
     if (!formData.address) {
       errors.address = 'Address is required';
     }
-    if (!formData.shipRefNo) {
-      errors.shipRefNo = 'shipper RefNo is required';
-    }
+    // if (!formData.shipRefNo) {
+    //   errors.shipRefNo = 'shipper RefNo is required';
+    // }
     if (!formData.gstType) {
       errors.gstType = 'Tax Type is required';
     }
@@ -1169,7 +926,8 @@ const IrnCreditNote = () => {
         ...(editId && { id: row.id }),
         chargeType: row.chargeType,
         chargeCode: row.chargeCode,
-        govChargeCode: row.govChargeCode,
+        description: row.description,
+        // govChargeCode: row.govChargeCode,
         ledger: row.ledger,
         chargeName: row.chargeName,
         taxable: row.taxable,
@@ -1184,7 +942,8 @@ const IrnCreditNote = () => {
       const saveFormData = {
         ...(editId && { id: editId }),
         address: formData.address,
-        jobNo: formData.jobOrderNo,
+        jobNo: formData.jobNo,
+        dueDate: formatDate(formData.dueDate),
         addressType: formData.addressType,
         billCurr: formData.currency,
         billCurrRate: parseInt(formData.exRate),
@@ -1268,6 +1027,77 @@ const IrnCreditNote = () => {
     console.log('PDF-Data =>', row.original);
     setPdfData(row.original);
     setDownloadPdf(true);
+  };
+  useEffect(() => {
+    if (irnChargesData && irnChargesData.length) {
+      calculateTotals(irnChargesData, setFormData);
+    }
+  }, [irnChargesData, setFormData]);
+  
+  const calculateTotals = (rows, setFormData) => {
+    if (!Array.isArray(rows)) return; // Ensure rows is an array
+  
+    console.log("irncreditnote table values", rows);
+  
+    const totalChargeAmountLc = rows.reduce((sum, row) => sum + (parseFloat(row.lcAmount) || 0), 0);
+    const totalTaxAmountLc = rows.reduce((sum, row) => sum + (parseFloat(row.gstAmount) || 0), 0);
+    const totalInvAmountLc = totalChargeAmountLc + totalTaxAmountLc;
+    const roundOffAmountLc = totalInvAmountLc;
+    const totalChargeAmountBc = rows.reduce((sum, row) => sum + (parseFloat(row.billAmount) || 0), 0);
+    const totalTaxAmountBc = rows.reduce((sum, row) => sum + (parseFloat(row.gstAmount) || 0), 0);
+    const totalInvAmountBc = totalChargeAmountBc + totalTaxAmountBc;
+    const totalTaxableAmountLc = 0;
+  
+    setFormData((prev) => ({
+      ...prev,
+      totalChargeAmountLc: totalChargeAmountLc.toFixed(2),
+      totalTaxAmountLc: totalTaxAmountLc.toFixed(2),
+      totalInvAmountLc: totalInvAmountLc.toFixed(2),
+      roundOffAmountLc: roundOffAmountLc.toFixed(2),
+      totalChargeAmountBc: totalChargeAmountBc.toFixed(2),
+      totalTaxAmountBc: totalTaxAmountBc.toFixed(2),
+      totalInvAmountBc: totalInvAmountBc.toFixed(2),
+      totalTaxableAmountLc: totalTaxableAmountLc.toFixed(2),
+      amountInWords: toWords(Math.round(totalInvAmountLc)).toUpperCase(),
+    }));
+  };
+  
+  const handleRowUpdate = async (index, field, value) => {
+    setIrnChargesData((prev) => {
+      return prev.map((row, idx) => {
+        if (idx === index) {
+          const updatedRow = { ...row, [field]: value };
+          const rate = Number(updatedRow.rate) || 0;
+          const selectedCurrencyData = currencies.find((currency) => currency.currency === updatedRow.currency);
+          const exRate = selectedCurrencyData?.buyingExRate || 1;
+          const fcAmount = updatedRow.currency === 'INR' ? 0 : rate;
+          const lcAmount = rate * exRate;
+          const billAmount = rate * exRate;
+          const gstAmount = (lcAmount * updatedRow.gstpercent) / 100;
+
+          return {
+            ...updatedRow,
+            // rate,
+            exRate,
+            fcAmount,
+            lcAmount,
+            billAmount,
+            gstAmount,
+          };
+        }
+        return row;
+      });
+    });
+
+    setIrnChargesError((prev) => {
+      const newErrors = [...prev];
+      const updatedErrors = {
+        ...newErrors[index],
+        [field]: !value ? `${field} is required` : ''
+      };
+      newErrors[index] = updatedErrors;
+      return newErrors;
+    });
   };
 
   return (
@@ -1400,7 +1230,7 @@ const IrnCreditNote = () => {
                         textField: { size: 'small', clearable: true }
                       }}
                       format="DD-MM-YYYY"
-                      disabled={formData.status === 'TAX'}
+                      disabled
                       error={!!fieldErrors.vohDate}
                       helperText={fieldErrors.vohDate ? fieldErrors.vohDate : ''}
                     />
@@ -1664,7 +1494,7 @@ const IrnCreditNote = () => {
                   {fieldErrors.currency && <FormHelperText>{fieldErrors.currency}</FormHelperText>}
                 </FormControl>
               </div> */}
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="currency"
@@ -1695,7 +1525,7 @@ const IrnCreditNote = () => {
                     disabled
                   />
                 </FormControl>
-              </div>
+              </div> */}
               {/* <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
                   <InputLabel id="status" required>
@@ -1828,7 +1658,7 @@ const IrnCreditNote = () => {
                   />
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="shipRefNo"
@@ -1843,7 +1673,7 @@ const IrnCreditNote = () => {
                     helperText={fieldErrors.shipRefNo}
                   />
                 </FormControl>
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -1879,6 +1709,22 @@ const IrnCreditNote = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
+                    id="jobNo"
+                    name="jobNo"
+                    label="Job No"
+                    size="small"
+                    value={formData.jobNo}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 30 }}
+                    error={!!fieldErrors.jobNo}
+                    helperText={fieldErrors.jobNo}
+                    disabled
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-6 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
                     id="creditRemarks"
                     name="creditRemarks"
                     label="Credit Remarks"
@@ -1892,22 +1738,6 @@ const IrnCreditNote = () => {
                   />
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="jobOrderNo"
-                    name="jobOrderNo"
-                    label="Job No"
-                    size="small"
-                    value={formData.jobOrderNo}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.jobOrderNo}
-                    helperText={fieldErrors.jobOrderNo}
-                    disabled
-                  />
-                </FormControl>
-              </div>
             </div>
 
             <div className="card w-full p-6 bg-base-100 shadow-xl mb-3">
@@ -1916,8 +1746,8 @@ const IrnCreditNote = () => {
                   <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
                       <Tab label="Charges" value="1" />
-                      {editId && <Tab label="Tax" value="2" />}
-                      {editId && <Tab label="Summary" value="3" />}
+                      <Tab label="Summary" value="2" />
+                      {editId && <Tab label="Tax" value="3" />}
                     </TabList>
                   </Box>
                   <TabPanel value="1">
@@ -1939,19 +1769,20 @@ const IrnCreditNote = () => {
                                   {/* <th className="px-2 py-2 text-white text-center">Job Number</th> */}
                                   <th className="px-2 py-2 text-white text-center">Charge Type</th>
                                   <th className="px-2 py-2 text-white text-center">Charge Code</th>
-                                  <th className="px-2 py-2 text-white text-center">GCharge Code</th>
+                                  {/* <th className="px-2 py-2 text-white text-center">GCharge Code</th> */}
+                                  <th className="px-2 py-2 text-white text-center">Description</th>
                                   <th className="px-2 py-2 text-white text-center">Ledger</th>
                                   <th className="px-2 py-2 text-white text-center">Charge Name</th>
                                   {/* <th className="px-2 py-2 text-white text-center">Apply On</th> */}
                                   <th className="px-2 py-2 text-white text-center">Taxable</th>
                                   <th className="px-2 py-2 text-white text-center">Qty</th>
                                   <th className="px-2 py-2 text-white text-center">Rate</th>
-                                  <th className="px-2 py-2 text-white text-center">Currency</th>
-                                  <th className="px-2 py-2 text-white text-center">Ex. Rate</th>
+                                  {/* <th className="px-2 py-2 text-white text-center">Currency</th>
+                                  <th className="px-2 py-2 text-white text-center">Ex. Rate</th> */}
                                   <th className="px-2 py-2 text-white text-center">Excempted</th>
                                   <th className="px-2 py-2 text-white text-center">FC Amount</th>
                                   <th className="px-2 py-2 text-white text-center">LC Amount</th>
-                                  <th className="px-2 py-2 text-white text-center">TLC Amount</th>
+                                  {/* <th className="px-2 py-2 text-white text-center">TLC Amount</th> */}
                                   <th className="px-2 py-2 text-white text-center">Bill Amount</th>
                                   <th className="px-2 py-2 text-white text-center">SAC</th>
                                   <th className="px-2 py-2 text-white text-center">TAX</th>
@@ -2061,6 +1892,46 @@ const IrnCreditNote = () => {
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
+                                          value={row.description}
+                                          disabled
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            const regex = /^[a-zA-Z0-9\s-]*$/;
+                                            if (regex.test(value)) {
+                                              setIrnChargesData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, description: value } : r))
+                                              );
+                                              setIrnChargesError((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  description: !value ? 'Description is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            } else {
+                                              setIrnChargesError((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  description: 'Only alphabets and numbers are allowed'
+                                                };
+                                                return newErrors;
+                                              });
+                                            }
+                                          }}
+                                          className={irnChargesError[index]?.description ? 'error form-control' : 'form-control'}
+                                          style={{ width: '150px' }}
+                                        />
+                                        {irnChargesError[index]?.description && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {irnChargesError[index].description}
+                                          </div>
+                                        )}
+                                      </td>
+                                      {/* <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
                                           value={row.govChargeCode}
                                           disabled
                                           onChange={(e) => {
@@ -2097,7 +1968,7 @@ const IrnCreditNote = () => {
                                             {irnChargesError[index].govChargeCode}
                                           </div>
                                         )}
-                                      </td>
+                                      </td> */}
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
@@ -2112,7 +1983,7 @@ const IrnCreditNote = () => {
                                                 const newErrors = [...prev];
                                                 newErrors[index] = {
                                                   ...newErrors[index],
-                                                  ledger: !value ? 'GCharge Code is required' : ''
+                                                  ledger: !value ? 'Ledger is required' : ''
                                                 };
                                                 return newErrors;
                                               });
@@ -2176,7 +2047,6 @@ const IrnCreditNote = () => {
                                           </div>
                                         )}
                                       </td>
-
                                       <td className="border px-2 py-2">
                                         <div style={{ display: 'flex', alignItems: 'center' }}>
                                           <Checkbox
@@ -2198,487 +2068,41 @@ const IrnCreditNote = () => {
                                           />
                                         </div>
                                       </td>
-                                      {/* <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.qty}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setIrnChargesData((prev) => prev.map((r) => (r.id === row.id ? { ...r, qty: value } : r)));
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  qty: !value ? 'Qty is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  qty: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnChargesError[index]?.qty ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnChargesError[index]?.qty && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnChargesError[index].qty}
-                                          </div>
-                                        )}
-                                      </td> */}
-                                      {/* <td className="border px-2 py-2">
-  <input
-    type="text"
-    value={row.qty}
-    onChange={(e) => {
-      const value = e.target.value;
-      const isNumeric = /^[0-9]*$/;
-      if (isNumeric.test(value)) {
-        // Update the quantity
-        setIrnChargesData((prev) => prev.map((r) => (r.id === row.id ? { ...r, qty: value } : r)));
-        
-        // Recalculate fcAmount if necessary
-        if (row.currency !== 'INR') {
-          const newFcAmount = (Number(value) * Number(row.rate)).toFixed(2);
-          setIrnChargesData((prev) => prev.map((r) => (r.id === row.id ? { ...r, fcAmount: newFcAmount } : r)));
-        }
-        
-        setIrnChargesError((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = {
-            ...newErrors[index],
-            qty: !value ? 'Qty is required' : ''
-          };
-          return newErrors;
-        });
-      } else {
-        setIrnChargesError((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = {
-            ...newErrors[index],
-            qty: 'Only numbers are allowed'
-          };
-          return newErrors;
-        });
-      }
-    }}
-    className={irnChargesError[index]?.qty ? 'error form-control' : 'form-control'}
-    style={{ width: '150px' }}
-  />
-  {irnChargesError[index]?.qty && (
-    <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-      {irnChargesError[index].qty}
-    </div>
-  )}
-</td> */}
-                                      {/* <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.qty}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              // Update the qty
-                                              setIrnChargesData((prev) =>
-                                                prev.map((r) => {
-                                                  if (r.id === row.id) {
-                                                    const newQty = value;
-
-                                                    // Calculate lcAmount
-                                                    const newLcAmount = (Number(newQty) * Number(row.rate) * Number(row.exRate)).toFixed(2);
-
-                                                    // Calculate billAmount
-                                                    const newBillAmount = (
-                                                      (Number(newQty) * Number(row.rate) * Number(row.exRate)) /
-                                                      Number(row.exRate)
-                                                    ).toFixed(2);
-
-                                                    // Calculate gstAmount
-                                                    const newGstAmount = (
-                                                      (Number(newQty) * Number(row.rate) * Number(row.exRate) * Number(row.gstpercent)) /
-                                                      100
-                                                    ).toFixed(2);
-
-                                                    return {
-                                                      ...r,
-                                                      qty: newQty,
-                                                      lcAmount: newLcAmount,
-                                                      billAmount: newBillAmount,
-                                                      gstAmount: newGstAmount
-                                                    };
-                                                  }
-                                                  return r;
-                                                })
-                                              );
-
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  qty: !value ? 'Quantity is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  qty: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnChargesError[index]?.qty ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnChargesError[index]?.qty && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnChargesError[index].qty}
-                                          </div>
-                                        )}
-                                      </td> */}
                                       <td className="border px-2 py-2">
                                         <input type="text" value={row.qty} readOnly className="form-control" style={{ width: '150px' }} />
                                       </td>
-
-                                      {/* <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.rate}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setIrnChargesData((prev) => prev.map((r) => (r.id === row.id ? { ...r, rate: value } : r)));
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  rate: !value ? 'Rate is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  rate: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnChargesError[index]?.rate ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnChargesError[index]?.rate && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnChargesError[index].rate}
-                                          </div>
-                                        )}
-                                      </td> */}
-                                      {/* <td className="border px-2 py-2">
-  <input
-    type="text"
-    value={row.rate}
-    onChange={(e) => {
-      const value = e.target.value;
-      const isNumeric = /^[0-9]*$/;
-      if (isNumeric.test(value)) {
-        // Update the rate
-        setIrnChargesData((prev) => prev.map((r) => (r.id === row.id ? { ...r, rate: value } : r)));
-
-        // Recalculate fcAmount if necessary
-        if (row.currency !== 'INR') {
-          const newFcAmount = (Number(row.qty) * Number(value)).toFixed(2);
-          setIrnChargesData((prev) => prev.map((r) => (r.id === row.id ? { ...r, fcAmount: newFcAmount } : r)));
-        }
-
-        setIrnChargesError((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = {
-            ...newErrors[index],
-            rate: !value ? 'Rate is required' : ''
-          };
-          return newErrors;
-        });
-      } else {
-        setIrnChargesError((prev) => {
-          const newErrors = [...prev];
-          newErrors[index] = {
-            ...newErrors[index],
-            rate: 'Only numbers are allowed'
-          };
-          return newErrors;
-        });
-      }
-    }}
-    className={irnChargesError[index]?.rate ? 'error form-control' : 'form-control'}
-    style={{ width: '150px' }}
-  />
-  {irnChargesError[index]?.rate && (
-    <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-      {irnChargesError[index].rate}
-    </div>
-  )}
-</td> */}
-                                      {/* <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.rate}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              // Update the rate
-                                              setIrnChargesData((prev) =>
-                                                prev.map((r) => {
-                                                  if (r.id === row.id) {
-                                                    const newRate = value;
-
-                                                    // Calculate lcAmount
-                                                    const newLcAmount = (Number(row.qty) * Number(newRate) * Number(row.exRate)).toFixed(2);
-
-                                                    // Calculate billAmount
-                                                    const newBillAmount = (
-                                                      (Number(row.qty) * Number(newRate) * Number(row.exRate)) /
-                                                      Number(row.exRate)
-                                                    ).toFixed(2);
-
-                                                    // Calculate gstAmount
-                                                    const newGstAmount = (
-                                                      (Number(row.qty) * Number(newRate) * Number(row.exRate) * Number(row.gstpercent)) /
-                                                      100
-                                                    ).toFixed(2);
-
-                                                    return {
-                                                      ...r,
-                                                      rate: newRate,
-                                                      lcAmount: newLcAmount,
-                                                      billAmount: newBillAmount,
-                                                      gstAmount: newGstAmount
+                                      <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.rate}
+                                              style={{ width: '100px' }}
+                                              disabled={
+                                                formData.status === 'TAX' ||
+                                                originBillList.some(invoice =>
+                                                  invoice.originBillList?.some(charge =>
+                                                    charge.chargeName === row.chargeName && charge.taxable === null
+                                                  )
+                                                )
+                                              }
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                const numericRegex = /^[0-9]*$/;
+                                                if (numericRegex.test(value)) {
+                                                  handleRowUpdate(index, 'rate', value);
+                                                } else {
+                                                  setIrnChargesError((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      rate: 'Only numeric characters are allowed'
                                                     };
-                                                  }
-                                                  return r;
-                                                })
-                                              );
-
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  rate: !value ? 'Rate is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  rate: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnChargesError[index]?.rate ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnChargesError[index]?.rate && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnChargesError[index].rate}
-                                          </div>
-                                        )}
-                                      </td> */}
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.rate}
-                                          disabled={formData.status === 'TAX'}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*\.?[0-9]*$/; // Updated regex to allow decimals
-
-                                            if (isNumeric.test(value)) {
-                                              // Update the rate
-                                              setIrnChargesData((prev) =>
-                                                prev.map((r) => {
-                                                  if (r.id === row.id) {
-                                                    // Calculate new values based on the updated rate
-                                                    const updatedRate = Number(value);
-                                                    const newLcAmount = (Number(row.qty) * updatedRate * Number(row.exRate)).toFixed(2);
-                                                    const newBillAmount = (
-                                                      (Number(row.qty) * updatedRate * Number(row.exRate)) /
-                                                      Number(row.exRate)
-                                                    ).toFixed(2);
-                                                    const newGstAmount = (
-                                                      (Number(row.qty) * updatedRate * Number(row.exRate) * Number(row.gstpercent)) /
-                                                      100
-                                                    ).toFixed(2);
-
-                                                    return {
-                                                      ...r,
-                                                      rate: value,
-                                                      lcAmount: newLcAmount,
-                                                      billAmount: newBillAmount,
-                                                      gstAmount: newGstAmount
-                                                    };
-                                                  }
-                                                  return r;
-                                                })
-                                              );
-
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  rate: !value ? 'Rate is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  rate: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnChargesError[index]?.rate ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnChargesError[index]?.rate && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnChargesError[index].rate}
-                                          </div>
-                                        )}
-                                      </td>
-
-                                      {/* <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.currency}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-
-                                            setIrnChargesData((prev) => prev.map((r) => (r.id === row.id ? { ...r, currency: value } : r)));
-
-                                            setIrnChargesError((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                currency: !value ? 'currency is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={irnChargesError[index]?.currency ? 'error form-control' : 'form-control'}
-                                          style={{ width: '200px' }}
-                                        />
-                                        {irnChargesError[index]?.currency && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnChargesError[index].currency}
-                                          </div>
-                                        )}
-                                      </td> */}
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.currency}
-                                          disabled
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setIrnChargesData((prev) => prev.map((r) => (r.id === row.id ? { ...r, currency: value } : r)));
-
-                                            // Recalculate fcAmount based on currency
-                                            if (value === 'INR') {
-                                              // If currency is INR, set fcAmount to 0.00
-                                              setIrnChargesData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, fcAmount: '0.00' } : r))
-                                              );
-                                            } else {
-                                              // If currency is not INR, calculate fcAmount
-                                              const newFcAmount = (Number(row.qty) * Number(row.rate)).toFixed(2);
-                                              setIrnChargesData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, fcAmount: newFcAmount } : r))
-                                              );
-                                            }
-
-                                            setIrnChargesError((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                currency: !value ? 'Currency is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={irnChargesError[index]?.currency ? 'error form-control' : 'form-control'}
-                                          style={{ width: '200px' }}
-                                        />
-                                        {irnChargesError[index]?.currency && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnChargesError[index].currency}
-                                          </div>
-                                        )}
-                                      </td>
-
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.exRate}
-                                          disabled
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setIrnChargesData((prev) => prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r)));
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  exRate: !value ? 'Ex Rate is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  exRate: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnChargesError[index]?.exRate ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnChargesError[index]?.exRate && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnChargesError[index].exRate}
-                                          </div>
-                                        )}
-                                      </td>
-
+                                                    return newErrors;
+                                                  });
+                                                }
+                                              }}
+                                              className={irnChargesError[index]?.rate ? 'error form-control' : 'form-control'}
+                                            />
+                                          </td>
                                       <td className="border px-2 py-2">
                                         <div style={{ display: 'flex', alignItems: 'center' }}>
                                           <Checkbox
@@ -2700,45 +2124,6 @@ const IrnCreditNote = () => {
                                           />
                                         </div>
                                       </td>
-                                      {/* <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.fcAmount}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setIrnChargesData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, fcAmount: value } : r))
-                                              );
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  fcAmount: !value ? 'FC Amount is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  fcAmount: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnChargesError[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnChargesError[index]?.fcAmount && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnChargesError[index].fcAmount}
-                                          </div>
-                                        )}
-                                      </td> */}
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
@@ -2779,46 +2164,6 @@ const IrnCreditNote = () => {
                                           </div>
                                         )}
                                       </td>
-
-                                      {/* <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.lcAmount}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setIrnChargesData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, lcAmount: value } : r))
-                                              );
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  lcAmount: !value ? 'LC Amount is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  lcAmount: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnChargesError[index]?.lcAmount ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnChargesError[index]?.lcAmount && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnChargesError[index].lcAmount}
-                                          </div>
-                                        )}
-                                      </td> */}
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
@@ -2828,83 +2173,6 @@ const IrnCreditNote = () => {
                                           style={{ width: '150px' }}
                                         />
                                       </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.tlcAmount}
-                                          disabled
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setIrnChargesData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, tlcAmount: value } : r))
-                                              );
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  tlcAmount: !value ? 'TLC Amount is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], tlcAmount: 'Only numbers are allowed' };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnChargesError[index]?.tlcAmount ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnChargesError[index]?.tlcAmount && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnChargesError[index].tlcAmount}
-                                          </div>
-                                        )}
-                                      </td>
-                                      {/* <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.billAmount}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-
-                                            if (isNumeric.test(value)) {
-                                              setIrnChargesData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, billAmount: value } : r))
-                                              );
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  billAmount: !value ? 'Bill Amount is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setIrnChargesError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  billAmount: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={irnChargesError[index]?.billAmount ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {irnChargesError[index]?.billAmount && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {irnChargesError[index].billAmount}
-                                          </div>
-                                        )}
-                                      </td> */}
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
@@ -3059,8 +2327,175 @@ const IrnCreditNote = () => {
                       </div>
                     </div>
                   </TabPanel>
-                  {editId && (
+                 
+                  {/* {editId && ( */}
                     <TabPanel value="2">
+                      <div>
+                        <div className="row d-flex mt-2">
+                        <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="totalChargeAmountLc"
+                                name="totalChargeAmountLc"
+                                label="Total Charge Amount(LC) "
+                                size="small"
+                                disabled
+                                value={formData.totalChargeAmountLc}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="totalTaxAmountLc"
+                                name="totalTaxAmountLc"
+                                label="Total Tax Amount(LC) "
+                                size="small"
+                                disabled
+                                value={formData.totalTaxAmountLc}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="totalInvAmountLc"
+                                name="totalInvAmountLc"
+                                label="Total Inv Amount(LC)"
+                                size="small"
+                                disabled
+                                value={formData.totalInvAmountLc}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="roundOffAmountLc"
+                                name="roundOffAmountLc"
+                                label="Round Off Amt(LC)"
+                                size="small"
+                                disabled
+                                value={formData.roundOffAmountLc}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="totalChargeAmountBc"
+                                name="totalChargeAmountBc"
+                                label="Total Charge Amount(Bill Curr)"
+                                size="small"
+                                disabled
+                                value={formData.totalChargeAmountBc}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="totalTaxAmountBc"
+                                name="totalTaxAmountBc"
+                                label="Total Tax Amount(Bill Curr)"
+                                size="small"
+                                disabled
+                                value={formData.totalTaxAmountBc}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="totalInvAmountBc"
+                                name="totalInvAmountBc"
+                                label="Total Inv Amount(Bill Curr)"
+                                size="small"
+                                disabled
+                                value={formData.totalInvAmountBc}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-3 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="totalTaxableAmountLc"
+                                name="totalTaxableAmountLc"
+                                label="Total Taxable Amount(LC)"
+                                size="small"
+                                disabled
+                                value={formData.totalTaxableAmountLc}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                                // error={!!fieldErrors.netLCAmt}
+                                // helperText={fieldErrors.netLCAmt}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-6 mb-3">
+                            <FormControl fullWidth variant="filled">
+                              <TextField
+                                id="amountInWords"
+                                name="amountInWords"
+                                label="Amount In Words"
+                                size="small"
+                                disabled
+                                value={formData.amountInWords}
+                                onChange={handleInputChange}
+                                inputProps={{ maxLength: 30 }}
+                              />
+                            </FormControl>
+                          </div>
+                          <div className="col-md-6 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              id="billingRemarks"
+                              name="billingRemarks"
+                              label="Billing Remarks"
+                              size="small"
+                              disabled
+                              value={formData.billingRemarks}
+                              onChange={handleInputChange}
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        {/* <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              id="totTaxAmt"
+                              name="totTaxAmt"
+                              label="Total Tax Amount"
+                              size="small"
+                              disabled
+                              value={formData.totTaxAmt}
+                              onChange={handleInputChange}
+                              inputProps={{ maxLength: 30 }}
+                              // error={!!fieldErrors.totTaxAmt}
+                              // helperText={fieldErrors.totTaxAmt}
+                            />
+                          </FormControl>
+                        </div> */}
+                        </div>
+                      </div>
+                    </TabPanel>
+                  {/* )} */}
+                  {editId && (
+                    <TabPanel value="3">
                       {/* <TableComponent /> */}
                       <div className="row d-flex ml">
                         <div className="mb-1">{/* <ActionButton title="Add" icon={AddIcon} onClick={handleGstAddRow} /> */}</div>
@@ -3105,7 +2540,7 @@ const IrnCreditNote = () => {
                                           <input
                                             type="text"
                                             value={row.chargeAcc}
-                                            disabled={formData.status === 'TAX'}
+                                            disabled
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const regex = /^[a-zA-Z0-9\s-]*$/;
@@ -3147,7 +2582,7 @@ const IrnCreditNote = () => {
                                           <input
                                             type="text"
                                             value={row.subLodgerCode}
-                                            disabled={formData.status === 'TAX'}
+                                            disabled
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const regex = /^[a-zA-Z0-9\s-]*$/;
@@ -3188,7 +2623,7 @@ const IrnCreditNote = () => {
                                           <input
                                             type="text"
                                             value={row.dbillAmt}
-                                            disabled={formData.status === 'TAX'}
+                                            disabled
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const isNumeric = /^[0-9]*$/;
@@ -3226,7 +2661,7 @@ const IrnCreditNote = () => {
                                           <input
                                             type="text"
                                             value={row.crBillAmt}
-                                            disabled={formData.status === 'TAX'}
+                                            disabled
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const isNumeric = /^[0-9]*$/;
@@ -3266,7 +2701,7 @@ const IrnCreditNote = () => {
                                           <input
                                             type="text"
                                             value={row.dblcamt}
-                                            disabled={formData.status === 'TAX'}
+                                            disabled
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const isNumeric = /^[0-9]*$/;
@@ -3304,7 +2739,7 @@ const IrnCreditNote = () => {
                                           <input
                                             type="text"
                                             value={row.crLCAmt}
-                                            disabled={formData.status === 'TAX'}
+                                            disabled
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const isNumeric = /^[0-9]*$/;
@@ -3343,7 +2778,7 @@ const IrnCreditNote = () => {
                                           <input
                                             type="text"
                                             value={row.gstRemarks}
-                                            disabled={formData.status === 'TAX'}
+                                            disabled
                                             className="form-control"
                                             style={{ width: '150px' }}
                                             onChange={(e) => {
@@ -3362,174 +2797,6 @@ const IrnCreditNote = () => {
                       </div>
                     </TabPanel>
                   )}
-                  {editId && (
-                    <TabPanel value="3">
-                      <div>
-                        <div className="row d-flex mt-2">
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="roundOff"
-                                name="roundOff"
-                                label="Round Off"
-                                size="small"
-                                disabled
-                                value={formData.roundOff}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.roundOff}
-                                // helperText={fieldErrors.roundOff}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="totChargesBillCurrAmt"
-                                name="totChargesBillCurrAmt"
-                                label="Total Charges Bill Curr Amount"
-                                size="small"
-                                disabled
-                                value={formData.totChargesBillCurrAmt}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.totChargesBillCurrAmt}
-                                // helperText={fieldErrors.totChargesBillCurrAmt}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="totChargesLCAmt"
-                                name="totChargesLCAmt"
-                                label="Total Charges LC Amount"
-                                size="small"
-                                disabled
-                                value={formData.totChargesLCAmt}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.totChargesLCAmt}
-                                // helperText={fieldErrors.totChargesLCAmt}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="totGrossBillAmt"
-                                name="totGrossBillAmt"
-                                label="Total Gross Bill Amount"
-                                size="small"
-                                disabled
-                                value={formData.totGrossBillAmt}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.totGrossBillAmt}
-                                // helperText={fieldErrors.totGrossBillAmt}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="totGrossLCAmt"
-                                name="totGrossLCAmt"
-                                label="Total Gross LC Amount"
-                                size="small"
-                                disabled
-                                value={formData.totGrossLCAmt}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.totGrossLCAmt}
-                                // helperText={fieldErrors.totGrossLCAmt}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="netBillCurrAmt"
-                                name="netBillCurrAmt"
-                                label="Net Bill Curr Amount"
-                                size="small"
-                                disabled
-                                value={formData.netBillCurrAmt}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.netBillCurrAmt}
-                                // helperText={fieldErrors.netBillCurrAmt}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="netLCAmt"
-                                name="netLCAmt"
-                                label="Net LC Amount"
-                                size="small"
-                                disabled
-                                value={formData.netLCAmt}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.netLCAmt}
-                                // helperText={fieldErrors.netLCAmt}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="amtInWords"
-                                name="amtInWords"
-                                label="Amount In Words"
-                                size="small"
-                                disabled
-                                value={formData.amtInWords}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.amtInWords}
-                                // helperText={fieldErrors.amtInWords}
-                              />
-                            </FormControl>
-                          </div>
-                          {/* <div className="col-md-3 mb-3">
-                          <FormControl fullWidth variant="filled">
-                            <TextField
-                              id="summaryExRate"
-                              name="summaryExRate"
-                              label="Ex Rate"
-                              size="small"
-                              disabled
-                              value={formData.summaryExRate}
-                              onChange={handleInputChange}
-                              inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.summaryExRate}
-                              // helperText={fieldErrors.summaryExRate}
-                            />
-                          </FormControl>
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <FormControl fullWidth variant="filled">
-                            <TextField
-                              id="totTaxAmt"
-                              name="totTaxAmt"
-                              label="Total Tax Amount"
-                              size="small"
-                              disabled
-                              value={formData.totTaxAmt}
-                              onChange={handleInputChange}
-                              inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.totTaxAmt}
-                              // helperText={fieldErrors.totTaxAmt}
-                            />
-                          </FormControl>
-                        </div> */}
-                        </div>
-                      </div>
-                    </TabPanel>
-                  )}
                 </TabContext>
               </Box>
             </div>
@@ -3538,7 +2805,7 @@ const IrnCreditNote = () => {
       </div>
       <ConfirmationModal
         open={modalOpen}
-        title="IRN Credit Note Approval"
+        title="Credit Note Approval"
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={() => handleConfirmAction(docId)}
         onCancel={handleCloseModal}

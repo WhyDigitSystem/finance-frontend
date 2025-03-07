@@ -6,11 +6,13 @@ import jsPDF from 'jspdf';
 import { toWords } from 'number-to-words';
 import { useEffect, useState } from 'react';
 import QRCodeComponent from './QRCode';
+import apiCalls from 'apicall';
 
 const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
   const [open, setOpen] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState('');
-
+  const [bankDetails, setBankDetails] = useState([]);
+   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const styles = {
     container: {
       textAlign: 'center',
@@ -111,6 +113,7 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
   useEffect(() => {
     if (row) {
       handleOpen();
+      getBankDetailsByOrgId();
     }
     console.log('RowData =>', row);
 
@@ -124,6 +127,15 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
     const formattedTime = now.toLocaleTimeString('en-GB'); // Format time as HH:MM:SS
     setCurrentDateTime(`${formattedDate} ${formattedTime}`);
   }, [row, callBackFunction]);
+    const getBankDetailsByOrgId = async () => {
+      try {
+        const response = await apiCalls('get', `/commonmaster/getBankDetailsByOrgId?orgId=${orgId}`);
+        setBankDetails(response.paramObjectsMap.bankDetailsVO[0]);
+        console.log('setBankDetails =>', response.paramObjectsMap.bankDetailsVO);
+      } catch (error) {
+        console.error('Error fetching invoice:', error);
+      }
+    };
 
   return (
     <Dialog
@@ -159,7 +171,7 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
               color: '#333'
             }}
           >
-            <div>EFit Finance</div>
+            <div>{localStorage.getItem('companyName')}</div>
             <div>
               <strong>Credit Note</strong>
             </div>
@@ -225,7 +237,7 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
             </div>
             <div style={{ textAlign: 'left' }}>
               <div>
-                <strong>Due date:</strong> {row.dueDate}
+                <strong>Due Date:</strong> {row.dueDate ? dayjs(row.dueDate).format('DD-MM-YYYY') : 'N/A'}
               </div>
               <div>
                 <strong>Place Of Supply:</strong> {row.placeOfSupply}
@@ -319,7 +331,7 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
             <thead>
               <tr style={{ backgroundColor: '#673ab7', color: '#fff' }}>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>HSN/SAC</th>
-                <th style={{ border: '1px solid #000000', padding: '10px' }}>Details</th>
+                <th style={{ border: '1px solid #000000', padding: '10px' }}>Description</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Cur</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Ex.Rt</th>
                 {/* <th style={{ border: '1px solid #000000', padding: '10px' }}>Apply On</th> */}
@@ -335,7 +347,7 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
               {row.irnCreditNoteDetailsVO?.map((item, index) => (
                 <tr key={index} style={{ borderBottom: '1px solid #000000' }}>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.govChargeCode}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.chargeName}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.description}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.currency}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.exRate || ''}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.qty}</td>
@@ -349,45 +361,48 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
             </tbody>
           </table>
 
-          {/* <!-- Total Section --> */}
           <div
             style={{
-              textAlign: 'right',
+              // textAlign: 'right',
               fontWeight: 'bold',
               fontSize: '14px',
               color: '#333'
             }}
+            className="d-flex justify-content-between mb-2"
           >
-            Total:{' '}
-            <span
+            <div
               style={{
-                fontWeight: 'normal',
+                textAlign: 'right',
+                fontWeight: 'bold',
                 fontSize: '14px',
                 color: '#333'
               }}
             >
-              {row.totalChargeAmountLc}
-            </span>
+              Amount in words:{' '}
+              <span
+                style={{
+                  fontWeight: 'normal',
+                  fontSize: '14px',
+                  color: '#333'
+                }}
+              >
+                {toWords(parseFloat(row.totalInvAmountLc)).toUpperCase()}
+              </span>
+            </div>
+            <div>
+              Total:{' '}
+              <span
+                style={{
+                  fontWeight: 'normal',
+                  fontSize: '14px',
+                  color: '#333'
+                }}
+              >
+                {row.totalInvAmountLc}
+              </span>
+            </div>
           </div>
-          <div
-            style={{
-              textAlign: 'right',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              color: '#333'
-            }}
-          >
-            Amount in words:{' '}
-            <span
-              style={{
-                fontWeight: 'normal',
-                fontSize: '14px',
-                color: '#333'
-              }}
-            >
-              {toWords(parseFloat(row.totalChargeAmountLc)).toUpperCase()}
-            </span>
-          </div>
+          {row.remarks ? (
           <div
             style={{
               marginBottom: '20px',
@@ -404,6 +419,9 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
               <strong>Shipment Ref No :</strong> {row.recipientGSTIN}
             </div>*/}
           </div>
+                    ) : (
+                      ''
+                    )}
 
           {/*<div
             style={{
@@ -423,10 +441,10 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
               <strong>Date :</strong> {row.recipientGSTIN}
             </div>
           </div>*/}
-          <div>
+          {/* <div>
             <strong>Other Information :</strong>
           </div>
-          <br></br>
+          <br></br> */}
 
           <div style={{ fontSize: '12px' }}>
             <strong>Terms And Conditions :</strong>
@@ -443,25 +461,25 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
           <div style={styles2.container}>
             <h6 style={styles2.heading}>Bank Details:</h6>
             <p style={styles2.item}>
-              <span style={styles2.label}>BANK NAME:</span> HDFC BANK LIMITED
+              <span style={styles2.label}>BANK NAME:</span> {bankDetails.bankName}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT CODE:</span> XYZ
+              <span style={styles2.label}>ACCOUNT CODE:</span> {bankDetails.accountCode}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>BENEFICIARY NAME:</span> XYZ LOGISTICS PVT LTD
+              <span style={styles2.label}>BENEFICIARY NAME:</span> {bankDetails.beneficiaryName}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>BRANCH:</span> KORAMANGALA, BENGALURU
+              <span style={styles2.label}>BRANCH:</span> {bankDetails.branch}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>IFSC:</span> HDFC0000053
+              <span style={styles2.label}>IFSC:</span> {bankDetails.ifsc}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT NO.:</span> 00530330000072
+              <span style={styles2.label}>ACCOUNT NO:</span> {bankDetails.accountNo}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT TYPE:</span> CURRENT ACCOUNT
+              <span style={styles2.label}>ACCOUNT TYPE:</span> {bankDetails.accountType}
             </p>
           </div>
 
