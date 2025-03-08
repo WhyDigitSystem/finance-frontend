@@ -932,7 +932,7 @@ const IrnCreditNote = () => {
         chargeName: row.chargeName,
         taxable: row.taxable,
         qty: parseInt(row.qty),
-        rate: parseInt(row.rate),
+        rate: parseFloat(row.rate),
         currency: row.currency,
         exRate: parseInt(row.exRate),
         exempted: row.exempted,
@@ -1042,7 +1042,8 @@ const IrnCreditNote = () => {
     const totalChargeAmountLc = rows.reduce((sum, row) => sum + (parseFloat(row.lcAmount) || 0), 0);
     const totalTaxAmountLc = rows.reduce((sum, row) => sum + (parseFloat(row.gstAmount) || 0), 0);
     const totalInvAmountLc = totalChargeAmountLc + totalTaxAmountLc;
-    const roundOffAmountLc = totalInvAmountLc;
+    const roundOffDiff = (Math.round(totalChargeAmountLc) - totalChargeAmountLc).toFixed(2);
+    const roundOffAmountLc = roundOffDiff;
     const totalChargeAmountBc = rows.reduce((sum, row) => sum + (parseFloat(row.billAmount) || 0), 0);
     const totalTaxAmountBc = rows.reduce((sum, row) => sum + (parseFloat(row.gstAmount) || 0), 0);
     const totalInvAmountBc = totalChargeAmountBc + totalTaxAmountBc;
@@ -1053,7 +1054,7 @@ const IrnCreditNote = () => {
       totalChargeAmountLc: totalChargeAmountLc.toFixed(2),
       totalTaxAmountLc: totalTaxAmountLc.toFixed(2),
       totalInvAmountLc: totalInvAmountLc.toFixed(2),
-      roundOffAmountLc: roundOffAmountLc.toFixed(2),
+      roundOffAmountLc: roundOffAmountLc,
       totalChargeAmountBc: totalChargeAmountBc.toFixed(2),
       totalTaxAmountBc: totalTaxAmountBc.toFixed(2),
       totalInvAmountBc: totalInvAmountBc.toFixed(2),
@@ -1067,7 +1068,19 @@ const IrnCreditNote = () => {
       return prev.map((row, idx) => {
         if (idx === index) {
           const updatedRow = { ...row, [field]: value };
-          const rate = Number(updatedRow.rate) || 0;
+
+          if (value === '') {
+            return {
+              ...updatedRow,
+              rate: '',
+              fcAmount: '',
+              lcAmount: '',
+              billAmount: '',
+              gstAmount: '',
+            };
+          }
+
+          const rate = parseFloat(updatedRow.rate) || 0;
           const selectedCurrencyData = currencies.find((currency) => currency.currency === updatedRow.currency);
           const exRate = selectedCurrencyData?.buyingExRate || 1;
           const fcAmount = updatedRow.currency === 'INR' ? 0 : rate;
@@ -1077,7 +1090,7 @@ const IrnCreditNote = () => {
 
           return {
             ...updatedRow,
-            // rate,
+            rate,
             exRate,
             fcAmount,
             lcAmount,
@@ -2086,8 +2099,10 @@ const IrnCreditNote = () => {
                                               }
                                               onChange={(e) => {
                                                 const value = e.target.value;
-                                                const numericRegex = /^[0-9]*$/;
-                                                if (numericRegex.test(value)) {
+                                                // const numericRegex = /^[0-9]*$/;
+                                                // if (value === '' || numericRegex.test(value)) {
+                                                const floatRegex = /^[0-9]*\.?[0-9]*$/; // Accept numbers and decimals
+                                                  if (value === '' || floatRegex.test(value)) {
                                                   handleRowUpdate(index, 'rate', value);
                                                 } else {
                                                   setIrnChargesError((prev) => {
