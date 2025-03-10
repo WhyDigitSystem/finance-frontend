@@ -108,7 +108,7 @@ const Company = () => {
       branch: '',
       ifsc: '',
       accountType: '',
-      primaryAccount: 'true'
+      primaryAccount: false
     };
     setDetailsTableData([...detailsTableData, newRow]);
     setDetailsTableErrors([
@@ -121,7 +121,7 @@ const Company = () => {
         branch: '',
         ifsc: '',
         accountType: '',
-        primaryAccount: 'true'
+        primaryAccount: false
       }
     ]);
   };
@@ -698,7 +698,7 @@ const Company = () => {
                   indicatorColor="secondary"
                   aria-label="secondary tabs example"
                 >
-                  <Tab value={0} label="Details" />
+                  <Tab value={0} label="Bank Details" />
                 </Tabs>
               </Box>
               <Box sx={{ padding: 2 }}>
@@ -939,16 +939,32 @@ const Company = () => {
                                             className="ms-2 pb-0 pt-1"
                                             checked={row.primaryAccount}
                                             style={{ width: 200 }}
-                                            onChange={(e) => {
-                                              const isChecked = e.target.checked;
-
+                                            onChange={() => {
                                               setDetailsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, primaryAccount: isChecked } : r))
+                                                prev.map((r) => ({
+                                                  ...r,
+                                                  primaryAccount: r.id === row.id // Only one row gets primaryAccount: true
+                                                }))
                                               );
                                             }}
                                             name="primaryAccount"
                                             color="primary"
                                           />
+
+                                          // <Checkbox
+                                          //   className="ms-2 pb-0 pt-1"
+                                          //   checked={row.primaryAccount}
+                                          //   style={{ width: 200 }}
+                                          //   onChange={(e) => {
+                                          //     const isChecked = e.target.checked;
+
+                                          //     setDetailsTableData((prev) =>
+                                          //       prev.map((r) => (r.id === row.id ? { ...r, primaryAccount: isChecked } : r))
+                                          //     );
+                                          //   }}
+                                          //   name="primaryAccount"
+                                          //   color="primary"
+                                          // />
                                         }
                                         // label="primaryAccount"
                                         sx={{
