@@ -83,49 +83,88 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
     }
   };
 
-  // Function to open the dialog
   const handleOpen = () => {
     setOpen(true);
   };
 
-  // Function to close the dialog
   const handleClose = () => {
     setOpen(false);
   };
 
-  // Function to generate and download the PDF
   const handleDownloadPdf = async () => {
-    const input = document.getElementById('pdf-content');
+    const input = document.getElementById("pdf-content");
     if (input) {
-      const canvas = await html2canvas(input);
-      const imgData = canvas.toDataURL('image/png');
+      const canvas = await html2canvas(input, {
+        scale: 2,
+        useCORS: true,
+      });
 
-      const pdf = new jsPDF();
-      pdf.addImage(imgData, 'PNG', 0, 0);
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const imgWidth = 210;
+      const pageHeight = 310;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let yPosition = 0;
+
+      if (imgHeight <= pageHeight) {
+        pdf.addImage(imgData, "PNG", 0, yPosition, imgWidth, imgHeight);
+      } else {
+        let currentHeight = 0;
+
+        while (currentHeight < imgHeight) {
+          pdf.addImage(imgData, "PNG", 0, -currentHeight, imgWidth, imgHeight);
+          currentHeight += pageHeight;
+
+          if (currentHeight < imgHeight) {
+            pdf.addPage();
+          }
+        }
+      }
+
       pdf.save(`Tax-Invoice_${row.docId}.pdf`);
-
-      handleClose();
     } else {
       console.error("Element not found: 'pdf-content'");
     }
   };
 
   // Automatically open the dialog when the component is rendered
+  // useEffect(() => {
+  //   if (row) {
+  //     handleOpen();
+  //     getBankDetailsByOrgId();
+  //   }
+  //   console.log('RowData =>', row);
+
+  //   // Call the callback function to pass handleDownloadPdf if needed
+  //   if (callBackFunction) {
+  //     callBackFunction(handleDownloadPdf);
+  //   }
+
+  //   const now = new Date();
+  //   const formattedDate = now.toLocaleDateString('en-GB'); // Format date as DD/MM/YYYY
+  //   const formattedTime = now.toLocaleTimeString('en-GB'); // Format time as HH:MM:SS
+  //   setCurrentDateTime(`${formattedDate} ${formattedTime}`);
+  // }, [row, callBackFunction]);
+
   useEffect(() => {
-    if (row) {
+    if (row && row.approveStatus === 'Approved') {
       handleOpen();
       getBankDetailsByOrgId();
+    } else {
+      setOpen(false);
     }
+
     console.log('RowData =>', row);
 
-    // Call the callback function to pass handleDownloadPdf if needed
     if (callBackFunction) {
       callBackFunction(handleDownloadPdf);
     }
 
     const now = new Date();
-    const formattedDate = now.toLocaleDateString('en-GB'); // Format date as DD/MM/YYYY
-    const formattedTime = now.toLocaleTimeString('en-GB'); // Format time as HH:MM:SS
+    const formattedDate = now.toLocaleDateString('en-GB');
+    const formattedTime = now.toLocaleTimeString('en-GB');
     setCurrentDateTime(`${formattedDate} ${formattedTime}`);
   }, [row, callBackFunction]);
 
@@ -145,7 +184,7 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
       onClose={handleClose}
       maxWidth="md"
       fullWidth
-      onEntered={handleDownloadPdf} // Ensure content is fully rendered before generating PDF
+      onEntered={handleDownloadPdf}
     >
       <DialogTitle>PDF Preview</DialogTitle>
       <DialogContent>
@@ -173,7 +212,7 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
               color: '#333'
             }}
           >
-            <div>EFit Finance</div>
+            <div>{localStorage.getItem('companyName')}</div>
             <div>
               <strong>Debit Note</strong>
             </div>
@@ -191,13 +230,19 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
             }}
           >
             <div>
+              {/* <div>
+                Invoice No:
+                <strong>{row.purVoucherNo}</strong>
+              </div> */}
               <div>
-                <strong>Invoice No:</strong>
-                {row.purVoucherNo}
+                Invoice No
+                <strong className="ms-3">: {row.purVoucherNo}</strong>
               </div>
               <div>
-                <strong>Invoice Date: </strong>
-                {row.purVoucherDate ? dayjs(row.purVoucherDate).format('DD-MM-YYYY') : 'N/A'}
+                Invoice Date
+                <strong className="ms-1">: {row.purVoucherDate ? dayjs(row.purVoucherDate).format('DD-MM-YYYY') : 'N/A'}
+                </strong>
+
               </div>
               {/* <div>
                 <strong>ACK No: </strong>
@@ -219,7 +264,7 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
                 <strong>GRN Date:</strong> {row.grnDate}
               </div>
             </div> */}
-            <QRCodeComponent text={'1234567'} />
+            {/* <QRCodeComponent text={'1234567'} /> */}
           </div>
           <div
             style={{
@@ -231,31 +276,30 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
             }}
           >
             <div>
-              <div>
-                <strong>Bill To</strong>
-              </div>
-              <div>{row.supplierName}</div>
+              <div>Bill To</div>
+              <div><strong>{row.supplierName}</strong></div>
+              <span style={{ textWrap: 'auto', textOverflow: 'ellipsis' }}>{row.address}</span>
               <div>
                 <strong className="mb-2">Reg No:</strong> {row.supplierGstIn}
               </div>
               {/* <div>{row.address}</div> */}
-              <div style={{ width: 300 }}>
+              {/* <div style={{ width: 300 }}>
                 <strong>Place of address:</strong>
                 <br />
                 <span style={{ textWrap: 'auto', textOverflow: 'ellipsis' }}>{row.address}</span>
-              </div>
-            </div>
-            <div style={{ textAlign: 'left' }}>
-              {/* <div>
-                <strong>Due date:</strong> {row.dueDate}
               </div> */}
+            </div>
+            {/* <div style={{ textAlign: 'left' }}>
+              <div>
+                <strong>Due date:</strong> {row.dueDate}
+              </div>
               <div>
                 <strong>Place Of Supply:</strong> {row.supplierPlace}
               </div>
-              {/* <div>
+              <div>
                 <strong>GRN Date:</strong> {row.grnDate}
-              </div> */}
-            </div>
+              </div>
+            </div> */}
           </div>
 
           <div style={styles.container}>
@@ -353,21 +397,47 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
               </tr>
             </thead>
             <tbody>
-              {row.costDebitChargesVO?.map((item, index) => (
+              {row.chargerCostDebitNoteVO?.map((item, index) => (
                 <tr key={index} style={{ borderBottom: '1px solid #000000' }}>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.govChargeCode}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.chargeName}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.currency}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.exRate || ''}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.qty}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.rate}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.fcAmt}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                    {Number(item.rate).toLocaleString('en-IN')}
+                  </td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                    {Number(item.fcAmt).toLocaleString('en-IN')}
+                  </td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.gstpercent}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.lcAmt}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                    {Number(item.lcAmt).toLocaleString('en-IN')}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
+
+          <div
+            style={{
+              fontStyle: 'italic',
+              textAlign: 'right',
+            }}
+          >
+            Total Taxable Amount:{' '}
+            <span
+              style={{
+                fontStyle: 'normal',
+                fontWeight: 'normal',
+                fontSize: '14px',
+                color: '#333',
+                marginLeft: 10
+              }}
+            >
+              {parseFloat(row.gstInputLcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
 
           {/* <!-- Total Section --> */}
           <div
@@ -375,7 +445,8 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
               textAlign: 'right',
               fontWeight: 'bold',
               fontSize: '14px',
-              color: '#333'
+              color: '#333',
+              marginTop: '8px'
             }}
           >
             Total:{' '}
@@ -386,12 +457,13 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
                 color: '#333'
               }}
             >
-              {row.totChargesBillCurrAmt}
+              {Number(row.totChargesBillCurrAmt).toLocaleString('en-IN')}
             </span>
           </div>
+
           <div
             style={{
-              textAlign: 'right',
+              textAlign: 'left',
               fontWeight: 'bold',
               fontSize: '14px',
               color: '#333'
@@ -402,6 +474,7 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
               style={{
                 fontWeight: 'normal',
                 fontSize: '14px',
+                fontStyle: 'italic',
                 color: '#333'
               }}
             >
@@ -409,22 +482,27 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
             </span>
           </div>
 
-          <div
-            style={{
-              marginBottom: '20px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: '14px',
-              color: '#555'
-            }}
-          >
-            <div>
-              <strong>Remarks :</strong>
-            </div>
-            {/* <div>
+          {row.remarks ? (
+            <div
+              style={{
+                marginBottom: '20px',
+                marginTop: '10px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '14px',
+                color: '#555'
+              }}
+            >
+              <div>
+                <strong>Remarks :</strong> {row.remarks}
+              </div>
+              {/* <div>
               <strong>Shipment Ref No :</strong> {row.recipientGSTIN}
             </div> */}
-          </div>
+            </div>
+          ) : (
+            ''
+          )}
 
           {/* <div
             style={{
@@ -444,10 +522,10 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
               <strong>Date :</strong> {row.recipientGSTIN}
             </div>
           </div> */}
-          <div>
+          {/* <div>
             <strong>Other Information :</strong>
-          </div>
-          <br></br>
+          </div> */}
+
 
           <div style={{ fontSize: '12px' }}>
             <strong>Terms And Conditions :</strong>
@@ -461,7 +539,7 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
             </ol>
           </div>
 
-          <div style={styles2.container}>
+          {/* <div style={styles2.container}>
             <h6 style={styles2.heading}>Bank Details:</h6>
             <p style={styles2.item}>
               <span style={styles2.label}>BANK NAME:</span> {bankDetails.bankName}
@@ -484,7 +562,7 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
             <p style={styles2.item}>
               <span style={styles2.label}>ACCOUNT TYPE:</span> {bankDetails.accountType}
             </p>
-          </div>
+          </div> */}
 
           <div
             style={{

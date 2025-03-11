@@ -43,7 +43,6 @@ const CostDebitNote = () => {
   const [originBillVo, setOriginBillVo] = useState([]);
   const [partyName, setPartyName] = useState([]);
   const [partyId, setPartyId] = useState('');
-  const [docId, setDocId] = useState('');
   const [stateCode, setStateCode] = useState('');
   const [placeOfSupply, setPlaceOfSupply] = useState([]);
   const [jobNoList, setJobNoList] = useState([]);
@@ -74,7 +73,6 @@ const CostDebitNote = () => {
     actBillLcAmt: '',
     address: '',
     originBill: '',
-    approveStatus: '',
     approveBy: '',
     approveOn: '',
     branch: '',
@@ -84,6 +82,8 @@ const CostDebitNote = () => {
     branchCode: '',
     client: '',
     costInvoiceDate: null,
+    vid: '',
+    vdate: null,
     costInvoiceNo: '',
     costType: '',
     creditDays: '',
@@ -95,13 +95,13 @@ const CostDebitNote = () => {
     exRate: '',
     finYear: '',
     gstInputLcAmt: '',
+    approveStatus: '',
     gstType: '',
     ipNo: '',
     latitude: '',
     mode: 'EDIT',
     netBillCurrAmt: '',
     netBillLcAmt: '',
-    originBill: '',
     originBillDate: null,
     otherInfo: '',
     payment: '',
@@ -169,7 +169,7 @@ const CostDebitNote = () => {
     }
   ]);
 
-  const [costDebitNoteTaxPrtculDTO, setTdsCostInvoiceDTO] = useState([
+  const [costDebitNoteTaxParticularDTO, setTdsCostInvoiceDTO] = useState([
     {
       section: '',
       tdsWithHolding: '',
@@ -203,6 +203,8 @@ const CostDebitNote = () => {
       costInvoiceDate: null,
       costInvoiceNo: '',
       creditDays: '',
+      vid: '',
+      vdate: null,
       currency: '',
       customer: '',
       dueDate: null,
@@ -251,6 +253,8 @@ const CostDebitNote = () => {
       dueDate: null,
       exRate: '',
       finYear: '',
+      vid: '',
+      vdate: null,
       gstType: '',
       ipNo: '',
       latitude: '',
@@ -302,7 +306,7 @@ const CostDebitNote = () => {
       }
     ]);
     setCostInvoiceErrors([]);
-    getCurrencyAndExratesForMatchingParties([]);
+    getCurrencyAndExRatesForMatchingParties([]);
     setTdsCostErrors([]);
     setEditId('');
     getCostDebitNoteDocId();
@@ -317,196 +321,17 @@ const CostDebitNote = () => {
     { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 }
   ];
 
-  const handleOpenModalApprove = () => {
-    setModalOpen(true);
-    setApproveStatus('Approved');
-  };
-
-  const handleOpenModalReject = () => {
-    setModalOpen(true);
-    setApproveStatus('Rejected');
-  };
-
-  const handleCloseModal = () => setModalOpen(false);
-
-  const handleConfirmAction = async () => {
-    try {
-      const result = await apiCalls(
-        'put',
-        `/costdebitnote/approveCostDebitNote?action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${editId}&orgId=${orgId}`
-      );
-      console.log('API Response:==>', result);
-      if (result.status === true) {
-        setFormData((prevState) => ({
-          ...prevState,
-          approveStatus: result.paramObjectsMap.costDebitNoteVO.approveStatus
-        }));
-        showToast(
-          result.paramObjectsMap.costDebitNoteVO.approveStatus === 'Approved' ? 'success' : 'error',
-          result.paramObjectsMap.costDebitNoteVO.approveStatus === 'Approved'
-            ? ' Cost Debit Note Approved successfully'
-            : 'Cost Debit Note Rejected successfully'
-        );
-        const listValueVO = result.paramObjectsMap.costDebitNoteVO;
-        setFormData({
-          accuralid: listValueVO.accuralid,
-          actBillCurrAmt: listValueVO.actBillCurrAmt,
-          actBillLcAmt: listValueVO.actBillLcAmt,
-          address: listValueVO.address,
-          approveBy: listValueVO.approveBy,
-          approveOn: listValueVO.approveOn,
-          approveStatus: listValueVO.approveStatus,
-          creditDays: listValueVO.creditDays,
-          currency: listValueVO.currency,
-          dueDate: listValueVO.dueDate ? dayjs(listValueVO.dueDate) : dayjs(),
-          docDate: listValueVO.docDate ? dayjs(listValueVO.docDate) : dayjs(),
-          docId: listValueVO.docId,
-          exRate: listValueVO.exRate,
-          gstInputLcAmt: listValueVO.gstInputLcAmt,
-          gstType: listValueVO.gstType,
-          id: listValueVO.id,
-          mode: listValueVO.mode,
-          netBillCurrAmt: listValueVO.netBillCurrAmt,
-          netBillLcAmt: listValueVO.netBillLcAmt,
-          originBill: listValueVO.orginBill,
-          originBillDate: listValueVO.orginBillDate,
-          otherInfo: listValueVO.otherInfo,
-          payment: listValueVO.payment,
-          product: listValueVO.product,
-          purVoucherDate: listValueVO.purVoucherDate ? dayjs(listValueVO.purVoucherDate) : dayjs(),
-          purVoucherNo: listValueVO.purVoucherNo,
-          remarks: listValueVO.remarks,
-          roundOff: listValueVO.roundOff,
-          shipperRefNo: listValueVO.shipperRefNo,
-          // sumLcAmt: listValueVO.sumLcAmt,
-          supplierBillNo: listValueVO.supplierBillNo,
-          supplierCode: listValueVO.supplierCode,
-          supplierGstIn: listValueVO.supplierGstIn,
-          supplierGstInCode: listValueVO.supplierGstInCode,
-          supplierName: listValueVO.supplierName,
-          supplierPlace: listValueVO.supplierPlace,
-          supplierType: listValueVO.supplierType,
-          totChargesBillCurrAmt: listValueVO.totChargesBillCurrAmt,
-          totChargesLcAmt: listValueVO.totChargesLcAmt,
-          utrRef: listValueVO.utrRef
-        });
-        setChargerCostInvoice(
-          listValueVO.costDebitChargesVO.map((row) => ({
-            id: row.id,
-            billAmt: row.billAmt,
-            chargeCode: row.chargeCode,
-            chargeLedger: row.chargeLedger,
-            chargeName: row.chargeName,
-            govChargeCode: row.govChargeCode,
-            currency: row.currency,
-            exRate: row.exRate,
-            fcAmount: row.fcAmt,
-            gst: row.gst,
-            gstPercent: row.gstpercent,
-            jobNo: row.jobNo,
-            lcAmount: row.lcAmt,
-            ledger: row.ledger,
-            qty: row.qty,
-            rate: row.rate,
-            sac: row.sac,
-            taxable: row.taxable,
-            description: row.description
-          }))
-        );
-        setTdsCostInvoiceDTO(
-          listValueVO.tdsCostDebitNoteVO.map((row) => ({
-            id: row.id,
-            section: row.section,
-            tdsWithHolding: row.tdsWithHolding,
-            tdsWithHoldingPer: row.tdsWithHoldingPer,
-            totTdsWhAmnt: row.totTdsWhAmnt
-          }))
-        );
-        getAllCostDebitNoteByOrgId();
-        // setChargeDetails(
-        //   listValueVO.gstLines.map((row) => ({
-        //     id: row.id,
-        //     chargeCode: row.chargeCode,
-        //     chargeDesc: row.chargeName,
-        //     gChargeCode: row.govChargeCode,
-        //     gstPercent: row.gstpercent,
-        //     sac: row.sac,
-        //     lcAmount: row.lcAmt
-        //   }))
-        // );
-        // handleCloseModal();
-        console.log('TAX INVOICE:==>', result);
-      } else {
-        console.error('API Error:', result.data);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    } finally {
-      handleCloseModal(); // Ensure the modal always closes
-    }
-  };
-
-  const calculateTotTdsWhAmnt = () => {
-    const totallcAmt = chargerCostInvoice.reduce((acc, curr) => acc + curr.lcAmt, 0);
-
-    const updatedTdsCostInvoiceDTO = costDebitNoteTaxPrtculDTO.map((item) => {
-      const tdsWithHoldingPer = parseFloat(item.tdsWithHoldingPer);
-      const totTdsWhAmnt = tdsWithHoldingPer ? (totallcAmt * tdsWithHoldingPer) / 100 : 0;
-      return { ...item, totTdsWhAmnt: totTdsWhAmnt.toFixed(2) };
-    });
-
-    setTdsCostInvoiceDTO(updatedTdsCostInvoiceDTO);
-  };
-
-  useEffect(() => {
-    calculateTotTdsWhAmnt();
-  }, [chargerCostInvoice, costDebitNoteTaxPrtculDTO.map((item) => item.tdsWithHoldingPer)]);
-
-  useEffect(() => {
-    calculateTotals();
-  }, [chargerCostInvoice, costDebitNoteTaxPrtculDTO]);
-
-  const calculateTotals = () => {
-    let totalBillAmt = 0;
-    let totallcAmt = 0;
-    let totalGstAmount = 0;
-
-    chargerCostInvoice.forEach((row) => {
-      totalBillAmt += parseFloat(row.billAmt || 0);
-      totallcAmt += parseFloat(row.lcAmt || 0);
-      totalGstAmount += parseFloat(row.gstAmount || 0);
-    });
-
-    const totalTds = costDebitNoteTaxPrtculDTO.reduce((acc, row) => acc + parseFloat(row.totTdsWhAmnt || 0), 0);
-
-    const roundOffDifference = (Math.round(totallcAmt) - totallcAmt).toFixed(2);
-
-    const roundedlcAmt = Math.round(totallcAmt);
-
-    setFormData((prev) => ({
-      ...prev,
-      totChargesBillCurrAmt: totalBillAmt.toFixed(2),
-      totChargesLcAmt: roundedlcAmt.toFixed(2),
-      roundOff: roundOffDifference,
-      actBillCurrAmt: (totalBillAmt + totalGstAmount).toFixed(2),
-      actBillLcAmt: (roundedlcAmt + totalGstAmount - totalTds).toFixed(2),
-      netBillCurrAmt: (totalBillAmt + totalGstAmount - totalTds).toFixed(2),
-      netBillLcAmt: (roundedlcAmt + totalGstAmount - totalTds).toFixed(2),
-      gstInputLcAmt: totalGstAmount.toFixed(2)
-    }));
-  };
-
   useEffect(() => {
     getAllCostDebitNoteByOrgId();
     getCostDebitNoteDocId();
     getJobNoFromTmsJobCard();
     getChargeDetailsFromChargeType();
-    getCurrencyAndExratesForMatchingParties();
+    getCurrencyAndExRatesForMatchingParties();
   }, []);
 
   useEffect(() => {
     if (formData.supplierName) {
-      getOrginBillNoByParty(formData.supplierName);
+      getOriginBillNoByParty(formData.supplierName);
     }
   }, [formData.supplierName]);
 
@@ -530,10 +355,229 @@ const CostDebitNote = () => {
         'get',
         `/costdebitnote/getCostDebitNoteDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
-      setDocId(response.paramObjectsMap.costDebitNoteDocId);
+      // setDocId(response.paramObjectsMap.costDebitNoteDocId);
+      const newDocId = response.paramObjectsMap.costDebitNoteDocId;
+      setFormData((prevData) => ({
+        ...prevData,
+        docId: newDocId
+      }));
     } catch (error) {
       console.error('Error fetching invoice:', error);
     }
+  };
+
+  // const getCostDebitNoteDocId = async () => {
+  //   try {
+  //     const response = await apiCalls(
+  //       'get',
+  //       `/costdebitnote/getCostDebitNoteDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
+  //     );
+
+  //     const newDocId = response.paramObjectsMap.costDebitNoteDocId;
+
+  //     setFormData((prevData) => {
+  //       // Prevent updating docId if it is already set and unchanged
+  //       if (prevData.docId && prevData.docId >= newDocId) {
+  //         return prevData;
+  //       }
+  //       return {
+  //         ...prevData,
+  //         docId: newDocId,
+  //         // docDate: dayjs()
+  //       };
+  //     });
+  //   } catch (error) {
+  //     console.error('Error fetching invoice:', error);
+  //   }
+  // };
+
+
+  const handleOpenModalApprove = () => {
+    setModalOpen(true);
+    setApproveStatus('Approved');
+  };
+
+  const handleOpenModalReject = () => {
+    setModalOpen(true);
+    setApproveStatus('Rejected');
+  };
+
+  const handleCloseModal = () => setModalOpen(false);
+
+  const handleConfirmAction = async () => {
+    try {
+      // if (approveStatus === 'Approved') {
+      //   GeneratePdf(pdfData); // Trigger PDF generation when approved
+      // }
+
+      const result = await apiCalls(
+        'put',
+        `/costdebitnote/approveCostDebitNote?action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${editId}&orgId=${orgId}`
+      );
+
+      console.log('API Response:==>', result);
+
+      if (result.status) {
+        const listValueVO = result.paramObjectsMap.costDebitNoteVO;
+
+        setFormData((prevState) => ({
+          ...prevState,
+          ...listValueVO,
+          dueDate: listValueVO.dueDate ? dayjs(listValueVO.dueDate) : dayjs(),
+          docDate: listValueVO.docDate ? dayjs(listValueVO.docDate) : dayjs(),
+          vdate: listValueVO.vdate ? dayjs(listValueVO.vdate) : dayjs(),
+          purVoucherDate: listValueVO.purVoucherDate ? dayjs(listValueVO.purVoucherDate) : dayjs(),
+        }));
+
+        setChargerCostInvoice(
+          listValueVO.costDebitChargesVO.map((row) => ({
+            id: row.id,
+            billAmt: row.billAmt,
+            chargeCode: row.chargeCode,
+            chargeLedger: row.chargeLedger,
+            chargeName: row.chargeName,
+            govChargeCode: row.govChargeCode,
+            currency: row.currency,
+            exRate: row.exRate,
+            fcAmount: row.fcAmt,
+            gst: row.gst,
+            gstPercent: row.gstpercent,
+            jobNo: row.jobNo,
+            lcAmount: row.lcAmt,
+            ledger: row.ledger,
+            qty: row.qty,
+            rate: row.rate,
+            sac: row.sac,
+            taxable: row.taxable,
+            description: row.description
+          }))
+        );
+
+        setTdsCostInvoiceDTO(
+          listValueVO.tdsCostDebitNoteVO.map((row) => ({
+            id: row.id,
+            section: row.section,
+            tdsWithHolding: row.tdsWithHolding,
+            tdsWithHoldingPer: row.tdsWithHoldingPer,
+            totTdsWhAmnt: row.totTdsWhAmnt
+          }))
+        );
+
+        showToast(
+          listValueVO.approveStatus === 'Approved' ? 'success' : 'error',
+          listValueVO.approveStatus === 'Approved'
+            ? 'Cost Debit Note Approved successfully'
+            : 'Cost Debit Note Rejected successfully'
+        );
+      } else {
+        console.error('API Error:', result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    } finally {
+      handleCloseModal(); // Ensure the modal always closes
+      getAllCostDebitNoteByOrgId();
+    }
+  };
+
+  const calculateTotTdsWhAmnt = () => {
+    const totallcAmt = chargerCostInvoice.reduce((acc, curr) => acc + curr.lcAmt, 0);
+
+    const updatedTdsCostInvoiceDTO = costDebitNoteTaxParticularDTO.map((item) => {
+      const tdsWithHoldingPer = parseFloat(item.tdsWithHoldingPer);
+      const totTdsWhAmnt = tdsWithHoldingPer ? (totallcAmt * tdsWithHoldingPer) / 100 : 0;
+      return { ...item, totTdsWhAmnt: totTdsWhAmnt.toFixed(2) };
+    });
+
+    setTdsCostInvoiceDTO(updatedTdsCostInvoiceDTO);
+  };
+
+  useEffect(() => {
+    calculateTotTdsWhAmnt();
+  }, [chargerCostInvoice, costDebitNoteTaxParticularDTO.map((item) => item.tdsWithHoldingPer)]);
+
+  useEffect(() => {
+    calculateTotals();
+  }, [chargerCostInvoice, JSON.stringify(costDebitNoteTaxParticularDTO)]);
+
+
+  // const calculateTotals = () => {
+  //   let totalBillAmt = 0;
+  //   let totallcAmt = 0;
+  //   let totalGstAmount = 0;
+
+  //   chargerCostInvoice.forEach((row) => {
+  //     totalBillAmt += parseFloat(row.billAmt || 0);
+  //     totallcAmt += parseFloat(row.lcAmt || 0);
+  //     totalGstAmount += parseFloat(row.gstAmount || 0);
+  //   });
+
+  //   const totalTds = costDebitNoteTaxParticularDTO.reduce((acc, row) => acc + parseFloat(row.totTdsWhAmnt || 0), 0);
+
+  //   const roundOffDifference = (Math.round(totallcAmt) - totallcAmt).toFixed(2);
+
+  //   const roundedlcAmt = Math.round(totallcAmt);
+
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     totChargesBillCurrAmt: totalBillAmt.toFixed(2),
+  //     totChargesLcAmt: roundedlcAmt.toFixed(2),
+  //     roundOff: roundOffDifference,
+  //     actBillCurrAmt: (totalBillAmt + totalGstAmount).toFixed(2),
+  //     actBillLcAmt: (roundedlcAmt + totalGstAmount - totalTds).toFixed(2),
+  //     netBillCurrAmt: (totalBillAmt + totalGstAmount - totalTds).toFixed(2),
+  //     netBillLcAmt: (roundedlcAmt + totalGstAmount - totalTds).toFixed(2),
+  //     // gstInputLcAmt: totalGstAmount.toFixed(2)
+  //   }));
+  // };
+
+  const calculateTotals = () => {
+    let totalBillAmt = 0;
+    let totallcAmt = 0;
+    let totalGstAmount = 0;
+
+    // Calculate totals
+    chargerCostInvoice.forEach((row) => {
+      totalBillAmt += parseFloat(row.billAmt || 0);
+      totallcAmt += parseFloat(row.lcAmt || 0);
+      totalGstAmount += parseFloat(row.gst || 0);
+    });
+
+    // Calculate total TDS
+    const totalTds = costDebitNoteTaxParticularDTO.reduce((acc, row) => acc + parseFloat(row.totTdsWhAmnt || 0), 0);
+
+    // Correct Net Bill Calculation
+    const netBillCurrAmt = totalBillAmt + totalGstAmount - totalTds;
+    const netBillLcAmt = totallcAmt + totalGstAmount - totalTds;
+    const roundOff = (Math.round(netBillLcAmt) - netBillLcAmt).toFixed(2);
+
+    // Prevent unnecessary state updates (Fixes the infinite loop!)
+    setFormData((prev) => {
+      if (
+        prev.totChargesBillCurrAmt !== totalBillAmt.toFixed(2) ||
+        prev.totChargesLcAmt !== totallcAmt.toFixed(2) ||
+        prev.netBillCurrAmt !== netBillCurrAmt.toFixed(2) ||
+        prev.netBillLcAmt !== netBillLcAmt.toFixed(2)
+      ) {
+        return {
+          ...prev,
+          totChargesBillCurrAmt: totalBillAmt.toFixed(2),
+          totChargesLcAmt: totallcAmt.toFixed(2),
+          actBillCurrAmt: (totalBillAmt + totalGstAmount).toFixed(2),
+          actBillLcAmt: (totallcAmt + totalGstAmount - totalTds).toFixed(2),
+          netBillCurrAmt: netBillCurrAmt.toFixed(2),
+          netBillLcAmt: netBillLcAmt.toFixed(2),
+          roundOff: roundOff
+        };
+      }
+      return prev; // No change, so avoid triggering re-render
+    });
+
+    console.log('Total Bill Amount:', totalBillAmt);
+    console.log('Total GST Amount:', totalGstAmount);
+    console.log('Total TDS:', totalTds);
+    console.log('Net Bill Curr Amt:', netBillCurrAmt);
+    console.log('Net Bill LC Amt:', netBillLcAmt);
   };
 
   const GeneratePdf = (row) => {
@@ -570,19 +614,23 @@ const CostDebitNote = () => {
         const costVO = result.paramObjectsMap.costDebitNoteVOs[0];
         setListViewData(costVO);
         setEditId(row.original.id);
-        getCurrencyAndExratesForMatchingParties(costVO.supplierName);
+        getCurrencyAndExRatesForMatchingParties(costVO.supplierName);
 
         setFormData({
+          approveStatus: costVO?.approveStatus,
+          approveBy: costVO?.approveBy,
+          approveOn: costVO?.approveOn,
           accuralid: costVO?.accuralid || '',
           address: costVO?.address || '',
           actBillCurrAmt: costVO?.actBillCurrAmt || '',
           actBillLcAmt: costVO?.actBillLcAmt || '',
-          originBill: costVO?.orginBill || '',
           branch: costVO?.branch || '',
           branchCode: costVO?.branchCode || '',
           client: costVO?.client || '',
           costInvoiceDate: costVO?.costInvoiceDate ? dayjs(costVO.costInvoiceDate) : dayjs(),
           costInvoiceNo: costVO?.costInvoiceNo || '',
+          vid: costVO?.vid,
+          vdate: costVO?.vdate ? dayjs(costVO.vdate) : dayjs(),
           costType: costVO?.costType || '',
           createdBy: costVO?.createdBy || loginUserName,
           creditDays: costVO?.creditDays || '',
@@ -593,14 +641,14 @@ const CostDebitNote = () => {
           docId: costVO?.docId || '',
           exRate: costVO?.exRate || '',
           finYear: costVO?.finYear || finYear,
-          gstInputLcAmt: costVO?.gstInputLcAmt || '',
+          gstInputLcAmt: costVO?.gstInputLcAmt,
           gstType: costVO?.gstType || '',
           mode: costVO?.mode || '',
           netBillCurrAmt: costVO?.netBillCurrAmt || '',
           netBillLcAmt: costVO?.netBillLcAmt || '',
           orgId: costVO?.orgId || orgId,
-          originBill: costVO?.orginBill || '',
-          originBillDate: costVO?.orginBillDate || '',
+          originBill: costVO?.orginBill,
+          originBillDate: costVO?.originBillDate || '',
           otherInfo: costVO?.otherInfo || '',
           payment: costVO?.payment || '',
           product: costVO?.product || '',
@@ -649,7 +697,7 @@ const CostDebitNote = () => {
 
         // Correct Mapping of TDS
         setTdsCostInvoiceDTO(
-          costVO?.chargerCostDebitNoteVO?.map((row) => ({
+          costVO?.tdsCostDebitNoteVO?.map((row) => ({
             id: row?.id || '',
             section: row?.section || '',
             tdsWithHolding: row?.tdsWithHolding || '',
@@ -660,7 +708,7 @@ const CostDebitNote = () => {
 
         // Correct Mapping of GST Lines
         setChargeDetails(
-          costVO?.costDebitChargesVO?.map((row) => ({
+          costVO?.tdsCostDebitNoteVO?.map((row) => ({
             id: row?.id || '',
             chargeCode: row?.chargeCode || '',
             chargeDesc: row?.chargeName || '',
@@ -686,7 +734,7 @@ const CostDebitNote = () => {
 
     console.log(`Field Name: ${name}, Field Value: ${value}, Field Type: ${fieldType}, Index: ${index}`);
 
-    if (fieldType === 'costDebitNoteTaxPrtculDTO') {
+    if (fieldType === 'costDebitNoteTaxParticularDTO') {
       setTdsCostInvoiceDTO((prevData) => {
         const updatedData = [...prevData]; // Clone state
         updatedData[index] = { ...updatedData[index], [name]: value };
@@ -779,7 +827,7 @@ const CostDebitNote = () => {
         supplierName: selectedEmp.partyName,
         supplierCode: selectedEmp.partyCode
       }));
-      // getOrginBillNoByParty(selectedEmp.partyName);
+      // getOriginBillNoByParty(selectedEmp.partyName);
     } else {
       console.log('No employee found with the given code:', value);
     }
@@ -795,7 +843,6 @@ const CostDebitNote = () => {
       console.log('Selected Employee:', selectedBill);
       setFormData((prevData) => ({
         ...prevData,
-
         actBillCurrAmt: selectedBill.actBillCurrAmt,
         actBillLcAmt: selectedBill.actBillLcAmt,
         customer: selectedBill.customer,
@@ -810,6 +857,8 @@ const CostDebitNote = () => {
         totChargesLcAmt: selectedBill.totChargesLcAmt,
         originBill: selectedBill.docId,
         originBillDate: selectedBill.docDate,
+        vid: selectedBill.vid,
+        vdate: selectedBill.vdate ? dayjs(selectedBill.vdate) : dayjs(),
         orgId: orgId,
         branch: selectedBill.branch,
         branchCode: selectedBill.branchCode,
@@ -890,7 +939,7 @@ const CostDebitNote = () => {
     }
   };
 
-  const getOrginBillNoByParty = async (partyName) => {
+  const getOriginBillNoByParty = async (partyName) => {
     try {
       console.log(`Fetching OriginBillNo for partyCode: ${partyName}`);
       const response = await apiCalls(
@@ -912,7 +961,7 @@ const CostDebitNote = () => {
     }
   };
 
-  const getCurrencyAndExratesForMatchingParties = async () => {
+  const getCurrencyAndExRatesForMatchingParties = async () => {
     if (!orgId) {
       console.error('Error: orgId is null or undefined');
       return;
@@ -1385,7 +1434,7 @@ const CostDebitNote = () => {
     setCostInvoiceErrors(newTableErrors);
 
     let tdsValid = true;
-    const tdsTableErrors = costDebitNoteTaxPrtculDTO.map((row) => {
+    const tdsTableErrors = costDebitNoteTaxParticularDTO.map((row) => {
       const rowErrors = {};
       if (!row.section) {
         rowErrors.section = 'Section is required';
@@ -1413,6 +1462,7 @@ const CostDebitNote = () => {
         exRate: row.exRate,
         // exempted: row.exempted,
         govChargeCode: row.govChargeCode,
+        lcAmt: row.lcAmt,
         gst: row.gst,
         gstpercent: row.gstPercent,
         jobNo: row.jobNo,
@@ -1423,7 +1473,7 @@ const CostDebitNote = () => {
         taxable: row.taxable,
         description: row.description
       }));
-      const tdsVO = costDebitNoteTaxPrtculDTO.map((row) => ({
+      const tdsVO = costDebitNoteTaxParticularDTO.map((row) => ({
         ...(editId && { id: row.id }),
         section: row.section,
         tdsWithHolding: row.tdsWithHolding,
@@ -1447,6 +1497,8 @@ const CostDebitNote = () => {
         customer: formData.customer,
         dueDate: formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : dayjs(),
         exRate: formData.exRate,
+        vid: formData.vid,
+        vdate: formData.vdate ? dayjs(formData.vdate, 'YYYY-MM-DD') : dayjs(),
         finYear: finYear,
         gstType: formData.gstType,
         invoiceDate: formData.invoiceDate,
@@ -1512,7 +1564,8 @@ const CostDebitNote = () => {
               <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
             </div>
 
-            {editId && !showForm && (formData.mode === 'SUBMIT' || listViewData.mode === 'SUBMIT') && (
+            {editId && !showForm && (formData.mode === 'SUBMIT') && (
+              //  || listViewData.mode === 'SUBMIT'
               <>
                 {formData.approveStatus === 'Approved' && (
                   <Stack direction="row" spacing={2}>
@@ -1578,7 +1631,7 @@ const CostDebitNote = () => {
                     size="small"
                     fullWidth
                     name="docId"
-                    value={docId}
+                    value={formData.docId}
                     onChange={handleInputChange}
                     disabled
                     inputProps={{ maxLength: 10 }}
@@ -1898,20 +1951,35 @@ const CostDebitNote = () => {
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="V Id"
+                      size="small"
+                      name="vid"
+                      inputProps={{ maxLength: 30 }}
+                      value={formData.vid}
+                      onChange={handleInputChange}
+                      disabled
+                      error={!!fieldErrors.vid}
+                      helperText={fieldErrors.vid}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
                   <FormControl fullWidth>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
-                        label="Due Date"
+                        label="V Date"
                         disabled
-                        value={formData.dueDate}
-                        onChange={(date) => handleDateChange('dueDate', date)}
+                        value={formData.vdate}
+                        onChange={(date) => handleDateChange('vdate', date)}
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
                         format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
-                    {fieldErrors.dueDate && <p className="dateErrMsg">Due Date is required</p>}
+                    {fieldErrors.vdate && <p className="dateErrMsg">V Date is required</p>}
                   </FormControl>
                 </div>
 
@@ -2064,8 +2132,8 @@ const CostDebitNote = () => {
                           ''
                         ) : (
                           <div className="mb-1">
-                            <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                            <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
+                            {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
+                            {/* <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} /> */}
                           </div>
                         )}
                         <div className="row mt-2">
@@ -2124,7 +2192,8 @@ const CostDebitNote = () => {
                                             <input
                                               type="text"
                                               value={row.chargeCode}
-                                              disabled={!!formData.originBill}
+                                              // disabled={!!formData.originBill}
+                                              disabled={formData.mode === "SUBMIT"}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2133,7 +2202,7 @@ const CostDebitNote = () => {
                                             <input
                                               type="text"
                                               value={row.description}
-                                              disabled={!!formData.description}
+                                              disabled={formData.mode === "SUBMIT" || row.taxable === null}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2243,7 +2312,8 @@ const CostDebitNote = () => {
                                             <input
                                               type="text"
                                               value={row.currency}
-                                              disabled={!!formData.originBill}
+                                              // disabled={!!formData.originBill}
+                                              disabled={formData.mode === "SUBMIT"}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2253,7 +2323,8 @@ const CostDebitNote = () => {
                                             <input
                                               type="text"
                                               value={row.exRate}
-                                              disabled={!!formData.originBill}
+                                              disabled={formData.mode === "SUBMIT"}
+                                              // disabled={!!formData.originBill}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2268,7 +2339,8 @@ const CostDebitNote = () => {
                                                   ? new Intl.NumberFormat("en-IN").format(row.fcAmount)
                                                   : ""
                                               }
-                                              disabled={!!formData.originBill}
+                                              // disabled={!!formData.originBill}
+                                              disabled={formData.mode === "SUBMIT"}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2283,7 +2355,8 @@ const CostDebitNote = () => {
                                                   ? new Intl.NumberFormat("en-IN").format(row.lcAmt)
                                                   : ""
                                               }
-                                              disabled={!!formData.originBill}
+                                              // disabled={!!formData.originBill}
+                                              disabled={formData.mode === "SUBMIT"}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2298,7 +2371,8 @@ const CostDebitNote = () => {
                                                   ? new Intl.NumberFormat("en-IN").format(row.billAmt)
                                                   : ""
                                               }
-                                              disabled={!!formData.originBill}
+                                              disabled={formData.mode === "SUBMIT"}
+                                              // disabled={!!formData.originBill}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2308,7 +2382,8 @@ const CostDebitNote = () => {
                                             <input
                                               type="text"
                                               value={row.sac}
-                                              disabled={!!formData.originBill}
+                                              disabled={formData.mode === "SUBMIT"}
+                                              // disabled={!!formData.originBill}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2318,7 +2393,8 @@ const CostDebitNote = () => {
                                             <input
                                               type="text"
                                               value={row.gstPercent}
-                                              disabled={!!formData.originBill}
+                                              disabled={formData.mode === "SUBMIT"}
+                                              // disabled={!!formData.originBill}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2334,7 +2410,8 @@ const CostDebitNote = () => {
                                                   ? new Intl.NumberFormat("en-IN").format(row.gst)
                                                   : ""
                                               }
-                                              disabled={!!formData.originBill}
+                                              disabled={formData.mode === "SUBMIT"}
+                                              // disabled={!!formData.originBill}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2601,7 +2678,11 @@ const CostDebitNote = () => {
                                               style={{ width: '100px' }}
                                               disabled={
                                                 formData.mode === 'SUBMIT' ||
-                                                row.taxable === null // Disable when taxable is null
+                                                originBillVo.some(invoice =>
+                                                  invoice.chargerCostInvoiceVO?.some(charge =>
+                                                    charge.chargeName === row.chargeName && charge.taxable === null
+                                                  )
+                                                )
                                               }
                                               onChange={(e) => {
                                                 const value = e.target.value.replace(/,/g, '');
@@ -2660,7 +2741,7 @@ const CostDebitNote = () => {
                                             <select
                                               value={row.currency || ''}
                                               style={{ width: '150px' }}
-                                              disabled={!row.isNew}
+                                              disabled={formData.mode === 'SUBMIT' || !row.isNew}
                                               onChange={(e) => {
                                                 const value = e.target.value;
                                                 handleRowUpdate(index, 'currency', value);
@@ -3018,16 +3099,16 @@ const CostDebitNote = () => {
                   )}
                   {value === 1 && (
                     <>
-                      {costDebitNoteTaxPrtculDTO.map((row, index) => (
+                      {costDebitNoteTaxParticularDTO.map((row, index) => (
                         <div className="row mt-3">
                           <div className="col-md-3 mb-3">
                             <FormControl fullWidth size="small">
                               <InputLabel id="demo-simple-select-label">TDS</InputLabel>
                               <Select
-                                labelId="tds/wh"
+                                labelId="TDS"
                                 name="tdsWithHolding"
-                                value={costDebitNoteTaxPrtculDTO[index]?.tdsWithHolding || ''}
-                                onChange={(e) => handleInputChange(e, 'costDebitNoteTaxPrtculDTO', index)}
+                                value={costDebitNoteTaxParticularDTO[index]?.tdsWithHolding || ''}
+                                onChange={(e) => handleInputChange(e, 'costDebitNoteTaxParticularDTO', index)}
                                 // disabled={formData.mode === 'SUBMIT' || !!formData.originBill}
                                 disabled
                                 label="TDS / WH"
@@ -3048,8 +3129,8 @@ const CostDebitNote = () => {
                                 size="small"
                                 name="section"
                                 inputProps={{ maxLength: 30 }}
-                                value={costDebitNoteTaxPrtculDTO[index]?.section || ''}
-                                onChange={(e) => handleInputChange(e, 'costDebitNoteTaxPrtculDTO', index)}
+                                value={costDebitNoteTaxParticularDTO[index]?.section || ''}
+                                onChange={(e) => handleInputChange(e, 'costDebitNoteTaxParticularDTO', index)}
                                 disabled
                                 // disabled={formData.mode === 'SUBMIT' || !!formData.originBill}
                                 error={!!tdsCostErrors[index]?.section}
@@ -3066,8 +3147,8 @@ const CostDebitNote = () => {
                                 type="number"
                                 disabled
                                 inputProps={{ maxLength: 30 }}
-                                value={costDebitNoteTaxPrtculDTO[index]?.tdsWithHoldingPer || ''}
-                                onChange={(e) => handleInputChange(e, 'costDebitNoteTaxPrtculDTO', index)}
+                                value={costDebitNoteTaxParticularDTO[index]?.tdsWithHoldingPer || ''}
+                                onChange={(e) => handleInputChange(e, 'costDebitNoteTaxParticularDTO', index)}
                                 error={!!tdsCostErrors[index]?.tdsWithHoldingPer}
                                 helperText={tdsCostErrors[index]?.tdsWithHoldingPer || ''}
                               />
@@ -3082,13 +3163,13 @@ const CostDebitNote = () => {
                               disabled
                               inputProps={{ maxLength: 30 }}
                               value={
-                                costDebitNoteTaxPrtculDTO[index]?.totTdsWhAmnt !== null && costDebitNoteTaxPrtculDTO[index]?.totTdsWhAmnt !== undefined
-                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(costDebitNoteTaxPrtculDTO[index]?.totTdsWhAmnt)
+                                costDebitNoteTaxParticularDTO[index]?.totTdsWhAmnt !== null && costDebitNoteTaxParticularDTO[index]?.totTdsWhAmnt !== undefined
+                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(costDebitNoteTaxParticularDTO[index]?.totTdsWhAmnt)
                                   : ""
                               }
                               onChange={(e) => {
                                 const rawValue = e.target.value.replace(/,/g, ""); // Remove commas before parsing
-                                handleInputChange({ ...e, target: { ...e.target, value: rawValue } }, 'costDebitNoteTaxPrtculDTO', index);
+                                handleInputChange({ ...e, target: { ...e.target, value: rawValue } }, 'costDebitNoteTaxParticularDTO', index);
                               }}
                               error={!!tdsCostErrors[index]?.totTdsWhAmnt}
                               helperText={tdsCostErrors[index]?.totTdsWhAmnt}
@@ -3197,12 +3278,12 @@ const CostDebitNote = () => {
                             <TextField
                               label="GST Input Amt(LC)"
                               name="gstInputLcAmt"
-                              // value={formData.gstInputLcAmt}
-                              value={
-                                formData.gstInputLcAmt !== null && formData.gstInputLcAmt !== undefined
-                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(formData.gstInputLcAmt)
-                                  : "0.00"
-                              }
+                              value={formData.gstInputLcAmt}
+                              // value={
+                              //   formData.gstInputLcAmt !== null && formData.gstInputLcAmt !== undefined
+                              //     ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(formData.gstInputLcAmt)
+                              //     : "0.00"
+                              // }
                               size="small"
                               placeholder="0.00"
                               disabled
@@ -3255,7 +3336,6 @@ const CostDebitNote = () => {
             </>
           )}
           {showForm && (
-            // <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getAllCostInvoiceById} />
             <CommonListViewTable
               data={data && data}
               columns={listViewColumns}
