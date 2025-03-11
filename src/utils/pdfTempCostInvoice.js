@@ -100,7 +100,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
 
       const pdf = new jsPDF();
       pdf.addImage(imgData, 'PNG', 0, 0);
-      pdf.save(`Tax-Invoice_${row.docId}.pdf`);
+      pdf.save(`Cost-Invoice_${row.vid}.pdf`);
       modalClose();
       // handleClose();
     } else {
@@ -110,8 +110,10 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
 
   // Automatically open the dialog when the component is rendered
   useEffect(() => {
-    if (row) {
+    if ((row && row.approveStatus === 'Approved') || (row && row.approveStatus === 'Rejected')) {
       handleOpen();
+    } else {
+      setOpen(false);
     }
     console.log('RowData =>', row);
 
@@ -332,8 +334,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               <tr style={{ backgroundColor: '#673ab7', color: '#fff' }}>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>HSN/SAC</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Description</th>
-                <th style={{ border: '1px solid #000000', padding: '10px' }}>Cur</th>
-                <th style={{ border: '1px solid #000000', padding: '10px' }}>Ex.Rt</th>
+                {/* <th style={{ border: '1px solid #000000', padding: '10px' }}>Cur</th>
+                <th style={{ border: '1px solid #000000', padding: '10px' }}>Ex.Rt</th> */}
                 {/* <th style={{ border: '1px solid #000000', padding: '10px' }}>Apply On</th> */}
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Qty</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Rate</th>
@@ -347,17 +349,17 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 <tr key={index} style={{ borderBottom: '1px solid #000000' }}>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.govChargeCode}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.description}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.currency}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.exRate || ''}</td>
+                  {/* <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.currency}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.exRate || ''}</td> */}
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.qty}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>
-                    {parseFloat(row.rate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {parseFloat(item.rate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
 
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.fcAmt}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.gstpercent}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>
-                    {parseFloat(row.lcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {parseFloat(item.lcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
                 </tr>
               ))}
@@ -367,30 +369,72 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
           {/* <!-- Total Section --> */}
           <div
             style={{
-              // textAlign: 'right',
+              textAlign: 'right',
               // fontWeight: 'bold',
               fontSize: '14px',
               color: '#333'
             }}
             className="d-flex justify-content-end mb-2"
           >
-            <div
-              style={{
-                fontStyle: 'italic'
-              }}
-            >
-              Total Taxable Amount:{' '}
-              <span
-                style={{
-                  fontStyle: 'normal',
-                  fontWeight: 'normal',
-                  fontSize: '14px',
-                  color: '#333',
-                  marginLeft: 10
-                }}
+            <div className="d-flex flex-column">
+              <div
+              // style={{
+              //   fontStyle: 'italic'
+              // }}
               >
-                {parseFloat(row.gstInputLcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
+                Total Charges Amount:{' '}
+                <span
+                  style={{
+                    fontStyle: 'normal',
+                    fontWeight: 'normal',
+                    fontSize: '14px',
+                    color: '#333',
+                    marginLeft: 3
+                  }}
+                >
+                  {parseFloat(row.totChargesBillCurrAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div
+              // style={{
+              //   fontStyle: 'italic'
+              // }}
+              >
+                Total Taxable Amount:{' '}
+                <span
+                  style={{
+                    fontStyle: 'normal',
+                    fontWeight: 'normal',
+                    fontSize: '14px',
+                    color: '#333',
+                    marginLeft: 10
+                  }}
+                >
+                  {parseFloat(row.gstInputLcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div
+              // style={{
+              //   fontStyle: 'italic'
+              // }}
+              >
+                Total TDS Amount:{' '}
+                <span
+                  style={{
+                    fontStyle: 'normal',
+                    fontWeight: 'normal',
+                    fontSize: '14px',
+                    color: '#333',
+                    marginLeft: 3
+                  }}
+                >
+                  -{' '}
+                  {parseFloat(row.tdsCostInvoiceVO[0].totTdsWhAmnt).toLocaleString('en-IN', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                  })}
+                </span>
+              </div>
             </div>
           </div>
           <div
@@ -426,12 +470,12 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               Total:{' '}
               <span
                 style={{
-                  fontWeight: 'normal',
+                  // fontWeight: 'normal',
                   fontSize: '14px',
                   color: '#333'
                 }}
               >
-                {parseFloat(row.sumLcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                {parseFloat(row.netBillCurrAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
           </div>
@@ -480,14 +524,15 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
           <br></br>*/}
 
           <div style={{ fontSize: '12px' }}>
-            <strong>Terms And Conditions :</strong>
+            <strong>Terms & Conditions :</strong>
             <ol style={{ lineHeight: '1.6' }}>
               <li>
-                OUR LIABILITY IS RESTRICTED AND LIMITED TO STANDARD TRADING CONDITIONS OF FEDERATIONS OF FREIGHT FORWARDERS ASSOCIATIONS IN
-                INDIA OF WHICH WE ARE MEMBERS, COPIES OF STANDARD TRADING CONDITIONS ARE AVAILABLE ON REQUEST.
+                The payment should be made by way of Account Payee Cheque / Demand Draft / NEFT / RTGS in the name of "
+                {localStorage.getItem('companyName')}".
               </li>
-              <li>INTEREST WILL BE CHARGED @ 16% PER ANNUM FOR ALL PAYMENT RECEIVED ON OR AFTER DUE DATE AS MENTIONED ABOVE.</li>
-              <li>CHEQUE / DD SHOULD BE IN FAVOUR OF {localStorage.getItem('companyName')}.</li>
+              <li>Any Discrepancy in the invoice shall be informed within 7 days of the invoice submission.</li>
+              <li>Interest at 2% p.m. or part thereof will be charged if the bill is not paid on the due date.</li>
+              <li>Any dispute is subject to Bangalore Jurisdiction</li>
             </ol>
           </div>
 

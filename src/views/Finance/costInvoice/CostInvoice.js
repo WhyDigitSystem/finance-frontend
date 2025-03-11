@@ -760,7 +760,7 @@ const CostInvoice = () => {
               }))
             : []
         );
-        // setShowChargeDetails(false);
+        setShowChargeDetails(true);
         handleCloseModal();
         // setModalOpen(false);
         getAllCostInvoiceByOrgId();

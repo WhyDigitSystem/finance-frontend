@@ -3,9 +3,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/
 import dayjs from 'dayjs';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { toWords } from 'number-to-words';
 import { useEffect, useState } from 'react';
-import QRCodeComponent from './QRCode';
 import apiCalls from 'apicall';
 
 const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
@@ -94,27 +92,84 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   };
 
   // Function to generate and download the PDF
-  const handleDownloadPdf = async () => {
-    const input = document.getElementById('pdf-content');
-    if (input) {
-      const canvas = await html2canvas(input);
-      const imgData = canvas.toDataURL('image/png');
+  // const handleDownloadPdf = async () => {
+  //   const input = document.getElementById('pdf-content');
+  //   if (input) {
+  //     const canvas = await html2canvas(input);
+  //     const imgData = canvas.toDataURL('image/png');
 
-      const pdf = new jsPDF();
-      pdf.addImage(imgData, 'PNG', 0, 0);
-      pdf.save(`Tax-Invoice_${row.docId}.pdf`);
-      modalClose();
-      // handleClose();
-    } else {
-      console.error("Element not found: 'pdf-content'");
+  //     const pdf = new jsPDF();
+  //     pdf.addImage(imgData, 'PNG', 0, 0);
+  //     pdf.save(`Tax-Invoice_${row.docId}.pdf`);
+  //     modalClose();
+  //     // handleClose();
+  //   } else {
+  //     console.error("Element not found: 'pdf-content'");
+  //   }
+  // };
+
+  // const handleDownloadPdf = async () => {
+  //   const input = document.getElementById('pdf-content');
+  //   if (!input) {
+  //     console.error("Element not found: 'pdf-content'");
+  //     return;
+  //   }
+
+  //   const canvas = await html2canvas(input, { scale: 2 });
+  //   const imgData = canvas.toDataURL('image/png');
+
+  //   const pdf = new jsPDF({
+  //     orientation: 'p',
+  //     unit: 'px',
+  //     format: [canvas.width, canvas.height]
+  //   });
+
+  //   pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+  //   pdf.save(`Tax-Invoice_${row.docId}.pdf`);
+  //   modalClose();
+  // };
+
+  const handleDownloadPdf = async () => {
+    const doc = new jsPDF('p', 'mm', 'a4');
+
+    const contentDiv = document.getElementById('main-content');
+    const annexureDiv = document.getElementById('annexure-content');
+
+    if (!contentDiv) {
+      console.error('Main content element not found!');
+      return;
     }
+
+    // Convert main content to an image
+    const contentCanvas = await html2canvas(contentDiv);
+    const contentImgData = contentCanvas.toDataURL('image/png');
+
+    // Add main content to PDF
+    doc.addImage(contentImgData, 'PNG', 10, 10, 190, 0);
+
+    // Only add ANNEXURE - A if taxInvoiceAnnexureVO has values
+    if (row.taxInvoiceAnnexureVO?.length > 0 && annexureDiv) {
+      doc.addPage();
+
+      // Convert ANNEXURE - A to an image
+      const annexureCanvas = await html2canvas(annexureDiv);
+      const annexureImgData = annexureCanvas.toDataURL('image/png');
+
+      // Add ANNEXURE - A to the last page
+      doc.addImage(annexureImgData, 'PNG', 10, 10, 190, 0);
+    }
+
+    // Save the PDF
+    doc.save(`Tax-Invoice_${row.vid}.pdf`);
   };
 
   // Automatically open the dialog when the component is rendered
   useEffect(() => {
-    if (row) {
+    if ((row && row.approveStatus === 'Approved') || (row && row.approveStatus === 'Rejected')) {
       handleOpen();
       getBankDetailsByOrgId();
+    } else {
+      setOpen(false);
     }
     console.log('RowData =>', row);
 
@@ -150,7 +205,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       <DialogTitle>PDF Preview</DialogTitle>
       <DialogContent>
         <div
-          id="pdf-content"
+          id="main-content"
           style={{
             padding: '20px',
             backgroundColor: '#f9f9f9',
@@ -209,22 +264,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 Place Of Supply
                 <strong> : {row.stateNo}</strong>
               </div>
-              {/* <div>
-                <strong>GRN Date:</strong> {row.grnDate}
-              </div> */}
             </div>
-            {/* <div style={{ textAlign: 'left' }}>
-              <div>
-                <strong>Client:</strong> {row.client}
-              </div>
-              <div>
-                <strong>GRN No:</strong> {row.grnNo}
-              </div>
-              <div>
-                <strong>GRN Date:</strong> {row.grnDate}
-              </div>
-            </div>
-            <QRCodeComponent text={'1234567'} /> */}
           </div>
           <div
             style={{
@@ -240,10 +280,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               <div>
                 <strong>{row.partyName}</strong>
               </div>
-              {/* <div>{row.address}</div> */}
               <div style={{ width: 300, marginBottom: 4 }}>
-                {/* <strong>Place of address:</strong>
-                <br /> */}
                 <span style={{ textWrap: 'auto', textOverflow: 'ellipsis' }}>{row.address}</span>
               </div>
               <div>
@@ -259,70 +296,6 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             <div style={{ ...styles.beforeAfter, ...styles.after }} />
           </div>
 
-          {/* <div style={styles1.container}>
-            <div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Job Number / Dt. :</span>
-                <span style={styles1.value}>AHM24SOJ00030</span>
-                <span style={styles1.value}>16/10/2024</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Master No / Dt. :</span>
-                <span style={styles1.value}>MAEU245530351</span>
-                <span style={styles1.value}>22/10/2024</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Currency :</span>
-                <span style={styles1.value}>INR</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Ex. Rate :</span>
-                <span style={styles1.value}>1</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Volume / Container No :</span>
-                <span style={styles1.value}>3 X 20ft, PONU20921210, MSKU5519587, TCKU1124408</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>IGM NO & Date :</span>
-                <span style={styles1.value}></span>
-              </div>
-            </div>
-
-            <div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>House No / Dt. :</span>
-                <span style={styles1.value}>AHM24HS00016</span>
-                <span style={styles1.value}>16/10/2024</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Flight No./Vessel Name :</span>
-                <span style={styles1.value}>CAP SAN VINCENT 442W</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>ETD / ETA :</span>
-                <span style={styles1.value}>22-OCT-24 / 22-NOV-24</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Assessable Value :</span>
-                <span style={styles1.value}></span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Pkgs/Ch.Wt/Gr.Wt (Kgs.):</span>
-                <span style={styles1.value}>71 / 0 / 73769</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Bill of Entry/ S B No :</span>
-                <span style={styles1.value}></span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Goods Desc :</span>
-                <span style={styles1.value}></span>
-              </div>
-            </div>
-          </div> */}
-
-          {/* <!-- Table Section --> */}
           <table
             style={{
               width: '100%',
@@ -336,9 +309,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               <tr style={{ backgroundColor: '#673ab7', color: '#fff' }}>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>HSN/SAC</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Description</th>
-                <th style={{ border: '1px solid #000000', padding: '10px' }}>Cur</th>
-                <th style={{ border: '1px solid #000000', padding: '10px' }}>Ex.Rt</th>
-                {/* <th style={{ border: '1px solid #000000', padding: '10px' }}>Apply On</th> */}
+                {/* <th style={{ border: '1px solid #000000', padding: '10px' }}>Cur</th>
+                <th style={{ border: '1px solid #000000', padding: '10px' }}>Ex.Rt</th> */}
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Qty</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Rate</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>FC Amount</th>
@@ -352,8 +324,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 <tr key={index} style={{ borderBottom: '1px solid #000000' }}>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.govChargeCode}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.description}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.currency}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.exRate || ''}</td>
+                  {/* <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.currency}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.exRate || ''}</td> */}
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.qty}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>
                     {parseFloat(item.rate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -376,30 +348,50 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
           {/* <!-- Total Section --> */}
           <div
             style={{
-              // textAlign: 'right',
+              textAlign: 'right',
               // fontWeight: 'bold',
               fontSize: '14px',
               color: '#333'
             }}
             className="d-flex justify-content-end mb-2"
           >
-            <div
-              style={{
-                fontStyle: 'italic'
-              }}
-            >
-              Total Taxable Amount:{' '}
-              <span
-                style={{
-                  fontStyle: 'normal',
-                  fontWeight: 'normal',
-                  fontSize: '14px',
-                  color: '#333',
-                  marginLeft: 10
-                }}
+            <div className="d-flex flex-column">
+              <div
+              // style={{
+              //   fontStyle: 'italic'
+              // }}
               >
-                {parseFloat(row.totalTaxAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
+                Sub Total:{' '}
+                <span
+                  style={{
+                    fontStyle: 'normal',
+                    fontWeight: 'normal',
+                    fontSize: '14px',
+                    color: '#333',
+                    marginLeft: 3
+                  }}
+                >
+                  {parseFloat(row.totalChargeAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div
+              // style={{
+              //   fontStyle: 'italic'
+              // }}
+              >
+                Total Taxable Amount:{' '}
+                <span
+                  style={{
+                    fontStyle: 'normal',
+                    fontWeight: 'normal',
+                    fontSize: '14px',
+                    color: '#333',
+                    marginLeft: 10
+                  }}
+                >
+                  {parseFloat(row.totalTaxAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
             </div>
           </div>
           <div
@@ -457,46 +449,21 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               <div>
                 <strong>Remarks :</strong> {row.remarks}
               </div>
-              {/* <div> 
-              <strong>Shipment Ref No :</strong> {row.recipientGSTIN}
-            </div>*/}
             </div>
           ) : (
             ''
           )}
 
-          {/*<div
-            style={{
-              marginBottom: '20px',
-              display: 'flex',
-              fontSize: '14px',
-              color: '#555'
-            }}
-          >
-            <div>
-              {' '}
-              <strong>Shipper Inv No :</strong> {row.recipientGSTIN}
-            </div>
-            &nbsp;&nbsp;&nbsp;
-            <div>
-              {' '}
-              <strong>Date :</strong> {row.recipientGSTIN}
-            </div>
-          </div>
-          <div>
-            <strong>Other Information :</strong>
-          </div>
-          <br></br>*/}
-
           <div style={{ fontSize: '12px' }}>
-            <strong>Terms And Conditions :</strong>
+            <strong>Terms & Conditions :</strong>
             <ol style={{ lineHeight: '1.6' }}>
               <li>
-                OUR LIABILITY IS RESTRICTED AND LIMITED TO STANDARD TRADING CONDITIONS OF FEDERATIONS OF FREIGHT FORWARDERS ASSOCIATIONS IN
-                INDIA OF WHICH WE ARE MEMBERS, COPIES OF STANDARD TRADING CONDITIONS ARE AVAILABLE ON REQUEST.
+                The payment should be made by way of Account Payee Cheque / Demand Draft / NEFT / RTGS in the name of "
+                {localStorage.getItem('companyName')}".
               </li>
-              <li>INTEREST WILL BE CHARGED @ 16% PER ANNUM FOR ALL PAYMENT RECEIVED ON OR AFTER DUE DATE AS MENTIONED ABOVE.</li>
-              <li>CHEQUE / DD SHOULD BE IN FAVOUR OF {localStorage.getItem('companyName')}.</li>
+              <li>Any Discrepancy in the invoice shall be informed within 7 days of the invoice submission.</li>
+              <li>Interest at 2% p.m. or part thereof will be charged if the bill is not paid on the due date.</li>
+              <li>Any dispute is subject to Bangalore Jurisdiction</li>
             </ol>
           </div>
 
@@ -505,9 +472,6 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             <p style={styles2.item}>
               <span style={styles2.label}>BANK NAME:</span> {bankDetails.bankName ? bankDetails.bankName : ''}
             </p>
-            {/* <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT CODE:</span> {bankDetails.accountCode ? bankDetails.accountCode : ''}
-              </p> */}
             <p style={styles2.item}>
               <span style={styles2.label}>BRANCH:</span> {bankDetails.branch ? bankDetails.branch : ''}
             </p>
@@ -520,9 +484,6 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             <p style={styles2.item}>
               <span style={styles2.label}>ACCOUNT NO:</span> {bankDetails.accountNo ? bankDetails.accountNo : ''}
             </p>
-            {/* <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT TYPE:</span> {bankDetails.accountType ? bankDetails.accountType : ''}
-            </p> */}
           </div>
 
           <div
@@ -565,6 +526,73 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             </div>
           </div>
         </div>
+        {row.taxInvoiceAnnexureVO?.length > 0 && (
+          <div id="annexure-content" className="mt-5">
+            <div className="d-flex justify-content-center">
+              <div className="d-flex justify-content-between mb-3">
+                <div className="me-3">
+                  <strong>Invoice No : {row.vid}</strong>
+                </div>
+                <div>
+                  <strong>Invoice Date : {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}</strong>
+                </div>
+              </div>
+            </div>
+            <div className="d-flex justify-content-center">
+              <strong className="text-decoration-underline mb-3">ANNEXURE - A</strong>
+            </div>
+            <table
+              style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                marginBottom: '20px',
+                fontSize: '12px',
+                border: '1px solid #000000'
+              }}
+            >
+              <thead>
+                <tr>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 96 }}>Date</th>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 116 }}>Transaction No</th>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 57 }}>KIT Id</th>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 256 }}>Kit Description</th>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 110 }}>SKU Type</th>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 44 }}>Qty</th>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 68 }}>Rate</th>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 86 }}>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {row.taxInvoiceAnnexureVO?.map((item, index) => (
+                  <tr key={index} style={{ borderBottom: '1px solid #000000' }}>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                      {item.transDate ? dayjs(item.transDate).format('DD-MM-YYYY') : 'N/A'}
+                    </td>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.transNo}</td>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.kitId}</td>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.dsec}</td>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.skuType}</td>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.qty}</td>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                      {parseFloat(item.rate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                      {parseFloat(item.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="d-flex justify-content-end">
+              <div>
+                <strong>
+                  Sub Total{' '}
+                  {parseFloat(row.annexureSubTotal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </strong>
+              </div>
+            </div>
+          </div>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={handleDownloadPdf} color="primary" variant="contained" startIcon={<DownloadIcon />}>

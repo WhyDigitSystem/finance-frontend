@@ -683,6 +683,32 @@ const TaxInvoiceDetails = () => {
         taxable: ''
       }
     ]);
+
+    setTaxInvoiceAnnexure([
+      {
+        amount: '',
+        dsec: '',
+        kitId: '',
+        qty: '',
+        rate: '',
+        skuType: '',
+        transDate: null,
+        transNo: ''
+      }
+    ]);
+
+    setTaxInvoiceAnnexureErrors([
+      {
+        amount: '',
+        dsec: '',
+        kitId: '',
+        qty: '',
+        rate: '',
+        skuType: '',
+        transDate: null,
+        transNo: ''
+      }
+    ]);
   };
 
   const handleSaveClear = () => {
@@ -1631,7 +1657,21 @@ const TaxInvoiceDetails = () => {
   };
 
   const handleAnnexureInputChange = (index, field, value) => {
-    setTaxInvoiceAnnexure((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+    setTaxInvoiceAnnexure((prev) =>
+      prev.map((row, i) => {
+        if (i === index) {
+          let updatedRow = { ...row, [field]: value };
+          if (field === 'qty' || field === 'rate') {
+            const qty = parseFloat(updatedRow.qty) || 0;
+            const rate = parseFloat(updatedRow.rate) || 0;
+            updatedRow.amount = qty * rate;
+          }
+
+          return updatedRow;
+        }
+        return row;
+      })
+    );
 
     // Error Handling
     setTaxInvoiceAnnexureErrors((prev) => {
@@ -1660,20 +1700,22 @@ const TaxInvoiceDetails = () => {
             transNo: ''
           };
         }
-      } else if (field === 'kitId') {
-        const duplicate = taxInvoiceAnnexure.some((row, i) => row.kitId === value && i !== index);
-        if (duplicate) {
-          newErrors[index] = {
-            ...newErrors[index],
-            kitId: 'Duplicate Kit ID not allowed'
-          };
-        } else {
-          newErrors[index] = {
-            ...newErrors[index],
-            kitId: ''
-          };
-        }
-      } else {
+      }
+      // else if (field === 'kitId') {
+      //   const duplicate = taxInvoiceAnnexure.some((row, i) => row.kitId === value && i !== index);
+      //   if (duplicate) {
+      //     newErrors[index] = {
+      //       ...newErrors[index],
+      //       kitId: 'Duplicate Kit ID not allowed'
+      //     };
+      //   } else {
+      //     newErrors[index] = {
+      //       ...newErrors[index],
+      //       kitId: ''
+      //     };
+      //   }
+      // }
+      else {
         newErrors[index] = {
           ...newErrors[index],
           [field]: ''
@@ -3298,22 +3340,22 @@ const TaxInvoiceDetails = () => {
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                   S.No
                                 </th>
-                                <th className="px-2 py-2 text-white text-center">Amount</th>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                  Description
+                                  Transaction Date
                                 </th>
-                                <th className="px-2 py-2 text-white text-center">Kit</th>
+                                <th className="px-2 py-2 text-white text-center">Transaction No</th>
+                                <th className="px-2 py-2 text-white text-center">Kit Id</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                  Kit Description
+                                </th>
+                                <th className="px-2 py-2 text-white text-center">SKU Type</th>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
                                   Qty
                                 </th>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
                                   Rate
                                 </th>
-                                <th className="px-2 py-2 text-white text-center">Sku Type</th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                  Transaction Date
-                                </th>
-                                <th className="px-2 py-2 text-white text-center">Transaction No</th>
+                                <th className="px-2 py-2 text-white text-center">Amount</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -3340,18 +3382,83 @@ const TaxInvoiceDetails = () => {
                                     <div className="pt-2">{index + 1}</div>
                                   </td>
 
+                                  <td className="border px-2 py-2" style={{ width: '250px' }}>
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                      <DatePicker
+                                        value={
+                                          row.transDate
+                                            ? dayjs(row.transDate, 'YYYY-MM-DD').isValid()
+                                              ? dayjs(row.transDate, 'YYYY-MM-DD')
+                                              : null
+                                            : null
+                                        }
+                                        disabled={formData.status === 'TAX'}
+                                        slotProps={{
+                                          textField: { size: 'small', clearable: true }
+                                        }}
+                                        sx={{
+                                          width: '200px'
+                                        }}
+                                        format="DD-MM-YYYY"
+                                        onChange={(newValue) => {
+                                          setTaxInvoiceAnnexure((prev) =>
+                                            prev.map((r) =>
+                                              r.id === row.id ? { ...r, transDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
+                                            )
+                                          );
+                                          setTaxInvoiceAnnexureErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              transDate: !newValue ? 'Transaction Date is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        renderInput={(params) => (
+                                          <TextField
+                                            {...params}
+                                            className={taxInvoiceAnnexureErrors[index]?.transDate ? 'error form-control' : 'form-control'}
+                                          />
+                                        )}
+                                        // minDate={dayjs()}
+                                      />
+                                    </LocalizationProvider>
+                                    {taxInvoiceAnnexureErrors[index]?.transDate && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {taxInvoiceAnnexureErrors[index].transDate}
+                                      </div>
+                                    )}
+                                  </td>
+
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
-                                      value={row.amount}
+                                      value={row.transNo}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '150px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'transNo', e.target.value)}
+                                      className={taxInvoiceAnnexureErrors[index]?.transNo ? 'error form-control' : 'form-control'}
+                                    />
+                                    {taxInvoiceAnnexureErrors[index]?.transNo && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {taxInvoiceAnnexureErrors[index].transNo}
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.kitId}
                                       disabled={formData.status === 'TAX'}
                                       style={{ width: '100px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'amount', e.target.value)}
-                                      className={taxInvoiceAnnexureErrors[index]?.amount ? 'error form-control' : 'form-control'}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'kitId', e.target.value)}
+                                      className={taxInvoiceAnnexureErrors[index]?.kitId ? 'error form-control' : 'form-control'}
                                     />
-                                    {taxInvoiceAnnexureErrors[index]?.amount && (
+                                    {taxInvoiceAnnexureErrors[index]?.kitId && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {taxInvoiceAnnexureErrors[index].amount}
+                                        {taxInvoiceAnnexureErrors[index].kitId}
                                       </div>
                                     )}
                                   </td>
@@ -3387,15 +3494,15 @@ const TaxInvoiceDetails = () => {
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
-                                      value={row.kitId}
+                                      value={row.skuType}
                                       disabled={formData.status === 'TAX'}
                                       style={{ width: '100px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'kitId', e.target.value)}
-                                      className={taxInvoiceAnnexureErrors[index]?.kitId ? 'error form-control' : 'form-control'}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'skuType', e.target.value)}
+                                      className={taxInvoiceAnnexureErrors[index]?.skuType ? 'error form-control' : 'form-control'}
                                     />
-                                    {taxInvoiceAnnexureErrors[index]?.kitId && (
+                                    {taxInvoiceAnnexureErrors[index]?.skuType && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {taxInvoiceAnnexureErrors[index].kitId}
+                                        {taxInvoiceAnnexureErrors[index].skuType}
                                       </div>
                                     )}
                                   </td>
@@ -3431,81 +3538,19 @@ const TaxInvoiceDetails = () => {
                                       </div>
                                     )}
                                   </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.skuType}
-                                      disabled={formData.status === 'TAX'}
-                                      style={{ width: '100px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'skuType', e.target.value)}
-                                      className={taxInvoiceAnnexureErrors[index]?.skuType ? 'error form-control' : 'form-control'}
-                                    />
-                                    {taxInvoiceAnnexureErrors[index]?.skuType && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {taxInvoiceAnnexureErrors[index].skuType}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2" style={{ width: '250px' }}>
-                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                      <DatePicker
-                                        value={
-                                          row.transDate
-                                            ? dayjs(row.transDate, 'YYYY-MM-DD').isValid()
-                                              ? dayjs(row.transDate, 'YYYY-MM-DD')
-                                              : null
-                                            : null
-                                        }
-                                        slotProps={{
-                                          textField: { size: 'small', clearable: true }
-                                        }}
-                                        sx={{
-                                          width: '192px'
-                                        }}
-                                        format="DD-MM-YYYY"
-                                        onChange={(newValue) => {
-                                          setTaxInvoiceAnnexure((prev) =>
-                                            prev.map((r) =>
-                                              r.id === row.id ? { ...r, transDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
-                                            )
-                                          );
-                                          setTaxInvoiceAnnexureErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              transDate: !newValue ? 'Transaction Date is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            className={taxInvoiceAnnexureErrors[index]?.transDate ? 'error form-control' : 'form-control'}
-                                          />
-                                        )}
-                                        minDate={dayjs()}
-                                      />
-                                    </LocalizationProvider>
-                                    {taxInvoiceAnnexureErrors[index]?.transDate && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {taxInvoiceAnnexureErrors[index].transDate}
-                                      </div>
-                                    )}
-                                  </td>
 
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
-                                      value={row.transNo}
-                                      disabled={formData.status === 'TAX'}
-                                      style={{ width: '150px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'transNo', e.target.value)}
-                                      className={taxInvoiceAnnexureErrors[index]?.transNo ? 'error form-control' : 'form-control'}
+                                      value={row.amount}
+                                      disabled
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'amount', e.target.value)}
+                                      className={taxInvoiceAnnexureErrors[index]?.amount ? 'error form-control' : 'form-control'}
                                     />
-                                    {taxInvoiceAnnexureErrors[index]?.transNo && (
+                                    {taxInvoiceAnnexureErrors[index]?.amount && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {taxInvoiceAnnexureErrors[index].transNo}
+                                        {taxInvoiceAnnexureErrors[index].amount}
                                       </div>
                                     )}
                                   </td>
