@@ -5,7 +5,6 @@ import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { toWords } from 'number-to-words';
 import { useEffect, useState } from 'react';
-import QRCodeComponent from './QRCode';
 import apiCalls from 'apicall';
 
 const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
@@ -82,17 +81,14 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
     }
   };
 
-  // Function to open the dialog
   const handleOpen = () => {
     setOpen(true);
   };
 
-  // Function to close the dialog
   const handleClose = () => {
     setOpen(false);
   };
 
-  // Function to generate and download the PDF
   const handleDownloadPdf = async () => {
     const input = document.getElementById('pdf-content');
     if (input) {
@@ -198,18 +194,6 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
                 {row.voucherDate ? dayjs(row.voucherDate).format('DD-MM-YYYY') : 'N/A'}
               </div>
             </div>
-            {/* <div style={{ textAlign: 'left' }}>
-              <div>
-                <strong>Client:</strong> {row.client}
-              </div>
-              <div>
-                <strong>GRN No:</strong> {row.grnNo}
-              </div>
-              <div>
-                <strong>GRN Date:</strong> {row.grnDate}
-              </div>
-            </div> */}
-            <QRCodeComponent text={'1234567'} />
           </div>
           <div
             style={{
@@ -242,9 +226,6 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
               <div>
                 <strong>Place Of Supply:</strong> {row.placeOfSupply}
               </div>
-              {/* <div>
-                <strong>GRN Date:</strong> {row.grnDate}
-              </div> */}
             </div>
           </div>
 
@@ -254,71 +235,6 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
 
             <div style={{ ...styles.beforeAfter, ...styles.after }} />
           </div>
-
-          {/* <div style={styles1.container}>
-            <div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Job Number / Dt. :</span>
-                <span style={styles1.value}>AHM24SOJ00030</span>
-                <span style={styles1.value}>16/10/2024</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Master No / Dt. :</span>
-                <span style={styles1.value}>MAEU245530351</span>
-                <span style={styles1.value}>22/10/2024</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Currency :</span>
-                <span style={styles1.value}>INR</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Ex. Rate :</span>
-                <span style={styles1.value}>1</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Volume / Container No :</span>
-                <span style={styles1.value}>3 X 20ft, PONU20921210, MSKU5519587, TCKU1124408</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>IGM NO & Date :</span>
-                <span style={styles1.value}></span>
-              </div>
-            </div>
-
-            <div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>House No / Dt. :</span>
-                <span style={styles1.value}>AHM24HS00016</span>
-                <span style={styles1.value}>16/10/2024</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Flight No./Vessel Name :</span>
-                <span style={styles1.value}>CAP SAN VINCENT 442W</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>ETD / ETA :</span>
-                <span style={styles1.value}>22-OCT-24 / 22-NOV-24</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Assessable Value :</span>
-                <span style={styles1.value}></span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Pkgs/Ch.Wt/Gr.Wt (Kgs.):</span>
-                <span style={styles1.value}>71 / 0 / 73769</span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Bill of Entry/ S B No :</span>
-                <span style={styles1.value}></span>
-              </div>
-              <div style={styles1.row}>
-                <span style={styles1.label}>Goods Desc :</span>
-                <span style={styles1.value}></span>
-              </div>
-            </div>
-          </div> */}
-
-          {/* <!-- Table Section --> */}
           <table
             style={{
               width: '100%',
@@ -422,29 +338,6 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
                     ) : (
                       ''
                     )}
-
-          {/*<div
-            style={{
-              marginBottom: '20px',
-              display: 'flex',
-              fontSize: '14px',
-              color: '#555'
-            }}
-          >
-            <div>
-              {' '}
-              <strong>Shipper Inv No :</strong> {row.recipientGSTIN}
-            </div>
-            &nbsp;&nbsp;&nbsp;
-            <div>
-              {' '}
-              <strong>Date :</strong> {row.recipientGSTIN}
-            </div>
-          </div>*/}
-          {/* <div>
-            <strong>Other Information :</strong>
-          </div>
-          <br></br> */}
 
           <div style={{ fontSize: '12px' }}>
             <strong>Terms And Conditions :</strong>
