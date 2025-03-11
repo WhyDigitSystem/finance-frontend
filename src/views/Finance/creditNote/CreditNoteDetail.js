@@ -1,4 +1,5 @@
 import CancelIcon from '@mui/icons-material/Cancel';
+import AddIcon from '@mui/icons-material/Add';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -60,105 +61,117 @@ const IrnCreditNote = () => {
   const [pdfData, setPdfData] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [formData, setFormData] = useState({
-    vohNo: '',
-    dueDate: null,
-    vohDate: null,
+    voucherNo: '',
+    voucherDate: null,
+    status: 'PROFORMA',
     approveStatus: '',
     approveBy: '',
     approveOn: '',
-    partyType: 'CUSTOMER',
-    partyName: '',
-    originBill: '',
     partyCode: '',
-    supplierRefNo: '',
-    jobNo: '',
-    supplierRefDate: null,
-    originBillDate: null,
-    // currentDate: dayjs(),
-    // currentDateValue: '',
-    // product: '',
-    creditDays: '',
-    // dueDate: null,
-    currency: '',
-    exRate: '',
-    status: 'PROFORMA',
-    // remarks: '',
-    address: '',
-    shipRefNo: '',
-    pincode: '',
-    gstType: '',
-    // billingMonth: '',
-    // otherInfo: '',
-    salesType: '',
-    // exAmount: '',
-    creditRemarks: '',
-    // charges: '',
-    stateCode: '',
+    partyName: '',
+    docDate: dayjs(),
+    docId: '',
+    orgId: '',
+    branch: '',
+    branchCode: '',
+    finYear: '',
+    createdBy: '',
+    modifiedBy: '',
     stateNo: '',
+    stateCode: '',
+    vid: '',
+    vdate: null,
     recipientGSTIN: '',
     placeOfSupply: '',
     addressType: '',
-    totalChargeAmountLc:'',
-    totalTaxAmountLc:'',
-    totalInvAmountLc:'',
-    roundOffAmountLc:'',
-    totalChargeAmountBc:'',
-    totalTaxAmountBc:'',
-    totalInvAmountBc:'',
-    totalTaxableAmountLc:'',
-    amountInWords:'',
-    billingRemarks:'',
-    summaryExRate: '',
-    amtInWords: '',
-    docId: '',
+    address: '',
+    pinCode: '',
+    gstType: '',
+    originBillNo:'',
+    originBillDate: null,
+    currency: '',
+    exRate: '',
+    creditDays: '',
+    shipRefNo: '',
+    jobNo: '',
+    supplierRefNo: '',
+    supplierRefDate: null,
+    dueDate: null,
+
+    billOfEntry: '',
+    partyType: 'CUSTOMER',
+    partyId: '',
+    bizMode: '',
+    bizType: '',
+    
+    totalChargeAmountLc: '',
+    totalChargeAmountBc: '',
+    totalTaxAmountLc: '',
+    roundOffAmountLc: '',
+    totalInvAmountLc: '',
+    totalInvAmountBc: '',
+    totalTaxAmountBc: '',
+    totalTaxableAmountLc: '',
+    amountInWords: '',
+    billingRemarks: '',
+    creditRemarks: '',
   });
 
   const [fieldErrors, setFieldErrors] = useState({
-    vohNo: '',
-    jobNo: '',
-    vohDate: null,
-    partyType: '',
-    partyName: '',
-    originBill: '',
+    voucherNo: '',
+    voucherDate: null,
+    status: 'PROFORMA',
+    approveStatus: '',
+    approveBy: '',
+    approveOn: '',
     partyCode: '',
-    supplierRefNo: '',
-    supplierRefDate: null,
-    // currentDate: dayjs(),
-    // currentDateValue: '',
-    // product: '',
-    creditDays: '',
-    // dueDate: null,
-    currency: '',
-    exRate: '',
-    status: '',
-    // remarks: '',
-    address: '',
-    shipRefNo: '',
-    pincode: '',
-    gstType: '',
-    // billingMonth: '',
-    // otherInfo: '',
-    salesType: '',
-    // exAmount: '',
-    creditRemarks: '',
-    // charges: '',
-    stateCode: '',
+    partyName: '',
+    docDate: dayjs(),
+    docId: '',
+    orgId: '',
+    branch: '',
+    branchCode: '',
+    finYear: '',
+    createdBy: '',
+    modifiedBy: '',
     stateNo: '',
+    stateCode: '',
+    vid: '',
+    vdate: null,
     recipientGSTIN: '',
     placeOfSupply: '',
     addressType: '',
-    totalChargeAmountLc:'',
-    totalTaxAmountLc:'',
-    totalInvAmountLc:'',
-    roundOffAmountLc:'',
-    totalChargeAmountBc:'',
-    totalTaxAmountBc:'',
-    totalInvAmountBc:'',
-    totalTaxableAmountLc:'',
-    amountInWords:'',
-    billingRemarks:'',
-    summaryExRate: '',
-    totTaxAmt: ''
+    address: '',
+    pinCode: '',
+    gstType: '',
+    originBillNo:'',
+    originBillDate: null,
+    currency: '',
+    exRate: '',
+    creditDays: '',
+    shipRefNo: '',
+    jobNo: '',
+    supplierRefNo: '',
+    supplierRefDate: null,
+    dueDate: null,
+
+    billOfEntry: '',
+    partyType: '',
+    partyId: '',
+    bizMode: '',
+    bizType: '',
+    
+    totalChargeAmountLc: '',
+    totalChargeAmountBc: '',
+    totalTaxAmountLc: '',
+    roundOffAmountLc: '',
+    totalInvAmountLc: '',
+    totalInvAmountBc: '',
+    totalTaxAmountBc: '',
+    totalTaxableAmountLc: '',
+    amountInWords: '',
+    billingRemarks: '',
+    creditRemarks: '',
   });
 
   const [irnChargesData, setIrnChargesData] = useState([
@@ -190,7 +203,6 @@ const IrnCreditNote = () => {
 
   const [irnChargesError, setIrnChargesError] = useState([
     {
-      // jobNo: '',
       chargeType: '',
       chargeCode: '',
       // govChargeCode: '',
@@ -198,7 +210,6 @@ const IrnCreditNote = () => {
       ledger: '',
       chargeName: '',
       taxable: '',
-      // applyOn: '',
       qty: '',
       rate: '',
       currency: '',
@@ -238,20 +249,50 @@ const IrnCreditNote = () => {
       dblcamt: ''
     }
   ]);
+    const [creditNoteAnnexure, setCreditNoteAnnexure] = useState([
+      {
+        amount: '',
+        dsec: '',
+        kitId: '',
+        qty: '',
+        rate: '',
+        skuType: '',
+        transDate: null,
+        transNo: ''
+      }
+    ]);
+  
+    const [creditNoteAnnexureErrors, setCreditNoteAnnexureErrors] = useState([
+      {
+        amount: '',
+        dsec: '',
+        kitId: '',
+        qty: '',
+        rate: '',
+        skuType: '',
+        transDate: null,
+        transNo: ''
+      }
+    ]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
   const handleInputChange = (e) => {
+    // if (!e || !e.target) {
+    //   console.error('Undefined event or target:', e);
+    //   return; // Avoid crashing the application
+    // }
     const { name, value, type, checked } = e.target;
-    const inputValue = type === 'checkbox' ? checked : value || ''; // ✅ Default to empty string if undefined
+    console.log('Field Name:', name, 'Field Value:', value);
+    const inputValue = type === 'checkbox' ? checked : value || '';
 
     // Define regex for numeric fields
     const isNumeric = /^[0-9]*$/;
 
     // Validation logic for numeric fields
     const numericFields = [
-      'pincode',
+      'pinCode',
       'creditDays',
       'exRate',
       'summaryExRate',
@@ -296,7 +337,7 @@ const IrnCreditNote = () => {
         partyName: '',
         partyCode: ''
       }));
-      getAllPartyName(inputValue); // Fetch all party names based on selected partyType
+      getAllPartyName(inputValue);
       return;
     }
 
@@ -328,103 +369,122 @@ const IrnCreditNote = () => {
 
   const handleClear = () => {
     setFormData({
-      vohNo: '',
-      jobNo:'',
-      vohDate: null,
-      partyType: 'CUSTOMER',
-      partyName: '',
-      originBill: '',
-      partyCode: '',
-      supplierRefNo: '',
-      supplierRefDate: null,
-      // currentDate: dayjs(),
-      // currentDateValue: '',
-      // product: '',
-      creditDays: '',
-      // dueDate: null,
-      currency: '',
-      exRate: '',
+      voucherNo: '',
+      voucherDate: null,
       status: 'PROFORMA',
-      // remarks: '',
-      address: '',
-      shipRefNo: '',
-      pincode: '',
-      gstType: '',
-      // billingMonth: '',
-      // otherInfo: '',
-      salesType: '',
-      // exAmount: '',
-      creditRemarks: '',
-      // charges: '',
-      stateCode: '',
+      approveStatus: '',
+      approveBy: '',
+      approveOn: '',
+      partyCode: '',
+      partyName: '',
+      docDate: dayjs(),
+      docId: '',
+      orgId: '',
+      branch: '',
+      branchCode: '',
+      finYear: '',
+      createdBy: '',
+      modifiedBy: '',
       stateNo: '',
+      stateCode: '',
+      vid: '',
+      vdate: null,
       recipientGSTIN: '',
       placeOfSupply: '',
       addressType: '',
-      totalChargeAmountLc:'',
-      totalTaxAmountLc:'',
-      totalInvAmountLc:'',
-      roundOffAmountLc:'',
-      totalChargeAmountBc:'',
-      totalTaxAmountBc:'',
-      totalInvAmountBc:'',
-      totalTaxableAmountLc:'',
-      amountInWords:'',
-      billingRemarks:'',
-      summaryExRate: '',
+      address: '',
+      pinCode: '',
+      gstType: '',
+      originBillNo:'',
+      originBillDate: null,
+      currency: '',
+      exRate: '',
+      creditDays: '',
+      shipRefNo: '',
+      jobNo: '',
+      supplierRefNo: '',
+      supplierRefDate: null,
+      dueDate: null,
+  
+      billOfEntry: '',
+      partyType: 'CUSTOMER',
+      partyId: '',
+      bizMode: '',
+      bizType: '',
+      
+      totalChargeAmountLc: '',
+      totalChargeAmountBc: '',
+      totalTaxAmountLc: '',
+      roundOffAmountLc: '',
+      totalInvAmountLc: '',
+      totalInvAmountBc: '',
+      totalTaxAmountBc: '',
+      totalTaxableAmountLc: '',
+      amountInWords: '',
+      billingRemarks: '',
+      creditRemarks: '',
     });
 
     setFieldErrors({
-      vohNo: '',
-      jobNo:'',
-      vohDate: null,
-      partyType: '',
-      partyName: '',
-      originBill: '',
+      voucherNo: '',
+      voucherDate: null,
+      status: 'PROFORMA',
+      approveStatus: '',
+      approveBy: '',
+      approveOn: '',
       partyCode: '',
-      supplierRefNo: '',
-      supplierRefDate: null,
-      // currentDate: dayjs(),
-      // currentDateValue: '',
-      // product: '',
-      creditDays: '',
-      // dueDate: null,
-      currency: '',
-      exRate: '',
-      status: '',
-      // remarks: '',
-      address: '',
-      shipRefNo: '',
-      pincode: '',
-      gstType: '',
-      // billingMonth: '',
-      // otherInfo: '',
-      salesType: '',
-      // exAmount: '',
-      creditRemarks: '',
-      // charges: '',
-      stateCode: '',
+      partyName: '',
+      docDate: dayjs(),
+      docId: '',
+      orgId: '',
+      branch: '',
+      branchCode: '',
+      finYear: '',
+      createdBy: '',
+      modifiedBy: '',
       stateNo: '',
+      stateCode: '',
+      vid: '',
+      vdate: null,
       recipientGSTIN: '',
       placeOfSupply: '',
       addressType: '',
-      totalChargeAmountLc:'',
-      totalTaxAmountLc:'',
-      totalInvAmountLc:'',
-      roundOffAmountLc:'',
-      totalChargeAmountBc:'',
-      totalTaxAmountBc:'',
-      totalInvAmountBc:'',
-      totalTaxableAmountLc:'',
-      amountInWords:'',
-      billingRemarks:'',
-      summaryExRate: '',
+      address: '',
+      pinCode: '',
+      gstType: '',
+      originBillNo:'',
+      originBillDate: null,
+      currency: '',
+      exRate: '',
+      creditDays: '',
+      shipRefNo: '',
+      jobNo: '',
+      supplierRefNo: '',
+      supplierRefDate: null,
+      dueDate: null,
+  
+      billOfEntry: '',
+      partyType: '',
+      partyId: '',
+      bizMode: '',
+      bizType: '',
+      
+      totalChargeAmountLc: '',
+      totalChargeAmountBc: '',
+      totalTaxAmountLc: '',
+      roundOffAmountLc: '',
+      totalInvAmountLc: '',
+      totalInvAmountBc: '',
+      totalTaxAmountBc: '',
+      totalTaxableAmountLc: '',
+      amountInWords: '',
+      billingRemarks: '',
+      creditRemarks: '',
     });
 
     setIrnChargesData([
       {
         // id: 1,
-        // jobNo: '',
         chargeType: '',
         chargeCode: '',
         // govChargeCode: '',
@@ -432,7 +492,6 @@ const IrnCreditNote = () => {
         ledger: '',
         chargeName: '',
         taxable: '',
-        // applyOn: '',
         qty: '',
         rate: '',
         currency: '',
@@ -447,6 +506,19 @@ const IrnCreditNote = () => {
         gstpercent: ''
       }
     ]);
+    setCreditNoteAnnexure([
+      {
+        amount: '',
+        dsec: '',
+        kitId: '',
+        qty: '',
+        rate: '',
+        skuType: '',
+        transDate: null,
+        transNo: ''
+      }
+    ]);
+    setCreditNoteAnnexureErrors('');
     setIrnChargesError('');
     setEditId('');
     // setDocId('');
@@ -467,6 +539,7 @@ const IrnCreditNote = () => {
 
   const handleView = () => {
     setListView(!listView);
+    handleClear();
   };
 
   const handleTabSelect = (index) => {
@@ -489,20 +562,24 @@ const IrnCreditNote = () => {
     try {
       const result = await apiCalls(
         'put',
-        `/irnCreditNote/approveIrnCreditNote?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${encodeURIComponent(docId)}&id=${formData.id}`
+        `/irnCreditNote/approveIrnCreditNote?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${encodeURIComponent(formData.docId)}&id=${formData.id}`
       );
-      console.log('API Response:==>', result);
+      console.log('API Response Confirm:==>', result);
       if (result.status === true) {
         setFormData({ ...formData, approveStatus: result.paramObjectsMap.irnCreditNoteVO.approveStatus });
         showToast(
           result.paramObjectsMap.irnCreditNoteVO.approveStatus === 'Approved' ? 'success' : 'error',
           result.paramObjectsMap.irnCreditNoteVO.approveStatus === 'Approved'
-            ? ' Credit Note Approved successfully'
+            ? 'Credit Note Approved successfully'
             : 'Credit Note Rejected successfully'
         );
         const listValueVO = result.paramObjectsMap.irnCreditNoteVO;
         setFormData({
           docId: listValueVO.docId,
+          voucherNo: listValueVO.voucherNo,
+          creditRemarks: listValueVO.creditRemarks,
+          jobNo: listValueVO.jobNo,
+          voucherDate: listValueVO.voucherDate,
           approveStatus: listValueVO.approveStatus,
           approveBy: listValueVO.approveBy,
           approveOn: listValueVO.approveOn,
@@ -511,7 +588,9 @@ const IrnCreditNote = () => {
           partyCode: listValueVO.partyCode,
           partyName: listValueVO.partyName,
           partyType: listValueVO.partyType,
-          originBill: listValueVO.originBillNo,
+          originBillNo: listValueVO.originBillNo,
+          vid: listValueVO.vid,
+          vdate: listValueVO.vdate,
           bizType: listValueVO.bizType,
           bizMode: listValueVO.bizMode,
           stateNo: listValueVO.stateNo,
@@ -522,21 +601,21 @@ const IrnCreditNote = () => {
           pinCode: listValueVO.pinCode,
           placeOfSupply: listValueVO.placeOfSupply,
           recipientGSTIN: listValueVO.recipientGSTIN,
-          billCurr: listValueVO.billCurr,
+          currency: listValueVO.billCurr,
           status: listValueVO.status,
           // salesType: listValueVO.salesType,
           updatedBy: listValueVO.updatedBy,
           supplierBillNo: listValueVO.supplierBillNo,
           supplierBillDate: listValueVO.supplierBillDate,
-          billCurrRate: listValueVO.billCurrRate,
+          exRate: listValueVO.billCurrRate,
           // exAmount: listValueVO.exAmount,
           creditDays: listValueVO.creditDays,
           contactPerson: listValueVO.contactPerson,
           shipperInvoiceNo: listValueVO.shipperInvoiceNo,
           billOfEntry: listValueVO.billOfEntry,
           billMonth: listValueVO.billMonth,
-          invoiceNo: listValueVO.invoiceNo,
-          invoiceDate: listValueVO.invoiceDate,
+          supplierRefNo: listValueVO.supplierRefNo,
+          supplierRefDate: listValueVO.supplierRefDate,
           id: listValueVO.id,
           totalChargeAmountLc: listValueVO.totalChargeAmountLc,
           totalChargeAmountBc: listValueVO.totalChargeAmountBc,
@@ -585,7 +664,6 @@ const IrnCreditNote = () => {
     try {
       const response = await apiCalls('get', `irnCreditNote/getOrginBillNoByParty?branchCode=${branchCode}&orgId=${orgId}&party=${party}`);
       if (response.status === true) {
-        // Update the origin bill dropdown options
         setOriginBillList(response.paramObjectsMap.taxInvoiceVO || []);
       } else {
         console.error('Failed to fetch origin bills:', response);
@@ -597,37 +675,51 @@ const IrnCreditNote = () => {
 
   const handleOriginBillSelection = (selectedBill) => {
     if (selectedBill) {
-      // Update the formData with selected bill data (excluding table data for Party Name)
       setFormData((prev) => ({
         ...prev,
-        creditDays: selectedBill.creditDays,
-        currency: selectedBill.billCurr,
-        exRate: parseFloat(selectedBill.billCurrRate),
-        originBill: selectedBill.originBillNo,
-        originBillDate: selectedBill.docDate,
-        address: selectedBill.address,
-        pincode: selectedBill.pinCode,
-        gstType: selectedBill.gstType,
-        stateCode: selectedBill.stateCode,
-        stateNo: selectedBill.stateNo,
-        recipientGSTIN: selectedBill.recipientGSTIN,
-        placeOfSupply: selectedBill.placeOfSupply,
-        addressType: selectedBill.addressType,
-        shipRefNo: selectedBill.shipperInvoiceNo,
-        jobNo: selectedBill.jobOrderNo,
-        supplierRefNo: selectedBill.invoiceNo,
-        supplierRefDate: selectedBill.invoiceDate,
-        dueDate: selectedBill.dueDate,
-        totalChargeAmountLc: selectedBill.totalChargeAmountLc,
-        totalChargeAmountBc: selectedBill.totalChargeAmountBc,
-        totalTaxAmountLc: selectedBill.totalTaxAmountLc,
-        roundOffAmountLc: selectedBill.roundOffAmountLc,
-        totalInvAmountLc: selectedBill.totalInvAmountLc,
-        totalInvAmountBc: selectedBill.totalInvAmountBc,
-        totalTaxAmountBc: selectedBill.totalTaxAmountBc,
-        totalTaxableAmountLc: selectedBill.totalTaxableAmountLc,
-        amountInWords: selectedBill.amountInWords,
-        billingRemarks: selectedBill.billingRemarks
+        orgId: selectedBill?.orgId || '',
+        branch: selectedBill?.branch || '',
+        branchCode: selectedBill?.branchCode || '',
+        finYear: selectedBill?.finYear || '',
+        createdBy: selectedBill?.createdBy || '',
+        modifiedBy: selectedBill?.modifiedBy || '',
+        stateNo: selectedBill?.stateNo || '',
+        stateCode: selectedBill?.stateCode || '',
+        vid: selectedBill?.vid || '',
+        vdate: selectedBill?.vdate || '',
+        recipientGSTIN: selectedBill?.recipientGSTIN || '',
+        placeOfSupply: selectedBill?.placeOfSupply || '',
+        addressType: selectedBill?.addressType || '',
+        address: selectedBill?.address || '',
+        pinCode: selectedBill?.pinCode || '',
+        gstType: selectedBill?.gstType || '',
+        originBillNo: selectedBill?.originBillNo || '',
+        originBillDate: selectedBill?.docDate || '',
+        currency: selectedBill?.billCurr || '',
+        exRate: parseFloat(selectedBill?.billCurrRate) || '',
+        creditDays: selectedBill?.creditDays || '',
+        shipRefNo: selectedBill?.shipperInvoiceNo || '',
+        jobNo: selectedBill?.jobOrderNo || '',
+        supplierRefNo: selectedBill?.supplierBillNo || '',
+        supplierRefDate: selectedBill?.supplierBillDate || '',
+        dueDate: selectedBill?.dueDate || '',
+
+        billOfEntry: selectedBill?.billOfEntry || '',
+        partyType: selectedBill?.partyType || '',
+        partyId: selectedBill?.partyId || '',
+        bizMode: selectedBill?.bizMode || '',
+        bizType: selectedBill?.bizType || '',
+        
+        totalChargeAmountLc: selectedBill?.totalChargeAmountLc || '',
+        totalChargeAmountBc: selectedBill?.totalChargeAmountBc || '',
+        totalTaxAmountLc: selectedBill?.totalTaxAmountLc || '',
+        roundOffAmountLc: selectedBill?.roundOffAmountLc || '',
+        totalInvAmountLc: selectedBill?.totalInvAmountLc || '',
+        totalInvAmountBc: selectedBill?.totalInvAmountBc || '',
+        totalTaxAmountBc: selectedBill?.totalTaxAmountBc || '',
+        totalTaxableAmountLc: selectedBill?.totalTaxableAmountLc || '',
+        amountInWords: selectedBill?.amountInWords || '',
+        billingRemarks: selectedBill?.billingRemarks || ''
       }));
       if (selectedBill.taxInvoiceDetailsVO) {
         setIrnChargesData(
@@ -640,7 +732,7 @@ const IrnCreditNote = () => {
             ledger: item.ledger,
             chargeName: item.chargeName,
             taxable: item.taxable,
-            qty: parseFloat(item.qty).toFixed(2),
+            qty: parseInt(item.qty),
             rate: parseFloat(item.rate).toFixed(2),
             currency: item.currency,
             exRate: parseFloat(item.exRate).toFixed(2),
@@ -652,7 +744,6 @@ const IrnCreditNote = () => {
             sac: item.sac,
             gstAmount: parseFloat(item.gstAmount).toFixed(2),
             gstpercent: item.gstpercent
-            // Map other fields as needed
           }))
         );
       }
@@ -703,11 +794,10 @@ const IrnCreditNote = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        if (response.paramObjectsMap.irnCreditVO && response.paramObjectsMap.irnCreditVO) {
-          setDocId(response.paramObjectsMap.irnCreditVO); // Extracting the actual docId
-        } else {
-          console.error('Invalid response format: Missing docId');
-        }
+        setFormData((prev) => ({
+          ...prev,
+          docId: response.paramObjectsMap.irnCreditVO, 
+        }));
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -744,6 +834,81 @@ const IrnCreditNote = () => {
       console.error('Error fetching data:', error);
     }
   };
+  const handleAddAnnexureRow = () => {
+    if (isLastRowAnnexureEmpty(creditNoteAnnexure)) {
+      displayRowAnnexureError(creditNoteAnnexure);
+      return;
+    }
+    const newRow = {
+      id: Date.now(),
+      amount: '',
+      dsec: '',
+      id: '',
+      kitId: '',
+      qty: '',
+      rate: '',
+      skuType: '',
+      transDate: null,
+      transNo: ''
+    };
+    setCreditNoteAnnexure([...creditNoteAnnexure, newRow]);
+    setCreditNoteAnnexureErrors([
+      ...creditNoteAnnexureErrors,
+      {
+        amount: '',
+        dsec: '',
+        kitId: '',
+        qty: '',
+        rate: '',
+        skuType: '',
+        transDate: null,
+        transNo: ''
+      }
+    ]);
+  };
+
+  const isLastRowAnnexureEmpty = (table) => {
+    const lastRow = table[table.length - 1];
+    if (!lastRow) return false;
+
+    if (table === creditNoteAnnexure) {
+      return (
+        !lastRow.amount ||
+        !lastRow.dsec ||
+        !lastRow.kitId ||
+        !lastRow.qty ||
+        !lastRow.rate ||
+        !lastRow.skuType ||
+        !lastRow.transDate ||
+        !lastRow.transNo
+      );
+    }
+    return false;
+  };
+
+  const displayRowAnnexureError = (table) => {
+    if (table === creditNoteAnnexureErrors) {
+      setCreditNoteAnnexureErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          amount: !table[table.length - 1].amount ? 'Amount is required' : '',
+          dsec: !table[table.length - 1].dsec ? 'Desc is required' : '',
+          kitId: !table[table.length - 1].kitId ? 'KitId is required' : '',
+          qty: !table[table.length - 1].qty ? 'Qty is required' : '',
+          rate: !table[table.length - 1].rate ? 'Rate is required' : '',
+          skuType: !table[table.length - 1].skuType ? 'Sku Type is required' : '',
+          transDate: !table[table.length - 1].transDate ? 'Trans Date is required' : '',
+          transNo: !table[table.length - 1].transNo ? 'Trans No is required' : ''
+        };
+        return newErrors;
+      });
+    }
+  };
+
+  const handleDeleteRowAnnexure = (rowId) => {
+    setCreditNoteAnnexure((prev) => prev.filter((row) => row.id !== rowId));
+  };
 
   const getIrnCreditById = async (row) => {
     console.log('first', row);
@@ -755,40 +920,54 @@ const IrnCreditNote = () => {
       if (response.status === true) {
         const irnCreditNoteVO = response.paramObjectsMap.irnCreditVO[0];
         setListViewById(response.paramObjectsMap.irnCreditVO[0]);
-        setDocId(irnCreditNoteVO.docId);
+        // setDocId(irnCreditNoteVO.docId);
+        // handleClear();
         setFormData({
-          jobNo: irnCreditNoteVO.jobNo,
+          bizMode: irnCreditNoteVO.bizMode,
+          docId: irnCreditNoteVO.docId,
+          bizType: irnCreditNoteVO.bizType,
+          orgId: irnCreditNoteVO.orgId,
+          branch: irnCreditNoteVO.branch,
+          branchCode: irnCreditNoteVO.branchCode,
+          finYear: irnCreditNoteVO.finYear,
+          createdBy: irnCreditNoteVO.createdBy,
+          modifiedBy: irnCreditNoteVO.modifiedBy,
+          vid: irnCreditNoteVO.vid,
+          vdate: irnCreditNoteVO.vdate,
           partyName: irnCreditNoteVO.partyName,
           partyCode: irnCreditNoteVO.partyCode,
           partyType: irnCreditNoteVO.partyType,
-          stateCode: irnCreditNoteVO.stateCode,
-          approveStatus: irnCreditNoteVO.approveStatus,
-          approveBy: irnCreditNoteVO.approveBy,
-          approveOn: irnCreditNoteVO.approveOn,
           stateNo: irnCreditNoteVO.stateNo,
+          stateCode: irnCreditNoteVO.stateCode,
           recipientGSTIN: irnCreditNoteVO.recipientGSTIN,
           placeOfSupply: irnCreditNoteVO.placeOfSupply,
           addressType: irnCreditNoteVO.addressType,
           address: irnCreditNoteVO.address,
-          pincode: irnCreditNoteVO.pinCode,
+          pinCode: irnCreditNoteVO.pinCode,
           status: irnCreditNoteVO.status,
           gstType: irnCreditNoteVO.gstType,
-          originBill: irnCreditNoteVO.originBillNo,
-          vohNo: irnCreditNoteVO.voucherNo,
-          vohDate: irnCreditNoteVO.voucherDate,
+          originBillNo: irnCreditNoteVO.originBillNo,
+          originBillDate: irnCreditNoteVO.originBillDate,
+          voucherNo: irnCreditNoteVO.voucherNo,
+          voucherDate: irnCreditNoteVO.voucherDate,
           supplierRefNo: irnCreditNoteVO.supplierRefNo,
           supplierRefDate: irnCreditNoteVO.supplierRefDate,
+          approveStatus: irnCreditNoteVO.approveStatus,
+          approveBy: irnCreditNoteVO.approveBy,
+          approveOn: irnCreditNoteVO.approveOn,
+          creditRemarks: irnCreditNoteVO.creditRemarks,
+          jobNo: irnCreditNoteVO.jobNo,
+          id: irnCreditNoteVO.id,
+          creditDays: irnCreditNoteVO.creditDays,
+          // exAmount: irnCreditNoteVO.exAmount,
+          dueDate: irnCreditNoteVO.dueDate,
           currency: irnCreditNoteVO.billCurr,
           exRate: irnCreditNoteVO.billCurrRate,
-          // exAmount: irnCreditNoteVO.exAmount,
-          creditDays: irnCreditNoteVO.creditDays,
-          shipRefNo: irnCreditNoteVO.shipperRefNo,
-          id: irnCreditNoteVO.id,
-          // dueDate: irnCreditNoteVO.dueDate,
           // billingMonth: irnCreditNoteVO.billMonth,
           // salesType: irnCreditNoteVO.salesType,
-          creditRemarks: irnCreditNoteVO.creditRemarks,
-          supplierRefDate: irnCreditNoteVO.invoiceDate,
+          // summaryExRate: irnCreditNoteVO.summaryExRate,
+          // totTaxAmt: irnCreditNoteVO.totTaxAmt
+          shipRefNo: irnCreditNoteVO.shipperRefNo,
           totalChargeAmountLc: irnCreditNoteVO.totalChargeAmountLc,
           totalChargeAmountBc: irnCreditNoteVO.totalChargeAmountBc,
           totalTaxAmountLc: irnCreditNoteVO.totalTaxAmountLc,
@@ -798,14 +977,11 @@ const IrnCreditNote = () => {
           totalTaxAmountBc: irnCreditNoteVO.totalTaxAmountBc,
           totalTaxableAmountLc: irnCreditNoteVO.totalTaxableAmountLc,
           amountInWords: irnCreditNoteVO.amountInWords,
-          billingRemarks: irnCreditNoteVO.billingRemarks
-          // summaryExRate: irnCreditNoteVO.summaryExRate,
-          // totTaxAmt: irnCreditNoteVO.totTaxAmt
+          billingRemarks: irnCreditNoteVO.billingRemarks,
         });
         setIrnChargesData(
           irnCreditNoteVO.irnCreditNoteDetailsVO.map((invoiceData) => ({
             id: invoiceData.id,
-            // jobNo: invoiceData.jobNo,
             chargeType: invoiceData.chargeType,
             chargeCode: invoiceData.chargeCode,
             description: invoiceData.description,
@@ -813,7 +989,6 @@ const IrnCreditNote = () => {
             ledger: invoiceData.ledger,
             chargeName: invoiceData.chargeName,
             taxable: invoiceData.taxable,
-            // applyOn: invoiceData.applyOn,
             qty: invoiceData.qty,
             rate: invoiceData.rate,
             currency: invoiceData.currency,
@@ -837,6 +1012,19 @@ const IrnCreditNote = () => {
             crBillAmt: invoiceData.gstCrBillAmount,
             dblcamt: invoiceData.gstDbLcAmount,
             crLCAmt: invoiceData.gstCrLcAmount
+          }))
+        );
+        setCreditNoteAnnexure(
+          irnCreditNoteVO.taxInvoiceAnnexureVO.map((row) => ({
+            id: row.id,
+            amount: row.amount,
+            dsec: row.dsec,
+            kitId: row.kitId,
+            qty: row.qty,
+            rate: row.rate,
+            skuType: row.skuType,
+            transDate: row.transDate ? dayjs(row.transDate) : null,
+            transNo: row.transNo
           }))
         );
       } else {
@@ -878,12 +1066,6 @@ const IrnCreditNote = () => {
     if (!formData.partyType) {
       errors.partyType = 'Party Type is required';
     }
-    // if (!formData.currency) {
-    //   errors.currency = 'Currency is required';
-    // }
-    // if (!formData.exRate) {
-    //   errors.exRate = 'Ex Rate is required';
-    // }
     if (!formData.status) {
       errors.status = 'Status is required';
     }
@@ -902,24 +1084,17 @@ const IrnCreditNote = () => {
     if (!formData.addressType) {
       errors.addressType = 'Address Type is required';
     }
-    if (!formData.originBill) {
-      errors.originBill = 'Origin Bill is required';
+    if (!formData.originBillNo) {
+      errors.originBillNo = 'Origin Bill is required';
     }
     if (!formData.address) {
       errors.address = 'Address is required';
     }
-    // if (!formData.shipRefNo) {
-    //   errors.shipRefNo = 'shipper RefNo is required';
-    // }
     if (!formData.gstType) {
       errors.gstType = 'Tax Type is required';
     }
-    console.log('Error Save', errors);
-
     setFieldErrors(errors);
     setIrnChargesError(tableErrors);
-
-    // Prevent saving if form or table errors exist
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       const irnCreditChargesVo = irnChargesData.map((row) => ({
@@ -939,61 +1114,74 @@ const IrnCreditNote = () => {
         sac: row.sac,
         gstpercent: parseInt(row.gstpercent)
       }));
+          const annexureVO = creditNoteAnnexure.map((row) => ({
+            ...(editId && { id: row.id }),
+            amount: row.amount,
+            dsec: row.dsec,
+            kitId: row.kitId,
+            qty: row.qty,
+            rate: row.rate,
+            skuType: row.skuType,
+            transDate: row.transDate ? dayjs(row.transDate).format('YYYY-MM-DD') : null,
+            transNo: row.transNo
+          }));
       const saveFormData = {
         ...(editId && { id: editId }),
-        address: formData.address,
-        jobNo: formData.jobNo,
-        dueDate: formatDate(formData.dueDate),
-        addressType: formData.addressType,
-        billCurr: formData.currency,
-        billCurrRate: parseInt(formData.exRate),
-        branch: branch,
-        status: formData.status,
-        branchCode: branchCode,
-        createdBy: loginUserName,
-        creditDays: parseInt(formData.creditDays),
-        // exAmount: parseInt(formData.exAmount),
-        creditRemarks: formData.creditRemarks || null,
-        finYear: finYear,
-        gstType: formData.gstType,
-        originBillDate: formData.originBillDate,
-        irnCreditNoteDetailsDTO: irnCreditChargesVo,
-        orgId: parseInt(orgId),
-        originBillNo: formData.originBill,
-        partyCode: formData.partyCode,
-        partyName: formData.partyName,
-        partyType: formData.partyType,
-        pinCode: formData.pincode,
-        placeOfSupply: formData.placeOfSupply,
-        recipientGSTIN: formData.recipientGSTIN,
-        // salesType: formData.salesType,
-        shipperRefNo: formData.shipRefNo || null,
-        stateCode: formData.stateCode,
-        stateNo: formData.stateNo,
-        status: formData.status,
-        supplierRefDate: formatDate(formData.supplierRefDate),
-        supplierRefNo: formData.supplierRefNo,
-        voucherDate: formatDate(formData.vohDate),
-        voucherNo: formData.vohNo,
-        bizMode: 'TAX',
-        bizType: 'B2B'
+            address: formData.address,
+            addressType: formData.addressType,
+            billCurr: formData.currency,
+            billCurrRate: parseInt(formData.exRate),
+            bizMode: formData.bizMode,
+            bizType: formData.bizType,
+            branch: formData.branch,
+            branchCode: formData.branchCode,
+            finYear: formData.finYear,
+            createdBy: formData.createdBy,
+            creditDays: formData.creditDays,
+            creditRemarks: formData.creditRemarks,
+            dueDate: formData.dueDate,
+            gstType: formData.gstType,
+            jobNo: formData.jobNo,
+            orgId: formData.orgId,
+            originBillNo: formData.originBillNo,
+            originBillDate: formData.originBillDate,
+            partyCode: formData.partyCode,
+            partyName: formData.partyName,
+            partyType: formData.partyType,
+            pinCode: formData.pinCode,
+            placeOfSupply: formData.placeOfSupply,
+            recipientGSTIN: formData.recipientGSTIN,
+            shipperRefNo: formData.shipRefNo,
+            stateCode: formData.stateCode,
+            stateNo: formData.stateNo,
+            status: formData.status,
+            supplierRefNo: formData.supplierRefNo,
+            supplierRefDate: formData.supplierRefDate,
+            vid: formData.vid,
+            vdate: formData.vdate,
+            irnCreditNoteDetailsDTO: irnCreditChargesVo,
+            taxInvoiceAnnexureDTO: annexureVO,
+    
+            billOfEntry: formData.billOfEntry,
+            partyId: formData.partyId,
+            billingRemarks: formData.billingRemarks,
       };
 
       try {
         const response = await apiCalls('put', `/irnCreditNote/updateCreateIrnCreditNote`, saveFormData);
         if (response.status === true) {
-          showToast('success', editId ? 'IRN Credit Note Updated Successfully' : 'IRN Credit Note created successfully');
+          showToast('success', editId ? 'Credit Note Updated Successfully' : 'Credit Note created successfully');
           handleClear();
           getAllIrnCredit();
           getIrnCreditNoteDocId();
           setIsLoading(false);
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'IRN Credit Note creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'Credit Note creation failed');
           setIsLoading(false);
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'IRN Credit Note creation failed');
+        showToast('error', 'Credit Note creation failed');
       } finally {
         setIsLoading(false);
       }
@@ -1035,10 +1223,7 @@ const IrnCreditNote = () => {
   }, [irnChargesData, setFormData]);
   
   const calculateTotals = (rows, setFormData) => {
-    if (!Array.isArray(rows)) return; // Ensure rows is an array
-  
-    console.log("irncreditnote table values", rows);
-  
+    if (!Array.isArray(rows)) return;
     const totalChargeAmountLc = rows.reduce((sum, row) => sum + (parseFloat(row.lcAmount) || 0), 0);
     const totalTaxAmountLc = rows.reduce((sum, row) => sum + (parseFloat(row.gstAmount) || 0), 0);
     const totalInvAmountLc = totalChargeAmountLc + totalTaxAmountLc;
@@ -1084,8 +1269,8 @@ const IrnCreditNote = () => {
           const selectedCurrencyData = currencies.find((currency) => currency.currency === updatedRow.currency);
           const exRate = selectedCurrencyData?.buyingExRate || 1;
           const fcAmount = updatedRow.currency === 'INR' ? 0 : rate;
-          const lcAmount = rate * exRate;
-          const billAmount = rate * exRate;
+          const lcAmount = rate * exRate * updatedRow.qty;
+          const billAmount = rate * exRate * updatedRow.qty;
           const gstAmount = (lcAmount * updatedRow.gstpercent) / 100;
 
           return {
@@ -1112,7 +1297,95 @@ const IrnCreditNote = () => {
       return newErrors;
     });
   };
+  const handleAnnexureDescriptionChange = (index, newDescription) => {
+    const updatedRows = [...creditNoteAnnexure];
+    updatedRows[index].dsec = newDescription;
+    setCreditNoteAnnexure(updatedRows);
+  };
+  // const handleAnnexureInputChange = (index, field, value) => {
+  //   setCreditNoteAnnexure((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
 
+  //   setCreditNoteAnnexureErrors((prev) => {
+  //     const newErrors = [...prev];
+  //     if (field === 'amount' || field === 'qty' || field === 'rate') {
+  //       const regex = /^[0-9\n-]*$/;
+  //       if (value === '' || !regex.test(value)) {
+  //         newErrors[index] = {
+  //           ...newErrors[index],
+  //           [field]: `${field} must be a valid number`
+  //         };
+  //       } else {
+  //         newErrors[index] = {
+  //           ...newErrors[index],
+  //           [field]: ''
+  //         };
+  //       }
+  //     } else if (field === 'transNo') {
+  //       if (value.length > 20) {
+  //         newErrors[index] = {
+  //           ...newErrors[index],
+  //           transNo: 'Transaction No cannot exceed 20 characters'
+  //         };
+  //       } else {
+  //         newErrors[index] = {
+  //           ...newErrors[index],
+  //           transNo: ''
+  //         };
+  //       }
+  //     } else if (field === 'kitId') {
+  //       const duplicate = creditNoteAnnexure.some((row, i) => row.kitId === value && i !== index);
+  //       if (duplicate) {
+  //         newErrors[index] = {
+  //           ...newErrors[index],
+  //           kitId: 'Duplicate Kit ID not allowed'
+  //         };
+  //       } else {
+  //         newErrors[index] = {
+  //           ...newErrors[index],
+  //           kitId: ''
+  //         };
+  //       }
+  //     } else {
+  //       newErrors[index] = {
+  //         ...newErrors[index],
+  //         [field]: ''
+  //       };
+  //     }
+  //     return newErrors;
+  //   });
+  // };
+  const handleAnnexureInputChange = (index, field, value) => {
+    const isValidNumber = /^\d*\.?\d*$/.test(value);
+  
+    if ((field === 'amount' || field === 'qty' || field === 'rate') && !isValidNumber && value !== '') {
+      return; 
+    }
+    setCreditNoteAnnexure((prev) =>
+      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
+    );
+    setCreditNoteAnnexureErrors((prev) => {
+      const newErrors = [...prev];
+  
+      if (field === 'amount' || field === 'qty' || field === 'rate') {
+        newErrors[index] = {
+          ...newErrors[index],
+          [field]: isValidNumber ? '' : `${field} must be a valid number`
+        };
+      } else if (field === 'transNo') {
+        newErrors[index] = {
+          ...newErrors[index],
+          transNo: value.length > 20 ? 'Transaction No cannot exceed 20 characters' : ''
+        };
+      } else if (field === 'kitId') {
+        const duplicate = creditNoteAnnexure.some((row, i) => row.kitId === value && i !== index);
+        newErrors[index] = {
+          ...newErrors[index],
+          kitId: duplicate ? 'Duplicate Kit ID not allowed' : ''
+        };
+      }
+      return newErrors;
+    });
+  };
   return (
     <div>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
@@ -1197,7 +1470,7 @@ const IrnCreditNote = () => {
             <div className="row d-flex ml" style={{ marginBottom: '20px' }}>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
-                  <TextField id="docId" name="docId" label="Doc No" size="small" value={docId} disabled required fullWidth />
+                  <TextField id="docId" name="docId" label="Doc No" size="small" value={formData.docId} disabled required fullWidth />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -1212,40 +1485,6 @@ const IrnCreditNote = () => {
                       }}
                       format="DD-MM-YYYY"
                       readOnly
-                    />
-                  </LocalizationProvider>
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="vohNo"
-                    name="vohNo"
-                    label="Voucher No"
-                    size="small"
-                    value={formData.vohNo}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.vohNo}
-                    helperText={fieldErrors.vohNo}
-                    disabled
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Voucher Date"
-                      value={formData.vohDate ? dayjs(formData.vohDate, 'YYYY-MM-DD') : null}
-                      onChange={(date) => handleDateChange('vohDate', date)}
-                      slotProps={{
-                        textField: { size: 'small', clearable: true }
-                      }}
-                      format="DD-MM-YYYY"
-                      disabled
-                      error={!!fieldErrors.vohDate}
-                      helperText={fieldErrors.vohDate ? fieldErrors.vohDate : ''}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -1290,7 +1529,7 @@ const IrnCreditNote = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <Autocomplete
-                  disablePortal
+                  
                   options={allPartyName}
                   getOptionLabel={(option) => option.partyName}
                   disabled={formData.status === 'TAX'}
@@ -1338,23 +1577,22 @@ const IrnCreditNote = () => {
                   />
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
-                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.originBill}>
-                  <InputLabel id="originBill">Origin Bill</InputLabel>
+                <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.originBillNo}>
+                  <InputLabel id="originBillNo">Origin Bill</InputLabel>
                   <Select
-                    labelId="originBill"
+                    labelId="originBillNo"
                     label="Origin Bill"
-                    name="originBill"
+                    name="originBillNo"
                     disabled={formData.status === 'TAX'}
-                    value={formData.originBill}
+                    value={formData.originBillNo}
                     onChange={(event) => {
                       const selectedDocId = event.target.value;
                       const selectedBill = originBillList.find((item) => item.docId === selectedDocId);
                       handleOriginBillSelection(selectedBill);
                       setFormData((prev) => ({
                         ...prev,
-                        originBill: selectedDocId ? selectedDocId : ''
+                        originBillNo: selectedDocId ? selectedDocId : ''
                       }));
                     }}
                   >
@@ -1364,10 +1602,42 @@ const IrnCreditNote = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.originBill && <FormHelperText>{fieldErrors.originBill}</FormHelperText>}
+                  {fieldErrors.originBillNo && <FormHelperText>{fieldErrors.originBillNo}</FormHelperText>}
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth size="small">
+                            <TextField
+                              label="V Id"
+                              disabled
+                              size="small"
+                              required
+                              inputProps={{ maxLength: 30 }}
+                              value={formData.vid}
+                              onChange={(e) => setFormData({ ...formData, vid: e.target.value })}
+                              error={!!fieldErrors.vid}
+                              // helperText={fieldErrors.pincode}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth>
+                            <LocalizationProvider dateAdapter={AdapterDayjs}>
+                              <DatePicker
+                                label="V Date"
+                                disabled
+                                format="DD-MM-YYYY"
+                                slotProps={{
+                                  textField: { size: 'small', clearable: true }
+                                }}
+                                value={formData.vdate ? dayjs(formData.vdate) : null}
+                                onChange={(newValue) => setFormData({ ...formData, vdate: newValue })}
+                              />
+                            </LocalizationProvider>
+                            {fieldErrors.vdate && <FormHelperText style={{ color: 'red' }}>{fieldErrors.vdate}</FormHelperText>}
+                          </FormControl>
+                        </div>
+              {/*<div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="supplierRefNo"
@@ -1400,7 +1670,7 @@ const IrnCreditNote = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
-              {/* <div className="col-md-3 mb-3">
+               <div className="col-md-3 mb-3">
                 <FormControl fullWidth>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
@@ -1671,34 +1941,18 @@ const IrnCreditNote = () => {
                   />
                 </FormControl>
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="shipRefNo"
-                    name="shipRefNo"
-                    label="Shipper Ref. No."
-                    size="small"
-                    disabled
-                    value={formData.shipRefNo}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.shipRefNo}
-                    helperText={fieldErrors.shipRefNo}
-                  />
-                </FormControl>
-              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="pincode"
-                    name="pincode"
+                    id="pinCode"
+                    name="pinCode"
                     label="Pin code"
                     size="small"
-                    value={formData.pincode}
+                    value={formData.pinCode}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.pincode}
-                    helperText={fieldErrors.pincode}
+                    error={!!fieldErrors.pinCode}
+                    helperText={fieldErrors.pinCode}
                     disabled
                   />
                 </FormControl>
@@ -1735,6 +1989,40 @@ const IrnCreditNote = () => {
                   />
                 </FormControl>
               </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="voucherNo"
+                    name="voucherNo"
+                    label="Voucher No"
+                    size="small"
+                    value={formData.voucherNo}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 30 }}
+                    error={!!fieldErrors.voucherNo}
+                    helperText={fieldErrors.voucherNo}
+                    disabled
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Voucher Date"
+                      value={formData.voucherDate ? dayjs(formData.voucherDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('voucherDate', date)}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                      format="DD-MM-YYYY"
+                      disabled
+                      error={!!fieldErrors.voucherDate}
+                      helperText={fieldErrors.voucherDate ? fieldErrors.voucherDate : ''}
+                    />
+                  </LocalizationProvider>
+                </FormControl>
+              </div>
               <div className="col-md-6 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -1759,7 +2047,8 @@ const IrnCreditNote = () => {
                   <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
                       <Tab label="Charges" value="1" />
-                      <Tab label="Summary" value="2" />
+                      <Tab label="Annexure" value="2" />
+                      <Tab label="Summary" value="3" />
                       {editId && <Tab label="Tax" value="3" />}
                     </TabList>
                   </Box>
@@ -1806,7 +2095,7 @@ const IrnCreditNote = () => {
                               <tbody>
                                 {Array.isArray(irnChargesData) &&
                                   irnChargesData.map((row, index) => (
-                                    <tr key={row.id}>
+                                    <tr key={row.id || index}>
                                       <td className="border px-2 py-2 text-center">
                                         <ActionButton
                                           title="Delete"
@@ -1934,7 +2223,7 @@ const IrnCreditNote = () => {
                                             }
                                           }}
                                           className={irnChargesError[index]?.description ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
+                                          style={{ width: '250px' }}
                                         />
                                         {irnChargesError[index]?.description && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2342,9 +2631,247 @@ const IrnCreditNote = () => {
                       </div>
                     </div>
                   </TabPanel>
-                 
+                <TabPanel value="2">
+                  <div className="row d-flex ml">
+                    <div className="mb-1">
+                      <ActionButton title="Add" icon={AddIcon} onClick={handleAddAnnexureRow} />
+                    </div>
+                    <div className="row mt-2">
+                      <div className="col-lg-12">
+                        <div className="table-responsive">
+                          <table className="table table-bordered">
+                            <thead>
+                              <tr style={{ backgroundColor: '#673AB7' }}>
+                                {formData.status !== 'TAX' && (
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                    Action
+                                  </th>
+                                )}
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                  S.No
+                                </th>
+                                <th className="px-2 py-2 text-white text-center">Amount</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                  Description
+                                </th>
+                                <th className="px-2 py-2 text-white text-center">Kit</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
+                                  Qty
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
+                                  Rate
+                                </th>
+                                <th className="px-2 py-2 text-white text-center">Sku Type</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                  Transaction Date
+                                </th>
+                                <th className="px-2 py-2 text-white text-center">Transaction No</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {creditNoteAnnexure.map((row, index) => (
+                                <tr key={row.id}>
+                                  {formData.status !== 'TAX' && (
+                                    <td className="border px-2 py-2 text-center">
+                                      <ActionButton
+                                        title="Delete"
+                                        icon={DeleteIcon}
+                                        onClick={() =>
+                                          handleDeleteRowAnnexure(
+                                            row.id,
+                                            creditNoteAnnexure,
+                                            setCreditNoteAnnexure,
+                                            creditNoteAnnexureErrors,
+                                            setCreditNoteAnnexureErrors
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                  )}
+                                  <td className="text-center">
+                                    <div className="pt-2">{index + 1}</div>
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.amount}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'amount', e.target.value)}
+                                      className={creditNoteAnnexureErrors[index]?.amount ? 'error form-control' : 'form-control'}
+                                    />
+                                    {creditNoteAnnexureErrors[index]?.amount && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {creditNoteAnnexureErrors[index].amount}
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.dsec}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '250px' }}
+                                      className={creditNoteAnnexureErrors[index]?.dsec ? 'error form-control' : 'form-control'}
+                                      onChange={(e) => {
+                                        const newValue = e.target.value;
+                                        if (newValue.length <= 250) {
+                                          handleAnnexureDescriptionChange(index, newValue);
+                                        } else {
+                                          const updatedErrors = [...creditNoteAnnexureErrors];
+                                          updatedErrors[index] = {
+                                            ...updatedErrors[index],
+                                            dsec: 'Description cannot exceed 250 characters.'
+                                          };
+                                          setCreditNoteAnnexureErrors(updatedErrors);
+                                        }
+                                      }}
+                                    />
+                                    {creditNoteAnnexureErrors[index]?.dsec && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {creditNoteAnnexureErrors[index].dsec}
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.kitId}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'kitId', e.target.value)}
+                                      className={creditNoteAnnexureErrors[index]?.kitId ? 'error form-control' : 'form-control'}
+                                    />
+                                    {creditNoteAnnexureErrors[index]?.kitId && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {creditNoteAnnexureErrors[index].kitId}
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.qty}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'qty', e.target.value)}
+                                      className={creditNoteAnnexureErrors[index]?.qty ? 'error form-control' : 'form-control'}
+                                    />
+                                    {creditNoteAnnexureErrors[index]?.qty && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {creditNoteAnnexureErrors[index].qty}
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.rate}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'rate', e.target.value)}
+                                      className={creditNoteAnnexureErrors[index]?.rate ? 'error form-control' : 'form-control'}
+                                    />
+                                    {creditNoteAnnexureErrors[index]?.rate && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {creditNoteAnnexureErrors[index].rate}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.skuType}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'skuType', e.target.value)}
+                                      className={creditNoteAnnexureErrors[index]?.skuType ? 'error form-control' : 'form-control'}
+                                    />
+                                    {creditNoteAnnexureErrors[index]?.skuType && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {creditNoteAnnexureErrors[index].skuType}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2" style={{ width: '250px' }}>
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                      <DatePicker
+                                        value={
+                                          row.transDate
+                                            ? dayjs(row.transDate, 'YYYY-MM-DD').isValid()
+                                              ? dayjs(row.transDate, 'YYYY-MM-DD')
+                                              : null
+                                            : null
+                                        }
+                                        slotProps={{
+                                          textField: { size: 'small', clearable: true }
+                                        }}
+                                        sx={{
+                                          width: '192px'
+                                        }}
+                                        format="DD-MM-YYYY"
+                                        onChange={(newValue) => {
+                                          setCreditNoteAnnexure((prev) =>
+                                            prev.map((r) =>
+                                              r.id === row.id ? { ...r, transDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
+                                            )
+                                          );
+                                          setCreditNoteAnnexureErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              transDate: !newValue ? 'Transaction Date is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        renderInput={(params) => (
+                                          <TextField
+                                            {...params}
+                                            className={creditNoteAnnexureErrors[index]?.transDate ? 'error form-control' : 'form-control'}
+                                          />
+                                        )}
+                                        minDate={dayjs()}
+                                      />
+                                    </LocalizationProvider>
+                                    {creditNoteAnnexureErrors[index]?.transDate && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {creditNoteAnnexureErrors[index].transDate}
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.transNo}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '150px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'transNo', e.target.value)}
+                                      className={creditNoteAnnexureErrors[index]?.transNo ? 'error form-control' : 'form-control'}
+                                    />
+                                    {creditNoteAnnexureErrors[index]?.transNo && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {creditNoteAnnexureErrors[index].transNo}
+                                      </div>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </TabPanel>
                   {/* {editId && ( */}
-                    <TabPanel value="2">
+                    <TabPanel value="3">
                       <div>
                         <div className="row d-flex mt-2">
                         <div className="col-md-3 mb-3">

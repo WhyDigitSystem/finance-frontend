@@ -538,9 +538,9 @@ const RCostInvoicegna = () => {
           amtInWords: rCostVO.amountInWords,
           roundOff: rCostVO.roundOff,
           taxAmountLc: rCostVO.gstAmtLc,
-          createdBy: loginUserName,
-          finYear: finYear,
-          orgId: orgId
+          createdBy: rCostVO.createdBy,
+          finYear: rCostVO.finYear,
+          orgId: rCostVO.orgId
         });
         setChargerCostInvoice(
           rCostVO.normalCharges.map((row) => ({
