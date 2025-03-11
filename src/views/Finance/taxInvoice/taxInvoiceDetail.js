@@ -169,6 +169,32 @@ const TaxInvoiceDetails = () => {
     }
   ]);
 
+  const [taxInvoiceAnnexure, setTaxInvoiceAnnexure] = useState([
+    {
+      amount: '',
+      dsec: '',
+      kitId: '',
+      qty: '',
+      rate: '',
+      skuType: '',
+      transDate: null,
+      transNo: ''
+    }
+  ]);
+
+  const [taxInvoiceAnnexureErrors, setTaxInvoiceAnnexureErrors] = useState([
+    {
+      amount: '',
+      dsec: '',
+      kitId: '',
+      qty: '',
+      rate: '',
+      skuType: '',
+      transDate: null,
+      transNo: ''
+    }
+  ]);
+
   const columns = [
     { accessorKey: 'status', header: 'Status', size: 140 },
     { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
@@ -419,6 +445,82 @@ const TaxInvoiceDetails = () => {
     setWithdrawalsTableData((prev) => prev.filter((row) => row.id !== rowId));
   };
 
+  const handleAddAnnexureRow = () => {
+    if (isLastRowAnnexureEmpty(taxInvoiceAnnexure)) {
+      displayRowAnnexureError(taxInvoiceAnnexure);
+      return;
+    }
+    const newRow = {
+      id: Date.now(),
+      amount: '',
+      dsec: '',
+      id: '',
+      kitId: '',
+      qty: '',
+      rate: '',
+      skuType: '',
+      transDate: null,
+      transNo: ''
+    };
+    setTaxInvoiceAnnexure([...taxInvoiceAnnexure, newRow]);
+    setTaxInvoiceAnnexureErrors([
+      ...taxInvoiceAnnexureErrors,
+      {
+        amount: '',
+        dsec: '',
+        kitId: '',
+        qty: '',
+        rate: '',
+        skuType: '',
+        transDate: null,
+        transNo: ''
+      }
+    ]);
+  };
+
+  const isLastRowAnnexureEmpty = (table) => {
+    const lastRow = table[table.length - 1];
+    if (!lastRow) return false;
+
+    if (table === taxInvoiceAnnexure) {
+      return (
+        !lastRow.amount ||
+        !lastRow.dsec ||
+        !lastRow.kitId ||
+        !lastRow.qty ||
+        !lastRow.rate ||
+        !lastRow.skuType ||
+        !lastRow.transDate ||
+        !lastRow.transNo
+      );
+    }
+    return false;
+  };
+
+  const displayRowAnnexureError = (table) => {
+    if (table === taxInvoiceAnnexureErrors) {
+      setWithdrawalsTableErrors((prevErrors) => {
+        const newErrors = [...prevErrors];
+        newErrors[table.length - 1] = {
+          ...newErrors[table.length - 1],
+          amount: !table[table.length - 1].amount ? 'amount is required' : '',
+          dsec: !table[table.length - 1].dsec ? 'dsec is required' : '',
+          kitId: !table[table.length - 1].kitId ? 'kitId is required' : '',
+          qty: !table[table.length - 1].qty ? 'qty is required' : '',
+          rate: !table[table.length - 1].rate ? 'rate is required' : '',
+          skuType: !table[table.length - 1].skuType ? 'skuType is required' : '',
+          transDate: !table[table.length - 1].transDate ? 'transDate is required' : '',
+          transNo: !table[table.length - 1].transNo ? 'transNo is required' : ''
+        };
+        return newErrors;
+      });
+    }
+  };
+
+  const handleDeleteRowAnnexure = (rowId) => {
+    setTaxInvoiceAnnexure((prev) => prev.filter((row) => row.id !== rowId));
+  };
+
   const handleCreateNewRow = (values) => {
     // Ensure that relevant fields in gstTaxInvoiceDTO are integers
     const updatedValues = {
@@ -540,6 +642,7 @@ const TaxInvoiceDetails = () => {
     setStateName('');
     setPlaceOfSupply('');
     setJobCardNo([]);
+    setChargeType([]);
     setChargeCodeList([]);
     setChargeCodeCache([]);
     setPartyCurrencyList([]);
@@ -1328,6 +1431,20 @@ const TaxInvoiceDetails = () => {
           addressType: listValueVO.addressType
         });
 
+        setTaxInvoiceAnnexure(
+          listValueVO.taxInvoiceAnnexureVO.map((row) => ({
+            id: row.id,
+            amount: row.amount,
+            dsec: row.dsec,
+            kitId: row.kitId,
+            qty: row.qty,
+            rate: row.rate,
+            skuType: row.skuType,
+            transDate: row.transDate ? dayjs(row.transDate) : null,
+            transNo: row.transNo
+          }))
+        );
+
         // getPartyName(listValueVO.partType);
 
         // const selectedEmp = partyName.find((emp) => emp.partyName === value); // Check if 'empCode' is correct
@@ -1432,6 +1549,18 @@ const TaxInvoiceDetails = () => {
       taxable: row.taxable
     }));
 
+    const annexureVO = taxInvoiceAnnexure.map((row) => ({
+      ...(editId && { id: row.id }),
+      amount: row.amount,
+      dsec: row.dsec,
+      kitId: row.kitId,
+      qty: row.qty,
+      rate: row.rate,
+      skuType: row.skuType,
+      transDate: row.transDate ? dayjs(row.transDate).format('YYYY-MM-DD') : null,
+      transNo: row.transNo
+    }));
+
     const saveFormData = {
       ...(editId && { id: editId }),
       address: formData.address,
@@ -1467,7 +1596,8 @@ const TaxInvoiceDetails = () => {
       supplierBillNo: formData.supplierBillNo,
       vid: formData.vid,
       vdate: formData.vdate ? dayjs(formData.vdate).format('YYYY-MM-DD') : null,
-      taxInvoiceDetailsDTO: detailsVo
+      taxInvoiceDetailsDTO: detailsVo,
+      taxInvoiceAnnexureDTO: annexureVO
     };
 
     console.log('DATA TO SAVE:', saveFormData);
@@ -1492,6 +1622,65 @@ const TaxInvoiceDetails = () => {
     const updatedRows = [...withdrawalsTableData];
     updatedRows[index].description = newDescription;
     setWithdrawalsTableData(updatedRows);
+  };
+
+  const handleAnnexureDescriptionChange = (index, newDescription) => {
+    const updatedRows = [...taxInvoiceAnnexure];
+    updatedRows[index].dsec = newDescription;
+    setTaxInvoiceAnnexure(updatedRows);
+  };
+
+  const handleAnnexureInputChange = (index, field, value) => {
+    setTaxInvoiceAnnexure((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+
+    // Error Handling
+    setTaxInvoiceAnnexureErrors((prev) => {
+      const newErrors = [...prev];
+      if (field === 'amount' || field === 'qty' || field === 'rate') {
+        if (value === '' || isNaN(value)) {
+          newErrors[index] = {
+            ...newErrors[index],
+            [field]: `${field} must be a valid number`
+          };
+        } else {
+          newErrors[index] = {
+            ...newErrors[index],
+            [field]: ''
+          };
+        }
+      } else if (field === 'transNo') {
+        if (value.length > 20) {
+          newErrors[index] = {
+            ...newErrors[index],
+            transNo: 'Transaction No cannot exceed 20 characters'
+          };
+        } else {
+          newErrors[index] = {
+            ...newErrors[index],
+            transNo: ''
+          };
+        }
+      } else if (field === 'kitId') {
+        const duplicate = taxInvoiceAnnexure.some((row, i) => row.kitId === value && i !== index);
+        if (duplicate) {
+          newErrors[index] = {
+            ...newErrors[index],
+            kitId: 'Duplicate Kit ID not allowed'
+          };
+        } else {
+          newErrors[index] = {
+            ...newErrors[index],
+            kitId: ''
+          };
+        }
+      } else {
+        newErrors[index] = {
+          ...newErrors[index],
+          [field]: ''
+        };
+      }
+      return newErrors;
+    });
   };
 
   const handleTableInputChange = (index, field, value) => {
@@ -1669,7 +1858,7 @@ const TaxInvoiceDetails = () => {
 
           {!listView && (
             <div className="d-flex flex-wrap justify-content-start row">
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
                     label="Biz Type"
@@ -1696,7 +1885,7 @@ const TaxInvoiceDetails = () => {
                     error={!!errors.bizMode}
                   />
                 </FormControl>
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
@@ -2159,6 +2348,35 @@ const TaxInvoiceDetails = () => {
                 </FormControl>
               </div>
 
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <InputLabel id="demo-simple-select-label" required>
+                    Job Card No
+                  </InputLabel>
+                  <Select
+                    labelId="jobCardNo"
+                    value={formData.jobNo || (jobCardNo.length === 1 ? jobCardNo[0].jobCard : '')}
+                    onChange={handleJobOrderNo}
+                    label="Job Card No"
+                    required
+                    error={!!errors.jobNo}
+                    helperText={errors.jobNo}
+                    disabled={formData.status === 'TAX'}
+                  >
+                    {jobCardNo?.length > 0 ? (
+                      jobCardNo.map((par, index) => (
+                        <MenuItem key={index} value={par.jobCard}>
+                          {par.jobCard}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem disabled>No Job Card no available</MenuItem>
+                    )}
+                  </Select>
+                  {errors.jobNo && <FormHelperText style={{ color: 'red' }}>{errors.jobNo}</FormHelperText>}
+                </FormControl>
+              </div>
+
               {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
@@ -2223,34 +2441,6 @@ const TaxInvoiceDetails = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Job Card No
-                  </InputLabel>
-                  <Select
-                    labelId="jobCardNo"
-                    value={formData.jobNo || (jobCardNo.length === 1 ? jobCardNo[0].jobCard : '')}
-                    onChange={handleJobOrderNo}
-                    label="Job Card No"
-                    required
-                    error={!!errors.jobNo}
-                    helperText={errors.jobNo}
-                    disabled={formData.status === 'TAX'}
-                  >
-                    {jobCardNo?.length > 0 ? (
-                      jobCardNo.map((par, index) => (
-                        <MenuItem key={index} value={par.jobCard}>
-                          {par.jobCard}
-                        </MenuItem>
-                      ))
-                    ) : (
-                      <MenuItem disabled>No Job Card no available</MenuItem>
-                    )}
-                  </Select>
-                  {errors.jobNo && <FormHelperText style={{ color: 'red' }}>{errors.jobNo}</FormHelperText>}
-                </FormControl>
-              </div>
               <div className="col-md-6 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
@@ -2278,9 +2468,10 @@ const TaxInvoiceDetails = () => {
                 <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                   <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
                     <Tab label="Charge Particulars" value="1" />
-                    <Tab label="Summary" value="2" />
+                    <Tab label="Annexure" value="2" />
+                    <Tab label="Summary" value="3" />
                     {editId ? (
-                      <Tab label="TAX" value="3">
+                      <Tab label="TAX" value="4">
                         {' '}
                       </Tab>
                     ) : (
@@ -3089,6 +3280,245 @@ const TaxInvoiceDetails = () => {
                   </div>
                 </TabPanel>
                 <TabPanel value="2">
+                  <div className="row d-flex ml">
+                    <div className="mb-1">
+                      <ActionButton title="Add" icon={AddIcon} onClick={handleAddAnnexureRow} />
+                    </div>
+                    <div className="row mt-2">
+                      <div className="col-lg-12">
+                        <div className="table-responsive">
+                          <table className="table table-bordered">
+                            <thead>
+                              <tr style={{ backgroundColor: '#673AB7' }}>
+                                {formData.status !== 'TAX' && (
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                    Action
+                                  </th>
+                                )}
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                  S.No
+                                </th>
+                                <th className="px-2 py-2 text-white text-center">Amount</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                  Description
+                                </th>
+                                <th className="px-2 py-2 text-white text-center">Kit</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
+                                  Qty
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
+                                  Rate
+                                </th>
+                                <th className="px-2 py-2 text-white text-center">Sku Type</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                  Transaction Date
+                                </th>
+                                <th className="px-2 py-2 text-white text-center">Transaction No</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {taxInvoiceAnnexure.map((row, index) => (
+                                <tr key={row.id}>
+                                  {formData.status !== 'TAX' && (
+                                    <td className="border px-2 py-2 text-center">
+                                      <ActionButton
+                                        title="Delete"
+                                        icon={DeleteIcon}
+                                        onClick={() =>
+                                          handleDeleteRowAnnexure(
+                                            row.id,
+                                            taxInvoiceAnnexure,
+                                            setTaxInvoiceAnnexure,
+                                            taxInvoiceAnnexureErrors,
+                                            setTaxInvoiceAnnexureErrors
+                                          )
+                                        }
+                                      />
+                                    </td>
+                                  )}
+                                  <td className="text-center">
+                                    <div className="pt-2">{index + 1}</div>
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.amount}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'amount', e.target.value)}
+                                      className={taxInvoiceAnnexureErrors[index]?.amount ? 'error form-control' : 'form-control'}
+                                    />
+                                    {taxInvoiceAnnexureErrors[index]?.amount && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {taxInvoiceAnnexureErrors[index].amount}
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.dsec}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '250px' }}
+                                      className={taxInvoiceAnnexureErrors[index]?.dsec ? 'error form-control' : 'form-control'}
+                                      onChange={(e) => {
+                                        const newValue = e.target.value;
+                                        if (newValue.length <= 250) {
+                                          handleAnnexureDescriptionChange(index, newValue);
+                                        } else {
+                                          const updatedErrors = [...taxInvoiceAnnexureErrors];
+                                          updatedErrors[index] = {
+                                            ...updatedErrors[index],
+                                            dsec: 'Description cannot exceed 250 characters.'
+                                          };
+                                          setTaxInvoiceAnnexureErrors(updatedErrors);
+                                        }
+                                      }}
+                                    />
+                                    {taxInvoiceAnnexureErrors[index]?.dsec && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {taxInvoiceAnnexureErrors[index].dsec}
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.kitId}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'kitId', e.target.value)}
+                                      className={taxInvoiceAnnexureErrors[index]?.kitId ? 'error form-control' : 'form-control'}
+                                    />
+                                    {taxInvoiceAnnexureErrors[index]?.kitId && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {taxInvoiceAnnexureErrors[index].kitId}
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.qty}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'qty', e.target.value)}
+                                      className={taxInvoiceAnnexureErrors[index]?.qty ? 'error form-control' : 'form-control'}
+                                    />
+                                    {taxInvoiceAnnexureErrors[index]?.qty && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {taxInvoiceAnnexureErrors[index].qty}
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.rate}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'rate', e.target.value)}
+                                      className={taxInvoiceAnnexureErrors[index]?.rate ? 'error form-control' : 'form-control'}
+                                    />
+                                    {taxInvoiceAnnexureErrors[index]?.rate && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {taxInvoiceAnnexureErrors[index].rate}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.skuType}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'skuType', e.target.value)}
+                                      className={taxInvoiceAnnexureErrors[index]?.skuType ? 'error form-control' : 'form-control'}
+                                    />
+                                    {taxInvoiceAnnexureErrors[index]?.skuType && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {taxInvoiceAnnexureErrors[index].skuType}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2" style={{ width: '250px' }}>
+                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                      <DatePicker
+                                        value={
+                                          row.transDate
+                                            ? dayjs(row.transDate, 'YYYY-MM-DD').isValid()
+                                              ? dayjs(row.transDate, 'YYYY-MM-DD')
+                                              : null
+                                            : null
+                                        }
+                                        slotProps={{
+                                          textField: { size: 'small', clearable: true }
+                                        }}
+                                        sx={{
+                                          width: '192px'
+                                        }}
+                                        format="DD-MM-YYYY"
+                                        onChange={(newValue) => {
+                                          setTaxInvoiceAnnexure((prev) =>
+                                            prev.map((r) =>
+                                              r.id === row.id ? { ...r, transDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
+                                            )
+                                          );
+                                          setTaxInvoiceAnnexureErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              transDate: !newValue ? 'Transaction Date is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        renderInput={(params) => (
+                                          <TextField
+                                            {...params}
+                                            className={taxInvoiceAnnexureErrors[index]?.transDate ? 'error form-control' : 'form-control'}
+                                          />
+                                        )}
+                                        minDate={dayjs()}
+                                      />
+                                    </LocalizationProvider>
+                                    {taxInvoiceAnnexureErrors[index]?.transDate && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {taxInvoiceAnnexureErrors[index].transDate}
+                                      </div>
+                                    )}
+                                  </td>
+
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.transNo}
+                                      disabled={formData.status === 'TAX'}
+                                      style={{ width: '150px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'transNo', e.target.value)}
+                                      className={taxInvoiceAnnexureErrors[index]?.transNo ? 'error form-control' : 'form-control'}
+                                    />
+                                    {taxInvoiceAnnexureErrors[index]?.transNo && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {taxInvoiceAnnexureErrors[index].transNo}
+                                      </div>
+                                    )}
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </TabPanel>
+                <TabPanel value="3">
                   <div className="row d-flex mt-3">
                     <div className="col-md-3 mb-3">
                       <FormControl fullWidth variant="filled">
@@ -3240,7 +3670,7 @@ const TaxInvoiceDetails = () => {
                     </div>
                   </div>
                 </TabPanel>
-                <TabPanel value="3">
+                <TabPanel value="4">
                   {' '}
                   <GstTable tableData={gstTableData} onCreateNewRow={handleCreateNewRow} />
                 </TabPanel>

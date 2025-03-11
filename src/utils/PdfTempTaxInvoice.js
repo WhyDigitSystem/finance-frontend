@@ -192,13 +192,26 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
           >
             <div>
               <div>
-                <strong>Invoice No:</strong>
-                {row.invoiceNo}
+                Invoice No
+                <strong className="ms-3">: {row.vid}</strong>
               </div>
               <div>
-                <strong>Invoice Date: </strong>
-                {row.invoiceDate ? dayjs(row.invoiceDate).format('DD-MM-YYYY') : 'N/A'}
+                Invoice Date
+                <strong> : {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}</strong>
               </div>
+            </div>
+            <div>
+              <div>
+                Due date
+                <strong style={{ textAlign: 'right' }}> : {row.dueDate ? dayjs(row.dueDate).format('DD-MM-YYYY') : 'N/A'}</strong>
+              </div>
+              <div>
+                Place Of Supply
+                <strong> : {row.stateNo}</strong>
+              </div>
+              {/* <div>
+                <strong>GRN Date:</strong> {row.grnDate}
+              </div> */}
             </div>
             {/* <div style={{ textAlign: 'left' }}>
               <div>
@@ -210,8 +223,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               <div>
                 <strong>GRN Date:</strong> {row.grnDate}
               </div>
-            </div> */}
-            <QRCodeComponent text={'1234567'} />
+            </div>
+            <QRCodeComponent text={'1234567'} /> */}
           </div>
           <div
             style={{
@@ -223,30 +236,19 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             }}
           >
             <div>
+              <div>Bill To</div>
               <div>
-                <strong>Bill To</strong>
+                <strong>{row.partyName}</strong>
               </div>
-              <div>{row.partyName}</div>
+              {/* <div>{row.address}</div> */}
+              <div style={{ width: 300, marginBottom: 4 }}>
+                {/* <strong>Place of address:</strong>
+                <br /> */}
+                <span style={{ textWrap: 'auto', textOverflow: 'ellipsis' }}>{row.address}</span>
+              </div>
               <div>
                 <strong className="mb-2">Reg IN:</strong> {row.recipientGSTIN}
               </div>
-              {/* <div>{row.address}</div> */}
-              <div style={{ width: 300 }}>
-                <strong>Place of address:</strong>
-                <br />
-                <span style={{ textWrap: 'auto', textOverflow: 'ellipsis' }}>{row.address}</span>
-              </div>
-            </div>
-            <div style={{ textAlign: 'left' }}>
-              <div>
-                <strong>Due date:</strong> {row.dueDate}
-              </div>
-              <div>
-                <strong>Place Of Supply:</strong> {row.placeOfSupply}
-              </div>
-              {/* <div>
-                <strong>GRN Date:</strong> {row.grnDate}
-              </div> */}
             </div>
           </div>
 
@@ -353,17 +355,53 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.currency}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.exRate || ''}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.qty}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.rate}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.fcAmount}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                    {parseFloat(item.rate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                    {parseFloat(item.fcAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.gstpercent}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.gstAmount}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.lcAmount}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                    {parseFloat(item.gstAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                    {parseFloat(item.lcAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
 
           {/* <!-- Total Section --> */}
+          <div
+            style={{
+              // textAlign: 'right',
+              // fontWeight: 'bold',
+              fontSize: '14px',
+              color: '#333'
+            }}
+            className="d-flex justify-content-end mb-2"
+          >
+            <div
+              style={{
+                fontStyle: 'italic'
+              }}
+            >
+              Total Taxable Amount:{' '}
+              <span
+                style={{
+                  fontStyle: 'normal',
+                  fontWeight: 'normal',
+                  fontSize: '14px',
+                  color: '#333',
+                  marginLeft: 10
+                }}
+              >
+                {parseFloat(row.totalTaxAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
           <div
             style={{
               // textAlign: 'right',
@@ -386,22 +424,23 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 style={{
                   fontWeight: 'normal',
                   fontSize: '14px',
+                  fontStyle: 'italic',
                   color: '#333'
                 }}
               >
-                {toWords(parseFloat(row.totalInvAmountLc)).toUpperCase()}
+                {row.amountInWords.toUpperCase()}
               </span>
             </div>
             <div>
               Total:{' '}
               <span
                 style={{
-                  fontWeight: 'normal',
+                  // fontWeight: 'normal',
                   fontSize: '14px',
                   color: '#333'
                 }}
               >
-                {row.totalInvAmountLc}
+                {parseFloat(row.totalInvAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
           </div>
@@ -464,26 +503,26 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
           <div style={styles2.container}>
             <h6 style={styles2.heading}>Bank Details:</h6>
             <p style={styles2.item}>
-              <span style={styles2.label}>BANK NAME:</span> {bankDetails.bankName}
+              <span style={styles2.label}>BANK NAME:</span> {bankDetails.bankName ? bankDetails.bankName : ''}
+            </p>
+            {/* <p style={styles2.item}>
+              <span style={styles2.label}>ACCOUNT CODE:</span> {bankDetails.accountCode ? bankDetails.accountCode : ''}
+              </p> */}
+            <p style={styles2.item}>
+              <span style={styles2.label}>BRANCH:</span> {bankDetails.branch ? bankDetails.branch : ''}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT CODE:</span> {bankDetails.accountCode}
+              <span style={styles2.label}>IFSC:</span> {bankDetails.ifsc ? bankDetails.ifsc : ''}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>BENEFICIARY NAME:</span> {bankDetails.beneficiaryName}
+              <span style={styles2.label}>BENEFICIARY NAME:</span> {bankDetails.beneficiaryName ? bankDetails.beneficiaryName : ''}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>BRANCH:</span> {bankDetails.branch}
+              <span style={styles2.label}>ACCOUNT NO:</span> {bankDetails.accountNo ? bankDetails.accountNo : ''}
             </p>
-            <p style={styles2.item}>
-              <span style={styles2.label}>IFSC:</span> {bankDetails.ifsc}
-            </p>
-            <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT NO:</span> {bankDetails.accountNo}
-            </p>
-            <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT TYPE:</span> {bankDetails.accountType}
-            </p>
+            {/* <p style={styles2.item}>
+              <span style={styles2.label}>ACCOUNT TYPE:</span> {bankDetails.accountType ? bankDetails.accountType : ''}
+            </p> */}
           </div>
 
           <div

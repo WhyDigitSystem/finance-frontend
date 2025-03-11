@@ -130,6 +130,7 @@ const CostInvoice = () => {
       gst: '',
       gstPercent: '',
       jobNo: '',
+      party: '',
       ledger: '',
       description: '',
       qty: '',
@@ -152,6 +153,7 @@ const CostInvoice = () => {
       gst: '',
       gstPercent: '',
       jobNo: '',
+      party: '',
       ledger: '',
       description: '',
       qty: '',
@@ -281,6 +283,7 @@ const CostInvoice = () => {
         gst: '',
         gstPercent: '',
         jobNo: '',
+        party: '',
         ledger: '',
         description: '',
         qty: '',
@@ -346,7 +349,7 @@ const CostInvoice = () => {
       supplierBillNo: '',
       // supplierCode: '',
       // supplierGstIn: '',
-      // supplierGstInCode: '',
+      supplierGstInCode: '',
       // supplierName: '',
       // supplierPlace: '',
       supplierType: 'VENDOR',
@@ -407,6 +410,7 @@ const CostInvoice = () => {
         gst: '',
         gstPercent: '',
         jobNo: '',
+        party: '',
         ledger: '',
         description: '',
         qty: '',
@@ -724,6 +728,7 @@ const CostInvoice = () => {
             gst: row.gst,
             gstPercent: row.gstpercent,
             jobNo: row.jobNo,
+            party: row.party,
             lcAmount: row.lcAmt,
             ledger: row.ledger,
             description: row.description,
@@ -743,19 +748,21 @@ const CostInvoice = () => {
           }))
         );
         setChargeDetails(
-          listValueVO.gstLines.map((row) => ({
-            id: row.id,
-            chargeCode: row.chargeCode,
-            chargeDesc: row.chargeName,
-            gChargeCode: row.govChargeCode,
-            gstPercent: row.gstpercent,
-            sac: row.sac,
-            lcAmount: row.lcAmt
-          }))
+          listValueVO.gstLines
+            ? listValueVO.gstLines.map((row) => ({
+                id: row.id,
+                chargeCode: row.chargeCode,
+                chargeDesc: row.chargeName,
+                gChargeCode: row.govChargeCode,
+                gstPercent: row.gstpercent,
+                sac: row.sac,
+                lcAmount: row.lcAmt
+              }))
+            : []
         );
         // setShowChargeDetails(false);
-        // handleCloseModal();
-        setModalOpen(false);
+        handleCloseModal();
+        // setModalOpen(false);
         getAllCostInvoiceByOrgId();
         console.log('TAX INVOICE:==>', result);
       } else {
@@ -845,6 +852,7 @@ const CostInvoice = () => {
             gst: row.gst,
             gstPercent: row.gstpercent,
             jobNo: row.jobNo,
+            party: row.party,
             lcAmount: row.lcAmt,
             ledger: row.ledger,
             description: row.description,
@@ -902,6 +910,7 @@ const CostInvoice = () => {
             gst: '',
             gstPercent: '',
             jobNo: '',
+            party: '',
             ledger: '',
             description: '',
             qty: '',
@@ -1360,6 +1369,7 @@ const CostInvoice = () => {
       gst: '',
       gstPercent: '',
       jobNo: '',
+      party: '',
       ledger: '',
       description: '',
       qty: '',
@@ -1383,6 +1393,7 @@ const CostInvoice = () => {
         gst: '',
         gstPercent: '',
         jobNo: '',
+        party: '',
         ledger: '',
         description: '',
         qty: '',
@@ -1597,6 +1608,7 @@ const CostInvoice = () => {
         gst: row.gst,
         gstPercent: row.gstPercent,
         jobNo: row.jobNo,
+        party: row.party,
         ledger: row.ledger,
         description: row.description,
         qty: row.qty,
@@ -1661,7 +1673,8 @@ const CostInvoice = () => {
           getPartyName(formData.supplierType);
           // getStateName();
           // getPlaceOfSupply();
-          handleSaveClear();
+          // handleSaveClear();
+          handleClear();
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Cost Invoice Creation failed');
         }
@@ -2350,6 +2363,7 @@ const CostInvoice = () => {
                                       S.No
                                     </th>
                                     <th className="table-header">Job No</th>
+                                    <th className="table-header">Customer Name</th>
                                     <th className="table-header">Charge Code</th>
                                     <th className="table-header" style={{ width: '250px' }}>
                                       Description
@@ -2377,6 +2391,9 @@ const CostInvoice = () => {
                                           <td className="text-center">{index + 1}</td>
                                           <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                             {row.jobNo}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.party}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                             {row.chargeCode}
@@ -2456,10 +2473,12 @@ const CostInvoice = () => {
                                               onChange={(e) => {
                                                 const selectedJobNo = e.target.value;
                                                 const selectedCurrencyData = jobNoList.find((job) => job.jobNo === selectedJobNo);
+                                                console.log('jobList', selectedCurrencyData);
                                                 const updatedJobNoData = [...chargerCostInvoice];
                                                 updatedJobNoData[index] = {
                                                   ...updatedJobNoData[index],
-                                                  jobNo: selectedJobNo
+                                                  jobNo: selectedCurrencyData.jobNo,
+                                                  party: selectedCurrencyData.customerName
                                                 };
                                                 setChargerCostInvoice(updatedJobNoData);
                                               }}
@@ -2479,6 +2498,16 @@ const CostInvoice = () => {
                                                 {costInvoiceErrors[index].jobNo}
                                               </div>
                                             )}
+                                          </td>
+
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.party}
+                                              disabled
+                                              style={{ width: '300px' }}
+                                              className={costInvoiceErrors[index]?.party ? 'error form-control' : 'form-control'}
+                                            />
                                           </td>
 
                                           <td className="border px-2 py-2">
@@ -3136,7 +3165,7 @@ const CostInvoice = () => {
                                 size="small"
                                 name="tdsWithHoldingPer"
                                 type="number"
-                                disabled
+                                // disabled
                                 inputProps={{ maxLength: 30 }}
                                 value={tdsCostInvoiceDTO[index]?.tdsWithHoldingPer || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}

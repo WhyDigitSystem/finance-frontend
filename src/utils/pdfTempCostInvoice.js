@@ -11,8 +11,6 @@ import apiCalls from 'apicall';
 const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   const [open, setOpen] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState('');
-  const [bankDetails, setBankDetails] = useState([]);
-  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
 
   const styles = {
     container: {
@@ -114,7 +112,6 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   useEffect(() => {
     if (row) {
       handleOpen();
-      getBankDetailsByOrgId();
     }
     console.log('RowData =>', row);
 
@@ -128,16 +125,6 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     const formattedTime = now.toLocaleTimeString('en-GB'); // Format time as HH:MM:SS
     setCurrentDateTime(`${formattedDate} ${formattedTime}`);
   }, [row, callBackFunction]);
-
-  const getBankDetailsByOrgId = async () => {
-    try {
-      const response = await apiCalls('get', `/commonmaster/getBankDetailsByOrgId?orgId=${orgId}`);
-      setBankDetails(response.paramObjectsMap.bankDetailsVO[0]);
-      console.log('setBankDetails =>', response.paramObjectsMap.bankDetailsVO);
-    } catch (error) {
-      console.error('Error fetching invoice:', error);
-    }
-  };
 
   return (
     <Dialog
@@ -192,12 +179,12 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
           >
             <div>
               <div>
-                <strong>Invoice No:</strong>
-                {row.purVoucherNo}
+                Invoice No
+                <strong className="ms-3">: {row.vid}</strong>
               </div>
               <div>
-                <strong>Invoice Date: </strong>
-                {row.purVoucherDate ? dayjs(row.purVoucherDate).format('DD-MM-YYYY') : 'N/A'}
+                Invoice Date
+                <strong> : {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}</strong>
               </div>
               {/* <div>
                 <strong>ACK No: </strong>
@@ -218,8 +205,23 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               <div>
                 <strong>GRN Date:</strong> {row.grnDate}
               </div>
-            </div> */}
-            <QRCodeComponent text={'1234567'} />
+            </div>
+            <QRCodeComponent text={qrText} /> 
+            <div style={{ textAlign: 'left' }}>
+              {/* <div>
+                <strong>Due date:</strong> {row.dueDate}
+              </div>
+              <div>
+                Place Of Supply
+                <strong>
+                  {' '}
+                  : {row.supplierGstInCode}-{row.supplierPlace}
+                </strong>
+              </div>
+              {/* <div>
+                <strong>GRN Date:</strong> {row.grnDate}
+              </div> 
+            </div>*/}
           </div>
           <div
             style={{
@@ -231,30 +233,18 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             }}
           >
             <div>
+              <div>Bill To</div>
               <div>
-                <strong>Bill To</strong>
+                <strong>{row.supplierName}</strong>
               </div>
-              <div>{row.supplierName}</div>
+              <div style={{ width: 300, marginBottom: 4 }}>
+                {/* <strong>Place of address:</strong>
+                <br /> */}
+                <span style={{ textWrap: 'auto', textOverflow: 'ellipsis' }}>{row.address}</span>
+              </div>
               <div>
                 <strong className="mb-2">Reg No:</strong> {row.supplierGstIn}
               </div>
-              {/* <div>{row.address}</div> */}
-              <div style={{ width: 300 }}>
-                <strong>Place of address:</strong>
-                <br />
-                <span style={{ textWrap: 'auto', textOverflow: 'ellipsis' }}>{row.address}</span>
-              </div>
-            </div>
-            <div style={{ textAlign: 'left' }}>
-              {/* <div>
-                <strong>Due date:</strong> {row.dueDate}
-              </div> */}
-              <div>
-                <strong>Place Of Supply:</strong> {row.supplierPlace}
-              </div>
-              {/* <div>
-                <strong>GRN Date:</strong> {row.grnDate}
-              </div> */}
             </div>
           </div>
 
@@ -360,16 +350,49 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.currency}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.exRate || ''}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.qty}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.rate}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                    {parseFloat(row.rate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.fcAmt}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.gstpercent}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.lcAmt}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                    {parseFloat(row.lcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
 
           {/* <!-- Total Section --> */}
+          <div
+            style={{
+              // textAlign: 'right',
+              // fontWeight: 'bold',
+              fontSize: '14px',
+              color: '#333'
+            }}
+            className="d-flex justify-content-end mb-2"
+          >
+            <div
+              style={{
+                fontStyle: 'italic'
+              }}
+            >
+              Total Taxable Amount:{' '}
+              <span
+                style={{
+                  fontStyle: 'normal',
+                  fontWeight: 'normal',
+                  fontSize: '14px',
+                  color: '#333',
+                  marginLeft: 10
+                }}
+              >
+                {parseFloat(row.gstInputLcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+          </div>
           <div
             style={{
               // textAlign: 'right',
@@ -392,10 +415,11 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 style={{
                   fontWeight: 'normal',
                   fontSize: '14px',
+                  fontStyle: 'italic',
                   color: '#333'
                 }}
               >
-                {toWords(parseFloat(row.sumLcAmt)).toUpperCase()}
+                {row.amountInWords ? row.amountInWords.toUpperCase() : ''}
               </span>
             </div>
             <div>
@@ -407,7 +431,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                   color: '#333'
                 }}
               >
-                {row.sumLcAmt}
+                {parseFloat(row.sumLcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
           </div>
@@ -422,7 +446,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               }}
             >
               <div>
-                <strong>Remarks :</strong>
+                <strong>Remarks :</strong> {row.remarks}
               </div>
               {/* <div>
               <strong>Shipment Ref No :</strong> {row.recipientGSTIN}
@@ -467,30 +491,30 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             </ol>
           </div>
 
-          <div style={styles2.container}>
+          {/* <div style={styles2.container}>
             <h6 style={styles2.heading}>Bank Details:</h6>
             <p style={styles2.item}>
-              <span style={styles2.label}>BANK NAME:</span> {bankDetails.bankName}
+              <span style={styles2.label}>BANK NAME:</span> {bankDetails.bankName ? bankDetails.bankName : ''}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT CODE:</span> {bankDetails.accountCode}
+              <span style={styles2.label}>ACCOUNT CODE:</span> {bankDetails.accountCode ? bankDetails.accountCode : ''}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>BENEFICIARY NAME:</span> {bankDetails.beneficiaryName}
+              <span style={styles2.label}>BENEFICIARY NAME:</span> {bankDetails.beneficiaryName ? bankDetails.beneficiaryName : ''}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>BRANCH:</span> {bankDetails.branch}
+              <span style={styles2.label}>BRANCH:</span> {bankDetails.branch ? bankDetails.branch : ''}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>IFSC:</span> {bankDetails.ifsc}
+              <span style={styles2.label}>IFSC:</span> {bankDetails.ifsc ? bankDetails.ifsc : ''}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT NO:</span> {bankDetails.accountNo}
+              <span style={styles2.label}>ACCOUNT NO:</span> {bankDetails.accountNo ? bankDetails.accountNo : ''}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT TYPE:</span> {bankDetails.accountType}
+              <span style={styles2.label}>ACCOUNT TYPE:</span> {bankDetails.accountType ? bankDetails.accountType : ''}
             </p>
-          </div>
+          </div> */}
 
           <div
             style={{
