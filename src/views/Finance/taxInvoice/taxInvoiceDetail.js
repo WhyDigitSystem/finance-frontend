@@ -1244,7 +1244,8 @@ const TaxInvoiceDetails = () => {
       setFormData((prevData) => ({
         ...prevData,
         partyName: selectedEmp.partyName,
-        partyCode: selectedEmp.partyCode
+        partyCode: selectedEmp.partyCode,
+        partyId: selectedEmp.id,
       }));
       getCreditDays(selectedEmp.partyCode);
       getJobCardNo(selectedEmp.partyCode);
@@ -1392,6 +1393,7 @@ const TaxInvoiceDetails = () => {
         const listValueVO = result.paramObjectsMap.taxInvoiceVO;
         setListViewData(result.paramObjectsMap.taxInvoiceVO);
         setEditId(row.original.id);
+        getStateName(listValueVO.partyId);
         // setGstTableData(row.original.taxInvoiceGstVO);
         setGstTableData(listValueVO.taxInvoiceGstVO);
         setPartyId(listValueVO.partyId);
