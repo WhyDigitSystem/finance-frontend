@@ -6,10 +6,13 @@ import jsPDF from 'jspdf';
 import { useEffect, useState } from 'react';
 import apiCalls from 'apicall';
 
+const dummyImageURL = 'https://t3.ftcdn.net/jpg/04/62/93/66/240_F_462936689_BpEEcxfgMuYPfTaIAOC1tCDurmsno7Sp.jpg';
+
 const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   const [open, setOpen] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState('');
   const [bankDetails, setBankDetails] = useState([]);
+  const [companyDetails, setCompanyDetails] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
 
   const styles = {
@@ -168,6 +171,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     if ((row && row.approveStatus === 'Approved') || (row && row.approveStatus === 'Rejected')) {
       handleOpen();
       getBankDetailsByOrgId();
+      getCompanyDetails();
     } else {
       setOpen(false);
     }
@@ -194,6 +198,21 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     }
   };
 
+  const getCompanyDetails = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+
+      if (response.status === true) {
+        setCompanyDetails(response.paramObjectsMap.companyVO[0]);
+        console.log('getCompanyDetails:', response.paramObjectsMap.companyVO[0]);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   return (
     <Dialog
       open={open}
@@ -208,7 +227,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
           id="main-content"
           style={{
             padding: '20px',
-            backgroundColor: '#f9f9f9',
+            // backgroundColor: '#f9f9f9',
             width: '210mm',
             height: 'auto',
             margin: 'auto',
@@ -228,9 +247,26 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               color: '#333'
             }}
           >
-            <div>{localStorage.getItem('companyName')}</div>
-            <div>
-              <strong>Tax Invoice</strong>
+            {companyDetails.companyLogo && (
+              <div className="d-flex flex-row">
+                <img
+                  src={`data:image/jpeg;base64,${companyDetails.companyLogo}`}
+                  alt="Logo"
+                  style={{ width: '80px', objectFit: 'contain' }}
+                  onError={(e) => {
+                    e.target.src = dummyImageURL;
+                  }}
+                />
+                <div className="ms-2">
+                  <strong>{localStorage.getItem('companyName')}</strong>
+                  <div style={{ width: 198, marginBottom: 4 }}>
+                    <span style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '11px' }}>{companyDetails.address}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+            <div style={{ marginRight: '145px' }}>
+              <strong style={{ fontSize: '20px' }}>TAX INVOICE</strong>
             </div>
             <div>{localStorage.getItem('branch')}</div>
           </div>
