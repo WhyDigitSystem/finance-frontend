@@ -149,7 +149,7 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
   // }, [row, callBackFunction]);
 
   useEffect(() => {
-    if (row && row.approveStatus === 'Approved') {
+    if (row && row.approveStatus === 'Approved' || row.approveStatus === 'Rejected') {
       handleOpen();
       getBankDetailsByOrgId();
     } else {
@@ -419,7 +419,7 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
             </tbody>
           </table>
 
-          <div
+          {/* <div
             style={{
               fontStyle: 'italic',
               textAlign: 'right',
@@ -437,6 +437,68 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
             >
               {parseFloat(row.gstInputLcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </span>
+          </div> */}
+
+          <div className="d-flex flex-column">
+            <div
+            style={{
+              // fontStyle: 'italic',
+              textAlign: 'right'
+            }}
+            >
+              Total Charges Amount:{' '}
+              <span
+                style={{
+                  fontStyle: 'normal',
+                  fontWeight: 'normal',
+                  fontSize: '14px',
+                  color: '#333',
+                  marginLeft: 3
+                }}
+              >
+                {parseFloat(row.totChargesBillCurrAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <div
+            // style={{
+            //   fontStyle: 'italic'
+            // }}
+            >
+              Total Taxable Amount:{' '}
+              <span
+                style={{
+                  fontStyle: 'normal',
+                  fontWeight: 'normal',
+                  fontSize: '14px',
+                  color: '#333',
+                  marginLeft: 10
+                }}
+              >
+                {parseFloat(row.gstInputLcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <div
+            // style={{
+            //   fontStyle: 'italic'
+            // }}
+            >
+              Total TDS Amount:{' '}
+              <span
+                style={{
+                  fontStyle: 'normal',
+                  fontWeight: 'normal',
+                  fontSize: '14px',
+                  color: '#333',
+                  marginLeft: 3
+                }}
+              >
+                -{' '}
+                {/* {parseFloat(row.tdsCostInvoiceVO[0].totTdsWhAmnt).toLocaleString('en-IN', {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2
+                })} */}
+              </span>
+            </div>
           </div>
 
           {/* <!-- Total Section --> */}
@@ -531,11 +593,11 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
             <strong>Terms And Conditions :</strong>
             <ol style={{ lineHeight: '1.6' }}>
               <li>
-                OUR LIABILITY IS RESTRICTED AND LIMITED TO STANDARD TRADING CONDITIONS OF FEDERATIONS OF FREIGHT FORWARDERS ASSOCIATIONS IN
-                INDIA OF WHICH WE ARE MEMBERS, COPIES OF STANDARD TRADING CONDITIONS ARE AVAILABLE ON REQUEST.
+                The payment should be made by way of Account Payee Cheque / Demand Draft / NEFT / RTGS in the name of "SCM AI PACKS PVT LTD".
               </li>
-              <li>INTEREST WILL BE CHARGED @ 16% PER ANNUM FOR ALL PAYMENT RECEIVED ON OR AFTER DUE DATE AS MENTIONED ABOVE.</li>
-              <li>CHEQUE / DD SHOULD BE IN FAVOUR OF XYZ LOGISTICS PRIVATE LIMITED.</li>
+              <li>Any Discrepancy in the invoice shall be informed within 7 days of the invoice submission.</li>
+              <li>Interest at 2% p.m. or part thereof will be charged if the bill is not paid on the due date</li>
+              <li>Any dispute is subject to Bangalore Jurisdiction</li>
             </ol>
           </div>
 

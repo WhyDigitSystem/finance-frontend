@@ -169,7 +169,7 @@ const CostDebitNote = () => {
     }
   ]);
 
-  const [costDebitNoteTaxParticularDTO, setTdsCostInvoiceDTO] = useState([
+  const [tdsCostInvoice, setTdsCostInvoice] = useState([
     {
       section: '',
       tdsWithHolding: '',
@@ -297,7 +297,7 @@ const CostDebitNote = () => {
         description: ''
       }
     ]);
-    setTdsCostInvoiceDTO([
+    setTdsCostInvoice([
       {
         section: '',
         tdsWithHolding: '',
@@ -338,6 +338,91 @@ const CostDebitNote = () => {
   useEffect(() => {
     getPartyName(formData.supplierType);
   }, [formData.supplierType]);
+
+  useEffect(() => {
+    if (originBillVo.length === 1) {
+      const selectedBill = originBillVo[0];
+
+      setFormData((prevData) => ({
+        ...prevData,
+        originBill: selectedBill.docId,
+        actBillCurrAmt: selectedBill.actBillCurrAmt,
+        actBillLcAmt: selectedBill.actBillLcAmt,
+        customer: selectedBill.customer,
+        finYear: finYear,
+        gstInputLcAmt: selectedBill.gstInputLcAmt,
+        netBillCurrAmt: selectedBill.netBillCurrAmt,
+        netBillLcAmt: selectedBill.netBillLcAmt,
+        roundOff: selectedBill.roundOff,
+        supplierType: selectedBill.supplierType,
+        totChargesBillCurrAmt: selectedBill.totChargesBillCurrAmt,
+        totChargesLcAmt: selectedBill.totChargesLcAmt,
+        originBillDate: selectedBill.docDate,
+        vid: selectedBill.vid,
+        vdate: selectedBill.vdate ? dayjs(selectedBill.vdate) : dayjs(),
+        orgId: orgId,
+        branch: selectedBill.branch,
+        branchCode: selectedBill.branchCode,
+        client: selectedBill.client,
+        createdBy: loginUserName,
+        accuralid: selectedBill.accuralid,
+        address: selectedBill.address,
+        exRate: selectedBill.exRate,
+        dueDate: selectedBill.dueDate ? dayjs(selectedBill.dueDate) : dayjs(),
+        creditDays: selectedBill.creditDays,
+        currency: selectedBill.currency,
+        gstType: selectedBill.gstType,
+        otherInfo: selectedBill.otherInfo,
+        payment: selectedBill.payment,
+        remarks: selectedBill.remarks,
+        shipperRefNo: selectedBill.shipperRefNo,
+        supplierBillNo: selectedBill.supplierBillNo,
+        supplierGstIn: selectedBill.supplierGstIn,
+        supplierGstInCode: selectedBill.supplierGstInCode,
+        supplierPlace: selectedBill.supplierPlace,
+        utrRef: selectedBill.utrRef,
+        product: selectedBill.product
+      }));
+
+      setChargerCostInvoice(
+        (selectedBill.chargerCostInvoiceVO || []).map((row) => ({
+          id: row.id,
+          jobNo: row.jobNo,
+          chargeName: row.chargeName,
+          chargeCode: row.chargeCode,
+          chargeLedger: row.ledger,
+          sac: row.sac,
+          contType: row.contType,
+          currency: row.currency,
+          exRate: row.exRate,
+          fcAmt: row.fcAmt,
+          gst: row.gst,
+          billAmt: row.billAmt,
+          gstPercent: row.gstpercent,
+          lcAmt: row.lcAmt,
+          ledger: row.ledger,
+          govChargeCode: row.govChargeCode,
+          exempted: row.exempted,
+          qty: row.qty,
+          rate: row.rate,
+          taxable: row.taxable,
+          description: row.description
+        }))
+      );
+
+      setTdsCostInvoice(
+        (selectedBill.tdsCostInvoiceVO || []).map((row) => ({
+          id: row.id,
+          section: row.section,
+          tdsWithHolding: row.tdsWithHolding,
+          tdsWithHoldingPer: row.tdsWithHoldingPer,
+          totTdsWhAmnt: row.totTdsWhAmnt
+        }))
+      );
+
+      setShowChargeDetails(true);
+    }
+  }, [originBillVo]);
 
   const getAllCostDebitNoteByOrgId = async () => {
     try {
@@ -453,7 +538,7 @@ const CostDebitNote = () => {
           }))
         );
 
-        setTdsCostInvoiceDTO(
+        setTdsCostInvoice(
           listValueVO.tdsCostDebitNoteVO.map((row) => ({
             id: row.id,
             section: row.section,
@@ -483,22 +568,22 @@ const CostDebitNote = () => {
   const calculateTotTdsWhAmnt = () => {
     const totallcAmt = chargerCostInvoice.reduce((acc, curr) => acc + curr.lcAmt, 0);
 
-    const updatedTdsCostInvoiceDTO = costDebitNoteTaxParticularDTO.map((item) => {
+    const updatedTdsCostInvoiceDTO = tdsCostInvoice.map((item) => {
       const tdsWithHoldingPer = parseFloat(item.tdsWithHoldingPer);
       const totTdsWhAmnt = tdsWithHoldingPer ? (totallcAmt * tdsWithHoldingPer) / 100 : 0;
       return { ...item, totTdsWhAmnt: totTdsWhAmnt.toFixed(2) };
     });
 
-    setTdsCostInvoiceDTO(updatedTdsCostInvoiceDTO);
+    setTdsCostInvoice(updatedTdsCostInvoiceDTO);
   };
 
   useEffect(() => {
     calculateTotTdsWhAmnt();
-  }, [chargerCostInvoice, costDebitNoteTaxParticularDTO.map((item) => item.tdsWithHoldingPer)]);
+  }, [chargerCostInvoice, tdsCostInvoice.map((item) => item.tdsWithHoldingPer)]);
 
   useEffect(() => {
     calculateTotals();
-  }, [chargerCostInvoice, JSON.stringify(costDebitNoteTaxParticularDTO)]);
+  }, [chargerCostInvoice, JSON.stringify(tdsCostInvoice)]);
 
 
   // const calculateTotals = () => {
@@ -512,7 +597,7 @@ const CostDebitNote = () => {
   //     totalGstAmount += parseFloat(row.gstAmount || 0);
   //   });
 
-  //   const totalTds = costDebitNoteTaxParticularDTO.reduce((acc, row) => acc + parseFloat(row.totTdsWhAmnt || 0), 0);
+  //   const totalTds = tdsCostInvoice.reduce((acc, row) => acc + parseFloat(row.totTdsWhAmnt || 0), 0);
 
   //   const roundOffDifference = (Math.round(totallcAmt) - totallcAmt).toFixed(2);
 
@@ -544,7 +629,7 @@ const CostDebitNote = () => {
     });
 
     // Calculate total TDS
-    const totalTds = costDebitNoteTaxParticularDTO.reduce((acc, row) => acc + parseFloat(row.totTdsWhAmnt || 0), 0);
+    const totalTds = tdsCostInvoice.reduce((acc, row) => acc + parseFloat(row.totTdsWhAmnt || 0), 0);
 
     // Correct Net Bill Calculation
     const netBillCurrAmt = totalBillAmt + totalGstAmount - totalTds;
@@ -696,7 +781,7 @@ const CostDebitNote = () => {
         );
 
         // Correct Mapping of TDS
-        setTdsCostInvoiceDTO(
+        setTdsCostInvoice(
           costVO?.tdsCostDebitNoteVO?.map((row) => ({
             id: row?.id || '',
             section: row?.section || '',
@@ -734,8 +819,8 @@ const CostDebitNote = () => {
 
     console.log(`Field Name: ${name}, Field Value: ${value}, Field Type: ${fieldType}, Index: ${index}`);
 
-    if (fieldType === 'costDebitNoteTaxParticularDTO') {
-      setTdsCostInvoiceDTO((prevData) => {
+    if (fieldType === 'tdsCostInvoice') {
+      setTdsCostInvoice((prevData) => {
         const updatedData = [...prevData]; // Clone state
         updatedData[index] = { ...updatedData[index], [name]: value };
         return updatedData;
@@ -772,7 +857,7 @@ const CostDebitNote = () => {
             description: ''
           }
         ]);
-        setTdsCostInvoiceDTO([
+        setTdsCostInvoice([
           {
             section: '',
             tdsWithHolding: '',
@@ -910,7 +995,7 @@ const CostDebitNote = () => {
         }))
       );
 
-      setTdsCostInvoiceDTO(
+      setTdsCostInvoice(
         (selectedBill.tdsCostInvoiceVO || []).map((row) => ({
           id: row.id,
           section: row.section,
@@ -1434,7 +1519,7 @@ const CostDebitNote = () => {
     setCostInvoiceErrors(newTableErrors);
 
     let tdsValid = true;
-    const tdsTableErrors = costDebitNoteTaxParticularDTO.map((row) => {
+    const tdsTableErrors = tdsCostInvoice.map((row) => {
       const rowErrors = {};
       if (!row.section) {
         rowErrors.section = 'Section is required';
@@ -1473,7 +1558,7 @@ const CostDebitNote = () => {
         taxable: row.taxable,
         description: row.description
       }));
-      const tdsVO = costDebitNoteTaxParticularDTO.map((row) => ({
+      const tdsVO = tdsCostInvoice.map((row) => ({
         ...(editId && { id: row.id }),
         section: row.section,
         tdsWithHolding: row.tdsWithHolding,
@@ -3099,7 +3184,7 @@ const CostDebitNote = () => {
                   )}
                   {value === 1 && (
                     <>
-                      {costDebitNoteTaxParticularDTO.map((row, index) => (
+                      {tdsCostInvoice.map((row, index) => (
                         <div className="row mt-3">
                           <div className="col-md-3 mb-3">
                             <FormControl fullWidth size="small">
@@ -3107,8 +3192,8 @@ const CostDebitNote = () => {
                               <Select
                                 labelId="TDS"
                                 name="tdsWithHolding"
-                                value={costDebitNoteTaxParticularDTO[index]?.tdsWithHolding || ''}
-                                onChange={(e) => handleInputChange(e, 'costDebitNoteTaxParticularDTO', index)}
+                                value={tdsCostInvoice[index]?.tdsWithHolding || ''}
+                                onChange={(e) => handleInputChange(e, 'tdsCostInvoice', index)}
                                 // disabled={formData.mode === 'SUBMIT' || !!formData.originBill}
                                 disabled
                                 label="TDS / WH"
@@ -3129,8 +3214,8 @@ const CostDebitNote = () => {
                                 size="small"
                                 name="section"
                                 inputProps={{ maxLength: 30 }}
-                                value={costDebitNoteTaxParticularDTO[index]?.section || ''}
-                                onChange={(e) => handleInputChange(e, 'costDebitNoteTaxParticularDTO', index)}
+                                value={tdsCostInvoice[index]?.section || ''}
+                                onChange={(e) => handleInputChange(e, 'tdsCostInvoice', index)}
                                 disabled
                                 // disabled={formData.mode === 'SUBMIT' || !!formData.originBill}
                                 error={!!tdsCostErrors[index]?.section}
@@ -3147,8 +3232,8 @@ const CostDebitNote = () => {
                                 type="number"
                                 disabled
                                 inputProps={{ maxLength: 30 }}
-                                value={costDebitNoteTaxParticularDTO[index]?.tdsWithHoldingPer || ''}
-                                onChange={(e) => handleInputChange(e, 'costDebitNoteTaxParticularDTO', index)}
+                                value={tdsCostInvoice[index]?.tdsWithHoldingPer || ''}
+                                onChange={(e) => handleInputChange(e, 'tdsCostInvoice', index)}
                                 error={!!tdsCostErrors[index]?.tdsWithHoldingPer}
                                 helperText={tdsCostErrors[index]?.tdsWithHoldingPer || ''}
                               />
@@ -3163,13 +3248,13 @@ const CostDebitNote = () => {
                               disabled
                               inputProps={{ maxLength: 30 }}
                               value={
-                                costDebitNoteTaxParticularDTO[index]?.totTdsWhAmnt !== null && costDebitNoteTaxParticularDTO[index]?.totTdsWhAmnt !== undefined
-                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(costDebitNoteTaxParticularDTO[index]?.totTdsWhAmnt)
+                                tdsCostInvoice[index]?.totTdsWhAmnt !== null && tdsCostInvoice[index]?.totTdsWhAmnt !== undefined
+                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(tdsCostInvoice[index]?.totTdsWhAmnt)
                                   : ""
                               }
                               onChange={(e) => {
                                 const rawValue = e.target.value.replace(/,/g, ""); // Remove commas before parsing
-                                handleInputChange({ ...e, target: { ...e.target, value: rawValue } }, 'costDebitNoteTaxParticularDTO', index);
+                                handleInputChange({ ...e, target: { ...e.target, value: rawValue } }, 'tdsCostInvoice', index);
                               }}
                               error={!!tdsCostErrors[index]?.totTdsWhAmnt}
                               helperText={tdsCostErrors[index]?.totTdsWhAmnt}
