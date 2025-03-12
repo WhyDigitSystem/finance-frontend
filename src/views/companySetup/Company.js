@@ -4,18 +4,18 @@ import Box from '@mui/material/Box';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import { Avatar, ButtonBase, FormHelperText, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Avatar, Typography, FormHelperText, Button, Dialog, DialogContent, } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import TextField from '@mui/material/TextField';
-import { useTheme } from '@mui/material/styles';
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
-import axios from 'axios';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useRef, useState, useMemo, useEffect } from 'react';
+import ControlCameraIcon from '@mui/icons-material/ControlCamera';
+import { useRef, useState, useEffect } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -29,6 +29,7 @@ import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import { getAllActiveCitiesByState, getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
+import  CloseIcon  from '@mui/icons-material/Close';
 
 const Company = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -39,10 +40,12 @@ const Company = () => {
   const [cityList, setCityList] = useState([]);
   const [editId, setEditId] = useState('');
   const [value, setValue] = useState(0);
+  const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     companyCode: '',
     companyName: '',
     ceo: '',
+    termsAndConditions: '',
     address: '',
     country: '',
     state: '',
@@ -57,6 +60,7 @@ const Company = () => {
     companyCode: '',
     ceo: '',
     address: '',
+    termsAndConditions: '',
     country: '',
     state: '',
     city: '',
@@ -333,6 +337,7 @@ const Company = () => {
           ceo: particularCompany.ceo,
           address: particularCompany.address,
           country: particularCompany.country,
+          termsAndConditions: particularCompany.termsAndConditions,
           state: particularCompany.state,
           city: particularCompany.city,
           pincode: particularCompany.zip,
@@ -341,6 +346,8 @@ const Company = () => {
           // gst: particularCompany.gst,
           website: particularCompany.webSite
         });
+        handleBlob(particularCompany.companyLogo);
+        // setLogo(particularCompany.companyLogo);
         setDetailsTableData(
           particularCompany.bankDetailsVO.map((com) => ({
             id: com.id,
@@ -381,11 +388,13 @@ const Company = () => {
   };
 
   const handleClear = () => {
+    setLogo(null);
     setFormData({
       // companyCode: '',
       ceo: '',
       address: '',
       country: '',
+      termsAndConditions: '',
       state: '',
       city: '',
       pincode: '',
@@ -399,6 +408,7 @@ const Company = () => {
       ceo: '',
       address: '',
       country: '',
+      termsAndConditions: '',
       state: '',
       city: '',
       pincode: '',
@@ -438,6 +448,9 @@ const Company = () => {
     if (!formData.country) {
       errors.country = 'Country is required';
     }
+    // if (!formData.termsAndCondition) {
+    //   errors.termsandcondition = 'termsandcondition is required';
+    // }
     if (!formData.state) {
       errors.state = 'State is required';
     }
@@ -474,6 +487,7 @@ const Company = () => {
         ceo: formData.ceo,
         address: formData.address,
         country: formData.country,
+        termsAndConditions: formData.termsAndConditions,
         state: formData.state,
         city: formData.city,
         zip: formData.pincode,
@@ -488,9 +502,17 @@ const Company = () => {
       try {
         const response = await apiCalls('put', `commonmaster/updateCompany`, saveFormData);
         if (response.status === true) {
-          console.log('Response:', response);
-
+          console.log('Response:', response.paramObjectsMap.CompanyVO.id);
           showToast('success', ' Company updated Successfully');
+          const generatedId = response.paramObjectsMap.CompanyVO.id;
+          if (generatedId) {
+            console.log('Generated ID:', generatedId);
+            console.log('Uploaded Item', logo);
+            handleFileUpload(generatedId);
+          } else {
+            console.log('handle Img Upload failed');
+          }
+          // getCompanyDetails();
           handleClear();
           setIsLoading(false);
         } else {
@@ -510,10 +532,68 @@ const Company = () => {
 
   const handleView = () => {
     console.log('LIST VIEW DATAS ARE:', listViewData);
-
     setListView(!listView);
   };
+  const [logo, setLogo] = useState(null);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
+      setLogo(file);
+      // console.log(file.name);
+      // setLogo(URL.createObjectURL(file));
+    } else {
+      showToast('error', 'Please upload a valid image (PNG or JPEG).');
+    }
+  };
+  const handleFileUpload = async (generatedId) => {
+    if (!generatedId) {
+      console.warn('Generated ID is missing');
+      showToast('error', 'Generated ID is required');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', logo);
+    try {
+      const response = await apiCalls(
+        'post',
+        `/commonmaster/uploadCompanyLogoInBloob?id=${generatedId}`,
+        formData,
+        {},
+        {'Content-Type': 'multipart/form-data'}
+      );
+      console.log('Img Upload Response:', response);
 
+      if (response.status === true) {
+        showToast('success', response.message || 'Image Uploaded successfully!');
+      } else {
+        console.warn('Img upload failed:', response);
+        showToast('error', 'Img upload failed');
+      }
+    } catch (error) {
+      console.error('Img Upload Error:', error);
+      showToast('error', 'Failed to upload Img');
+    }
+  };
+  const handleBlob = async (bloblogo) => {
+  try {
+    const response = await fetch(bloblogo);
+    const blob = await response.blob();
+    console.log('Blob Type:', blob);
+    if (!blob || !(blob instanceof Blob)) {
+      console.error('Invalid Blob:', blob);
+      return;
+    }
+
+    // const imageUrl = URL.createObjectURL(blob);
+    setLogo(blob)
+    // console.log('Blob URL:', imageUrl);
+  } catch (error) {
+    console.error('Error fetching or converting Blob:', error);
+  }
+};
+  const handleRemoveLogo = () => setLogo(null);
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -683,9 +763,79 @@ const Company = () => {
                 />
               </div>
               <div className="col-md-3 mb-3">
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    multiline
+                    startIcon={<CloudUploadIcon />}
+                    sx={{color: 'rgb(103 58 183)', borderRadius: '12px' }}
+                  >
+                    {logo ? logo.name : 'Upload Logo'}
+                    {/* {logo ? 'Preview Logo 👉' : 'Upload Logo'} */}
+                    <input
+                      type="file"
+                      hidden
+                      accept="image/png, image/jpeg"
+                      onChange={handleLogoChange}
+                    />
+                  </Button>
+
+                  {logo && (
+                    <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }} onClick={handleOpen}>
+                      <ControlCameraIcon />
+                    </IconButton>
+                  )}
+                </Box>
+                  <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+                    <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
+                      <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)'}}>Company Logo</Typography>
+                      {logo ? (
+                        <Box>
+                          <Avatar src={URL.createObjectURL(logo)} alt="Company Logo" sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }} />
+                          <Box display="flex" gap={2} mt={2}>
+                            <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize:'13px' }} onClick={handleRemoveLogo}>
+                              Delete
+                            </IconButton>
+                            <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize:'13px' }} onClick={handleClose}>
+                              Close
+                            </IconButton>
+                          </Box> 
+                        </Box> 
+                      ) : (
+                        <Box>
+                          <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
+                              <Typography variant="caption">Upload Logo</Typography>
+                          </Avatar>
+                          <Box display="flex" gap={2} mt={2}>
+                            <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize:'15px' }} onClick={handleClose}>
+                              Close
+                            </IconButton>
+                          </Box>
+                      </Box>
+                      )}
+                    </DialogContent>
+                  </Dialog>
+              </div>
+
+              <div className="col-md-3 mb-3">
                 <FormControlLabel
                   control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
                   label="Active"
+                />
+              </div>
+              <div className="col-md-9 mb-5">
+                <TextField
+                  label="Terms And Conditions"
+                  variant="outlined"
+                  size="large"
+                  fullWidth
+                  multiline
+                  name="termsAndConditions"
+                  value={formData.termsAndConditions}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.termsAndConditions}
+                  helperText={fieldErrors.termsAndConditions}
                 />
               </div>
             </div>
