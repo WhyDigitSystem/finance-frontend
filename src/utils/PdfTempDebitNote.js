@@ -460,9 +460,10 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
               </span>
             </div>
             <div
-            // style={{
-            //   fontStyle: 'italic'
-            // }}
+            style={{
+              // fontStyle: 'italic',
+              textAlign: 'right'
+            }}
             >
               Total Taxable Amount:{' '}
               <span
@@ -478,9 +479,10 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
               </span>
             </div>
             <div
-            // style={{
-            //   fontStyle: 'italic'
-            // }}
+            style={{
+              // fontStyle: 'italic',
+              textAlign: 'right'
+            }}
             >
               Total TDS Amount:{' '}
               <span
