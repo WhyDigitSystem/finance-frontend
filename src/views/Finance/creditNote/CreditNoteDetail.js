@@ -747,6 +747,47 @@ const IrnCreditNote = () => {
           }))
         );
       }
+      if (selectedBill.taxInvoiceDetailsVO) {
+        setIrnChargesData(
+          selectedBill.taxInvoiceDetailsVO.map((item) => ({
+            id: item.id,
+            chargeType: item.chargeType,
+            chargeCode: item.chargeCode,
+            // govChargeCode: item.govChargeCode,
+            description: item.description,
+            ledger: item.ledger,
+            chargeName: item.chargeName,
+            taxable: item.taxable,
+            qty: parseInt(item.qty),
+            rate: parseFloat(item.rate).toFixed(2),
+            currency: item.currency,
+            exRate: parseFloat(item.exRate).toFixed(2),
+            exempted: item.exempted,
+            fcAmount: parseFloat(item.fcAmount).toFixed(2),
+            lcAmount: parseFloat(item.lcAmount).toFixed(2),
+            tlcAmount: item.tlcAmount,
+            billAmount: parseFloat(item.billAmount).toFixed(2),
+            sac: item.sac,
+            gstAmount: parseFloat(item.gstAmount).toFixed(2),
+            gstpercent: item.gstpercent
+          }))
+        );
+      }
+      if (selectedBill.taxInvoiceAnnexureVO) {
+        setCreditNoteAnnexure(
+          selectedBill.taxInvoiceAnnexureVO.map((item) => ({
+            id: item.id,
+            transDate: item.transDate,
+            transNo: item.transNo,
+            kitId: item.kitId,
+            dsec: item.dsec,
+            skuType: item.skuType,
+            qty: item.qty,
+            rate: item.rate,
+            amount: item.amount,
+          }))
+        );
+      }
       console.log('orgin bill ', formData.originBillDate, 'docDate', selectedBill.docDate);
     }
   };
@@ -1015,7 +1056,7 @@ const IrnCreditNote = () => {
           }))
         );
         setCreditNoteAnnexure(
-          irnCreditNoteVO.taxInvoiceAnnexureVO.map((row) => ({
+          irnCreditNoteVO.irnCreditNoteAnnexureVO.map((row) => ({
             id: row.id,
             amount: row.amount,
             dsec: row.dsec,
@@ -1160,7 +1201,7 @@ const IrnCreditNote = () => {
             vid: formData.vid,
             vdate: formData.vdate,
             irnCreditNoteDetailsDTO: irnCreditChargesVo,
-            taxInvoiceAnnexureDTO: annexureVO,
+            irnCreditNoteAnnexureDTO: annexureVO,
     
             billOfEntry: formData.billOfEntry,
             partyId: formData.partyId,
@@ -1395,7 +1436,7 @@ const IrnCreditNote = () => {
               {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
               <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
               <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-              <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+              {listViewById.approveStatus === 'Approved' ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
             </div>
             {editId && !listView && (formData.status.toUpperCase() === 'TAX' || listViewById.status === 'TAX') && (
               // {editId && !listView && (
@@ -2049,7 +2090,7 @@ const IrnCreditNote = () => {
                       <Tab label="Charges" value="1" />
                       <Tab label="Annexure" value="2" />
                       <Tab label="Summary" value="3" />
-                      {editId && <Tab label="Tax" value="3" />}
+                      {editId && <Tab label="Tax" value="4" />}
                     </TabList>
                   </Box>
                   <TabPanel value="1">
@@ -2696,7 +2737,7 @@ const IrnCreditNote = () => {
                                     <input
                                       type="text"
                                       value={row.amount}
-                                      disabled={formData.status === 'TAX'}
+                                      disabled
                                       style={{ width: '100px' }}
                                       onChange={(e) => handleAnnexureInputChange(index, 'amount', e.target.value)}
                                       className={creditNoteAnnexureErrors[index]?.amount ? 'error form-control' : 'form-control'}
@@ -2712,7 +2753,7 @@ const IrnCreditNote = () => {
                                     <input
                                       type="text"
                                       value={row.dsec}
-                                      disabled={formData.status === 'TAX'}
+                                      disabled
                                       style={{ width: '250px' }}
                                       className={creditNoteAnnexureErrors[index]?.dsec ? 'error form-control' : 'form-control'}
                                       onChange={(e) => {
@@ -2740,7 +2781,7 @@ const IrnCreditNote = () => {
                                     <input
                                       type="text"
                                       value={row.kitId}
-                                      disabled={formData.status === 'TAX'}
+                                      disabled
                                       style={{ width: '100px' }}
                                       onChange={(e) => handleAnnexureInputChange(index, 'kitId', e.target.value)}
                                       className={creditNoteAnnexureErrors[index]?.kitId ? 'error form-control' : 'form-control'}
@@ -2756,7 +2797,7 @@ const IrnCreditNote = () => {
                                     <input
                                       type="text"
                                       value={row.qty}
-                                      disabled={formData.status === 'TAX'}
+                                      disabled
                                       style={{ width: '100px' }}
                                       onChange={(e) => handleAnnexureInputChange(index, 'qty', e.target.value)}
                                       className={creditNoteAnnexureErrors[index]?.qty ? 'error form-control' : 'form-control'}
@@ -2772,7 +2813,7 @@ const IrnCreditNote = () => {
                                     <input
                                       type="text"
                                       value={row.rate}
-                                      disabled={formData.status === 'TAX'}
+                                      disabled
                                       style={{ width: '100px' }}
                                       onChange={(e) => handleAnnexureInputChange(index, 'rate', e.target.value)}
                                       className={creditNoteAnnexureErrors[index]?.rate ? 'error form-control' : 'form-control'}
@@ -2787,7 +2828,7 @@ const IrnCreditNote = () => {
                                     <input
                                       type="text"
                                       value={row.skuType}
-                                      disabled={formData.status === 'TAX'}
+                                      disabled
                                       style={{ width: '100px' }}
                                       onChange={(e) => handleAnnexureInputChange(index, 'skuType', e.target.value)}
                                       className={creditNoteAnnexureErrors[index]?.skuType ? 'error form-control' : 'form-control'}
@@ -2808,6 +2849,7 @@ const IrnCreditNote = () => {
                                               : null
                                             : null
                                         }
+                                        disabled
                                         slotProps={{
                                           textField: { size: 'small', clearable: true }
                                         }}
@@ -2850,7 +2892,7 @@ const IrnCreditNote = () => {
                                     <input
                                       type="text"
                                       value={row.transNo}
-                                      disabled={formData.status === 'TAX'}
+                                      disabled
                                       style={{ width: '150px' }}
                                       onChange={(e) => handleAnnexureInputChange(index, 'transNo', e.target.value)}
                                       className={creditNoteAnnexureErrors[index]?.transNo ? 'error form-control' : 'form-control'}
@@ -3037,7 +3079,7 @@ const IrnCreditNote = () => {
                     </TabPanel>
                   {/* )} */}
                   {editId && (
-                    <TabPanel value="3">
+                    <TabPanel value="4">
                       {/* <TableComponent /> */}
                       <div className="row d-flex ml">
                         <div className="mb-1">{/* <ActionButton title="Add" icon={AddIcon} onClick={handleGstAddRow} /> */}</div>
