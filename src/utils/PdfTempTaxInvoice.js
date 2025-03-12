@@ -252,16 +252,23 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 <img
                   src={`data:image/jpeg;base64,${companyDetails.companyLogo}`}
                   alt="Logo"
-                  style={{ width: '80px', objectFit: 'contain' }}
+                  style={{ width: '80px', height: '97px', objectFit: 'contain' }}
                   onError={(e) => {
                     e.target.src = dummyImageURL;
                   }}
                 />
                 <div className="ms-2">
                   <strong>{localStorage.getItem('companyName')}</strong>
-                  <div style={{ width: 198, marginBottom: 4 }}>
-                    <span style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '11px' }}>{companyDetails.address}</span>
+                  <div style={{ width: 198 }}>
+                    <span style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '11px', lineHeight: '0.1' }}>
+                      {companyDetails.address}
+                    </span>
                   </div>
+                  {companyDetails.gst && (
+                    <div className="d-flex flex-row mb-1" style={{ fontSize: '13px' }}>
+                      Reg IN: {companyDetails.gst}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -389,8 +396,30 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               fontSize: '14px',
               color: '#333'
             }}
-            className="d-flex justify-content-end mb-2"
+            className="d-flex justify-content-between mb-2"
           >
+            <div
+              style={{
+                textAlign: 'left',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                color: '#333'
+              }}
+            >
+              <div style={{ width: '500px' }}>
+                Amount in words:{' '}
+                <span
+                  style={{
+                    fontWeight: 'normal',
+                    fontSize: '14px',
+                    fontStyle: 'italic',
+                    color: '#333'
+                  }}
+                >
+                  {row.amountInWords.toUpperCase()}
+                </span>
+              </div>
+            </div>
             <div className="d-flex flex-column">
               <div
               // style={{
@@ -415,7 +444,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               //   fontStyle: 'italic'
               // }}
               >
-                Total Taxable Amount:{' '}
+                {row.gstType === 'INTER' ? 'Total  IGST:' : 'Total CGST:'}
+                {''}
                 <span
                   style={{
                     fontStyle: 'normal',
@@ -430,36 +460,32 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               </div>
             </div>
           </div>
-          <div
-            style={{
-              // textAlign: 'right',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              color: '#333'
-            }}
-            className="d-flex justify-content-between mb-2"
-          >
+          <div className="d-flex justify-content-between mb-2">
+            {row.remarks ? (
+              <div
+                style={{
+                  marginBottom: '10px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '14px',
+                  color: '#555'
+                }}
+              >
+                <div style={{ width: '500px' }}>
+                  <strong>Remarks :</strong> {row.remarks}
+                </div>
+              </div>
+            ) : (
+              ''
+            )}
             <div
               style={{
-                textAlign: 'right',
+                // textAlign: 'right',
                 fontWeight: 'bold',
                 fontSize: '14px',
                 color: '#333'
               }}
             >
-              Amount in words:{' '}
-              <span
-                style={{
-                  fontWeight: 'normal',
-                  fontSize: '14px',
-                  fontStyle: 'italic',
-                  color: '#333'
-                }}
-              >
-                {row.amountInWords.toUpperCase()}
-              </span>
-            </div>
-            <div>
               Total:{' '}
               <span
                 style={{
@@ -472,23 +498,6 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               </span>
             </div>
           </div>
-          {row.remarks ? (
-            <div
-              style={{
-                marginBottom: '10px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                fontSize: '14px',
-                color: '#555'
-              }}
-            >
-              <div>
-                <strong>Remarks :</strong> {row.remarks}
-              </div>
-            </div>
-          ) : (
-            ''
-          )}
 
           <div style={{ fontSize: '12px' }}>
             <strong>Terms & Conditions :</strong>

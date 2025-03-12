@@ -3,14 +3,16 @@ import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/
 import dayjs from 'dayjs';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { toWords } from 'number-to-words';
 import { useEffect, useState } from 'react';
-import QRCodeComponent from './QRCode';
 import apiCalls from 'apicall';
+
+const dummyImageURL = 'https://t3.ftcdn.net/jpg/04/62/93/66/240_F_462936689_BpEEcxfgMuYPfTaIAOC1tCDurmsno7Sp.jpg';
 
 const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   const [open, setOpen] = useState(false);
+  const [companyDetails, setCompanyDetails] = useState([]);
   const [currentDateTime, setCurrentDateTime] = useState('');
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
 
   const styles = {
     container: {
@@ -112,6 +114,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   useEffect(() => {
     if ((row && row.approveStatus === 'Approved') || (row && row.approveStatus === 'Rejected')) {
       handleOpen();
+      getCompanyDetails();
     } else {
       setOpen(false);
     }
@@ -128,6 +131,21 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     setCurrentDateTime(`${formattedDate} ${formattedTime}`);
   }, [row, callBackFunction]);
 
+  const getCompanyDetails = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+
+      if (response.status === true) {
+        setCompanyDetails(response.paramObjectsMap.companyVO[0]);
+        console.log('getCompanyDetails:', response.paramObjectsMap.companyVO[0]);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   return (
     <Dialog
       open={open}
@@ -142,7 +160,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
           id="pdf-content"
           style={{
             padding: '20px',
-            backgroundColor: '#f9f9f9',
+            // backgroundColor: '#f9f9f9',
             width: '210mm',
             height: 'auto',
             margin: 'auto',
@@ -162,9 +180,33 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               color: '#333'
             }}
           >
-            <div>{localStorage.getItem('companyName')}</div>
-            <div>
-              <strong>Cost Invoice</strong>
+            {companyDetails.companyLogo && (
+              <div className="d-flex flex-row">
+                <img
+                  src={`data:image/jpeg;base64,${companyDetails.companyLogo}`}
+                  alt="Logo"
+                  style={{ width: '80px', height: '97px', objectFit: 'contain' }}
+                  onError={(e) => {
+                    e.target.src = dummyImageURL;
+                  }}
+                />
+                <div className="ms-2">
+                  <strong>{localStorage.getItem('companyName')}</strong>
+                  <div style={{ width: 198 }}>
+                    <span style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '11px', lineHeight: '0.1' }}>
+                      {companyDetails.address}
+                    </span>
+                  </div>
+                  {companyDetails.gst && (
+                    <div className="d-flex flex-row mb-1" style={{ fontSize: '13px' }}>
+                      Reg IN: {companyDetails.gst}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            <div style={{ marginRight: '145px' }}>
+              <strong style={{ fontSize: '20px' }}>Cost Invoice</strong>
             </div>
             <div>{localStorage.getItem('branch')}</div>
           </div>
@@ -374,15 +416,37 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               fontSize: '14px',
               color: '#333'
             }}
-            className="d-flex justify-content-end mb-2"
+            className="d-flex justify-content-between mb-2"
           >
+            <div
+              style={{
+                textAlign: 'left',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                color: '#333'
+              }}
+            >
+              <div style={{ width: '500px' }}>
+                Amount in words:{' '}
+                <span
+                  style={{
+                    fontWeight: 'normal',
+                    fontSize: '14px',
+                    fontStyle: 'italic',
+                    color: '#333'
+                  }}
+                >
+                  {row.amountInWords ? row.amountInWords.toUpperCase() : ''}
+                </span>
+              </div>
+            </div>
             <div className="d-flex flex-column">
               <div
               // style={{
               //   fontStyle: 'italic'
               // }}
               >
-                Total Charges Amount:{' '}
+                Total Charges:{' '}
                 <span
                   style={{
                     fontStyle: 'normal',
@@ -400,7 +464,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               //   fontStyle: 'italic'
               // }}
               >
-                Total Taxable Amount:{' '}
+                Total Tax:{' '}
                 <span
                   style={{
                     fontStyle: 'normal',
@@ -418,7 +482,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               //   fontStyle: 'italic'
               // }}
               >
-                Total TDS Amount:{' '}
+                Total TDS:{' '}
                 <span
                   style={{
                     fontStyle: 'normal',
@@ -437,36 +501,35 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               </div>
             </div>
           </div>
-          <div
-            style={{
-              // textAlign: 'right',
-              fontWeight: 'bold',
-              fontSize: '14px',
-              color: '#333'
-            }}
-            className="d-flex justify-content-between mb-2"
-          >
+          <div className="d-flex justify-content-between mb-2">
+            {row.remarks ? (
+              <div
+                style={{
+                  marginBottom: '20px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '14px',
+                  color: '#555'
+                }}
+              >
+                <div style={{ width: '500px' }}>
+                  <strong>Remarks :</strong> {row.remarks}
+                </div>
+                {/* <div>
+              <strong>Shipment Ref No :</strong> {row.recipientGSTIN}
+            </div> */}
+              </div>
+            ) : (
+              ''
+            )}
             <div
               style={{
-                textAlign: 'right',
+                // textAlign: 'right',
                 fontWeight: 'bold',
                 fontSize: '14px',
                 color: '#333'
               }}
             >
-              Amount in words:{' '}
-              <span
-                style={{
-                  fontWeight: 'normal',
-                  fontSize: '14px',
-                  fontStyle: 'italic',
-                  color: '#333'
-                }}
-              >
-                {row.amountInWords ? row.amountInWords.toUpperCase() : ''}
-              </span>
-            </div>
-            <div>
               Total:{' '}
               <span
                 style={{
@@ -479,26 +542,6 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               </span>
             </div>
           </div>
-          {row.remarks ? (
-            <div
-              style={{
-                marginBottom: '20px',
-                display: 'flex',
-                justifyContent: 'space-between',
-                fontSize: '14px',
-                color: '#555'
-              }}
-            >
-              <div>
-                <strong>Remarks :</strong> {row.remarks}
-              </div>
-              {/* <div>
-              <strong>Shipment Ref No :</strong> {row.recipientGSTIN}
-            </div> */}
-            </div>
-          ) : (
-            ''
-          )}
 
           {/* <div
             style={{

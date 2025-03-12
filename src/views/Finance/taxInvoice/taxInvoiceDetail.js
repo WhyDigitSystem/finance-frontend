@@ -1457,19 +1457,23 @@ const TaxInvoiceDetails = () => {
           addressType: listValueVO.addressType
         });
 
-        setTaxInvoiceAnnexure(
-          listValueVO.taxInvoiceAnnexureVO.map((row) => ({
-            id: row.id,
-            amount: row.amount,
-            dsec: row.dsec,
-            kitId: row.kitId,
-            qty: row.qty,
-            rate: row.rate,
-            skuType: row.skuType,
-            transDate: row.transDate ? dayjs(row.transDate) : null,
-            transNo: row.transNo
-          }))
-        );
+        if (listValueVO.taxInvoiceAnnexureVO.length === 0) {
+          handleAddAnnexureRow();
+        } else {
+          setTaxInvoiceAnnexure(
+            listValueVO.taxInvoiceAnnexureVO.map((row) => ({
+              id: row.id,
+              amount: row.amount,
+              dsec: row.dsec,
+              kitId: row.kitId,
+              qty: row.qty,
+              rate: row.rate,
+              skuType: row.skuType,
+              transDate: row.transDate ? dayjs(row.transDate) : null,
+              transNo: row.transNo
+            }))
+          );
+        }
 
         // getPartyName(listValueVO.partType);
 
@@ -1575,17 +1579,23 @@ const TaxInvoiceDetails = () => {
       taxable: row.taxable
     }));
 
-    const annexureVO = taxInvoiceAnnexure.map((row) => ({
-      ...(editId && { id: row.id }),
-      amount: row.amount,
-      dsec: row.dsec,
-      kitId: row.kitId,
-      qty: row.qty,
-      rate: row.rate,
-      skuType: row.skuType,
-      transDate: row.transDate ? dayjs(row.transDate).format('YYYY-MM-DD') : null,
-      transNo: row.transNo
-    }));
+    const isAnnexureEmpty = taxInvoiceAnnexure.every(
+      (row) => !row.amount && !row.dsec && !row.kitId && !row.qty && !row.rate && !row.skuType && !row.transDate && !row.transNo
+    );
+
+    const annexureVO = isAnnexureEmpty
+      ? null
+      : taxInvoiceAnnexure.map((row) => ({
+          ...(editId && { id: row.id }),
+          amount: row.amount,
+          dsec: row.dsec,
+          kitId: row.kitId,
+          qty: row.qty,
+          rate: row.rate,
+          skuType: row.skuType,
+          transDate: row.transDate ? dayjs(row.transDate).format('YYYY-MM-DD') : null,
+          transNo: row.transNo
+        }));
 
     const saveFormData = {
       ...(editId && { id: editId }),
