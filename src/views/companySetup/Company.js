@@ -168,7 +168,6 @@ const Company = () => {
 
   const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
     const rowIndex = table.findIndex((row) => row.id === id);
-    // If the row exists, proceed to delete
     if (rowIndex !== -1) {
       const updatedData = table.filter((row) => row.id !== id);
       const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
@@ -232,12 +231,9 @@ const Company = () => {
   const handleInputChange = (e) => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
 
-    // Regular expressions for validation
-    const nameRegex = /^[A-Za-z ]*$/; // Allows only alphabetic characters and spaces
+    const nameRegex = /^[A-Za-z ]*$/; 
     const numericRegex = /^[0-9]*$/;
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
-    // const websiteRegex = /^(https?:\/\/)?(www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,6}(\S*)?$/;
-    // const gstRegex = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}[Z]{1}[0-9A-Z]{1}$/
     let error = '';
     if (name === 'panNo' && value.length > 11) return;
     if (name === 'panNo') {
@@ -262,22 +258,6 @@ const Company = () => {
         error = 'Only 6 digits allowed';
       }
     }
-    //  else if (name === 'gst') {
-    //   if (!gstRegex.test(value)) {
-    //     error = 'Invalid Format';
-    //   } else if (value.length > 15) {
-    //     error = 'Only 15 characters are allowed';
-    //   }
-    // }
-    //  else if (name === 'pan') {
-    //   if (!panRegex.test(value)) {
-    //     error = 'Invalid Format';
-    //   } else if (value.length > 15) {
-    //     error = 'Only 15 characters are allowed';
-    //   }
-    // }
-
-    // Handle errors if validation fails
     if (error) {
       setFieldErrors((prevErrors) => ({
         ...prevErrors,
@@ -329,8 +309,7 @@ const Company = () => {
       if (response.status === true) {
         setListView(false);
         const particularCompany = response.paramObjectsMap.companyVO[0];
-        console.log('PARTICULAR COMPANY IS:', particularCompany);
-
+        setLogo(response.paramObjectsMap.companyVO[0].companyLogo);
         setFormData({
           companyCode: particularCompany.companyCode,
           companyName: particularCompany.companyName,
@@ -341,12 +320,12 @@ const Company = () => {
           state: particularCompany.state,
           city: particularCompany.city,
           pincode: particularCompany.zip,
-          panNo: particularCompany.panno,
+          panNo: particularCompany.panNo,
           active: particularCompany.active === 'Active' ? true : false,
           // gst: particularCompany.gst,
           website: particularCompany.webSite
         });
-        handleBlob(particularCompany.companyLogo);
+        // setLogo(`data:image/jpeg;base64,${particularCompany.companyLogo}`);
         // setLogo(particularCompany.companyLogo);
         setDetailsTableData(
           particularCompany.bankDetailsVO.map((com) => ({
@@ -491,7 +470,7 @@ const Company = () => {
         state: formData.state,
         city: formData.city,
         zip: formData.pincode,
-        panno: formData.panNo,
+        panNo: formData.panNo,
         webSite: formData.website,
         active: formData.active,
         updatedBy: loginUserName,
@@ -541,8 +520,6 @@ const Company = () => {
     const file = e.target.files[0];
     if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
       setLogo(file);
-      // console.log(file.name);
-      // setLogo(URL.createObjectURL(file));
     } else {
       showToast('error', 'Please upload a valid image (PNG or JPEG).');
     }
@@ -576,23 +553,13 @@ const Company = () => {
       showToast('error', 'Failed to upload Img');
     }
   };
-  const handleBlob = async (bloblogo) => {
-  try {
-    const response = await fetch(bloblogo);
-    const blob = await response.blob();
-    console.log('Blob Type:', blob);
-    if (!blob || !(blob instanceof Blob)) {
-      console.error('Invalid Blob:', blob);
-      return;
-    }
-
-    // const imageUrl = URL.createObjectURL(blob);
-    setLogo(blob)
-    // console.log('Blob URL:', imageUrl);
-  } catch (error) {
-    console.error('Error fetching or converting Blob:', error);
-  }
-};
+  useEffect(() => {
+    return () => {
+      if (logo && typeof logo === 'object') {
+        URL.revokeObjectURL(logo);
+      }
+    };
+  }, [logo]);
   const handleRemoveLogo = () => setLogo(null);
   return (
     <>
@@ -736,19 +703,6 @@ const Company = () => {
                   helperText={fieldErrors.panNo}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <TextField
-                  label="GST"
-                  variant="outlined"
-                  size="small"
-                  fullWidth
-                  name="gst"
-                  value={formData.gst}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.gst}
-                  helperText={fieldErrors.gst}
-                />
-              </div> */}
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Official Website"
@@ -771,8 +725,13 @@ const Company = () => {
                     startIcon={<CloudUploadIcon />}
                     sx={{color: 'rgb(103 58 183)', borderRadius: '12px' }}
                   >
-                    {logo ? logo.name : 'Upload Logo'}
-                    {/* {logo ? 'Preview Logo 👉' : 'Upload Logo'} */}
+                    {/* {logo ? logo.name === '' ? "Logo👉" : logo.name : 'Upload Logo'} */}
+                    {logo
+                      ? typeof logo === 'object' && logo.name
+                        ? logo.name
+                        : "Logo👉"
+                      : 'Upload Logo'}
+
                     <input
                       type="file"
                       hidden
@@ -792,7 +751,7 @@ const Company = () => {
                       <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)'}}>Company Logo</Typography>
                       {logo ? (
                         <Box>
-                          <Avatar src={URL.createObjectURL(logo)} alt="Company Logo" sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }} />
+                          <Avatar src={ typeof logo === 'object' ? URL.createObjectURL(logo) : `data:image/jpeg;base64,${logo}`} alt="Company Logo" sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }} />
                           <Box display="flex" gap={2} mt={2}>
                             <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize:'13px' }} onClick={handleRemoveLogo}>
                               Delete
