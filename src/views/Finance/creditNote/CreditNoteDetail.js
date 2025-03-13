@@ -2684,11 +2684,11 @@ const IrnCreditNote = () => {
                           <table className="table table-bordered">
                             <thead>
                               <tr style={{ backgroundColor: '#673AB7' }}>
-                                {formData.status !== 'TAX' && (
+                                {/* {formData.status !== 'TAX' && (
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                     Action
                                   </th>
-                                )}
+                                )} */}
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                   S.No
                                 </th>
@@ -3085,9 +3085,9 @@ const IrnCreditNote = () => {
                               <table className="table table-bordered">
                                 <thead>
                                   <tr style={{ backgroundColor: '#673AB7' }}>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                    {/* <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                       Action
-                                    </th>
+                                    </th> */}
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                       S.No
                                     </th>
@@ -3098,8 +3098,6 @@ const IrnCreditNote = () => {
                                     <th className="px-2 py-2 text-white text-center">DB LC Amount</th>
                                     <th className="px-2 py-2 text-white text-center">CR LC Amount</th>
                                     <th className="px-2 py-2 text-white text-center">Remarks</th>
-
-                                    {/* <th className="px-2 py-2 text-white text-center">Remarks</th> */}
                                   </tr>
                                 </thead>
                                 <tbody>
