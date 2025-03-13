@@ -2692,28 +2692,28 @@ const IrnCreditNote = () => {
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                   S.No
                                 </th>
-                                <th className="px-2 py-2 text-white text-center">Amount</th>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                  Description
+                                  Transaction Date
                                 </th>
-                                <th className="px-2 py-2 text-white text-center">Kit</th>
+                                <th className="px-2 py-2 text-white text-center">Transaction No</th>
+                                <th className="px-2 py-2 text-white text-center">Kit Id</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                  Kit Description
+                                </th>
+                                <th className="px-2 py-2 text-white text-center">Sku Type</th>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
                                   Qty
                                 </th>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
                                   Rate
                                 </th>
-                                <th className="px-2 py-2 text-white text-center">Sku Type</th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                  Transaction Date
-                                </th>
-                                <th className="px-2 py-2 text-white text-center">Transaction No</th>
+                                <th className="px-2 py-2 text-white text-center">Amount</th>
                               </tr>
                             </thead>
                             <tbody>
                               {creditNoteAnnexure.map((row, index) => (
                                 <tr key={row.id}>
-                                  {formData.status !== 'TAX' && (
+                                  {/* {formData.status !== 'TAX' && (
                                     <td className="border px-2 py-2 text-center">
                                       <ActionButton
                                         title="Delete"
@@ -2729,116 +2729,9 @@ const IrnCreditNote = () => {
                                         }
                                       />
                                     </td>
-                                  )}
+                                  )} */}
                                   <td className="text-center">
                                     <div className="pt-2">{index + 1}</div>
-                                  </td>
-
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.amount}
-                                      disabled
-                                      style={{ width: '100px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'amount', e.target.value)}
-                                      className={creditNoteAnnexureErrors[index]?.amount ? 'error form-control' : 'form-control'}
-                                    />
-                                    {creditNoteAnnexureErrors[index]?.amount && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {creditNoteAnnexureErrors[index].amount}
-                                      </div>
-                                    )}
-                                  </td>
-
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.dsec}
-                                      disabled
-                                      style={{ width: '250px' }}
-                                      className={creditNoteAnnexureErrors[index]?.dsec ? 'error form-control' : 'form-control'}
-                                      onChange={(e) => {
-                                        const newValue = e.target.value;
-                                        if (newValue.length <= 250) {
-                                          handleAnnexureDescriptionChange(index, newValue);
-                                        } else {
-                                          const updatedErrors = [...creditNoteAnnexureErrors];
-                                          updatedErrors[index] = {
-                                            ...updatedErrors[index],
-                                            dsec: 'Description cannot exceed 250 characters.'
-                                          };
-                                          setCreditNoteAnnexureErrors(updatedErrors);
-                                        }
-                                      }}
-                                    />
-                                    {creditNoteAnnexureErrors[index]?.dsec && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {creditNoteAnnexureErrors[index].dsec}
-                                      </div>
-                                    )}
-                                  </td>
-
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.kitId}
-                                      disabled
-                                      style={{ width: '100px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'kitId', e.target.value)}
-                                      className={creditNoteAnnexureErrors[index]?.kitId ? 'error form-control' : 'form-control'}
-                                    />
-                                    {creditNoteAnnexureErrors[index]?.kitId && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {creditNoteAnnexureErrors[index].kitId}
-                                      </div>
-                                    )}
-                                  </td>
-
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.qty}
-                                      disabled
-                                      style={{ width: '100px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'qty', e.target.value)}
-                                      className={creditNoteAnnexureErrors[index]?.qty ? 'error form-control' : 'form-control'}
-                                    />
-                                    {creditNoteAnnexureErrors[index]?.qty && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {creditNoteAnnexureErrors[index].qty}
-                                      </div>
-                                    )}
-                                  </td>
-
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.rate}
-                                      disabled
-                                      style={{ width: '100px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'rate', e.target.value)}
-                                      className={creditNoteAnnexureErrors[index]?.rate ? 'error form-control' : 'form-control'}
-                                    />
-                                    {creditNoteAnnexureErrors[index]?.rate && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {creditNoteAnnexureErrors[index].rate}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.skuType}
-                                      disabled
-                                      style={{ width: '100px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'skuType', e.target.value)}
-                                      className={creditNoteAnnexureErrors[index]?.skuType ? 'error form-control' : 'form-control'}
-                                    />
-                                    {creditNoteAnnexureErrors[index]?.skuType && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {creditNoteAnnexureErrors[index].skuType}
-                                      </div>
-                                    )}
                                   </td>
                                   <td className="border px-2 py-2" style={{ width: '250px' }}>
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -2901,6 +2794,108 @@ const IrnCreditNote = () => {
                                     {creditNoteAnnexureErrors[index]?.transNo && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                         {creditNoteAnnexureErrors[index].transNo}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.kitId}
+                                      disabled
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'kitId', e.target.value)}
+                                      className={creditNoteAnnexureErrors[index]?.kitId ? 'error form-control' : 'form-control'}
+                                    />
+                                    {creditNoteAnnexureErrors[index]?.kitId && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {creditNoteAnnexureErrors[index].kitId}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.dsec}
+                                      disabled
+                                      style={{ width: '250px' }}
+                                      className={creditNoteAnnexureErrors[index]?.dsec ? 'error form-control' : 'form-control'}
+                                      onChange={(e) => {
+                                        const newValue = e.target.value;
+                                        if (newValue.length <= 250) {
+                                          handleAnnexureDescriptionChange(index, newValue);
+                                        } else {
+                                          const updatedErrors = [...creditNoteAnnexureErrors];
+                                          updatedErrors[index] = {
+                                            ...updatedErrors[index],
+                                            dsec: 'Description cannot exceed 250 characters.'
+                                          };
+                                          setCreditNoteAnnexureErrors(updatedErrors);
+                                        }
+                                      }}
+                                    />
+                                    {creditNoteAnnexureErrors[index]?.dsec && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {creditNoteAnnexureErrors[index].dsec}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.skuType}
+                                      disabled
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'skuType', e.target.value)}
+                                      className={creditNoteAnnexureErrors[index]?.skuType ? 'error form-control' : 'form-control'}
+                                    />
+                                    {creditNoteAnnexureErrors[index]?.skuType && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {creditNoteAnnexureErrors[index].skuType}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.qty}
+                                      disabled
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'qty', e.target.value)}
+                                      className={creditNoteAnnexureErrors[index]?.qty ? 'error form-control' : 'form-control'}
+                                    />
+                                    {creditNoteAnnexureErrors[index]?.qty && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {creditNoteAnnexureErrors[index].qty}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.rate}
+                                      disabled
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'rate', e.target.value)}
+                                      className={creditNoteAnnexureErrors[index]?.rate ? 'error form-control' : 'form-control'}
+                                    />
+                                    {creditNoteAnnexureErrors[index]?.rate && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {creditNoteAnnexureErrors[index].rate}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.amount}
+                                      disabled
+                                      style={{ width: '100px' }}
+                                      onChange={(e) => handleAnnexureInputChange(index, 'amount', e.target.value)}
+                                      className={creditNoteAnnexureErrors[index]?.amount ? 'error form-control' : 'form-control'}
+                                    />
+                                    {creditNoteAnnexureErrors[index]?.amount && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {creditNoteAnnexureErrors[index].amount}
                                       </div>
                                     )}
                                   </td>
@@ -3111,13 +3106,13 @@ const IrnCreditNote = () => {
                                   {Array.isArray(irnGstData) &&
                                     irnGstData.map((row, index) => (
                                       <tr key={row.id}>
-                                        <td className="border px-2 py-2 text-center">
+                                        {/* <td className="border px-2 py-2 text-center">
                                           <ActionButton
                                             title="Delete"
                                             icon={DeleteIcon}
                                             onClick={() => handleDeleteRow1(row.id, irnGstData, setIrnGstData, irnGstError, setIrnGstError)}
                                           />
-                                        </td>
+                                        </td> */}
                                         <td className="text-center">
                                           <div className="pt-2">{index + 1}</div>
                                         </td>
