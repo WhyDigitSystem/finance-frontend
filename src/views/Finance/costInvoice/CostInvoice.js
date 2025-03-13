@@ -110,6 +110,7 @@ const CostInvoice = () => {
     supplierCode: '',
     supplierGstIn: '',
     supplierGstInCode: '',
+    supplierId: '',
     supplierName: '',
     supplierPlace: '',
     supplierType: 'VENDOR',
@@ -223,6 +224,7 @@ const CostInvoice = () => {
       supplierCode: '',
       supplierGstIn: '',
       supplierGstInCode: '',
+      supplierId: '',
       supplierName: '',
       supplierPlace: '',
       supplierType: 'VENDOR',
@@ -234,6 +236,7 @@ const CostInvoice = () => {
     });
     setExRates([]);
     setStateName([]);
+    setPlaceOfSupply([]);
     getAllActiveCurrency(orgId);
     setFieldErrors({
       accuralid: '',
@@ -264,6 +267,7 @@ const CostInvoice = () => {
       supplierCode: '',
       supplierGstIn: '',
       supplierGstInCode: '',
+      supplierId: '',
       supplierName: '',
       supplierPlace: '',
       supplierType: '',
@@ -350,6 +354,7 @@ const CostInvoice = () => {
       // supplierCode: '',
       // supplierGstIn: '',
       supplierGstInCode: '',
+      supplierId: '',
       // supplierName: '',
       // supplierPlace: '',
       supplierType: 'VENDOR',
@@ -391,6 +396,7 @@ const CostInvoice = () => {
       supplierCode: '',
       supplierGstIn: '',
       supplierGstInCode: '',
+      supplierId: '',
       supplierName: '',
       supplierPlace: '',
       supplierType: '',
@@ -487,6 +493,7 @@ const CostInvoice = () => {
         ...prevData,
         supplierCode: '',
         supplierGstIn: '',
+        supplierId: '',
         supplierGstInCode: ''
       }));
     }
@@ -784,8 +791,8 @@ const CostInvoice = () => {
         setListViewData(costVO);
         setEditId(row.original.id);
         getCurrencyAndExratesForMatchingParties(costVO.supplierCode);
-        getTdsDetailsFromPartyMasterSpecialTDS(costVO.supplierCode);
-        getStateName(partyId);
+        // getTdsDetailsFromPartyMasterSpecialTDS(costVO.supplierCode);
+        getStateName(costVO.supplierId);
         getPlaceOfSupply(costVO.supplierGstInCode);
         setFormData({
           accuralid: costVO.accuralid,
@@ -828,6 +835,7 @@ const CostInvoice = () => {
           supplierBillNo: costVO.supplierBillNo,
           supplierCode: costVO.supplierCode,
           supplierGstIn: costVO.supplierGstIn,
+          supplierId: costVO.supplierId,
           supplierGstInCode: costVO.supplierGstInCode,
           supplierName: costVO.supplierName,
           supplierPlace: costVO.supplierPlace,
@@ -983,7 +991,8 @@ const CostInvoice = () => {
       setFormData((prevData) => ({
         ...prevData,
         supplierName: selectedEmp.partyName,
-        supplierCode: selectedEmp.partyCode
+        supplierCode: selectedEmp.partyCode,
+        supplierId: selectedEmp.id
       }));
       setPartyId(selectedEmp.id);
       getStateName(selectedEmp.id);
@@ -1083,7 +1092,10 @@ const CostInvoice = () => {
 
   const getPlaceOfSupply = async (stateCode) => {
     try {
-      const response = await apiCalls('get', `/costInvoice/getPlaceOfSupply?orgId=${orgId}&id=${partyId}&stateCode=${stateCode}`);
+      const response = await apiCalls(
+        'get',
+        `/costInvoice/getPlaceOfSupply?orgId=${orgId}&id=${formData.supplierId}&stateCode=${stateCode}`
+      );
       setPlaceOfSupply(response.paramObjectsMap.placeOfSupplyDetails);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -1655,6 +1667,7 @@ const CostInvoice = () => {
         supplierCode: formData.supplierCode,
         supplierGstIn: formData.supplierGstIn,
         supplierGstInCode: formData.supplierGstInCode,
+        supplierId: formData.supplierId,
         supplierName: formData.supplierName,
         supplierPlace: formData.supplierPlace,
         supplierType: formData.supplierType,
@@ -3165,6 +3178,7 @@ const CostInvoice = () => {
                                 size="small"
                                 name="tdsWithHoldingPer"
                                 type="number"
+                                disabled={formData.mode === 'SUBMIT'}
                                 // disabled
                                 inputProps={{ maxLength: 30 }}
                                 value={tdsCostInvoiceDTO[index]?.tdsWithHoldingPer || ''}

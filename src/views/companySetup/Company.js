@@ -4,7 +4,7 @@ import Box from '@mui/material/Box';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import { Avatar, Typography, FormHelperText, Button, Dialog, DialogContent, } from '@mui/material';
+import { Avatar, Typography, FormHelperText, Button, Dialog, DialogContent } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -29,7 +29,7 @@ import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import { getAllActiveCitiesByState, getAllActiveCountries, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
-import  CloseIcon  from '@mui/icons-material/Close';
+import CloseIcon from '@mui/icons-material/Close';
 
 const Company = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -49,9 +49,10 @@ const Company = () => {
     address: '',
     country: '',
     state: '',
+    cin: '',
     city: '',
     pincode: '',
-    // gst: '',
+    gst: '',
     website: '',
     panNo: '',
     active: true
@@ -63,9 +64,10 @@ const Company = () => {
     termsAndConditions: '',
     country: '',
     state: '',
+    cin: '',
     city: '',
     pincode: '',
-    // gst: '',
+    gst: '',
     panNo: '',
     website: '',
     active: ''
@@ -156,7 +158,7 @@ const Company = () => {
           beneficiaryName: !table[table.length - 1].beneficiaryName ? 'Beneficiary Name is required' : '',
           accountNo: !table[table.length - 1].accountNo ? 'Account No is required' : '',
           bankName: !table[table.length - 1].bankName ? 'Bank Name is required' : '',
-          accountCode: !table[table.length - 1].accountCode ? 'Account Code is required' : '',
+          // accountCode: !table[table.length - 1].accountCode ? 'Account Code is required' : '',
           branch: !table[table.length - 1].branch ? 'Branch is required' : '',
           ifsc: !table[table.length - 1].ifsc ? 'IFSC is required' : '',
           accountType: !table[table.length - 1].accountType ? 'Account Type is required' : ''
@@ -231,9 +233,10 @@ const Company = () => {
   const handleInputChange = (e) => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
 
-    const nameRegex = /^[A-Za-z ]*$/; 
+    const nameRegex = /^[A-Za-z ]*$/;
     const numericRegex = /^[0-9]*$/;
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+    const alphanumericRegex = /^[A-Za-z0-9 ]*$/;
     let error = '';
     if (name === 'panNo' && value.length > 11) return;
     if (name === 'panNo') {
@@ -256,6 +259,18 @@ const Company = () => {
         error = 'Only numerics allowed';
       } else if (value.length > 6) {
         error = 'Only 6 digits allowed';
+      }
+    } else if (name === 'gst') {
+      if (!alphanumericRegex.test(value)) {
+        error = 'Special Characters are not allowed';
+      } else if (value.length > 15) {
+        error = 'Only 15 characters are allowed';
+      }
+    } else if (name === 'cin') {
+      if (!alphanumericRegex.test(value)) {
+        error = 'Special Characters are not allowed';
+      } else if (value.length > 21) {
+        error = 'Only 21 characters are allowed';
       }
     }
     if (error) {
@@ -303,6 +318,7 @@ const Company = () => {
 
   const getCompanyById = async (row) => {
     try {
+      setFieldErrors({});
       const response = await apiCalls('get', `commonmaster/company/${row.original.id}`);
       console.log('API Response:', response);
 
@@ -318,11 +334,12 @@ const Company = () => {
           country: particularCompany.country,
           termsAndConditions: particularCompany.termsAndConditions,
           state: particularCompany.state,
+          cin: particularCompany.cin,
           city: particularCompany.city,
           pincode: particularCompany.zip,
           panNo: particularCompany.panNo,
           active: particularCompany.active === 'Active' ? true : false,
-          // gst: particularCompany.gst,
+          gst: particularCompany.gst,
           website: particularCompany.webSite
         });
         // setLogo(`data:image/jpeg;base64,${particularCompany.companyLogo}`);
@@ -369,15 +386,17 @@ const Company = () => {
   const handleClear = () => {
     setLogo(null);
     setFormData({
-      // companyCode: '',
+      companyCode: formData.companyCode,
+      companyName: formData.companyName,
       ceo: '',
       address: '',
       country: '',
       termsAndConditions: '',
       state: '',
+      cin: '',
       city: '',
       pincode: '',
-      // gst: '',
+      gst: '',
       panNo: '',
       website: '',
       active: true
@@ -389,10 +408,11 @@ const Company = () => {
       country: '',
       termsAndConditions: '',
       state: '',
+      cin: '',
       city: '',
       pincode: '',
       panNo: '',
-      // gst: '',
+      gst: '',
       website: ''
     });
     setDetailsTableData([
@@ -441,6 +461,16 @@ const Company = () => {
     } else if (formData.panNo.length < 10) {
       errors.panNo = 'Invalid Pan No';
     }
+    if (!formData.gst) {
+      errors.gst = 'GST is required';
+    } else if (formData.gst.length < 15) {
+      errors.gst = 'Invalid GST No';
+    }
+    if (!formData.cin) {
+      errors.cin = 'CIN is required';
+    } else if (formData.cin.length < 21) {
+      errors.cin = 'Invalid CIN No';
+    }
     if (formData.pincode.length < 6 && formData.pincode.length >= 1) {
       errors.pincode = 'Invalid Pincode';
     }
@@ -468,7 +498,9 @@ const Company = () => {
         country: formData.country,
         termsAndConditions: formData.termsAndConditions,
         state: formData.state,
+        cin: formData.cin,
         city: formData.city,
+        gst: formData.gst,
         zip: formData.pincode,
         panNo: formData.panNo,
         webSite: formData.website,
@@ -538,7 +570,7 @@ const Company = () => {
         `/commonmaster/uploadCompanyLogoInBloob?id=${generatedId}`,
         formData,
         {},
-        {'Content-Type': 'multipart/form-data'}
+        { 'Content-Type': 'multipart/form-data' }
       );
       console.log('Img Upload Response:', response);
 
@@ -705,6 +737,32 @@ const Company = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
+                  label="Gst"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="gst"
+                  value={formData.gst}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.gst}
+                  helperText={fieldErrors.gst}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="CIN"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="cin"
+                  value={formData.cin}
+                  onChange={handleInputChange}
+                  error={!!fieldErrors.cin}
+                  helperText={fieldErrors.cin}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
                   label="Official Website"
                   variant="outlined"
                   size="small"
@@ -716,74 +774,8 @@ const Company = () => {
                   helperText={fieldErrors.website}
                 />
               </div>
-              <div className="col-md-3 mb-3">
-                <Box display="flex" alignItems="center" gap={1}>
-                  <Button
-                    variant="outlined"
-                    component="label"
-                    multiline
-                    startIcon={<CloudUploadIcon />}
-                    sx={{color: 'rgb(103 58 183)', borderRadius: '12px' }}
-                  >
-                    {/* {logo ? logo.name === '' ? "Logo👉" : logo.name : 'Upload Logo'} */}
-                    {logo
-                      ? typeof logo === 'object' && logo.name
-                        ? logo.name
-                        : "Logo👉"
-                      : 'Upload Logo'}
 
-                    <input
-                      type="file"
-                      hidden
-                      accept="image/png, image/jpeg"
-                      onChange={handleLogoChange}
-                    />
-                  </Button>
-
-                  {logo && (
-                    <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }} onClick={handleOpen}>
-                      <ControlCameraIcon />
-                    </IconButton>
-                  )}
-                </Box>
-                  <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-                    <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
-                      <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)'}}>Company Logo</Typography>
-                      {logo ? (
-                        <Box>
-                          <Avatar src={ typeof logo === 'object' ? URL.createObjectURL(logo) : `data:image/jpeg;base64,${logo}`} alt="Company Logo" sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }} />
-                          <Box display="flex" gap={2} mt={2}>
-                            <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize:'13px' }} onClick={handleRemoveLogo}>
-                              Delete
-                            </IconButton>
-                            <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize:'13px' }} onClick={handleClose}>
-                              Close
-                            </IconButton>
-                          </Box> 
-                        </Box> 
-                      ) : (
-                        <Box>
-                          <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
-                              <Typography variant="caption">Upload Logo</Typography>
-                          </Avatar>
-                          <Box display="flex" gap={2} mt={2}>
-                            <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize:'15px' }} onClick={handleClose}>
-                              Close
-                            </IconButton>
-                          </Box>
-                      </Box>
-                      )}
-                    </DialogContent>
-                  </Dialog>
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControlLabel
-                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
-                  label="Active"
-                />
-              </div>
-              <div className="col-md-9 mb-5">
+              <div className="col-md-9 mb-3">
                 <TextField
                   label="Terms And Conditions"
                   variant="outlined"
@@ -797,8 +789,83 @@ const Company = () => {
                   helperText={fieldErrors.termsAndConditions}
                 />
               </div>
+              <div className="col-md-3 mb-3">
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Button
+                    variant="outlined"
+                    component="label"
+                    multiline
+                    startIcon={<CloudUploadIcon />}
+                    sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
+                  >
+                    {/* {logo ? logo.name === '' ? "Logo👉" : logo.name : 'Upload Logo'} */}
+                    {logo ? (typeof logo === 'object' && logo.name ? logo.name : 'Logo👉') : 'Upload Logo'}
+
+                    <input type="file" hidden accept="image/png, image/jpeg" onChange={handleLogoChange} />
+                  </Button>
+
+                  {logo && (
+                    <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }} onClick={handleOpen}>
+                      <ControlCameraIcon />
+                    </IconButton>
+                  )}
+                </Box>
+                <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+                  <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
+                    <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }}>
+                      Company Logo
+                    </Typography>
+                    {logo ? (
+                      <Box>
+                        <Avatar
+                          src={typeof logo === 'object' ? URL.createObjectURL(logo) : `data:image/jpeg;base64,${logo}`}
+                          alt="Company Logo"
+                          sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }}
+                        />
+                        <Box display="flex" gap={2} mt={2}>
+                          <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                            onClick={handleRemoveLogo}
+                          >
+                            Delete
+                          </IconButton>
+                          <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                            onClick={handleClose}
+                          >
+                            Close
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Box>
+                        <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
+                          <Typography variant="caption">Upload Logo</Typography>
+                        </Avatar>
+                        <Box display="flex" gap={2} mt={2}>
+                          <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '15px' }}
+                            onClick={handleClose}
+                          >
+                            Close
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    )}
+                  </DialogContent>
+                </Dialog>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControlLabel
+                  control={<Checkbox checked={formData.active} onChange={handleInputChange} name="active" />}
+                  label="Active"
+                />
+              </div>
             </div>
-            <div className="row mt-2">
+            <div className="row">
               <Box sx={{ width: '100%' }}>
                 <Tabs
                   value={value}

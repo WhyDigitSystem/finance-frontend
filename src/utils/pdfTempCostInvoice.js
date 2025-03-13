@@ -192,27 +192,46 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 />
                 <div className="ms-2">
                   <strong>{localStorage.getItem('companyName')}</strong>
-                  <div style={{ width: 198 }}>
-                    <span style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '11px', lineHeight: '0.1' }}>
-                      {companyDetails.address}
-                    </span>
-                  </div>
+                  {companyDetails.cin && (
+                    <div className="d-flex flex-row" style={{ fontSize: '13px' }}>
+                      CIN: {companyDetails.cin}
+                    </div>
+                  )}
                   {companyDetails.gst && (
-                    <div className="d-flex flex-row mb-1" style={{ fontSize: '13px' }}>
-                      Reg IN: {companyDetails.gst}
+                    <div className="d-flex flex-row" style={{ fontSize: '13px' }}>
+                      GST IN: {companyDetails.gst}
+                    </div>
+                  )}
+                  <div style={{ width: 198 }}>
+                    <p style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '10px', lineHeight: '1.6', marginBottom: 0 }}>
+                      {companyDetails.address}
+                    </p>
+                  </div>
+                  {companyDetails.city && (
+                    <div className="d-flex flex-row" style={{ fontSize: '13px' }}>
+                      {companyDetails.city} - {companyDetails.zip}
                     </div>
                   )}
                 </div>
               </div>
             )}
-            <div style={{ marginRight: '145px' }}>
-              <strong style={{ fontSize: '20px' }}>Cost Invoice</strong>
+            <div style={{ marginRight: '50px' }}>
+              <strong style={{ fontSize: '20px' }}>COST INVOICE</strong>
             </div>
-            <div>{localStorage.getItem('branch')}</div>
+            {/* <div>{localStorage.getItem('branch')}</div> */}
+            <div>
+              <div className="mb-2">
+                Invoice <strong className="">: {row.vid}</strong>
+              </div>
+              <div>
+                Date
+                <strong> : {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}</strong>
+              </div>
+            </div>
           </div>
 
           {/* <!-- Details Section --> */}
-          <div
+          {/* <div
             style={{
               marginBottom: '20px',
               display: 'flex',
@@ -230,16 +249,16 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 Invoice Date
                 <strong> : {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}</strong>
               </div>
-              {/* <div>
+              <div>
                 <strong>ACK No: </strong>
                 {row.invoiceDate ? dayjs(row.invoiceDate).format('DD-MM-YYYY') : 'N/A'}
               </div>
               <div>
                 <strong>IRN No: </strong>
                 {row.invoiceDate ? dayjs(row.invoiceDate).format('DD-MM-YYYY') : 'N/A'}
-              </div> */}
+              </div> 
             </div>
-            {/* <div style={{ textAlign: 'left' }}>
+            <div style={{ textAlign: 'left' }}>
               <div>
                 <strong>Client:</strong> {row.client}
               </div>
@@ -265,8 +284,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               {/* <div>
                 <strong>GRN Date:</strong> {row.grnDate}
               </div> 
-            </div>*/}
-          </div>
+            </div>
+          </div>*/}
           <div
             style={{
               marginBottom: '20px',
@@ -281,13 +300,12 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               <div>
                 <strong>{row.supplierName}</strong>
               </div>
+              <div>GST IN- {row.supplierGstIn}</div>
+              {/* <div>Place Of Supply - {row.stateNo}</div> */}
               <div style={{ width: 300, marginBottom: 4 }}>
-                {/* <strong>Place of address:</strong>
-                <br /> */}
-                <span style={{ textWrap: 'auto', textOverflow: 'ellipsis' }}>{row.address}</span>
-              </div>
-              <div>
-                <strong className="mb-2">Reg No:</strong> {row.supplierGstIn}
+                <p style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '12px', lineHeight: '1.6', marginBottom: 0 }}>
+                  {row.address}
+                </p>
               </div>
             </div>
           </div>
@@ -375,13 +393,13 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             <thead>
               <tr style={{ backgroundColor: '#673ab7', color: '#fff' }}>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>HSN/SAC</th>
-                <th style={{ border: '1px solid #000000', padding: '10px' }}>Description</th>
+                <th style={{ border: '1px solid #000000', padding: '10px', width: '368px' }}>Description</th>
                 {/* <th style={{ border: '1px solid #000000', padding: '10px' }}>Cur</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Ex.Rt</th> */}
                 {/* <th style={{ border: '1px solid #000000', padding: '10px' }}>Apply On</th> */}
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Qty</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Rate</th>
-                <th style={{ border: '1px solid #000000', padding: '10px' }}>FC Amount</th>
+                {/* <th style={{ border: '1px solid #000000', padding: '10px' }}>FC Amount</th> */}
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>TAX</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Amount</th>
               </tr>
@@ -397,8 +415,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>
                     {parseFloat(item.rate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </td>
-
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.fcAmt}</td>
+                  {/* <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.fcAmt}</td> */}
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.gstpercent}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>
                     {parseFloat(item.lcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -436,7 +453,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                     color: '#333'
                   }}
                 >
-                  {row.amountInWords ? row.amountInWords.toUpperCase() : ''}
+                  INDIAN RUPEES {row.amountInWords ? row.amountInWords.toUpperCase() : ''}
                 </span>
               </div>
             </div>
@@ -456,7 +473,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                     marginLeft: 3
                   }}
                 >
-                  {parseFloat(row.totChargesBillCurrAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹{parseFloat(row.totChargesBillCurrAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
               <div
@@ -474,7 +491,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                     marginLeft: 10
                   }}
                 >
-                  {parseFloat(row.gstInputLcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  ₹{parseFloat(row.gstInputLcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
               <div
@@ -482,17 +499,17 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               //   fontStyle: 'italic'
               // }}
               >
-                Total TDS:{' '}
+                Total TDS: -
                 <span
                   style={{
                     fontStyle: 'normal',
                     fontWeight: 'normal',
                     fontSize: '14px',
                     color: '#333',
-                    marginLeft: 3
+                    marginLeft: 6
                   }}
                 >
-                  -{' '}
+                  ₹
                   {parseFloat(row.tdsCostInvoiceVO[0].totTdsWhAmnt).toLocaleString('en-IN', {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2
@@ -538,7 +555,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                   color: '#333'
                 }}
               >
-                {parseFloat(row.netBillCurrAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                ₹{parseFloat(row.netBillCurrAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </span>
             </div>
           </div>
