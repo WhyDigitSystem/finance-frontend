@@ -7,11 +7,13 @@ import { toWords } from 'number-to-words';
 import { useEffect, useState } from 'react';
 import apiCalls from 'apicall';
 
-const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
+const dummyImageURL = 'https://t3.ftcdn.net/jpg/04/62/93/66/240_F_462936689_BpEEcxfgMuYPfTaIAOC1tCDurmsno7Sp.jpg';
+const GeneratePdfTempIRN = ({ row, callBackFunction, modalClose }) => {
   const [open, setOpen] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState('');
   const [bankDetails, setBankDetails] = useState([]);
-   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [companyDetails, setCompanyDetails] = useState([]);
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const styles = {
     container: {
       textAlign: 'center',
@@ -132,6 +134,20 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
         console.error('Error fetching invoice:', error);
       }
     };
+    const getCompanyDetails = async () => {
+      try {
+        const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+  
+        if (response.status === true) {
+          setCompanyDetails(response.paramObjectsMap.companyVO[0]);
+          console.log('getCompanyDetails:', response.paramObjectsMap.companyVO[0]);
+        } else {
+          console.error('API Error:', response);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
 
   return (
     <Dialog
@@ -144,10 +160,10 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
       <DialogTitle>PDF Preview</DialogTitle>
       <DialogContent>
         <div
-          id="pdf-content"
+          id="main-content"
           style={{
             padding: '20px',
-            backgroundColor: '#f9f9f9',
+            // backgroundColor: '#f9f9f9',
             width: '210mm',
             height: 'auto',
             margin: 'auto',
@@ -167,7 +183,31 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
               color: '#333'
             }}
           >
-            <div>{localStorage.getItem('companyName')}</div>
+            {companyDetails.companyLogo && (
+              <div className="d-flex flex-row">
+                <img
+                  src={`data:image/jpeg;base64,${companyDetails.companyLogo}`}
+                  alt="Logo"
+                  style={{ width: '80px', height: '97px', objectFit: 'contain' }}
+                  onError={(e) => {
+                    e.target.src = dummyImageURL;
+                  }}
+                />
+                <div className="ms-2">
+                  <strong>{localStorage.getItem('companyName')}</strong>
+                  <div style={{ width: 198 }}>
+                    <span style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '11px', lineHeight: '0.1' }}>
+                      {companyDetails.address}
+                    </span>
+                  </div>
+                  {companyDetails.gst && (
+                    <div className="d-flex flex-row mb-1" style={{ fontSize: '13px' }}>
+                      Reg IN: {companyDetails.gst}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             <div>
               <strong>Credit Note</strong>
             </div>
@@ -187,11 +227,21 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
             <div>
               <div>
                 <strong>Invoice No:</strong>
-                {row.voucherNo}
+                {row.vid}
               </div>
               <div>
                 <strong>Invoice Date: </strong>
-                {row.voucherDate ? dayjs(row.voucherDate).format('DD-MM-YYYY') : 'N/A'}
+                {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}
+              </div>
+            </div>
+            <div>
+              <div>
+                Due date
+                <strong style={{ textAlign: 'right' }}> : {row.dueDate ? dayjs(row.dueDate).format('DD-MM-YYYY') : 'N/A'}</strong>
+              </div>
+              <div>
+                Place Of Supply
+                <strong> : {row.stateNo}</strong>
               </div>
             </div>
           </div>
@@ -205,26 +255,15 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
             }}
           >
             <div>
+              <div>Bill To</div>
               <div>
-                <strong>Bill To</strong>
+                <strong>{row.partyName}</strong>
               </div>
-              <div>{row.partyName}</div>
-              <div>
-                <strong className="mb-2">Reg IN:</strong> {row.recipientGSTIN}
-              </div>
-              {/* <div>{row.address}</div> */}
-              <div style={{ width: 300 }}>
-                <strong>Place of address:</strong>
-                <br />
+              <div style={{ width: 300, marginBottom: 4 }}>
                 <span style={{ textWrap: 'auto', textOverflow: 'ellipsis' }}>{row.address}</span>
               </div>
-            </div>
-            <div style={{ textAlign: 'left' }}>
               <div>
-                <strong>Due Date:</strong> {row.dueDate ? dayjs(row.dueDate).format('DD-MM-YYYY') : 'N/A'}
-              </div>
-              <div>
-                <strong>Place Of Supply:</strong> {row.placeOfSupply}
+                <strong className="mb-2">Reg IN:</strong> {row.recipientGSTIN}
               </div>
             </div>
           </div>
@@ -248,8 +287,8 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
               <tr style={{ backgroundColor: '#673ab7', color: '#fff' }}>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>HSN/SAC</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Description</th>
-                <th style={{ border: '1px solid #000000', padding: '10px' }}>Cur</th>
-                <th style={{ border: '1px solid #000000', padding: '10px' }}>Ex.Rt</th>
+                {/* <th style={{ border: '1px solid #000000', padding: '10px' }}>Cur</th>
+                <th style={{ border: '1px solid #000000', padding: '10px' }}>Ex.Rt</th> */}
                 {/* <th style={{ border: '1px solid #000000', padding: '10px' }}>Apply On</th> */}
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Qty</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Rate</th>
@@ -264,14 +303,20 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
                 <tr key={index} style={{ borderBottom: '1px solid #000000' }}>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.govChargeCode}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.description}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.currency}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.exRate || ''}</td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.qty}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.rate}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.fcAmount}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                    {parseFloat(item.rate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                    {parseFloat(item.fcAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
                   <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.gstpercent}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.gstAmount}</td>
-                  <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.lcAmount}</td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                    {parseFloat(item.gstAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
+                  <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                    {parseFloat(item.lcAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -279,8 +324,7 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
 
           <div
             style={{
-              // textAlign: 'right',
-              fontWeight: 'bold',
+              textAlign: 'right',
               fontSize: '14px',
               color: '#333'
             }}
@@ -288,40 +332,70 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
           >
             <div
               style={{
-                textAlign: 'right',
+                textAlign: 'left',
                 fontWeight: 'bold',
                 fontSize: '14px',
                 color: '#333'
               }}
             >
-              Amount in words:{' '}
-              <span
-                style={{
-                  fontWeight: 'normal',
-                  fontSize: '14px',
-                  color: '#333'
-                }}
-              >
-                {toWords(parseFloat(row.totalInvAmountLc)).toUpperCase()}
-              </span>
+              <div style={{ width: '500px' }}>
+                Amount in words:{' '}
+                <span
+                  style={{
+                    fontWeight: 'normal',
+                    fontSize: '14px',
+                    fontStyle: 'italic',
+                    color: '#333'
+                  }}
+                >
+                  {row.amountInWords.toUpperCase()}
+                </span>
+              </div>
             </div>
-            <div>
-              Total:{' '}
-              <span
-                style={{
-                  fontWeight: 'normal',
-                  fontSize: '14px',
-                  color: '#333'
-                }}
+            <div className="d-flex flex-column">
+              <div
+              // style={{
+              //   fontStyle: 'italic'
+              // }}
               >
-                {row.totalInvAmountLc}
-              </span>
+                Sub Total:{' '}
+                <span
+                  style={{
+                    fontStyle: 'normal',
+                    fontWeight: 'normal',
+                    fontSize: '14px',
+                    color: '#333',
+                    marginLeft: 3
+                  }}
+                >
+                  {parseFloat(row.totalChargeAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+              <div
+              // style={{
+              //   fontStyle: 'italic'
+              // }}
+              >
+                {row.gstType === 'INTER' ? 'Total  IGST:' : 'Total CGST:'}
+                {''}
+                <span
+                  style={{
+                    fontStyle: 'normal',
+                    fontWeight: 'normal',
+                    fontSize: '14px',
+                    color: '#333',
+                    marginLeft: 10
+                  }}
+                >
+                  {parseFloat(row.totalTaxAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
             </div>
           </div>
           {row.remarks ? (
           <div
             style={{
-              marginBottom: '20px',
+              marginBottom: '10px',
               display: 'flex',
               justifyContent: 'space-between',
               fontSize: '14px',
@@ -331,23 +405,39 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
             <div>
               <strong>Remarks :</strong>
             </div>
-            {/* <div> 
-              <strong>Shipment Ref No :</strong> {row.recipientGSTIN}
-            </div>*/}
           </div>
                     ) : (
                       ''
                     )}
-
-          <div style={{ fontSize: '12px' }}>
-            <strong>Terms And Conditions :</strong>
+            <div
+              style={{
+                textAlign: 'right',
+                fontWeight: 'bold',
+                fontSize: '14px',
+                color: '#333'
+              }}
+            >
+              Total:{' '}
+              <span
+                style={{
+                  // fontWeight: 'normal',
+                  fontSize: '14px',
+                  color: '#333'
+                }}
+              >
+                {parseFloat(row.totalInvAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </span>
+            </div>
+            <div style={{ fontSize: '12px' }}>
+            <strong>Terms & Conditions :</strong>
             <ol style={{ lineHeight: '1.6' }}>
               <li>
-                OUR LIABILITY IS RESTRICTED AND LIMITED TO STANDARD TRADING CONDITIONS OF FEDERATIONS OF FREIGHT FORWARDERS ASSOCIATIONS IN
-                INDIA OF WHICH WE ARE MEMBERS, COPIES OF STANDARD TRADING CONDITIONS ARE AVAILABLE ON REQUEST.
+                The payment should be made by way of Account Payee Cheque / Demand Draft / NEFT / RTGS in the name of "
+                {localStorage.getItem('companyName')}".
               </li>
-              <li>INTEREST WILL BE CHARGED @ 16% PER ANNUM FOR ALL PAYMENT RECEIVED ON OR AFTER DUE DATE AS MENTIONED ABOVE.</li>
-              <li>CHEQUE / DD SHOULD BE IN FAVOUR OF XYZ LOGISTICS PRIVATE LIMITED.</li>
+              <li>Any Discrepancy in the invoice shall be informed within 7 days of the invoice submission.</li>
+              <li>Interest at 2% p.m. or part thereof will be charged if the bill is not paid on the due date.</li>
+              <li>Any dispute is subject to Bangalore Jurisdiction</li>
             </ol>
           </div>
 
@@ -357,22 +447,16 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
               <span style={styles2.label}>BANK NAME:</span> {bankDetails.bankName}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT CODE:</span> {bankDetails.accountCode}
-            </p>
-            <p style={styles2.item}>
-              <span style={styles2.label}>BENEFICIARY NAME:</span> {bankDetails.beneficiaryName}
-            </p>
-            <p style={styles2.item}>
               <span style={styles2.label}>BRANCH:</span> {bankDetails.branch}
             </p>
             <p style={styles2.item}>
               <span style={styles2.label}>IFSC:</span> {bankDetails.ifsc}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT NO:</span> {bankDetails.accountNo}
+              <span style={styles2.label}>BENEFICIARY NAME:</span> {bankDetails.beneficiaryName}
             </p>
             <p style={styles2.item}>
-              <span style={styles2.label}>ACCOUNT TYPE:</span> {bankDetails.accountType}
+              <span style={styles2.label}>ACCOUNT NO:</span> {bankDetails.accountNo}
             </p>
           </div>
 
@@ -416,12 +500,79 @@ const GeneratePdfTempIRN = ({ row, callBackFunction }) => {
             </div>
           </div>
         </div>
+        {row.irnCreditNoteAnnexureVO?.length > 0 && (
+          <div id="annexure-content" className="mt-5">
+            <div className="d-flex justify-content-center">
+              <div className="d-flex justify-content-between mb-3">
+                <div className="me-3">
+                  <strong>Invoice No : {row.vid}</strong>
+                </div>
+                <div>
+                  <strong>Invoice Date : {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}</strong>
+                </div>
+              </div>
+            </div>
+            <div className="d-flex justify-content-center">
+              <strong className="text-decoration-underline mb-3">ANNEXURE - A</strong>
+            </div>
+            <table
+              style={{
+                width: '100%',
+                borderCollapse: 'collapse',
+                marginBottom: '20px',
+                fontSize: '12px',
+                border: '1px solid #000000'
+              }}
+            >
+              <thead>
+                <tr>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 96 }}>Date</th>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 116 }}>Transaction No</th>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 57 }}>KIT Id</th>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 256 }}>Kit Description</th>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 110 }}>SKU Type</th>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 44 }}>Qty</th>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 68 }}>Rate</th>
+                  <th style={{ border: '1px solid #000000', padding: '10px', width: 86 }}>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {row.irnCreditNoteAnnexureVO?.map((item, index) => (
+                  <tr key={index} style={{ borderBottom: '1px solid #000000' }}>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                      {item.transDate ? dayjs(item.transDate).format('DD-MM-YYYY') : 'N/A'}
+                    </td>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.transNo}</td>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.kitId}</td>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.dsec}</td>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.skuType}</td>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.qty}</td>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                      {parseFloat(item.rate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                    <td style={{ border: '1px solid #000000', padding: '10px' }}>
+                      {parseFloat(item.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="d-flex justify-content-end">
+              <div>
+                <strong>
+                  Sub Total{' '}
+                  {parseFloat(row.annexureSubTotal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </strong>
+              </div>
+            </div>
+          </div>
+        )}
       </DialogContent>
       <DialogActions>
         <Button onClick={handleDownloadPdf} color="primary" variant="contained" startIcon={<DownloadIcon />}>
           PDF
         </Button>
-        <Button onClick={handleClose} color="secondary">
+        <Button onClick={modalClose} color="secondary">
           Close
         </Button>
       </DialogActions>
