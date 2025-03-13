@@ -2675,9 +2675,9 @@ const IrnCreditNote = () => {
                   {creditNoteAnnexure.length > 0 && (
                 <TabPanel value="2">
                   <div className="row d-flex ml">
-                    <div className="mb-1">
+                    {/* <div className="mb-1">
                       <ActionButton title="Add" icon={AddIcon} onClick={handleAddAnnexureRow} />
-                    </div>
+                    </div> */}
                     <div className="row mt-2">
                       <div className="col-lg-12">
                         <div className="table-responsive">
