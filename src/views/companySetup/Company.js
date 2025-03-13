@@ -484,7 +484,7 @@ const Company = () => {
           console.log('Response:', response.paramObjectsMap.CompanyVO.id);
           showToast('success', ' Company updated Successfully');
           const generatedId = response.paramObjectsMap.CompanyVO.id;
-          if (generatedId) {
+          if (generatedId && typeof logo === 'object') {
             console.log('Generated ID:', generatedId);
             console.log('Uploaded Item', logo);
             handleFileUpload(generatedId);

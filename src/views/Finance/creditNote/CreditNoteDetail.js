@@ -2088,7 +2088,7 @@ const IrnCreditNote = () => {
                   <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
                       <Tab label="Charges" value="1" />
-                      <Tab label="Annexure" value="2" />
+                      {creditNoteAnnexure.length > 0 && <Tab label="Annexure" value="2" />}
                       <Tab label="Summary" value="3" />
                       {editId && <Tab label="Tax" value="4" />}
                     </TabList>
@@ -2672,6 +2672,7 @@ const IrnCreditNote = () => {
                       </div>
                     </div>
                   </TabPanel>
+                  {creditNoteAnnexure.length > 0 && (
                 <TabPanel value="2">
                   <div className="row d-flex ml">
                     <div className="mb-1">
@@ -2912,7 +2913,7 @@ const IrnCreditNote = () => {
                     </div>
                   </div>
                 </TabPanel>
-                  {/* {editId && ( */}
+                )}
                     <TabPanel value="3">
                       <div>
                         <div className="row d-flex mt-2">
