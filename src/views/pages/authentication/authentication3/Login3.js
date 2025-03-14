@@ -16,8 +16,8 @@ const bevanRegularStyle = {
   fontFamily: "'Bevan', serif",
   fontWeight: 300,
   fontStyle: 'normal',
-  fontSize: 25,
-  color: '#673ab7',
+  fontSize: 35,
+  color: '#673ab7'
 };
 
 const Login = () => {
@@ -32,7 +32,7 @@ const Login = () => {
         justifyContent="flex-end"
         sx={{
           minHeight: '100vh',
-          overflow: 'hidden', // Hide any overflow on the main container
+          overflow: 'hidden' // Hide any overflow on the main container
         }}
       >
         <Grid item xs={12}>
@@ -42,14 +42,10 @@ const Login = () => {
             alignItems="center"
             sx={{
               minHeight: 'calc(100vh - 68px)',
-              overflow: 'hidden', // Hide overflow here as well
+              overflow: 'hidden' // Hide overflow here as well
             }}
           >
-            <Grid
-              item
-              sx={{ m: { xs: 1, sm: 3 }, mb: 0, p: 0 }}
-              className="css-1arlb8v css-1irzm6x-MuiGrid-root"
-            >
+            <Grid item sx={{ m: { xs: 1, sm: 3 }, mb: 0, p: 0 }} className="css-1arlb8v css-1irzm6x-MuiGrid-root">
               <AuthCardWrapper>
                 <Grid container direction="column" spacing={2} alignItems="center" justifyContent="center">
                   <Grid item sx={{ mt: 2 }}>
@@ -59,18 +55,13 @@ const Login = () => {
                         alt="logo"
                         style={{
                           width: '150px',
-                          height: 'auto',
+                          height: 'auto'
                         }}
                       />
                     </Link>
                   </Grid>
                   <Grid item xs={12}>
-                    <Grid
-                      container
-                      direction={matchDownSM ? 'column-reverse' : 'row'}
-                      alignItems="center"
-                      justifyContent="center"
-                    >
+                    <Grid container direction={matchDownSM ? 'column-reverse' : 'row'} alignItems="center" justifyContent="center">
                       <Grid item>
                         <Stack alignItems="center" justifyContent="center" spacing={1}>
                           <Stack alignItems="center" justifyContent="center" spacing={1}>

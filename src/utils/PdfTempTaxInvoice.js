@@ -402,7 +402,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 color: '#333'
               }}
             >
-              <div style={{ width: '500px' }}>
+              <div style={{ width: '500px', marginBottom: '3px' }}>
                 Amount in words:{' '}
                 <span
                   style={{
@@ -415,83 +415,95 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                   INDIAN RUPEES {row.amountInWords.toUpperCase()}
                 </span>
               </div>
-            </div>
-            <div className="d-flex flex-column">
-              <div
-              // style={{
-              //   fontStyle: 'italic'
-              // }}
-              >
-                Sub Total:{' '}
-                <span
+              {row.remarks ? (
+                <div
                   style={{
-                    fontStyle: 'normal',
-                    fontWeight: 'normal',
+                    display: 'flex',
+                    justifyContent: 'space-between',
                     fontSize: '14px',
-                    color: '#333',
-                    marginLeft: 3
+                    color: '#555'
                   }}
                 >
-                  ₹{parseFloat(row.totalChargeAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
-              </div>
-              <div
-              // style={{
-              //   fontStyle: 'italic'
-              // }}
-              >
-                {row.gstType === 'INTER' ? 'Total  IGST:' : 'Total CGST:'}
-                {''}
-                <span
+                  <div style={{ width: '500px', fontWeight: 'normal' }}>
+                    <strong>Remarks :</strong> {row.remarks}
+                  </div>
+                </div>
+              ) : (
+                ''
+              )}
+            </div>
+            <div className="d-flex justify-content-between">
+              <div className="d-flex flex-column me-2">
+                <p className="mb-0">Sub Total:</p>
+                <p className="mb-0">{row.gstType === 'INTER' ? 'Total  IGST:' : 'Total CGST:'}</p>
+                <p
+                  className="mb-1"
                   style={{
-                    fontStyle: 'normal',
-                    fontWeight: 'normal',
+                    // textAlign: 'right',
+                    fontWeight: 'bold',
                     fontSize: '14px',
                     color: '#333',
-                    marginLeft: 10
+                    marginBottom: 0
                   }}
                 >
-                  ₹{parseFloat(row.totalTaxAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                </span>
+                  Total:
+                </p>
               </div>
-            </div>
-          </div>
-          <div className="d-flex justify-content-between mb-2">
-            {row.remarks ? (
-              <div
-                style={{
-                  marginBottom: '10px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  fontSize: '14px',
-                  color: '#555'
-                }}
-              >
-                <div style={{ width: '500px' }}>
-                  <strong>Remarks :</strong> {row.remarks}
+              <div className="d-flex flex-column">
+                <div
+                // style={{
+                //   fontStyle: 'italic'
+                // }}
+                >
+                  <span
+                    style={{
+                      fontStyle: 'normal',
+                      fontWeight: 'normal',
+                      fontSize: '14px',
+                      color: '#333',
+                      marginLeft: 3
+                    }}
+                  >
+                    ₹{parseFloat(row.totalChargeAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div
+                // style={{
+                //   fontStyle: 'italic'
+                // }}
+                >
+                  <span
+                    style={{
+                      fontStyle: 'normal',
+                      fontWeight: 'normal',
+                      fontSize: '14px',
+                      color: '#333',
+                      marginLeft: 10
+                    }}
+                  >
+                    ₹{parseFloat(row.totalTaxAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div
+                  className="mb-1"
+                  style={{
+                    // textAlign: 'right',
+                    fontWeight: 'bold',
+                    fontSize: '14px',
+                    color: '#333'
+                  }}
+                >
+                  <span
+                    style={{
+                      // fontWeight: 'normal',
+                      fontSize: '14px',
+                      color: '#333'
+                    }}
+                  >
+                    ₹{parseFloat(row.totalInvAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
                 </div>
               </div>
-            ) : (
-              ''
-            )}
-            <div
-              style={{
-                // textAlign: 'right',
-                fontWeight: 'bold',
-                fontSize: '14px',
-                color: '#333'
-              }}
-            >
-              Total:{' '}
-              <span
-                style={{
-                  // fontWeight: 'normal',
-                  fontSize: '14px',
-                  color: '#333'
-                }}
-              >
-                ₹{parseFloat(row.totalInvAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
             </div>
           </div>
 
