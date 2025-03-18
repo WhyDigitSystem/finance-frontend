@@ -6,12 +6,13 @@ import Loadable from 'ui-component/Loadable';
 const Customer = Loadable(lazy(() => import('views/Finance/Customer')));
 const DocumentTypeMaster = Loadable(lazy(() => import('views/Finance/DocumentType/documentType')));
 const DocumentTypeMappingMaster = Loadable(lazy(() => import('views/Finance/DocumentType/documentTypeMapping')));
-const MultipleDocumentIdGeneration = Loadable(lazy(() => import( 'views/Finance/DocumentType/multipleDocumentIdGeneration')));
+const MultipleDocumentIdGeneration = Loadable(lazy(() => import('views/Finance/DocumentType/multipleDocumentIdGeneration')));
 const ReconcileCash = Loadable(lazy(() => import('views/Finance/Reconcile/ReconcileCash')));
 const ReconcileCorp = Loadable(lazy(() => import('views/Finance/Reconcile/ReconcileCorp')));
 const Vender = Loadable(lazy(() => import('views/Finance/Vender')));
 const UrCostInvoicegna = Loadable(lazy(() => import('views/Finance/costInvoice/UrCostInvoicegna')));
 const RCostInvoicegna = Loadable(lazy(() => import('views/Finance/costInvoice/RCostInvoicegna')));
+const CostRegister = Loadable(lazy(() => import('views/Finance/costInvoice/CostRegister')));
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
 
 // login option 3 routing
@@ -67,6 +68,7 @@ const ChargeTypeRequest = Loadable(lazy(() => import('views/Finance/ChargeTypeRe
 const JobCard = Loadable(lazy(() => import('views/Finance/JobCard')));
 const AdjustmentOffset = Loadable(lazy(() => import('views/Finance/AdjustmentOffset')));
 // const ExcelUpload = Loadable(lazy(() => import('views/Finance/excelUpload')));
+const TaxRegister = Loadable(lazy(() => import('views/Finance/taxInvoice/TaxRegister')));
 const TaxInvoiceDetail = Loadable(lazy(() => import('views/Finance/taxInvoice/taxInvoiceDetail')));
 const CreditNoteDetail = Loadable(lazy(() => import('views/Finance/creditNote/CreditNoteDetail')));
 const CostInvoice = Loadable(lazy(() => import('views/Finance/costInvoice/CostInvoice')));
@@ -81,7 +83,8 @@ const ARAPAdjustment = Loadable(lazy(() => import('views/Finance/APAP-Adjustment
 const ARadjustmentOffset = Loadable(lazy(() => import('views/Finance/AR-adjustmentOffset')));
 const PartMaster = Loadable(lazy(() => import('views/Finance/PartyMaster')));
 const CreatePartyMaster = Loadable(lazy(() => import('views/Finance/CreatePartyMaster')));
-
+const PartyLedger = Loadable(lazy(() => import('views/Finance/FinalReport/PartyLedger')));
+const LedgerReport = Loadable(lazy(() => import('views/Finance/FinalReport/LedgerReport')));
 const TrailBalance = Loadable(lazy(() => import('views/Finance/FinalReport/TrailBalance')));
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
@@ -296,12 +299,20 @@ const FinanceRoute = {
       element: <TaxInvoiceDetail />
     },
     {
+      path: '/Finance/taxInvoice/TaxRegister',
+      element: <TaxRegister />
+    },
+    {
       path: '/Finance/creditNote/CreditNoteDetail',
       element: <CreditNoteDetail />
     },
     {
       path: '/Finance/costInvoice/CostInvoice',
       element: <CostInvoice />
+    },
+    {
+      path: '/Finance/costInvoice/CostRegister',
+      element: <CostRegister />
     },
     {
       path: '/Finance/RCostInvoicegna/RCostInvoicegna',
@@ -378,6 +389,14 @@ const FinanceRoute = {
     {
       path: '/Finance/FinalReport/TrailBalance',
       element: <TrailBalance />
+    },
+    {
+      path: '/Finance/FinalReport/PartyLedger',
+      element: <PartyLedger />
+    },
+    {
+      path: '/Finance/FinalReport/LedgerReport',
+      element: <LedgerReport />
     }
   ]
 };

@@ -53,6 +53,12 @@ const ar = {
           url: '/finance/creditNote/creditNoteDetail'
         },
         {
+          id: 'taxRegister',
+          title: 'Tax Register',
+          type: 'item',
+          url: '/finance/taxInvoice/TaxRegister'
+        },
+        {
           id: 'receipt',
           title: 'Customer Receipt',
           type: 'item',

@@ -46,6 +46,12 @@ const ap = {
           url: '/finance/UrCostInvoicegna/UrCostInvoicegna'
         },
         {
+          id: 'costRegister',
+          title: 'Cost Register',
+          type: 'item',
+          url: '/finance/costInvoice/CostRegister'
+        },
+        {
           id: 'apBill',
           title: 'AP Bill Balance',
           type: 'item',

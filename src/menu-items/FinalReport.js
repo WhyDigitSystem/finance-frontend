@@ -21,6 +21,18 @@ const finalReport = {
       icon: icons.IconKey,
       children: [
         {
+          id: 'partyLedger',
+          title: 'Party Ledger',
+          type: 'item',
+          url: '/finance/FinalReport/PartyLedger'
+        },
+        {
+          id: 'ledgerReport',
+          title: 'Ledger Report',
+          type: 'item',
+          url: '/finance/FinalReport/LedgerReport'
+        },
+        {
           id: 'trailBalance',
           title: 'Trail Balance',
           type: 'item',
