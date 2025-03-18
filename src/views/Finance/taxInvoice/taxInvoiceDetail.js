@@ -91,7 +91,7 @@ const TaxInvoiceDetails = () => {
     supplierBillDate: '',
     supplierBillNo: '',
     vid: '',
-    vdate: ''
+    vdate: null
   });
 
   const [errors, setErrors] = useState({
@@ -126,7 +126,7 @@ const TaxInvoiceDetails = () => {
     supplierBillDate: '',
     supplierBillNo: '',
     vid: '',
-    vdate: ''
+    vdate: null
   });
 
   const [withdrawalsTableData, setWithdrawalsTableData] = useState([
@@ -484,14 +484,13 @@ const TaxInvoiceDetails = () => {
 
     if (table === taxInvoiceAnnexure) {
       return (
-        !lastRow.amount ||
-        !lastRow.dsec ||
-        !lastRow.kitId ||
-        !lastRow.qty ||
-        !lastRow.rate ||
-        !lastRow.skuType ||
-        !lastRow.transDate ||
-        !lastRow.transNo
+        // !lastRow.amount ||
+        // !lastRow.dsec ||
+        // !lastRow.kitId ||
+        // !lastRow.qty ||
+        // !lastRow.rate ||
+        // !lastRow.skuType ||
+        !lastRow.transDate || !lastRow.transNo
       );
     }
     return false;
@@ -503,12 +502,12 @@ const TaxInvoiceDetails = () => {
         const newErrors = [...prevErrors];
         newErrors[table.length - 1] = {
           ...newErrors[table.length - 1],
-          amount: !table[table.length - 1].amount ? 'amount is required' : '',
-          dsec: !table[table.length - 1].dsec ? 'dsec is required' : '',
-          kitId: !table[table.length - 1].kitId ? 'kitId is required' : '',
-          qty: !table[table.length - 1].qty ? 'qty is required' : '',
-          rate: !table[table.length - 1].rate ? 'rate is required' : '',
-          skuType: !table[table.length - 1].skuType ? 'skuType is required' : '',
+          // amount: !table[table.length - 1].amount ? 'amount is required' : '',
+          // dsec: !table[table.length - 1].dsec ? 'dsec is required' : '',
+          // kitId: !table[table.length - 1].kitId ? 'kitId is required' : '',
+          // qty: !table[table.length - 1].qty ? 'qty is required' : '',
+          // rate: !table[table.length - 1].rate ? 'rate is required' : '',
+          // skuType: !table[table.length - 1].skuType ? 'skuType is required' : '',
           transDate: !table[table.length - 1].transDate ? 'transDate is required' : '',
           transNo: !table[table.length - 1].transNo ? 'transNo is required' : ''
         };
@@ -592,7 +591,7 @@ const TaxInvoiceDetails = () => {
       supplierBillDate: '',
       supplierBillNo: '',
       vid: '',
-      vdate: '',
+      vdate: null,
       totalChargeAmountLc: '',
       totalTaxAmountLc: '',
       totalInvAmountLc: '',
@@ -635,16 +634,16 @@ const TaxInvoiceDetails = () => {
       supplierBillDate: '',
       supplierBillNo: '',
       vid: '',
-      vdate: ''
+      vdate: null
     });
     setEditId('');
-    setAddressType('');
-    setStateName('');
-    setPlaceOfSupply('');
+    setAddressType([]);
+    setStateName([]);
+    setPlaceOfSupply([]);
     setJobCardNo([]);
-    setChargeType([]);
+    // setChargeType([]);
     setChargeCodeList([]);
-    setChargeCodeCache([]);
+    setChargeCodeCache(new Map());
     setPartyCurrencyList([]);
     setWithdrawalsTableErrors({
       sno: '',
@@ -1153,6 +1152,7 @@ const TaxInvoiceDetails = () => {
         updatedLists[rowIndex] = chargeCodeCache.get(type);
         return updatedLists;
       });
+      console.log('chargeCodeCache.has(type)', chargeCodeList);
       return;
     }
 
@@ -1162,13 +1162,14 @@ const TaxInvoiceDetails = () => {
 
       // Cache the response for future use
       setChargeCodeCache((prevCache) => new Map(prevCache).set(type, chargeCodes));
-
+      console.log('setChargeCodeCache', chargeCodeCache);
       // Update only the specific row's chargeCodeList
       setChargeCodeList((prevLists) => {
         const updatedLists = [...prevLists];
         updatedLists[rowIndex] = chargeCodes;
         return updatedLists;
       });
+      console.log('setChargeCodeList', chargeCodeList);
     } catch (error) {
       console.error('Error fetching charge codes:', error);
     }
@@ -1245,7 +1246,7 @@ const TaxInvoiceDetails = () => {
         ...prevData,
         partyName: selectedEmp.partyName,
         partyCode: selectedEmp.partyCode,
-        partyId: selectedEmp.id,
+        partyId: selectedEmp.id
       }));
       getCreditDays(selectedEmp.partyCode);
       getJobCardNo(selectedEmp.partyCode);
@@ -1404,59 +1405,51 @@ const TaxInvoiceDetails = () => {
         console.log('DataToEdit ==>', listValueVO);
 
         setFormData({
-          docId: listValueVO.docId,
-          approveStatus: listValueVO.approveStatus,
+          address: listValueVO.address,
+          addressType: listValueVO.addressType,
+          amountInWords: listValueVO.amountInWords,
           approveBy: listValueVO.approveBy,
           approveOn: listValueVO.approveOn,
-          // docDate: listValueVO.docDate,
+          approveStatus: listValueVO.approveStatus,
+          billCurr: listValueVO.billCurr,
+          billCurrRate: listValueVO.billCurrRate,
+          billOfEntry: listValueVO.billOfEntry,
+          billingRemarks: listValueVO.billingRemarks,
+          bizMode: listValueVO.bizMode,
+          bizType: listValueVO.bizType,
+          creditDays: listValueVO.creditDays,
           docDate: listValueVO.docDate ? dayjs(listValueVO.docDate) : null,
-          type: listValueVO.type,
+          docId: listValueVO.docId,
+          dueDate: listValueVO.dueDate ? dayjs(listValueVO.dueDate) : null,
+          gstType: listValueVO.gstType,
+          invoiceDate: listValueVO.invoiceDate ? dayjs(listValueVO.invoiceDate) : null,
+          invoiceNo: listValueVO.invoiceNo,
+          jobNo: listValueVO.jobOrderNo,
           partyCode: listValueVO.partyCode,
+          partyId: listValueVO.partyId,
           partyName: listValueVO.partyName,
           partyType: listValueVO.partyType,
-          bizType: listValueVO.bizType,
-          bizMode: listValueVO.bizMode,
-          stateNo: listValueVO.stateNo,
-          stateCode: listValueVO.stateCode,
-          address: listValueVO.address,
-          // addressType: listValueVO.addressType,
-          gstType: listValueVO.gstType,
-          partyId: listValueVO.partyId,
           pinCode: listValueVO.pinCode,
           placeOfSupply: listValueVO.placeOfSupply,
           recipientGSTIN: listValueVO.recipientGSTIN,
-          remarks: listValueVO.remarks,
-          billCurr: listValueVO.billCurr,
-          status: listValueVO.status,
-          updatedBy: listValueVO.updatedBy,
-          supplierBillNo: listValueVO.supplierBillNo,
-          supplierBillDate: listValueVO.supplierBillDate ? dayjs(listValueVO.supplierBillDate) : null,
-          vid: listValueVO.vid,
-          vdate: listValueVO.vdate ? dayjs(listValueVO.vdate) : null,
-          billCurrRate: listValueVO.billCurrRate,
-          creditDays: listValueVO.creditDays,
-          shipperInvoiceNo: listValueVO.shipperInvoiceNo,
-          billOfEntry: listValueVO.billOfEntry,
-          invoiceNo: listValueVO.invoiceNo,
-          // invoiceDate: listValueVO.invoiceDate,
-          invoiceDate: listValueVO.invoiceDate ? dayjs(listValueVO.invoiceDate) : null,
-          id: listValueVO.id,
-          totalChargeAmountLc: listValueVO.totalChargeAmountLc,
-          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
-          totalTaxAmountLc: listValueVO.totalTaxAmountLc,
-          totalInvAmountLc: listValueVO.totalInvAmountLc,
           roundOffAmountLc: listValueVO.roundOffAmountLc,
-          // totalChargeAmountBc: listValueVO.totalChargeAmountBc,
-          // totalInvAmountLc: listValueVO.totalInvAmountLc,
-          // totalInvAmountBc: listValueVO.totalInvAmountBc,
-          // totalChargeAmountBc: listValueVO.totalChargeAmountBc,
-          totalTaxAmountBc: listValueVO.totalTaxAmountBc,
+          shipperInvoiceNo: listValueVO.shipperInvoiceNo,
+          stateCode: listValueVO.stateCode,
+          stateNo: listValueVO.stateNo,
+          status: listValueVO.status,
+          supplierBillDate: listValueVO.supplierBillDate ? dayjs(listValueVO.supplierBillDate) : null,
+          supplierBillNo: listValueVO.supplierBillNo,
+          remarks: listValueVO.remarks,
+          id: listValueVO.id,
+          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
+          totalChargeAmountLc: listValueVO.totalChargeAmountLc,
           totalInvAmountBc: listValueVO.totalInvAmountBc,
+          totalInvAmountLc: listValueVO.totalInvAmountLc,
+          totalTaxAmountBc: listValueVO.totalTaxAmountBc,
+          totalTaxAmountLc: listValueVO.totalTaxAmountLc,
           totalTaxableAmountLc: listValueVO.totalTaxableAmountLc,
-          amountInWords: listValueVO.amountInWords,
-          billingRemarks: listValueVO.billingRemarks,
-          jobNo: listValueVO.jobOrderNo,
-          addressType: listValueVO.addressType
+          vid: listValueVO.vid,
+          vdate: listValueVO.vdate ? dayjs(listValueVO.vdate) : null
         });
 
         if (listValueVO.taxInvoiceAnnexureVO.length === 0) {
@@ -1483,30 +1476,31 @@ const TaxInvoiceDetails = () => {
 
         if (!listValueVO?.taxInvoiceDetailsVO) return;
 
-        const mappedData = listValueVO.taxInvoiceDetailsVO.map((cl) => {
+        const mappedData = listValueVO.taxInvoiceDetailsVO.map((cl, index) => {
           // Call getChargeCodeDetail for each chargeType
-          getChargeCodeDetail(cl.chargeType);
+          getChargeCodeDetail(cl.chargeType, index);
 
           return {
-            id: cl.id,
+            billAmount: cl.billAmount,
             chargeCode: cl.chargeCode,
             chargeName: cl.chargeName,
             chargeType: cl.chargeType,
             currency: cl.currency,
+            description: cl.description,
             exRate: cl.exRate,
             exempted: cl.exempted,
+            fcAmount: cl.fcAmount,
             govChargeCode: cl.govChargeCode,
-            // gstpercent: cl.gstpercent,
+            gst: cl.gstAmount,
+            GSTPercent: cl.gstpercent ? cl.gstpercent : cl.GSTPercent,
+            id: cl.id,
+            lcAmount: cl.lcAmount,
             ledger: cl.ledger,
-            description: cl.description,
             qty: cl.qty,
             rate: cl.rate,
             sac: cl.sac,
             taxable: cl.taxable,
-            gst: cl.gstAmount,
-            lcAmount: cl.lcAmount,
-            billAmount: cl.billAmount,
-            GSTPercent: cl.gstpercent ? cl.gstpercent : cl.GSTPercent
+            tlcAmount: cl.tlcAmount
           };
         });
         console.log('getChargeCodeDetail', mappedData);
@@ -1614,7 +1608,6 @@ const TaxInvoiceDetails = () => {
       creditDays: parseInt(formData.creditDays),
       finYear: finYear,
       gstType: formData.gstType,
-      // invoiceDate: dayjs(formData.invoiceDate).format('YYYY-MM-DD'),
       invoiceNo: formData.invoiceNo,
       jobOrderNo: formData.jobNo,
       orgId: orgId,
@@ -1646,7 +1639,6 @@ const TaxInvoiceDetails = () => {
         showToast('success', editId ? 'Tax Invoice updated successfully' : 'Tax Invoice created successfully');
         getAllTaxInvoice();
         handleClear();
-        // handleSaveClear();
       } else {
         showToast('error', response.paramObjectsMap.errorMessage || 'Tax Invoice creation failed');
       }
@@ -1688,7 +1680,7 @@ const TaxInvoiceDetails = () => {
     // Error Handling
     setTaxInvoiceAnnexureErrors((prev) => {
       const newErrors = [...prev];
-      if (field === 'amount' || field === 'qty' || field === 'rate') {
+      if (field === 'qty') {
         if (value === '' || isNaN(value)) {
           newErrors[index] = {
             ...newErrors[index],
