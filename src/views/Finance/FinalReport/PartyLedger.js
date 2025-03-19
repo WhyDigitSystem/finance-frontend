@@ -32,6 +32,7 @@ export const PartyLedger = () => {
   const [loginWarehouse, setLoginWarehouse] = useState(localStorage.getItem('warehouse'));
   const [branchList, setBranchList] = useState([]);
   const [partyList, setPartyList] = useState([]);
+  const [partyTypeList, setPartyTypeList] = useState([]);
 
   const [formData, setFormData] = useState({
     startDate: dayjs(),
@@ -48,6 +49,13 @@ export const PartyLedger = () => {
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
 
+  const [selectedSections, setSelectedSections] = useState({
+    date: false,
+    branch: false,
+    customer: false,
+    withDetails: false
+  });
+
   const [visibleSections, setVisibleSections] = useState({
     date: false,
     branch: false,
@@ -55,14 +63,26 @@ export const PartyLedger = () => {
     withDetails: false
   });
 
-  const handleProceed = () => {
-    setVisibleSections({
-      date: visibleSections.date,
-      branch: visibleSections.branch,
-      customer: visibleSections.customer,
-      withDetails: visibleSections.withDetails
-    });
+  const handleCheckboxChange = (event) => {
+    const { name, checked } = event.target;
+    setSelectedSections((prevState) => ({
+      ...prevState,
+      [name]: checked
+    }));
   };
+
+  const handleProceed = () => {
+    setVisibleSections({ ...selectedSections });
+  };
+
+  //   const handleProceed = () => {
+  //     setVisibleSections({
+  //       date: visibleSections.date,
+  //       branch: visibleSections.branch,
+  //       customer: visibleSections.customer,
+  //       withDetails: visibleSections.withDetails
+  //     });
+  //   };
 
   const reportColumns = [
     { accessorKey: 'docId', header: 'Part No', size: 140 },
@@ -88,6 +108,7 @@ export const PartyLedger = () => {
   useEffect(() => {
     getAllBranches();
     getAllPartyName();
+    getAllPartyMasterByOrgId();
   }, []);
 
   // const getAllPartNo = async () => {
@@ -120,6 +141,26 @@ export const PartyLedger = () => {
   //     }));
   //   };
 
+  const handleInputChange = (field) => (event, newValue) => {
+    if (field === 'partyType') {
+      const selectedPartyType = newValue ? newValue.partyType : '';
+      setFormData((prevData) => ({
+        ...prevData,
+        partyType: selectedPartyType,
+        partyName: '' // Reset partyName when partyType changes
+      }));
+
+      if (selectedPartyType) {
+        getPartyNameByPartyType(selectedPartyType);
+      }
+    } else {
+      setFormData((prevData) => ({
+        ...prevData,
+        [field]: newValue || (event?.target ? event.target.value : '')
+      }));
+    }
+  };
+
   //   const handleInputChange = (event) => {
   //     const { name, checked } = event.target;
   //     setVisibleSections((prevState) => ({
@@ -128,14 +169,14 @@ export const PartyLedger = () => {
   //     }));
   //   };
 
-  const handleInputChange = (event) => {
-    if (!event || !event.target) return; // Prevents crashing if event or event.target is undefined
-    const { name, checked } = event.target;
-    setVisibleSections((prevState) => ({
-      ...prevState,
-      [name]: checked
-    }));
-  };
+  //   const handleInputChange = (event) => {
+  //     if (!event || !event.target) return; // Prevents crashing if event or event.target is undefined
+  //     const { name, checked } = event.target;
+  //     setVisibleSections((prevState) => ({
+  //       ...prevState,
+  //       [name]: checked
+  //     }));
+  //   };
 
   const handleDateChange = (field, date) => {
     setFormData((prevData) => ({
@@ -231,6 +272,25 @@ export const PartyLedger = () => {
     }
   };
 
+  const getAllPartyMasterByOrgId = async () => {
+    try {
+      const result = await apiCalls('get', `/master/getAllPartyTypeByOrgId?orgid=${orgId}`);
+      setPartyTypeList(result.paramObjectsMap.partyTypeVO || []);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
+
+  const getPartyNameByPartyType = async (partType) => {
+    try {
+      const response = await apiCalls('get', `/costInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=${partType}`);
+      setPartyList(response.paramObjectsMap.partyMasterVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -240,8 +300,8 @@ export const PartyLedger = () => {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={visibleSections.date}
-                    onChange={handleInputChange}
+                    checked={selectedSections.date}
+                    onChange={handleCheckboxChange}
                     name="date"
                     sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
                   />
@@ -255,8 +315,8 @@ export const PartyLedger = () => {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={visibleSections.branch}
-                    onChange={handleInputChange}
+                    checked={selectedSections.branch}
+                    onChange={handleCheckboxChange}
                     name="branch"
                     sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
                   />
@@ -270,8 +330,8 @@ export const PartyLedger = () => {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={visibleSections.customer}
-                    onChange={handleInputChange}
+                    checked={selectedSections.customer}
+                    onChange={handleCheckboxChange}
                     name="customer"
                     sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
                   />
@@ -286,8 +346,8 @@ export const PartyLedger = () => {
               <FormControlLabel
                 control={
                   <Checkbox
-                    checked={visibleSections.withDetails}
-                    onChange={handleInputChange}
+                    checked={selectedSections.withDetails}
+                    onChange={handleCheckboxChange}
                     name="withDetails"
                     sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
                   />
@@ -380,7 +440,7 @@ export const PartyLedger = () => {
                 />
               </div>
 
-              <div className="col-md-3 mb-3"></div>
+              {/* <div className="col-md-3 mb-3"></div> */}
             </>
           )}
           {visibleSections.customer && (
@@ -388,24 +448,24 @@ export const PartyLedger = () => {
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
-                  options={partyList}
-                  getOptionLabel={(option) => option.partyName}
+                  options={partyTypeList}
+                  getOptionLabel={(option) => option.partyType}
                   sx={{ width: '100%' }}
                   size="small"
                   value={
-                    partyList.length === 1
-                      ? partyList[0]
-                      : formData.partyName
-                        ? partyList.find((p) => p.partyName === formData.partyName)
+                    partyTypeList.length === 1
+                      ? partyTypeList[0]
+                      : formData.partyType
+                        ? partyTypeList.find((p) => p.partyType === formData.partyType)
                         : null
                   }
-                  onChange={handleInputChange('partyName')}
+                  onChange={handleInputChange('partyType')}
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="SubLedger Type"
-                      error={!!fieldErrors.partyName}
-                      helperText={fieldErrors.partyName}
+                      label="Party Type"
+                      error={!!fieldErrors.partyType}
+                      helperText={fieldErrors.partyType}
                       InputProps={{
                         ...params.InputProps,
                         style: { height: 40 }
@@ -428,11 +488,11 @@ export const PartyLedger = () => {
                         ? partyList.find((p) => p.partyName === formData.partyName)
                         : null
                   }
-                  onChange={handleInputChange('partyName')}
+                  onChange={handleInputChange}
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="SubLedger Name"
+                      label="Party Name"
                       error={!!fieldErrors.partyName}
                       helperText={fieldErrors.partyName}
                       InputProps={{
