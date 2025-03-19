@@ -27,13 +27,13 @@ function CostRegister() {
 
   const [selectedSections, setSelectedSections] = useState({
     date: false,
-    branch: false,
+    branchCode: false,
     customer: false,
   });
 
   const [visibleSections, setVisibleSections] = useState({
     date: false,
-    branch: false,
+    branchCode: false,
     customer: false,
   });
   const handleCheckboxChange = (event) => {
@@ -160,30 +160,28 @@ function CostRegister() {
   };
   const getPartyName = async () => {
     try {
-      const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=customer`);
+      const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=VENDOR`);
       setPartyNameList(response.paramObjectsMap.partyMasterVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
   };
   const reportColumns = [
-    { accessorKey: 'branch', header: 'Branch', size: 140 },
-    { accessorKey: 'srName', header: 'Sr Name', size: 140 },
+    { accessorKey: 'branchCode', header: 'Branch', size: 140 },
     { accessorKey: 'docId', header: 'Doc No', size: 140 },
     { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
-    { accessorKey: 'partyType', header: 'Party Type', size: 140 },
-    { accessorKey: 'partyName', header: 'Party Name', size: 140 },
-    { accessorKey: 'pgstin', header: 'PGSTIN', size: 140 },
-    { accessorKey: 'suppBillNo', header: 'Supplier Bill No', size: 140 },
-    { accessorKey: 'suppBillDate', header: 'Supplier Bill Date', size: 140 },
+    { accessorKey: 'supplierName', header: 'Party Name', size: 140 },
+    { accessorKey: 'supplierGstin', header: 'PGSTIN', size: 140 },
+    { accessorKey: 'supplierBillNo', header: 'Supplier Bill No', size: 140 },
+    // { accessorKey: '', header: 'Supplier Bill Date', size: 140 },
     { accessorKey: 'gstType', header: 'GST Type', size: 140 },
     { accessorKey: 'charges', header: 'Charges', size: 140 },
-    { accessorKey: 'igstip', header: 'IGST - I/P', size: 140 },
-    { accessorKey: 'cgstip', header: 'CGST - I/P', size: 140 },
-    { accessorKey: 'sgstip', header: 'SGST - I/P', size: 140 },
-    { accessorKey: 'igstop', header: 'IGST - O/P', size: 140 },
-    { accessorKey: 'cgstop', header: 'CGST - O/P', size: 140 },
-    { accessorKey: 'sgstop', header: 'SGST - O/P', size: 140 }
+    // { accessorKey: '', header: 'IGST - I/P', size: 140 },
+    // { accessorKey: '', header: 'CGST - I/P', size: 140 },
+    // { accessorKey: '', header: 'SGST - I/P', size: 140 },
+    { accessorKey: 'outputIgst', header: 'IGST - O/P', size: 140 },
+    { accessorKey: 'outputCgst', header: 'CGST - O/P', size: 140 },
+    { accessorKey: 'outputSgst', header: 'SGST - O/P', size: 140 }
   ];
   const handleGo = async () => {
     const errors = {};
@@ -208,7 +206,7 @@ function CostRegister() {
         if(formData.fromDate && formData.toDate){
           response = await apiCalls(
             'get',
-            `/rCostInvoiceGna/getRegisterCostInvoiceReport?branchCode=${formData.branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&toDate=${formData.toDate}`
+            `/rCostInvoiceGna/getRegisterCostInvoiceReport?branchCode=${formData.branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&toDate=${formData.toDate}&partyCode=${formData.customerCode}`
           );
         }else {
           response = await apiCalls(
@@ -218,7 +216,7 @@ function CostRegister() {
         }
         if (response.status === true) {
           console.log('Response:', response);
-          setRowData(response.paramObjectsMap.partyMasterVO);
+          setRowData(response.paramObjectsMap.rCostinvoiceReport);
           setIsLoading(false);
           setListView(true);
         } else {
@@ -281,7 +279,6 @@ function CostRegister() {
              
               {visibleSections.date && (
                 <>
-                  
                   <div className="col-md-3 mb-3">
                     <FormControl fullWidth variant="filled" size="small">
                       <LocalizationProvider dateAdapter={AdapterDayjs}>

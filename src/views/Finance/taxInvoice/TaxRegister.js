@@ -118,7 +118,7 @@ function TaxRegister() {
       const selectedBranch = branchCodeList.find((br) => br.branchCode === value);
       setFormData((prevData) => ({
         ...prevData,
-        branchCode: selectedBranch ? selectedBranch.branchCode : '', // Avoids undefined error
+        branchCode: selectedBranch ? selectedBranch.branchCode : '',
       }));
     } else {
       let inputValue = value;
