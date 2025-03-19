@@ -1,6 +1,7 @@
 import React from 'react';
 import { TextField, Checkbox, FormControlLabel, FormHelperText, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import ClearIcon from '@mui/icons-material/Clear';
 import ActionButton from 'utils/ActionButton';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -22,16 +23,15 @@ function TaxRegister() {
   const [partyNameList, setPartyNameList] = useState([]);
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
-
   const [selectedSections, setSelectedSections] = useState({
     date: false,
-    branch: false,
+    branchCode: false,
     customer: false,
   });
 
   const [visibleSections, setVisibleSections] = useState({
     date: false,
-    branch: false,
+    branchCode: false,
     customer: false,
   });
   const handleCheckboxChange = (event) => {
@@ -46,20 +46,22 @@ function TaxRegister() {
   };
   
   const [formData, setFormData] = useState({
-    // fromDate: null,
-    // toDate: null,
-    dateRange: [null, null],
+    fromDate: null,
+    toDate: null,
+    // dateRange: [null, null],
     branchCode: 'All',
     customer: 'All',
     customerCode:'All'
   });
   const [fieldErrors, setFieldErrors] = useState({
+    fromDate: '',
+    toDate: '',
     branchCode: '',
     customer: '',
     customerCode:'',
-    branchCode: '',
   });
   const handleClear = () => {
+    setListView(false);
     setVisibleSections({
       date: false,
       branchCode: false,
@@ -71,12 +73,16 @@ function TaxRegister() {
       customer: false,
     });
     setFormData({
-      dateRange: [null, null],
+      // dateRange: [null, null],
+      fromDate: null,
+      toDate: null,
       branchCode: 'All',
       customer: 'All',
       customerCode: 'All',
     });
     setFieldErrors({
+      fromDate: '',
+      toDate: '',
       customer: '',
       customerCode: '',
       branchCode: '',
@@ -129,16 +135,18 @@ function TaxRegister() {
       }, 0);
     }
   };
-  const handleDateChange = (newValue) => {
-    setFormData((prevData) => ({
-      ...prevData,
-      dateRange: newValue, // Store selected date range
-    }));
-  };
-  // const handleDateChange = (field, date) => {
-  //   const formattedDate = dayjs(date).format('YYYY-MM-DD') || null;
-  //   setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+  // const handleDateChange = (newValue) => {
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     dateRange: newValue,
+  //   }));
+  //   console.log("date range",formData.dateRange);
+    
   // };
+  const handleDateChange = (field, date) => {
+    const formattedDate = dayjs(date).format('YYYY-MM-DD') || null;
+    setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+  };
   useEffect(() => {
     getAllBranches();
     getPartyName();
@@ -235,12 +243,12 @@ function TaxRegister() {
   return(
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-        <div className="row d-flex ml">
+        {/* <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Search" icon={SearchIcon} isLoading={isLoading} onClick={handleGo} margin="0 10px 0 10px" />
           </div>
-        </div>
+        </div> */}
         <>
             <div className="row">
               <div className="row">
@@ -275,25 +283,11 @@ function TaxRegister() {
                 </Button>
               </div>
               </div>
-              {/* <Button onClick={() => setShowFields(true)} color="secondary">Proceed</Button> */}
-             
               {visibleSections.date && (
                 <>
-                  {/* <div className="col-md-3 mb-3"> */}
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <div className="col-md-6 mb-3">
-                        <FormControl fullWidth variant="outlined" size="small">
-                          <DateRangePicker
-                            value={formData.dateRange}
-                            onChange={handleDateChange}
-                            format="DD-MM-YYYY"
-                          />
-                        </FormControl>
-                      </div>
-                    </LocalizationProvider>
-                    {/* </div> */}
-                  {/* <div className="col-md-3 mb-3">
-                    {/* <FormControl fullWidth variant="filled" size="small">
+                  
+                  <div className="col-md-3 mb-3">
+                    <FormControl fullWidth variant="filled" size="small">
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <DatePicker
                           label="From Date"
@@ -304,7 +298,6 @@ function TaxRegister() {
                           }}
                           format="DD-MM-YYYY"
                         />
-                        </DemoItem>
                       </LocalizationProvider>
                     </FormControl>
                   </div>
@@ -320,10 +313,9 @@ function TaxRegister() {
                           }}
                           format="DD-MM-YYYY"
                         />
-                        </DemoItem>
                        </LocalizationProvider>
                     </FormControl> 
-                  </div> */}
+                  </div>
                 </>
               )}
               {visibleSections.branchCode && ( 
@@ -371,6 +363,16 @@ function TaxRegister() {
                   {fieldErrors.customer && <FormHelperText>{fieldErrors.customer}</FormHelperText>}
                 </FormControl>
               </div>
+              )}
+              {(visibleSections.date || visibleSections.branchCode || visibleSections.customer) && (
+                <div className="col-md-3 mb-3">
+                  <div className="row d-flex ml">
+                    <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
+                      <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
+                      <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
           </>
