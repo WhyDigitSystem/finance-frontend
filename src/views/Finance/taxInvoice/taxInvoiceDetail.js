@@ -243,9 +243,10 @@ const TaxInvoiceDetails = () => {
         );
 
         const listValueVO = result.paramObjectsMap.taxInvoiceVO;
-
+        getAddessType(listValueVO.placeOfSupply, listValueVO.stateCode, listValueVO.partyId);
         setFormData({
           docId: listValueVO.docId,
+          partyId: listValueVO.partyId,
           approveStatus: listValueVO.approveStatus,
           approveBy: listValueVO.approveBy,
           approveOn: listValueVO.approveOn,
@@ -259,6 +260,7 @@ const TaxInvoiceDetails = () => {
           stateNo: listValueVO.stateNo,
           stateCode: listValueVO.stateCode,
           address: listValueVO.address,
+          addressType: listValueVO.addressType,
           gstType: listValueVO.gstType,
           pinCode: listValueVO.pinCode,
           placeOfSupply: listValueVO.placeOfSupply,
@@ -291,7 +293,6 @@ const TaxInvoiceDetails = () => {
           totalInvAmountBc: listValueVO.totalInvAmountBc,
           totalTaxableAmountLc: listValueVO.totalTaxableAmountLc,
           amountInWords: listValueVO.amountInWords,
-          addressType: listValueVO.addressType,
           billingRemarks: listValueVO.billingRemarks
           // amountInWords: listValueVO.amountInWords
         });
@@ -1516,6 +1517,7 @@ const TaxInvoiceDetails = () => {
 
   const handleList = () => {
     setlistView(!listView);
+    handleClear();
   };
 
   // const handleSelectChange = (e) => {
