@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import apiCalls from 'apicall';
+import { useEffect, useState } from 'react';
 
 // material-ui
 import { Avatar, Box, Button, Grid, Typography } from '@mui/material';
@@ -67,8 +68,44 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
   const theme = useTheme();
 
   const [timeValue, setTimeValue] = useState(false);
+  const [totalOrderYear, setTotalOrderYear] = useState(0);
+  const [billMonth, setBillMonth] = useState('All');
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const handleChangeTime = (event, newValue) => {
     setTimeValue(newValue);
+  };
+
+  useEffect(() => {
+    getDashboardRevenue();
+  }, [timeValue]);
+
+  // const getDashboardRevenue = async () => {
+  //   try {
+  //     const currentMonth = new Date().toISOString().slice(0, 7);
+  //     const targetMonth = timeValue ? currentMonth : 'ALL';
+
+  //     const response = await apiCalls('get', `taxInvoice/getDsahboardRevenue?billMonth=${targetMonth}&finYear=${finYear}&orgId=${orgId}`);
+  //     setTotalOrderYear(response.paramObjectsMap.taxInvoiceVO[0].amount);
+  //   } catch (error) {
+  //     console.error('Error fetching dashboard revenue:', error);
+  //   }
+  // };
+
+  const getDashboardRevenue = async () => {
+    try {
+      // Get the current month as a full name (e.g., "March", "April")
+      const options = { month: 'long' };
+      const currentMonth = new Date().toLocaleString('default', options); // Get current month name (e.g., "March")
+
+      // Use 'ALL' if timeValue is false, otherwise use the current month name
+      const targetMonth = timeValue ? currentMonth : 'ALL';
+
+      const response = await apiCalls('get', `taxInvoice/getDsahboardRevenue?billMonth=${targetMonth}&finYear=${finYear}&orgId=${orgId}`);
+      setTotalOrderYear(response.paramObjectsMap.taxInvoiceVO[0].amount);
+    } catch (error) {
+      console.error('Error fetching dashboard revenue:', error);
+    }
   };
 
   return (
@@ -123,9 +160,13 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                     <Grid container alignItems="center">
                       <Grid item>
                         {timeValue ? (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>₹108</Typography>
+                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>
+                            {parseInt(totalOrderYear)}
+                          </Typography>
                         ) : (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>₹961</Typography>
+                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>
+                            {parseInt(totalOrderYear)}
+                          </Typography>
                         )}
                       </Grid>
                       <Grid item>

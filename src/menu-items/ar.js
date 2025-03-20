@@ -54,7 +54,7 @@ const ar = {
         },
         {
           id: 'taxRegister',
-          title: 'Tax Register',
+          title: 'Sales Register',
           type: 'item',
           url: '/finance/taxInvoice/TaxRegister'
         },
