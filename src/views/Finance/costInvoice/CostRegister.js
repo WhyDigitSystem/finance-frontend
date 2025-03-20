@@ -56,8 +56,8 @@ function CostRegister() {
   });
   const [fieldErrors, setFieldErrors] = useState({
     // dateRange: [null, null],
-    fromDate: null,
-    toDate: null,
+    fromDate: '',
+    toDate: '',
     branchCode: '',
     customer: '',
     customerCode:'',
@@ -82,16 +82,19 @@ function CostRegister() {
       customerCode: 'All',
     });
     setFieldErrors({
+      // dateRange: [null, null],
+      fromDate: '',
+      toDate: '',
+      branchCode: '',
       customer: '',
       customerCode: '',
-      branchCode: '',
     });
     setRowData([]);
     setListView(false);
   };
   const handleSelectPartyChange = (e) => {
     const value = e.target.value;
-    console.log('Selected employeeCode value:', value);
+    console.log('Selected party value:', value);
     const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
 
     if (selectedEmp) {
@@ -194,8 +197,8 @@ function CostRegister() {
     const saveFormData = {
       branchCode: formData.branchCode,
       customer: formData.customerCode,
-      fromDate: formData.startDate ? dayjs(formData.startDate).format('YYYY-MM-DD') : null,
-      toDate: formData.endDate ? dayjs(formData.endDate).format('YYYY-MM-DD') : null
+      fromDate: formData.fromDate,
+      toDate: formData.toDate
     };
     console.log('THE SAVE FORM DATA IS:', saveFormData);
 
@@ -211,13 +214,14 @@ function CostRegister() {
         }else {
           response = await apiCalls(
             'get',
-            `/rCostInvoiceGna/getRegisterCostInvoiceReport?branchCode=${formData.branchCode}&finyear=${finYear}&orgId=${orgId}&partyCode=${formData.customerCode}`
+            `/rCostInvoiceGna/getRegisterCostInvoiceReport?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyCode=${formData.customerCode}`
           );
         }
         if (response.status === true) {
           console.log('Response:', response);
           setRowData(response.paramObjectsMap.rCostinvoiceReport);
           setIsLoading(false);
+          // showToast('succes', response.paramObjectsMap.message)
           setListView(true);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Report Fetch failed');
@@ -244,8 +248,7 @@ function CostRegister() {
         <>
             <div className="row">
               <div className="row">
-              <div className="col-md-2
-               mb-3">
+              <div className="col-md-2 mb-3">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                   label="Date"
@@ -275,8 +278,6 @@ function CostRegister() {
                 </Button>
               </div>
               </div>
-              {/* <Button onClick={() => setShowFields(true)} color="secondary">Proceed</Button> */}
-             
               {visibleSections.date && (
                 <>
                   <div className="col-md-3 mb-3">
