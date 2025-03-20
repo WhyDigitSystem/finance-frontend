@@ -64,11 +64,11 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 // ==============================|| DASHBOARD - TOTAL ORDER LINE CHART CARD ||============================== //
 
-const TotalOrderLineChartCard = ({ isLoading }) => {
+const TotalOrderLineChartCard = ({ isLoading, costAPI, totalYear }) => {
   const theme = useTheme();
 
   const [timeValue, setTimeValue] = useState(false);
-  const [totalOrderYear, setTotalOrderYear] = useState(0);
+  // const [totalOrderYear, setTotalOrderYear] = useState(0);
   const [billMonth, setBillMonth] = useState('All');
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -76,37 +76,18 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
     setTimeValue(newValue);
   };
 
+  // useEffect(() => {
+  //   getDashboardRevenue();
+  // }, [timeValue]);
+
   useEffect(() => {
-    getDashboardRevenue();
-  }, [timeValue]);
-
-  // const getDashboardRevenue = async () => {
-  //   try {
-  //     const currentMonth = new Date().toISOString().slice(0, 7);
-  //     const targetMonth = timeValue ? currentMonth : 'ALL';
-
-  //     const response = await apiCalls('get', `taxInvoice/getDsahboardRevenue?billMonth=${targetMonth}&finYear=${finYear}&orgId=${orgId}`);
-  //     setTotalOrderYear(response.paramObjectsMap.taxInvoiceVO[0].amount);
-  //   } catch (error) {
-  //     console.error('Error fetching dashboard revenue:', error);
-  //   }
-  // };
-
-  const getDashboardRevenue = async () => {
-    try {
-      // Get the current month as a full name (e.g., "March", "April")
-      const options = { month: 'long' };
-      const currentMonth = new Date().toLocaleString('default', options); // Get current month name (e.g., "March")
-
-      // Use 'ALL' if timeValue is false, otherwise use the current month name
-      const targetMonth = timeValue ? currentMonth : 'ALL';
-
-      const response = await apiCalls('get', `taxInvoice/getDsahboardRevenue?billMonth=${targetMonth}&finYear=${finYear}&orgId=${orgId}`);
-      setTotalOrderYear(response.paramObjectsMap.taxInvoiceVO[0].amount);
-    } catch (error) {
-      console.error('Error fetching dashboard revenue:', error);
+    if (typeof costAPI === 'function') {
+      console.log("Calling costAPI with timeValue:", timeValue);
+      costAPI(timeValue);
+    } else {
+      console.error("costAPI is not a function");
     }
-  };
+  }, [timeValue, costAPI]);
 
   return (
     <>
@@ -116,21 +97,11 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
         <CardWrapper border={false} content={false}>
           <Box sx={{ p: 2.25 }}>
             <Grid container direction="column">
+
               <Grid item>
                 <Grid container justifyContent="space-between">
                   <Grid item>
-                    <Avatar
-                      variant="rounded"
-                      sx={{
-                        ...theme.typography.commonAvatar,
-                        ...theme.typography.largeAvatar,
-                        backgroundColor: theme.palette.primary[800],
-                        color: '#fff',
-                        mt: 1
-                      }}
-                    >
-                      <LocalMallOutlinedIcon fontSize="inherit" />
-                    </Avatar>
+
                   </Grid>
                   <Grid item>
                     <Button
@@ -158,45 +129,44 @@ const TotalOrderLineChartCard = ({ isLoading }) => {
                 <Grid container alignItems="center">
                   <Grid item xs={6}>
                     <Grid container alignItems="center">
-                      <Grid item>
-                        {timeValue ? (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>
-                            {parseInt(totalOrderYear)}
+                      <Grid container alignItems="center" wrap="nowrap">
+                        <Grid item>
+                          <Typography sx={{ fontSize: '1.5rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75, zIndex: 1 }}>
+                            {/* {parseInt(totalOrderYear)} */}
+                            ₹{parseFloat(totalYear).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </Typography>
-                        ) : (
-                          <Typography sx={{ fontSize: '2.125rem', fontWeight: 500, mr: 1, mt: 1.75, mb: 0.75 }}>
-                            {parseInt(totalOrderYear)}
-                          </Typography>
-                        )}
-                      </Grid>
-                      <Grid item>
-                        <Avatar
-                          sx={{
-                            ...theme.typography.smallAvatar,
-                            cursor: 'pointer',
-                            backgroundColor: theme.palette.primary[200],
-                            color: theme.palette.primary.dark
-                          }}
-                        >
-                          <ArrowDownwardIcon fontSize="inherit" sx={{ transform: 'rotate3d(1, 1, 1, 45deg)' }} />
-                        </Avatar>
-                      </Grid>
-                      <Grid item xs={12}>
-                        <Typography
-                          sx={{
-                            fontSize: '1rem',
-                            fontWeight: 500,
-                            color: theme.palette.primary[200]
-                          }}
-                        >
-                          Total Order
-                        </Typography>
+                        </Grid>
+
+                        <Grid item>
+                          <Avatar
+                            sx={{
+                              ...theme.typography.smallAvatar,
+                              cursor: 'pointer',
+                              backgroundColor: theme.palette.primary[200],
+                              color: theme.palette.primary.dark
+                            }}
+                          >
+                            <ArrowDownwardIcon fontSize="inherit" sx={{ transform: 'rotate3d(1, 1, 1, 45deg)' }} />
+                          </Avatar>
+                        </Grid>
                       </Grid>
                     </Grid>
                   </Grid>
-                  <Grid item xs={6}>
-                    {timeValue ? <Chart {...ChartDataMonth} /> : <Chart {...ChartDataYear} />}
+
+                  <Grid item xs={12}>
+                    <Typography
+                      sx={{
+                        fontSize: '1rem',
+                        fontWeight: 500,
+                        color: theme.palette.primary[200]
+                      }}
+                    >
+                      Cost
+                    </Typography>
                   </Grid>
+                  {/* <Grid item xs={6}>
+                    {timeValue ? <Chart {...ChartDataMonth} /> : <Chart {...ChartDataYear} />}
+                  </Grid> */}
                 </Grid>
               </Grid>
             </Grid>

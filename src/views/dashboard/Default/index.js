@@ -14,11 +14,19 @@ import TotalIncomeDarkCard from './TotalIncomeDarkCard';
 import TotalIncomeLightCard from './TotalIncomeLightCard';
 import TotalOrderLineChartCard from './TotalOrderLineChartCard';
 import CurrencyExchangeRates from './ExRateDash';
+import apiCalls from 'apicall';
+import { useCallback } from 'react';
+
+
 
 // ==============================|| DEFAULT DASHBOARD ||============================== //
 
 const Dashboard = () => {
   const [isLoading, setLoading] = useState(true);
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [totalOrderYear, setTotalOrderYear] = useState(0);
+  const [totalYear, setTotalYear] = useState(0);
 
   useEffect(() => {
     setLoading(false);
@@ -35,12 +43,46 @@ const Dashboard = () => {
 
       // setTimeout(() => {
       //   window.location.reload();
-      // }, 2000);
+      // }, 1000);
 
       // Clear the timeout on component unmount to prevent memory leaks
       return () => clearTimeout(timeoutId);
     }
   }, []);
+
+  const getDashboardRevenue = useCallback(async (timeValue) => {
+    try {
+      const options = { month: 'long' };
+      const currentMonth = new Date().toLocaleString('default', options);
+      const targetMonth = timeValue ? currentMonth : 'ALL';
+
+      const response = await apiCalls(
+        'get',
+        `taxInvoice/getDsahboardRevenue?billMonth=${targetMonth}&finYear=${finYear}&orgId=${orgId}`
+      );
+
+      setTotalOrderYear(response.paramObjectsMap.taxInvoiceVO[0].amount);
+    } catch (error) {
+      console.error('Error fetching dashboard revenue:', error);
+    }
+  }, [finYear, orgId]); // Dependencies
+
+  const getDashboardCost = useCallback(async (timeValue) => {
+    try {
+      const options = { month: 'long' };
+      const currentMonth = new Date().toLocaleString('default', options);
+      const targetMonth = timeValue ? currentMonth : 'ALL';
+
+      const response = await apiCalls(
+        'get',
+        `costInvoice/getDsahboardCost?billMonth=${targetMonth}&finYear=${finYear}&orgId=${orgId}`
+      );
+
+      setTotalYear(response.paramObjectsMap.cost[0].amount);
+    } catch (error) {
+      console.error('Error fetching dashboard revenue:', error);
+    }
+  }, [finYear, orgId]); // Dependencies
 
   return (
     <Grid container spacing={gridSpacing}>
@@ -49,13 +91,19 @@ const Dashboard = () => {
       </div> */}
       <Grid item xs={12}>
         <Grid container spacing={gridSpacing}>
-          <Grid item lg={4} md={6} sm={6} xs={12}>
-            <EarningCard isLoading={isLoading} />
+          <Grid item lg={3} md={4} sm={4} xs={6}>
+            <EarningCard isLoading={isLoading} revenueAPI={getDashboardRevenue} cardName={"Revenue"} totalOrderYear={totalOrderYear} />
           </Grid>
-          <Grid item lg={4} md={6} sm={6} xs={12}>
+          <Grid item lg={3} md={4} sm={4} xs={6}>
+            <TotalOrderLineChartCard isLoading={isLoading} costAPI={getDashboardCost} cardName={"Cost"} totalYear={totalYear}/>
+          </Grid>
+          <Grid item lg={3} md={4} sm={4} xs={6}>
+            <EarningCard isLoading={isLoading} revenueAPI={getDashboardRevenue} cardName={"AR"} totalOrderYear={totalOrderYear} />
+          </Grid>
+          <Grid item lg={3} md={4} sm={4} xs={6}>
             <TotalOrderLineChartCard isLoading={isLoading} />
           </Grid>
-          <Grid item lg={4} md={12} sm={12} xs={12}>
+          {/* <Grid item lg={4} md={12} sm={12} xs={12}>
             <Grid container spacing={gridSpacing}>
               <Grid item sm={6} xs={12} md={6} lg={12}>
                 <TotalIncomeDarkCard isLoading={isLoading} />
@@ -64,7 +112,7 @@ const Dashboard = () => {
                 <TotalIncomeLightCard isLoading={isLoading} />
               </Grid>
             </Grid>
-          </Grid>
+          </Grid> */}
         </Grid>
       </Grid>
       <Grid item xs={12}>
