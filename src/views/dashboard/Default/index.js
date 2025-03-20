@@ -101,7 +101,7 @@ const Dashboard = () => {
             <EarningCard isLoading={isLoading} revenueAPI={getDashboardRevenue} cardName={"AR"} totalOrderYear={totalOrderYear} />
           </Grid>
           <Grid item lg={3} md={4} sm={4} xs={6}>
-            <TotalOrderLineChartCard isLoading={isLoading} />
+            <TotalOrderLineChartCard isLoading={isLoading} costAPI={getDashboardCost} cardName={"AP"} totalYear={totalYear}/>
           </Grid>
           {/* <Grid item lg={4} md={12} sm={12} xs={12}>
             <Grid container spacing={gridSpacing}>

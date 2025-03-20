@@ -64,7 +64,7 @@ const CardWrapper = styled(MainCard)(({ theme }) => ({
 
 // ==============================|| DASHBOARD - TOTAL ORDER LINE CHART CARD ||============================== //
 
-const TotalOrderLineChartCard = ({ isLoading, costAPI, totalYear }) => {
+const TotalOrderLineChartCard = ({ isLoading, costAPI, totalYear, cardName }) => {
   const theme = useTheme();
 
   const [timeValue, setTimeValue] = useState(false);
@@ -161,7 +161,7 @@ const TotalOrderLineChartCard = ({ isLoading, costAPI, totalYear }) => {
                         color: theme.palette.primary[200]
                       }}
                     >
-                      Cost
+                      {cardName}
                     </Typography>
                   </Grid>
                   {/* <Grid item xs={6}>
