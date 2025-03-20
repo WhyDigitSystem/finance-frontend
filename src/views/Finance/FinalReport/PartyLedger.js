@@ -23,6 +23,7 @@ function PartyLedger() {
   const [partyNameList, setPartyNameList] = useState([]);
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
+  const [partyTypeList, setPartyTypeList] = useState([]);
   const [selectedSections, setSelectedSections] = useState({
     date: false,
     branchCode: false,
@@ -50,17 +51,16 @@ function PartyLedger() {
   const [formData, setFormData] = useState({
     fromDate: null,
     toDate: null,
-    // dateRange: [null, null],
     branchCode: 'All',
-    customer: 'All',
-    customerCode: 'All'
+    partyName: 'All',
+    partyType: 'All'
   });
   const [fieldErrors, setFieldErrors] = useState({
     fromDate: '',
     toDate: '',
     branchCode: '',
-    customer: '',
-    customerCode: ''
+    partyName: '',
+    partyType: ''
   });
   const handleClear = () => {
     setListView(false);
@@ -81,32 +81,49 @@ function PartyLedger() {
       fromDate: null,
       toDate: null,
       branchCode: 'All',
-      customer: 'All',
-      customerCode: 'All'
+      partyName: 'All',
+      partyType: 'All'
     });
     setFieldErrors({
       fromDate: '',
       toDate: '',
-      customer: '',
-      customerCode: '',
+      partyName: '',
+      partyType: '',
       branchCode: ''
     });
     setRowData([]);
   };
-  const handleSelectPartyChange = (e) => {
-    const value = e.target.value;
-    console.log('Selected employeeCode value:', value);
-    const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
+  //   const handleSelectPartyChange = (e) => {
+  //     const value = e.target.value;
+  //     console.log('Selected employeeCode value:', value);
+  //     const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
 
-    if (selectedEmp) {
-      console.log('Selected party:', selectedEmp);
-      setFormData((prevData) => ({
-        ...prevData,
-        customer: selectedEmp.partyName,
-        customerCode: selectedEmp.partyCode
-      }));
-    } else {
-      console.log('No party found with the given code:', value);
+  //     if (selectedEmp) {
+  //       console.log('Selected party:', selectedEmp);
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         partyName: selectedEmp.partyName,
+  //         partyType: selectedEmp.partyType
+  //       }));
+  //     } else {
+  //       console.log('No party found with the given code:', value);
+  //     }
+  //   };
+
+  const handleSelectPartyChange = async (event) => {
+    const { value } = event.target;
+
+    setFormData((prevState) => ({
+      ...prevState,
+      partyType: value,
+      partyName: 'All' // Reset partyName when partyType changes
+    }));
+
+    try {
+      const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=${value}`);
+      setPartyNameList(response.paramObjectsMap.partyMasterVO || []);
+    } catch (error) {
+      console.error('Error fetching party names:', error);
     }
   };
 
@@ -154,6 +171,7 @@ function PartyLedger() {
   useEffect(() => {
     getAllBranches();
     getPartyName();
+    getAllPartyMasterByOrgId();
   }, []);
 
   const getAllBranches = async () => {
@@ -166,10 +184,19 @@ function PartyLedger() {
   };
   const getPartyName = async () => {
     try {
-      const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=customer`);
+      const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=${formData.partyType}`);
       setPartyNameList(response.paramObjectsMap.partyMasterVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
+    }
+  };
+  const getAllPartyMasterByOrgId = async () => {
+    try {
+      const result = await apiCalls('get', `/master/getAllPartyTypeByOrgId?orgid=${orgId}`);
+      setPartyTypeList(result.paramObjectsMap.partyTypeVO || []);
+      console.log('Test', result);
+    } catch (err) {
+      console.log('error', err);
     }
   };
   const reportColumns = [
@@ -205,7 +232,8 @@ function PartyLedger() {
     // }
     const saveFormData = {
       branchCode: formData.branchCode,
-      customer: formData.customerCode,
+      partyName: formData.partyName,
+      partyType: formData.partyType,
       fromDate: formData.startDate ? dayjs(formData.startDate).format('YYYY-MM-DD') : null,
       toDate: formData.endDate ? dayjs(formData.endDate).format('YYYY-MM-DD') : null
     };
@@ -218,17 +246,17 @@ function PartyLedger() {
         if (formData.fromDate && formData.toDate) {
           response = await apiCalls(
             'get',
-            `/taxInvoice/getReportDetailsForSalesRegister?branchCode=${formData.branchCode}&finyear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyCode=${formData.customerCode}&toDate=${formData.toDate}`
+            `/master/getAllPartyLedgerReport?branchCode=${formData.branchCode}&finyear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyName=${formData.partyName}&toDate=${formData.toDate}`
           );
         } else {
           response = await apiCalls(
             'get',
-            `/taxInvoice/getReportDetailsForSalesRegister?branchCode=${formData.branchCode}&finyear=${finYear}&orgId=${orgId}&partyCode=${formData.customerCode}`
+            `/master/getAllPartyLedgerReport?branchCode=${formData.branchCode}&finyear=${finYear}&orgId=${orgId}&partyName=${formData.partyName}`
           );
         }
         if (response.status === true) {
           console.log('Response:', response);
-          setRowData(response.paramObjectsMap.taxInvoiceVO);
+          setRowData(response.paramObjectsMap.partyMasterVO || []);
           setIsLoading(false);
           setListView(true);
         } else {
@@ -357,27 +385,50 @@ function PartyLedger() {
               </div>
             )}
             {visibleSections.customer && (
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
-                  <InputLabel id="customer-label">Customer</InputLabel>
-                  <Select
-                    labelId="customer-label"
-                    label="customer"
-                    value={formData.customer}
-                    onChange={handleSelectPartyChange}
-                    name="customer"
-                  >
-                    <MenuItem value="All">All</MenuItem>
+              <>
+                <div className="col-md-3 mb-3">
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.partyType}>
+                    <InputLabel id="partyType-label">Party Type</InputLabel>
+                    <Select
+                      labelId="partyType-label"
+                      label="partyType"
+                      value={formData.partyType}
+                      onChange={handleSelectPartyChange}
+                      name="partyType"
+                    >
+                      <MenuItem value="All">All</MenuItem>
 
-                    {partyNameList?.map((row) => (
-                      <MenuItem key={row.id} value={row.partyName}>
-                        {row.partyName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.customer && <FormHelperText>{fieldErrors.customer}</FormHelperText>}
-                </FormControl>
-              </div>
+                      {partyTypeList?.map((row) => (
+                        <MenuItem key={row.id} value={row.partyType}>
+                          {row.partyType}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {fieldErrors.partyType && <FormHelperText>{fieldErrors.partyType}</FormHelperText>}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.partyName}>
+                    <InputLabel id="partyName-label">Party Name</InputLabel>
+                    <Select
+                      labelId="partyName-label"
+                      label="partyName"
+                      value={formData.partyName}
+                      onChange={handleInputChange}
+                      name="partyName"
+                    >
+                      <MenuItem value="All">All</MenuItem>
+
+                      {partyNameList?.map((row) => (
+                        <MenuItem key={row.id} value={row.partyName}>
+                          {row.partyName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {fieldErrors.partyName && <FormHelperText>{fieldErrors.partyName}</FormHelperText>}
+                  </FormControl>
+                </div>
+              </>
             )}
             {visibleSections.withDetails && (
               <div className="col-md-3 mb-3">
