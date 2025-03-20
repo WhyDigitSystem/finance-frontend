@@ -223,7 +223,7 @@ function PartyLedger() {
         if (formData.fromDate && formData.toDate) {
           response = await apiCalls(
             'get',
-            `/master/getAllPartyLedgerReport?branch=${formData.branch}&fromDate=${formData.fromDate}&orgId=${orgId}&partyName=${formData.partyName}&toDate=${formData.toDate}`
+            `/master/getAllPartyLedgerReport?branch=${formData.branch}&fromDate=${formData.fromDate}&orgId=${orgId}&partyName=${formData.partyName}&partyType=${formData.partyType}&toDate=${formData.toDate}`
           );
         } else {
           response = await apiCalls(
