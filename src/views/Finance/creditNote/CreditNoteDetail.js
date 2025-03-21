@@ -87,7 +87,7 @@ const IrnCreditNote = () => {
     address: '',
     pinCode: '',
     gstType: '',
-    originBillNo:'',
+    originBillNo: '',
     originBillDate: null,
     currency: '',
     exRate: '',
@@ -103,7 +103,7 @@ const IrnCreditNote = () => {
     partyId: '',
     bizMode: '',
     bizType: '',
-    
+
     totalChargeAmountLc: '',
     totalChargeAmountBc: '',
     totalTaxAmountLc: '',
@@ -114,7 +114,7 @@ const IrnCreditNote = () => {
     totalTaxableAmountLc: '',
     amountInWords: '',
     billingRemarks: '',
-    creditRemarks: '',
+    creditRemarks: ''
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -144,7 +144,7 @@ const IrnCreditNote = () => {
     address: '',
     pinCode: '',
     gstType: '',
-    originBillNo:'',
+    originBillNo: '',
     originBillDate: null,
     currency: '',
     exRate: '',
@@ -160,7 +160,7 @@ const IrnCreditNote = () => {
     partyId: '',
     bizMode: '',
     bizType: '',
-    
+
     totalChargeAmountLc: '',
     totalChargeAmountBc: '',
     totalTaxAmountLc: '',
@@ -171,7 +171,7 @@ const IrnCreditNote = () => {
     totalTaxableAmountLc: '',
     amountInWords: '',
     billingRemarks: '',
-    creditRemarks: '',
+    creditRemarks: ''
   });
 
   const [irnChargesData, setIrnChargesData] = useState([
@@ -249,31 +249,31 @@ const IrnCreditNote = () => {
       dblcamt: ''
     }
   ]);
-    const [creditNoteAnnexure, setCreditNoteAnnexure] = useState([
-      {
-        amount: '',
-        dsec: '',
-        kitId: '',
-        qty: '',
-        rate: '',
-        skuType: '',
-        transDate: null,
-        transNo: ''
-      }
-    ]);
-  
-    const [creditNoteAnnexureErrors, setCreditNoteAnnexureErrors] = useState([
-      {
-        amount: '',
-        dsec: '',
-        kitId: '',
-        qty: '',
-        rate: '',
-        skuType: '',
-        transDate: null,
-        transNo: ''
-      }
-    ]);
+  const [creditNoteAnnexure, setCreditNoteAnnexure] = useState([
+    {
+      amount: '',
+      dsec: '',
+      kitId: '',
+      qty: '',
+      rate: '',
+      skuType: '',
+      transDate: null,
+      transNo: ''
+    }
+  ]);
+
+  const [creditNoteAnnexureErrors, setCreditNoteAnnexureErrors] = useState([
+    {
+      amount: '',
+      dsec: '',
+      kitId: '',
+      qty: '',
+      rate: '',
+      skuType: '',
+      transDate: null,
+      transNo: ''
+    }
+  ]);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -305,7 +305,7 @@ const IrnCreditNote = () => {
       'totalInvAmountBc',
       'totalTaxableAmountLc',
       'amountInWords',
-      'billingRemarks',
+      'billingRemarks'
     ];
 
     if (numericFields.includes(name)) {
@@ -395,7 +395,7 @@ const IrnCreditNote = () => {
       address: '',
       pinCode: '',
       gstType: '',
-      originBillNo:'',
+      originBillNo: '',
       originBillDate: null,
       currency: '',
       exRate: '',
@@ -405,13 +405,13 @@ const IrnCreditNote = () => {
       supplierRefNo: '',
       supplierRefDate: null,
       dueDate: null,
-  
+
       billOfEntry: '',
       partyType: 'CUSTOMER',
       partyId: '',
       bizMode: '',
       bizType: '',
-      
+
       totalChargeAmountLc: '',
       totalChargeAmountBc: '',
       totalTaxAmountLc: '',
@@ -422,7 +422,7 @@ const IrnCreditNote = () => {
       totalTaxableAmountLc: '',
       amountInWords: '',
       billingRemarks: '',
-      creditRemarks: '',
+      creditRemarks: ''
     });
 
     setFieldErrors({
@@ -452,7 +452,7 @@ const IrnCreditNote = () => {
       address: '',
       pinCode: '',
       gstType: '',
-      originBillNo:'',
+      originBillNo: '',
       originBillDate: null,
       currency: '',
       exRate: '',
@@ -462,13 +462,13 @@ const IrnCreditNote = () => {
       supplierRefNo: '',
       supplierRefDate: null,
       dueDate: null,
-  
+
       billOfEntry: '',
       partyType: '',
       partyId: '',
       bizMode: '',
       bizType: '',
-      
+
       totalChargeAmountLc: '',
       totalChargeAmountBc: '',
       totalTaxAmountLc: '',
@@ -479,7 +479,7 @@ const IrnCreditNote = () => {
       totalTaxableAmountLc: '',
       amountInWords: '',
       billingRemarks: '',
-      creditRemarks: '',
+      creditRemarks: ''
     });
 
     setIrnChargesData([
@@ -709,7 +709,7 @@ const IrnCreditNote = () => {
         partyId: selectedBill?.partyId || '',
         bizMode: selectedBill?.bizMode || '',
         bizType: selectedBill?.bizType || '',
-        
+
         totalChargeAmountLc: selectedBill?.totalChargeAmountLc || '',
         totalChargeAmountBc: selectedBill?.totalChargeAmountBc || '',
         totalTaxAmountLc: selectedBill?.totalTaxAmountLc || '',
@@ -784,7 +784,7 @@ const IrnCreditNote = () => {
             skuType: item.skuType,
             qty: item.qty,
             rate: item.rate,
-            amount: item.amount,
+            amount: item.amount
           }))
         );
       }
@@ -837,7 +837,7 @@ const IrnCreditNote = () => {
       if (response.status === true) {
         setFormData((prev) => ({
           ...prev,
-          docId: response.paramObjectsMap.irnCreditVO, 
+          docId: response.paramObjectsMap.irnCreditVO
         }));
       }
     } catch (error) {
@@ -863,7 +863,10 @@ const IrnCreditNote = () => {
 
   const getAllIrnCredit = async () => {
     try {
-      const response = await apiCalls('get', `irnCreditNote/getAllIrnCreditByOrgId?orgId=${orgId}`);
+      const response = await apiCalls(
+        'get',
+        `irnCreditNote/getAllIrnCreditByOrgId?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}`
+      );
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -1018,7 +1021,7 @@ const IrnCreditNote = () => {
           totalTaxAmountBc: irnCreditNoteVO.totalTaxAmountBc,
           totalTaxableAmountLc: irnCreditNoteVO.totalTaxableAmountLc,
           amountInWords: irnCreditNoteVO.amountInWords,
-          billingRemarks: irnCreditNoteVO.billingRemarks,
+          billingRemarks: irnCreditNoteVO.billingRemarks
         });
         setIrnChargesData(
           irnCreditNoteVO.irnCreditNoteDetailsVO.map((invoiceData) => ({
@@ -1155,57 +1158,57 @@ const IrnCreditNote = () => {
         sac: row.sac,
         gstpercent: parseInt(row.gstpercent)
       }));
-          const annexureVO = creditNoteAnnexure.map((row) => ({
-            ...(editId && { id: row.id }),
-            amount: row.amount,
-            dsec: row.dsec,
-            kitId: row.kitId,
-            qty: row.qty,
-            rate: row.rate,
-            skuType: row.skuType,
-            transDate: row.transDate ? dayjs(row.transDate).format('YYYY-MM-DD') : null,
-            transNo: row.transNo
-          }));
+      const annexureVO = creditNoteAnnexure.map((row) => ({
+        ...(editId && { id: row.id }),
+        amount: row.amount,
+        dsec: row.dsec,
+        kitId: row.kitId,
+        qty: row.qty,
+        rate: row.rate,
+        skuType: row.skuType,
+        transDate: row.transDate ? dayjs(row.transDate).format('YYYY-MM-DD') : null,
+        transNo: row.transNo
+      }));
       const saveFormData = {
         ...(editId && { id: editId }),
-            address: formData.address,
-            addressType: formData.addressType,
-            billCurr: formData.currency,
-            billCurrRate: parseInt(formData.exRate),
-            bizMode: formData.bizMode,
-            bizType: formData.bizType,
-            branch: formData.branch,
-            branchCode: formData.branchCode,
-            finYear: formData.finYear,
-            createdBy: formData.createdBy,
-            creditDays: formData.creditDays,
-            creditRemarks: formData.creditRemarks,
-            dueDate: formData.dueDate,
-            gstType: formData.gstType,
-            jobNo: formData.jobNo,
-            orgId: formData.orgId,
-            originBillNo: formData.originBillNo,
-            originBillDate: formData.originBillDate,
-            partyCode: formData.partyCode,
-            partyName: formData.partyName,
-            partyType: formData.partyType,
-            pinCode: formData.pinCode,
-            placeOfSupply: formData.placeOfSupply,
-            recipientGSTIN: formData.recipientGSTIN,
-            shipperRefNo: formData.shipRefNo,
-            stateCode: formData.stateCode,
-            stateNo: formData.stateNo,
-            status: formData.status,
-            supplierRefNo: formData.supplierRefNo,
-            supplierRefDate: formData.supplierRefDate,
-            vid: formData.vid,
-            vdate: formData.vdate,
-            irnCreditNoteDetailsDTO: irnCreditChargesVo,
-            irnCreditNoteAnnexureDTO: annexureVO,
-    
-            billOfEntry: formData.billOfEntry,
-            partyId: formData.partyId,
-            billingRemarks: formData.billingRemarks,
+        address: formData.address,
+        addressType: formData.addressType,
+        billCurr: formData.currency,
+        billCurrRate: parseInt(formData.exRate),
+        bizMode: formData.bizMode,
+        bizType: formData.bizType,
+        branch: formData.branch,
+        branchCode: formData.branchCode,
+        finYear: formData.finYear,
+        createdBy: formData.createdBy,
+        creditDays: formData.creditDays,
+        creditRemarks: formData.creditRemarks,
+        dueDate: formData.dueDate,
+        gstType: formData.gstType,
+        jobNo: formData.jobNo,
+        orgId: formData.orgId,
+        originBillNo: formData.originBillNo,
+        originBillDate: formData.originBillDate,
+        partyCode: formData.partyCode,
+        partyName: formData.partyName,
+        partyType: formData.partyType,
+        pinCode: formData.pinCode,
+        placeOfSupply: formData.placeOfSupply,
+        recipientGSTIN: formData.recipientGSTIN,
+        shipperRefNo: formData.shipRefNo,
+        stateCode: formData.stateCode,
+        stateNo: formData.stateNo,
+        status: formData.status,
+        supplierRefNo: formData.supplierRefNo,
+        supplierRefDate: formData.supplierRefDate,
+        vid: formData.vid,
+        vdate: formData.vdate,
+        irnCreditNoteDetailsDTO: irnCreditChargesVo,
+        irnCreditNoteAnnexureDTO: annexureVO,
+
+        billOfEntry: formData.billOfEntry,
+        partyId: formData.partyId,
+        billingRemarks: formData.billingRemarks
       };
 
       try {
@@ -1262,7 +1265,7 @@ const IrnCreditNote = () => {
       calculateTotals(irnChargesData, setFormData);
     }
   }, [irnChargesData, setFormData]);
-  
+
   const calculateTotals = (rows, setFormData) => {
     if (!Array.isArray(rows)) return;
     const totalChargeAmountLc = rows.reduce((sum, row) => sum + (parseFloat(row.lcAmount) || 0), 0);
@@ -1274,7 +1277,7 @@ const IrnCreditNote = () => {
     const totalTaxAmountBc = rows.reduce((sum, row) => sum + (parseFloat(row.gstAmount) || 0), 0);
     const totalInvAmountBc = totalChargeAmountBc + totalTaxAmountBc;
     const totalTaxableAmountLc = 0;
-  
+
     setFormData((prev) => ({
       ...prev,
       totalChargeAmountLc: totalChargeAmountLc.toFixed(2),
@@ -1285,10 +1288,10 @@ const IrnCreditNote = () => {
       totalTaxAmountBc: totalTaxAmountBc.toFixed(2),
       totalInvAmountBc: totalInvAmountBc.toFixed(2),
       totalTaxableAmountLc: totalTaxableAmountLc.toFixed(2),
-      amountInWords: toWords(Math.round(totalInvAmountLc)).toUpperCase(),
+      amountInWords: toWords(Math.round(totalInvAmountLc)).toUpperCase()
     }));
   };
-  
+
   const handleRowUpdate = async (index, field, value) => {
     setIrnChargesData((prev) => {
       return prev.map((row, idx) => {
@@ -1302,7 +1305,7 @@ const IrnCreditNote = () => {
               fcAmount: '',
               lcAmount: '',
               billAmount: '',
-              gstAmount: '',
+              gstAmount: ''
             };
           }
 
@@ -1321,7 +1324,7 @@ const IrnCreditNote = () => {
             fcAmount,
             lcAmount,
             billAmount,
-            gstAmount,
+            gstAmount
           };
         }
         return row;
@@ -1397,16 +1400,14 @@ const IrnCreditNote = () => {
   // };
   const handleAnnexureInputChange = (index, field, value) => {
     const isValidNumber = /^\d*\.?\d*$/.test(value);
-  
+
     if ((field === 'amount' || field === 'qty' || field === 'rate') && !isValidNumber && value !== '') {
-      return; 
+      return;
     }
-    setCreditNoteAnnexure((prev) =>
-      prev.map((row, i) => (i === index ? { ...row, [field]: value } : row))
-    );
+    setCreditNoteAnnexure((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
     setCreditNoteAnnexureErrors((prev) => {
       const newErrors = [...prev];
-  
+
       if (field === 'amount' || field === 'qty' || field === 'rate') {
         newErrors[index] = {
           ...newErrors[index],
@@ -1570,7 +1571,6 @@ const IrnCreditNote = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <Autocomplete
-                  
                   options={allPartyName}
                   getOptionLabel={(option) => option.partyName}
                   disabled={formData.status === 'TAX'}
@@ -1646,38 +1646,38 @@ const IrnCreditNote = () => {
                   {fieldErrors.originBillNo && <FormHelperText>{fieldErrors.originBillNo}</FormHelperText>}
                 </FormControl>
               </div>
-                        <div className="col-md-3 mb-3">
-                          <FormControl fullWidth size="small">
-                            <TextField
-                              label="V Id"
-                              disabled
-                              size="small"
-                              required
-                              inputProps={{ maxLength: 30 }}
-                              value={formData.vid}
-                              onChange={(e) => setFormData({ ...formData, vid: e.target.value })}
-                              error={!!fieldErrors.vid}
-                              // helperText={fieldErrors.pincode}
-                            />
-                          </FormControl>
-                        </div>
-                        <div className="col-md-3 mb-3">
-                          <FormControl fullWidth>
-                            <LocalizationProvider dateAdapter={AdapterDayjs}>
-                              <DatePicker
-                                label="V Date"
-                                disabled
-                                format="DD-MM-YYYY"
-                                slotProps={{
-                                  textField: { size: 'small', clearable: true }
-                                }}
-                                value={formData.vdate ? dayjs(formData.vdate) : null}
-                                onChange={(newValue) => setFormData({ ...formData, vdate: newValue })}
-                              />
-                            </LocalizationProvider>
-                            {fieldErrors.vdate && <FormHelperText style={{ color: 'red' }}>{fieldErrors.vdate}</FormHelperText>}
-                          </FormControl>
-                        </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="V Id"
+                    disabled
+                    size="small"
+                    required
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.vid}
+                    onChange={(e) => setFormData({ ...formData, vid: e.target.value })}
+                    error={!!fieldErrors.vid}
+                    // helperText={fieldErrors.pincode}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="V Date"
+                      disabled
+                      format="DD-MM-YYYY"
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                      value={formData.vdate ? dayjs(formData.vdate) : null}
+                      onChange={(newValue) => setFormData({ ...formData, vdate: newValue })}
+                    />
+                  </LocalizationProvider>
+                  {fieldErrors.vdate && <FormHelperText style={{ color: 'red' }}>{fieldErrors.vdate}</FormHelperText>}
+                </FormControl>
+              </div>
               {/*<div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -2415,39 +2415,39 @@ const IrnCreditNote = () => {
                                         <input type="text" value={row.qty} readOnly className="form-control" style={{ width: '150px' }} />
                                       </td>
                                       <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              value={row.rate}
-                                              style={{ width: '100px' }}
-                                              disabled={
-                                                formData.status === 'TAX' ||
-                                                originBillList.some(invoice =>
-                                                  invoice.originBillList?.some(charge =>
-                                                    charge.chargeName === row.chargeName && charge.taxable === null
-                                                  )
-                                                )
-                                              }
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                // const numericRegex = /^[0-9]*$/;
-                                                // if (value === '' || numericRegex.test(value)) {
-                                                const floatRegex = /^[0-9]*\.?[0-9]*$/; // Accept numbers and decimals
-                                                  if (value === '' || floatRegex.test(value)) {
-                                                  handleRowUpdate(index, 'rate', value);
-                                                } else {
-                                                  setIrnChargesError((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      rate: 'Only numeric characters are allowed'
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }
-                                              }}
-                                              className={irnChargesError[index]?.rate ? 'error form-control' : 'form-control'}
-                                            />
-                                          </td>
+                                        <input
+                                          type="text"
+                                          value={row.rate}
+                                          style={{ width: '100px' }}
+                                          disabled={
+                                            formData.status === 'TAX' ||
+                                            originBillList.some((invoice) =>
+                                              invoice.originBillList?.some(
+                                                (charge) => charge.chargeName === row.chargeName && charge.taxable === null
+                                              )
+                                            )
+                                          }
+                                          onChange={(e) => {
+                                            const value = e.target.value;
+                                            // const numericRegex = /^[0-9]*$/;
+                                            // if (value === '' || numericRegex.test(value)) {
+                                            const floatRegex = /^[0-9]*\.?[0-9]*$/; // Accept numbers and decimals
+                                            if (value === '' || floatRegex.test(value)) {
+                                              handleRowUpdate(index, 'rate', value);
+                                            } else {
+                                              setIrnChargesError((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  rate: 'Only numeric characters are allowed'
+                                                };
+                                                return newErrors;
+                                              });
+                                            }
+                                          }}
+                                          className={irnChargesError[index]?.rate ? 'error form-control' : 'form-control'}
+                                        />
+                                      </td>
                                       <td className="border px-2 py-2">
                                         <div style={{ display: 'flex', alignItems: 'center' }}>
                                           <Checkbox
@@ -2673,47 +2673,47 @@ const IrnCreditNote = () => {
                     </div>
                   </TabPanel>
                   {creditNoteAnnexure.length > 0 && (
-                <TabPanel value="2">
-                  <div className="row d-flex ml">
-                    {/* <div className="mb-1">
+                    <TabPanel value="2">
+                      <div className="row d-flex ml">
+                        {/* <div className="mb-1">
                       <ActionButton title="Add" icon={AddIcon} onClick={handleAddAnnexureRow} />
                     </div> */}
-                    <div className="row mt-2">
-                      <div className="col-lg-12">
-                        <div className="table-responsive">
-                          <table className="table table-bordered">
-                            <thead>
-                              <tr style={{ backgroundColor: '#673AB7' }}>
-                                {/* {formData.status !== 'TAX' && (
+                        <div className="row mt-2">
+                          <div className="col-lg-12">
+                            <div className="table-responsive">
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr style={{ backgroundColor: '#673AB7' }}>
+                                    {/* {formData.status !== 'TAX' && (
                                   <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                     Action
                                   </th>
                                 )} */}
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                  S.No
-                                </th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                  Transaction Date
-                                </th>
-                                <th className="px-2 py-2 text-white text-center">Transaction No</th>
-                                <th className="px-2 py-2 text-white text-center">Kit Id</th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
-                                  Kit Description
-                                </th>
-                                <th className="px-2 py-2 text-white text-center">Sku Type</th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
-                                  Qty
-                                </th>
-                                <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
-                                  Rate
-                                </th>
-                                <th className="px-2 py-2 text-white text-center">Amount</th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {creditNoteAnnexure.map((row, index) => (
-                                <tr key={row.id}>
-                                  {/* {formData.status !== 'TAX' && (
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                      S.No
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                      Transaction Date
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center">Transaction No</th>
+                                    <th className="px-2 py-2 text-white text-center">Kit Id</th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '250px' }}>
+                                      Kit Description
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center">Sku Type</th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
+                                      Qty
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '100px' }}>
+                                      Rate
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center">Amount</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {creditNoteAnnexure.map((row, index) => (
+                                    <tr key={row.id}>
+                                      {/* {formData.status !== 'TAX' && (
                                     <td className="border px-2 py-2 text-center">
                                       <ActionButton
                                         title="Delete"
@@ -2730,317 +2730,319 @@ const IrnCreditNote = () => {
                                       />
                                     </td>
                                   )} */}
-                                  <td className="text-center">
-                                    <div className="pt-2">{index + 1}</div>
-                                  </td>
-                                  <td className="border px-2 py-2" style={{ width: '250px' }}>
-                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                      <DatePicker
-                                        value={
-                                          row.transDate
-                                            ? dayjs(row.transDate, 'YYYY-MM-DD').isValid()
-                                              ? dayjs(row.transDate, 'YYYY-MM-DD')
-                                              : null
-                                            : null
-                                        }
-                                        disabled
-                                        slotProps={{
-                                          textField: { size: 'small', clearable: true }
-                                        }}
-                                        sx={{
-                                          width: '192px'
-                                        }}
-                                        format="DD-MM-YYYY"
-                                        onChange={(newValue) => {
-                                          setCreditNoteAnnexure((prev) =>
-                                            prev.map((r) =>
-                                              r.id === row.id ? { ...r, transDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
-                                            )
-                                          );
-                                          setCreditNoteAnnexureErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              transDate: !newValue ? 'Transaction Date is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            className={creditNoteAnnexureErrors[index]?.transDate ? 'error form-control' : 'form-control'}
+                                      <td className="text-center">
+                                        <div className="pt-2">{index + 1}</div>
+                                      </td>
+                                      <td className="border px-2 py-2" style={{ width: '250px' }}>
+                                        <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                          <DatePicker
+                                            value={
+                                              row.transDate
+                                                ? dayjs(row.transDate, 'YYYY-MM-DD').isValid()
+                                                  ? dayjs(row.transDate, 'YYYY-MM-DD')
+                                                  : null
+                                                : null
+                                            }
+                                            disabled
+                                            slotProps={{
+                                              textField: { size: 'small', clearable: true }
+                                            }}
+                                            sx={{
+                                              width: '192px'
+                                            }}
+                                            format="DD-MM-YYYY"
+                                            onChange={(newValue) => {
+                                              setCreditNoteAnnexure((prev) =>
+                                                prev.map((r) =>
+                                                  r.id === row.id ? { ...r, transDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
+                                                )
+                                              );
+                                              setCreditNoteAnnexureErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  transDate: !newValue ? 'Transaction Date is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                className={
+                                                  creditNoteAnnexureErrors[index]?.transDate ? 'error form-control' : 'form-control'
+                                                }
+                                              />
+                                            )}
+                                            minDate={dayjs()}
                                           />
+                                        </LocalizationProvider>
+                                        {creditNoteAnnexureErrors[index]?.transDate && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {creditNoteAnnexureErrors[index].transDate}
+                                          </div>
                                         )}
-                                        minDate={dayjs()}
-                                      />
-                                    </LocalizationProvider>
-                                    {creditNoteAnnexureErrors[index]?.transDate && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {creditNoteAnnexureErrors[index].transDate}
-                                      </div>
-                                    )}
-                                  </td>
+                                      </td>
 
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.transNo}
-                                      disabled
-                                      style={{ width: '150px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'transNo', e.target.value)}
-                                      className={creditNoteAnnexureErrors[index]?.transNo ? 'error form-control' : 'form-control'}
-                                    />
-                                    {creditNoteAnnexureErrors[index]?.transNo && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {creditNoteAnnexureErrors[index].transNo}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.kitId}
-                                      disabled
-                                      style={{ width: '100px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'kitId', e.target.value)}
-                                      className={creditNoteAnnexureErrors[index]?.kitId ? 'error form-control' : 'form-control'}
-                                    />
-                                    {creditNoteAnnexureErrors[index]?.kitId && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {creditNoteAnnexureErrors[index].kitId}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.dsec}
-                                      disabled
-                                      style={{ width: '250px' }}
-                                      className={creditNoteAnnexureErrors[index]?.dsec ? 'error form-control' : 'form-control'}
-                                      onChange={(e) => {
-                                        const newValue = e.target.value;
-                                        if (newValue.length <= 250) {
-                                          handleAnnexureDescriptionChange(index, newValue);
-                                        } else {
-                                          const updatedErrors = [...creditNoteAnnexureErrors];
-                                          updatedErrors[index] = {
-                                            ...updatedErrors[index],
-                                            dsec: 'Description cannot exceed 250 characters.'
-                                          };
-                                          setCreditNoteAnnexureErrors(updatedErrors);
-                                        }
-                                      }}
-                                    />
-                                    {creditNoteAnnexureErrors[index]?.dsec && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {creditNoteAnnexureErrors[index].dsec}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.skuType}
-                                      disabled
-                                      style={{ width: '100px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'skuType', e.target.value)}
-                                      className={creditNoteAnnexureErrors[index]?.skuType ? 'error form-control' : 'form-control'}
-                                    />
-                                    {creditNoteAnnexureErrors[index]?.skuType && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {creditNoteAnnexureErrors[index].skuType}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.qty}
-                                      disabled
-                                      style={{ width: '100px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'qty', e.target.value)}
-                                      className={creditNoteAnnexureErrors[index]?.qty ? 'error form-control' : 'form-control'}
-                                    />
-                                    {creditNoteAnnexureErrors[index]?.qty && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {creditNoteAnnexureErrors[index].qty}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.rate}
-                                      disabled
-                                      style={{ width: '100px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'rate', e.target.value)}
-                                      className={creditNoteAnnexureErrors[index]?.rate ? 'error form-control' : 'form-control'}
-                                    />
-                                    {creditNoteAnnexureErrors[index]?.rate && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {creditNoteAnnexureErrors[index].rate}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.amount}
-                                      disabled
-                                      style={{ width: '100px' }}
-                                      onChange={(e) => handleAnnexureInputChange(index, 'amount', e.target.value)}
-                                      className={creditNoteAnnexureErrors[index]?.amount ? 'error form-control' : 'form-control'}
-                                    />
-                                    {creditNoteAnnexureErrors[index]?.amount && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {creditNoteAnnexureErrors[index].amount}
-                                      </div>
-                                    )}
-                                  </td>
-                                </tr>
-                              ))}
-                            </tbody>
-                          </table>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.transNo}
+                                          disabled
+                                          style={{ width: '150px' }}
+                                          onChange={(e) => handleAnnexureInputChange(index, 'transNo', e.target.value)}
+                                          className={creditNoteAnnexureErrors[index]?.transNo ? 'error form-control' : 'form-control'}
+                                        />
+                                        {creditNoteAnnexureErrors[index]?.transNo && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {creditNoteAnnexureErrors[index].transNo}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.kitId}
+                                          disabled
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleAnnexureInputChange(index, 'kitId', e.target.value)}
+                                          className={creditNoteAnnexureErrors[index]?.kitId ? 'error form-control' : 'form-control'}
+                                        />
+                                        {creditNoteAnnexureErrors[index]?.kitId && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {creditNoteAnnexureErrors[index].kitId}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.dsec}
+                                          disabled
+                                          style={{ width: '250px' }}
+                                          className={creditNoteAnnexureErrors[index]?.dsec ? 'error form-control' : 'form-control'}
+                                          onChange={(e) => {
+                                            const newValue = e.target.value;
+                                            if (newValue.length <= 250) {
+                                              handleAnnexureDescriptionChange(index, newValue);
+                                            } else {
+                                              const updatedErrors = [...creditNoteAnnexureErrors];
+                                              updatedErrors[index] = {
+                                                ...updatedErrors[index],
+                                                dsec: 'Description cannot exceed 250 characters.'
+                                              };
+                                              setCreditNoteAnnexureErrors(updatedErrors);
+                                            }
+                                          }}
+                                        />
+                                        {creditNoteAnnexureErrors[index]?.dsec && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {creditNoteAnnexureErrors[index].dsec}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.skuType}
+                                          disabled
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleAnnexureInputChange(index, 'skuType', e.target.value)}
+                                          className={creditNoteAnnexureErrors[index]?.skuType ? 'error form-control' : 'form-control'}
+                                        />
+                                        {creditNoteAnnexureErrors[index]?.skuType && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {creditNoteAnnexureErrors[index].skuType}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.qty}
+                                          disabled
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleAnnexureInputChange(index, 'qty', e.target.value)}
+                                          className={creditNoteAnnexureErrors[index]?.qty ? 'error form-control' : 'form-control'}
+                                        />
+                                        {creditNoteAnnexureErrors[index]?.qty && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {creditNoteAnnexureErrors[index].qty}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.rate}
+                                          disabled
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleAnnexureInputChange(index, 'rate', e.target.value)}
+                                          className={creditNoteAnnexureErrors[index]?.rate ? 'error form-control' : 'form-control'}
+                                        />
+                                        {creditNoteAnnexureErrors[index]?.rate && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {creditNoteAnnexureErrors[index].rate}
+                                          </div>
+                                        )}
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <input
+                                          type="text"
+                                          value={row.amount}
+                                          disabled
+                                          style={{ width: '100px' }}
+                                          onChange={(e) => handleAnnexureInputChange(index, 'amount', e.target.value)}
+                                          className={creditNoteAnnexureErrors[index]?.amount ? 'error form-control' : 'form-control'}
+                                        />
+                                        {creditNoteAnnexureErrors[index]?.amount && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {creditNoteAnnexureErrors[index].amount}
+                                          </div>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </div>
-                </TabPanel>
-                )}
-                    <TabPanel value="3">
-                      <div>
-                        <div className="row d-flex mt-2">
+                    </TabPanel>
+                  )}
+                  <TabPanel value="3">
+                    <div>
+                      <div className="row d-flex mt-2">
                         <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="totalChargeAmountLc"
-                                name="totalChargeAmountLc"
-                                label="Total Charge Amount(LC) "
-                                size="small"
-                                disabled
-                                value={formData.totalChargeAmountLc}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="totalTaxAmountLc"
-                                name="totalTaxAmountLc"
-                                label="Total Tax Amount(LC) "
-                                size="small"
-                                disabled
-                                value={formData.totalTaxAmountLc}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="totalInvAmountLc"
-                                name="totalInvAmountLc"
-                                label="Total Inv Amount(LC)"
-                                size="small"
-                                disabled
-                                value={formData.totalInvAmountLc}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="roundOffAmountLc"
-                                name="roundOffAmountLc"
-                                label="Round Off Amt(LC)"
-                                size="small"
-                                disabled
-                                value={formData.roundOffAmountLc}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="totalChargeAmountBc"
-                                name="totalChargeAmountBc"
-                                label="Total Charge Amount(Bill Curr)"
-                                size="small"
-                                disabled
-                                value={formData.totalChargeAmountBc}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="totalTaxAmountBc"
-                                name="totalTaxAmountBc"
-                                label="Total Tax Amount(Bill Curr)"
-                                size="small"
-                                disabled
-                                value={formData.totalTaxAmountBc}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="totalInvAmountBc"
-                                name="totalInvAmountBc"
-                                label="Total Inv Amount(Bill Curr)"
-                                size="small"
-                                disabled
-                                value={formData.totalInvAmountBc}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="totalTaxableAmountLc"
-                                name="totalTaxableAmountLc"
-                                label="Total Taxable Amount(LC)"
-                                size="small"
-                                disabled
-                                value={formData.totalTaxableAmountLc}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                                // error={!!fieldErrors.netLCAmt}
-                                // helperText={fieldErrors.netLCAmt}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-6 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="amountInWords"
-                                name="amountInWords"
-                                label="Amount In Words"
-                                size="small"
-                                disabled
-                                value={formData.amountInWords}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-6 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              id="totalChargeAmountLc"
+                              name="totalChargeAmountLc"
+                              label="Total Charge Amount(LC) "
+                              size="small"
+                              disabled
+                              value={formData.totalChargeAmountLc}
+                              onChange={handleInputChange}
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              id="totalTaxAmountLc"
+                              name="totalTaxAmountLc"
+                              label="Total Tax Amount(LC) "
+                              size="small"
+                              disabled
+                              value={formData.totalTaxAmountLc}
+                              onChange={handleInputChange}
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              id="totalInvAmountLc"
+                              name="totalInvAmountLc"
+                              label="Total Inv Amount(LC)"
+                              size="small"
+                              disabled
+                              value={formData.totalInvAmountLc}
+                              onChange={handleInputChange}
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              id="roundOffAmountLc"
+                              name="roundOffAmountLc"
+                              label="Round Off Amt(LC)"
+                              size="small"
+                              disabled
+                              value={formData.roundOffAmountLc}
+                              onChange={handleInputChange}
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              id="totalChargeAmountBc"
+                              name="totalChargeAmountBc"
+                              label="Total Charge Amount(Bill Curr)"
+                              size="small"
+                              disabled
+                              value={formData.totalChargeAmountBc}
+                              onChange={handleInputChange}
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              id="totalTaxAmountBc"
+                              name="totalTaxAmountBc"
+                              label="Total Tax Amount(Bill Curr)"
+                              size="small"
+                              disabled
+                              value={formData.totalTaxAmountBc}
+                              onChange={handleInputChange}
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              id="totalInvAmountBc"
+                              name="totalInvAmountBc"
+                              label="Total Inv Amount(Bill Curr)"
+                              size="small"
+                              disabled
+                              value={formData.totalInvAmountBc}
+                              onChange={handleInputChange}
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-3 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              id="totalTaxableAmountLc"
+                              name="totalTaxableAmountLc"
+                              label="Total Taxable Amount(LC)"
+                              size="small"
+                              disabled
+                              value={formData.totalTaxableAmountLc}
+                              onChange={handleInputChange}
+                              inputProps={{ maxLength: 30 }}
+                              // error={!!fieldErrors.netLCAmt}
+                              // helperText={fieldErrors.netLCAmt}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-6 mb-3">
+                          <FormControl fullWidth variant="filled">
+                            <TextField
+                              id="amountInWords"
+                              name="amountInWords"
+                              label="Amount In Words"
+                              size="small"
+                              disabled
+                              value={formData.amountInWords}
+                              onChange={handleInputChange}
+                              inputProps={{ maxLength: 30 }}
+                            />
+                          </FormControl>
+                        </div>
+                        <div className="col-md-6 mb-3">
                           <FormControl fullWidth variant="filled">
                             <TextField
                               id="billingRemarks"
@@ -3070,9 +3072,9 @@ const IrnCreditNote = () => {
                             />
                           </FormControl>
                         </div> */}
-                        </div>
                       </div>
-                    </TabPanel>
+                    </div>
+                  </TabPanel>
                   {/* )} */}
                   {editId && (
                     <TabPanel value="4">

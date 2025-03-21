@@ -2,6 +2,7 @@ import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { Box, Button } from '@mui/material';
 import { download, generateCsv, mkConfig } from 'export-to-csv';
 import { MaterialReactTable } from 'material-react-table';
+import dayjs from 'dayjs';
 
 // CSV Configuration
 const csvConfig = mkConfig({
@@ -9,6 +10,25 @@ const csvConfig = mkConfig({
   decimalSeparator: '.',
   useKeysAsHeaders: true
 });
+
+const formatDate = (value) => {
+  return value ? dayjs(value).format('DD-MM-YYYY') : '-';
+};
+
+const applyDateFormattingToColumns = (columns) => {
+  return columns.map((column) => {
+    if (column.accessorKey && column.accessorKey.toLowerCase().includes('date')) {
+      return {
+        ...column,
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          return formatDate(value);
+        }
+      };
+    }
+    return column;
+  });
+};
 
 const CommonReportTable = ({ columns, data }) => {
   const handleExportRows = (rows) => {
@@ -22,9 +42,11 @@ const CommonReportTable = ({ columns, data }) => {
     download(csvConfig)(csv);
   };
 
+  const formattedColumns = applyDateFormattingToColumns(columns);
+
   return (
     <MaterialReactTable
-      columns={columns}
+      columns={formattedColumns} // Use formatted columns
       data={data}
       enableRowSelection={true} // Enable row selection
       columnFilterDisplayMode="popover" // Display filter in popover

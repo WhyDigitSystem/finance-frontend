@@ -426,7 +426,10 @@ const CostDebitNote = () => {
 
   const getAllCostDebitNoteByOrgId = async () => {
     try {
-      const result = await apiCalls('get', `/costdebitnote/getCostDebitNoteByOrgId?orgId=${orgId}`);
+      const result = await apiCalls(
+        'get',
+        `/costdebitnote/getCostDebitNoteByOrgId?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}`
+      );
       setData(result.paramObjectsMap.costDebitNoteVOs.reverse());
       console.log('costInvoiceVO', result);
     } catch (err) {
@@ -476,7 +479,6 @@ const CostDebitNote = () => {
   //   }
   // };
 
-
   const handleOpenModalApprove = () => {
     setModalOpen(true);
     setApproveStatus('Approved');
@@ -511,7 +513,7 @@ const CostDebitNote = () => {
           dueDate: listValueVO.dueDate ? dayjs(listValueVO.dueDate) : dayjs(),
           docDate: listValueVO.docDate ? dayjs(listValueVO.docDate) : dayjs(),
           vdate: listValueVO.vdate ? dayjs(listValueVO.vdate) : dayjs(),
-          purVoucherDate: listValueVO.purVoucherDate ? dayjs(listValueVO.purVoucherDate) : dayjs(),
+          purVoucherDate: listValueVO.purVoucherDate ? dayjs(listValueVO.purVoucherDate) : dayjs()
         }));
 
         setChargerCostInvoice(
@@ -550,9 +552,7 @@ const CostDebitNote = () => {
 
         showToast(
           listValueVO.approveStatus === 'Approved' ? 'success' : 'error',
-          listValueVO.approveStatus === 'Approved'
-            ? 'Cost Debit Note Approved successfully'
-            : 'Cost Debit Note Rejected successfully'
+          listValueVO.approveStatus === 'Approved' ? 'Cost Debit Note Approved successfully' : 'Cost Debit Note Rejected successfully'
         );
       } else {
         console.error('API Error:', result.data);
@@ -584,7 +584,6 @@ const CostDebitNote = () => {
   useEffect(() => {
     calculateTotals();
   }, [chargerCostInvoice, JSON.stringify(tdsCostInvoice)]);
-
 
   // const calculateTotals = () => {
   //   let totalBillAmt = 0;
@@ -1416,7 +1415,7 @@ const CostDebitNote = () => {
       setCostInvoiceErrors((prevErrors) => {
         const newErrors = [...prevErrors];
         newErrors[table.length - 1] = {
-          ...newErrors[table.length - 1],
+          ...newErrors[table.length - 1]
           // jobNo: !table[table.length - 1].jobNo ? 'Job No is required' : '',
           // chargeCode: !table[table.length - 1].chargeCode ? 'Charge Code is required' : '',
           // chargeLedger: !table[table.length - 1].chargeLedger ? 'Charge Ledger is required' : '',
@@ -1649,7 +1648,7 @@ const CostDebitNote = () => {
               <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
             </div>
 
-            {editId && !showForm && (formData.mode === 'SUBMIT') && (
+            {editId && !showForm && formData.mode === 'SUBMIT' && (
               //  || listViewData.mode === 'SUBMIT'
               <>
                 {formData.approveStatus === 'Approved' && (
@@ -2278,7 +2277,7 @@ const CostDebitNote = () => {
                                               type="text"
                                               value={row.chargeCode}
                                               // disabled={!!formData.originBill}
-                                              disabled={formData.mode === "SUBMIT"}
+                                              disabled={formData.mode === 'SUBMIT'}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2287,7 +2286,7 @@ const CostDebitNote = () => {
                                             <input
                                               type="text"
                                               value={row.description}
-                                              disabled={formData.mode === "SUBMIT" || row.taxable === null}
+                                              disabled={formData.mode === 'SUBMIT' || row.taxable === null}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2328,29 +2327,29 @@ const CostDebitNote = () => {
                                               type="text"
                                               value={
                                                 row.qty !== null && row.qty !== undefined
-                                                  ? new Intl.NumberFormat("en-IN").format(row.qty)
-                                                  : ""
+                                                  ? new Intl.NumberFormat('en-IN').format(row.qty)
+                                                  : ''
                                               }
-                                              style={{ width: "100px" }}
-                                              disabled={formData.mode === "SUBMIT" || row.taxable === null} // Disable when taxable is null
+                                              style={{ width: '100px' }}
+                                              disabled={formData.mode === 'SUBMIT' || row.taxable === null} // Disable when taxable is null
                                               onChange={(e) => {
-                                                const rawValue = e.target.value.replace(/,/g, ""); // Remove commas before processing
+                                                const rawValue = e.target.value.replace(/,/g, ''); // Remove commas before processing
                                                 const numericRegex = /^[0-9]*$/;
 
                                                 if (numericRegex.test(rawValue)) {
-                                                  handleRowUpdate(index, "qty", rawValue);
+                                                  handleRowUpdate(index, 'qty', rawValue);
                                                 } else {
                                                   setCostInvoiceErrors((prev) => {
                                                     const newErrors = [...prev];
                                                     newErrors[index] = {
                                                       ...newErrors[index],
-                                                      qty: "Only numeric characters are allowed",
+                                                      qty: 'Only numeric characters are allowed'
                                                     };
                                                     return newErrors;
                                                   });
                                                 }
                                               }}
-                                              className={costInvoiceErrors[index]?.qty ? "error form-control" : "form-control"}
+                                              className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
                                           </td>
 
@@ -2361,15 +2360,15 @@ const CostDebitNote = () => {
                                               // value={row.rate}
                                               value={
                                                 row.rate !== null && row.rate !== undefined
-                                                  ? new Intl.NumberFormat("en-IN").format(row.rate)
-                                                  : ""
+                                                  ? new Intl.NumberFormat('en-IN').format(row.rate)
+                                                  : ''
                                               }
                                               style={{ width: '100px' }}
                                               disabled={
                                                 formData.mode === 'SUBMIT' ||
-                                                originBillVo.some(invoice =>
-                                                  invoice.chargerCostInvoiceVO?.some(charge =>
-                                                    charge.chargeName === row.chargeName && charge.taxable === null
+                                                originBillVo.some((invoice) =>
+                                                  invoice.chargerCostInvoiceVO?.some(
+                                                    (charge) => charge.chargeName === row.chargeName && charge.taxable === null
                                                   )
                                                 )
                                               }
@@ -2398,7 +2397,7 @@ const CostDebitNote = () => {
                                               type="text"
                                               value={row.currency}
                                               // disabled={!!formData.originBill}
-                                              disabled={formData.mode === "SUBMIT"}
+                                              disabled={formData.mode === 'SUBMIT'}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2408,7 +2407,7 @@ const CostDebitNote = () => {
                                             <input
                                               type="text"
                                               value={row.exRate}
-                                              disabled={formData.mode === "SUBMIT"}
+                                              disabled={formData.mode === 'SUBMIT'}
                                               // disabled={!!formData.originBill}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
@@ -2421,11 +2420,11 @@ const CostDebitNote = () => {
                                               // value={row.fcAmount}
                                               value={
                                                 row.fcAmount !== null && row.fcAmount !== undefined
-                                                  ? new Intl.NumberFormat("en-IN").format(row.fcAmount)
-                                                  : ""
+                                                  ? new Intl.NumberFormat('en-IN').format(row.fcAmount)
+                                                  : ''
                                               }
                                               // disabled={!!formData.originBill}
-                                              disabled={formData.mode === "SUBMIT"}
+                                              disabled={formData.mode === 'SUBMIT'}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2437,11 +2436,11 @@ const CostDebitNote = () => {
                                               // value={row.lcAmt}
                                               value={
                                                 row.lcAmt !== null && row.lcAmt !== undefined
-                                                  ? new Intl.NumberFormat("en-IN").format(row.lcAmt)
-                                                  : ""
+                                                  ? new Intl.NumberFormat('en-IN').format(row.lcAmt)
+                                                  : ''
                                               }
                                               // disabled={!!formData.originBill}
-                                              disabled={formData.mode === "SUBMIT"}
+                                              disabled={formData.mode === 'SUBMIT'}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
                                             />
@@ -2453,10 +2452,10 @@ const CostDebitNote = () => {
                                               // value={row.billAmt}
                                               value={
                                                 row.billAmt !== null && row.billAmt !== undefined
-                                                  ? new Intl.NumberFormat("en-IN").format(row.billAmt)
-                                                  : ""
+                                                  ? new Intl.NumberFormat('en-IN').format(row.billAmt)
+                                                  : ''
                                               }
-                                              disabled={formData.mode === "SUBMIT"}
+                                              disabled={formData.mode === 'SUBMIT'}
                                               // disabled={!!formData.originBill}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
@@ -2467,7 +2466,7 @@ const CostDebitNote = () => {
                                             <input
                                               type="text"
                                               value={row.sac}
-                                              disabled={formData.mode === "SUBMIT"}
+                                              disabled={formData.mode === 'SUBMIT'}
                                               // disabled={!!formData.originBill}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
@@ -2478,7 +2477,7 @@ const CostDebitNote = () => {
                                             <input
                                               type="text"
                                               value={row.gstPercent}
-                                              disabled={formData.mode === "SUBMIT"}
+                                              disabled={formData.mode === 'SUBMIT'}
                                               // disabled={!!formData.originBill}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
@@ -2492,10 +2491,10 @@ const CostDebitNote = () => {
                                               // value={row.gst}
                                               value={
                                                 row.gst !== null && row.gst !== undefined
-                                                  ? new Intl.NumberFormat("en-IN").format(row.gst)
-                                                  : ""
+                                                  ? new Intl.NumberFormat('en-IN').format(row.gst)
+                                                  : ''
                                               }
-                                              disabled={formData.mode === "SUBMIT"}
+                                              disabled={formData.mode === 'SUBMIT'}
                                               // disabled={!!formData.originBill}
                                               style={{ whiteSpace: 'nowrap', width: '150px' }}
                                               className={costInvoiceErrors[index]?.qty ? 'error form-control' : 'form-control'}
@@ -2509,27 +2508,26 @@ const CostDebitNote = () => {
                                       {chargerCostInvoice.map((row, index) => (
                                         <tr key={row.id}>
                                           <td className="border px-2 py-2 text-center">
-                                            {!(originBillVo.some(invoice =>
-                                              invoice.chargerCostInvoiceVO?.some(charge =>
-                                                charge.chargeName === row.chargeName && charge.taxable === null
+                                            {!originBillVo.some((invoice) =>
+                                              invoice.chargerCostInvoiceVO?.some(
+                                                (charge) => charge.chargeName === row.chargeName && charge.taxable === null
                                               )
-                                            )) && (
-                                                <ActionButton
-                                                  title="Delete"
-                                                  icon={DeleteIcon}
-                                                  onClick={() =>
-                                                    handleDeleteRow(
-                                                      row.id,
-                                                      chargerCostInvoice,
-                                                      setChargerCostInvoice,
-                                                      costInvoiceErrors,
-                                                      setCostInvoiceErrors
-                                                    )
-                                                  }
-                                                />
-                                              )}
+                                            ) && (
+                                              <ActionButton
+                                                title="Delete"
+                                                icon={DeleteIcon}
+                                                onClick={() =>
+                                                  handleDeleteRow(
+                                                    row.id,
+                                                    chargerCostInvoice,
+                                                    setChargerCostInvoice,
+                                                    costInvoiceErrors,
+                                                    setCostInvoiceErrors
+                                                  )
+                                                }
+                                              />
+                                            )}
                                           </td>
-
 
                                           <td className="text-center">
                                             <div className="pt-2">{index + 1}</div>
@@ -2624,7 +2622,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.description ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.description && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2759,13 +2757,13 @@ const CostDebitNote = () => {
                                             <input
                                               type="text"
                                               // value={row.qty}
-                                              value={new Intl.NumberFormat("en-IN").format(row.qty)}
+                                              value={new Intl.NumberFormat('en-IN').format(row.qty)}
                                               style={{ width: '100px' }}
                                               disabled={
                                                 formData.mode === 'SUBMIT' ||
-                                                originBillVo.some(invoice =>
-                                                  invoice.chargerCostInvoiceVO?.some(charge =>
-                                                    charge.chargeName === row.chargeName && charge.taxable === null
+                                                originBillVo.some((invoice) =>
+                                                  invoice.chargerCostInvoiceVO?.some(
+                                                    (charge) => charge.chargeName === row.chargeName && charge.taxable === null
                                                   )
                                                 )
                                               }
@@ -2792,13 +2790,13 @@ const CostDebitNote = () => {
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"
-                                              value={new Intl.NumberFormat("en-IN").format(row.rate)} // Format with commas
+                                              value={new Intl.NumberFormat('en-IN').format(row.rate)} // Format with commas
                                               style={{ width: '100px' }}
                                               disabled={
                                                 formData.mode === 'SUBMIT' ||
-                                                originBillVo.some(invoice =>
-                                                  invoice.chargerCostInvoiceVO?.some(charge =>
-                                                    charge.chargeName === row.chargeName && charge.taxable === null
+                                                originBillVo.some((invoice) =>
+                                                  invoice.chargerCostInvoiceVO?.some(
+                                                    (charge) => charge.chargeName === row.chargeName && charge.taxable === null
                                                   )
                                                 )
                                               }
@@ -2872,7 +2870,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.exRate && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2914,7 +2912,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.fcAmount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2928,8 +2926,8 @@ const CostDebitNote = () => {
                                               type="text"
                                               value={
                                                 row.lcAmt !== null && row.lcAmt !== undefined
-                                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(row.lcAmt)
-                                                  : "0.00"
+                                                  ? new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(row.lcAmt)
+                                                  : '0.00'
                                               }
                                               disabled={!row.isNew}
                                               style={{ width: '100px' }}
@@ -2971,8 +2969,8 @@ const CostDebitNote = () => {
                                               // value={row.billAmt ? row.billAmt.toFixed(2) : '0.00'}
                                               value={
                                                 row.billAmt !== null && row.billAmt !== undefined
-                                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(row.billAmt)
-                                                  : "0.00"
+                                                  ? new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(row.billAmt)
+                                                  : '0.00'
                                               }
                                               disabled={!row.isNew}
                                               style={{ width: '100px' }}
@@ -3003,7 +3001,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.billAmt ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.billAmt && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3044,7 +3042,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.sac ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.sac && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3087,7 +3085,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.gstPercent ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.gstPercent && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3099,7 +3097,7 @@ const CostDebitNote = () => {
                                             <input
                                               type="text"
                                               // value={row.gst}
-                                              value={new Intl.NumberFormat("en-IN").format(row.gst)}
+                                              value={new Intl.NumberFormat('en-IN').format(row.gst)}
                                               disabled={!row.isNew}
                                               style={{ width: '100px' }}
                                               onChange={(e) => {
@@ -3129,7 +3127,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.gst ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.gst && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3137,7 +3135,6 @@ const CostDebitNote = () => {
                                               </div>
                                             )} */}
                                           </td>
-
                                         </tr>
                                       ))}
                                     </>
@@ -3249,18 +3246,17 @@ const CostDebitNote = () => {
                               inputProps={{ maxLength: 30 }}
                               value={
                                 tdsCostInvoice[index]?.totTdsWhAmnt !== null && tdsCostInvoice[index]?.totTdsWhAmnt !== undefined
-                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(tdsCostInvoice[index]?.totTdsWhAmnt)
-                                  : ""
+                                  ? new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(tdsCostInvoice[index]?.totTdsWhAmnt)
+                                  : ''
                               }
                               onChange={(e) => {
-                                const rawValue = e.target.value.replace(/,/g, ""); // Remove commas before parsing
+                                const rawValue = e.target.value.replace(/,/g, ''); // Remove commas before parsing
                                 handleInputChange({ ...e, target: { ...e.target, value: rawValue } }, 'tdsCostInvoice', index);
                               }}
                               error={!!tdsCostErrors[index]?.totTdsWhAmnt}
                               helperText={tdsCostErrors[index]?.totTdsWhAmnt}
                             />
                           </div>
-
                         </div>
                       ))}
                     </>
@@ -3275,8 +3271,8 @@ const CostDebitNote = () => {
                               name="totChargesBillCurrAmt"
                               value={
                                 formData.totChargesBillCurrAmt !== null && formData.totChargesBillCurrAmt !== undefined
-                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(formData.totChargesBillCurrAmt)
-                                  : "0.00"
+                                  ? new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(formData.totChargesBillCurrAmt)
+                                  : '0.00'
                               }
                               size="small"
                               placeholder="0.00"
@@ -3294,8 +3290,8 @@ const CostDebitNote = () => {
                               // value={formData.actBillCurrAmt}
                               value={
                                 formData.actBillCurrAmt !== null && formData.actBillCurrAmt !== undefined
-                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(formData.actBillCurrAmt)
-                                  : "0.00"
+                                  ? new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(formData.actBillCurrAmt)
+                                  : '0.00'
                               }
                               size="small"
                               placeholder="0.00"
@@ -3312,8 +3308,8 @@ const CostDebitNote = () => {
                               // value={formData.netBillCurrAmt}
                               value={
                                 formData.netBillCurrAmt !== null && formData.netBillCurrAmt !== undefined
-                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(formData.netBillCurrAmt)
-                                  : "0.00"
+                                  ? new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(formData.netBillCurrAmt)
+                                  : '0.00'
                               }
                               size="small"
                               placeholder="0.00"
@@ -3330,8 +3326,8 @@ const CostDebitNote = () => {
                               // value={formData.actBillLcAmt}
                               value={
                                 formData.actBillLcAmt !== null && formData.actBillLcAmt !== undefined
-                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(formData.actBillLcAmt)
-                                  : "0.00"
+                                  ? new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(formData.actBillLcAmt)
+                                  : '0.00'
                               }
                               size="small"
                               placeholder="0.00"
@@ -3348,8 +3344,8 @@ const CostDebitNote = () => {
                               // value={formData.netBillLcAmt}
                               value={
                                 formData.netBillLcAmt !== null && formData.netBillLcAmt !== undefined
-                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(formData.netBillLcAmt)
-                                  : "0.00"
+                                  ? new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(formData.netBillLcAmt)
+                                  : '0.00'
                               }
                               size="small"
                               placeholder="0.00"
@@ -3384,8 +3380,8 @@ const CostDebitNote = () => {
                               // value={formData.roundOff}
                               value={
                                 formData.roundOff !== null && formData.roundOff !== undefined
-                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(formData.roundOff)
-                                  : "0.00"
+                                  ? new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(formData.roundOff)
+                                  : '0.00'
                               }
                               size="small"
                               placeholder="0.00"
@@ -3402,8 +3398,8 @@ const CostDebitNote = () => {
                               // value={formData.totChargesLcAmt}
                               value={
                                 formData.totChargesLcAmt !== null && formData.totChargesLcAmt !== undefined
-                                  ? new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2 }).format(formData.totChargesLcAmt)
-                                  : "0.00"
+                                  ? new Intl.NumberFormat('en-IN', { minimumFractionDigits: 2 }).format(formData.totChargesLcAmt)
+                                  : '0.00'
                               }
                               size="small"
                               placeholder="0.00"
