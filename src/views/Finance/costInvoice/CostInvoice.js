@@ -613,7 +613,7 @@ const CostInvoice = () => {
 
   const getAllCostInvoiceByOrgId = async () => {
     try {
-      const result = await apiCalls('get', `/costInvoice/getAllCostInvoiceByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/costInvoice/getAllCostInvoiceByOrgId?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}`);
       setData(result.paramObjectsMap.costInvoiceVO.reverse() || []);
       console.log('costInvoiceVO', result);
     } catch (err) {
@@ -868,24 +868,24 @@ const CostInvoice = () => {
             taxable: row.taxable
           }))
         );
-        // setTdsCostInvoiceDTO(
-        //   Array.isArray(costVO.tdsCostInvoiceVO) ? costVO.tdsCostInvoiceVO.map((row) => ({
-        //     id: row.id,
-        //     section: row.section,
-        //     tdsWithHolding: row.tdsWithHolding,
-        //     tdsWithHoldingPer: row.tdsWithHoldingPer,
-        //     totTdsWhAmnt: row.totTdsWhAmnt
-        //   })) : []
-        // );        
         setTdsCostInvoiceDTO(
-          costVO.tdsCostInvoiceVO.map((row) => ({
+          Array.isArray(costVO.tdsCostInvoiceVO) ? costVO.tdsCostInvoiceVO.map((row) => ({
             id: row.id,
             section: row.section,
             tdsWithHolding: row.tdsWithHolding,
             tdsWithHoldingPer: row.tdsWithHoldingPer,
             totTdsWhAmnt: row.totTdsWhAmnt
-          }))
-        );
+          })) : []
+        );        
+        // setTdsCostInvoiceDTO(
+        //   costVO.tdsCostInvoiceVO.map((row) => ({
+        //     id: row.id,
+        //     section: row.section,
+        //     tdsWithHolding: row.tdsWithHolding,
+        //     tdsWithHoldingPer: row.tdsWithHoldingPer,
+        //     totTdsWhAmnt: row.totTdsWhAmnt
+        //   }))
+        // );
         setChargeDetails(
           costVO.gstLines.map((row) => ({
             id: row.id,
