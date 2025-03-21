@@ -516,17 +516,16 @@ const CostInvoice = () => {
   //   }
   // };
 
-  useEffect(() => {
-    if (placeOfSupply.length === 1) {
-      const defaultSupplierPlace = placeOfSupply[0];
-      setFormData((prevData) => ({
-        ...prevData,
-        supplierPlace: defaultSupplierPlace.placeOfSupply
-      }));
-      getAddessType(defaultSupplierPlace.placeOfSupply);
-      console.log('defaultSupplierPlace.supplierPlace', defaultSupplierPlace.placeOfSupply);
-    }
-  }, [placeOfSupply]);
+  // useEffect(() => {
+  //   if (placeOfSupply.length === 1) {
+  //     const defaultSupplierPlace = placeOfSupply[0];
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       supplierPlace: defaultSupplierPlace.placeOfSupply
+  //     }));
+  //     getAddessType(defaultSupplierPlace.placeOfSupply);
+  //   }
+  // }, [placeOfSupply]);
 
   // useEffect(() => {
   //   if (exRates.length === 1) {
@@ -551,7 +550,6 @@ const CostInvoice = () => {
         stateNo: defaultSGST.stateNo,
         supplierGstIn: defaultSGST.recipientGSTIN
       }));
-      console.log('defaultSGST.supplierGstInCode', defaultSGST.stateCode);
       getPlaceOfSupply(defaultSGST.stateCode);
       setStateCode(defaultSGST.stateCode);
       getGSTType(defaultSGST.stateCode);
@@ -870,6 +868,15 @@ const CostInvoice = () => {
             taxable: row.taxable
           }))
         );
+        // setTdsCostInvoiceDTO(
+        //   Array.isArray(costVO.tdsCostInvoiceVO) ? costVO.tdsCostInvoiceVO.map((row) => ({
+        //     id: row.id,
+        //     section: row.section,
+        //     tdsWithHolding: row.tdsWithHolding,
+        //     tdsWithHoldingPer: row.tdsWithHoldingPer,
+        //     totTdsWhAmnt: row.totTdsWhAmnt
+        //   })) : []
+        // );        
         setTdsCostInvoiceDTO(
           costVO.tdsCostInvoiceVO.map((row) => ({
             id: row.id,

@@ -112,13 +112,14 @@ export const ChargeTypeRequest = () => {
     const newValue = type === 'checkbox' ? checked : value;
 
     if (name === 'serviceAccountCode') {
-      const selectedService = serviceCode.find((item) => item.serviceAccountCode === value);
-      const sacDescription = selectedService ? selectedService.sacDescription : '';
+      const selectedService = serviceCode.find((item) => item.code === value);
+      console.log("sac",selectedService);
+      const sacDescription = selectedService ? selectedService.description : '';
 
       setFormData({
         ...formData,
-        [name]: newValue,
-        sacDescripition: sacDescription
+        sacDescripition: sacDescription,
+        serviceAccountCode: selectedService.code,
       });
     } else {
       setFormData({ ...formData, [name]: newValue });
@@ -277,8 +278,8 @@ export const ChargeTypeRequest = () => {
   const getAllServiceAccountCode = async () => {
     try {
       const result = await apiCalls('get', `/master/getAllActiveSacCodeByOrgId?orgId=${orgId}`);
-      setServiceCode(result.paramObjectsMap.sacCodeVO || []);
-      console.log('Test', result);
+      setServiceCode(result.paramObjectsMap.hSNSacCodeVO || []);
+      console.log('Test sac', result);
     } catch (err) {
       console.log('error', err);
     }
@@ -660,8 +661,8 @@ export const ChargeTypeRequest = () => {
                     onChange={handleInputChange}
                   >
                     {serviceCode.map((item) => (
-                      <MenuItem key={item.id} value={item.serviceAccountCode}>
-                        {item.serviceAccountCode}
+                      <MenuItem key={item.id} value={item.code}>
+                        {item.code}
                       </MenuItem>
                     ))}
                   </Select>

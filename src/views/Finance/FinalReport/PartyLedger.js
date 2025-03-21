@@ -199,8 +199,8 @@ function PartyLedger() {
     }
   };
   const reportColumns = [
-    { accessorKey: 'docid', header: 'Invoice No', size: 140 },
-    { accessorKey: 'docdate', header: 'Invoice Date', size: 140 },
+    { accessorKey: 'vId', header: 'Invoice No', size: 140 },
+    { accessorKey: 'vdate', header: 'Invoice Date', size: 140 },
     { accessorKey: 'refno', header: 'Reference No', size: 140 },
     { accessorKey: 'refdate', header: 'Reference Date', size: 140 },
     { accessorKey: 'supplierrefno', header: 'Supp Reference No', size: 140 },

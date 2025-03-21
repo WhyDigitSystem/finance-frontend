@@ -61,16 +61,16 @@ function TaxRegister() {
   });
   const handleClear = () => {
     setListView(false);
-    setVisibleSections({
-      date: false,
-      branchCode: false,
-      customer: false,
-    });
-    setSelectedSections({
-      date: false,
-      branchCode: false,
-      customer: false,
-    });
+    // setVisibleSections({
+    //   date: false,
+    //   branchCode: false,
+    //   customer: false,
+    // });
+    // setSelectedSections({
+    //   date: false,
+    //   branchCode: false,
+    //   customer: false,
+    // });
     setFormData({
       // dateRange: [null, null],
       fromDate: null,
@@ -170,8 +170,8 @@ function TaxRegister() {
   const reportColumns = [
     { accessorKey: 'branchCode', header: 'Branch', size: 140 },
     { accessorKey: 'jobOrderNo', header: 'Job No', size: 140 },
-    { accessorKey: 'docId', header: 'Doc No', size: 140 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'vId', header: 'V Id', size: 140 },
+    { accessorKey: 'vDate', header: 'V Date', size: 140 },
     { accessorKey: 'voucherNo', header: 'Voucher No', size: 140 },
     { accessorKey: 'voucherDate', header: 'Voucher Date', size: 140 },
     // { accessorKey: '', header: 'Invoice Type', size: 140 },

@@ -66,7 +66,7 @@ const HsnSacCode = () => {
           igst: hsnSocCodeVO.igst || '',
           cgst: hsnSocCodeVO.cgst || '',
           sgst: hsnSocCodeVO.sgst || '',
-          active: hsnSocCodeVO.active || false,
+          active: hsnSocCodeVO.active === 'Active' ? true : false,
           orgId: orgId
         });
       } else {
@@ -116,6 +116,8 @@ const HsnSacCode = () => {
   };  
 
   const handleCheckboxChange = (event) => {
+    console.log(event.target.checked);
+    
     setFormData({ ...formData, active: event.target.checked });
   };
   const handleClear = () => {
@@ -160,7 +162,7 @@ const HsnSacCode = () => {
     if (validateForm()) {
       const formDataToSend = {
         ...(editId && { id: editId }),
-        active: formData.active === 'Active' ? true : false,
+        active: formData.active === true ? true : false,
         type: formData.type,
         code: formData.code,
         description: formData.description,

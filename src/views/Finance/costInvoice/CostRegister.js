@@ -62,16 +62,16 @@ function CostRegister() {
     customerCode:'',
   });
   const handleClear = () => {
-    setVisibleSections({
-      date: false,
-      branchCode: false,
-      customer: false,
-    });
-    setSelectedSections({
-      date: false,
-      branchCode: false,
-      customer: false,
-    });
+    // setVisibleSections({
+    //   date: false,
+    //   branchCode: false,
+    //   customer: false,
+    // });
+    // setSelectedSections({
+    //   date: false,
+    //   branchCode: false,
+    //   customer: false,
+    // });
     setFormData({
       // dateRange: [null, null],
       fromDate: null,
@@ -170,8 +170,8 @@ function CostRegister() {
   };
   const reportColumns = [
     { accessorKey: 'branchCode', header: 'Branch', size: 140 },
-    { accessorKey: 'docId', header: 'Doc No', size: 140 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'vId', header: 'V Id', size: 140 },
+    { accessorKey: 'vDate', header: 'V Date', size: 140 },
     { accessorKey: 'supplierName', header: 'Party Name', size: 140 },
     { accessorKey: 'supplierGstin', header: 'PGSTIN', size: 140 },
     { accessorKey: 'supplierBillNo', header: 'Supplier Bill No', size: 140 },
