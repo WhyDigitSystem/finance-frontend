@@ -3,6 +3,7 @@ import { lazy } from 'react';
 // project imports
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
+// import DashboardNew from 'views/dashboardNew/dashboardNew';
 const Customer = Loadable(lazy(() => import('views/Finance/Customer')));
 const DocumentTypeMaster = Loadable(lazy(() => import('views/Finance/DocumentType/documentType')));
 const DocumentTypeMappingMaster = Loadable(lazy(() => import('views/Finance/DocumentType/documentTypeMapping')));
@@ -14,6 +15,7 @@ const UrCostInvoicegna = Loadable(lazy(() => import('views/Finance/costInvoice/U
 const RCostInvoicegna = Loadable(lazy(() => import('views/Finance/costInvoice/RCostInvoicegna')));
 const CostRegister = Loadable(lazy(() => import('views/Finance/costInvoice/CostRegister')));
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
+const DashboardNew = Loadable(lazy(() => import('views/dashboardNew/dashboardNew')));
 
 // login option 3 routing
 // const Fin1 = Loadable(lazy(() => import('views/Finance')));
@@ -97,6 +99,10 @@ const FinanceRoute = {
     {
       path: '/',
       element: <DashboardDefault />
+    },
+    {
+      path: '/dashboard/DashboardNew',
+      element: <DashboardNew />
     },
     {
       path: '/companysetup/createcompany',

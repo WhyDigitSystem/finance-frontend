@@ -36,19 +36,15 @@ const Dashboard = () => {
         theme: 'colored'
       });
 
-      // Set loginMessage to false after 2 seconds
       const timeoutId = setTimeout(() => {
         localStorage.setItem('LoginMessage', false);
-      }, 2000);
+        // window.location.reload();
+      }, 500);
 
-      // setTimeout(() => {
-      //   window.location.reload();
-      // }, 1000);
-
-      // Clear the timeout on component unmount to prevent memory leaks
       return () => clearTimeout(timeoutId);
     }
   }, []);
+
 
   const getDashboardRevenue = useCallback(async (timeValue) => {
     try {
@@ -95,13 +91,13 @@ const Dashboard = () => {
             <EarningCard isLoading={isLoading} revenueAPI={getDashboardRevenue} cardName={"Revenue"} totalOrderYear={totalOrderYear} />
           </Grid>
           <Grid item lg={3} md={4} sm={4} xs={6}>
-            <TotalOrderLineChartCard isLoading={isLoading} costAPI={getDashboardCost} cardName={"Cost"} totalYear={totalYear}/>
+            <TotalOrderLineChartCard isLoading={isLoading} costAPI={getDashboardCost} cardName={"Cost"} totalYear={totalYear} />
           </Grid>
           <Grid item lg={3} md={4} sm={4} xs={6}>
             <EarningCard isLoading={isLoading} revenueAPI={getDashboardRevenue} cardName={"AR"} totalOrderYear={totalOrderYear} />
           </Grid>
           <Grid item lg={3} md={4} sm={4} xs={6}>
-            <TotalOrderLineChartCard isLoading={isLoading} costAPI={getDashboardCost} cardName={"AP"} totalYear={totalYear}/>
+            <TotalOrderLineChartCard isLoading={isLoading} costAPI={getDashboardCost} cardName={"AP"} totalYear={totalYear} />
           </Grid>
           {/* <Grid item lg={4} md={12} sm={12} xs={12}>
             <Grid container spacing={gridSpacing}>

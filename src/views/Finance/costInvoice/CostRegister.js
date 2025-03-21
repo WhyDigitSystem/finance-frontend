@@ -7,7 +7,6 @@ import ActionButton from 'utils/ActionButton';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
-import { DateRangePicker } from '@mui/x-date-pickers-pro';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
