@@ -169,14 +169,15 @@ function CostRegister() {
     }
   };
   const reportColumns = [
-    { accessorKey: 'branchCode', header: 'Branch', size: 140 },
-    { accessorKey: 'vid', header: 'V Id', size: 140 },
-    { accessorKey: 'vdate', header: 'V Date', size: 140 },
+    // { accessorKey: 'branchCode', header: 'Branch', size: 140 },
+    { accessorKey: 'vid', header: 'Cost Invoice No', size: 140 },
+    { accessorKey: 'vdate', header: 'Date', size: 140 },
     { accessorKey: 'supplierName', header: 'Party Name', size: 140 },
-    { accessorKey: 'supplierGstin', header: 'PGSTIN', size: 140 },
-    { accessorKey: 'supplierBillNo', header: 'Supplier Bill No', size: 140 },
+    { accessorKey: 'supplierGstin', header: 'Reg In', size: 140 },
+    // { accessorKey: 'supplierBillNo', header: 'Supplier Bill No', size: 140 },
     // { accessorKey: '', header: 'Supplier Bill Date', size: 140 },
     { accessorKey: 'gstType', header: 'GST Type', size: 140 },
+    { accessorKey: 'gstPercent', header: 'GST Percent', size: 140 },
     { accessorKey: 'charges', header: 'Charges', size: 140 },
     // { accessorKey: '', header: 'IGST - I/P', size: 140 },
     // { accessorKey: '', header: 'CGST - I/P', size: 140 },
