@@ -446,7 +446,8 @@ const CostInvoice = () => {
   const listViewColumns = [
     { accessorKey: 'mode', header: 'Mode', size: 140 },
     { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
-    { accessorKey: 'docId', header: 'Doc No', size: 140 },
+    { accessorKey: 'vid', header: 'Invoice No', size: 140 },
+    { accessorKey: 'vdate', header: 'Invoice Date', size: 140 },
     { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 }
   ];
 
@@ -613,7 +614,10 @@ const CostInvoice = () => {
 
   const getAllCostInvoiceByOrgId = async () => {
     try {
-      const result = await apiCalls('get', `/costInvoice/getAllCostInvoiceByOrgId?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}`);
+      const result = await apiCalls(
+        'get',
+        `/costInvoice/getAllCostInvoiceByOrgId?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}`
+      );
       setData(result.paramObjectsMap.costInvoiceVO.reverse() || []);
       console.log('costInvoiceVO', result);
     } catch (err) {
@@ -788,6 +792,7 @@ const CostInvoice = () => {
         const costVO = result.paramObjectsMap.costInvoiceVO[0];
         setListViewData(costVO);
         setEditId(row.original.id);
+        setPartyId(costVO.supplierId);
         getCurrencyAndExratesForMatchingParties(costVO.supplierCode);
         // getTdsDetailsFromPartyMasterSpecialTDS(costVO.supplierCode);
         getStateName(costVO.supplierId);
@@ -869,14 +874,16 @@ const CostInvoice = () => {
           }))
         );
         setTdsCostInvoiceDTO(
-          Array.isArray(costVO.tdsCostInvoiceVO) ? costVO.tdsCostInvoiceVO.map((row) => ({
-            id: row.id,
-            section: row.section,
-            tdsWithHolding: row.tdsWithHolding,
-            tdsWithHoldingPer: row.tdsWithHoldingPer,
-            totTdsWhAmnt: row.totTdsWhAmnt
-          })) : []
-        );        
+          Array.isArray(costVO.tdsCostInvoiceVO)
+            ? costVO.tdsCostInvoiceVO.map((row) => ({
+                id: row.id,
+                section: row.section,
+                tdsWithHolding: row.tdsWithHolding,
+                tdsWithHoldingPer: row.tdsWithHoldingPer,
+                totTdsWhAmnt: row.totTdsWhAmnt
+              }))
+            : []
+        );
         // setTdsCostInvoiceDTO(
         //   costVO.tdsCostInvoiceVO.map((row) => ({
         //     id: row.id,
