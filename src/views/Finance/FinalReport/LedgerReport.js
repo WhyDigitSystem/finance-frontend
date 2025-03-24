@@ -59,16 +59,16 @@ function TaxRegister() {
   });
   const handleClear = () => {
     setListView(false);
-    setVisibleSections({
-      date: false,
-      accountName: false,
-      branchCode: false,
-    });
-    setSelectedSections({
-      date: false,
-      accountName: false,
-      branchCode: false,
-    });
+    // setVisibleSections({
+    //   date: false,
+    //   accountName: false,
+    //   branchCode: false,
+    // });
+    // setSelectedSections({
+    //   date: false,
+    //   accountName: false,
+    //   branchCode: false,
+    // });
     setFormData({
       // dateRange: [null, null],
       fromDate: null,
@@ -107,32 +107,64 @@ function TaxRegister() {
   const handleSelectAccountChange = (e) => {
     const value = e.target.value;
     console.log('Selected Account value:', value);
-    const selectedEmp = accountNameList.find((emp) => emp.accountGroupName === value);
-
-    if (selectedEmp) {
-      console.log('Selected party:', selectedEmp);
+  
+    if (value === "All") {
       setFormData((prevData) => ({
         ...prevData,
-        accountName: selectedEmp.accountGroupName,
+        accountName: "All",
       }));
     } else {
-      console.log('No Account found with the given code:', value);
+      const selectedEmp = accountNameList.find((emp) => emp.accountGroupName === value);
+  
+      if (selectedEmp) {
+        console.log('Selected party:', selectedEmp);
+        setFormData((prevData) => ({
+          ...prevData,
+          accountName: selectedEmp.accountGroupName,
+        }));
+      } else {
+        console.log('No Account found with the given code:', value);
+      }
     }
   };
+  
+  // const handleSelectAccountChange = (e) => {
+  //   const value = e.target.value;
+  //   console.log('Selected Account value:', value);
+  //   const selectedEmp = accountNameList.find((emp) => emp.accountGroupName === value);
+
+  //   if (selectedEmp) {
+  //     console.log('Selected party:', selectedEmp);
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       accountName: selectedEmp.accountGroupName,
+  //     }));
+  //   } else {
+  //     console.log('No Account found with the given code:', value);
+  //   }
+  // };
 
   const handleInputChange = (e) => {
-    const { name, value, type, selectionStart, selectionEnd } = e.target;
+    const { name, value, type } = e.target;
   
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
       [name]: '',
     }));
+  
     if (name === 'branchCode') {
-      const selectedBranch = branchCodeList.find((br) => br.branchCode === value);
-      setFormData((prevData) => ({
-        ...prevData,
-        branchCode: selectedBranch ? selectedBranch.branchCode : '',
-      }));
+      if (value === "All") {
+        setFormData((prevData) => ({
+          ...prevData,
+          branchCode: "All",
+        }));
+      } else {
+        const selectedBranch = branchCodeList.find((br) => br.branchCode === value);
+        setFormData((prevData) => ({
+          ...prevData,
+          branchCode: selectedBranch ? selectedBranch.branchCode : '',
+        }));
+      }
     } else {
       let inputValue = value;
       if (type === 'text' || type === 'textarea') {
@@ -146,14 +178,16 @@ function TaxRegister() {
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
   const reportColumns = [
-    { accessorKey: 'voucherNo', header: 'Invoice No', size: 140 },
-    { accessorKey: 'voucherDate', header: 'Invoice Date', size: 140 },
-    { accessorKey: 'partyname', header: 'Particulars', size: 300 },
+    { accessorKey: 'vId', header: 'Invoice No', size: 140 },
+    { accessorKey: 'vDate', header: 'Date', size: 140 },
+    { accessorKey: 'partyName', header: 'Particulars', size: 300 },
+    { accessorKey: 'opbal', header: 'Opening Balance', size: 140 },
     { accessorKey: 'ndAmount', header: 'Debit(INR)', size: 140 },
     { accessorKey: 'ncAmount', header: 'Credit(INR)', size: 140 },
-    { accessorKey: 'currency', header: 'Currency', size: 140 },
     { accessorKey: 'dbAmount', header: 'Debit', size: 140 },
-    { accessorKey: 'cramount', header: 'Credit', size: 140 },
+    { accessorKey: 'crAmount', header: 'Credit', size: 140 },
+    { accessorKey: 'clBal', header: 'Closing Balance', size: 140 },
+    // { accessorKey: 'currency', header: 'Currency', size: 140 },
     // { accessorKey: '', header: 'Narration', size: 140 },
   ];
   const handleGo = async () => {

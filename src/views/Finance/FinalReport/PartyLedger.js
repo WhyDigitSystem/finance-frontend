@@ -63,18 +63,18 @@ function PartyLedger() {
   });
   const handleClear = () => {
     setListView(false);
-    setVisibleSections({
-      date: false,
-      branch: false,
-      customer: false
-      // withDetails: false
-    });
-    setSelectedSections({
-      date: false,
-      branch: false,
-      customer: false
-      // withDetails: false
-    });
+    // setVisibleSections({
+    //   date: false,
+    //   branch: false,
+    //   customer: false
+    //   // withDetails: false
+    // });
+    // setSelectedSections({
+    //   date: false,
+    //   branch: false,
+    //   customer: false
+    //   // withDetails: false
+    // });
     setFormData({
       // dateRange: [null, null],
       fromDate: null,
@@ -135,11 +135,18 @@ function PartyLedger() {
     }));
 
     if (name === 'branch') {
-      const selectedBranch = branchCodeList.find((br) => br.branch === value);
-      setFormData((prevData) => ({
-        ...prevData,
-        branch: selectedBranch ? selectedBranch.branch : ''
-      }));
+      if (value === "All") {
+        setFormData((prevData) => ({
+          ...prevData,
+          branch: "All",
+        }));
+      } else {
+        const selectedBranch = branchCodeList.find((br) => br.branch === value);
+        setFormData((prevData) => ({
+          ...prevData,
+          branch: selectedBranch ? selectedBranch.branch : '',
+        }));
+      }
     } else {
       let inputValue = value;
       if (type === 'text' || type === 'textarea') {
@@ -199,18 +206,20 @@ function PartyLedger() {
     }
   };
   const reportColumns = [
-    { accessorKey: 'vid', header: 'Invoice No', size: 140 },
-    { accessorKey: 'vdate', header: 'Invoice Date', size: 140 },
-    { accessorKey: 'refno', header: 'Reference No', size: 140 },
-    { accessorKey: 'refdate', header: 'Reference Date', size: 140 },
+    { accessorKey: 'vId', header: 'Invoice No', size: 140 },
+    { accessorKey: 'vDate', header: 'Date', size: 140 },
+    { accessorKey: 'opbal', header: 'Opening Balance', size: 140 },
+    // { accessorKey: 'refno', header: 'Reference No', size: 140 },
+    // { accessorKey: 'refdate', header: 'Reference Date', size: 140 },
     // { accessorKey: 'supplierrefno', header: 'Supp Reference No', size: 140 },
     // { accessorKey: 'supplierrefdate', header: 'Supp Reference Date', size: 140 },
     // { accessorKey: 'partyType', header: 'Particulars', size: 140 },
+    // { accessorKey: 'currency', header: 'Currency', size: 140 },
     { accessorKey: 'dbAmount', header: 'Debit(INR)', size: 140 },
-    { accessorKey: 'cramount', header: 'Credit(INR)', size: 140 },
-    { accessorKey: 'currency', header: 'Currency', size: 140 },
-    { accessorKey: 'billdbamount', header: 'Debit', size: 140 },
-    { accessorKey: 'billcramount', header: 'Credit', size: 140 }
+    { accessorKey: 'crAmount', header: 'Credit(INR)', size: 140 },
+    { accessorKey: 'billdbAmount', header: 'Debit', size: 140 },
+    { accessorKey: 'billcrAmount', header: 'Credit', size: 140 },
+    { accessorKey: 'clBal', header: 'Closing Balance', size: 140 },
   ];
   const handleGo = async () => {
     const errors = {};
