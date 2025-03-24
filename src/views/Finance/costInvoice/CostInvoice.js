@@ -516,16 +516,16 @@ const CostInvoice = () => {
   //   }
   // };
 
-  // useEffect(() => {
-  //   if (placeOfSupply.length === 1) {
-  //     const defaultSupplierPlace = placeOfSupply[0];
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       supplierPlace: defaultSupplierPlace.placeOfSupply
-  //     }));
-  //     getAddessType(defaultSupplierPlace.placeOfSupply);
-  //   }
-  // }, [placeOfSupply]);
+  useEffect(() => {
+    if (placeOfSupply.length === 1) {
+      const defaultSupplierPlace = placeOfSupply[0];
+      setFormData((prevData) => ({
+        ...prevData,
+        supplierPlace: defaultSupplierPlace.placeOfSupply
+      }));
+      getAddessType(defaultSupplierPlace.placeOfSupply);
+    }
+  }, [placeOfSupply]);
 
   // useEffect(() => {
   //   if (exRates.length === 1) {
@@ -1485,6 +1485,7 @@ const CostInvoice = () => {
 
   const handleView = () => {
     setShowForm(!showForm);
+    handleClear();
   };
 
   const handleChange = (event, newValue) => {
