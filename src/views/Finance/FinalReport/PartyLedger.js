@@ -26,14 +26,14 @@ function PartyLedger() {
   const [selectedSections, setSelectedSections] = useState({
     date: false,
     branch: false,
-    customer: false,
+    customer: false
     // withDetails: false
   });
 
   const [visibleSections, setVisibleSections] = useState({
     date: false,
     branch: false,
-    customer: false,
+    customer: false
     // withDetails: false
   });
   const handleCheckboxChange = (event) => {
@@ -66,13 +66,13 @@ function PartyLedger() {
     setVisibleSections({
       date: false,
       branch: false,
-      customer: false,
+      customer: false
       // withDetails: false
     });
     setSelectedSections({
       date: false,
       branch: false,
-      customer: false,
+      customer: false
       // withDetails: false
     });
     setFormData({
@@ -88,7 +88,7 @@ function PartyLedger() {
       toDate: '',
       partyName: '',
       partyType: '',
-      branch: '',
+      branch: ''
     });
     setRowData([]);
   };
@@ -199,18 +199,18 @@ function PartyLedger() {
     }
   };
   const reportColumns = [
-    { accessorKey: 'vId', header: 'Invoice No', size: 140 },
+    { accessorKey: 'vid', header: 'Invoice No', size: 140 },
     { accessorKey: 'vdate', header: 'Invoice Date', size: 140 },
     { accessorKey: 'refno', header: 'Reference No', size: 140 },
     { accessorKey: 'refdate', header: 'Reference Date', size: 140 },
-    { accessorKey: 'supplierrefno', header: 'Supp Reference No', size: 140 },
-    { accessorKey: 'supplierrefdate', header: 'Supp Reference Date', size: 140 },
+    // { accessorKey: 'supplierrefno', header: 'Supp Reference No', size: 140 },
+    // { accessorKey: 'supplierrefdate', header: 'Supp Reference Date', size: 140 },
     // { accessorKey: 'partyType', header: 'Particulars', size: 140 },
     { accessorKey: 'dbAmount', header: 'Debit(INR)', size: 140 },
     { accessorKey: 'cramount', header: 'Credit(INR)', size: 140 },
     { accessorKey: 'currency', header: 'Currency', size: 140 },
     { accessorKey: 'billdbamount', header: 'Debit', size: 140 },
-    { accessorKey: 'billcramount', header: 'Credit', size: 140 },
+    { accessorKey: 'billcramount', header: 'Credit', size: 140 }
   ];
   const handleGo = async () => {
     const errors = {};
@@ -276,9 +276,7 @@ function PartyLedger() {
             </div>
             <div className="col-md-2 mb-3">
               <FormControlLabel
-                control={
-                  <Checkbox checked={selectedSections.branch} onChange={handleCheckboxChange} name="branch" color="secondary" />
-                }
+                control={<Checkbox checked={selectedSections.branch} onChange={handleCheckboxChange} name="branch" color="secondary" />}
                 label="Branch"
               />
             </div>
@@ -341,13 +339,7 @@ function PartyLedger() {
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
                   <InputLabel id="branch-label">Branch</InputLabel>
-                  <Select
-                    labelId="branch-label"
-                    label="branch"
-                    value={formData.branch}
-                    onChange={handleInputChange}
-                    name="branch"
-                  >
+                  <Select labelId="branch-label" label="branch" value={formData.branch} onChange={handleInputChange} name="branch">
                     <MenuItem value="All">All</MenuItem>
 
                     {branchCodeList?.map((row) => (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { TextField, Checkbox, FormControlLabel, FormHelperText, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -27,13 +27,13 @@ function CostRegister() {
   const [selectedSections, setSelectedSections] = useState({
     date: false,
     branchCode: false,
-    customer: false,
+    customer: false
   });
 
   const [visibleSections, setVisibleSections] = useState({
     date: false,
     branchCode: false,
-    customer: false,
+    customer: false
   });
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
@@ -51,7 +51,7 @@ function CostRegister() {
     toDate: null,
     branchCode: 'All',
     customer: 'All',
-    customerCode:'All'
+    customerCode: 'All'
   });
   const [fieldErrors, setFieldErrors] = useState({
     // dateRange: [null, null],
@@ -59,7 +59,7 @@ function CostRegister() {
     toDate: '',
     branchCode: '',
     customer: '',
-    customerCode:'',
+    customerCode: ''
   });
   const handleClear = () => {
     // setVisibleSections({
@@ -78,7 +78,7 @@ function CostRegister() {
       toDate: null,
       branchCode: 'All',
       customer: 'All',
-      customerCode: 'All',
+      customerCode: 'All'
     });
     setFieldErrors({
       // dateRange: [null, null],
@@ -86,7 +86,7 @@ function CostRegister() {
       toDate: '',
       branchCode: '',
       customer: '',
-      customerCode: '',
+      customerCode: ''
     });
     setRowData([]);
     setListView(false);
@@ -101,7 +101,7 @@ function CostRegister() {
       setFormData((prevData) => ({
         ...prevData,
         customer: selectedEmp.partyName,
-        customerCode: selectedEmp.partyCode,
+        customerCode: selectedEmp.partyCode
       }));
     } else {
       console.log('No party found with the given code:', value);
@@ -110,17 +110,17 @@ function CostRegister() {
 
   const handleInputChange = (e) => {
     const { name, value, type, selectionStart, selectionEnd } = e.target;
-  
+
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: '',
+      [name]: ''
     }));
-  
+
     if (name === 'branchCode') {
       const selectedBranch = branchCodeList.find((br) => br.branchCode === value);
       setFormData((prevData) => ({
         ...prevData,
-        branchCode: selectedBranch ? selectedBranch.branchCode : '',
+        branchCode: selectedBranch ? selectedBranch.branchCode : ''
       }));
     } else {
       let inputValue = value;
@@ -128,7 +128,7 @@ function CostRegister() {
         inputValue = value.toUpperCase();
       }
       setFormData((prevData) => ({ ...prevData, [name]: inputValue }));
-  
+
       setTimeout(() => {
         const inputElement = document.getElementsByName(name)[0];
         if (inputElement && inputElement.setSelectionRange) {
@@ -170,8 +170,8 @@ function CostRegister() {
   };
   const reportColumns = [
     { accessorKey: 'branchCode', header: 'Branch', size: 140 },
-    { accessorKey: 'vId', header: 'V Id', size: 140 },
-    { accessorKey: 'vDate', header: 'V Date', size: 140 },
+    { accessorKey: 'vid', header: 'V Id', size: 140 },
+    { accessorKey: 'vdate', header: 'V Date', size: 140 },
     { accessorKey: 'supplierName', header: 'Party Name', size: 140 },
     { accessorKey: 'supplierGstin', header: 'PGSTIN', size: 140 },
     { accessorKey: 'supplierBillNo', header: 'Supplier Bill No', size: 140 },
@@ -205,12 +205,12 @@ function CostRegister() {
       setIsLoading(true);
       try {
         let response;
-        if(formData.fromDate && formData.toDate){
+        if (formData.fromDate && formData.toDate) {
           response = await apiCalls(
             'get',
             `/rCostInvoiceGna/getRegisterCostInvoiceReport?branchCode=${formData.branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&toDate=${formData.toDate}&partyCode=${formData.customerCode}`
           );
-        }else {
+        } else {
           response = await apiCalls(
             'get',
             `/rCostInvoiceGna/getRegisterCostInvoiceReport?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyCode=${formData.customerCode}`
@@ -235,7 +235,7 @@ function CostRegister() {
       setFieldErrors(errors);
     }
   };
-  return(
+  return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         {/* <div className="row d-flex ml">
@@ -245,8 +245,8 @@ function CostRegister() {
           </div>
         </div> */}
         <>
+          <div className="row">
             <div className="row">
-              <div className="row">
               <div className="col-md-2 mb-3">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
@@ -255,14 +255,18 @@ function CostRegister() {
               </div>
               <div className="col-md-2 mb-3">
                 <FormControlLabel
-                  control={<Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />}
-                  label="Customer"
+                  control={
+                    <Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />
+                  }
+                  label="Vendor"
                 />
               </div>
               <div className="col-md-2 mb-3">
                 <FormControlLabel
-                  control={<Checkbox checked={selectedSections.branchCode}  onChange={handleCheckboxChange} name="branchCode" color="secondary" />}
-                  label="Branch Code"
+                  control={
+                    <Checkbox checked={selectedSections.branchCode} onChange={handleCheckboxChange} name="branchCode" color="secondary" />
+                  }
+                  label="Branch"
                 />
               </div>
               <div className="col-md-2 mb-3">
@@ -276,42 +280,42 @@ function CostRegister() {
                   Proceed
                 </Button>
               </div>
-              </div>
-              {visibleSections.date && (
-                <>
-                  <div className="col-md-3 mb-3">
-                    <FormControl fullWidth variant="filled" size="small">
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker
-                          label="From Date"
-                          value={formData.fromDate ? dayjs(formData.fromDate, 'YYYY-MM-DD') : null}
-                          onChange={(date) => handleDateChange('fromDate', date)}
-                          slotProps={{
-                            textField: { size: 'small', clearable: true, error: fieldErrors.fromDate, helperText: fieldErrors.fromDate }
-                          }}
-                          format="DD-MM-YYYY"
-                        />
-                      </LocalizationProvider>
-                    </FormControl>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                     <FormControl fullWidth variant="filled" size="small">
-                      <LocalizationProvider dateAdapter={AdapterDayjs}> 
-                         <DatePicker 
-                          label="To Date"
-                          value={formData.toDate ? dayjs(formData.toDate, 'YYYY-MM-DD') : null}
-                          onChange={(date) => handleDateChange('toDate', date)}
-                          slotProps={{
-                            textField: { size: 'small', clearable: true, error: fieldErrors.toDate, helperText: fieldErrors.toDate }
-                          }}
-                          format="DD-MM-YYYY"
-                        />
-                       </LocalizationProvider>
-                    </FormControl> 
-                  </div>
-                </>
-              )}
-              {visibleSections.branchCode && ( 
+            </div>
+            {visibleSections.date && (
+              <>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled" size="small">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="From Date"
+                        value={formData.fromDate ? dayjs(formData.fromDate, 'YYYY-MM-DD') : null}
+                        onChange={(date) => handleDateChange('fromDate', date)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true, error: fieldErrors.fromDate, helperText: fieldErrors.fromDate }
+                        }}
+                        format="DD-MM-YYYY"
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled" size="small">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="To Date"
+                        value={formData.toDate ? dayjs(formData.toDate, 'YYYY-MM-DD') : null}
+                        onChange={(date) => handleDateChange('toDate', date)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true, error: fieldErrors.toDate, helperText: fieldErrors.toDate }
+                        }}
+                        format="DD-MM-YYYY"
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
+              </>
+            )}
+            {visibleSections.branchCode && (
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchCode}>
                   <InputLabel id="branchCode-label">Branch Code</InputLabel>
@@ -333,11 +337,11 @@ function CostRegister() {
                   {fieldErrors.branchCode && <FormHelperText>{fieldErrors.branchCode}</FormHelperText>}
                 </FormControl>
               </div>
-              )}
-              {visibleSections.customer && ( 
+            )}
+            {visibleSections.customer && (
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
-                  <InputLabel id="customer-label">Customer</InputLabel>
+                  <InputLabel id="customer-label">Vendor</InputLabel>
                   <Select
                     labelId="customer-label"
                     label="customer"
@@ -356,27 +360,27 @@ function CostRegister() {
                   {fieldErrors.customer && <FormHelperText>{fieldErrors.customer}</FormHelperText>}
                 </FormControl>
               </div>
-              )}
-              {(visibleSections.date || visibleSections.branchCode || visibleSections.customer) && (
-                <div className="col-md-3 mb-3">
-                  <div className="row d-flex ml">
-                    <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
-                      <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
-                      <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                    </div>
+            )}
+            {(visibleSections.date || visibleSections.branchCode || visibleSections.customer) && (
+              <div className="col-md-3 mb-3">
+                <div className="row d-flex ml">
+                  <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
+                    <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
+                    <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                   </div>
                 </div>
-              )}
-            </div>
-          </>
+              </div>
+            )}
+          </div>
+        </>
         {listView && (
           <div className="mt-4">
             <CommonReportTable data={rowData} columns={reportColumns} />
           </div>
         )}
-  </div>
+      </div>
     </>
-  )
+  );
 }
 
 export default CostRegister;
