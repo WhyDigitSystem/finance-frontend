@@ -198,13 +198,6 @@ function TaxRegister() {
     // if (!formData.branchCode) {
     //   errors.branchCode = 'Branch Code is required';
     // }
-    const saveFormData = {
-      branchCode: formData.branchCode,
-      customer: formData.customerCode,
-      fromDate: formData.startDate ? dayjs(formData.startDate).format('YYYY-MM-DD') : null,
-      toDate: formData.endDate ? dayjs(formData.endDate).format('YYYY-MM-DD') : null
-    };
-    console.log('THE SAVE FORM DATA IS:', saveFormData);
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);

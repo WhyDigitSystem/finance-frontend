@@ -223,7 +223,20 @@ function PartyLedger() {
   ];
   const handleGo = async () => {
     const errors = {};
-
+    if (!formData.partyName) {
+      errors.partyName = 'Party Name is required';
+    }
+    if (!formData.branchCode) {
+      errors.branchCode = 'Branch Code is required';
+    }
+      if (!formData.fromDate) {
+        errors.fromDate = 'From Date is required';
+        showToast('error', errors.fromDate);
+      }
+      if (!formData.toDate) {
+        errors.toDate = 'To Date is required';
+        showToast('error', errors.toDate);
+      }
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       try {
@@ -320,7 +333,7 @@ function PartyLedger() {
                         value={formData.fromDate ? dayjs(formData.fromDate, 'YYYY-MM-DD') : null}
                         onChange={(date) => handleDateChange('fromDate', date)}
                         slotProps={{
-                          textField: { size: 'small', clearable: true, error: fieldErrors.fromDate, helperText: fieldErrors.fromDate }
+                          textField: { size: 'small', error: fieldErrors.fromDate, helperText: fieldErrors.fromDate }
                         }}
                         format="DD-MM-YYYY"
                       />
@@ -335,7 +348,7 @@ function PartyLedger() {
                         value={formData.toDate ? dayjs(formData.toDate, 'YYYY-MM-DD') : null}
                         onChange={(date) => handleDateChange('toDate', date)}
                         slotProps={{
-                          textField: { size: 'small', clearable: true, error: fieldErrors.toDate, helperText: fieldErrors.toDate }
+                          textField: { size: 'small', error: fieldErrors.toDate, helperText: fieldErrors.toDate }
                         }}
                         format="DD-MM-YYYY"
                       />

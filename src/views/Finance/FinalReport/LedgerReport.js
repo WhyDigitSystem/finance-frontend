@@ -192,12 +192,20 @@ function TaxRegister() {
   ];
   const handleGo = async () => {
     const errors = {};
-    // if (!formData.partyName) {
-    //   errors.partyName = 'Sub ledger name is required';
-    // }
-    // if (!formData.branchCode) {
-    //   errors.branchCode = 'Branch Code is required';
-    // }
+    if (!formData.partyName) {
+      errors.partyName = 'Party Name is required';
+    }
+    if (!formData.branchCode) {
+      errors.branchCode = 'Branch Code is required';
+    }
+      if (!formData.fromDate) {
+        errors.fromDate = 'From Date is required';
+        showToast('error', errors.fromDate);
+      }
+      if (!formData.toDate) {
+        errors.toDate = 'To Date is required';
+        showToast('error', errors.toDate);
+      }
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       try {

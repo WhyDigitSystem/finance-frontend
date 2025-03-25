@@ -178,7 +178,11 @@ function CostRegister() {
     // { accessorKey: '', header: 'Supplier Bill Date', size: 140 },
     { accessorKey: 'gstType', header: 'GST Type', size: 140 },
     { accessorKey: 'gstPercent', header: 'GST Percent', size: 140 },
-    { accessorKey: 'charges', header: 'Charges', size: 140 },
+    { accessorKey: 'billAmount', header: 'Bill Amount', size: 140 },
+    { accessorKey: 'tax', header: 'TAX', size: 140 },
+    { accessorKey: 'totalAmount', header: 'Charges', size: 140 },
+    { accessorKey: 'tds', header: 'TDS', size: 140 },
+    { accessorKey: 'partyPayable', header: 'Party Payable', size: 140 },
     // { accessorKey: '', header: 'IGST - I/P', size: 140 },
     // { accessorKey: '', header: 'CGST - I/P', size: 140 },
     // { accessorKey: '', header: 'SGST - I/P', size: 140 },
@@ -188,12 +192,12 @@ function CostRegister() {
   ];
   const handleGo = async () => {
     const errors = {};
-    // if (!formData.partyName) {
-    //   errors.partyName = 'Sub ledger name is required';
-    // }
-    // if (!formData.branchCode) {
-    //   errors.branchCode = 'Branch Code is required';
-    // }
+    if (!formData.customerCode) {
+      errors.customerCode = 'Customer Code is required';
+    }
+    if (!formData.branchCode) {
+      errors.branchCode = 'Branch Code is required';
+    }
     const saveFormData = {
       branchCode: formData.branchCode,
       customer: formData.customerCode,
@@ -342,9 +346,9 @@ function CostRegister() {
             {visibleSections.customer && (
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
-                  <InputLabel id="customer-label">Vendor</InputLabel>
+                  <InputLabel id="customer">Vendor</InputLabel>
                   <Select
-                    labelId="customer-label"
+                    labelId="customer"
                     label="customer"
                     value={formData.customer}
                     onChange={handleSelectPartyChange}
