@@ -280,7 +280,7 @@ function PartyLedger() {
             <div className="col-md-2 mb-3">
               <FormControlLabel
                 control={<Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />}
-                label="Customer"
+                label="Party Type"
               />
             </div>
             <div className="col-md-2 mb-3">

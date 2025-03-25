@@ -67,14 +67,14 @@ const ap = {
           id: 'apAdjustment',
           title: 'AP Offset',
           type: 'item',
-          url: '/finance/paymentRegister/PaymentRegister'
+          url: '/finance/AP-adjustment'
         },
-        {
-          id: 'vendorLedger',
-          title: 'Vendor Ledger',
-          type: 'item',
-          url: '/finance/paymentRegister/PaymentRegister'
-        },
+        // {
+        //   id: 'vendorLedger',
+        //   title: 'Vendor Ledger',
+        //   type: 'item',
+        //   url: '/finance/paymentRegister/PaymentRegister'
+        // },
         {
           id: 'paymentRegister',
           title: 'AP Outstanding with aging Report',

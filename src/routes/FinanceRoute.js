@@ -387,7 +387,7 @@ const FinanceRoute = {
       element: <JobCard />
     },
     {
-      path: 'Finance/AdjustmentOffset',
+      path: 'Finance/AP-adjustment',
       element: <AdjustmentOffset />
     },
     // {

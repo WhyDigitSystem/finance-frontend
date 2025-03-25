@@ -88,12 +88,12 @@ const ar = {
           type: 'item',
           url: '/finance/AR-adjustment'
         },
-        {
-          id: 'customerLedger',
-          title: 'Customer Ledger',
-          type: 'item',
-          url: '/finance/AR-adjustment'
-        },
+        // {
+        //   id: 'customerLedger',
+        //   title: 'Customer Ledger',
+        //   type: 'item',
+        //   url: '/finance/AR-adjustment'
+        // },
         {
           id: 'Outstanding',
           title: 'AR Outstanding',
