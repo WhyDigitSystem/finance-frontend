@@ -140,7 +140,7 @@ const FirebaseLogin = ({ ...others }) => {
         } catch (error) {
           console.error('Error fetching data in Company Name:', error);
         }
-        navigate('/dashboard/default');
+        navigate('/dashboard/dashboard');
         if (checked) {
           localStorage.setItem('rememberedCredentials', JSON.stringify({ email: values.email, password: values.password }));
         } else {

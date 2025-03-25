@@ -51,7 +51,7 @@ export const ChargeTypeRequest = () => {
     sacDescripition: '',
     salesAccount: '',
     purchaseAccount: '',
-    taxable: '',
+    taxable: 'YES',
     taxablePercentage: '',
     product: '',
     govtSac: '',
@@ -113,13 +113,13 @@ export const ChargeTypeRequest = () => {
 
     if (name === 'serviceAccountCode') {
       const selectedService = serviceCode.find((item) => item.code === value);
-      console.log("sac",selectedService);
+      console.log('sac', selectedService);
       const sacDescription = selectedService ? selectedService.description : '';
 
       setFormData({
         ...formData,
         sacDescripition: sacDescription,
-        serviceAccountCode: selectedService.code,
+        serviceAccountCode: selectedService.code
       });
     } else {
       setFormData({ ...formData, [name]: newValue });
@@ -392,7 +392,7 @@ export const ChargeTypeRequest = () => {
       sacDescripition: '',
       salesAccount: '',
       purchaseAccount: '',
-      taxable: '',
+      taxable: 'YES',
       taxablePercentage: '',
       product: '',
       govtSac: '',
@@ -470,10 +470,10 @@ export const ChargeTypeRequest = () => {
       errors.purchaseAccount = 'Purchase Account is required';
       hasError = true;
     }
-    if (!formData.taxable) {
-      errors.taxable = 'Taxable is required';
-      hasError = true;
-    }
+    // if (!formData.taxable) {
+    //   errors.taxable = 'Taxable is required';
+    //   hasError = true;
+    // }
     // if (!formData.taxablePercentage) {
     //   errors.taxablePercentage = 'Taxable Percentage is required';
     //   hasError = true;

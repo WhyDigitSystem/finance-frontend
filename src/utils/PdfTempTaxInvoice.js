@@ -412,7 +412,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                     color: '#333'
                   }}
                 >
-                  INDIAN RUPEES {row.amountInWords.toUpperCase()}
+                  {row.billCurr} {row.amountInWords.toUpperCase()}
                 </span>
               </div>
               {row.remarks ? (
