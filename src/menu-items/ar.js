@@ -6,6 +6,23 @@ const icons = {
   IconKey
 };
 
+// const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
+
+// // Mapping of screen names (from localStorage) to menu item IDs
+// const screenMapping = {
+//   'TAX INVOICE': 'taxInvoiceDetail',
+//   'IRN CREDIT NOTE': 'creditNoteDetail',
+//   'TAX REGISTER': 'taxRegister',
+//   'RECEIPT': 'receipt',
+//   'AR ADJUSTMENT OFFSET': 'adjustmentOffset',
+//   'CUSTOMER LEDGER': 'customerLedger',
+//   'ADJUSTMENT JOURNAL': 'adjustmentJournal',
+//   'AR OUTSTANDING': 'Outstanding'
+// };
+
+// // Convert allowed screen names to corresponding menu item IDs
+// const allowedScreenIds = allowedScreens.map((screen) => screenMapping[screen]).filter(Boolean);
+
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
 const ar = {
@@ -81,9 +98,16 @@ const ar = {
           id: 'Outstanding',
           title: 'AR Outstanding',
           type: 'item',
-          url: '/finance/AR-adjustment'
-        }
+          url: '/finance/AR-outstanding'
+        },
+        {
+          id: 'aging',
+          title: 'AR Aging',
+          type: 'item',
+          url: '/finance/AR-aging'
+        },
       ]
+      // .filter((item) => allowedScreenIds.includes(item.id))
     }
   ]
 };

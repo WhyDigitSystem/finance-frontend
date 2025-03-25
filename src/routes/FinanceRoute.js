@@ -3,6 +3,8 @@ import { lazy } from 'react';
 // project imports
 import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
+import ArAging from 'views/Finance/taxInvoice/ArAging';
+import ArOutstanding from 'views/Finance/taxInvoice/ArOutstanding';
 // import DashboardNew from 'views/dashboardNew/dashboardNew';
 const Customer = Loadable(lazy(() => import('views/Finance/Customer')));
 const DocumentTypeMaster = Loadable(lazy(() => import('views/Finance/DocumentType/documentType')));
@@ -347,6 +349,14 @@ const FinanceRoute = {
     {
       path: 'Finance/ARAP-Adjustment',
       element: <ARAPAdjustment />
+    },
+    {
+      path: 'Finance/AR-aging',
+      element: <ArAging />
+    },
+    {
+      path: 'Finance/AR-outstanding',
+      element: <ArOutstanding />
     },
     {
       path: 'Finance/DocumentType/documentType',
