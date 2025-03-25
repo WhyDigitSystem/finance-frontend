@@ -2318,10 +2318,10 @@ const CostInvoice = () => {
                     />
                   </FormControl>
                 </div>
-                {/* <div className="col-md-5 mb-3">
+                <div className="col-md-6 mb-3">
                   <div className="d-flex flex-row">
                     <FormLabel className="me-3" style={{ marginTop: 10 }}>
-                      Cost Type
+                      Cost Type :
                     </FormLabel>
                     <FormControlLabel
                       control={
@@ -2337,16 +2337,27 @@ const CostInvoice = () => {
                     <FormControlLabel
                       control={
                         <Checkbox
-                          checked={formData.costType === 'Accrual'}
-                          onChange={(e) => handleCostTypeChange('Accrual')}
-                          name="Accrual"
+                          checked={formData.costType === 'RCM'}
+                          onChange={(e) => handleCostTypeChange('RCM')}
+                          name="RCM"
                           color="primary"
                         />
                       }
-                      label="Accrual"
+                      label="RCM"
+                    />
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={formData.costType === 'UR Cost Invoice'}
+                          onChange={(e) => handleCostTypeChange('UR Cost Invoice')}
+                          name="UR Cost Invoice"
+                          color="primary"
+                        />
+                      }
+                      label="UR Cost Invoice"
                     />
                   </div>
-                </div> */}
+                </div>
               </div>
               <div className="row mt-2">
                 <Box sx={{ width: '100%' }}>
