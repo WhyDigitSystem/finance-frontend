@@ -10,7 +10,7 @@ const icons = {
 
 const finance = {
   id: 'finance',
-  title: 'Business Master',
+  // title: 'Business Master',
   type: 'group',
   children: [
     {
@@ -19,49 +19,6 @@ const finance = {
       type: 'collapse',
       icon: icons.IconKey,
       children: [
-        {
-          id: 'listOfValues',
-          title: 'List Of Values',
-          type: 'item',
-          url: '/finance/listOfValues/listOfValues'
-        },
-        {
-          id: 'group',
-          title: 'COA',
-          type: 'item',
-          url: '/finance/Group'
-        },
-        {
-          id: 'chargeTypeRequest',
-          title: 'Charge Code',
-          type: 'item',
-          url: '/finance/ChargeTypeRequest'
-        },
-        {
-          id: 'tdsMaster',
-          title: 'TDS',
-          type: 'item',
-          url: '/finance/tdsMaster/TdsMaster'
-        },
-        {
-          id: 'hsnSacCode',
-          title: 'HSN SAC Code',
-          type: 'item',
-          url: '/finance/HsnSacCode'
-        },
-
-        {
-          id: 'costCenter',
-          title: 'Cost Center Values',
-          type: 'item',
-          url: '/finance/costcenter/CostCentre'
-        },
-        {
-          id: 'createPartyMaster',
-          title: 'Create Party',
-          type: 'item',
-          url: '/finance/createPartyMaster'
-        },
         {
           id: 'partyMaster',
           title: 'Party',
@@ -81,11 +38,55 @@ const finance = {
           url: '/finance/vendor'
         },
         {
+          id: 'group',
+          title: 'COA',
+          type: 'item',
+          url: '/finance/Group'
+        },
+        {
+          id: 'tdsMaster',
+          title: 'TDS',
+          type: 'item',
+          url: '/finance/tdsMaster/TdsMaster'
+        },
+        {
           id: 'taxMaster',
-          title: 'Tax Master',
+          title: 'Tax',
           type: 'item',
           url: '/finance/taxMaster'
-        }
+        },
+        {
+          id: 'hsnSacCode',
+          title: 'HSN SAC',
+          type: 'item',
+          url: '/finance/HsnSacCode'
+        },
+        {
+          id: 'chargeTypeRequest',
+          title: 'Charges',
+          type: 'item',
+          url: '/finance/ChargeTypeRequest'
+        },
+        {
+          id: 'costCenter',
+          title: 'Cost Center Values',
+          type: 'item',
+          url: '/finance/costcenter/CostCentre'
+        },
+        {
+          id: 'listOfValues',
+          title: 'List Of Values',
+          type: 'item',
+          url: '/finance/listOfValues/listOfValues'
+        },
+        {
+          id: 'createPartyMaster',
+          title: 'Create Party',
+          type: 'item',
+          url: '/finance/createPartyMaster'
+        },        
+        
+        
       ] // No filter applied
     }
   ]

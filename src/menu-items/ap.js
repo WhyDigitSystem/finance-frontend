@@ -59,13 +59,13 @@ const ap = {
         },
         {
           id: 'payment',
-          title: 'Vendor Payment',
+          title: 'Payment',
           type: 'item',
           url: '/finance/payment/Payment'
         },
         {
           id: 'apAdjustment',
-          title: 'AP Adjustment / Offset',
+          title: 'AP Offset',
           type: 'item',
           url: '/finance/paymentRegister/PaymentRegister'
         },

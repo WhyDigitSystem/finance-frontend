@@ -66,7 +66,7 @@ const companySetup = {
       children: [
         {
           id: 'createCompany',
-          title: 'Create Company',
+          title: 'New Entity',
           type: 'item',
           url: '/companysetup/createcompany',
           icon: icons1.IconSquareRoundedPlus
@@ -88,28 +88,28 @@ const companySetup = {
 
         {
           id: 'documentType',
-          title: 'Document Type',
+          title: 'Doc Type',
           type: 'item',
           url: '/finance/DocumentType/documentType',
           icon: icons4.IconFileTypeDoc
         },
         {
           id: 'documentTypeMaping',
-          title: 'Document Type Mapping',
+          title: 'Doc Mapping',
           type: 'item',
           url: '/finance/DocumentType/documentTypeMapping',
           icon: icons4.IconFileTypeDoc
         },
         {
           id: 'multipleDocumentIdGeneration',
-          title: 'Multiple Document Id Generation',
+          title: 'Multi Doc',
           type: 'item',
           url: '/finance/DocumentType/multipleDocumentIdGeneration',
           icon: icons4.IconFileTypeDoc
         },
         {
           id: 'screenNames',
-          title: 'Screen Names',
+          title: 'Screens',
           type: 'item',
           url: '/basicMaster/ScreenNames',
           icon: icons5.IconAppWindow

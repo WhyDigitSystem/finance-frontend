@@ -15,7 +15,7 @@ const UrCostInvoicegna = Loadable(lazy(() => import('views/Finance/costInvoice/U
 const RCostInvoicegna = Loadable(lazy(() => import('views/Finance/costInvoice/RCostInvoicegna')));
 const CostRegister = Loadable(lazy(() => import('views/Finance/costInvoice/CostRegister')));
 const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
-const DashboardNew = Loadable(lazy(() => import('views/dashboardNew/dashboardNew')));
+const Dashboard = Loadable(lazy(() => import('views/dashboardNew/dashboardNew')));
 
 // login option 3 routing
 // const Fin1 = Loadable(lazy(() => import('views/Finance')));
@@ -101,8 +101,8 @@ const FinanceRoute = {
       element: <DashboardDefault />
     },
     {
-      path: '/dashboard/DashboardNew',
-      element: <DashboardNew />
+      path: '/dashboard/Dashboard',
+      element: <Dashboard />
     },
     {
       path: '/companysetup/createcompany',

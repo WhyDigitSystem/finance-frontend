@@ -60,14 +60,14 @@ const ar = {
         },
         {
           id: 'receipt',
-          title: 'Customer Receipt',
+          title: 'Receipt',
           type: 'item',
           url: '/finance/receipt/Receipt'
         },
 
         {
           id: 'adjustmentOffset',
-          title: 'AR Adjustment / Offset',
+          title: 'AR Offset',
           type: 'item',
           url: '/finance/AR-adjustment'
         },
@@ -79,7 +79,7 @@ const ar = {
         },
         {
           id: 'Outstanding',
-          title: 'AR Outstanding with aging Report',
+          title: 'AR Outstanding',
           type: 'item',
           url: '/finance/AR-adjustment'
         }

@@ -8,22 +8,22 @@ const icons = { IconDashboard };
 
 const dashboard = {
   id: 'dashboard',
-  title: 'Dashboard',
+  // title: 'Dashboard',
   type: 'group',
   children: [
-    {
-      id: 'default',
-      title: 'Dashboard',
-      type: 'item',
-      url: '/dashboard/default',
-      icon: icons.IconDashboard,
-      breadcrumbs: false
-    },
+    // {
+    //   id: 'default',
+    //   title: 'Dashboard',
+    //   type: 'item',
+    //   url: '/dashboard/default',
+    //   icon: icons.IconDashboard,
+    //   breadcrumbs: false
+    // },
     {
       id: 'dashboardNew',
-      title: 'DashboardNew',
+      title: 'Dashboard',
       type: 'item',
-      url: '/dashboard/dashboardNew',
+      url: '/dashboard/dashboard',
       icon: icons.IconDashboard,
       breadcrumbs: false
     }

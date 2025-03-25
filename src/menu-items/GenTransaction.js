@@ -16,7 +16,7 @@ const transactionChildren = [
   },
   {
     id: 'chartOfCostCenter',
-    title: 'Chart of Cost center',
+    title: 'Cost center',
     type: 'item',
     url: '/finance/chartOfCostcenter/ChartOfCostcenter'
   },
@@ -76,7 +76,7 @@ const transactionChildren = [
   },
   {
     id: 'AdjustmentOffset',
-    title: 'Adjustment Offset',
+    title: 'AR Offset',
     type: 'item',
     url: '/finance/AdjustmentOffset'
   },
@@ -97,7 +97,7 @@ const transactionChildren = [
 // Define the transaction menu
 const genTransaction = {
   id: 'transaction',
-  title: 'General Transaction',
+  // title: 'General Transaction',
   type: 'group',
   children: [
     {
