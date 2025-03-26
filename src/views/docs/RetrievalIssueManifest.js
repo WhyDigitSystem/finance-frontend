@@ -169,10 +169,10 @@ export const RetrievalIssueManifest = () => {
     []
   );
 
-  const table = MaterialReactTable({
-    data,
-    columns
-  });
+  // const table = MaterialReactTable({
+  //   data,
+  //   columns
+  // });
 
   const transformProductDetails = (details) => {
     const groupedDetails = details.reduce((acc, detail) => {
@@ -237,7 +237,7 @@ Sender: ${concatenatedData.Sender}
         <div>
           {(addRim && <RetrievalManifestProvider addRim={handleBack} />) ||
             (editRim && <RetrievalManifestProvider addRim={handleBack} rimId={selectedRowId} />) || (
-              <div className="card w-full p-6 bg-base-100 shadow-xl">
+              <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 {/* BULK UPLOAD AND ADD NEW BUTTON */}
                 <div className="">
                   {userDetails === 'ROLE_DOCUMENT' ? (
@@ -293,7 +293,7 @@ Sender: ${concatenatedData.Sender}
 
                 {/* LISTVIEW TABLE */}
                 <div className="">
-                  <MaterialReactTable table={table} />
+                  <MaterialReactTable columns={columns} data={data} />
                 </div>
               </div>
             )}

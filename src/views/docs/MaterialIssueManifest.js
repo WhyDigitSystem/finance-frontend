@@ -238,7 +238,7 @@ Receiver: ${concatenatedData.Receiver}
         <div>
           {(addMim && <IssueManifestProvider addMim={handleBack} />) ||
             (editMim && <IssueManifestProvider addMim={handleBack} mimId={selectedRowId} />) || (
-              <div className="card w-full p-6 bg-base-100 shadow-xl">
+              <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
                 {/* BULK UPLOAD AND ADD NEW BUTTON */}
                 <div className="">
                   {userDetails === 'ROLE_DOCUMENT' ? (
@@ -434,7 +434,11 @@ Receiver: ${concatenatedData.Receiver}
                 </div>
 
                 <div className="">
-                  <IoMdClose onClick={() => setOpenDialog(false)} className="cursor-pointer w-8 h-8 mb-3" />
+                  <IoMdClose
+                    onClick={() => setOpenDialog(false)}
+                    className="cursor-pointer mb-3"
+                    style={{ width: '32px', height: '32px' }}
+                  />
                 </div>
               </div>
               <div className="print-scale" ref={componentRef}>
