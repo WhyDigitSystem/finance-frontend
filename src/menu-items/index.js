@@ -4,6 +4,7 @@ import ar from './ar';
 import basicMaster from './basicMaster';
 import companySetup from './companySetup';
 import dashboard from './dashboard';
+import docs from './docs';
 import finalReport from './FinalReport';
 import finance from './finance';
 import genTransaction from './GenTransaction';
@@ -14,7 +15,7 @@ const getMenuItems = () => {
 
   // Define default menu items
   const defaultMenuItems = {
-    items: [dashboard, companySetup, admin, basicMaster, finance, genTransaction, ar, ap, finalReport]
+    items: [dashboard, companySetup, admin, basicMaster, finance, genTransaction, ar, ap, finalReport, docs]
   };
 
   // Define menu items based on localStorage value
@@ -25,7 +26,7 @@ const getMenuItems = () => {
       };
     case 'admin': // Correctly match the value
       return {
-        items: [dashboard, companySetup, admin, basicMaster, finance, genTransaction, ar, ap, finalReport]
+        items: [dashboard, companySetup, admin, basicMaster, finance, genTransaction, ar, ap, finalReport, docs]
       };
     // Add more cases as needed
     default:

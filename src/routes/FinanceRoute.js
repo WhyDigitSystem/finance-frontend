@@ -90,6 +90,10 @@ const CreatePartyMaster = Loadable(lazy(() => import('views/Finance/CreatePartyM
 const PartyLedger = Loadable(lazy(() => import('views/Finance/FinalReport/PartyLedger')));
 const LedgerReport = Loadable(lazy(() => import('views/Finance/FinalReport/LedgerReport')));
 const TrailBalance = Loadable(lazy(() => import('views/Finance/FinalReport/TrailBalance')));
+const MaterialIssueManifest = Loadable(lazy(() => import('views/docs/MaterialIssueManifest')));
+const PurchaseOrder = Loadable(lazy(() => import('views/docs/PurchaseOrder')));
+const InvoiceManifest = Loadable(lazy(() => import('views/docs/InvoiceManifest')));
+const RetrievalIssueManifest = Loadable(lazy(() => import('views/docs/RetrievalIssueManifest')));
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
@@ -413,6 +417,22 @@ const FinanceRoute = {
     {
       path: '/Finance/FinalReport/LedgerReport',
       element: <LedgerReport />
+    },
+    {
+      path: '/docs/MaterialIssueManifest',
+      element: <MaterialIssueManifest />
+    },
+    {
+      path: '/docs/PurchaseOrder',
+      element: <PurchaseOrder />
+    },
+    {
+      path: '/docs/Invoice',
+      element: <InvoiceManifest />
+    },
+    {
+      path: '/docs/RetrievalIssueManifest',
+      element: <RetrievalIssueManifest />
     }
   ]
 };
