@@ -71,7 +71,7 @@ const Login = () => {
                               gutterBottom
                               variant={matchDownSM ? 'h5' : 'h4'}
                             >
-                              Finance
+                              e-Books
                             </Typography>
                             {/* <Typography
                               variant="caption"
