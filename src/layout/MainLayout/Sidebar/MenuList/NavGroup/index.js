@@ -56,8 +56,8 @@ const NavGroup = ({ item }) => {
                     ...theme.typography.subMenuCaption,
                     display: 'block',
                     gutterBottom: false, // Remove bottom margin
-                    py: 0.25, // Reduce vertical padding
-                    mt: 0.5, // Adjust spacing
+                    // py: 0.25, 
+                    mt: 0.5, 
                   }}
                   display="block"
                   gutterBottom

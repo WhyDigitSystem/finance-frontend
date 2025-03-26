@@ -44,7 +44,7 @@ const Sidebar = ({ drawerOpen, drawerToggle, window }) => {
         </PerfectScrollbar>
       </BrowserView>
       <MobileView>
-        <Box sx={{ px: 2 }}>
+        <Box sx={{ px: 1 }}>
           <MenuList />
           <MenuCard />
           {/* <Stack direction="row" justifyContent="center" sx={{ mb: 2 }}>

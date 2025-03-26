@@ -108,6 +108,13 @@ const FirebaseLogin = ({ ...others }) => {
         localStorage.setItem('userType', userVO.userType);
         localStorage.setItem('LoginMessage', true);
 
+        const userType = response.data?.paramObjectsMap?.userVO?.userType;
+        const role = response.data?.paramObjectsMap?.userVO?.roleVO?.[0]?.role;
+
+        if (userType || role) {
+          localStorage.setItem('userType', userType === 'SADMIN' || userType === 'ADMIN' ? userType : role);
+        }
+
         const userRole = userVO.roleVO;
         localStorage.setItem('ROLE', userRole);
         dispatch(setUserRole(userRole));
@@ -141,6 +148,11 @@ const FirebaseLogin = ({ ...others }) => {
           console.error('Error fetching data in Company Name:', error);
         }
         navigate('/dashboard/dashboard');
+
+        setTimeout(() => {
+          window.location.reload();
+        }, 50);
+        
         if (checked) {
           localStorage.setItem('rememberedCredentials', JSON.stringify({ email: values.email, password: values.password }));
         } else {

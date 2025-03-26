@@ -110,7 +110,7 @@ const NavCollapse = ({ menu, level }) => {
           // mb: 0, // Reduce margin-bottom
           alignItems: 'center', // Align vertically centered
           backgroundColor: level > 1 ? 'transparent !important' : 'inherit',
-          py: level > 1 ? 0.5 : 0.75, // Reduce vertical padding
+          py: level > 1 ? 0.3 : 0.5, // Reduce vertical padding
           pl: `${level * 20}px` // Reduce left padding
         }}
         selected={selected === menu.id}
