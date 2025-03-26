@@ -45,6 +45,7 @@ const Payment = () => {
   const [gstState, setGSTState] = useState([]);
   const [currencyList, setCurrencyList] = useState([]);
     const [sectionOptions, setSectionOptions] = useState([]);
+      const [currencyExRates, setCurrencyExRates] = useState([]);
 
   const handleChangeTab = (event, newValue) => {
     setValue(newValue);
@@ -776,7 +777,7 @@ const Payment = () => {
     setWithdrawalsTableData((prev) => 
       prev.map((row) => ({
         ...row,
-        settled: formData.paymentAmt,
+        // settled: formData.paymentAmt,
         outstanding: row.amount
       }))
     );
@@ -788,7 +789,7 @@ const Payment = () => {
     });
     const totalTds = tdsCostInvoiceDTO.reduce((acc, row) => acc + parseFloat(row.totTdsWhAmnt || 0), 0);
     // const totalOutstanding = withdrawalsTableData.reduce((acc, row) => acc + parseFloat(row.outstanding || 0), 0);
-    const totalSettled = parseFloat(formData.paymentAmt);
+    const totalSettled = withdrawalsTableData.reduce((acc, row) => acc + parseFloat(row.settled || 0), 0);
     setFormData((prev) => ({
       ...prev,
       netAmount: (totalAmount + totalTds).toFixed(2),
