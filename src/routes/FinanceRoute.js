@@ -94,6 +94,7 @@ const MaterialIssueManifest = Loadable(lazy(() => import('views/docs/MaterialIss
 const PurchaseOrder = Loadable(lazy(() => import('views/docs/PurchaseOrder')));
 const InvoiceManifest = Loadable(lazy(() => import('views/docs/InvoiceManifest')));
 const RetrievalIssueManifest = Loadable(lazy(() => import('views/docs/RetrievalIssueManifest')));
+const Quotation = Loadable(lazy(() => import('views/docs/Quotation')));
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //
@@ -433,6 +434,10 @@ const FinanceRoute = {
     {
       path: '/docs/RetrievalIssueManifest',
       element: <RetrievalIssueManifest />
+    },
+    {
+      path: '/docs/Quotation',
+      element: <Quotation />
     }
   ]
 };

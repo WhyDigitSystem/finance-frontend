@@ -52,11 +52,17 @@ const docs = {
           type: 'item',
           url: '/docs/purchaseOrder'
         },
+        // {
+        //   id: 'invoice',
+        //   title: 'Invoice',
+        //   type: 'item',
+        //   url: '/docs/Invoice'
+        // },
         {
-          id: 'invoice',
-          title: 'Invoice',
+          id: 'quotation',
+          title: 'Quotation',
           type: 'item',
-          url: '/docs/Invoice'
+          url: '/docs/Quotation'
         }
       ]
     }
