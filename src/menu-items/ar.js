@@ -27,7 +27,7 @@ const icons = {
 
 const ar = {
   id: 'ar',
-  title: 'Accounts Receival',
+  title: 'Accounts Receivable',
   //   caption: 'Pages Caption',
   type: 'group',
   children: [
@@ -105,7 +105,7 @@ const ar = {
           title: 'AR Aging',
           type: 'item',
           url: '/finance/AR-aging'
-        },
+        }
       ]
       // .filter((item) => allowedScreenIds.includes(item.id))
     }

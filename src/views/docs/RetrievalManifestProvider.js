@@ -532,7 +532,7 @@ function RetrievalManifestProvider({ addRim, rimId }) {
               </label>
             </div>
             <div className="col-lg-3 col-md-6 mb-2">
-              <select className="form-select form-sz w-full mb-2" onChange={handleEmitterChange} value={receiverName}>
+              {/* <select className="form-select form-sz w-full mb-2" onChange={handleEmitterChange} value={receiverName}>
                 <option value="" disabled>
                   Select an sender
                 </option>
@@ -543,7 +543,16 @@ function RetrievalManifestProvider({ addRim, rimId }) {
                     </option>
                   ))}
               </select>
-              {errors.receiver && <span className="error-text mb-1">{errors.receiver}</span>}
+              {errors.receiver && <span className="error-text mb-1">{errors.receiver}</span>} */}
+              <input
+                className="form-control form-sz mb-2"
+                name="receiverName"
+                type="text"
+                value={receiverName}
+                onInput={stringAndNoAndSpecialCharValidation}
+                onChange={handleInputChange}
+              />
+              {errors.receiverName && <span className="error-text">{errors.receiverName}</span>}
             </div>
             <div className="col-lg-3 col-md-6 mb-2">
               <label className="label">
