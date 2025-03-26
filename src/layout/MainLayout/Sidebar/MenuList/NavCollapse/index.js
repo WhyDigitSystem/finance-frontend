@@ -107,11 +107,11 @@ const NavCollapse = ({ menu, level }) => {
       <ListItemButton
         sx={{
           borderRadius: `${customization.borderRadius}px`,
-          mb: 0.5,
-          alignItems: 'flex-start',
+          // mb: 0, // Reduce margin-bottom
+          alignItems: 'center', // Align vertically centered
           backgroundColor: level > 1 ? 'transparent !important' : 'inherit',
-          py: level > 1 ? 1 : 1.25,
-          pl: `${level * 24}px`
+          py: level > 1 ? 0.5 : 0.75, // Reduce vertical padding
+          pl: `${level * 20}px` // Reduce left padding
         }}
         selected={selected === menu.id}
         onClick={handleClick}
@@ -137,6 +137,7 @@ const NavCollapse = ({ menu, level }) => {
           <IconChevronDown stroke={1.5} size="1rem" style={{ marginTop: 'auto', marginBottom: 'auto' }} />
         )}
       </ListItemButton>
+
       <Collapse in={open} timeout="auto" unmountOnExit>
         <List
           component="div"

@@ -34,10 +34,34 @@ const NavGroup = ({ item }) => {
       <List
         subheader={
           item.title && (
-            <Typography variant="caption" sx={{ ...theme.typography.menuCaption }} display="block" gutterBottom>
+            <Typography
+              variant="caption"
+              sx={{
+                ...theme.typography.menuCaption,
+                display: 'block',
+                gutterBottom: false, // Remove bottom margin
+                py: 0, // Reduce vertical padding
+                mt: 0, // Adjust spacing
+                mb: 0
+              }}
+              display="block"
+              gutterBottom
+            >
               {item.title}
               {item.caption && (
-                <Typography variant="caption" sx={{ ...theme.typography.subMenuCaption }} display="block" gutterBottom>
+                <Typography
+                  variant="caption"
+                  // sx={{ ...theme.typography.subMenuCaption }}
+                  sx={{
+                    ...theme.typography.subMenuCaption,
+                    display: 'block',
+                    gutterBottom: false, // Remove bottom margin
+                    py: 0.25, // Reduce vertical padding
+                    mt: 0.5, // Adjust spacing
+                  }}
+                  display="block"
+                  gutterBottom
+                >
                   {item.caption}
                 </Typography>
               )}
@@ -49,7 +73,7 @@ const NavGroup = ({ item }) => {
       </List>
 
       {/* group divider */}
-      <Divider sx={{ mt: 0.25, mb: 1.25 }} />
+      {/* <Divider sx={{ mt: 0.25, mb: 1.25 }} /> */}
     </>
   );
 };
