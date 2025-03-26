@@ -6,7 +6,7 @@ import { ButtonBase } from '@mui/material';
 
 // project imports
 import { MENU_OPEN } from 'store/actions';
-import LogoImage from '../../../../src/assets/images/BIN_BEE.png';
+import LogoImage from '../../../../src/assets/images/Efit.png';
 
 // ==============================|| MAIN LOGO ||============================== //
 

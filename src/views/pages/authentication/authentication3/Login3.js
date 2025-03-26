@@ -5,7 +5,7 @@ import { Chip, Divider, Grid, Stack, Typography, useMediaQuery } from '@mui/mate
 import { useTheme } from '@mui/material/styles';
 
 // project imports
-import LogoImage from '../../../../assets/images/BIN_BEE.png';
+import LogoImage from '../../../../assets/images/Efit.png';
 import AuthCardWrapper from '../AuthCardWrapper';
 import AuthWrapper1 from '../AuthWrapper1';
 import AuthLogin from '../auth-forms/AuthLogin';

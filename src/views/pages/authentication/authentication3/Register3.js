@@ -9,7 +9,7 @@ import AuthCardWrapper from '../AuthCardWrapper';
 import AuthWrapper1 from '../AuthWrapper1';
 import AuthRegister from '../auth-forms/AuthRegister';
 
-import LogoImage from '../../../../assets/images/BIN_BEE.png';
+import LogoImage from '../../../../assets/images/Efit.png';
 
 // assets
 
