@@ -28,6 +28,10 @@ const getMenuItems = () => {
       return {
         items: [dashboard, companySetup, admin, basicMaster, finance, genTransaction, ar, ap, finalReport, docs]
       };
+    case 'SADMIN':
+      return {
+        items: [dashboard, companySetup]
+      };
     // Add more cases as needed
     default:
       return defaultMenuItems; // Return default menu items if no match is found

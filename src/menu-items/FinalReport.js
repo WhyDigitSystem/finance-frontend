@@ -1,16 +1,29 @@
 // assets
-import { IconKey } from '@tabler/icons-react';
+import { IconCopyright } from '@tabler/icons-react';
 
 // constant
 const icons = {
-  IconKey
+  IconCopyright
 };
+
+const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
+
+// Mapping of screen names (from localStorage) to menu item IDs
+const screenMapping = {
+  'PARTY LEDGER': 'partyLedger',
+  'LEDGER REPORT': 'ledgerReport',
+  'TRAIL BALANCE': 'trailBalance',
+  'PROFIT': 'profit',
+  'BALANCESHEET': 'balanceSheet'
+};
+
+const allowedScreenIds = allowedScreens.map((screen) => screenMapping[screen]).filter(Boolean);
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
-const finalReport = {
+const finalReport =  {
   id: ' finalReport',
-  title: 'Final Report',
+  // title: 'Final Report',
   //   caption: 'Pages Caption',
   type: 'group',
   children: [
@@ -18,7 +31,7 @@ const finalReport = {
       id: 'report',
       title: 'Report',
       type: 'collapse',
-      icon: icons.IconKey,
+      icon: icons.IconCopyright,
       children: [
         {
           id: 'partyLedger',
@@ -50,9 +63,9 @@ const finalReport = {
           type: 'item',
           url: '/finance/FinalReport/TrailBalance'
         }
-      ]
+      ].filter((item) => allowedScreenIds.includes(item.id))
     }
   ]
-};
+} 
 
 export default finalReport;

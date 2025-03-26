@@ -61,7 +61,7 @@ const companySetup = {
       id: 'companySetup',
       title: 'Setup',
       type: 'collapse',
-      icon: icons.IconCopyright,
+      icon: icons2.IconSettingsPlus,
 
       children: [
         {

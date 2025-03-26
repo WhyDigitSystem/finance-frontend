@@ -1,9 +1,10 @@
 // assets
 import { IconKey } from '@tabler/icons-react';
+import { IconFileDollar } from "@tabler/icons-react";
 
 // constant
 const icons = {
-  IconKey
+  IconFileDollar
 };
 
 // const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
@@ -27,15 +28,15 @@ const icons = {
 
 const ar = {
   id: 'ar',
-  title: 'Accounts Receivable',
+  // title: 'Accounts Receivable',
   //   caption: 'Pages Caption',
   type: 'group',
   children: [
     {
       id: 'ar',
-      title: 'AR',
+      title: 'Account Receivable',
       type: 'collapse',
-      icon: icons.IconKey,
+      icon: icons.IconFileDollar,
 
       children: [
         // {
