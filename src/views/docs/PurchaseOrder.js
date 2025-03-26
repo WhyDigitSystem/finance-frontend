@@ -4,6 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PrintIcon from '@mui/icons-material/Print';
 import SaveIcon from '@mui/icons-material/Save';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+
 import {
   Box,
   Button,
@@ -169,6 +170,7 @@ const PurchaseOrderComponent = React.forwardRef((props, ref) => {
       <div>
         <ToastContainer />
       </div>
+
       <Paper ref={ref} elevation={3} sx={{ padding: 4, fontFamily: 'Roboto, sans-serif' }}>
         <Container>
           <Box sx={{ mb: 3 }}>
@@ -199,7 +201,6 @@ const PurchaseOrderComponent = React.forwardRef((props, ref) => {
                     onChange={(e) => setCompanyAddress(e.target.value)}
                   />
                 </Box>
-                <Grid item xs={5}></Grid>
               </Grid>
 
               {/* Right Box */}
@@ -219,6 +220,7 @@ const PurchaseOrderComponent = React.forwardRef((props, ref) => {
                     fontWeight: 'bold'
                   }}
                 />
+
                 <br></br>
                 <StyledTextField
                   fullWidth
@@ -547,16 +549,22 @@ const PurchaseOrder = () => {
     setTotal(subtotal + calculatedIgst + calculatedCgst + calculatedSgst);
   };
 
+  // const handlePrint = useReactToPrint({
+  //   content: () => componentRef.current,
+  //   documentTitle: `Purchase_Order-${poNumber}`,
+  //   onBeforeGetContent: () => {
+  //     if (!poNumber || poNumber.trim() === '') {
+  //       showErrorToast('PO Number is a mandatory field.');
+  //       // return Promise.reject(); // Prevent the print if PO Number is empty
+  //       return false;
+  //     }
+  //     return Promise.resolve();
+  //   }
+  // });
+
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
-    documentTitle: `Purchase_Order-${poNumber}`,
-    onBeforeGetContent: () => {
-      if (!poNumber || poNumber.trim() === '') {
-        showErrorToast('PO Number is a mandatory field.');
-        return Promise.reject(); // Prevent the print if PO Number is empty
-      }
-      return Promise.resolve();
-    }
+    documentTitle: `Purchase_Order-${poNumber}`
   });
 
   const handleSave = () => {
@@ -640,42 +648,41 @@ const PurchaseOrder = () => {
 
   // You can now use `formData` to make an API request
 
-  const postInvoice = () => {
-    const formData = createFormData();
+  const postInvoice = async () => {
+    try {
+      const formData = createFormData();
 
-    // Validate the PO Number field
-    if (!formData.poNumber || formData.poNumber.trim() === '') {
-      showErrorToast('PO Number is a mandatory field.');
-      return Promise.reject(); // Prevent the API call if PO Number is empty
-    }
+      if (!formData?.poNumber?.trim()) {
+        showErrorToast('PO Number is a mandatory field.');
+        // throw new Error('PO Number is required.'); // ✅ This properly throws an error
+      }
 
-    if (formData) {
       const formDataWithOrgId = { ...formData, orgId };
 
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/master/createUpdateInvoice`, formDataWithOrgId)
-        .then((response) => {
-          console.log('Response:', response.data);
+      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/reportController/createUpdateInvoice`, formDataWithOrgId, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-          if (response.data.statusFlag === 'Error') {
-            // showErrorToast(response.data.paramObjectsMap.errorMessage);
-          } else {
-            showSuccessToast(editMode ? 'PO Updated Successfully' : response.data.paramObjectsMap.message);
-            getInvoiceData();
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showErrorToast('An error occurred while posting the invoice.');
-        });
-    } else {
-      showErrorToast('No invoice data to post.');
+      console.log('Response:', response.data);
+
+      if (response.data.statusFlag === 'Error') {
+        showErrorToast(response.data.paramObjectsMap?.errorMessage || 'Unknown error occurred.');
+      } else {
+        showSuccessToast(editMode ? 'PO Updated Successfully' : response.data.paramObjectsMap?.message);
+        getInvoiceData();
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showErrorToast(error.message || 'An error occurred while posting the invoice.');
     }
   };
 
   const getInvoiceData = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/master/getAllInvoiceByOrgId?orgId=${orgId}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getAllInvoiceByOrgId?orgId=${orgId}`);
       if (response.status === 200) {
         setPoData(response.data.paramObjectsMap.invoiceVO.reverse());
       } else {
@@ -750,7 +757,7 @@ const PurchaseOrder = () => {
             sx={{ ml: 1 }}
             variant="contained"
             color="primary"
-            onClick={handleSave}
+            onClick={postInvoice}
             startIcon={<SaveIcon />} // Add icon here
           >
             Save

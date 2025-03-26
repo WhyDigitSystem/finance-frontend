@@ -1,22 +1,11 @@
-import {
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-} from "@mui/material";
-import axios from "axios";
-import React from "react";
+import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import axios from 'axios';
+import React from 'react';
 
 const PoList = ({ poData, onListView, setPoVo, setEditMode }) => {
   const getInvoiceDataById = async (id) => {
     try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/master/getInvoiceById?id=${id}`
-      );
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getInvoiceById?id=${id}`);
       if (response.status === 200) {
         const invoiceVO = response.data.paramObjectsMap.invoiceVO;
 
@@ -31,10 +20,10 @@ const PoList = ({ poData, onListView, setPoVo, setEditMode }) => {
 
         // Storing the updated invoiceVO with id in localStorage
       } else {
-        console.error("API Error:", response.data);
+        console.error('API Error:', response.data);
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error('Error fetching data:', error);
     }
   };
 
@@ -60,19 +49,12 @@ const PoList = ({ poData, onListView, setPoVo, setEditMode }) => {
         <TableBody>
           {poData?.map((invoice) => (
             <TableRow key={invoice.id}>
-              <TableCell
-                onClick={() => handleClick(invoice.id)}
-                style={{ cursor: "pointer", color: "blue" }}
-              >
+              <TableCell onClick={() => handleClick(invoice.id)} style={{ cursor: 'pointer', color: 'blue' }}>
                 {invoice.poNumber}
               </TableCell>
               <TableCell>Purchase Order</TableCell>
               <TableCell>{invoice.poDate}</TableCell>
-              <TableCell>
-                {invoice.vendorAddress
-                  ? invoice.vendorAddress.split("\n")[0]
-                  : ""}
-              </TableCell>
+              <TableCell>{invoice.vendorAddress ? invoice.vendorAddress.split('\n')[0] : ''}</TableCell>
 
               {/* Add other fields here */}
             </TableRow>
