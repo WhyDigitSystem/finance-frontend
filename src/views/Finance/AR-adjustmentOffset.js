@@ -58,8 +58,8 @@ const ARadjustmentOffset = () => {
     active: true,
     receiptType1: '',
     bankChargeAcc: '',
-    // docId: '',
-    // docDate: null,
+    docNo: '',
+    docDate: dayjs(),
     bankCharges: '',
     inCurrencyBnkChargs: '',
     type: '',
@@ -84,8 +84,8 @@ const ARadjustmentOffset = () => {
     active: true,
     receiptType1: '',
     bankChargeAcc: '',
-    // docId: '',
-    // docDate: null,
+    docNo: '',
+    docDate: null,
     bankCharges: '',
     inCurrencyBnkChargs: '',
     type: '',
@@ -268,8 +268,8 @@ const ARadjustmentOffset = () => {
     setFormData({
       active: true,
       bankChargeAcc: '',
-      // docId: '',
-      // docDate: null,
+      docNo: '',
+      docDate: dayjs(),
       bankCharges: '',
       inCurrencyBnkChargs: '',
       type: '',
@@ -291,8 +291,8 @@ const ARadjustmentOffset = () => {
     });
     setFieldErrors({
       bankChargeAcc: '',
-      // docId: '',
-      // docDate: null,
+      docNo: '',
+      docDate: null,
       bankCharges: '',
       inCurrencyBnkChargs: '',
       type: '',
@@ -350,6 +350,7 @@ const ARadjustmentOffset = () => {
       gainAmt: ''
       // remarks: ''
     });
+    getReceiptDocId();
   };
 
   const handleChange = (event, newValue) => {
@@ -477,7 +478,6 @@ const ARadjustmentOffset = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Replace with your orgId or fetch it from somewhere
         const currencyData = await getAllActiveCurrency(orgId);
         setCurrencies(currencyData);
 
@@ -493,8 +493,22 @@ const ARadjustmentOffset = () => {
 
   useEffect(() => {
     getAllCustomerName();
+    getReceiptDocId();
   }, []);
-
+  const getReceiptDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/offSetcontroller/getOffSetDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
+      );
+      setFormData((prevData) => ({
+        ...prevData,
+        docNo: response.paramObjectsMap.offSetDocId
+      }));
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
   const getAllCustomerName = async () => {
     try {
       const response = await apiCalls(
@@ -514,16 +528,16 @@ const ARadjustmentOffset = () => {
   };
 
   useEffect(() => {
-    getAllReceipt();
+    getAllARAdjustmentOffset();
   }, []);
 
-  const getAllReceipt = async () => {
+  const getAllARAdjustmentOffset = async () => {
     try {
-      const response = await apiCalls('get', `arreceivable/getAllReceiptByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `/offSetcontroller/getAllOffSet?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.receiptReceivableVO);
+        setListViewData(response.paramObjectsMap.offSetVO);
       } else {
         console.error('API Error:', response);
       }
@@ -532,13 +546,13 @@ const ARadjustmentOffset = () => {
     }
   };
 
-  const getReceiptById = async (row) => {
+  const getARAdjustmentOffsetById = async (row) => {
     console.log('first', row);
     setEditId(row.original.id);
     // setShowForm(true);
 
     try {
-      const response = await apiCalls('get', `/arreceivable/getAllReceiptById?id=${row.original.id}`);
+      const response = await apiCalls('get', `/offSetcontroller/getOffSetById?id=${row.original.id}`);
       if (response.status === true) {
         setListView(false);
         const receiptVO = response.paramObjectsMap.receiptReceivableVO[0];
@@ -546,8 +560,8 @@ const ARadjustmentOffset = () => {
         setFormData({
           receiptType: receiptVO.receiptType,
           bankChargeAcc: receiptVO.bankChargeAcc,
-          // docId: receiptVO.docId,
-          // docDate: dayjs(receiptVO.docDate, 'DD-MM-YYYY').format('YYYY-MM-DD'), // Convert to correct format
+          docNo: receiptVO.docNo,
+          docDate: dayjs(receiptVO.docDate, 'DD-MM-YYYY').format('YYYY-MM-DD'), // Convert to correct format
           bankCharges: receiptVO.bankCharges,
           inCurrencyBnkChargs: receiptVO.inCurrencyBnkChargs,
           type: receiptVO.type,
@@ -638,8 +652,8 @@ const ARadjustmentOffset = () => {
     if (!formData.bankChargeAcc) {
       errors.bankChargeAcc = 'Bank Charge Acc is required';
     }
-    // if (!formData.docId) {
-    //   errors.docId = 'Document ID is required';
+    // if (!formData.docNo) {
+    //   errors.docNo = 'Document ID is required';
     // }
     // if (!formData.docDate) {
     //   errors.docDate = 'Document Date is required';
@@ -757,25 +771,26 @@ const ARadjustmentOffset = () => {
         taxAmt: 0,
         tdsAmt: parseInt(formData.tdsAmt),
         type: formData.type,
-        orgId: parseInt(orgId)
-        // docId: formData.docId,
-        // docDate: formatDate(new Date(formData.docDate)), // Formatting with date and time
+        orgId: parseInt(orgId),
+        docNo: formData.docNo,
+        docDate: formatDate(new Date(formData.docDate)), // Formatting with date and time
         // ipNo: '',
         // latitude: '',
       };
 
       try {
-        const response = await apiCalls('put', `arreceivable/updateCreateReceipt`, saveFormData);
+        const response = await apiCalls('put', `/offSetcontroller/updateCreateOffSet`, saveFormData);
         if (response.status === true) {
-          showToast('success', editId ? 'Receipt Updated Successfully' : 'Receipt created successfully');
+          showToast('success', editId ? 'AR-Adjustment Offset Updated Successfully' : 'AR-Adjustment Offset created successfully');
           handleClear();
-          getAllReceipt();
+          getAllARAdjustmentOffset();
+          getReceiptDocId();
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Receipt creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'AR-Adjustment Offset creation failed');
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'Receipt creation failed');
+        showToast('error', 'AR-Adjustment Offset creation failed');
       } finally {
         setIsLoading(false);
       }
@@ -785,7 +800,7 @@ const ARadjustmentOffset = () => {
   const listViewColumns = [
     { accessorKey: 'receiptType', header: 'Receipt Type', size: 140 },
     { accessorKey: 'bankChargeAcc', header: 'Bank Charges Account', size: 140 },
-    // { accessorKey: 'docId', header: 'Doc Id', size: 140 },
+    // { accessorKey: 'docNo', header: 'Doc Id', size: 140 },
     { accessorKey: 'type', header: 'Type', size: 140 },
     { accessorKey: 'tdsAmt', header: 'TDS Amount', size: 140 },
     { accessorKey: 'customerName', header: 'Customer Name', size: 140 },
@@ -806,7 +821,7 @@ const ARadjustmentOffset = () => {
         </div>
         {listView ? (
           <div className="">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getReceiptById} />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getARAdjustmentOffsetById} />
           </div>
         ) : (
           <>
@@ -814,15 +829,16 @@ const ARadjustmentOffset = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="docId"
-                    name="docId"
-                    label="Doc ID"
+                    id="docNo"
+                    name="docNo"
+                    label="Doc No"
                     size="small"
-                    value={formData.docId}
+                    disabled
+                    value={formData.docNo}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.docId}
-                    helperText={fieldErrors.docId}
+                    error={!!fieldErrors.docNo}
+                    helperText={fieldErrors.docNo}
                   />
                 </FormControl>
               </div>
@@ -836,9 +852,8 @@ const ARadjustmentOffset = () => {
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
+                      disabled
                       format="DD-MM-YYYY"
-                      error={!!fieldErrors.docDate}
-                      helperText={fieldErrors.docDate ? fieldErrors.docDate : ''}
                     />
                   </LocalizationProvider>
                 </FormControl>
@@ -863,24 +878,29 @@ const ARadjustmentOffset = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Receipt/Payment Doc Date"
-                      value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
-                      onChange={(date) => handleDateChange('docDate', date)}
+                      value={formData.receiptDocDate ? dayjs(formData.receiptDocDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('receiptDocDate', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}
                       format="DD-MM-YYYY"
-                      error={!!fieldErrors.docDate}
-                      helperText={fieldErrors.docDate ? fieldErrors.docDate : ''}
+                      // disabled
+                      error={!!fieldErrors.receiptDocDate}
+                      helperText={fieldErrors.receiptDocDate ? fieldErrors.receiptDocDate : ''}
                     />
                   </LocalizationProvider>
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.type}>
-                  <InputLabel id="type" required>
-                    Subledger Type
-                  </InputLabel>
-                  <Select labelId="type" id="type" name="type" required value={formData.type} label="Type" onChange={handleInputChange}>
+                  <InputLabel  id="subledgerType"> Subledger Type </InputLabel>
+                    <Select
+                      labelId="subledgerType"
+                      label="Subledger Type"
+                      value={formData.type}
+                      onChange={handleInputChange}
+                      name="subledgerType"
+                    >
                     <MenuItem value={'AIR CARRIER'}>AIR CARRIER</MenuItem>
                     <MenuItem value={'BANK'}>BANK</MenuItem>
                     <MenuItem value={'COLOADER'}>COLOADER</MenuItem>
