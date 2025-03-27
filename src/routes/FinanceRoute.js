@@ -72,6 +72,7 @@ const ScreenNames = Loadable(lazy(() => import('views/basicMaster/ScreenNames'))
 const Employee = Loadable(lazy(() => import('views/basicMaster/employee')));
 const ChargeTypeRequest = Loadable(lazy(() => import('views/Finance/ChargeTypeRequest')));
 const JobCard = Loadable(lazy(() => import('views/Finance/JobCard')));
+const ProductService = Loadable(lazy(() => import('views/Finance/ProductService')));
 const AdjustmentOffset = Loadable(lazy(() => import('views/Finance/AdjustmentOffset')));
 // const ExcelUpload = Loadable(lazy(() => import('views/Finance/excelUpload')));
 const TaxRegister = Loadable(lazy(() => import('views/Finance/taxInvoice/TaxRegister')));
@@ -394,6 +395,10 @@ const FinanceRoute = {
     {
       path: 'Finance/JobCard',
       element: <JobCard />
+    },
+    {
+      path: 'Finance/ProductService',
+      element: <ProductService />
     },
     {
       path: 'Finance/AP-adjustment',

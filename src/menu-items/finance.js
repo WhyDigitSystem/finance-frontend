@@ -62,6 +62,12 @@ const finance = {
           url: '/finance/HsnSacCode'
         },
         {
+          id: 'productService',
+          title: 'Product Service',
+          type: 'item',
+          url: '/finance/ProductService'
+        },
+        {
           id: 'chargeTypeRequest',
           title: 'Charges',
           type: 'item',
@@ -84,9 +90,7 @@ const finance = {
           title: 'Create Party',
           type: 'item',
           url: '/finance/createPartyMaster'
-        },        
-        
-        
+        }
       ] // No filter applied
     }
   ]
