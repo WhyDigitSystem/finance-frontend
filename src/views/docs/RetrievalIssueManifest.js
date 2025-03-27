@@ -29,12 +29,12 @@ export const RetrievalIssueManifest = () => {
 
   useEffect(() => {
     getAllRetrievalManifestProvider();
-    getAllDeclarationAndNotes();
+    // getAllDeclarationAndNotes();
   }, []);
 
   const getAllRetrievalManifestProvider = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/oem/getAllRetrievalManifestProvider`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getAllRetrievalManifestProvider`);
 
       if (response.status === 200) {
         setData(response.data.paramObjectsMap.retrievalManifestProviderVOs.reverse());
@@ -45,7 +45,7 @@ export const RetrievalIssueManifest = () => {
   };
   const getAllDeclarationAndNotes = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/oem/getAllDeclarationAndNotes`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getAllDeclarationAndNotes`);
 
       if (response.status === 200) {
         setTerms(response.data.paramObjectsMap.declarationAndNotesVO[0]);
@@ -203,7 +203,9 @@ export const RetrievalIssueManifest = () => {
 
   const getRetrievalManifestProviderById = async (selectedRowId) => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/oem/getRetrievalManifestProviderById?id=${selectedRowId}`);
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/reportController/getRetrievalManifestProviderById?id=${selectedRowId}`
+      );
       if (response.status === 200) {
         const rimData = response.data.paramObjectsMap.retrievalManifestProviderVO;
         setPdfData(rimData);

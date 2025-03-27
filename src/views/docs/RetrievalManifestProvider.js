@@ -220,32 +220,33 @@ function RetrievalManifestProvider({ addRim, rimId }) {
   };
 
   const handleAddKitDetails = () => {
-    if (!selectedKit || !kitQty || !hsnCode) {
+    if (!kitId || !kitQty || !hsnCode) {
       setErrors({
-        kitId: selectedKit ? '' : 'Please select a kit',
+        kitId: kitId ? '' : 'Please select a kit',
         kitQty: kitQty ? '' : 'Please enter a kit quantity',
         hsnCode: hsnCode ? '' : 'Please enter a HSN Code'
       });
       return;
     }
 
-    const existingKit = kitDetails.find((kit) => kit.kitNo === selectedKit.kitNo);
-    if (existingKit) {
-      toast.error('This kit has already been added.');
-      return;
-    }
+    // const existingKit = kitDetails.find((kit) => kit.kitNo === kitId.kitNo);
+    // if (existingKit) {
+    //   toast.error('This kit has already been added.');
+    //   return;
+    // }
 
     const newKitDetail = {
-      kitNo: selectedKit.kitNo,
+      kitNo: kitId,
       kitQty,
-      kitDesc: selectedKit.kitDesc,
+      kitDesc: kitId,
       hsnCode,
-      assets: Object.values(selectedKit.kitAssetCategory)
+      // assets: kitId
+      assets: Object.values(kitId)
         .flat()
         .map((asset) => ({
-          assetCodeId: asset.assetCodeId,
-          assetName: asset.assetName,
-          quantity: asset.quantity * kitQty
+          assetCodeId: asset.kitId,
+          assetName: asset.kitId,
+          quantity: 1 * kitQty
         }))
     };
 
@@ -277,14 +278,17 @@ function RetrievalManifestProvider({ addRim, rimId }) {
     }
 
     switch (name) {
-      case 'dispatchDate':
-        setDispatchDate(value);
-        break;
+      // case 'dispatchDate':
+      //   setDispatchDate(value);
+      //   break;
       case 'receiver':
         setReceiver(value);
         break;
       case 'receiverAddress':
         setReceiverAddress(value);
+        break;
+      case 'receiverName':
+        setReceiverName(value);
         break;
       case 'receiverGst':
         setReceiverGst(value);
@@ -307,6 +311,12 @@ function RetrievalManifestProvider({ addRim, rimId }) {
       case 'transporterName':
         setTransporterName(value);
         break;
+      case 'warehouse':
+        setWarehouse(value);
+        break;
+      case 'kitId':
+        setKitId(value);
+        break;
       case 'vehicleNo':
         setVehicleNo(value.toUpperCase());
         break;
@@ -316,6 +326,10 @@ function RetrievalManifestProvider({ addRim, rimId }) {
       default:
         break;
     }
+  };
+
+  const handleDispatchDateChange = (date) => {
+    setDispatchDate(date);
   };
 
   const transformKitDetails = (kits) => {
@@ -346,14 +360,14 @@ function RetrievalManifestProvider({ addRim, rimId }) {
     const errors = {};
     if (!dispatchDate) errors.dispatchDate = 'Dispatch Date is required';
     if (!transactionDate) errors.transactionDate = 'Transaction Date is required';
-    if (!receiver) errors.receiver = 'Receiver is required';
-    if (!warehouse) errors.warehouse = 'Warehouse is required';
-    if (!receiver) errors.receiver = 'Sender is required';
-    if (!transactionNo) errors.transactionNo = 'Transaction No is required';
+    // if (!receiver) errors.receiver = 'Receiver is required';
+    // if (!warehouse) errors.warehouse = 'Warehouse is required';
+    // if (!receiver) errors.receiver = 'Sender is required';
+    // if (!transactionNo) errors.transactionNo = 'Transaction No is required';
     if (!transporterName) errors.transporterName = 'Transporter Name is required';
     if (!vehicleNo) errors.vehicleNo = 'Vehicle No is required';
     if (!driverNo) errors.driverNo = 'Driver Phone No is required';
-    if (kitDetails.length === 0) errors.kitDetails = 'Please add at least one Kit detail';
+    // if (kitDetails.length === 0) errors.kitDetails = 'Please add at least one Kit detail';
 
     if (Object.keys(errors).length === 0) {
       const retrievalManifestProviderDetailsDTO = transformKitDetails(kitDetails);
@@ -378,7 +392,7 @@ function RetrievalManifestProvider({ addRim, rimId }) {
       };
 
       axios
-        .put(`${process.env.REACT_APP_API_URL}/api/oem/createUpdateRetrievalManifest`, formData)
+        .put(`${process.env.REACT_APP_API_URL}/api/reportController/createUpdateRetrievalManifest`, formData)
         .then((response) => {
           if (response.data.statusFlag === 'Error') {
             showErrorToast(response.data.paramObjectsMap.errorMessage);
@@ -506,7 +520,7 @@ function RetrievalManifestProvider({ addRim, rimId }) {
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DesktopDatePicker
                   value={dispatchDate}
-                  onChange={(date) => setDispatchDate(dayjs(date).format('YYYY-MM-DD'))}
+                  onChange={handleDispatchDateChange}
                   slotProps={{
                     textField: { size: 'small', clearable: true }
                   }}
@@ -564,9 +578,10 @@ function RetrievalManifestProvider({ addRim, rimId }) {
                 placeholder=""
                 className="form-control form-sz mb-2"
                 style={{ height: 100 }}
-                name="receiverAddress"
+                name="senderAddress"
                 value={senderAddress}
-                disabled
+                onChange={handleInputChange}
+                // disabled
               />
             </div>
             <div className="col-lg-3 col-md-6 mb-2">
@@ -575,7 +590,14 @@ function RetrievalManifestProvider({ addRim, rimId }) {
               </label>
             </div>
             <div className="col-lg-3 col-md-6 mb-2">
-              <input placeholder="" className="form-control form-sz mb-2" name="receiverGst" type="text" value={receiverGst} disabled />
+              <input
+                placeholder=""
+                className="form-control form-sz mb-2"
+                name="receiverGst"
+                type="text"
+                value={receiverGst}
+                onChange={handleInputChange}
+              />
             </div>
             {/* <div className="col-lg-3 col-md-6">
           <label className="label mb-4">
@@ -615,7 +637,7 @@ function RetrievalManifestProvider({ addRim, rimId }) {
               </label>
             </div>
             <div className="col-lg-3 col-md-6 mb-2">
-              <select className="form-select form-sz w-full mb-2" onChange={handleWarehouseChange} value={warehouse}>
+              {/* <select className="form-select form-sz w-full mb-2" onChange={handleWarehouseChange} value={warehouse}>
                 <option value="" disabled>
                   Select an warehouse
                 </option>
@@ -626,7 +648,16 @@ function RetrievalManifestProvider({ addRim, rimId }) {
                     </option>
                   ))}
               </select>
-              {errors.warehouse && <span className="error-text mb-1">{errors.warehouse}</span>}
+              {errors.warehouse && <span className="error-text mb-1">{errors.warehouse}</span>} */}
+              <input
+                className="form-control form-sz mb-2"
+                name="warehouse"
+                type="text"
+                value={warehouse}
+                onInput={stringAndNoAndSpecialCharValidation}
+                onChange={handleInputChange}
+              />
+              {errors.warehouse && <span className="error-text">{errors.warehouse}</span>}
             </div>
             <div className="col-lg-3 col-md-6 mb-2">
               <label className="label">
@@ -638,9 +669,10 @@ function RetrievalManifestProvider({ addRim, rimId }) {
                 placeholder=""
                 className="form-control form-sz mb-2"
                 style={{ height: 100 }}
-                name="senderAddress"
+                name="receiverAddress"
                 value={receiverAddress}
-                disabled
+                onChange={handleInputChange}
+                // disabled
               />
             </div>
             <div className="col-lg-3 col-md-6 mb-2">
@@ -776,25 +808,25 @@ function RetrievalManifestProvider({ addRim, rimId }) {
                               {kit.hsnCode}
                             </td>
                           </tr>
-                          {kit.assets.map((asset, subIndex) => (
-                            <tr key={subIndex}>
-                              {/* <td className="text-center">{`${index + 1}.${
+                          {/* {kit.assets.map((asset, subIndex) => ( */}
+                          <tr key={index}>
+                            {/* <td className="text-center">{`${index + 1}.${
                             subIndex + 1
                           }`}</td> */}
-                              <td className="text-center">{asset.assetCodeId}</td>
-                              <td
-                                className="text-center"
-                                style={{
-                                  width: 150,
-                                  overflow: 'hidden',
-                                  textWrap: 'wrap'
-                                }}
-                              >
-                                {asset.assetName}
-                              </td>
-                              <td className="text-center">{asset.quantity}</td>
-                            </tr>
-                          ))}
+                            <td className="text-center">-</td>
+                            <td
+                              className="text-center"
+                              style={{
+                                width: 150,
+                                overflow: 'hidden',
+                                textWrap: 'wrap'
+                              }}
+                            >
+                              -
+                            </td>
+                            <td className="text-center">-</td>
+                          </tr>
+                          {/* ))} */}
                         </React.Fragment>
                       ))}
                     </tbody>
@@ -838,7 +870,16 @@ function RetrievalManifestProvider({ addRim, rimId }) {
                     </label>
                   </div>
                   <div className="col-lg-3 col-md-6 mb-2">
-                    <select className="form-select form-sz w-full mb-2" value={kitId} name="kitId" onChange={handleKitChange}>
+                    <input
+                      className="form-control form-sz mb-2"
+                      name="kitId"
+                      type="text"
+                      value={kitId}
+                      onInput={stringAndNoAndSpecialCharValidation}
+                      onChange={handleInputChange}
+                    />
+                    {errors.kitId && <span className="error-text">{errors.kitId}</span>}
+                    {/* <select className="form-select form-sz w-full mb-2" value={kitId} name="kitId" onChange={handleKitChange}>
                       <option value="" disabled>
                         Select a kit
                       </option>
@@ -849,7 +890,7 @@ function RetrievalManifestProvider({ addRim, rimId }) {
                           </option>
                         ))}
                     </select>
-                    {errors.kitId && <div className="error-text">{errors.kitId}</div>}
+                    {errors.kitId && <div className="error-text">{errors.kitId}</div>} */}
                   </div>
                   <div className="col-lg-3 col-md-6 mb-2">
                     <label className="label">
