@@ -5,6 +5,8 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import ArAging from 'views/Finance/taxInvoice/ArAging';
 import ArOutstanding from 'views/Finance/taxInvoice/ArOutstanding';
+// import PaymentReport from 'views/Finance/FinalReport/PaymentRegister';
+// import ReceiptReport from 'views/Finance/FinalReport/ReceiptRegister';
 // import DashboardNew from 'views/dashboardNew/dashboardNew';
 const Customer = Loadable(lazy(() => import('views/Finance/Customer')));
 const DocumentTypeMaster = Loadable(lazy(() => import('views/Finance/DocumentType/documentType')));
@@ -90,6 +92,8 @@ const CreatePartyMaster = Loadable(lazy(() => import('views/Finance/CreatePartyM
 const PartyLedger = Loadable(lazy(() => import('views/Finance/FinalReport/PartyLedger')));
 const LedgerReport = Loadable(lazy(() => import('views/Finance/FinalReport/LedgerReport')));
 const TrailBalance = Loadable(lazy(() => import('views/Finance/FinalReport/TrailBalance')));
+const PaymentReport = Loadable(lazy(() => import('views/Finance/FinalReport/PaymentRegister')));
+const ReceiptReport = Loadable(lazy(() => import('views/Finance/FinalReport/ReceiptRegister')));
 const MaterialIssueManifest = Loadable(lazy(() => import('views/docs/MaterialIssueManifest')));
 const PurchaseOrder = Loadable(lazy(() => import('views/docs/PurchaseOrder')));
 const InvoiceManifest = Loadable(lazy(() => import('views/docs/InvoiceManifest')));
@@ -418,6 +422,14 @@ const FinanceRoute = {
     {
       path: '/Finance/FinalReport/LedgerReport',
       element: <LedgerReport />
+    },
+    {
+      path: '/Finance/FinalReport/paymentReport',
+      element: <PaymentReport />
+    },
+    {
+      path: '/Finance/FinalReport/receiptReport',
+      element: <ReceiptReport />
     },
     {
       path: '/docs/MaterialIssueManifest',

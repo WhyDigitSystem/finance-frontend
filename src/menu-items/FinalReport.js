@@ -6,18 +6,18 @@ const icons = {
   IconCopyright
 };
 
-const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
+// const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
 
-// Mapping of screen names (from localStorage) to menu item IDs
-const screenMapping = {
-  'PARTY LEDGER': 'partyLedger',
-  'LEDGER REPORT': 'ledgerReport',
-  'TRAIL BALANCE': 'trailBalance',
-  'PROFIT': 'profit',
-  'BALANCESHEET': 'balanceSheet'
-};
+// // Mapping of screen names (from localStorage) to menu item IDs
+// const screenMapping = {
+//   'PARTY LEDGER': 'partyLedger',
+//   'LEDGER REPORT': 'ledgerReport',
+//   'TRAIL BALANCE': 'trailBalance',
+//   'PROFIT': 'profit',
+//   'BALANCESHEET': 'balanceSheet'
+// };
 
-const allowedScreenIds = allowedScreens.map((screen) => screenMapping[screen]).filter(Boolean);
+// const allowedScreenIds = allowedScreens.map((screen) => screenMapping[screen]).filter(Boolean);
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -62,8 +62,21 @@ const finalReport =  {
           title: 'Balance Sheet',
           type: 'item',
           url: '/finance/FinalReport/TrailBalance'
+        },
+        {
+          id: 'paymentRegister',
+          title: 'Payment Register',
+          type: 'item',
+          url: '/finance/FinalReport/PaymentReport'
+        },
+        {
+          id: 'receiptRegister',
+          title: 'Receipt Register',
+          type: 'item',
+          url: '/finance/FinalReport/ReceiptReport'
         }
-      ].filter((item) => allowedScreenIds.includes(item.id))
+      ]
+      // .filter((item) => allowedScreenIds.includes(item.id))
     }
   ]
 } 
