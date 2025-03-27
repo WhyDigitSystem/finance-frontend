@@ -385,7 +385,7 @@ const Payment = () => {
       if (result) {
         const listValueVO = result.paramObjectsMap.paymentVO[0];
         setEditId(row.original.id);
-
+        getGSTState(listValueVO.partyName);
         setFormData({
           paymentType: listValueVO.paymentType,
           docId: listValueVO.docId,
@@ -462,8 +462,15 @@ const Payment = () => {
   const handleSelectGst = (e) => {
     const value = e.target.value;
     const selectedEmp = gstState.find((emp) => emp.stateCode === value);
-
-    if (selectedEmp) {
+    if (selectedEmp.length === 1) {
+      setFormData((prevData) => ({
+        ...prevData,
+        gstState: selectedEmp.stateCode,
+        gstIn: selectedEmp.gstin,
+        currency: selectedEmp.currency,
+      }));
+    }
+    else if (selectedEmp) {
       setFormData((prevData) => ({
         ...prevData,
         gstState: selectedEmp.stateCode,

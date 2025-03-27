@@ -21,12 +21,12 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { MaterialReactTable } from 'material-react-table';
-import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
+import { fontSize } from '@mui/system';
 
 // import { getStateByCountry } from 'utils/common-functions';
 
-const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEdit, toEdit, handleRowEdit }) => {
+const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEdit, toEdit, handleRowEdit, enableEditing }) => {
   const [tableData, setTableData] = useState(data || []);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
@@ -74,19 +74,6 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
     }
   };
 
-  // useEffect(() => {
-  //   console.log('BlockEdit', blockEdit);
-  //   const fetchDataState = async () => {
-  //     try {
-  //       const stateData = await getStateByCountry(orgId, selectedCountry);
-  //       setStateVO(stateData);
-  //     } catch (error) {
-  //       console.error('Error fetching country data:', error);
-  //     }
-  //   };
-  //   fetchDataState();
-  // }, [selectedCountry]);
-
   const handleSaveRowEdits = async () => {
     if (!Object.keys(validationErrors).length) {
       const updatedRows = [...tableData];
@@ -104,16 +91,6 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
   };
 
   const customColumns = columns.map((column) => {
-    if (column.accessorKey && column.accessorKey.toLowerCase().includes('date')) {
-      return {
-        ...column,
-        Cell: ({ cell }) => {
-          const value = cell.getValue();
-          return value ? dayjs(value).format('DD-MM-YYYY') : '-';
-        }
-      };
-    }
-
     if (column.accessorKey === 'active') {
       return {
         ...column,
@@ -179,24 +156,96 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
     }
   });
 
+  const customLocalization = {
+    toggleDensity: "Wide View",
+  };
+
   return (
     <>
       <MaterialReactTable
         displayColumnDefOptions={{
-          'mrt-row-actions': {
+          "mrt-row-actions": {
             muiTableHeadCellProps: {
-              align: 'center'
+              align: "center",
+              sx: {
+                backgroundColor: "#2d3e98",
+                color: "white",
+                fontWeight: "bold",
+                // height: "40px",
+                borderBottom: "2px solid #D1D5DB",
+              },
             },
-            size: 120
-          }
+            size: 100,
+          },
         }}
-        columns={customColumns}
+
+        columns={customColumns.map((col) => ({
+          ...col,
+          muiTableHeadCellProps: {
+            sx: {
+              backgroundColor: "#2d3e98",
+              color: "white",
+              fontWeight: "bold",
+              fontSize: "13px",
+              textAlign: "left",
+              borderBottom: "2px solid #D1D5DB",
+            },
+          },
+          muiTableBodyCellProps: {
+            sx: {
+              fontSize: "14px",
+              color: "#374151",
+              textAlign: "left",
+              borderBottom: "1px solid #E5E7EB",
+            },
+          },
+        }))}
+
         data={tableData && tableData}
-        enableColumnOrdering
-        enableEditing
+        enableColumnOrdering={false}
+        enableColumnActions={false}
+        enableEditing={enableEditing}
         renderRowActions={renderRowActions}
-        renderTopToolbarCustomActions={() => <Stack direction="row" spacing={2} className="ml-5 "></Stack>}
+        initialState={{ density: "compact" }}
+        localization={customLocalization}
+        muiTableContainerProps={{
+          sx: {
+            background: "#FFFFFF",
+            borderRadius: "10px",
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+            border: "1px solid #E5E7EB",
+          },
+        }}
+        muiTableProps={{
+          sx: {
+            backgroundColor: "#FFFFFF",
+            borderRadius: "10px",
+            overflow: "hidden",
+            border: "1px solid #E5E7EB",
+          },
+        }}
+        muiTableBodyRowProps={{
+          sx: {
+            height: "42px",
+            "&:nth-of-type(even)": { backgroundColor: "#F9FAFB" },
+            "&:hover": {
+              backgroundColor: "#E5E7EB",
+              boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)",
+              transition: "0.2s ease-in-out",
+            },
+          },
+        }}
+        renderTopToolbarCustomActions={() => (
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{
+              marginLeft: "20px",
+            }}
+          ></Stack>
+        )}
       />
+
       {editingRow && (
         <Dialog open={editModalOpen} onClose={handleCancelRowEdits}>
           <DialogTitle textAlign="center">

@@ -3,8 +3,10 @@ import { Box, Button } from '@mui/material';
 import { download, generateCsv, mkConfig } from 'export-to-csv';
 import { MaterialReactTable } from 'material-react-table';
 import dayjs from 'dayjs';
-
-// CSV Configuration
+import {
+  Chip,
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 const csvConfig = mkConfig({
   fieldSeparator: ',',
   decimalSeparator: '.',
@@ -41,25 +43,123 @@ const CommonReportTable = ({ columns, data }) => {
     const csv = generateCsv(csvConfig)(data);
     download(csvConfig)(csv);
   };
+  const theme = useTheme();
 
+  const chipSX = {
+    height: 24,
+    padding: '0 6px'
+  };
+  const chipSuccessSX = {
+    ...chipSX,
+    color: theme.palette.success.dark,
+    backgroundColor: theme.palette.success.light,
+    height: 28
+  };
+
+  const chipErrorSX = {
+    ...chipSX,
+    color: theme.palette.orange.dark,
+    backgroundColor: theme.palette.orange.light,
+    marginRight: '5px'
+  };
   const formattedColumns = applyDateFormattingToColumns(columns);
+  const customColumns = columns.map((column) => {
+    if (column.accessorKey === 'active') {
+      return {
+        ...column,
 
+        Cell: ({ cell }) => (
+          <Chip label={cell.getValue() === true ? 'Active' : 'Inactive'} sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX} />
+        )
+      };
+    }
+    return column;
+  });
+  const customLocalization = {
+    toggleDensity: "Wide View",
+  };
   return (
     <MaterialReactTable
-      columns={formattedColumns} // Use formatted columns
-      data={data}
-      enableRowSelection={true} // Enable row selection
-      columnFilterDisplayMode="popover" // Display filter in popover
-      paginationDisplayMode="pages" // Use paginated view
-      positionToolbarAlertBanner="bottom" // Position toolbar alert at the bottom
+    displayColumnDefOptions={{
+      "mrt-row-actions": {
+        muiTableHeadCellProps: {
+          align: "center",
+          sx: {
+            backgroundColor: "#2d3e98",
+            color: "white",
+            fontWeight: "bold",
+            // height: "40px",
+            borderBottom: "2px solid #D1D5DB",
+          },
+        },
+        size: 100,
+      },
+    }}
+
+    columns={customColumns.map((col) => ({
+      ...col,
+      muiTableHeadCellProps: {
+        sx: {
+          backgroundColor: "#2d3e98",
+          color: "white",
+          fontWeight: "bold",
+          fontSize: "13px",
+          textAlign: "left",
+          borderBottom: "2px solid #D1D5DB",
+        },
+      },
+      muiTableBodyCellProps: {
+        sx: {
+          fontSize: "14px",
+          color: "#374151",
+          textAlign: "left",
+          borderBottom: "1px solid #E5E7EB",
+        },
+      },
+    }))}
+    data={data}
+    enableColumnOrdering={false}
+    enableColumnActions={false}
+    // enableEditing={enableEditing}
+    // renderRowActions={renderRowActions}
+    initialState={{ density: "compact" }}
+    localization={customLocalization}
+    muiTableContainerProps={{
+      sx: {
+        background: "#FFFFFF",
+        borderRadius: "10px",
+        boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
+        border: "1px solid #E5E7EB",
+      },
+    }}
+    muiTableProps={{
+      sx: {
+        backgroundColor: "#FFFFFF",
+        borderRadius: "10px",
+        overflow: "hidden",
+        border: "1px solid #E5E7EB",
+      },
+    }}
+    muiTableBodyRowProps={{
+      sx: {
+        height: "42px",
+        "&:nth-of-type(even)": { backgroundColor: "#F9FAFB" },
+        "&:hover": {
+          backgroundColor: "#E5E7EB",
+          boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)",
+          transition: "0.2s ease-in-out",
+        },
+      },
+    }}
       renderTopToolbarCustomActions={({ table }) => (
         <Box
-          sx={{
-            display: 'flex',
-            gap: '16px',
-            padding: '8px',
-            flexWrap: 'wrap'
-          }}
+        // <Stack
+        direction="row"
+        spacing={2}
+        sx={{
+          marginLeft: "20px",
+        }}
+      // </Stack>
         >
           <Button onClick={handleExportData} startIcon={<FileDownloadIcon />}>
             Export All Data
