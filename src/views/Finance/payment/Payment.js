@@ -219,6 +219,7 @@ const Payment = () => {
 
   const handleClear = () => {
     setFormData({
+      bankCashAcc:'',
       paymentType: 'BANK PAYMENT',
       partyName: '',
       partyCode: '',
