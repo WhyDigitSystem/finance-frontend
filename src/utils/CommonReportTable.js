@@ -58,8 +58,8 @@ const CommonReportTable = ({ columns, data,isListView  }) => {
 
   const chipErrorSX = {
     ...chipSX,
-    color: theme.palette.orange.dark,
-    backgroundColor: theme.palette.orange.light,
+    color: theme.palette.warning.dark,
+    backgroundColor: theme.palette.warning.light,
     marginRight: '5px'
   };
   const formattedColumns = applyDateFormattingToColumns(columns);
@@ -93,28 +93,44 @@ const CommonReportTable = ({ columns, data,isListView  }) => {
   //   // }
   //   return column;
   // });
-  const customColumns = formattedColumns.map((column) => {
-    if (column.accessorKey === 'active') {
+  const customColumns = columns.map((column) => {
+    if (column.accessorKey && column.accessorKey.toLowerCase().includes('date')) {
       return {
         ...column,
         Cell: ({ cell }) => {
           const value = cell.getValue();
-          return (
-            <Chip 
-              label={value === true ? 'Active' : value === false ? 'Inactive' : formatDate(value)}
-              sx={value === true ? chipSuccessSX : chipErrorSX} 
-            />
-          );
+          return value ? dayjs(value).format('DD-MM-YYYY') : '-';
         }
       };
-    } else if (column.accessorKey && column.accessorKey.toLowerCase().includes('date')) {
+    }
+
+    if (column.accessorKey === 'active') {
+      console.log('the columns are:', column);
+
       return {
         ...column,
-        Cell: ({ cell }) => formatDate(cell.getValue())
+        Cell: ({ cell }) => (
+          <Chip
+            label={cell.getValue() === 'Active' ? 'Active' : 'Inactive'}
+            sx={cell.getValue() === 'Active' ? chipSuccessSX : chipErrorSX}
+          />
+        )
       };
     }
+
+    if (column.accessorKey === 'closed') {
+      console.log('the columns are:', column);
+
+      return {
+        ...column,
+        Cell: ({ cell }) => (
+          <Chip label={cell.getValue() === 'Yes' ? 'Yes' : 'No'} sx={cell.getValue() === 'Yes' ? chipSuccessSX : chipErrorSX} />
+        )
+      };
+    }
+
     return column;
-  }); 
+  });
   const customLocalization = {
     toggleDensity: "Wide View",
   };
@@ -209,7 +225,7 @@ const CommonReportTable = ({ columns, data,isListView  }) => {
           }}
         // </Stack>
           >
-            <Button onClick={handleExportData} startIcon={<FileDownloadIcon />} color="#34449b" variant="outlined"
+            <Button onClick={handleExportData} startIcon={<FileDownloadIcon />} color="secondary" variant="outlined"
                   style={{ textTransform: 'none', padding: '4px 8px', marginTop: '6px' }}>
               Download
             </Button>
