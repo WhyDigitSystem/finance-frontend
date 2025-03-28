@@ -792,8 +792,7 @@ const Quotation = () => {
       const formDataWithOrgId = { ...formData, orgId };
 
       axios
-        .put(`${process.env.REACT_APP_API_URL}/api/quotation/createUpdateQuotatio`, formDataWithOrgId)
-
+        .put(`${process.env.REACT_APP_API_URL}/api/reportController/createUpdateQuotatio`, formDataWithOrgId)
         .then((response) => {
           console.log('Response:', response.data);
           console.log('Form Data:', formDataWithOrgId);
@@ -816,7 +815,7 @@ const Quotation = () => {
 
   const getAllQutationById = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/quotation/getQuotationByorgId?orgId=${orgId}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getQuotationByorgId?orgId=${orgId}`);
       if (response.status === 200) {
         setQuotationAdviceData(response.data.paramObjectsMap.quotationVO.reverse());
       } else {

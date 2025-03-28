@@ -5,7 +5,7 @@ import React from 'react';
 const QuotationList = ({ quotationAdviceData, onListView, setQuotationAdviceData, setEditMode }) => {
   const getQutationById = async (id) => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/quotation/getQutationById?id=${id}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getQutationById?id=${id}`);
       if (response.status === 200) {
         const quotationVO = response.data.paramObjectsMap.quotationVO;
 
