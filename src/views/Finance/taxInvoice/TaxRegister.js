@@ -234,7 +234,7 @@ function TaxRegister() {
   };
   return(
     <>
-      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
+      <div className="card w-full bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         {/* <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
@@ -245,25 +245,25 @@ function TaxRegister() {
             <div className="row">
               <div className="row">
               <div className="col-md-2
-               mb-3">
+               mb-2">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                   label="Date"
                 />
               </div>
-              <div className="col-md-2 mb-3">
+              <div className="col-md-2 mb-1">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />}
                   label="Customer"
                 />
               </div>
-              <div className="col-md-2 mb-3">
+              <div className="col-md-2 mb-1">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.branchCode}  onChange={handleCheckboxChange} name="branchCode" color="secondary" />}
                   label="Branch Code"
                 />
               </div>
-              <div className="col-md-2 mb-3">
+              <div className="col-md-2 mb-1">
                 <Button
                   onClick={handleProceed}
                   color="secondary"
@@ -334,7 +334,7 @@ function TaxRegister() {
               </div>
               )}
               {visibleSections.customer && ( 
-              <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
                   <InputLabel id="customer-label">Customer</InputLabel>
                   <Select
@@ -357,9 +357,9 @@ function TaxRegister() {
               </div>
               )}
               {(visibleSections.date || visibleSections.branchCode || visibleSections.customer) && (
-                <div className="col-md-3 mb-3">
+                <div className="col-md-3 mb-2">
                   <div className="row d-flex ml">
-                    <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
+                    <div className="d-flex flex-wrap justify-content-start mb-3 mt-1" style={{ marginBottom: '20px' }}>
                       <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
                       <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                     </div>
@@ -369,7 +369,7 @@ function TaxRegister() {
             </div>
           </>
         {listView && (
-          <div className="mt-4">
+          <div>
             <CommonReportTable data={rowData} columns={reportColumns} />
           </div>
         )}
