@@ -95,7 +95,12 @@ function CostRegister() {
     const value = e.target.value;
     console.log('Selected party value:', value);
     const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
-
+    if (value === "All") {
+      setFormData((prevData) => ({
+        ...prevData,
+        customer: "All",
+      }));
+    } else {
     if (selectedEmp) {
       console.log('Selected party:', selectedEmp);
       setFormData((prevData) => ({
@@ -106,6 +111,7 @@ function CostRegister() {
     } else {
       console.log('No party found with the given code:', value);
     }
+  }
   };
 
   const handleInputChange = (e) => {
@@ -117,11 +123,18 @@ function CostRegister() {
     }));
 
     if (name === 'branchCode') {
-      const selectedBranch = branchCodeList.find((br) => br.branchCode === value);
-      setFormData((prevData) => ({
-        ...prevData,
-        branchCode: selectedBranch ? selectedBranch.branchCode : ''
-      }));
+      if (value === "All") {
+        setFormData((prevData) => ({
+          ...prevData,
+          branchCode: "All",
+        }));
+      } else {
+        const selectedBranch = branchCodeList.find((br) => br.branchCode === value);
+        setFormData((prevData) => ({
+          ...prevData,
+          branchCode: selectedBranch ? selectedBranch.branchCode : '',
+        }));
+      }
     } else {
       let inputValue = value;
       if (type === 'text' || type === 'textarea') {
@@ -169,26 +182,20 @@ function CostRegister() {
     }
   };
   const reportColumns = [
-    // { accessorKey: 'branchCode', header: 'Branch', size: 140 },
-    { accessorKey: 'vid', header: 'Cost Invoice No', size: 140 },
-    { accessorKey: 'vdate', header: 'Date', size: 140 },
-    { accessorKey: 'supplierName', header: 'Party Name', size: 140 },
-    { accessorKey: 'supplierGstin', header: 'Reg In', size: 140 },
-    // { accessorKey: 'supplierBillNo', header: 'Supplier Bill No', size: 140 },
-    // { accessorKey: '', header: 'Supplier Bill Date', size: 140 },
-    { accessorKey: 'gstType', header: 'GST Type', size: 140 },
-    { accessorKey: 'gstPercent', header: 'GST Percent', size: 140 },
-    { accessorKey: 'billAmount', header: 'Bill Amount', size: 140 },
-    { accessorKey: 'tax', header: 'TAX', size: 140 },
-    { accessorKey: 'totalAmount', header: 'Charges', size: 140 },
-    { accessorKey: 'tds', header: 'TDS', size: 140 },
-    { accessorKey: 'partyPayable', header: 'Party Payable', size: 140 },
-    // { accessorKey: '', header: 'IGST - I/P', size: 140 },
-    // { accessorKey: '', header: 'CGST - I/P', size: 140 },
-    // { accessorKey: '', header: 'SGST - I/P', size: 140 },
-    { accessorKey: 'outputIgst', header: 'IGST - O/P', size: 140 },
-    { accessorKey: 'outputCgst', header: 'CGST - O/P', size: 140 },
-    { accessorKey: 'outputSgst', header: 'SGST - O/P', size: 140 }
+    { accessorKey: 'vid', header: 'Cost Invoice No', size: 80 },
+    { accessorKey: 'vdate', header: 'Date', size: 80 },
+    { accessorKey: 'supplierName', header: 'Party Name', size: 80 },
+    { accessorKey: 'supplierGstin', header: 'Reg In', size: 80 },
+    { accessorKey: 'gstType', header: 'GST Type', size: 80 },
+    { accessorKey: 'gstPercent', header: 'GST Percent', size: 80 },
+    { accessorKey: 'billAmount', header: 'Bill Amount', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'tax', header: 'TAX', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'totalAmount', header: 'Charges', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'tds', header: 'TDS', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'partyPayable', header: 'Party Payable', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'outputIgst', header: 'IGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'outputCgst', header: 'CGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'outputSgst', header: 'SGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  }
   ];
   const handleGo = async () => {
     const errors = {};
@@ -208,6 +215,7 @@ function CostRegister() {
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
+      setListView(false);
       try {
         let response;
         if (formData.fromDate && formData.toDate) {

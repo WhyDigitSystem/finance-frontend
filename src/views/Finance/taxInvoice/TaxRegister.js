@@ -92,7 +92,12 @@ function TaxRegister() {
     const value = e.target.value;
     console.log('Selected employeeCode value:', value);
     const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
-
+    if (value === "All") {
+      setFormData((prevData) => ({
+        ...prevData,
+        customer: "All",
+      }));
+    } else {
     if (selectedEmp) {
       console.log('Selected party:', selectedEmp);
       setFormData((prevData) => ({
@@ -103,6 +108,7 @@ function TaxRegister() {
     } else {
       console.log('No party found with the given code:', value);
     }
+  }
   };
 
   const handleInputChange = (e) => {
@@ -114,11 +120,18 @@ function TaxRegister() {
     }));
   
     if (name === 'branchCode') {
-      const selectedBranch = branchCodeList.find((br) => br.branchCode === value);
-      setFormData((prevData) => ({
-        ...prevData,
-        branchCode: selectedBranch ? selectedBranch.branchCode : '',
-      }));
+      if (value === "All") {
+        setFormData((prevData) => ({
+          ...prevData,
+          branchCode: "All",
+        }));
+      } else {
+        const selectedBranch = branchCodeList.find((br) => br.branchCode === value);
+        setFormData((prevData) => ({
+          ...prevData,
+          branchCode: selectedBranch ? selectedBranch.branchCode : '',
+        }));
+      }
     } else {
       let inputValue = value;
       if (type === 'text' || type === 'textarea') {
@@ -168,27 +181,15 @@ function TaxRegister() {
     }
   };
   const reportColumns = [
-    // { accessorKey: 'branchCode', header: 'Branch', size: 140 },
-    { accessorKey: 'jobOrderNo', header: 'Job No', size: 180 },
-    { accessorKey: 'vId', header: 'Invoice No', size: 180 },
-    { accessorKey: 'vDate', header: 'Date', size: 140 },
-    // { accessorKey: 'voucherNo', header: 'Voucher No', size: 180 },
-    // { accessorKey: 'voucherDate', header: 'Voucher Date', size: 140 },
-    // { accessorKey: '', header: 'Invoice Type', size: 140 },
-    // { accessorKey: 'partyType', header: 'Party Type', size: 140 },
+    { accessorKey: 'jobOrderNo', header: 'Job No', size: 100 },
+    { accessorKey: 'vId', header: 'Invoice No', size: 100 },
+    { accessorKey: 'vDate', header: 'Date', size: 100 },
     { accessorKey: 'billToParty', header: 'Billing Party', size: 240 },
-    // { accessorKey: 'controllingOff', header: 'Cont Office', size: 140 },
-    // { accessorKey: 'billCurrency', header: 'Currency', size: 140 },
-    // { accessorKey: 'billCurrencyRate', header: 'Ex. Rate', size: 140 },
-    { accessorKey: 'totalTaxAmountBC', header: 'Total Inv Amt', size: 140 },
-    { accessorKey: 'totalInvAmountLC', header: 'Total Inv Amt(LC)', size: 140 },
-    { accessorKey: 'totalTaxableAmountLC', header: 'Total Taxable Amt', size: 140 },
-    { accessorKey: 'gstType', header: 'GST Type', size: 140 },
-    { accessorKey: 'totalTaxAmountLC', header: 'GST Amount', size: 140 },
-    // { accessorKey: '', header: 'GST Amount(LC)', size: 140 },
-    // { accessorKey: 'roundOffAmountLC', header: 'Round Amount', size: 140 },
-    // { accessorKey: '', header: 'Amount', size: 140 },
-    // { accessorKey: '', header: 'Amount(LC)', size: 140 },
+    { accessorKey: 'totalTaxAmountBC', header: 'Total Inv Amt', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'totalInvAmountLC', header: 'Total Inv Amt(LC)', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'totalTaxableAmountLC', header: 'Total Taxable Amt', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'gstType', header: 'GST Type', size: 80 },
+    { accessorKey: 'totalTaxAmountLC', header: 'GST Amount', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
   ];
   const handleGo = async () => {
     const errors = {};
@@ -201,6 +202,7 @@ function TaxRegister() {
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
+      setListView(false);
       try {
         let response;
         if(formData.fromDate && formData.toDate){

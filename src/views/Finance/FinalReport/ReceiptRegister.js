@@ -124,13 +124,13 @@ function ReceiptReport() {
     }
   };
   const reportColumns = [
-    { accessorKey: 'docId', header: 'Doc No', size: 180 },
+    { accessorKey: 'docId', header: 'Doc No', size: 110 },
     { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
-    { accessorKey: 'subLedgerName', header: 'Sub Ledger Name', size: 180 },
-    { accessorKey: 'bankChargesAmt', header: 'Bank / Cash A/C', size: 180 },
-    { accessorKey: 'receiptAmount', header: 'Receipt Amount', size: 140 },
-    { accessorKey: 'bankChargesAmt', header: 'Bank Charges', size: 180 },
-    { accessorKey: 'tdsAmt', header: 'TDS Amount', size: 140 },
+    { accessorKey: 'subLedgerName', header: 'Sub Ledger Name', size: 110 },
+    { accessorKey: 'bankChargesAmt', header: 'Bank / Cash A/C', size: 110 },
+    { accessorKey: 'receiptAmount', header: 'Receipt Amount', size: 140, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'bankChargesAmt', header: 'Bank Charges', size: 110, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'tdsAmt', header: 'TDS Amount', size: 140, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
     { accessorKey: 'invoiceNo', header: 'Invoice No', size: 140 },
     { accessorKey: 'invoiceDate', header: 'Invoice Date', size: 140 },
     { accessorKey: 'refNo', header: 'Ref No', size: 140 },
@@ -138,10 +138,10 @@ function ReceiptReport() {
     // { accessorKey: 'mode', header: 'Mode', size: 140 },
     { accessorKey: 'chequeBank', header: 'Cheque Bank', size: 240 },
     { accessorKey: 'chQnNumber', header: 'Cheque No', size: 240 },
-    { accessorKey: 'arapAmt', header: 'Amount', size: 140 },
-    { accessorKey: 'chargableAmt', header: 'Chargeable Amount', size: 140 },
-    { accessorKey: 'arApOutstanding', header: 'OutStanding', size: 140 },
-    { accessorKey: 'arapSettled', header: 'Settled', size: 140 },
+    { accessorKey: 'arapAmt', header: 'Amount', size: 140, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'chargableAmt', header: 'Chargeable Amount', size: 140, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'arApOutstanding', header: 'OutStanding', size: 140, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'arapSettled', header: 'Settled', size: 140, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
   ];
   const handleGo = async () => {
     const errors = {};

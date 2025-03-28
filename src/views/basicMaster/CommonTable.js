@@ -109,8 +109,8 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
         ...column,
         Cell: ({ cell }) => (
           <Chip
-            label={cell.getValue() === 'Active' ? 'Active' : 'Inactive'}
-            sx={cell.getValue() === 'Active' ? chipSuccessSX : chipErrorSX}
+            label={cell.getValue() === true ? 'Active' : 'Inactive'}
+            sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX}
           />
         )
       };

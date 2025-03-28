@@ -1,5 +1,6 @@
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
 import { Box, Button } from '@mui/material';
+import { IconButton } from '@mui/material';
 import { download, generateCsv, mkConfig } from 'export-to-csv';
 import { MaterialReactTable } from 'material-react-table';
 import dayjs from 'dayjs';
@@ -7,6 +8,7 @@ import {
   Chip,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { textAlign } from '@mui/system';
 const csvConfig = mkConfig({
   fieldSeparator: ',',
   decimalSeparator: '.',
@@ -32,7 +34,7 @@ const applyDateFormattingToColumns = (columns) => {
   });
 };
 
-const CommonReportTable = ({ columns, data,isListView  }) => {
+const CommonReportTable = ({ columns, data, isListView}) => {
   const handleExportRows = (rows) => {
     const rowData = rows.map((row) => row.original);
     const csv = generateCsv(csvConfig)(rowData);
@@ -111,8 +113,8 @@ const CommonReportTable = ({ columns, data,isListView  }) => {
         ...column,
         Cell: ({ cell }) => (
           <Chip
-            label={cell.getValue() === 'Active' ? 'Active' : 'Inactive'}
-            sx={cell.getValue() === 'Active' ? chipSuccessSX : chipErrorSX}
+            label={cell.getValue() === true ? 'Active' : 'Inactive'}
+            sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX}
           />
         )
       };
@@ -139,11 +141,12 @@ const CommonReportTable = ({ columns, data,isListView  }) => {
       displayColumnDefOptions={{
         "mrt-row-actions": {
           muiTableHeadCellProps: {
-            align: "center",
+            // align: "center",
             sx: {
               backgroundColor: "#2d3e98",
               color: "white",
               fontWeight: "bold",
+              // textAlign: "center",
               // height: "40px",
               borderBottom: "2px solid #D1D5DB",
             },
@@ -159,16 +162,17 @@ const CommonReportTable = ({ columns, data,isListView  }) => {
             backgroundColor: "#2d3e98",
             color: "white",
             fontWeight: "bold",
+            textAlign: "center",
             fontSize: "13px",
-            textAlign: "left",
             borderBottom: "2px solid #D1D5DB",
           },
+          align: "center",
         },
         muiTableBodyCellProps: {
           sx: {
             fontSize: "14px",
             color: "#374151",
-            textAlign: "left",
+            textAlign: "center",
             borderBottom: "1px solid #E5E7EB",
           },
         },
@@ -180,7 +184,7 @@ const CommonReportTable = ({ columns, data,isListView  }) => {
       // enableEditing={enableEditing}
       // renderRowActions={renderRowActions}
       initialState={{
-        isFullScreen: isListView ? true : false,
+        isFullScreen: isListView,
         density: "compact",
       }}
       localization={customLocalization}
@@ -225,10 +229,26 @@ const CommonReportTable = ({ columns, data,isListView  }) => {
           }}
         // </Stack>
           >
-            <Button onClick={handleExportData} startIcon={<FileDownloadIcon />} color="secondary" variant="outlined"
-                  style={{ textTransform: 'none', padding: '4px 8px', marginTop: '6px' }}>
+            <IconButton
+              onClick={handleExportData}
+              sx={{
+                width: '30px',
+                height: '30px',
+                minWidth: '30px',
+                borderRadius: '4px',
+                padding: '0',
+                marginTop: '6px',
+                color: "white",
+                backgroundColor: "#34449b",
+                '&:hover': { backgroundColor: "#2d3e98" } // Optional hover effect
+              }}
+            >
+              <FileDownloadIcon />
+            </IconButton>
+            {/* <Button onClick={handleExportData} startIcon={<FileDownloadIcon />} variant="contained"
+                  style={{ textTransform: 'none', padding: '4px', marginTop: '6px', color:"white", backgroundColor:"#34449b" }}>
               Download
-            </Button>
+            </Button> */}
             {/* <Button
               disabled={table.getPrePaginationRowModel().rows.length === 0}
               onClick={() => handleExportRows(table.getPrePaginationRowModel().rows)}
