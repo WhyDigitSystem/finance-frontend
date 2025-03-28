@@ -28,7 +28,7 @@ function IssueManifestProvider({ addMim, mimId }) {
   const [sender, setSender] = useState('SCM AI-PACKS PVT LIMITED');
   const [warehouse, setWarehouse] = useState('');
   const [warehouseVO, setWarehouseVO] = useState([]);
-  const [senderAddress, setSenderAddress] = useState('');
+  // const [senderAddress, setSenderAddress] = useState('');
   const [receiver, setReceiver] = useState('');
   const [receiverName, setReceiverName] = useState('');
   const [receiverAddress, setReceiverAddress] = useState('');
@@ -43,7 +43,7 @@ function IssueManifestProvider({ addMim, mimId }) {
   const [hsnCode, setHsnCode] = useState('');
   const [errors, setErrors] = useState({});
   const [emitterCustomersVO, setEmitterCustomersVO] = useState([]);
-  //   const [senderVO, setSenderVO] = useState([]);
+  const [senderVO, setSenderVO] = useState([]);
   const [kitVO, setKitVO] = useState([]);
   const [selectedKit, setSelectedKit] = useState(null);
   const [openKitModal, setOpenKitModal] = useState(false);
@@ -58,13 +58,13 @@ function IssueManifestProvider({ addMim, mimId }) {
     }
     getCustomersList();
     getWarehouseData();
-    // getAllUsersData();
+    getAllUsersData();
     getAllKitData();
   }, []);
 
   const getAllIssueManifestProviderById = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/oem/getAllIssueManifestProviderById?id=${mimId}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getAllIssueManifestProviderById?id=${mimId}`);
       if (response.status === 200) {
         const editMimData = response.data.paramObjectsMap.IssueManifestProviderVO;
         setMimData(editMimData);
@@ -72,8 +72,9 @@ function IssueManifestProvider({ addMim, mimId }) {
         setTransactionDate(dayjs(editMimData.transactionDate));
         setDispatchDate(dayjs(editMimData.dispatchDate));
         setTransactionType(editMimData.transactionType);
-        setSenderAddress(editMimData.senderAddress);
+        // setSenderAddress(editMimData.senderAddress);
         setReceiverName(editMimData.receiver);
+        setReceiver(editMimData.receiver);
         setReceiverAddress(editMimData.receiverAddress);
         setReceiverGst(editMimData.receiverGst);
         setSender(editMimData.sender);
@@ -139,19 +140,18 @@ function IssueManifestProvider({ addMim, mimId }) {
     }
   };
 
-  //   const getAllUsersData = async () => {
-  //     try {
-  //       const response = await axios.get(
-  //         `${process.env.REACT_APP_API_URL}/api/company/getAllCompany`
-  //       );
 
-  //       if (response.status === 200) {
-  //         setSenderVO(response.data.paramObjectsMap.organizationVO);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //     }
-  //   };
+  const getAllUsersData = async () => {
+    try {
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/company/getAllCompany`);
+
+      if (response.status === 200) {
+        setSenderVO(response.data.paramObjectsMap.organizationVO);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const getAllKitData = async () => {
     try {
@@ -194,12 +194,11 @@ function IssueManifestProvider({ addMim, mimId }) {
 
     const selectedWarehouse = warehouseVO.find((warehouse) => warehouse.warehouseId === parseInt(selectedWarehouseId));
 
-    if (selectedWarehouse) {
-      const { address, city, state, pincode } = selectedWarehouse;
-      setSenderAddress(`${address}, ${city}, ${state} - ${pincode}`);
-    }
+    // if (selectedWarehouse) {
+    //   const { address, city, state, pincode } = selectedWarehouse;
+    //   setSenderAddress(`${address}, ${city}, ${state} - ${pincode}`);
+    // }
   };
-
   const handleKitChange = (event) => {
     const selectedKitNo = event.target.value;
     setKitId(selectedKitNo);
@@ -228,46 +227,43 @@ function IssueManifestProvider({ addMim, mimId }) {
   };
 
   const handleAddKitDetails = () => {
-    // Check if selectedKit and kitQty are provided
-    if (!selectedKit || !kitQty || !hsnCode) {
+    if (!kitId || !kitQty || !hsnCode) {
       setErrors({
-        kitId: selectedKit ? '' : 'Please select a kit',
+        kitId: kitId ? '' : 'Please select a kit',
         kitQty: kitQty ? '' : 'Please enter a kit quantity',
         hsnCode: hsnCode ? '' : 'Please enter a HSN Code'
       });
       return;
     }
-
     // Check for duplicate kit
-    const existingKit = kitDetails.find((kit) => kit.kitNo === selectedKit.kitNo);
-    if (existingKit) {
-      toast.error('This kit has already been added.');
-      return;
-    }
+    // const existingKit = kitDetails.find((kit) => kit.kitNo === selectedKit.kitNo);
+    // if (existingKit) {
+    //   toast.error('This kit has already been added.');
+    //   return;
+    // }
 
     // Create a new kit detail object
     const newKitDetail = {
-      kitNo: selectedKit.kitNo,
+      kitNo: kitId,
       kitQty,
-      kitDesc: selectedKit.kitDesc,
+      kitDesc: kitId,
       hsnCode,
-      assets: Object.values(selectedKit.kitAssetCategory)
+      // assets: kitId
+      assets: Object.values(kitId)
         .flat()
         .map((asset) => ({
-          assetCodeId: asset.assetCodeId,
-          assetName: asset.assetName,
-          quantity: asset.quantity * kitQty
+          assetCodeId: asset.kitId,
+          assetName: asset.kitId,
+          quantity: 1 * kitQty
         }))
     };
 
-    // Update state with the new kit details
     setKitDetails([...kitDetails, newKitDetail]);
     setOpenKitModal(false);
     setKitId('');
     setKitQty('');
     setHsnCode('');
     setErrors({});
-    // toast.success("Kit details added successfully.");
   };
 
   const handleDeleteKit = (kitIndex) => {
@@ -309,9 +305,9 @@ function IssueManifestProvider({ addMim, mimId }) {
       case 'sender':
         setSender(value);
         break;
-      case 'senderAddress':
-        setSenderAddress(value);
-        break;
+      // case 'senderAddress':
+      //   setSenderAddress(value);
+      //   break;
       case 'transactionDate':
         setTransactionDate(value);
         break;
@@ -323,6 +319,9 @@ function IssueManifestProvider({ addMim, mimId }) {
         break;
       case 'transporterName':
         setTransporterName(value);
+        break;
+      case 'kitId':
+        setKitId(value);
         break;
       case 'vehicleNo':
         setVehicleNo(value.toUpperCase());
@@ -347,7 +346,7 @@ function IssueManifestProvider({ addMim, mimId }) {
           assetCode: asset.assetCodeId,
           assetQty: asset.quantity,
           hsnCode: parseInt(hsnCode, 10),
-          //   id: index, // Using index as ID
+          id: index, // Using index as ID
           kitId: kitNo,
           kitName: kitDesc,
           kitQty: parseInt(kitQty, 10)
@@ -359,14 +358,15 @@ function IssueManifestProvider({ addMim, mimId }) {
   };
 
   const createUpdateIssueManifest = () => {
+    console.log('save');
     const errors = {};
 
     if (!dispatchDate) errors.dispatchDate = 'Dispatch Date is required';
     if (!transactionDate) errors.transactionDate = 'Transaction Date is required';
-    if (!sender) errors.sender = 'Sender is required';
-    if (!warehouse) errors.warehouse = 'Warehouse is required';
-    if (!receiver) errors.receiver = 'Receiver is required';
-    // if (!transactionNo) errors.transactionNo = "Transaction No is required";
+    // if (!sender) errors.sender = 'Sender is required';
+    // if (!warehouse) errors.warehouse = 'Warehouse is required';
+    // if (!receiver) errors.receiver = 'Receiver is required';
+    if (!transactionNo) errors.transactionNo = "Transaction No is required";
     if (!transactionNo) {
       errors.transactionNo = 'Transaction number is required';
     } else if (transactionNo.length < 7) {
@@ -381,8 +381,8 @@ function IssueManifestProvider({ addMim, mimId }) {
 
     if (Object.keys(errors).length === 0) {
       const issueManifestProviderDetailsDTO = transformKitDetails(kitDetails);
-
       const formData = {
+        createdBy: userName,
         amount,
         amountInWords,
         createdBy: userName,
@@ -394,7 +394,7 @@ function IssueManifestProvider({ addMim, mimId }) {
         receiverAddress,
         receiverGst,
         sender,
-        senderAddress,
+        // senderAddress,
         transactionDate: transactionDate.format('YYYY-MM-DD'),
         transactionNo,
         transactionType,
@@ -404,7 +404,7 @@ function IssueManifestProvider({ addMim, mimId }) {
       };
 
       axios
-        .put(`${process.env.REACT_APP_API_URL}/api/oem/createUpdateIssuemanifest`, formData)
+        .put(`${process.env.REACT_APP_API_URL}/api/reportController/createUpdateIssuemanifest`, formData)
         .then((response) => {
           if (response.data.statusFlag === 'Error') {
             showErrorToast(response.data.paramObjectsMap.errorMessage);
@@ -419,7 +419,7 @@ function IssueManifestProvider({ addMim, mimId }) {
             setAmount('');
             setAmountInWords('');
             setSender('');
-            setSenderAddress('');
+            // setSenderAddress('');
             setTransactionDate(null);
             setTransactionNo('');
             setTransactionType('');
@@ -442,6 +442,9 @@ function IssueManifestProvider({ addMim, mimId }) {
       setErrors(errors);
     }
   };
+  const handleDispatchDateChange = (date) => {
+    setDispatchDate(date);
+  };
 
   const handleMimClose = () => {
     if (
@@ -452,7 +455,7 @@ function IssueManifestProvider({ addMim, mimId }) {
       receiverAddress ||
       receiverGst ||
       sender ||
-      senderAddress ||
+      // senderAddress ||
       transactionDate ||
       transactionNo ||
       transactionType ||
@@ -473,7 +476,7 @@ function IssueManifestProvider({ addMim, mimId }) {
 
   return (
     <>
-      <div style={{ maxWidth: 1060 }} className="ml-auto me-auto">
+      <div className="ml-auto me-auto">
         <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
           <div>
             <ToastContainer />
@@ -534,7 +537,7 @@ function IssueManifestProvider({ addMim, mimId }) {
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <DesktopDatePicker
                   value={dispatchDate}
-                  onChange={(date) => setDispatchDate(dayjs(date).format('YYYY-MM-DD'))}
+                  onChange={handleDispatchDateChange}
                   slotProps={{
                     textField: { size: 'small', clearable: true }
                   }}
@@ -554,7 +557,7 @@ function IssueManifestProvider({ addMim, mimId }) {
             <div className="col-lg-3 col-md-6 mb-2 col-sm-4">
               <input className="form-control form-sz mb-2" name="transactionType" type="text" value={transactionType} disabled />
             </div>
-            <div className="col-lg-3 col-md-6 mb-2">
+            {/* <div className="col-lg-3 col-md-6 mb-2">
               <label className="label">
                 <span className={'label-text text-base-content'}>From Warehouse:</span>
               </label>
@@ -572,8 +575,8 @@ function IssueManifestProvider({ addMim, mimId }) {
                   ))}
               </select>
               {errors.warehouse && <span className="error-text mb-1">{errors.warehouse}</span>}
-            </div>
-            <div className="col-lg-3 col-md-6 mb-2">
+            </div> */}
+            {/* <div className="col-lg-3 col-md-6 mb-2">
               <label className="label">
                 <span className={'label-text text-base-content '}>Warehouse's Address:</span>
               </label>
@@ -587,26 +590,28 @@ function IssueManifestProvider({ addMim, mimId }) {
                 value={senderAddress}
                 disabled
               />
-            </div>
+            </div> */}
+            {/* <div className="col-lg-3 col-md-6 mb-2">
+              <label className="label">
+                <span className={'label-text text-base-content'}>Receiver:</span>
+              </label>
+            </div> */}
             <div className="col-lg-3 col-md-6 mb-2">
               <label className="label">
                 <span className={'label-text text-base-content'}>Receiver:</span>
               </label>
             </div>
             <div className="col-lg-3 col-md-6 mb-2">
-              <select className="form-select form-sz w-full mb-2" onChange={handleEmitterChange} value={receiverName}>
-                <option value="" disabled>
-                  Select an receiver
-                </option>
-                {emitterCustomersVO.length > 0 &&
-                  emitterCustomersVO.map((list) => (
-                    <option key={list.id} value={list.id}>
-                      {list.displayName}
-                    </option>
-                  ))}
-              </select>
+              <input
+                className="form-control form-sz mb-2"
+                name="receiver"
+                type="text"
+                value={receiver}
+                onChange={(e) => setReceiver(e.target.value)}
+              />
               {errors.receiver && <span className="error-text mb-1">{errors.receiver}</span>}
             </div>
+
             <div className="col-lg-3 col-md-6 mb-2">
               <label className="label">
                 <span className={'label-text text-base-content '}>Receiver's Address:</span>
@@ -619,16 +624,33 @@ function IssueManifestProvider({ addMim, mimId }) {
                 style={{ height: 100 }}
                 name="receiverAddress"
                 value={receiverAddress}
-                disabled
+                onChange={handleInputChange}
+              // disabled
               />
             </div>
+
+            {/* <div className="col-lg-3 col-md-6 mb-2">
+              <label className="label">
+                <span className="label-text text-base-content">Receiver's GST:</span>
+              </label>
+            </div>
+            <div className="col-lg-3 col-md-6 mb-2">
+              <input placeholder="" className="form-control form-sz mb-2" name="receiverGst" type="text" value={receiverGst} />
+            </div> */}
             <div className="col-lg-3 col-md-6 mb-2">
               <label className="label">
                 <span className="label-text text-base-content">Receiver's GST:</span>
               </label>
             </div>
             <div className="col-lg-3 col-md-6 mb-2">
-              <input placeholder="" className="form-control form-sz mb-2" name="receiverGst" type="text" value={receiverGst} disabled />
+              <input
+                placeholder=""
+                className="form-control form-sz mb-2"
+                name="receiverGst"
+                type="text"
+                value={receiverGst}
+                onChange={handleInputChange}
+              />
             </div>
             <div className="col-lg-3 col-md-6">
               <label className="label mb-2">
@@ -639,7 +661,7 @@ function IssueManifestProvider({ addMim, mimId }) {
               </label>
             </div>
             <div className="col-lg-3 col-md-6">
-              <input className="form-control form-sz mb-2" name="sender" type="text" value={sender} disabled />
+              <input className="form-control form-sz mb-2" name="sender" type="text" value={sender} />
               {/* <select
             className="form-select form-sz w-full mb-2"
             onChange={handleSenderChange}
@@ -687,7 +709,6 @@ function IssueManifestProvider({ addMim, mimId }) {
                 name="amountInWords"
                 type="text"
                 value={amountInWords}
-                disabled
               />
               {errors.amountInWords && <span className="error-text">{errors.amountInWords}</span>}
             </div>
@@ -824,25 +845,27 @@ function IssueManifestProvider({ addMim, mimId }) {
                               {kit.hsnCode}
                             </td>
                           </tr>
-                          {kit.assets.map((asset, subIndex) => (
-                            <tr key={subIndex}>
-                              {/* <td className="text-center">{`${index + 1}.${
+                          {/* {kit.assets.map((asset, subIndex) => ( */}
+                          <tr key={index}>
+                            {/* <td className="text-center">{`${index + 1}.${
                             subIndex + 1
                           }`}</td> */}
-                              <td className="text-center">{asset.assetCodeId}</td>
-                              <td
-                                className="text-center"
-                                style={{
-                                  width: 150,
-                                  overflow: 'hidden',
-                                  textWrap: 'wrap'
-                                }}
-                              >
-                                {asset.assetName}
-                              </td>
-                              <td className="text-center">{asset.quantity}</td>
-                            </tr>
-                          ))}
+                            <td className="text-center">-</td>
+                            <td
+                              className="text-center"
+                              style={{
+                                width: 150,
+                                overflow: 'hidden',
+                                textWrap: 'wrap'
+                              }}
+                            >
+                              -
+                              {/* {asset.assetName} */}
+                            </td>
+                            {/* <td className="text-center">{asset.quantity}</td> */}
+                            <td className="text-center">-</td>
+                          </tr>
+                          {/* ))} */}
                         </React.Fragment>
                       ))}
                     </tbody>
@@ -857,7 +880,7 @@ function IssueManifestProvider({ addMim, mimId }) {
               color="secondary"
               variant="contained"
               style={{ textTransform: 'none', padding: '4px 8px', marginTop: '6px' }}
-              // disabled={isLoading}
+            // disabled={isLoading}
             >
               {mimId ? 'Update' : 'Proceed'}
             </Button>
@@ -886,7 +909,16 @@ function IssueManifestProvider({ addMim, mimId }) {
                     </label>
                   </div>
                   <div className="col-lg-3 col-md-6 mb-2">
-                    <select className="form-select form-sz w-full mb-2" value={kitId} name="kitId" onChange={handleKitChange}>
+                    <input
+                      className="form-control form-sz mb-2"
+                      name="kitId"
+                      type="text"
+                      value={kitId}
+                      onInput={stringAndNoAndSpecialCharValidation}
+                      onChange={handleInputChange}
+                    />
+                    {errors.kitId && <span className="error-text">{errors.kitId}</span>}
+                    {/* <select className="form-select form-sz w-full mb-2" value={kitId} name="kitId" onChange={handleKitChange}>
                       <option value="" disabled>
                         Select a kit
                       </option>
@@ -897,7 +929,7 @@ function IssueManifestProvider({ addMim, mimId }) {
                           </option>
                         ))}
                     </select>
-                    {errors.kitId && <div className="error-text">{errors.kitId}</div>}
+                    {errors.kitId && <div className="error-text">{errors.kitId}</div>} */}
                   </div>
                   <div className="col-lg-3 col-md-6 mb-2">
                     <label className="label">

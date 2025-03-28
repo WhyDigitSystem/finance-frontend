@@ -61,7 +61,7 @@ function RetrievalManifestProvider({ addRim, rimId }) {
 
   const getRetrievalManifestProviderById = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/oem/getRetrievalManifestProviderById?id=${rimId}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getRetrievalManifestProviderById?id=${rimId}`);
       if (response.status === 200) {
         const editRimData = response.data.paramObjectsMap.retrievalManifestProviderVO;
         setRimData(editRimData);
@@ -378,11 +378,11 @@ function RetrievalManifestProvider({ addRim, rimId }) {
         driverPhoneNo: driverNo,
         retrievalManifestProviderDetailsDTO,
         orgId,
-        sender: receiver,
-        senderAddress: receiverAddress,
+        sender: sender,
+        senderAddress: senderAddress,
         senderGst: receiverGst,
-        receiver: sender,
-        receiverAddress: senderAddress,
+        receiver: receiver,
+        receiverAddress: receiverAddress,
         transactionDate: transactionDate.format('YYYY-MM-DD'),
         transactionNo,
         transactionType,
@@ -546,27 +546,13 @@ function RetrievalManifestProvider({ addRim, rimId }) {
               </label>
             </div>
             <div className="col-lg-3 col-md-6 mb-2">
-              {/* <select className="form-select form-sz w-full mb-2" onChange={handleEmitterChange} value={receiverName}>
-                <option value="" disabled>
-                  Select an sender
-                </option>
-                {emitterCustomersVO.length > 0 &&
-                  emitterCustomersVO.map((list) => (
-                    <option key={list.id} value={list.id}>
-                      {list.displayName}
-                    </option>
-                  ))}
-              </select>
-              {errors.receiver && <span className="error-text mb-1">{errors.receiver}</span>} */}
               <input
                 className="form-control form-sz mb-2"
-                name="receiverName"
+                name="sender"
                 type="text"
-                value={receiverName}
-                onInput={stringAndNoAndSpecialCharValidation}
+                value={sender}
                 onChange={handleInputChange}
               />
-              {errors.receiverName && <span className="error-text">{errors.receiverName}</span>}
             </div>
             <div className="col-lg-3 col-md-6 mb-2">
               <label className="label">
@@ -581,7 +567,7 @@ function RetrievalManifestProvider({ addRim, rimId }) {
                 name="senderAddress"
                 value={senderAddress}
                 onChange={handleInputChange}
-                // disabled
+              // disabled
               />
             </div>
             <div className="col-lg-3 col-md-6 mb-2">
@@ -672,7 +658,7 @@ function RetrievalManifestProvider({ addRim, rimId }) {
                 name="receiverAddress"
                 value={receiverAddress}
                 onChange={handleInputChange}
-                // disabled
+              // disabled
               />
             </div>
             <div className="col-lg-3 col-md-6 mb-2">
@@ -841,7 +827,7 @@ function RetrievalManifestProvider({ addRim, rimId }) {
               color="secondary"
               variant="contained"
               style={{ textTransform: 'none', padding: '4px 8px', marginTop: '6px' }}
-              // disabled={isLoading}
+            // disabled={isLoading}
             >
               {rimId ? 'Update' : 'Proceed'}
             </Button>

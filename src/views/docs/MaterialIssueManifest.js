@@ -4,6 +4,7 @@ import axios from 'axios';
 import { IoMdClose } from 'react-icons/io';
 import EditIcon from '@mui/icons-material/Edit';
 import { QRCodeSVG } from 'qrcode.react';
+import QRCode from 'qrcode.react';
 import { MaterialReactTable } from 'material-react-table';
 import GetAppIcon from '@mui/icons-material/GetApp';
 import Dialog from '@mui/material/Dialog';
@@ -12,6 +13,7 @@ import IconButton from '@mui/material/IconButton';
 import IssueManifestProvider from '../docs/IssueManifestProvider';
 import { Link } from 'react-router-dom';
 import { FaArrowCircleLeft } from 'react-icons/fa';
+import AddIcon from '@mui/icons-material/Add';
 
 export const MaterialIssueManifest = () => {
   const componentRef = useRef();
@@ -22,9 +24,9 @@ export const MaterialIssueManifest = () => {
   const [selectedRowId, setSelectedRowId] = useState(null);
   const [pdfData, setPdfData] = useState('');
   const [data, setData] = React.useState([]);
+  const [orgId, setOrgId] = React.useState(localStorage.getItem('orgId'));
   const [terms, setTerms] = React.useState([]);
   const [productDetails, setProductDetails] = React.useState([]);
-  const [orgId, setOrgId] = React.useState(localStorage.getItem('orgId'));
   const [openDialog, setOpenDialog] = useState(false);
   const userDetails = localStorage.getItem('userDetails');
 
@@ -33,24 +35,25 @@ export const MaterialIssueManifest = () => {
     getAllIssueManifestProvider();
   }, []);
 
-  const getAllDeclarationAndNotes = async () => {
+  const getAllIssueManifestProvider = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/oem/getAllDeclarationAndNotes`);
+      // const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/oem/getAllIssueManifestProvider`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getAllIssueManifestProviderForPendingIR?orgId=${orgId}`);
 
       if (response.status === 200) {
-        setTerms(response.data.paramObjectsMap.declarationAndNotesVO[0]);
+        setData(response.data.paramObjectsMap.IssueManifestProviderVO.reverse());
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const getAllIssueManifestProvider = async () => {
+  const getAllDeclarationAndNotes = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/oem/getAllIssueManifestProvider`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/oem/getAllDeclarationAndNotes`);
 
       if (response.status === 200) {
-        setData(response.data.paramObjectsMap.IssueManifestProviderVO.reverse());
+        setTerms(response.data.paramObjectsMap.declarationAndNotesVO[0]);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -85,6 +88,7 @@ export const MaterialIssueManifest = () => {
 
   const handlePrintWithWatermark = (watermarkText) => {
     setWatermark(watermarkText);
+    // Use a timeout to ensure the watermark state is updated before printing
     setTimeout(() => {
       handlePrint();
     }, 100);
@@ -198,7 +202,7 @@ export const MaterialIssueManifest = () => {
 
   const getAllIssueManifestProviderById = async (selectedRowId) => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/oem/getAllIssueManifestProviderById?id=${selectedRowId}`);
+      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getAllIssueManifestProviderById?id=${selectedRowId}`);
       if (response.status === 200) {
         const mimData = response.data.paramObjectsMap.IssueManifestProviderVO;
         setPdfData(mimData);
@@ -212,11 +216,11 @@ export const MaterialIssueManifest = () => {
         };
 
         const formattedData = `
-TransactionNo: ${concatenatedData.TransactionNo},
-TransactionDate: ${concatenatedData.TransactionDate},
-DispatchDate: ${concatenatedData.DispatchDate},
-Receiver: ${concatenatedData.Receiver}
-`;
+          TransactionNo: ${concatenatedData.TransactionNo},
+          TransactionDate: ${concatenatedData.TransactionDate},
+          DispatchDate: ${concatenatedData.DispatchDate},
+          Receiver: ${concatenatedData.Receiver}
+       `;
 
         setQrCodeValue(formattedData);
         console.log('THE QRCODE DATA IS:', formattedData);
@@ -226,6 +230,11 @@ Receiver: ${concatenatedData.Receiver}
     }
   };
 
+  // const handleBack = () => {
+  //   setAddMim(false);
+  //   setEditMim(false);
+  //   getAllIssueManifestProvider();
+  // };
   const handleBack = () => {
     setAddMim(false);
     setEditMim(false);
@@ -234,7 +243,7 @@ Receiver: ${concatenatedData.Receiver}
 
   return (
     <>
-      <div style={{ maxWidth: 1060 }} className="ml-auto me-auto">
+      <div className="ml-auto me-auto">
         <div>
           {(addMim && <IssueManifestProvider addMim={handleBack} />) ||
             (editMim && <IssueManifestProvider addMim={handleBack} mimId={selectedRowId} />) || (
@@ -407,38 +416,28 @@ Receiver: ${concatenatedData.Receiver}
                   <button
                     className="me-2 bg-blue inline-block rounded bg-primary h-fit px-6 pb-2 pt-2.5 text-xs font-medium leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
                     onClick={() => handlePrintWithWatermark('Consignee Copy')}
-                    style={{
-                      marginBottom: '20px'
-                    }}
+                    style={{ marginBottom: '20px' }}
                   >
                     Consignee Copy
                   </button>
                   <button
                     className="me-2 bg-blue inline-block rounded bg-primary h-fit px-6 pb-2 pt-2.5 text-xs font-medium leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
                     onClick={() => handlePrintWithWatermark('Transporter Copy')}
-                    style={{
-                      marginBottom: '20px'
-                    }}
+                    style={{ marginBottom: '20px' }}
                   >
                     Transporter Copy
                   </button>
                   <button
                     className="bg-blue inline-block rounded bg-primary h-fit px-6 pb-2 pt-2.5 text-xs font-medium leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
                     onClick={() => handlePrintWithWatermark('Consignor Copy')}
-                    style={{
-                      marginBottom: '20px'
-                    }}
+                    style={{ marginBottom: '20px' }}
                   >
                     Consignor Copy
                   </button>
                 </div>
 
                 <div className="">
-                  <IoMdClose
-                    onClick={() => setOpenDialog(false)}
-                    className="cursor-pointer mb-3"
-                    style={{ width: '32px', height: '32px' }}
-                  />
+                  <IoMdClose onClick={() => setOpenDialog(false)} className="cursor-pointer w-8 h-8 mb-3" />
                 </div>
               </div>
               <div className="print-scale" ref={componentRef}>
@@ -458,7 +457,8 @@ Receiver: ${concatenatedData.Receiver}
                           <strong>Material Issue Manifest</strong>
                         </h3>
                       </div>
-                      <div className="mr-3 mt-4">{qrCodeValue && <QRCodeSVG value={qrCodeValue} size={120} />}</div>
+                      {/* <div className="mr-3 mt-4">{qrCodeValue && <QRCodeSVG value={qrCodeValue} size={120} />}</div> */}
+                      <div className="mr-3 mt-4">{qrCodeValue && <QRCode value={qrCodeValue} size={120} />}</div>
                     </div>
 
                     <hr />
@@ -507,6 +507,7 @@ Receiver: ${concatenatedData.Receiver}
                               {pdfData.senderAddress}
                               <br />
                             </div>
+                            <div className="mb-2">{pdfData.senderGst}</div>
                           </div>
                         </div>
                       </div>
