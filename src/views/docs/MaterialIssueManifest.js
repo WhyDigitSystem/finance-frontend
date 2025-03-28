@@ -14,6 +14,8 @@ import IssueManifestProvider from '../docs/IssueManifestProvider';
 import { Link } from 'react-router-dom';
 import { FaArrowCircleLeft } from 'react-icons/fa';
 import AddIcon from '@mui/icons-material/Add';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 export const MaterialIssueManifest = () => {
   const componentRef = useRef();
@@ -62,36 +64,41 @@ export const MaterialIssueManifest = () => {
 
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
-    onBeforeGetContent: () => {
-      const printDateTimeElement = document.createElement('div');
-      printDateTimeElement.className = 'print-datetime';
-      printDateTimeElement.innerHTML = `
-        <div class="d-flex justify-content-between mt-5 mb-5">
-          <div class="ms-5">
-            Printed By: ${pdfData.sender}
-          </div>
-          <div class="me-5">
-            Printed On: ${new Date().toLocaleString()}
-          </div>
-        </div>
-      `;
-      componentRef.current.appendChild(printDateTimeElement);
-      return new Promise((resolve) => setTimeout(() => resolve(), 100));
+    onBeforeGetContent: async () => {
+      // Ensure watermark is rendered before capturing content
+      await new Promise(resolve => setTimeout(resolve, 50));
+      return true;
     },
     onAfterPrint: () => {
-      const printDateTimeElement = componentRef.current.querySelector('.print-datetime');
-      if (printDateTimeElement) {
-        componentRef.current.removeChild(printDateTimeElement);
-      }
+      // Reset watermark after printing (optional)
+      setWatermark('');
     }
   });
 
-  const handlePrintWithWatermark = (watermarkText) => {
+  const handleDownloadPdf = async (watermarkText) => {
     setWatermark(watermarkText);
-    // Use a timeout to ensure the watermark state is updated before printing
-    setTimeout(() => {
-      handlePrint();
-    }, 100);
+    await new Promise(resolve => setTimeout(resolve, 50));
+
+    const element = componentRef.current;
+    const canvas = await html2canvas(element);
+    const data = canvas.toDataURL('image/png');
+
+    const pdf = new jsPDF();
+    const imgProperties = pdf.getImageProperties(data);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
+
+    pdf.addImage(data, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`MaterialIssueManifest_${pdfData.transactionNo}_${watermarkText.replace(' ', '_')}.pdf`);
+
+    setWatermark('');
+  };
+
+  const handlePrintWithWatermark = async (watermarkText) => {
+    setWatermark(watermarkText);
+    // Wait for React to render the updated watermark
+    await new Promise(resolve => setTimeout(resolve, 50));
+    handlePrint(); // Trigger print
   };
 
   const handleDownloadClick = (row) => {
@@ -415,27 +422,26 @@ export const MaterialIssueManifest = () => {
                 <div className="mr-5">
                   <button
                     className="me-2 bg-blue inline-block rounded bg-primary h-fit px-6 pb-2 pt-2.5 text-xs font-medium leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
-                    onClick={() => handlePrintWithWatermark('Consignee Copy')}
+                    onClick={() => handleDownloadPdf('Consignee_Copy')}
                     style={{ marginBottom: '20px' }}
                   >
-                    Consignee Copy
+                    Download Consignee Copy
                   </button>
                   <button
                     className="me-2 bg-blue inline-block rounded bg-primary h-fit px-6 pb-2 pt-2.5 text-xs font-medium leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
-                    onClick={() => handlePrintWithWatermark('Transporter Copy')}
+                    onClick={() => handleDownloadPdf('Transporter_Copy')}
                     style={{ marginBottom: '20px' }}
                   >
-                    Transporter Copy
+                    Download Transporter Copy
                   </button>
                   <button
                     className="bg-blue inline-block rounded bg-primary h-fit px-6 pb-2 pt-2.5 text-xs font-medium leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
-                    onClick={() => handlePrintWithWatermark('Consignor Copy')}
+                    onClick={() => handleDownloadPdf('Consignor_Copy')}
                     style={{ marginBottom: '20px' }}
                   >
-                    Consignor Copy
+                    Download Consignor Copy
                   </button>
                 </div>
-
                 <div className="">
                   <IoMdClose onClick={() => setOpenDialog(false)} className="cursor-pointer w-8 h-8 mb-3" />
                 </div>
