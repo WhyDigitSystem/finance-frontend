@@ -193,7 +193,7 @@ const PurchaseOrderComponent = React.forwardRef((props, ref) => {
                   </Typography> */}
                   <StyledTextField
                     fullWidth
-                    sx={{ fontWeight: 'bold', mb: 1 }}
+                    sx={{ fontWeight: 'bold', mb: 1, ml: 5 }}
                     variant="outlined"
                     multiline
                     // disabled={editMode}
