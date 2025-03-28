@@ -75,7 +75,12 @@ function ReceiptReport() {
     const value = e.target.value;
     console.log('Selected employeeCode value:', value);
     const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
-
+    if (value === "All") {
+      setFormData((prevData) => ({
+        ...prevData,
+        customer: "All",
+      }));
+    } else {
     if (selectedEmp) {
       console.log('Selected party:', selectedEmp);
       setFormData((prevData) => ({
@@ -86,6 +91,7 @@ function ReceiptReport() {
     } else {
       console.log('No party found with the given code:', value);
     }
+  }
   };
 
   const handleInputChange = (e) => {
@@ -151,6 +157,7 @@ function ReceiptReport() {
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
+      setListView(false);
       try {
         let response;
         // if(formData.fromDate && formData.toDate){
@@ -292,7 +299,7 @@ function ReceiptReport() {
           </>
         {listView && (
           <div className="mt-4">
-            <CommonReportTable data={rowData} columns={reportColumns} />
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
           </div>
         )}
   </div>
