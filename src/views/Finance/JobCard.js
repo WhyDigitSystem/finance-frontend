@@ -166,6 +166,7 @@ export const JobCard = () => {
           expense: jnVo.expense || '',
           profit: jnVo.profit || '',
           product: jnVo.product || '',
+          service: jnVo.service || '',
           type: jnVo.type || '',
           source: jnVo.source || '',
           details: jnVo.details || '',
@@ -299,6 +300,7 @@ export const JobCard = () => {
         expense: formData.expense || 0,
         profit: formData.profit || 0,
         product: formData.product || '',
+        service: formData.service || '',
         type: formData.type || '',
         remarks: formData.remarks || '',
         refNo: formData.refNo || '',
@@ -701,6 +703,20 @@ export const JobCard = () => {
                   className="w-100"
                   error={!!fieldErrors.product}
                   helperText={fieldErrors.product}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="service"
+                  label="Service"
+                  variant="outlined"
+                  size="small"
+                  name="service"
+                  value={formData.service}
+                  onChange={handleInputChange}
+                  className="w-100"
+                  error={!!fieldErrors.service}
+                  helperText={fieldErrors.service}
                 />
               </div>
               <div className="col-md-3 mb-3">

@@ -453,7 +453,7 @@ function PartyLedger() {
         </>
         {listView && (
           <div className="mt-2">
-            <CommonReportTable data={rowData} columns={reportColumns} />
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
           </div>
         )}
       </div>
