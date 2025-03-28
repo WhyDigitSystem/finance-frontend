@@ -6,6 +6,26 @@ const icons = {
   IconKey
 };
 
+// const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
+
+// // Mapping of screen names (from localStorage) to menu item IDs
+// const screenMapping = {
+//   'PARTY': 'partyMaster',
+//   'CUSTOMER': 'customer',
+//   'VENDOR': 'vendor',
+//   'COA': 'group',
+//   'TDS': 'tdsMaster',
+//   'TAX': 'taxMaster',
+//   'HSN SAC CODE': 'hsnSacCode',
+//   'CHARGES': 'chargeTypeRequest',
+//   'COST CENTER': 'costCenter',
+//   'LIST OF VALUES': 'listOfValues',
+//   'PARTY MASTER': 'createPartyMaster',
+// };
+
+// // Convert allowed screen names to corresponding menu item IDs
+// const allowedScreenIds = allowedScreens.map((screen) => screenMapping[screen]).filter(Boolean);
+
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
 const finance = {
@@ -92,6 +112,7 @@ const finance = {
           url: '/finance/createPartyMaster'
         }
       ] // No filter applied
+      // .filter((item) => allowedScreenIds.includes(item.id))
     }
   ]
 };

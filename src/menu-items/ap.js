@@ -9,24 +9,24 @@ const icons = {
   IconFileInvoice
 };
 
-const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
+// const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
 
-// Mapping of screen names (from localStorage) to menu item IDs
-const screenMapping = {
-  'COST INVOICE': 'costInvoice',
-  'COST DEBIT NOTE': 'costDebitNote',
-  'R COST INVOICE': 'rcostInvoicegna',
-  'UR COST INVOICE': 'urcostInvoicegna',
-  'COST REGISTER': 'costRegister',
-  'AP BILL BALANCE': 'apBill',
-  'PAYMENT': 'payment',
-  'AP ADJUSTMENT OFFSET': 'apAdjustment',
-  'VENDOR LEDGER': 'vendorLedger',
-  'PAYMENT REGISTER': 'paymentRegister',
-};
+// // Mapping of screen names (from localStorage) to menu item IDs
+// const screenMapping = {
+//   'COST INVOICE': 'costInvoice',
+//   'COST DEBIT NOTE': 'costDebitNote',
+//   'R COST INVOICE': 'rcostInvoicegna',
+//   'UR COST INVOICE': 'urcostInvoicegna',
+//   'COST REGISTER': 'costRegister',
+//   'AP BILL BALANCE': 'apBill',
+//   'PAYMENT': 'payment',
+//   'AP ADJUSTMENT OFFSET': 'apAdjustment',
+//   'VENDOR LEDGER': 'vendorLedger',
+//   'PAYMENT REGISTER': 'paymentRegister',
+// };
 
-// Convert allowed screen names to corresponding menu item IDs
-const allowedScreenIds = allowedScreens.map((screen) => screenMapping[screen]).filter(Boolean);
+// // Convert allowed screen names to corresponding menu item IDs
+// const allowedScreenIds = allowedScreens.map((screen) => screenMapping[screen]).filter(Boolean);
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -103,7 +103,8 @@ const ap = {
           type: 'item',
           url: '/finance/paymentRegister/PaymentRegister'
         }
-      ].filter((item) => allowedScreenIds.includes(item.id))
+      ]
+      // .filter((item) => allowedScreenIds.includes(item.id))
     }
   ]
 };

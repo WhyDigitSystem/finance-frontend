@@ -115,10 +115,16 @@ const Breadcrumbs = ({ card, divider, icon, icons, maxItems, navigation, rightAl
       breadcrumbContent = (
         <Card
           sx={{
-            marginBottom: card === false ? 0 : theme.spacing(gridSpacing),
-            border: card === false ? 'none' : '1px solid',
+            height: 40, // Fix the height
+            display: "flex", // Align items properly
+            alignItems: "center", // Center items vertically
+            justifyContent: "space-between", // Keep content well-spaced
+            // marginBottom: card === false ? 0 : theme.spacing(gridSpacing),
+            marginBottom: 2,
+            border: card === false ? "none" : "1px solid",
             borderColor: theme.palette.primary[200] + 75,
-            background: card === false ? 'transparent' : theme.palette.background.default
+            background: card === false ? "transparent" : theme.palette.background.default,
+            padding: "0 10px" // Reduce extra padding
           }}
           {...others}
         >
@@ -130,16 +136,22 @@ const Breadcrumbs = ({ card, divider, icon, icons, maxItems, navigation, rightAl
               alignItems={rightAlign ? 'center' : 'flex-start'}
               spacing={1}
             >
-              {title && !titleBottom && (
+              {/* {title && !titleBottom && (
                 <Grid item>
                   <Typography variant="h3" sx={{ fontWeight: 500 }}>
                     {item.title}
                   </Typography>
                 </Grid>
-              )}
+              )} */}
               <Grid item>
                 <MuiBreadcrumbs
-                  sx={{ '& .MuiBreadcrumbs-separator': { width: 16, ml: 1.25, mr: 1.25 } }}
+                  // sx={{ '& .MuiBreadcrumbs-separator': { width: 16, ml: 1.25, mr: 1.25 } }}
+                  sx={{
+                    '& .MuiBreadcrumbs-separator': { width: 12, ml: 0.75, mr: 0.75 },
+                    padding: "2px 0",
+                    lineHeight: "1.2",
+                    minHeight: "24px"
+                  }}
                   aria-label="breadcrumb"
                   maxItems={maxItems || 8}
                   separator={separatorIcon}

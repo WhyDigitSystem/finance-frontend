@@ -31,6 +31,22 @@ const icons7 = {
   IconMapQuestion 
 };
 
+// const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
+
+// // Mapping of screen names (from localStorage) to menu item IDs
+// const screenMapping = {
+//   COUNTRY: 'country',
+//   STATE: 'state',
+//   CITY: 'city',
+//   CURRENCY: 'currency',
+//   REGION: 'region',
+//   DEPARTMENT: 'department',
+//   DESIGNATION: 'designation',
+//   EMPLOYEE: 'employee'
+// };
+
+// const allowedScreenIds = allowedScreens.map((screen) => screenMapping[screen]).filter(Boolean);
+
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
 const basicMaster = {
@@ -123,6 +139,7 @@ const basicMaster = {
         //   url: '/basicMaster/roles'
         // }
       ]
+      // .filter((item) => allowedScreenIds.includes(item.id))
     }
   ]
 };

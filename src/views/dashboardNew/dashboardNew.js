@@ -75,14 +75,39 @@ const StatCard = ({ statsPercentage, stats, title, monthlyValue, yearlyValue, co
           {showToggle && (
             <Grid item>
               <ButtonGroup size="small" variant="contained">
-                <Button sx={{ px: 1, minWidth: 'auto' }} onClick={() => setIsYearly(false)} color={!isYearly ? 'dark' : 'inherit'}>
-                  <span style={{ color: !isYearly ? 'white' : 'black' }}>Month</span>
+                <Button
+                  sx={{
+                    px: 1,
+                    minWidth: "auto",
+                    bgcolor: !isYearly ? "primary.main" : "grey.100",
+                    fontWeight: !isYearly ? "bold" : "normal",
+                    color: !isYearly ? "white" : "grey.700",
+                    "&:hover": {
+                      bgcolor: !isYearly ? "primary.dark" : "grey.400",
+                    },
+                  }}
+                  onClick={() => setIsYearly(false)}
+                >
+                  Month
                 </Button>
-                <Button sx={{ px: 1, minWidth: 'auto' }} onClick={() => setIsYearly(true)} color={isYearly ? 'dark' : 'inherit'}>
-                  <span style={{ color: isYearly ? 'white' : 'black' }}>Year</span>
+                <Button
+                  sx={{
+                    px: 1,
+                    minWidth: "auto",
+                    bgcolor: isYearly ? "primary.main" : "grey.300",
+                    fontWeight: isYearly ? "bold" : "normal",
+                    color: isYearly ? "white" : "black",
+                    "&:hover": {
+                      bgcolor: isYearly ? "primary.dark" : "grey.400",
+                    },
+                  }}
+                  onClick={() => setIsYearly(true)}
+                >
+                  Year
                 </Button>
               </ButtonGroup>
             </Grid>
+
           )}
         </Grid>
         <Typography variant="h5" mt={2}>
@@ -101,105 +126,101 @@ const StatCard = ({ statsPercentage, stats, title, monthlyValue, yearlyValue, co
   );
 };
 
-const TopCustomersChart = () => {
-  const data = {
-    labels: ['Customer A', 'Customer B', 'Customer C', 'Customer D', 'Customer E'],
-    datasets: [
-      {
-        label: 'Product X',
-        data: [5000, 7000, 6000, 4000, 8000],
-        backgroundColor: '#FF5733'
-      },
-      {
-        label: 'Product Y',
-        data: [4000, 5000, 7000, 3000, 9000],
-        backgroundColor: '#33B5E5'
-      },
-      {
-        label: 'Product Z',
-        data: [3000, 3000, 5000, 3000, 5000],
-        backgroundColor: '#33D68A'
-      }
-    ]
-  };
-
+const TopCustomersChart = ({ chartData }) => {
   const options = {
     responsive: true,
     plugins: {
-      legend: {
-        position: 'top'
-      }
+      legend: { position: "top" },
+      tooltip: {
+        callbacks: {
+          label: (tooltipItem) => {
+            let value = tooltipItem.raw; // Raw numeric value
+            return `₹${value.toLocaleString("en-IN")}`; // Format as INR
+          },
+        },
+      },
     },
     scales: {
+      x: {
+        ticks: {
+          autoSkip: false,
+          maxRotation: 45,
+          minRotation: 30,
+          font: {
+            size: 10,
+          },
+          callback: function (value) {
+            return value.length > 15 ? value.substring(0, 12) + "..." : value;
+          },
+        },
+      },
       y: {
-        beginAtZero: true
-      }
-    }
+        beginAtZero: true,
+        ticks: {
+          callback: function (value) {
+            return `₹${value.toLocaleString("en-IN")}`; // Format Y-axis labels as INR
+          },
+        },
+      },
+    },
   };
 
   return (
     <Card sx={{ p: 1, boxShadow: 3, borderRadius: 2 }}>
       <CardContent>
-        <Typography variant="h6">Top 5 Customers (Product-wise)</Typography>
-        <Bar data={data} options={options} />
+        <Typography variant="h6">Top 5 Customers</Typography>
+        {chartData && chartData.labels.length > 0 ? (
+          <Bar data={chartData} options={options} />
+        ) : (
+          <Typography>No Data Available</Typography>
+        )}
       </CardContent>
     </Card>
   );
 };
 
-const SalesDistributionChart = () => {
-  const data = {
-    labels: ['Product A', 'Product B', 'Product C', 'Product D', 'Product E'],
-    datasets: [
-      {
-        label: 'Sales',
-        data: [30, 25, 20, 15, 10],
-        backgroundColor: ['#FF5733', '#33B5E5', '#33D68A', '#FFC107', '#8E44AD']
-      }
-    ]
-  };
+const SalesDistributionChart = ({ loading, error, salesData }) => {
 
   const options = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
       legend: {
-        position: 'bottom',
+        position: "bottom",
         labels: {
           boxWidth: 12,
           padding: 10,
           usePointStyle: true,
-          font: {
-            size: 12
-          }
+          font: { size: 12 },
         },
-        align: 'start'
-      }
-    }
+        align: "start",
+      },
+      tooltip: {
+        callbacks: {
+          label: (tooltipItem) => {
+            let value = tooltipItem.raw;
+            return `₹${value.toLocaleString("en-IN")}`;
+          },
+        },
+      },
+    },
   };
 
   return (
-    <Card
-      sx={{
-        p: 3,
-        boxShadow: 3,
-        borderRadius: 2,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        maxWidth: '100%',
-        width: '100%',
-        height: '100%'
-      }}
-    >
-      <CardContent sx={{ width: '100%', height: '300px', alignItems: 'center' }}>
+    <Card sx={{ p: 3, boxShadow: 3, borderRadius: 2, width: "100%", height: "100%" }}>
+      <CardContent sx={{ width: "100%", height: "300px", display: "flex", flexDirection: "column", alignItems: "center" }}>
         <Typography variant="h6" textAlign="center" mb={2}>
           Sales Distribution
         </Typography>
-        <div style={{ position: 'relative', width: '100%', height: '100%', alignItems: 'center' }}>
-          <Pie data={data} options={options} />
-        </div>
+        {loading ? (
+          <Typography>Loading...</Typography>
+        ) : error ? (
+          <Typography color="error">{error}</Typography>
+        ) : (
+          <div style={{ position: "relative", width: "100%", height: "100%" }}>
+            <Pie data={salesData} options={options} />
+          </div>
+        )}
       </CardContent>
     </Card>
   );
@@ -455,6 +476,10 @@ const DashboardNew = () => {
   const [totalCostYear, setTotalCostYear] = useState(0);
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [chartData, setChartData] = useState(null);
+  const [salesData, setSalesData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const getTargetMonth = (isYearly) => {
     if (isYearly) return 'ALL';
@@ -492,6 +517,84 @@ const DashboardNew = () => {
     getDashboardCost();
   }, [getDashboardRevenue, getDashboardCost]);
 
+  useEffect(() => {
+    const fetchTopCustomerData = async () => {
+      const targetMonth = getTargetMonth(isYearly);
+
+      try {
+        const response = await apiCalls(
+          "get",
+          `/master/getMonthlyAndYearWiseData?orgId=${orgId}${targetMonth === "ALL" ? `&year=Year` : `&month=month`}`
+        );
+
+        if (response?.status && response?.paramObjectsMap?.partyMasterVO) {
+          const parties = response.paramObjectsMap.partyMasterVO || [];
+
+          const labels = parties.map((party) => party.partyName);
+          const amounts = parties.map((party) => parseFloat(party.amt || 0)); // Raw numeric values
+
+          setChartData({
+            labels,
+            datasets: [
+              {
+                label: "Total Amount (INR)",
+                data: amounts, // Use raw numeric values
+                backgroundColor: "#FF5733",
+              },
+            ],
+          });
+        } else {
+          setChartData(null);
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setChartData(null);
+      }
+    };
+
+    fetchTopCustomerData();
+  }, [orgId, isYearly]); // Re-fetch when `orgId` or `isYearly` changes
+
+
+  useEffect(() => {
+    const fetchSalesData = async () => {
+      const targetMonth = getTargetMonth(isYearly);
+
+      try {
+        const response = await apiCalls(
+          "get",
+          `/master/getSalesDistributionData?orgId=${orgId}${targetMonth === "ALL" ? `&year=Year` : `&month=month`}`
+        );
+
+        if (response?.status && response?.paramObjectsMap?.partyMasterVO) {
+          const sales = response.paramObjectsMap.partyMasterVO;
+
+          const labels = sales.map((item) => item.product);
+          const data = sales.map((item) => parseFloat(item.amt || 0));
+
+          setSalesData({
+            labels,
+            datasets: [
+              {
+                label: "Sales",
+                data,
+                backgroundColor: ["#FF5733", "#33B5E5", "#33D68A", "#FFC107", "#8E44AD"],
+              },
+            ],
+          });
+        } else {
+          setError("No data available");
+        }
+      } catch (err) {
+        setError("Error fetching data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchSalesData();
+  }, [orgId, isYearly]);
+
   // Update financial data dynamically
   const financialData = [
     { stats: 'ETH', statsPercentage: '+4.6%', title: 'Revenue', monthly: totalOrderYear, yearly: totalOrderYear },
@@ -519,10 +622,10 @@ const DashboardNew = () => {
         </Grid>
       ))}
       <Grid item xs={12} md={6}>
-        <TopCustomersChart />
+        <TopCustomersChart chartData={chartData} />
       </Grid>
       <Grid item xs={12} md={6}>
-        <SalesDistributionChart />
+        <SalesDistributionChart salesData={salesData} loading={loading} error={error} />
       </Grid>
       <Grid item xs={12} md={6}>
         <GSTRTable />

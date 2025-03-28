@@ -5,7 +5,7 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 
 // login option 3 routing
-const DashboardDefault = Loadable(lazy(() => import('views/dashboard/Default')));
+const DashboardDefault = Loadable(lazy(() => import('views/dashboardNew/dashboardNew')));
 const UserCreation = Loadable(lazy(() => import('views/admin/user-creation/UserCreation')));
 
 // ==============================|| AUTHENTICATION ROUTING ||============================== //

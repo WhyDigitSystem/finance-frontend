@@ -6,6 +6,29 @@ const icons = {
   IconKey
 };
 
+// const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
+
+// // Mapping of screen names (from localStorage) to menu item IDs
+// const screenMapping = {
+//   'EX RATES': 'daily',
+//   'CHART OF COST CENTER': 'chartOfCostCenter',
+//   'BRS OPENING': 'brsOpening',
+//   'FUND TRANSFER': 'fundTransfer',
+//   'GENERAL JOURNAL': 'generalJournal',
+//   'RECONCILE BANK': 'reconcile-bank',
+//   'RECONCILE CORP': 'reconcile-corp',
+//   'RECONCILE CASH': 'reconcile-cash',
+//   'PAYMENT VOUCHER': 'paymentVoucher',
+//   'ADJUSTMENT JOURNAL': 'adjustmentJournal',
+//   'JOB CARD': 'JobCard',
+//   'ARAP ADJUSTMENT OFFSET': 'AdjustmentOffset',
+//   'BANKING DEPOSIT': 'deposit',
+//   'BANKINGWITHDRAWAL': 'withdrawal',
+// };
+
+// // Convert allowed screen names to corresponding menu item IDs
+// const allowedScreenIds = allowedScreens.map((screen) => screenMapping[screen]).filter(Boolean);
+
 // Define the transaction menu without filtering
 const transactionChildren = [
   {
@@ -92,7 +115,8 @@ const transactionChildren = [
     type: 'item',
     url: '/finance/Withdrawal'
   }
-];
+]
+// .filter((item) => allowedScreenIds.includes(item.id))
 
 // Define the transaction menu
 const genTransaction = {
