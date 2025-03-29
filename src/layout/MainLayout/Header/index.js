@@ -25,6 +25,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
       <Box
         sx={{
           width: 228,
+          height: 40,
           display: 'flex',
           [theme.breakpoints.down('md')]: {
             width: 'auto'
@@ -75,7 +76,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
             marginBottom: '8px'
           }}
         ></span>
-        <h6>{localStorage.getItem('companyName')} (E-Books)</h6>
+        <h6>{localStorage.getItem('companyName')}</h6>
       </div>
       <NotificationSection />
       <GlobalSection />

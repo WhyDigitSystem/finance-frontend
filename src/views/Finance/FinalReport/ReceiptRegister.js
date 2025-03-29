@@ -131,23 +131,23 @@ function ReceiptReport() {
   };
   const reportColumns = [
     { accessorKey: 'docId', header: 'Doc No', size: 110 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'docDate', header: 'Doc Date', size: 100 },
     { accessorKey: 'subLedgerName', header: 'Sub Ledger Name', size: 110 },
     { accessorKey: 'bankChargesAmt', header: 'Bank / Cash A/C', size: 110 },
-    { accessorKey: 'receiptAmount', header: 'Receipt Amount', size: 140, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'receiptAmount', header: 'Receipt Amount', size: 100, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
     { accessorKey: 'bankChargesAmt', header: 'Bank Charges', size: 110, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'tdsAmt', header: 'TDS Amount', size: 140, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'invoiceNo', header: 'Invoice No', size: 140 },
-    { accessorKey: 'invoiceDate', header: 'Invoice Date', size: 140 },
-    { accessorKey: 'refNo', header: 'Ref No', size: 140 },
-    { accessorKey: 'refDate', header: 'Ref Date', size: 140 },
-    // { accessorKey: 'mode', header: 'Mode', size: 140 },
-    { accessorKey: 'chequeBank', header: 'Cheque Bank', size: 240 },
-    { accessorKey: 'chQnNumber', header: 'Cheque No', size: 240 },
-    { accessorKey: 'arapAmt', header: 'Amount', size: 140, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'chargableAmt', header: 'Chargeable Amount', size: 140, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'arApOutstanding', header: 'OutStanding', size: 140, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'arapSettled', header: 'Settled', size: 140, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'tdsAmt', header: 'TDS Amount', size: 100, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'invoiceNo', header: 'Invoice No', size: 100 },
+    { accessorKey: 'invoiceDate', header: 'Invoice Date', size: 100 },
+    // { accessorKey: 'refNo', header: 'Ref No', size: 100 },
+    // { accessorKey: 'refDate', header: 'Ref Date', size: 100 },
+    // { accessorKey: 'mode', header: 'Mode', size: 100 },
+    { accessorKey: 'chequeBank', header: 'Cheque Bank', size: 200 },
+    { accessorKey: 'chQnNumber', header: 'Cheque No', size: 200 },
+    { accessorKey: 'arapAmt', header: 'Amount', size: 100, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'chargableAmt', header: 'Chargeable Amount', size: 100, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'arApOutstanding', header: 'OutStanding', size: 100, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'arapSettled', header: 'Settled', size: 100, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
   ];
   const handleGo = async () => {
     const errors = {};
@@ -209,13 +209,13 @@ function ReceiptReport() {
                   label="Date"
                 />
               </div>
-              <div className="col-md-2 mb-3">
+              <div className="col-md-2 mb-1">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />}
                   label="Customer"
                 />
               </div>
-              <div className="col-md-2 mb-3">
+              <div className="col-md-2 mb-1">
                 <Button
                   onClick={handleProceed}
                   color="secondary"
@@ -263,7 +263,7 @@ function ReceiptReport() {
                 </>
               )}
               {visibleSections.customer && ( 
-              <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
                   <InputLabel id="customer-label">Customer</InputLabel>
                   <Select
@@ -286,7 +286,7 @@ function ReceiptReport() {
               </div>
               )}
               {(visibleSections.date || visibleSections.customer) && (
-                <div className="col-md-3 mb-3">
+                <div className="col-md-3 mb-2">
                   <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
                       <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
@@ -298,7 +298,7 @@ function ReceiptReport() {
             </div>
           </>
         {listView && (
-          <div className="mt-4">
+          <div>
             <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
           </div>
         )}

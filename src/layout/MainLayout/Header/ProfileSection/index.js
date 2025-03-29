@@ -88,46 +88,57 @@ const ProfileSection = () => {
     <>
       <Chip
         sx={{
-          height: '48px',
-          alignItems: 'center',
-          borderRadius: '27px',
-          transition: 'all .2s ease-in-out',
+          height: "40px", // Reduced height
+          alignItems: "center",
+          borderRadius: "20px", // Adjusted for rounded edges
+          transition: "all .2s ease-in-out",
+          color: theme.palette.primary.light,
           borderColor: theme.palette.primary.light,
           backgroundColor: theme.palette.primary.light,
-          '&[aria-controls="menu-list-grow"], &:hover': {
+          "&[aria-controls='menu-list-grow'], &:hover": {
             borderColor: theme.palette.primary.main,
             background: `${theme.palette.primary.main}!important`,
             color: theme.palette.primary.light,
-            '& svg': {
-              stroke: theme.palette.primary.light
-            }
+            "& svg": {
+              stroke: theme.palette.primary.light,
+            },
           },
-          '& .MuiChip-label': {
-            lineHeight: 0
-          }
+          "& .MuiChip-label": {
+            lineHeight: 0,
+          },
+          padding: "2px 8px", // Adjusted padding
         }}
         icon={
           <Avatar
-            src={User1}
             sx={{
-              ...theme.typography.mediumAvatar,
-              margin: '8px 0 8px 8px !important',
-              cursor: 'pointer'
+              backgroundColor: theme.palette.secondary.main, // Different background color
+              fontSize: "16px", // Reduced font size
+              width: "35px", // Smaller size
+              height: "35px",
+              fontWeight: "bold",
+              border: "2px solid white", // White border for subtle definition
+              boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.15)", // Softer shadow
             }}
-            ref={anchorRef}
-            aria-controls={open ? 'menu-list-grow' : undefined}
-            aria-haspopup="true"
-            color="inherit"
+          >
+            {localStorage.getItem("userName")?.charAt(0) || "U"}
+          </Avatar>
+        }
+        label={
+          <IconSettings
+            stroke={1.5}
+            size="1.5rem" // Reduced icon size
+            color={theme.palette.primary.main}
           />
         }
-        label={<IconSettings stroke={1.5} size="1.5rem" color={theme.palette.primary.main} />}
         variant="outlined"
         ref={anchorRef}
-        aria-controls={open ? 'menu-list-grow' : undefined}
+        aria-controls={open ? "menu-list-grow" : undefined}
         aria-haspopup="true"
         onClick={handleToggle}
         color="primary"
       />
+
+
       <Popper
         placement="bottom-end"
         open={open}

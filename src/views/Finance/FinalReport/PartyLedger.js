@@ -283,20 +283,20 @@ function PartyLedger() {
           <div className="row mb-2">
             <div
               className="col-md-2
-               mb-3"
+               mb-2"
             >
               <FormControlLabel
                 control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                 label="Date"
               />
             </div>
-            <div className="col-md-2 mb-3">
+            <div className="col-md-2 mb-1">
               <FormControlLabel
                 control={<Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />}
                 label="Party Type"
               />
             </div>
-            <div className="col-md-2 mb-3">
+            <div className="col-md-2 mb-1">
               <FormControlLabel
                 control={<Checkbox checked={selectedSections.branch} onChange={handleCheckboxChange} name="branch" color="secondary" />}
                 label="Branch"
@@ -310,7 +310,7 @@ function PartyLedger() {
                 label="With Details"
               />
             </div> */}
-            <div className="col-md-2 mb-3">
+            <div className="col-md-2 mb-1">
               <Button
                 onClick={handleProceed}
                 color="secondary"
@@ -397,7 +397,7 @@ function PartyLedger() {
                     {fieldErrors.partyType && <FormHelperText>{fieldErrors.partyType}</FormHelperText>}
                   </FormControl>
                 </div>
-                <div className="col-md-3 mb-3">
+                <div className="col-md-3 mb-2">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.partyName}>
                     <InputLabel id="partyName-label">Party Name</InputLabel>
                     <Select
@@ -440,7 +440,7 @@ function PartyLedger() {
               </div>
             )} */}
             {(visibleSections.date || visibleSections.branch || visibleSections.customer) && (
-              <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-2">
                 <div className="row d-flex ml">
                   <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
                     <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
@@ -452,7 +452,7 @@ function PartyLedger() {
           </div>
         </>
         {listView && (
-          <div className="mt-2">
+          <div>
             <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
           </div>
         )}

@@ -212,13 +212,13 @@ function PaymentReport() {
                   label="Date"
                 />
               </div>
-              <div className="col-md-2 mb-3">
+              <div className="col-md-2 mb-1">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.vendor} onChange={handleCheckboxChange} name="vendor" color="secondary" />}
                   label="Vendor"
                 />
               </div>
-              <div className="col-md-2 mb-3">
+              <div className="col-md-2 mb-1">
                 <Button
                   onClick={handleProceed}
                   color="secondary"
@@ -266,7 +266,7 @@ function PaymentReport() {
                 </>
               )}
               {visibleSections.vendor && ( 
-              <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.vendor}>
                   <InputLabel id="vendor-label">Vendor</InputLabel>
                   <Select
@@ -289,7 +289,7 @@ function PaymentReport() {
               </div>
               )}
               {(visibleSections.date || visibleSections.vendor) && (
-                <div className="col-md-3 mb-3">
+                <div className="col-md-3 mb-2">
                   <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
                       <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
@@ -301,7 +301,7 @@ function PaymentReport() {
             </div>
           </>
         {listView && (
-          <div className="mt-4">
+          <div>
             <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
           </div>
         )}

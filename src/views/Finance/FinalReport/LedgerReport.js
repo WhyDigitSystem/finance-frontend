@@ -252,13 +252,13 @@ function TaxRegister() {
             <div className="row">
               <div className="row">
               <div className="col-md-2
-               mb-3">
+               mb-2">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                   label="Date"
                 />
               </div>
-              <div className="col-md-2 mb-3">
+              <div className="col-md-2 mb-1">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.accountName} onChange={handleCheckboxChange} name="accountName" color="secondary" />}
                   label="Account Name"
@@ -270,13 +270,13 @@ function TaxRegister() {
                   label="With Details"
                 />
               </div> */}
-              <div className="col-md-2 mb-3">
+              <div className="col-md-2 mb-1">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.branchCode}  onChange={handleCheckboxChange} name="branchCode" color="secondary" />}
                   label="Branch Code"
                 />
               </div>
-              <div className="col-md-2 mb-3">
+              <div className="col-md-2 mb-1">
                 <Button
                   onClick={handleProceed}
                   color="secondary"
@@ -367,7 +367,7 @@ function TaxRegister() {
               </div>
               )} */}
               {visibleSections.branchCode && ( 
-              <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchCode}>
                   <InputLabel id="branchCode-label">Branch Code</InputLabel>
                   <Select
@@ -390,7 +390,7 @@ function TaxRegister() {
               </div>
               )}
               {(visibleSections.date || visibleSections.accountName || visibleSections.branchCode) && (
-                <div className="col-md-3 mb-3">
+                <div className="col-md-3 mb-2">
                   <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
                       <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
@@ -402,7 +402,7 @@ function TaxRegister() {
             </div>
           </>
         {listView && (
-          <div className="mt-4">
+          <div>
             <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
           </div>
         )}

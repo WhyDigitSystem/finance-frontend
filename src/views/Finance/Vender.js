@@ -42,6 +42,7 @@ export const Vender = () => {
   const [formData, setFormData] = useState({
     active: true,
     vendorName: '',
+    shortName: '',
     vendorCode: '',
     gstIn: '',
     panNo: '',
@@ -67,6 +68,7 @@ export const Vender = () => {
   const listViewColumns = [
     { accessorKey: 'partyCode', header: 'Vendor Code', size: 140 },
     { accessorKey: 'partyName', header: 'Vendor Name', size: 140 },
+    { accessorKey: 'partyShortName', header: 'Short Name', size: 140 },
     { accessorKey: 'gstIn', header: 'Reg No', size: 140 },
     { accessorKey: 'panNo', header: 'Pan No', size: 140 },
     // { accessorKey: 'creditLimit', header: 'Credit Limit', size: 140 },
@@ -86,6 +88,7 @@ export const Vender = () => {
   const [fieldErrors, setFieldErrors] = useState({
     vendorCode: '',
     vendorName: '',
+    shortName: '',
     gstIn: '',
     panNo: '',
     creditLimit: '',
@@ -284,6 +287,7 @@ export const Vender = () => {
 
         setFormData({
           vendorName: vendorData.partyName,
+          shortName: vendorData.partyShortName,
           vendorCode: vendorData.partyCode,
           gstIn: vendorData.gstIn,
           panNo: vendorData.panNo,
@@ -464,6 +468,7 @@ export const Vender = () => {
     setEditId('');
     setFormData({
       vendorName: '',
+      shortName: '',
       vendorCode: '',
       gstIn: '',
       panNo: '',
@@ -478,6 +483,7 @@ export const Vender = () => {
     });
     setFieldErrors({
       vendorName: '',
+      shortName: '',
       vendorCode: '',
       gstIn: '',
       panNo: '',
@@ -920,6 +926,7 @@ export const Vender = () => {
       const saveData = {
         ...(editId && { id: editId }),
         vendorName: formData.vendorName,
+        shortName: formData.shortName,
         vendorCode: formData.vendorCode,
         gstIn: formData.gstIn,
         panNo: formData.panNo,
@@ -1026,6 +1033,19 @@ export const Vender = () => {
                   onChange={handleInputChange}
                   // error={fieldErrors.vendorCode}
                   // helperText={fieldErrors.vendorCode}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="shortName"
+                  fullWidth
+                  name="shortName"
+                  label="Short Name"
+                  size="small"
+                  value={formData.shortName}
+                  onChange={handleInputChange}
+                  error={fieldErrors.shortName}
+                  helperText={fieldErrors.shortName}
                 />
               </div>
               <div className="col-md-3 mb-3">

@@ -134,8 +134,8 @@ const TopCustomersChart = ({ chartData }) => {
       tooltip: {
         callbacks: {
           label: (tooltipItem) => {
-            let value = tooltipItem.raw; // Raw numeric value
-            return `₹${value.toLocaleString("en-IN")}`; // Format as INR
+            let value = tooltipItem.raw;
+            return `₹${value.toLocaleString("en-IN")}`;
           },
         },
       },
@@ -149,16 +149,8 @@ const TopCustomersChart = ({ chartData }) => {
           font: {
             size: 10,
           },
-          callback: function (value) {
-            return value.length > 15 ? value.substring(0, 12) + "..." : value;
-          },
-        },
-      },
-      y: {
-        beginAtZero: true,
-        ticks: {
-          callback: function (value) {
-            return `₹${value.toLocaleString("en-IN")}`; // Format Y-axis labels as INR
+          callback: function (value, index) {
+            return index + 1; // Display only numbers 1-5
           },
         },
       },
@@ -497,7 +489,7 @@ const DashboardNew = () => {
     } catch (error) {
       console.error('Error fetching dashboard revenue:', error);
     }
-  }, [finYear, orgId, isYearly]); // Depend on `isYearly`
+  }, [finYear, orgId, isYearly]);
 
   const getDashboardCost = useCallback(async () => {
     try {
@@ -510,7 +502,7 @@ const DashboardNew = () => {
     } catch (error) {
       console.error('Error fetching dashboard cost:', error);
     }
-  }, [finYear, orgId, isYearly]); // Depend on `isYearly`
+  }, [finYear, orgId, isYearly]);
 
   useEffect(() => {
     getDashboardRevenue();
@@ -528,18 +520,34 @@ const DashboardNew = () => {
         );
 
         if (response?.status && response?.paramObjectsMap?.partyMasterVO) {
-          const parties = response.paramObjectsMap.partyMasterVO || [];
+          let parties = response.paramObjectsMap.partyMasterVO || [];
 
-          const labels = parties.map((party) => party.partyName);
-          const amounts = parties.map((party) => parseFloat(party.amt || 0)); // Raw numeric values
+          parties = parties
+            .map((party, index) => ({
+              name: `${index + 1}. ${party.partyName}`, // Prefix with numbers 1-5
+              amount: parseFloat(party.amt || 0) / 100000,
+            }))
+            .sort((a, b) => b.amount - a.amount)
+            .slice(0, 5); // Limit to top 5 customers
+
+          const labels = parties.map((party) => party.name);
+          const amounts = parties.map((party) => party.amount);
 
           setChartData({
             labels,
             datasets: [
               {
-                label: "Total Amount (INR)",
-                data: amounts, // Use raw numeric values
-                backgroundColor: "#FF5733",
+                label: "Total Amount in Lakhs",
+                data: amounts,
+                backgroundColor: [
+                  "#33D68A",
+                  "#FF5733",
+                  "#33B5E5",
+                  "#FFC107",
+                  "#8E44AD",
+                ],
+                borderColor: "#fff",
+                borderWidth: 2,
               },
             ],
           });
@@ -553,8 +561,7 @@ const DashboardNew = () => {
     };
 
     fetchTopCustomerData();
-  }, [orgId, isYearly]); // Re-fetch when `orgId` or `isYearly` changes
-
+  }, [orgId, isYearly]);
 
   useEffect(() => {
     const fetchSalesData = async () => {
@@ -578,7 +585,7 @@ const DashboardNew = () => {
               {
                 label: "Sales",
                 data,
-                backgroundColor: ["#FF5733", "#33B5E5", "#33D68A", "#FFC107", "#8E44AD"],
+                backgroundColor: ["#33B5E5", "#FF5733", "#33D68A", "#FFC107", "#8E44AD"],
               },
             ],
           });
@@ -599,8 +606,8 @@ const DashboardNew = () => {
   const financialData = [
     { stats: 'ETH', statsPercentage: '+4.6%', title: 'Revenue', monthly: totalOrderYear, yearly: totalOrderYear },
     { stats: 'ETH', statsPercentage: '-7.4%', title: 'Cost', monthly: totalCostYear, yearly: totalCostYear },
-    { stats: 'ETH', statsPercentage: '0%', title: 'Accounts Receivable', monthly: 0, yearly: 0 },
-    { stats: 'ETH', statsPercentage: '0%', title: 'Accounts Payable', monthly: 0, yearly: 0 }
+    { stats: 'ETH', statsPercentage: '0%', title: 'Receipt', monthly: 0, yearly: 0 },
+    { stats: 'ETH', statsPercentage: '0%', title: 'Payment', monthly: 0, yearly: 0 }
   ];
 
   return (

@@ -251,6 +251,7 @@ const DesktopSearch = ({ value, setValue }) => {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         placeholder="Search"
+        sx={{ width: "250px", height: '35px' }} // Adjust width as needed
         startAdornment={
           <InputAdornment position="start">
             <IconSearch stroke={1.5} size="1rem" color={theme.palette.grey[500]} />
@@ -259,8 +260,8 @@ const DesktopSearch = ({ value, setValue }) => {
         endAdornment={
           <InputAdornment position="end" sx={{ display: 'flex', alignItems: 'center' }}>
             <ButtonBase sx={{ borderRadius: '12px', mr: 1 }}>
-              <HeaderAvatarStyle variant="rounded">
-                <IconAdjustmentsHorizontal stroke={1.5} size="1.3rem" />
+              <HeaderAvatarStyle variant="rounded" sx={{height: '25px', width: '25px'}}>
+                <IconAdjustmentsHorizontal stroke={1.5} size="1.1rem" />
               </HeaderAvatarStyle>
             </ButtonBase>
           </InputAdornment>
@@ -298,6 +299,7 @@ const DesktopSearch = ({ value, setValue }) => {
         </SearchResultsPaper>
       )}
     </Box>
+
   );
 };
 

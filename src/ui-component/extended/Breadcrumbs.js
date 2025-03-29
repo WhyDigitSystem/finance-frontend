@@ -113,27 +113,28 @@ const Breadcrumbs = ({ card, divider, icon, icons, maxItems, navigation, rightAl
     // main
     if (item.breadcrumbs !== false) {
       breadcrumbContent = (
-        <Card
-          sx={{
-            height: 40, // Fix the height
-            display: "flex", // Align items properly
-            alignItems: "center", // Center items vertically
-            justifyContent: "space-between", // Keep content well-spaced
-            // marginBottom: card === false ? 0 : theme.spacing(gridSpacing),
-            marginBottom: 2,
-            border: card === false ? "none" : "1px solid",
-            borderColor: theme.palette.primary[200] + 75,
-            background: card === false ? "transparent" : theme.palette.background.default,
-            padding: "0 10px" // Reduce extra padding
-          }}
-          {...others}
-        >
-          <Box sx={{ p: 2, pl: card === false ? 0 : 2 }}>
+        // <Card
+        //   sx={{
+        //     height: 40, // Fix the height
+        //     display: "flex", // Align items properly
+        //     alignItems: "center", // Center items vertically
+        //     justifyContent: "space-between", // Keep content well-spaced
+        //     // marginBottom: card === false ? 0 : theme.spacing(gridSpacing),
+        //     marginBottom: -1,
+        //     border: card === false ? "none" : "1px solid",
+        //     borderColor: theme.palette.primary[200] + 75,
+        //     background: card === false ? "transparent" : theme.palette.background.default,
+        //     padding: "0 10px" // Reduce extra padding
+        //   }}
+        //   {...others}
+        // >
+          <Box sx={{ p: 0, pl: card === false ? 0 : 1 }}>
             <Grid
               container
               direction={rightAlign ? 'row' : 'column'}
               justifyContent={rightAlign ? 'space-between' : 'flex-start'}
               alignItems={rightAlign ? 'center' : 'flex-start'}
+              style={{ marginTop: '-25px' }}
               spacing={1}
             >
               {/* {title && !titleBottom && (
@@ -147,10 +148,10 @@ const Breadcrumbs = ({ card, divider, icon, icons, maxItems, navigation, rightAl
                 <MuiBreadcrumbs
                   // sx={{ '& .MuiBreadcrumbs-separator': { width: 16, ml: 1.25, mr: 1.25 } }}
                   sx={{
-                    '& .MuiBreadcrumbs-separator': { width: 12, ml: 0.75, mr: 0.75 },
+                    '& .MuiBreadcrumbs-separator': { idth: 16, ml: 1.25, mr: 1.25 },
                     padding: "2px 0",
                     lineHeight: "1.2",
-                    minHeight: "24px"
+                    minHeight: "30px",
                   }}
                   aria-label="breadcrumb"
                   maxItems={maxItems || 8}
@@ -174,8 +175,8 @@ const Breadcrumbs = ({ card, divider, icon, icons, maxItems, navigation, rightAl
               )}
             </Grid>
           </Box>
-          {card === false && divider !== false && <Divider sx={{ borderColor: theme.palette.primary.main, mb: gridSpacing }} />}
-        </Card>
+          // {/* // {card === false && divider !== false && <Divider sx={{ borderColor: theme.palette.primary.main, mb: gridSpacing }} />} */}
+        // </Card>
       );
     }
   }

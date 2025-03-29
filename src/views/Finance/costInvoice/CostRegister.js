@@ -260,13 +260,13 @@ function CostRegister() {
         <>
           <div className="row">
             <div className="row">
-              <div className="col-md-2 mb-3">
+              <div className="col-md-2 mb-2">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                   label="Date"
                 />
               </div>
-              <div className="col-md-2 mb-3">
+              <div className="col-md-2 mb-1">
                 <FormControlLabel
                   control={
                     <Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />
@@ -274,7 +274,7 @@ function CostRegister() {
                   label="Vendor"
                 />
               </div>
-              <div className="col-md-2 mb-3">
+              <div className="col-md-2 mb-1">
                 <FormControlLabel
                   control={
                     <Checkbox checked={selectedSections.branchCode} onChange={handleCheckboxChange} name="branchCode" color="secondary" />
@@ -282,7 +282,7 @@ function CostRegister() {
                   label="Branch"
                 />
               </div>
-              <div className="col-md-2 mb-3">
+              <div className="col-md-2 mb-1">
                 <Button
                   onClick={handleProceed}
                   color="secondary"
@@ -352,7 +352,7 @@ function CostRegister() {
               </div>
             )}
             {visibleSections.customer && (
-              <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
                   <InputLabel id="customer">Vendor</InputLabel>
                   <Select
@@ -375,9 +375,9 @@ function CostRegister() {
               </div>
             )}
             {(visibleSections.date || visibleSections.branchCode || visibleSections.customer) && (
-              <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-2">
                 <div className="row d-flex ml">
-                  <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
+                  <div className="d-flex flex-wrap justify-content-start mb-3 mt-1" style={{ marginBottom: '20px' }}>
                     <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
                     <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                   </div>
@@ -387,7 +387,7 @@ function CostRegister() {
           </div>
         </>
         {listView && (
-          <div className="mt-4">
+          <div>
             <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
           </div>
         )}

@@ -48,6 +48,7 @@ export const PartyMaster = () => {
   const [companyName, setCompanyName] = useState(localStorage.getItem('companyName'));
   const [formData, setFormData] = useState({
     accountName: '',
+    shortName: '',
     accountNo: '',
     accType: '',
     creditTerms: '',
@@ -117,6 +118,7 @@ export const PartyMaster = () => {
     { accessorKey: 'partyType', header: 'Party Type', size: 140 },
     { accessorKey: 'partyCode', header: 'Party Code', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 },
+    { accessorKey: 'partyShortName', header: 'Short Name', size: 140 },
     { accessorKey: 'accountType', header: 'Account Type', size: 140 }
   ];
 
@@ -127,6 +129,7 @@ export const PartyMaster = () => {
   const [fieldErrors, setFieldErrors] = useState({
     accType: '',
     accountName: '',
+    shortName: '',
     accountNo: '',
     accountType: '',
     creditTerms: '',
@@ -358,6 +361,7 @@ export const PartyMaster = () => {
         partyType: party.partyType,
         partyCode: party.partyCode,
         partyName: party.partyName,
+        shortName: party.shortName,
         gstPartyName: party.gstPartyName,
         customerType: party.customerType,
         agentName: party.agentName,
@@ -565,6 +569,7 @@ export const PartyMaster = () => {
         setFormData({
           ...formData,
           accountName: particularMaster.accountName,
+          shortName: particularMaster.partyShortName,
           accountNo: particularMaster.accountNo || '',
           accType: particularMaster.accType,
           creditTerms: particularMaster.creditTerms,
@@ -921,6 +926,7 @@ export const PartyMaster = () => {
     setFormData({
       accType: '',
       accountName: '',
+      shortName: '',
       accountNo: '',
       accountType: '',
       creditTerms: '',
@@ -974,6 +980,7 @@ export const PartyMaster = () => {
     setFieldErrors({
       accType: '',
       accountName: '',
+      shortName: '',
       accountNo: '',
       accountType: '',
       creditTerms: '',
@@ -2299,6 +2306,19 @@ export const PartyMaster = () => {
                   onChange={handleInputChange}
                   error={fieldErrors.partyName}
                   helperText={fieldErrors.partyName}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="shortName"
+                  fullWidth
+                  name="shortName"
+                  label="Short Name"
+                  size="small"
+                  value={formData.shortName}
+                  onChange={handleInputChange}
+                  error={fieldErrors.shortName}
+                  helperText={fieldErrors.shortName}
                 />
               </div>
               <div className="col-md-3 mb-3">

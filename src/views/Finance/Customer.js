@@ -47,6 +47,7 @@ export const Customer = () => {
     active: true,
     customerName: '',
     customerCode: '',
+    shortName: '',
     gstIn: '',
     panNo: '',
     creditLimit: '',
@@ -72,6 +73,7 @@ export const Customer = () => {
   const listViewColumns = [
     { accessorKey: 'partyCode', header: 'Customer Code', size: 140 },
     { accessorKey: 'partyName', header: 'Customer Name', size: 140 },
+    { accessorKey: 'partyShortName', header: 'Short Name', size: 140 },
     { accessorKey: 'gstIn', header: 'Reg No', size: 140 },
     { accessorKey: 'panNo', header: 'Pan No', size: 140 },
     { accessorKey: 'creditLimit', header: 'Credit Limit', size: 140 },
@@ -92,6 +94,7 @@ export const Customer = () => {
   const [fieldErrors, setFieldErrors] = useState({
     customerCode: '',
     customerName: '',
+    shortName: '',
     gstIn: '',
     panNo: '',
     creditLimit: '',
@@ -137,9 +140,9 @@ export const Customer = () => {
       prev.map((r) =>
         r.id === row.id
           ? {
-              ...r,
-              transCurrency: value
-            }
+            ...r,
+            transCurrency: value
+          }
           : r
       )
     );
@@ -357,6 +360,7 @@ export const Customer = () => {
         setFormData({
           customerName: customer.partyName,
           customerCode: customer.partyCode,
+          shortName: customer.partyShortName,
           gstIn: customer.gstIn,
           panNo: customer.panNo,
           active: customer.active,
@@ -528,6 +532,7 @@ export const Customer = () => {
     setEditId('');
     setFormData({
       customerName: '',
+      shortName: '',
       active: '',
       customerCode: '',
       gstIn: '',
@@ -543,6 +548,7 @@ export const Customer = () => {
     });
     setFieldErrors({
       customerName: '',
+      shortName: '',
       customerCode: '',
       gstIn: '',
       panNo: '',
@@ -683,11 +689,11 @@ export const Customer = () => {
       prev.map((r) =>
         r.id === row.id
           ? {
-              ...r,
-              state: value,
-              stateCode: selectedState ? selectedState.stateCode : '',
-              stateNo: selectedState ? selectedState.stateNumber : ''
-            }
+            ...r,
+            state: value,
+            stateCode: selectedState ? selectedState.stateCode : '',
+            stateNo: selectedState ? selectedState.stateNumber : ''
+          }
           : r
       )
     );
@@ -722,10 +728,10 @@ export const Customer = () => {
       prev.map((r) =>
         r.id === row.id
           ? {
-              ...r,
-              salesPerson: selectedName,
-              empCode: selectedEmployee ? selectedEmployee.employeeCode : ''
-            }
+            ...r,
+            salesPerson: selectedName,
+            empCode: selectedEmployee ? selectedEmployee.employeeCode : ''
+          }
           : r
       )
     );
@@ -1020,6 +1026,7 @@ export const Customer = () => {
       const saveData = {
         ...(editId && { id: editId }),
         customerName: formData.customerName,
+        shortName: formData.shortName,
         customerCode: formData.customerCode,
         gstIn: formData.gstIn,
         panNo: formData.panNo,
@@ -1126,10 +1133,25 @@ export const Customer = () => {
                   value={formData.customerCode}
                   onChange={handleInputChange}
                   disabled
-                  // error={fieldErrors.customerCode}
-                  // helperText={fieldErrors.customerCode}
+                // error={fieldErrors.customerCode}
+                // helperText={fieldErrors.customerCode}
                 />
               </div>
+
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="shortName"
+                  fullWidth
+                  name="shortName"
+                  label="Short Name"
+                  size="small"
+                  value={formData.shortName}
+                  onChange={handleInputChange}
+                  // error={fieldErrors.shortName}
+                  // helperText={fieldErrors.shortName}
+                />
+              </div>
+
 
               <div className="col-md-3 mb-3">
                 <TextField
@@ -1155,8 +1177,8 @@ export const Customer = () => {
                   size="small"
                   value={formData.panNo}
                   onChange={handleInputChange}
-                  // error={Boolean(fieldErrors.panNo)}
-                  // helperText={fieldErrors.panNo}
+                // error={Boolean(fieldErrors.panNo)}
+                // helperText={fieldErrors.panNo}
                 />
               </div>
 
@@ -1170,8 +1192,8 @@ export const Customer = () => {
                   type="number"
                   value={formData.creditLimit}
                   onChange={handleInputChange}
-                  // error={fieldErrors.creditLimit}
-                  // helperText={fieldErrors.creditLimit}
+                // error={fieldErrors.creditLimit}
+                // helperText={fieldErrors.creditLimit}
                 />
               </div>
 
@@ -1185,8 +1207,8 @@ export const Customer = () => {
                   type="number"
                   value={formData.creditDays}
                   onChange={handleInputChange}
-                  // error={fieldErrors.creditDays}
-                  // helperText={fieldErrors.creditDays}
+                // error={fieldErrors.creditDays}
+                // helperText={fieldErrors.creditDays}
                 />
               </div>
 
@@ -2047,10 +2069,10 @@ export const Customer = () => {
                                             prev.map((r) =>
                                               r.id === row.id
                                                 ? {
-                                                    ...r,
-                                                    effectiveFrom: date,
-                                                    effectiveTill: date > r.effectiveTill ? null : r.effectiveTill
-                                                  }
+                                                  ...r,
+                                                  effectiveFrom: date,
+                                                  effectiveTill: date > r.effectiveTill ? null : r.effectiveTill
+                                                }
                                                 : r
                                             )
                                           );
