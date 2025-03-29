@@ -172,7 +172,7 @@ const CommonReportTable = ({ columns, data, isListView}) => {
           sx: {
             fontSize: "14px",
             color: "#374151",
-            textAlign: "center",
+            // textAlign: "right",
             borderBottom: "1px solid #E5E7EB",
           },
         },

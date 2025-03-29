@@ -182,15 +182,30 @@ function TaxRegister() {
   };
   const reportColumns = [
     { accessorKey: 'jobOrderNo', header: 'Job No', size: 100 },
-    { accessorKey: 'vId', header: 'Invoice No', size: 100 },
+    { accessorKey: 'vId', header: '# Invoice', size: 100 },
     { accessorKey: 'vDate', header: 'Date', size: 100 },
-    { accessorKey: 'billToParty', header: 'Billing Party', size: 240 },
-    { accessorKey: 'totalTaxAmountBC', header: 'Total Inv Amt', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'totalInvAmountLC', header: 'Total Inv Amt(LC)', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'totalTaxableAmountLC', header: 'Total Taxable Amt', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'gstType', header: 'GST Type', size: 80 },
-    { accessorKey: 'totalTaxAmountLC', header: 'GST Amount', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-  ];
+    { accessorKey: 'billToParty', header: 'Customer', size: 240 },
+    { accessorKey: 'billAmount', header: 'Amount', size: 80,     Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+      {cell.getValue() !== undefined && cell.getValue() !== null 
+        ? Number(cell.getValue()).toLocaleString('en-IN') 
+        : '-'}
+      </div>)},
+    { accessorKey: 'totalTaxAmountLC', header: 'TAX Amount', size: 80,
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+       {cell.getValue() !== undefined && cell.getValue() !== null 
+         ? Number(cell.getValue()).toLocaleString('en-IN') 
+         : '-'}
+       </div>)}, 
+    {
+      accessorKey: 'totalInvAmountLC',
+      header: 'Total Amount',
+      size: 80,
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() !== undefined && cell.getValue() !== null 
+        ? Number(cell.getValue()).toLocaleString('en-IN') 
+        : '-'}
+      </div>)},    
+    ];
   const handleGo = async () => {
     const errors = {};
     // if (!formData.partyName) {

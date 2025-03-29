@@ -58,8 +58,8 @@ const CommonListViewTable = ({ data, columns, blockEdit, toEdit, disableEditIcon
         ...column,
         Cell: ({ cell }) => (
           <Chip
-            label={cell.getValue() === true ? 'Active' : 'Inactive'}
-            sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX}
+            label={cell.getValue() === 'Active' ? 'Active' : 'In-active'}
+            sx={cell.getValue() === 'Active' ? chipSuccessSX : chipErrorSX}
           />
         )
       };
