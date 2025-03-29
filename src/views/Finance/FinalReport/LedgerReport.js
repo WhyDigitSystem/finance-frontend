@@ -192,11 +192,8 @@ function TaxRegister() {
   ];
   const handleGo = async () => {
     const errors = {};
-    if (!formData.partyName) {
-      errors.partyName = 'Party Name is required';
-    }
-    if (!formData.branchCode) {
-      errors.branchCode = 'Branch Code is required';
+    if (!formData.accountName) {
+      errors.accountName = 'Account Name is required';
     }
       if (!formData.fromDate) {
         errors.fromDate = 'From Date is required';
