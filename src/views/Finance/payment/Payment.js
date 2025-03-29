@@ -519,7 +519,7 @@ const Payment = () => {
                     <Select
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
-                      label="Payment Type"
+                      label="Payment Mode"
                       required
                       value={formData.paymentType}
                       onChange={(e) => setFormData({ ...formData, paymentType: e.target.value })}
@@ -535,7 +535,6 @@ const Payment = () => {
                     )}
                   </FormControl>
                 </div>
-
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField id="docId" label="Doc No" disabled size="small" value={formData.docId} inputProps={{ maxLength: 30 }} />
@@ -557,28 +556,6 @@ const Payment = () => {
                     </LocalizationProvider>
                   </FormControl>
                 </div>
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label">Type</InputLabel>
-                    <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      label="type"
-                      value={formData.type}
-                      error={!!formDataErrors.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    >
-                      <MenuItem value={'AIR_CARRIER'}>AIR CARRIER</MenuItem>
-                      <MenuItem value={'SEA_CARRIER'}>SEA CARRIER</MenuItem>
-                    </Select>
-                    {formDataErrors.type && (
-                      <FormHelperText error style={{ color: 'red' }}>
-                        {formDataErrors.type}
-                      </FormHelperText>
-                    )}
-                  </FormControl>
-                </div> */}
-
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel id="demo-simple-select-label-party">Party Name</InputLabel>
@@ -603,19 +580,6 @@ const Payment = () => {
                         {formDataErrors.partyName}
                       </FormHelperText>
                     )}
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled">
-                    <TextField
-                      id="partyCode"
-                      label="Party Code"
-                      disabled
-                      value={formData.partyCode}
-                      onChange={(e) => setFormData({ ...formData, partyCode: e.target.value })}
-                      size="small"
-                      inputProps={{ maxLength: 30 }}
-                    />
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
@@ -661,19 +625,6 @@ const Payment = () => {
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField
-                      id="bank/cash Acc"
-                      label="Bank"
-                      size="small"
-                      value={formData.bankCashAcc}
-                      onChange={(e) => setFormData({ ...formData, bankCashAcc: e.target.value })}
-                      error={!!formDataErrors.bankCashAcc}
-                      helperText={formDataErrors.bankCashAcc}
-                    />
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled">
-                    <TextField
                       id="paymentAmount"
                       label="Payment Amount"
                       size="small"
@@ -713,27 +664,12 @@ const Payment = () => {
                     />
                   </FormControl>
                 </div>
-
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled">
-                    <TextField
-                      id="Bank Charges A/c"
-                      label="Bank Charges"
-                      size="small"
-                      value={formData.bankChargeAcc}
-                      onChange={(e) => setFormData({ ...formData, bankChargeAcc: e.target.value })}
-                      inputProps={{ maxLength: 30 }}
-                      error={!!formDataErrors.bankChargeAcc}
-                      helperText={formDataErrors.bankChargeAcc}
-                    />
-                  </FormControl>
-                </div>
               <div className="col-md-6 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="chequeNo"
                     name="chequeNo"
-                    label="Chq/ UTI No"
+                    label="UTI No"
                     size="small"
                     value={formData.chequeNo}
                     onChange={(e) => setFormData({ ...formData, chequeNo: e.target.value })}
@@ -747,7 +683,7 @@ const Payment = () => {
                 <FormControl fullWidth>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Chq / UTI Dt"
+                      label="UTI Date"
                       value={formData.chequeDate ? dayjs(formData.chequeDate, 'YYYY-MM-DD') : null}
                       onChange={(newValue) => setFormData({ ...formData, chequeDate: newValue })}
                       slotProps={{
@@ -760,7 +696,6 @@ const Payment = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
-
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField
@@ -771,26 +706,6 @@ const Payment = () => {
                       onChange={(e) => setFormData({ ...formData, payTo: e.target.value })}
                       inputProps={{ maxLength: 30 }}
                     />
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="currency">Currency</InputLabel>
-                    <Select
-                      labelId="currency"
-                      disabled
-                      id="currency"
-                      label="Currency"
-                      value={formData.currency}
-                      onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                    >
-                      {gstState.length > 0 &&
-                        gstState.map((par, index) => (
-                          <MenuItem key={index} value={par.currency}>
-                            {par.currency} 
-                          </MenuItem>
-                        ))}
-                    </Select>
                   </FormControl>
                 </div>
               </div>
@@ -820,13 +735,13 @@ const Payment = () => {
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                       S.No
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center">Invoice No</th>
+                                    <th className="px-2 py-2 text-white text-center"># Invoice</th>
                                     <th className="px-2 py-2 text-white text-center">Date</th>
-                                    <th className="px-2 py-2 text-white text-center">Ref No</th>
-                                    <th className="px-2 py-2 text-white text-center">Ref Date</th>
+                                    {/* <th className="px-2 py-2 text-white text-center">Ref No</th>
+                                    <th className="px-2 py-2 text-white text-center">Ref Date</th> */}
                                     <th className="px-2 py-2 text-white text-center">Supplier Ref No</th>
                                     <th className="px-2 py-2 text-white text-center">Supplier Ref Date</th>
-                                    <th className="px-2 py-2 text-white text-center">Currency</th>
+                                    {/* <th className="px-2 py-2 text-white text-center">Currency</th> */}
                                     <th className="px-2 py-2 text-white text-center">Amount</th>
                                     <th className="px-2 py-2 text-white text-center">Outstanding</th>
                                     <th className="px-2 py-2 text-white text-center">Settled</th>
@@ -909,7 +824,7 @@ const Payment = () => {
                                             </div>
                                           )}
                                         </td>
-                                        <td className="border px-2 py-2">
+                                        {/* <td className="border px-2 py-2">
                                           <input
                                             type="text"
                                             value={row.refNo}
@@ -959,7 +874,7 @@ const Payment = () => {
                                               {withdrawalsTableErrors[index].refDate}
                                             </div>
                                           )}
-                                        </td>
+                                        </td> */}
                                         <td className="border px-2 py-2">
                                           <input
                                             type="text"
@@ -1016,7 +931,7 @@ const Payment = () => {
                                             </div>
                                           )}
                                         </td>
-                                        <td className="border px-2 py-2">
+                                        {/* <td className="border px-2 py-2">
                                           <select
                                             value={row.currency}
                                             style={{ width: '150px' }}
@@ -1043,7 +958,7 @@ const Payment = () => {
                                               {withdrawalsTableErrors[index].currency}
                                             </div>
                                           )}
-                                        </td>
+                                        </td> */}
                                         <td className="border px-2 py-2">
                                           <input
                                             type="text"
