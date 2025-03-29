@@ -1,25 +1,21 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
 import { FormHelperText } from '@mui/material';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import { useTheme } from '@mui/material/styles';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
-import dayjs from 'dayjs';
 import { useEffect, useRef, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
-import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../basicMaster/CommonListViewTable';
 import { Box, Button } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField, InputLabel } from '@mui/material';
+import { Avatar, Typography, Dialog, DialogContent } from '@mui/material';
+import ControlCameraIcon from '@mui/icons-material/ControlCamera';
+import IconButton from '@mui/material/IconButton';
 
 const ProductService = () => {
   const [editId, setEditId] = useState('');
@@ -46,6 +42,60 @@ const ProductService = () => {
     dimension: ''
   });
 
+  // image
+  const [logo, setLogo] = useState(null);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const [open, setOpen] = useState(false);
+
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
+      setLogo(file);
+    } else {
+      showToast('error', 'Please upload a valid image (PNG or JPEG).');
+    }
+  };
+
+  const handleFileUpload = async (generatedId) => {
+    if (!generatedId) {
+      console.warn('Generated ID is missing');
+      showToast('error', 'Generated ID is required');
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', logo);
+    try {
+      const response = await apiCalls(
+        'post',
+        `/commonmaster/uploadImageProductServivceInBloob?id=${generatedId}`,
+        formData,
+        {},
+        { 'Content-Type': 'multipart/form-data' }
+      );
+      console.log('Img Upload Response:', response);
+
+      if (response.status === true) {
+        showToast('success', response.message || 'Image Uploaded successfully!');
+      } else {
+        console.warn('Img upload failed:', response);
+        showToast('error', 'Img upload failed');
+      }
+    } catch (error) {
+      console.error('Img Upload Error:', error);
+      showToast('error', 'Failed to upload Img');
+    }
+  };
+  useEffect(() => {
+    return () => {
+      if (logo && typeof logo === 'object') {
+        URL.revokeObjectURL(logo);
+      }
+    };
+  }, [logo]);
+  const handleRemoveLogo = () => setLogo(null);
+
+  //
   const listViewColumns = [
     { accessorKey: 'type', header: 'Type', size: 140 },
     { accessorKey: 'code', header: 'Code', size: 140 },
@@ -61,10 +111,40 @@ const ProductService = () => {
 
   const getAllProductServiceCode = async () => {
     try {
-      const result = await apiCalls('get', `/api/commonmaster/getProductServiceByOrgId?orgId=${orgId}`);
-      setListViewData(result.paramObjectsMap?.productServices?.reverse() || []);
+      const result = await apiCalls('get', `/commonmaster/getProductServiceByOrgId?orgId=${orgId}`);
+      console.log('Fetching data for orgId:', orgId);
+      setListViewData(result.paramObjectsMap?.productServiceVO?.reverse() || []);
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+
+  const getAllProductServiceCodeId = async (row) => {
+    setEditId(row.original.id);
+    setFieldErrors({});
+    try {
+      const result = await apiCalls('get', `/commonmaster/getProductServiceById?id=${row.original.id}`);
+      console.log('Edit API Response:', result);
+
+      if (result.status === true) {
+        setListView(false);
+        const product = result.paramObjectsMap.productServiceVO;
+        setLogo(result.paramObjectsMap.productServiceVO.image);
+
+        setFormData({
+          type: product.type || '',
+          code: product.code || '',
+          name: product.name || '',
+          description: product.description || '',
+          dimension: product.dimension || '',
+          active: product.active === 'Active' ? true : false,
+          orgId: product.orgId
+        });
+      } else {
+        console.warn('Error fetching product details:', result.paramObjectsMap?.errorMessage);
+      }
+    } catch (error) {
+      console.error('Error fetching product details:', error);
     }
   };
 
@@ -74,10 +154,15 @@ const ProductService = () => {
 
     const codeRegex = /^[A-Za-z0-9_-]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
-    const descriptionRegex = /^[A-Za-z0-9 .,!]*$/;
-    const dimensionRegex = /^[0-9xX.]*$/;
+    // const descriptionRegex = /^[A-Za-z0-9.,!-]*$/;
+    const descriptionRegex = /^[A-Za-z0-9.,!\s-]*$/;
+    // const dimensionRegex = /^[0-9xX.]*$/;
 
     let newErrors = { ...fieldErrors };
+
+    if (name === 'type') {
+      newErrors.type = '';
+    }
 
     if (name === 'code') {
       if (!codeRegex.test(inputValue)) newErrors.code = 'Only alphanumeric, underscore, hyphen allowed.';
@@ -99,10 +184,9 @@ const ProductService = () => {
 
     // if (name === 'dimension') {
     //   if (!dimensionRegex.test(inputValue)) newErrors.dimension = 'Only numbers, x, X, and decimal allowed.';
-    //   else if (inputValue.length > 20) newErrors.dimension = 'Max length 20 characters.';
+    //   else if (inputValue.length > 20) newErrors.grt = 'Max length 20 characters.';
     //   else newErrors.dimension = '';
     // }
-
     setFieldErrors(newErrors);
 
     if (!newErrors[name]) {
@@ -110,8 +194,20 @@ const ProductService = () => {
     }
   };
 
+  // const handleCheckboxChange = (event) => {
+  //   // setFormData({ ...formData, active: event.target.checked });
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     active: event.target.checked
+  //   }));
+  // };
+
   const handleCheckboxChange = (event) => {
-    setFormData({ ...formData, active: event.target.checked });
+    setFormData((prevData) => ({
+      ...prevData,
+      active: event.target.checked
+    }));
+    console.log('Active Field Updated:', event.target.checked);
   };
 
   const handleClear = () => {
@@ -125,6 +221,7 @@ const ProductService = () => {
     });
     setFieldErrors({});
     setEditId('');
+    setLogo(null);
   };
 
   const handleView = () => {
@@ -150,7 +247,7 @@ const ProductService = () => {
 
     const formDataToSend = {
       ...(editId && { id: editId }),
-      active: formData.active,
+      active: formData.active === true ? true : false,
       type: formData.type,
       code: formData.code,
       name: formData.name,
@@ -162,13 +259,23 @@ const ProductService = () => {
 
     try {
       setIsLoading(true);
-      const result = await apiCalls('put', '/api/commonmaster/updateProductService', formDataToSend);
+      // const result = await apiCalls('put', 'api/commonmaster/createUpdateProductService', formDataToSend);
+      const result = await apiCalls('put', '/commonmaster/createUpdateProductService', formDataToSend);
+
       if (result.status) {
-        showToast('success', editId ? 'Product/Service Updated Successfully' : 'Product/Service Created Successfully');
+        showToast('success', editId ? 'Updated Successfully' : 'Created Successfully');
+        const generatedId = result.paramObjectsMap.productServiceVO.id;
+        if (generatedId && typeof logo === 'object') {
+          console.log('Generated ID:', generatedId);
+          console.log('Uploaded Item', logo);
+          handleFileUpload(generatedId);
+        } else {
+          console.log('handle Img Upload failed');
+        }
         getAllProductServiceCode();
         handleClear();
       } else {
-        showToast('error', result.paramObjectsMap?.errorMessage || 'Product/Service creation failed');
+        showToast('error', result.paramObjectsMap?.errorMessage || 'creation failed');
       }
     } catch (error) {
       console.error('API Error:', error);
@@ -177,6 +284,7 @@ const ProductService = () => {
       setIsLoading(false);
     }
   };
+
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
@@ -190,18 +298,26 @@ const ProductService = () => {
         </div>
         {listView ? (
           <div className="">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} />
+            {/* <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getAllProductServiceCodeId} /> */}
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getAllProductServiceCodeId} />
           </div>
         ) : (
           <>
-            <div className="row"></div>
             <div className="row">
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.type}>
-                  <InputLabel id="mode" required>
+                  <InputLabel htmlFor="type" required>
                     Type
                   </InputLabel>
-                  <Select labelId="type" id="type" name="type" required value={formData.type} label="Type" onChange={handleInputChange}>
+                  <Select
+                    labelId="type-label"
+                    id="type"
+                    name="type"
+                    required
+                    value={formData.type}
+                    label="Type"
+                    onChange={handleInputChange}
+                  >
                     <MenuItem value="Product">PRODUCT</MenuItem>
                     <MenuItem value="Services">SERVICES</MenuItem>
                   </Select>
@@ -272,7 +388,23 @@ const ProductService = () => {
                 />
               </div>
 
-              <div className="col-md-2 mb-3">
+              {/* <div className="col-md-2 mb-3">
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Button
+                      variant="outlined"
+                      component="label"
+                      multiline
+                      startIcon={<CloudUploadIcon />}
+                      sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
+                    >
+                      Upload
+                      <input type="file" hidden />
+                    </Button>
+                  </Box>
+                </div> */}
+
+              {/* image upload */}
+              <div className="col-md-3 mb-3">
                 <Box display="flex" alignItems="center" gap={1}>
                   <Button
                     variant="outlined"
@@ -281,11 +413,69 @@ const ProductService = () => {
                     startIcon={<CloudUploadIcon />}
                     sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
                   >
-                    Upload
-                    <input type="file" hidden />
+                    {/* {logo ? logo.name === '' ? "Logo👉
+                    " : logo.name : 'Upload Logo'} */}
+                    {logo ? (typeof logo === 'object' && logo.name ? logo.name : 'Image') : 'Image'}
+
+                    <input type="file" hidden accept="image/png, image/jpeg" onChange={handleLogoChange} />
                   </Button>
+
+                  {logo && (
+                    <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }} onClick={handleOpen}>
+                      <ControlCameraIcon />
+                    </IconButton>
+                  )}
                 </Box>
+                <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+                  <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
+                    <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }}>
+                      Company Logo
+                    </Typography>
+                    {logo ? (
+                      <Box>
+                        <Avatar
+                          src={typeof logo === 'object' ? URL.createObjectURL(logo) : `data:image/jpeg;base64,${logo}`}
+                          alt="Company Logo"
+                          sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }}
+                        />
+                        <Box display="flex" gap={2} mt={2}>
+                          <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                            onClick={handleRemoveLogo}
+                          >
+                            Delete
+                          </IconButton>
+                          <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                            onClick={handleClose}
+                          >
+                            Close
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Box>
+                        <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
+                          <Typography variant="caption">Upload Logo</Typography>
+                        </Avatar>
+                        <Box display="flex" gap={2} mt={2}>
+                          <IconButton
+                            variant="contained"
+                            sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '15px' }}
+                            onClick={handleClose}
+                          >
+                            Close
+                          </IconButton>
+                        </Box>
+                      </Box>
+                    )}
+                  </DialogContent>
+                </Dialog>
               </div>
+
+              {/*image upload  */}
 
               <div className="col-md-3 mb-3 d-flex align-items-center">
                 <FormGroup>
