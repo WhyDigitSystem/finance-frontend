@@ -48,62 +48,50 @@ const ARadjustmentOffset = () => {
   const [listViewData, setListViewData] = useState([]);
   const [currencies, setCurrencies] = useState([]);
   const [allCustomerName, setAllCustomerName] = useState([]);
+  const [allReceiptDocId, setAllReceiptDocId] = useState([]);
   const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [branch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [selectedDocId, setSelectedDocId] = useState("");
 
   const [formData, setFormData] = useState({
     active: true,
-    receiptType1: '',
-    bankChargeAcc: '',
     docNo: '',
     docDate: dayjs(),
-    bankCharges: '',
-    inCurrencyBnkChargs: '',
-    type: '',
-    tdsAmt: '',
-    inCurrencyTdsAmt: '',
-    customerName: '',
-    chequeBank: '',
-    customerCode: '',
-    receiptType: '',
-    bankCashAcc: '',
-    chequeUtiNo: '',
-    chequeUtiDt: null,
-    receiptAmt: '',
+    receiptDocId: '',
+    receiptDocDate: null,
+    subledgerType: '',
     currency: '',
-    currencyAmount: '',
-    receivedFrom: '',
-    netAmount: '',
-    remarks: ''
+    exRate: 1.00,
+    subledgerName: '',
+    amount: '',
+    supplierRefNo: '',
+    subledgerCode: '',
+    gainorLoss: '',
+    totalSettled: '',
+    roundOfAmount: '',
+    onAccount: '',
+    narration: ''
   });
 
   const [fieldErrors, setFieldErrors] = useState({
     active: true,
-    receiptType1: '',
-    bankChargeAcc: '',
-    docNo: '',
-    docDate: null,
-    bankCharges: '',
-    inCurrencyBnkChargs: '',
-    type: '',
-    tdsAmt: '',
-    inCurrencyTdsAmt: '',
-    customerName: '',
-    chequeBank: '',
-    customerCode: '',
-    receiptType: '',
-    bankCashAcc: '',
-    chequeUtiNo: '',
-    chequeUtiDt: null,
-    receiptAmt: '',
+    receiptDocId: '',
+    receiptDocDate: null,
+    subledgerType: '',
     currency: '',
-    currencyAmount: '',
-    receivedFrom: '',
-    netAmount: '',
-    remarks: ''
+    exRate: '',
+    subledgerName: '',
+    amount: '',
+    supplierRefNo: '',
+    subledgerCode: '',
+    gainorLoss: '',
+    totalSettled: '',
+    roundOfAmount: '',
+    onAccount: '',
+    narration: ''
   });
 
   const [inVoiceDetailsData, setInVoiceDetailsData] = useState([
@@ -113,18 +101,14 @@ const ARadjustmentOffset = () => {
       invDate: null,
       refNo: '',
       refDate: null,
-      masterRef: '',
-      houseRef: '',
       currency: '',
       exRate: '',
       amount: '',
-      chargeAmt: '',
-      outstanding: '',
+      outStanding: '',
       settled: '',
-      recExRate: '',
-      txnSettled: '',
+      setExRate: '',
+      tnxSettled: '',
       gainAmt: ''
-      // remarks: ''
     }
   ]);
 
@@ -134,130 +118,54 @@ const ARadjustmentOffset = () => {
       invDate: null,
       refNo: '',
       refDate: null,
-      masterRef: '',
-      houseRef: '',
       currency: '',
       exRate: '',
       amount: '',
-      chargeAmt: '',
-      outstanding: '',
+      outStanding: '',
       settled: '',
-      recExRate: '',
-      txnSettled: '',
+      setExRate: '',
+      tnxSettled: '',
       gainAmt: ''
-      // remarks: ''
     }
   ]);
 
-  // const handleInputChange = (e) => {
-  //   const { name, value, type, checked } = e.target;
-  //   const inputValue = type === 'checkbox' ? checked : value;
-  //   setFormData({ ...formData, [name]: inputValue });
-  //   setFieldErrors({ ...fieldErrors, [name]: false });
-  // };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value, type, checked } = e.target;
-  //   const inputValue = type === 'checkbox' ? checked : value;
-
-  //   // If customerName is selected, find and set customerCode
-  //   if (name === 'customerName') {
-  //     const selectedCustomer = allCustomerName.find((customer) => customer.customerName === value);
-  //     if (selectedCustomer) {
-  //       setFormData({
-  //         ...formData,
-  //         customerName: value,
-  //         customerCode: selectedCustomer.customerCode // Set the corresponding customerCode
-  //       });
-  //     }
-  //   } else {
-  //     setFormData({ ...formData, [name]: inputValue });
-  //   }
-
-  //   setFieldErrors({ ...fieldErrors, [name]: false });
-  // };
-
-  // const handleInputChange = (e) => {
-  //   const { name, value, type, checked } = e.target;
-  //   const inputValue = type === 'checkbox' ? checked : value;
-
-  //   // Define regex for numeric fields
-  //   const isNumeric = /^[0-9]*$/;
-
-  //   // Validation logic for numeric fields
-  //   const numericFields = ['bankCharges', 'receiptAmt', 'tdsAmt']; // Add other numeric fields if needed
-  //   if (numericFields.includes(name)) {
-  //     if (!isNumeric.test(value)) {
-  //       setFieldErrors({
-  //         ...fieldErrors,
-  //         [name]: 'Only numbers are allowed'
-  //       });
-  //       return; // Prevent further form updates if invalid input
-  //     }
-  //   }
-
-  //   // If customerName is selected, find and set customerCode
-  //   if (name === 'customerName') {
-  //     const selectedCustomer = allCustomerName.find((customer) => customer.customerName === value);
-  //     if (selectedCustomer) {
-  //       setFormData({
-  //         ...formData,
-  //         customerName: value,
-  //         customerCode: selectedCustomer.customerCode // Set the corresponding customerCode
-  //       });
-  //     }
-  //   } else {
-  //     setFormData({ ...formData, [name]: inputValue });
-  //   }
-
-  //   // Clear error when input is valid
-  //   setFieldErrors({ ...fieldErrors, [name]: false });
-  // };
-
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const inputValue = type === 'checkbox' ? checked : value;
-
-    // Define regex for numeric fields
-    const isNumeric = /^[0-9]*$/;
-
-    // Validation logic for numeric fields
-    const numericFields = ['bankCharges', 'receiptAmt', 'tdsAmt']; // Add other numeric fields if needed
-    if (numericFields.includes(name)) {
-      if (!isNumeric.test(value)) {
-        setFieldErrors({
-          ...fieldErrors,
-          [name]: 'Only numbers are allowed'
-        });
-        return; // Prevent further form updates if invalid input
+    const inputValue = type === "checkbox" ? checked : value;
+  
+    setFormData((prev) => {
+      const updatedFormData = { ...prev, [name]: inputValue };
+  
+      const totalSettled = inVoiceDetailsData.reduce(
+        (sum, row) => sum + (parseFloat(row.settled) || 0),
+        0
+      );
+  
+      const gainorLoss = inVoiceDetailsData.reduce(
+        (sum, row) => sum + (parseFloat(row.gainAmt) || 0),
+        0
+      );
+  
+      const roundedTotalSettled = Math.round(totalSettled);
+      
+      const roundOfAmount = (totalSettled - roundedTotalSettled).toFixed(2);
+  
+      if (name === "amount") {
+        updatedFormData.onAccount = totalSettled - Math.abs(parseFloat(value) || 0);
       }
-    }
-
-    // Handle customerName selection and customerCode mapping
-    if (name === 'customerName') {
-      const selectedCustomer = allCustomerName.find((customer) => customer.customerName === value);
-      if (selectedCustomer) {
-        setFormData({
-          ...formData,
-          customerName: value,
-          customerCode: selectedCustomer.customerCode // Set the corresponding customerCode
-        });
-
-        // Clear any errors related to customerName if input is valid
-        setFieldErrors({
-          ...fieldErrors,
-          customerName: false,
-          customerCode: false
-        });
-      }
-    } else {
-      // Handle other fields
-      setFormData({ ...formData, [name]: inputValue });
-
-      // Clear error when input is valid
-      setFieldErrors({ ...fieldErrors, [name]: false });
-    }
-  };
+  
+      updatedFormData.totalSettled = totalSettled;
+      updatedFormData.gainorLoss = gainorLoss;
+      updatedFormData.roundOfAmount = roundOfAmount;
+  
+      return updatedFormData;
+    });
+  
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: false,
+    }));
+  };  
 
   const handleDateChange = (name, date) => {
     setFormData({ ...formData, [name]: date });
@@ -267,50 +175,38 @@ const ARadjustmentOffset = () => {
   const handleClear = () => {
     setFormData({
       active: true,
-      bankChargeAcc: '',
-      docNo: '',
       docDate: dayjs(),
-      bankCharges: '',
-      inCurrencyBnkChargs: '',
-      type: '',
-      tdsAmt: '',
-      inCurrencyTdsAmt: '',
-      customerName: '',
-      chequeBank: '',
-      customerCode: '',
-      receiptType: '',
-      bankCashAcc: '',
-      chequeUtiNo: '',
-      chequeUtiDt: null,
-      receiptAmt: '',
+      receiptDocId: '',
+      receiptDocDate: null,
+      subledgerType: '',
       currency: '',
-      currencyAmount: '',
-      receivedFrom: '',
-      netAmount: '',
-      remarks: ''
+      exRate: 1.00,
+      subledgerName: '',
+      amount: '',
+      supplierRefNo: '',
+      subledgerCode: '',
+      gainorLoss: '',
+      totalSettled: '',
+      roundOfAmount: '',
+      onAccount: '',
+      narration: ''
     });
     setFieldErrors({
-      bankChargeAcc: '',
-      docNo: '',
-      docDate: null,
-      bankCharges: '',
-      inCurrencyBnkChargs: '',
-      type: '',
-      tdsAmt: '',
-      inCurrencyTdsAmt: '',
-      customerName: '',
-      chequeBank: '',
-      customerCode: '',
-      receiptType: '',
-      bankCashAcc: '',
-      chequeUtiNo: '',
-      chequeUtiDt: null,
-      receiptAmt: '',
+      active: true,
+      receiptDocId: '',
+      receiptDocDate: null,
+      subledgerType: '',
       currency: '',
-      currencyAmount: '',
-      receivedFrom: '',
-      netAmount: '',
-      remarks: ''
+      exRate: '',
+      subledgerName: '',
+      amount: '',
+      supplierRefNo: '',
+      subledgerCode: '',
+      gainorLoss: '',
+      totalSettled: '',
+      roundOfAmount: '',
+      onAccount: '',
+      narration: ''
     });
     setInVoiceDetailsData([
       {
@@ -318,18 +214,14 @@ const ARadjustmentOffset = () => {
         invDate: null,
         refNo: '',
         refDate: null,
-        masterRef: '',
-        houseRef: '',
         currency: '',
         exRate: '',
         amount: '',
-        chargeAmt: '',
-        outstanding: '',
+        outStanding: '',
         settled: '',
-        recExRate: '',
-        txnSettled: '',
+        setExRate: '',
+        tnxSettled: '',
         gainAmt: ''
-        // remarks: ''
       }
     ]);
     setInvoiceDetailsError({
@@ -337,20 +229,16 @@ const ARadjustmentOffset = () => {
       invDate: null,
       refNo: '',
       refDate: null,
-      masterRef: '',
-      houseRef: '',
       currency: '',
       exRate: '',
       amount: '',
-      chargeAmt: '',
-      outstanding: '',
+      outStanding: '',
       settled: '',
-      recExRate: '',
-      txnSettled: '',
+      setExRate: '',
+      tnxSettled: '',
       gainAmt: ''
-      // remarks: ''
     });
-    getReceiptDocId();
+    getArOffsetDocId();
   };
 
   const handleChange = (event, newValue) => {
@@ -362,29 +250,24 @@ const ARadjustmentOffset = () => {
   };
 
   const handleAddRow = () => {
-    if (isLastRowEmpty(inVoiceDetailsData)) {
-      displayRowError(inVoiceDetailsData);
-      return;
-    }
+    // if (isLastRowEmpty(inVoiceDetailsData)) {
+    //   displayRowError(inVoiceDetailsData);
+    //   return;
+    // }
     const newRow = {
       id: Date.now(),
       invNo: '',
       invDate: null,
       refNo: '',
       refDate: null,
-      masterRef: '',
-      houseRef: '',
       currency: '',
       exRate: '',
       amount: '',
-      chargeAmt: '',
-      outstanding: '',
+      outStanding: '',
       settled: '',
-      recExRate: '',
-      txnSettled: '',
-      txnSettled: '',
+      setExRate: '',
+      tnxSettled: '',
       gainAmt: ''
-      // remarks: ''
     };
     setInVoiceDetailsData([...inVoiceDetailsData, newRow]);
     setInvoiceDetailsError([
@@ -394,75 +277,70 @@ const ARadjustmentOffset = () => {
         invDate: null,
         refNo: '',
         refDate: null,
-        masterRef: '',
-        houseRef: '',
         currency: '',
         exRate: '',
         amount: '',
-        chargeAmt: '',
-        outstanding: '',
+        outStanding: '',
         settled: '',
-        recExRate: '',
-        txnSettled: '',
-        txnSettled: '',
+        setExRate: '',
+        tnxSettled: '',
         gainAmt: ''
-        // remarks: ''
       }
     ]);
   };
 
-  const isLastRowEmpty = (table) => {
-    const lastRow = table[table.length - 1];
-    if (!lastRow) return false;
+  // const isLastRowEmpty = (table) => {
+  //   const lastRow = table[table.length - 1];
+  //   if (!lastRow) return false;
 
-    if (table === inVoiceDetailsData) {
-      return (
-        !lastRow.invNo ||
-        !lastRow.invDate ||
-        !lastRow.refNo ||
-        !lastRow.refDate ||
-        !lastRow.masterRef ||
-        !lastRow.houseRef ||
-        !lastRow.currency ||
-        !lastRow.exRate ||
-        !lastRow.amount ||
-        !lastRow.chargeAmt ||
-        !lastRow.outstanding ||
-        !lastRow.settled ||
-        !lastRow.recExRate ||
-        !lastRow.txnSettled ||
-        !lastRow.gainAmt
-      );
-    }
-    return false;
-  };
+  //   if (table === inVoiceDetailsData) {
+  //     return (
+  //       !lastRow.invNo ||
+  //       !lastRow.invDate ||
+  //       !lastRow.refNo ||
+  //       !lastRow.refDate ||
+  //       !lastRow.masterRef ||
+  //       !lastRow.houseRef ||
+  //       !lastRow.currency ||
+  //       !lastRow.exRate ||
+  //       !lastRow.amount ||
+  //       !lastRow.chargeAmt ||
+  //       !lastRow.outStanding ||
+  //       !lastRow.settled ||
+  //       !lastRow.setExRate ||
+  //       !lastRow.tnxSettled ||
+  //       !lastRow.gainAmt
+  //     );
+  //   }
+  //   return false;
+  // };
 
-  const displayRowError = (table) => {
-    if (table === inVoiceDetailsData) {
-      setInvoiceDetailsError((prevErrors) => {
-        const newErrors = [...prevErrors];
-        newErrors[table.length - 1] = {
-          ...newErrors[table.length - 1],
-          invNo: !table[table.length - 1].invNo ? 'Invoice No is required' : '',
-          invDate: !table[table.length - 1].invDate ? 'Invoice Date is required' : '',
-          refNo: !table[table.length - 1].refNo ? 'Ref No is required' : '',
-          refDate: !table[table.length - 1].refDate ? 'Ref Date is required' : '',
-          masterRef: !table[table.length - 1].masterRef ? 'Master Ref is required' : '',
-          houseRef: !table[table.length - 1].houseRef ? 'House Ref is required' : '',
-          currency: !table[table.length - 1].currency ? 'Currency is required' : '',
-          exRate: !table[table.length - 1].exRate ? 'Ex Rate is required' : '',
-          amount: !table[table.length - 1].amount ? 'Amount is required' : '',
-          chargeAmt: !table[table.length - 1].chargeAmt ? 'Chargeable Amount is required' : '',
-          outstanding: !table[table.length - 1].outstanding ? 'Outstanding is required' : '',
-          settled: !table[table.length - 1].settled ? 'Settled is required' : '',
-          recExRate: !table[table.length - 1].recExRate ? 'Rec Ex Rate is required' : '',
-          txnSettled: !table[table.length - 1].txnSettled ? 'Txn Settled is required' : '',
-          gainAmt: !table[table.length - 1].gainAmt ? 'Gain or Loss is required' : ''
-        };
-        return newErrors;
-      });
-    }
-  };
+  // const displayRowError = (table) => {
+  //   if (table === inVoiceDetailsData) {
+  //     setInvoiceDetailsError((prevErrors) => {
+  //       const newErrors = [...prevErrors];
+  //       newErrors[table.length - 1] = {
+  //         ...newErrors[table.length - 1],
+  //         invNo: !table[table.length - 1].invNo ? 'Invoice No is required' : '',
+  //         invDate: !table[table.length - 1].invDate ? 'Invoice Date is required' : '',
+  //         refNo: !table[table.length - 1].refNo ? 'Ref No is required' : '',
+  //         refDate: !table[table.length - 1].refDate ? 'Ref Date is required' : '',
+  //         masterRef: !table[table.length - 1].masterRef ? 'Master Ref is required' : '',
+  //         houseRef: !table[table.length - 1].houseRef ? 'House Ref is required' : '',
+  //         currency: !table[table.length - 1].currency ? 'Currency is required' : '',
+  //         exRate: !table[table.length - 1].exRate ? 'Ex Rate is required' : '',
+  //         amount: !table[table.length - 1].amount ? 'Amount is required' : '',
+  //         chargeAmt: !table[table.length - 1].chargeAmt ? 'Chargeable Amount is required' : '',
+  //         outStanding: !table[table.length - 1].outStanding ? 'outStanding is required' : '',
+  //         settled: !table[table.length - 1].settled ? 'Settled is required' : '',
+  //         setExRate: !table[table.length - 1].setExRate ? 'Rec Ex Rate is required' : '',
+  //         tnxSettled: !table[table.length - 1].tnxSettled ? 'Txn Settled is required' : '',
+  //         gainAmt: !table[table.length - 1].gainAmt ? 'Gain or Loss is required' : ''
+  //       };
+  //       return newErrors;
+  //     });
+  //   }
+  // };
 
   const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
     const rowIndex = table.findIndex((row) => row.id === id);
@@ -488,37 +366,36 @@ const ARadjustmentOffset = () => {
     };
 
     fetchData();
-    // getGroup();
   }, []);
 
   useEffect(() => {
-    getAllCustomerName();
-    getReceiptDocId();
+    getAllReceiptId();
+    getArOffsetDocId();
   }, []);
-  const getReceiptDocId = async () => {
+  const getArOffsetDocId = async () => {
     try {
       const response = await apiCalls(
         'get',
-        `/offSetcontroller/getOffSetDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
+        `/aradjustmentoffset/getArAdjustmentOffSetDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
       setFormData((prevData) => ({
         ...prevData,
-        docNo: response.paramObjectsMap.offSetDocId
+        docNo: response.paramObjectsMap.arAdjustmentOffSetDocId
       }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
   };
-  const getAllCustomerName = async () => {
+  const getAllReceiptId = async () => {
     try {
       const response = await apiCalls(
         'get',
-        `arreceivable/getCustomerNameAndCodeForReceipt?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
+        `aradjustmentoffset/getAllCustomerReceiptByOrgIdAndBranchCode?branchCode=${branchCode}&orgId=${orgId}`
       );
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setAllCustomerName(response.paramObjectsMap.PartyMasterVO);
+        setAllReceiptDocId(response.paramObjectsMap.receiptVO);
       } else {
         console.error('API Error:', response);
       }
@@ -527,17 +404,58 @@ const ARadjustmentOffset = () => {
     }
   };
 
+  const handleDocIdChange = (event) => {
+    const selectedId = event.target.value;
+  
+    // Find the selected docId details
+    const selectedReceipt = allReceiptDocId.find((item) => item.docId === selectedId);
+  
+    if (selectedReceipt) {
+      setFormData((prev) => ({
+        ...prev,
+        receiptDocId: selectedId,
+        receiptDocDate: selectedReceipt.docDate,
+        subledgerType: selectedReceipt.type,
+        currency: selectedReceipt.currency,
+        subledgerName: selectedReceipt.customerName,
+        subledgerCode: selectedReceipt.customerCode,
+      }));
+  
+      // Ensure receiptInvDetailsVO is an array before setting it
+      const updatedTableData = Array.isArray(selectedReceipt.receiptInvDetailsVO)
+        ? selectedReceipt.receiptInvDetailsVO.map((item) => ({
+            invNo: item.invNo,
+            invDate: item.invDate,
+            refNo: item.refNo || '',
+            refDate: item.refDate || '',
+            currency: item.currency,
+            exRate: item.exRate,
+            amount: item.amount,
+            outStanding: item.outStanding || '',
+            settled: item.settled,
+            setExRate: item.recExRate || '',
+            tnxSettled: item.tnxSettled || '',
+            gainAmt: item.gainAmt || '',
+          }))
+        : [];
+  
+      setInVoiceDetailsData(updatedTableData);
+    }
+  };
+  
+  
+
   useEffect(() => {
     getAllARAdjustmentOffset();
   }, []);
 
   const getAllARAdjustmentOffset = async () => {
     try {
-      const response = await apiCalls('get', `/offSetcontroller/getAllOffSet?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
+      const response = await apiCalls('get', `/aradjustmentoffset/getAllArAdjustmentOffSetByOrgId?orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setListViewData(response.paramObjectsMap.offSetVO);
+        setListViewData(response.paramObjectsMap.arAdjustmentOffSetVO);
       } else {
         console.error('API Error:', response);
       }
@@ -549,55 +467,48 @@ const ARadjustmentOffset = () => {
   const getARAdjustmentOffsetById = async (row) => {
     console.log('first', row);
     setEditId(row.original.id);
-    // setShowForm(true);
 
     try {
-      const response = await apiCalls('get', `/offSetcontroller/getOffSetById?id=${row.original.id}`);
+      const response = await apiCalls('get', `/aradjustmentoffset/getArAdjustmentOffSetById?id=${row.original.id}`);
       if (response.status === true) {
         setListView(false);
-        const receiptVO = response.paramObjectsMap.receiptReceivableVO[0];
+        const receiptVO = response.paramObjectsMap.arAdjustmentOffSetVO[0];
 
         setFormData({
-          receiptType: receiptVO.receiptType,
-          bankChargeAcc: receiptVO.bankChargeAcc,
-          docNo: receiptVO.docNo,
-          docDate: dayjs(receiptVO.docDate, 'DD-MM-YYYY').format('YYYY-MM-DD'), // Convert to correct format
-          bankCharges: receiptVO.bankCharges,
-          inCurrencyBnkChargs: receiptVO.inCurrencyBnkChargs,
-          type: receiptVO.type,
-          tdsAmt: receiptVO.tdsAmt,
-          inCurrencyTdsAmt: receiptVO.inCurrencyTdsAmt,
-          chequeBank: receiptVO.chequeBank,
-          customerName: receiptVO.customerName,
-          customerCode: receiptVO.customerCode,
-          receiptType1: receiptVO.receiptType1,
-          bankCashAcc: receiptVO.bankCashAcc,
-          chequeUtiNo: receiptVO.chequeUtiNo,
-          chequeUtiDt: dayjs(receiptVO.chequeUtiDt, 'YYYY-MM-DD').format('YYYY-MM-DD'), // Convert to correct format
-          receiptAmt: receiptVO.receiptAmt,
+          docNo: receiptVO.docId,
+          // docDate: dayjs(receiptVO.docDate, 'DD-MM-YYYY').format('YYYY-MM-DD'),
+          docDate: dayjs(receiptVO.docDate),
+          receiptDocId: receiptVO.receiptDocId,
+          // receiptDocDate: dayjs(receiptVO.receiptDocDate, 'DD-MM-YYYY').format('YYYY-MM-DD'),
+          receiptDocDate: dayjs(receiptVO.receiptDocDate),
+          subledgerType: receiptVO.subLedgerType,
           currency: receiptVO.currency,
-          currencyAmount: receiptVO.currencyAmount,
-          receivedFrom: receiptVO.receivedFrom
+          exRate: receiptVO.exRate,
+          subledgerName: receiptVO.subLedgerName,
+          amount: receiptVO.amount,
+          supplierRefNo: receiptVO.supplierRefNo,
+          subledgerCode: receiptVO.subLedgerCode,
+          gainorLoss: receiptVO.forexGainOrLoss,
+          totalSettled: receiptVO.totalSettled,
+          roundOfAmount: receiptVO.roundOffAmount,
+          onAccount: receiptVO.onAccount,
+          narration: receiptVO.narration,
         });
         setInVoiceDetailsData(
-          receiptVO.receiptInvDetailsVO.map((invoiceData) => ({
+          receiptVO.arOffSetInvoiceDetailsVO.map((invoiceData) => ({
             id: invoiceData.id,
-            invNo: invoiceData.invNo,
-            invDate: dayjs(invoiceData.invDate, 'YYYY-MM-DD').format('YYYY-MM-DD'), // Convert to correct format
+            invNo: invoiceData.invoiceNo,
+            invDate: dayjs(invoiceData.invoiceDate, 'YYYY-MM-DD').format('YYYY-MM-DD'), // Convert to correct format
             refNo: invoiceData.refNo,
             refDate: dayjs(invoiceData.refDate, 'YYYY-MM-DD').format('YYYY-MM-DD'), // Convert to correct format
-            masterRef: invoiceData.masterRef,
-            houseRef: invoiceData.houseRef,
-            currency: invoiceData.currency,
+            currency: invoiceData.curr,
             exRate: invoiceData.exRate,
-            amount: invoiceData.amount,
-            chargeAmt: invoiceData.chargeAmt,
-            outstanding: invoiceData.outstanding,
+            amount: invoiceData.invAmount,
+            outStanding: invoiceData.outStanding,
             settled: invoiceData.settled,
-            recExRate: invoiceData.recExRate,
-            txnSettled: invoiceData.txnSettled,
-            gainAmt: invoiceData.gainAmt
-            // remarks: invoiceData.remarks
+            setExRate: invoiceData.setExRate,
+            tnxSettled: invoiceData.tnxSettled,
+            gainAmt: invoiceData.gainOrLoss
           }))
         );
       } else {
@@ -619,172 +530,88 @@ const ARadjustmentOffset = () => {
 
   const handleSave = async () => {
     const errors = {};
-    const tableErrors = inVoiceDetailsData.map((row) => ({
-      invNo: !row.invNo ? 'Invoice No is required' : '',
-      invDate: !row.invDate ? 'Invoice Date is required' : '',
-      refNo: !row.refNo ? 'Ref No is required' : '',
-      refDate: !row.refDate ? 'Ref Date is required' : '',
-      masterRef: !row.masterRef ? 'Master Ref is required' : '',
-      houseRef: !row.houseRef ? 'House Ref is required' : '',
-      currency: !row.currency ? 'Currency is required' : '',
-      exRate: !row.exRate ? 'Ex Rate is required' : '',
-      amount: !row.amount ? 'Amount is required' : '',
-      chargeAmt: !row.chargeAmt ? 'Chargeable Amount is required' : '',
-      outstanding: !row.outstanding ? 'Outstanding is required' : '',
-      settled: !row.settled ? 'Settled is required' : '',
-      recExRate: !row.recExRate ? 'Rec Ex Rate is required' : '',
-      txnSettled: !row.txnSettled ? 'Txn Settled is required' : '',
-      gainAmt: !row.gainAmt ? 'Gain or Loss is required' : ''
-    }));
+    // const tableErrors = inVoiceDetailsData.map((row) => ({
+    //   invNo: !row.invNo ? 'Invoice No is required' : '',
+    //   invDate: !row.invDate ? 'Invoice Date is required' : '',
+    //   refNo: !row.refNo ? 'Ref No is required' : '',
+    //   refDate: !row.refDate ? 'Ref Date is required' : '',
+    //   masterRef: !row.masterRef ? 'Master Ref is required' : '',
+    //   houseRef: !row.houseRef ? 'House Ref is required' : '',
+    //   currency: !row.currency ? 'Currency is required' : '',
+    //   exRate: !row.exRate ? 'Ex Rate is required' : '',
+    //   amount: !row.amount ? 'Amount is required' : '',
+    //   chargeAmt: !row.chargeAmt ? 'Chargeable Amount is required' : '',
+    //   outStanding: !row.outStanding ? 'outStanding is required' : '',
+    //   settled: !row.settled ? 'Settled is required' : '',
+    //   setExRate: !row.setExRate ? 'Rec Ex Rate is required' : '',
+    //   tnxSettled: !row.tnxSettled ? 'Txn Settled is required' : '',
+    //   gainAmt: !row.gainAmt ? 'Gain or Loss is required' : ''
+    // }));
 
-    let hasTableErrors = false;
+    // let hasTableErrors = false;
 
-    tableErrors.forEach((err) => {
-      if (Object.values(err).some((error) => error)) {
-        hasTableErrors = true;
-      }
-    });
+    // tableErrors.forEach((err) => {
+    //   if (Object.values(err).some((error) => error)) {
+    //     hasTableErrors = true;
+    //   }
+    // });
 
     // Check for empty fields and set error messages
-    if (!formData.receiptType) {
-      errors.receiptType = 'Receipt Type Bank is required';
-    }
-    if (!formData.bankChargeAcc) {
-      errors.bankChargeAcc = 'Bank Charge Acc is required';
-    }
-    // if (!formData.docNo) {
-    //   errors.docNo = 'Document ID is required';
-    // }
-    // if (!formData.docDate) {
-    //   errors.docDate = 'Document Date is required';
-    // }
-    if (!formData.bankCharges) {
-      errors.bankCharges = 'Bank Charges is required';
-    }
-    if (!formData.inCurrencyBnkChargs) {
-      errors.inCurrencyBnkChargs = 'In Currency Bank Charges is required';
-    }
-    if (!formData.type) {
-      errors.type = 'Type is required';
-    }
-    if (!formData.tdsAmt) {
-      errors.tdsAmt = 'Tds Amount is required';
-    }
-    if (!formData.inCurrencyTdsAmt) {
-      errors.inCurrencyTdsAmt = 'In Currency Tds Amount is required';
-    }
-    if (!formData.customerName) {
-      errors.customerName = 'Customer Name is required';
-    }
-    if (!formData.chequeBank) {
-      errors.chequeBank = 'Cheque Bank is required';
-    }
-    if (!formData.customerCode) {
-      errors.customerCode = 'Customer Code is required';
-    }
-    if (!formData.receiptType1) {
-      errors.receiptType1 = 'Receipt Type is required';
-    }
-    if (!formData.bankCashAcc) {
-      errors.bankCashAcc = 'Bank/Cash/Acc is required';
-    }
-    if (!formData.chequeUtiNo) {
-      errors.chequeUtiNo = 'Cheque/Uti No is required';
-    }
-    if (!formData.chequeUtiDt) {
-      errors.chequeUtiDt = 'Cheque/Uti Dt is required';
-    }
-    if (!formData.receiptAmt) {
-      errors.receiptAmt = 'Receipt Amount is required';
-    }
-    if (!formData.currency) {
-      errors.currency = 'Currency is required';
-    }
-    if (!formData.currencyAmount) {
-      errors.currencyAmount = 'Currency Amount is required';
-    }
-    if (!formData.receivedFrom) {
-      errors.receivedFrom = 'Received From is required';
+    if (!formData.amount) {
+      errors.amount = 'Amount is required';
     }
 
     setFieldErrors(errors);
-    setInvoiceDetailsError(tableErrors);
+    // setInvoiceDetailsError(tableErrors);
 
-    // Prevent saving if form or table errors exist
-    if (Object.keys(errors).length === 0 && !hasTableErrors) {
+    if (Object.keys(errors).length === 0) {
       setIsLoading(true);
 
       const receiptInvDetailVo = inVoiceDetailsData.map((row) => ({
-        // id: item.id || 0, // If id exists, otherwise 0
 
         ...(editId && { id: row.id }),
-        amount: parseInt(row.amount),
-        chargeAmt: parseInt(row.chargeAmt),
-        currency: row.currency,
+        curr: row.currency,
         exRate: parseInt(row.exRate),
-        gainAmt: parseInt(row.gainAmt),
-        houseRef: row.houseRef,
-        invNo: row.invNo,
-        invDate: formatDate(new Date(row.invDate)),
-        masterRef: row.masterRef,
-        outstanding: parseInt(row.outstanding),
-        recExRate: parseInt(row.recExRate),
+        gainOrLoss: parseInt(row.gainAmt),
+        invAmount: parseInt(row.amount),
+        invoiceDate: formatDate(new Date(row.invDate)),
+        invoiceNo: row.invNo,
+        outStanding: parseInt(row.outStanding),
         refDate: formatDate(new Date(row.refDate)),
         refNo: row.refNo,
+        setExRate: parseInt(row.setExRate),
         settled: parseInt(row.settled),
-        txnSettled: parseInt(row.txnSettled)
-        // remarks: row.remarks,
-        // fromDate: formatDate(currentDate), // Passing current date
-        // toDate: formatDate(currentDate)
+        tnxSettled: parseInt(row.tnxSettled)
       }));
 
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        bankCashAcc: formData.bankCashAcc,
-        bankChargeAcc: formData.bankChargeAcc,
-        bankCharges: parseInt(formData.bankCharges),
+        amount: formData.amount,
+        arOffSetInvoiceDetailsDTO: receiptInvDetailVo,
         branch: branch,
         branchCode: branchCode,
-        cancel: true,
-        cancelRemarks: '',
-        chequeBank: formData.chequeBank,
-        chequeUtiNo: formData.chequeUtiNo,
-        chequeUtiDt: formatDate(new Date(formData.chequeUtiDt)), // Formatting with date and time
-        client: '',
         createdBy: loginUserName,
         currency: formData.currency,
-        currencyAmount: formData.currencyAmount,
-        customer: '',
-        customerCode: formData.customerCode,
-        customerName: formData.customerName,
+        exRate: formData.exRate,
         finYear: finYear,
-        inCurrencyBnkChargs: formData.inCurrencyBnkChargs,
-        inCurrencyTdsAmt: formData.inCurrencyTdsAmt,
-        netAmount: formData.netAmount,
-        receiptAmt: parseInt(formData.receiptAmt),
-        receiptInvDetailaDTO: receiptInvDetailVo,
-        receiptType: formData.receiptType,
-        receiptType1: formData.receiptType1,
-        receivedFrom: formData.receivedFrom,
-        remarks: formData.remarks,
-        taxAmt: 0,
-        tdsAmt: parseInt(formData.tdsAmt),
-        type: formData.type,
+        narration: formData.narration,
         orgId: parseInt(orgId),
-        docNo: formData.docNo,
-        docDate: formatDate(new Date(formData.docDate)), // Formatting with date and time
-        // ipNo: '',
-        // latitude: '',
+        receiptDocDate: formData.receiptDocDate,
+        receiptDocId: formData.receiptDocId,
+        subLedgerCode: formData.subledgerCode,
+        subLedgerName: formData.subledgerName,
+        subLedgerType: formData.subledgerType,
+        supplierRefNo: formData.supplierRefNo,
       };
 
       try {
-        const response = await apiCalls('put', `/offSetcontroller/updateCreateOffSet`, saveFormData);
+        const response = await apiCalls('put', `/aradjustmentoffset/updateCreateArAdjustmentOffSet`, saveFormData);
         if (response.status === true) {
           showToast('success', editId ? 'AR-Adjustment Offset Updated Successfully' : 'AR-Adjustment Offset created successfully');
           handleClear();
           getAllARAdjustmentOffset();
-          getReceiptDocId();
+          getArOffsetDocId();
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'AR-Adjustment Offset creation failed');
         }
@@ -798,14 +625,15 @@ const ARadjustmentOffset = () => {
   };
 
   const listViewColumns = [
-    { accessorKey: 'receiptType', header: 'Receipt Type', size: 140 },
-    { accessorKey: 'bankChargeAcc', header: 'Bank Charges Account', size: 140 },
-    // { accessorKey: 'docNo', header: 'Doc Id', size: 140 },
-    { accessorKey: 'type', header: 'Type', size: 140 },
-    { accessorKey: 'tdsAmt', header: 'TDS Amount', size: 140 },
-    { accessorKey: 'customerName', header: 'Customer Name', size: 140 },
-    { accessorKey: 'chequeUtiDt', header: 'Chq/ UTI Dt', size: 140 },
-    { accessorKey: 'receiptAmt', header: 'Receipt Amount', size: 140 }
+    { accessorKey: 'docId', header: 'Doc No', size: 140 },
+    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'receiptDocId', header: 'Receipt Doc Id', size: 140 },
+    { accessorKey: 'receiptDocDate', header: 'Receipt Doc Date', size: 140 },
+    { accessorKey: 'subLedgerType', header: 'Subledger Type', size: 140 },
+    { accessorKey: 'subLedgerName', header: 'Subledger Name', size: 140 },
+    { accessorKey: 'subLedgerCode', header: 'Subledger Code', size: 140 },
+    { accessorKey: 'totalSettled', header: 'Total Settled', size: 140 },
+    { accessorKey: 'onAccount', header: 'On Account', size: 140 }
   ];
 
   return (
@@ -828,17 +656,13 @@ const ARadjustmentOffset = () => {
             <div className="row d-flex ml" style={{ marginBottom: '20px' }}>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
+                  {/* <TextField id="docNo" name="docNo" label="Doc No" value={docNo} size="small" disabled /> */}
                   <TextField
-                    id="docNo"
-                    name="docNo"
                     label="Doc No"
                     size="small"
                     disabled
                     value={formData.docNo}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.docNo}
-                    helperText={fieldErrors.docNo}
+                    onChange={(e) => setFormData({ ...formData, docNo: e.target.value })}
                   />
                 </FormControl>
               </div>
@@ -847,7 +671,8 @@ const ARadjustmentOffset = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Doc Date"
-                      value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
+                      // value={formData.docDate ? dayjs(formData.docDate, 'YYYY-MM-DD') : null}
+                      value={formData.docDate}
                       onChange={(date) => handleDateChange('docDate', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -859,26 +684,32 @@ const ARadjustmentOffset = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="bankCharges"
-                    name="bankCharges"
-                    label="Receipt/Payment Doc ID"
-                    size="small"
-                    value={formData.bankCharges}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.bankCharges}
-                    helperText={fieldErrors.bankCharges}
-                  />
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.receiptDocId}>
+                  <InputLabel id="receiptDocId">Receipt Doc ID</InputLabel>
+                  <Select
+                    labelId="receiptDocId"
+                    id="receiptDocId"
+                    label="Receipt Doc ID"
+                    onChange={handleDocIdChange}
+                    name="receiptDocId"
+                    value={formData.receiptDocId}
+                  >
+                    {allReceiptDocId.map((doc) => (
+                      <MenuItem key={doc.id} value={doc.docId}>
+                        {doc.docId}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.receiptDocId && <FormHelperText>{fieldErrors.receiptDocId}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Receipt/Payment Doc Date"
-                      value={formData.receiptDocDate ? dayjs(formData.receiptDocDate, 'YYYY-MM-DD') : null}
+                      label="Receipt Doc Date"
+                      // value={formData.receiptDocDate ? dayjs(formData.receiptDocDate, 'YYYY-MM-DD') : null}
+                      value={formData.receiptDocDate}
                       onChange={(date) => handleDateChange('receiptDocDate', date)}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -892,36 +723,30 @@ const ARadjustmentOffset = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.type}>
-                  <InputLabel  id="subledgerType"> Subledger Type </InputLabel>
-                    <Select
-                      labelId="subledgerType"
-                      label="Subledger Type"
-                      value={formData.type}
-                      onChange={handleInputChange}
-                      name="subledgerType"
-                    >
-                    <MenuItem value={'AIR CARRIER'}>AIR CARRIER</MenuItem>
-                    <MenuItem value={'BANK'}>BANK</MenuItem>
-                    <MenuItem value={'COLOADER'}>COLOADER</MenuItem>
-                    <MenuItem value={'CUSTOMER'}>CUSTOMER</MenuItem>
-                    <MenuItem value={'GLOBAL'}>GLOBAL</MenuItem>
-                    <MenuItem value={'SEA CARRIER'}>SEA CARRIER</MenuItem>
-                    <MenuItem value={'VENDOR'}>VENDOR</MenuItem>
-                  </Select>
-                  {fieldErrors.type && <FormHelperText>{fieldErrors.type}</FormHelperText>}
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="subledgerType"
+                    name="subledgerType"
+                    label="Subledger Type"
+                    size="small"
+                    value={formData.subledgerType}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 30 }}
+                    error={!!fieldErrors.subledgerType}
+                    helperText={fieldErrors.subledgerType}
+                  />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.inCurrencyBnkChargs}>
-                  <InputLabel id="inCurrencyBnkChargs">Currency</InputLabel>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
+                  <InputLabel id="currency">Currency</InputLabel>
                   <Select
-                    labelId="inCurrencyBnkChargs"
-                    id="inCurrencyBnkChargs"
+                    labelId="currency"
+                    id="currency"
                     label="Currency"
                     onChange={handleInputChange}
-                    name="inCurrencyBnkChargs"
-                    value={formData.inCurrencyBnkChargs}
+                    name="currency"
+                    value={formData.currency}
                   >
                     {currencies.map((currency) => (
                       <MenuItem key={currency.id} value={currency.currency}>
@@ -929,37 +754,22 @@ const ARadjustmentOffset = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.inCurrencyBnkChargs && <FormHelperText>{fieldErrors.inCurrencyBnkChargs}</FormHelperText>}
+                  {fieldErrors.currency && <FormHelperText>{fieldErrors.currency}</FormHelperText>}
                 </FormControl>
               </div>
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="chequeBank"
-                    name="chequeBank"
+                    id="exRate"
+                    name="exRate"
                     label="Ex. rate"
                     size="small"
-                    value={formData.chequeBank}
+                    value={formData.exRate}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.chequeBank}
-                    helperText={fieldErrors.chequeBank}
-                  />
-                </FormControl>
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="customerCode"
-                    name="customerCode"
-                    label="Subledger Name"
-                    size="small"
-                    value={formData.customerCode}
-                    onChange={handleInputChange}
-                    error={!!fieldErrors.customerCode}
-                    helperText={fieldErrors.customerCode}
+                    // error={!!fieldErrors.exRate}
+                    // helperText={fieldErrors.exRate}
                     disabled
                   />
                 </FormControl>
@@ -968,30 +778,14 @@ const ARadjustmentOffset = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="bankCashAcc"
-                    name="bankCashAcc"
-                    label="Amount"
+                    id="subledgerName"
+                    name="subledgerName"
+                    label="Subledger Name"
                     size="small"
-                    value={formData.bankCashAcc}
+                    value={formData.subledgerName}
                     onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.bankCashAcc}
-                    helperText={fieldErrors.bankCashAcc}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="chequeUtiNo"
-                    name="chequeUtiNo"
-                    label="Supplier Ref No"
-                    size="small"
-                    value={formData.chequeUtiNo}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.chequeUtiNo}
-                    helperText={fieldErrors.chequeUtiNo}
+                    error={!!fieldErrors.subledgerName}
+                    helperText={fieldErrors.subledgerName}
                   />
                 </FormControl>
               </div>
@@ -999,15 +793,46 @@ const ARadjustmentOffset = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
-                    id="receiptAmt"
-                    name="receiptAmt"
-                    label="Subledger Code"
+                    id="amount"
+                    name="amount"
+                    label="Amount"
                     size="small"
-                    value={formData.receiptAmt}
+                    value={formData.amount}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.receiptAmt}
-                    helperText={fieldErrors.receiptAmt}
+                    error={!!fieldErrors.amount}
+                    helperText={fieldErrors.amount}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="supplierRefNo"
+                    name="supplierRefNo"
+                    label="Supplier Ref No"
+                    size="small"
+                    value={formData.supplierRefNo}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 30 }}
+                    error={!!fieldErrors.supplierRefNo}
+                    helperText={fieldErrors.supplierRefNo}
+                  />
+                </FormControl>
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="subledgerCode"
+                    name="subledgerCode"
+                    label="Subledger Code"
+                    size="small"
+                    value={formData.subledgerCode}
+                    onChange={handleInputChange}
+                    inputProps={{ maxLength: 30 }}
+                    error={!!fieldErrors.subledgerCode}
+                    helperText={fieldErrors.subledgerCode}
                   />
                 </FormControl>
               </div>
@@ -1048,15 +873,12 @@ const ARadjustmentOffset = () => {
                               <th className="px-2 py-2 text-white text-center">Invoice Date</th>
                               <th className="px-2 py-2 text-white text-center">Ref No</th>
                               <th className="px-2 py-2 text-white text-center">Ref Date</th>
-                              <th className="px-2 py-2 text-white text-center">Master Ref</th>
-                              <th className="px-2 py-2 text-white text-center">House Ref</th>
                               <th className="px-2 py-2 text-white text-center">Curr.</th>
                               <th className="px-2 py-2 text-white text-center">Ex. Rate</th>
-                              <th className="px-2 py-2 text-white text-center">Amount</th>
-                              <th className="px-2 py-2 text-white text-center">Chargeable Amount</th>
-                              <th className="px-2 py-2 text-white text-center">Outstanding</th>
+                              <th className="px-2 py-2 text-white text-center">Inv. Amount</th>
+                              <th className="px-2 py-2 text-white text-center">outStanding</th>
                               <th className="px-2 py-2 text-white text-center">Settled</th>
-                              <th className="px-2 py-2 text-white text-center">Rec. Ex. Rate</th>
+                              <th className="px-2 py-2 text-white text-center">set. Ex. Rate</th>
                               <th className="px-2 py-2 text-white text-center">Txn Settled</th>
                               <th className="px-2 py-2 text-white text-center">Gain or Loss</th>
                               {/* <th className="px-2 py-2 text-white text-center">Remarks</th> */}
@@ -1211,78 +1033,6 @@ const ARadjustmentOffset = () => {
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
-                                      value={row.masterRef}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        const regex = /^[a-zA-Z0-9\s-]*$/;
-                                        if (regex.test(value)) {
-                                          setInVoiceDetailsData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, masterRef: value } : r))
-                                          );
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], masterRef: !value ? 'Master Ref is required' : '' };
-                                            return newErrors;
-                                          });
-                                        } else {
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              masterRef: 'Only alphabets and numbers are allowed'
-                                            };
-                                            return newErrors;
-                                          });
-                                        }
-                                      }}
-                                      className={invoiceDetailsError[index]?.masterRef ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
-                                    />
-                                    {invoiceDetailsError[index]?.masterRef && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {invoiceDetailsError[index].masterRef}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.houseRef}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        const regex = /^[a-zA-Z0-9\s-]*$/;
-                                        if (regex.test(value)) {
-                                          setInVoiceDetailsData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, houseRef: value } : r))
-                                          );
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], houseRef: !value ? 'House Ref is required' : '' };
-                                            return newErrors;
-                                          });
-                                        } else {
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              houseRef: 'Only alphabets and numbers are allowed'
-                                            };
-                                            return newErrors;
-                                          });
-                                        }
-                                      }}
-                                      className={invoiceDetailsError[index]?.houseRef ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
-                                    />
-                                    {invoiceDetailsError[index]?.houseRef && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {invoiceDetailsError[index].houseRef}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
                                       value={row.currency}
                                       onChange={(e) => {
                                         const value = e.target.value;
@@ -1382,55 +1132,19 @@ const ARadjustmentOffset = () => {
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
-                                      value={row.chargeAmt}
+                                      value={row.outStanding}
                                       onChange={(e) => {
                                         const value = e.target.value;
                                         const isNumeric = /^[0-9]*$/;
                                         if (isNumeric.test(value)) {
                                           setInVoiceDetailsData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, chargeAmt: value } : r))
-                                          );
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], chargeAmt: !value ? 'Charge Amt is required' : '' };
-                                            return newErrors;
-                                          });
-                                        } else {
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              chargeAmt: 'Only numbers are allowed'
-                                            };
-                                            return newErrors;
-                                          });
-                                        }
-                                      }}
-                                      className={invoiceDetailsError[index]?.chargeAmt ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
-                                    />
-                                    {invoiceDetailsError[index]?.chargeAmt && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {invoiceDetailsError[index].chargeAmt}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.outstanding}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        const isNumeric = /^[0-9]*$/;
-                                        if (isNumeric.test(value)) {
-                                          setInVoiceDetailsData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, outstanding: value } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, outStanding: value } : r))
                                           );
                                           setInvoiceDetailsError((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              outstanding: !value ? 'Outstanding is required' : ''
+                                              outStanding: !value ? 'outStanding is required' : ''
                                             };
                                             return newErrors;
                                           });
@@ -1439,18 +1153,18 @@ const ARadjustmentOffset = () => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              outstanding: 'Only numbers are allowed'
+                                              outStanding: 'Only numbers are allowed'
                                             };
                                             return newErrors;
                                           });
                                         }
                                       }}
-                                      className={invoiceDetailsError[index]?.outstanding ? 'error form-control' : 'form-control'}
+                                      className={invoiceDetailsError[index]?.outStanding ? 'error form-control' : 'form-control'}
                                       style={{ width: '150px' }}
                                     />
-                                    {invoiceDetailsError[index]?.outstanding && (
+                                    {invoiceDetailsError[index]?.outStanding && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {invoiceDetailsError[index].outstanding}
+                                        {invoiceDetailsError[index].outStanding}
                                       </div>
                                     )}
                                   </td>
@@ -1490,20 +1204,20 @@ const ARadjustmentOffset = () => {
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
-                                      value={row.recExRate}
+                                      value={row.setExRate}
                                       onChange={(e) => {
                                         const value = e.target.value;
                                         const isNumeric = /^[0-9]*$/;
 
                                         if (isNumeric.test(value)) {
                                           setInVoiceDetailsData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, recExRate: value } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, setExRate: value } : r))
                                           );
                                           setInvoiceDetailsError((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              recExRate: !value ? 'Rec Ex Rate is required' : ''
+                                              setExRate: !value ? 'Rec Ex Rate is required' : ''
                                             };
                                             return newErrors;
                                           });
@@ -1512,38 +1226,38 @@ const ARadjustmentOffset = () => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              recExRate: 'Only numbers are allowed'
+                                              setExRate: 'Only numbers are allowed'
                                             };
                                             return newErrors;
                                           });
                                         }
                                       }}
-                                      className={invoiceDetailsError[index]?.recExRate ? 'error form-control' : 'form-control'}
+                                      className={invoiceDetailsError[index]?.setExRate ? 'error form-control' : 'form-control'}
                                       style={{ width: '150px' }}
                                     />
-                                    {invoiceDetailsError[index]?.recExRate && (
+                                    {invoiceDetailsError[index]?.setExRate && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {invoiceDetailsError[index].recExRate}
+                                        {invoiceDetailsError[index].setExRate}
                                       </div>
                                     )}
                                   </td>
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
-                                      value={row.txnSettled}
+                                      value={row.tnxSettled}
                                       onChange={(e) => {
                                         const value = e.target.value;
                                         const isNumeric = /^[0-9]*$/;
 
                                         if (isNumeric.test(value)) {
                                           setInVoiceDetailsData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, txnSettled: value } : r))
+                                            prev.map((r) => (r.id === row.id ? { ...r, tnxSettled: value } : r))
                                           );
                                           setInvoiceDetailsError((prev) => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              txnSettled: !value ? 'Txn Settled is required' : ''
+                                              tnxSettled: !value ? 'Txn Settled is required' : ''
                                             };
                                             return newErrors;
                                           });
@@ -1552,18 +1266,18 @@ const ARadjustmentOffset = () => {
                                             const newErrors = [...prev];
                                             newErrors[index] = {
                                               ...newErrors[index],
-                                              txnSettled: 'Only numbers are allowed'
+                                              tnxSettled: 'Only numbers are allowed'
                                             };
                                             return newErrors;
                                           });
                                         }
                                       }}
-                                      className={invoiceDetailsError[index]?.txnSettled ? 'error form-control' : 'form-control'}
+                                      className={invoiceDetailsError[index]?.tnxSettled ? 'error form-control' : 'form-control'}
                                       style={{ width: '150px' }}
                                     />
-                                    {invoiceDetailsError[index]?.txnSettled && (
+                                    {invoiceDetailsError[index]?.tnxSettled && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {invoiceDetailsError[index].txnSettled}
+                                        {invoiceDetailsError[index].tnxSettled}
                                       </div>
                                     )}
                                   </td>
@@ -1631,15 +1345,15 @@ const ARadjustmentOffset = () => {
                     <div className="col-md-3 mb-3">
                       <FormControl fullWidth variant="filled">
                         <TextField
-                          id="netAmount"
-                          name="netAmount"
+                          id="gainorLoss"
+                          name="gainorLoss"
                           label="Forex Gain or Loss"
                           size="small"
-                          value={formData.netAmount}
+                          value={formData.gainorLoss}
                           onChange={handleInputChange}
                           inputProps={{ maxLength: 30 }}
-                          error={!!fieldErrors.netAmount}
-                          helperText={fieldErrors.netAmount}
+                          error={!!fieldErrors.gainorLoss}
+                          helperText={fieldErrors.gainorLoss}
                         />
                       </FormControl>
                     </div>
@@ -1647,60 +1361,57 @@ const ARadjustmentOffset = () => {
                     <div className="col-md-3 mb-3">
                       <FormControl fullWidth variant="filled">
                         <TextField
-                          id="remarks"
-                          name="remarks"
+                          id="totalSettled"
+                          name="totalSettled"
                           label="Total Setteled"
                           size="small"
-                          value={formData.remarks}
+                          value={formData.totalSettled}
                           onChange={handleInputChange}
                           inputProps={{ maxLength: 30 }}
-                          error={!!fieldErrors.remarks}
-                          helperText={fieldErrors.remarks}
+                          error={!!fieldErrors.totalSettled}
+                          helperText={fieldErrors.totalSettled}
                         />
                       </FormControl>
                     </div>
                     <div className="col-md-3 mb-3">
                       <FormControl fullWidth variant="filled">
                         <TextField
-                          id="remarks"
-                          name="remarks"
+                          id="roundOfAmount"
+                          name="roundOfAmount"
                           label="Round Of Amount"
                           size="small"
-                          value={formData.remarks}
+                          value={formData.roundOfAmount}
                           onChange={handleInputChange}
                           inputProps={{ maxLength: 30 }}
-                          error={!!fieldErrors.remarks}
-                          helperText={fieldErrors.remarks}
+                          error={!!fieldErrors.roundOfAmount}
+                          helperText={fieldErrors.roundOfAmount}
                         />
                       </FormControl>
                     </div>
                     <div className="col-md-3 mb-3">
                       <FormControl fullWidth variant="filled">
                         <TextField
-                          id="remarks"
-                          name="remarks"
+                          id="onAccount"
+                          name="onAccount"
                           label="On Account"
                           size="small"
-                          value={formData.remarks}
-                          onChange={handleInputChange}
-                          inputProps={{ maxLength: 30 }}
-                          error={!!fieldErrors.remarks}
-                          helperText={fieldErrors.remarks}
+                          value={formData.onAccount}
+                          disabled 
                         />
                       </FormControl>
                     </div>
                     <div className="col-md-3 mb-3">
                       <FormControl fullWidth variant="filled">
                         <TextField
-                          id="remarks"
-                          name="remarks"
+                          id="narration"
+                          name="narration"
                           label="Narration"
                           size="small"
-                          value={formData.remarks}
+                          value={formData.narration}
                           onChange={handleInputChange}
                           inputProps={{ maxLength: 30 }}
-                          error={!!fieldErrors.remarks}
-                          helperText={fieldErrors.remarks}
+                          error={!!fieldErrors.narration}
+                          helperText={fieldErrors.narration}
                         />
                       </FormControl>
                     </div>
