@@ -132,20 +132,20 @@ function ReceiptReport() {
   const reportColumns = [
     { accessorKey: 'docId', header: 'Doc No', size: 110 },
     { accessorKey: 'docDate', header: 'Doc Date', size: 100 },
-    { accessorKey: 'subLedgerName', header: 'Sub Ledger Name', size: 110 },
-    { accessorKey: 'bankChargesAmt', header: 'Bank / Cash A/C', size: 110 },
+    { accessorKey: 'subLedgerName', header: 'Party Name', size: 110 },
+    // { accessorKey: 'bankChargesAmt', header: 'Bank / Cash A/C', size: 110 },
     {
       accessorKey: 'receiptAmount',
       header: 'Receipt Amount',
       size: 100,
       Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
     },
-    {
-      accessorKey: 'bankChargesAmt',
-      header: 'Bank Charges',
-      size: 110,
-      Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    },
+    // {
+    //   accessorKey: 'bankChargesAmt',
+    //   header: 'Bank Charges',
+    //   size: 110,
+    //   Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
+    // },
     {
       accessorKey: 'tdsAmt',
       header: 'TDS Amount',
@@ -157,7 +157,7 @@ function ReceiptReport() {
     // { accessorKey: 'refNo', header: 'Ref No', size: 100 },
     // { accessorKey: 'refDate', header: 'Ref Date', size: 100 },
     // { accessorKey: 'mode', header: 'Mode', size: 100 },
-    { accessorKey: 'chequeBank', header: 'Cheque Bank', size: 200 },
+    // { accessorKey: 'chequeBank', header: 'Cheque Bank', size: 200 },
     { accessorKey: 'chQnNumber', header: 'Cheque No', size: 200 },
     {
       accessorKey: 'arapAmt',

@@ -135,16 +135,16 @@ function PartyLedger() {
     }));
 
     if (name === 'branch') {
-      if (value === "All") {
+      if (value === 'All') {
         setFormData((prevData) => ({
           ...prevData,
-          branch: "All",
+          branch: 'All'
         }));
       } else {
         const selectedBranch = branchCodeList.find((br) => br.branch === value);
         setFormData((prevData) => ({
           ...prevData,
-          branch: selectedBranch ? selectedBranch.branch : '',
+          branch: selectedBranch ? selectedBranch.branch : ''
         }));
       }
     } else {
@@ -215,25 +215,25 @@ function PartyLedger() {
     // { accessorKey: 'supplierrefdate', header: 'Supp Reference Date', size: 140 },
     // { accessorKey: 'partyType', header: 'Particulars', size: 140 },
     // { accessorKey: 'currency', header: 'Currency', size: 140 },
-    { accessorKey: 'dbAmount', header: 'Debit(INR)', size: 140 },
-    { accessorKey: 'crAmount', header: 'Credit(INR)', size: 140 },
-    { accessorKey: 'billdbAmount', header: 'Debit', size: 140 },
-    { accessorKey: 'billcrAmount', header: 'Credit', size: 140 },
-    { accessorKey: 'clBal', header: 'Closing Balance', size: 140 },
+    { accessorKey: 'dbAmount', header: 'Debit', size: 140 },
+    { accessorKey: 'crAmount', header: 'Credit', size: 140 },
+    // { accessorKey: 'billdbAmount', header: 'Debit', size: 140 },
+    // { accessorKey: 'billcrAmount', header: 'Credit', size: 140 },
+    { accessorKey: 'clBal', header: 'Closing Balance', size: 140 }
   ];
   const handleGo = async () => {
     const errors = {};
     if (!formData.partyName) {
       errors.partyName = 'Party Name is required';
     }
-      if (!formData.fromDate) {
-        errors.fromDate = 'From Date is required';
-        showToast('error', errors.fromDate);
-      }
-      if (!formData.toDate) {
-        errors.toDate = 'To Date is required';
-        showToast('error', errors.toDate);
-      }
+    if (!formData.fromDate) {
+      errors.fromDate = 'From Date is required';
+      showToast('error', errors.fromDate);
+    }
+    if (!formData.toDate) {
+      errors.toDate = 'To Date is required';
+      showToast('error', errors.toDate);
+    }
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       try {
