@@ -604,10 +604,10 @@ const DashboardNew = () => {
 
   // Update financial data dynamically
   const financialData = [
-    { stats: 'ETH', statsPercentage: '+4.6%', title: 'Revenue', monthly: totalOrderYear, yearly: totalOrderYear },
-    { stats: 'ETH', statsPercentage: '-7.4%', title: 'Cost', monthly: totalCostYear, yearly: totalCostYear },
-    { stats: 'ETH', statsPercentage: '0%', title: 'Receipt', monthly: 0, yearly: 0 },
-    { stats: 'ETH', statsPercentage: '0%', title: 'Payment', monthly: 0, yearly: 0 }
+    { stats: 'PM', statsPercentage: '+4.6%', title: 'Revenue', monthly: totalOrderYear, yearly: totalOrderYear },
+    { stats: 'PM', statsPercentage: '-7.4%', title: 'Cost', monthly: totalCostYear, yearly: totalCostYear },
+    { stats: 'PM', statsPercentage: '0%', title: 'Receipt', monthly: 0, yearly: 0 },
+    { stats: 'PM', statsPercentage: '0%', title: 'Payment', monthly: 0, yearly: 0 }
   ];
 
   return (
