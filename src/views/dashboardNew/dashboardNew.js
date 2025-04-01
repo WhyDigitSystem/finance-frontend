@@ -74,16 +74,25 @@ const StatCard = ({ statsPercentage, stats, title, monthlyValue, yearlyValue, co
           </Grid>
           {showToggle && (
             <Grid item>
-              <ButtonGroup size="small" variant="contained">
+              <ButtonGroup size="small">
                 <Button
                   sx={{
                     px: 1,
+                    // py: 1.2,
                     minWidth: "auto",
-                    bgcolor: !isYearly ? "primary.main" : "grey.100",
-                    fontWeight: !isYearly ? "bold" : "normal",
+                    // borderRadius: "8px",
+                    // border: "2px solid",
+                    borderColor: !isYearly ? "#121926" : "transparent",
+                    backgroundColor: !isYearly ? "#121926" : "",
                     color: !isYearly ? "white" : "grey.700",
+                    fontWeight: "bold",
+                    // boxShadow: !isYearly ? "0px 4px 10px rgba(0, 0, 0, 0.2)" : "none",
+                    // transition: "all 0.3s ease",
                     "&:hover": {
-                      bgcolor: !isYearly ? "primary.dark" : "grey.400",
+                      backgroundColor: !isYearly ? "#121926" : "",
+                      // transform: !isYearly ? "scale(1.05)" : "none",
+                      border: !isYearly ? "none" : "none",
+                      borderColor: !isYearly ? "#121926" : "transparent",
                     },
                   }}
                   onClick={() => setIsYearly(false)}
@@ -93,12 +102,21 @@ const StatCard = ({ statsPercentage, stats, title, monthlyValue, yearlyValue, co
                 <Button
                   sx={{
                     px: 1,
+                    // py: 1.2,
                     minWidth: "auto",
-                    bgcolor: isYearly ? "primary.main" : "grey.300",
-                    fontWeight: isYearly ? "bold" : "normal",
-                    color: isYearly ? "white" : "black",
+                    // borderRadius: "8px",
+                    // border: "2px solid",
+                    borderColor: isYearly ? "#121926" : "transparent",
+                    backgroundColor: isYearly ? "#121926" : "",
+                    color: isYearly ? "white" : "grey.700",
+                    fontWeight: "bold",
+                    // boxShadow: isYearly ? "0px 4px 10px rgba(0, 0, 0, 0.2)" : "none",
+                    // transition: "all 0.3s ease",
                     "&:hover": {
-                      bgcolor: isYearly ? "primary.dark" : "grey.400",
+                      backgroundColor: isYearly ? "#121926" : "",
+                      // transform: isYearly ? "scale(1.05)" : "none",
+                      border: isYearly ? "none" : "none",
+                      borderColor: !isYearly ? "#121926" : "transparent",
                     },
                   }}
                   onClick={() => setIsYearly(true)}
@@ -107,7 +125,6 @@ const StatCard = ({ statsPercentage, stats, title, monthlyValue, yearlyValue, co
                 </Button>
               </ButtonGroup>
             </Grid>
-
           )}
         </Grid>
         <Typography variant="h5" mt={2}>
@@ -134,8 +151,12 @@ const TopCustomersChart = ({ chartData }) => {
       tooltip: {
         callbacks: {
           label: (tooltipItem) => {
-            let value = tooltipItem.raw;
-            return `₹${value.toLocaleString("en-IN")}`;
+            const dataset = tooltipItem.dataset;
+            const index = tooltipItem.dataIndex;
+            const amount = tooltipItem.raw;
+            const fullName = dataset.tooltips[index];
+
+            return `${fullName}: ₹${amount.toLocaleString("en-IN")}`;
           },
         },
       },
@@ -143,14 +164,11 @@ const TopCustomersChart = ({ chartData }) => {
     scales: {
       x: {
         ticks: {
-          autoSkip: false,
-          maxRotation: 45,
-          minRotation: 30,
+          autoSkip: false, // Ensures all labels are displayed
+          maxRotation: 0, // Set rotation to 0 (keeps text straight)
+          minRotation: 0, // Prevents any rotation
           font: {
-            size: 10,
-          },
-          callback: function (value, index) {
-            return index + 1; // Display only numbers 1-5
+            size: 12, // Adjust font size if necessary
           },
         },
       },
@@ -465,7 +483,10 @@ export { GSTRTable, TDSTable };
 const DashboardNew = () => {
   const [isYearly, setIsYearly] = useState(false);
   const [totalOrderYear, setTotalOrderYear] = useState(0);
+  const [prevMonthAmt, setPrevMonthAmt] = useState(0);
   const [totalCostYear, setTotalCostYear] = useState(0);
+  const [totalReceiptYear, setTotalReceiptYear] = useState(0);
+  const [totalPaymentYear, setTotalPaymentYear] = useState(0);
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [chartData, setChartData] = useState(null);
@@ -504,10 +525,40 @@ const DashboardNew = () => {
     }
   }, [finYear, orgId, isYearly]);
 
+  const getDashboardReceipt = useCallback(async () => {
+    try {
+      const targetMonth = getTargetMonth(isYearly);
+
+      const response = await apiCalls('get', `dashboard/getReceiptAmont?orgId=${orgId}${targetMonth === "ALL" ? `&year=Year` : `&month=month`}`);
+
+      const totalReceiptYear = Number(response.paramObjectsMap.receiptAmont[0]?.receiptAmt || 0);
+      // const totalPrevMonthAmt = Number(response.paramObjectsMap.receiptAmont[0]?.preMnthAmt || 0);
+      setTotalReceiptYear(totalReceiptYear);
+      // setPrevMonthAmt(totalPrevMonthAmt);
+    } catch (error) {
+      console.error('Error fetching dashboard cost:', error);
+    }
+  }, [finYear, orgId, isYearly]);
+
+  const getDashboardPayment = useCallback(async () => {
+    try {
+      const targetMonth = getTargetMonth(isYearly);
+
+      const response = await apiCalls('get', `dashboard/getPaymentAmont?orgId=${orgId}${targetMonth === "ALL" ? `&year=Year` : `&month=month`}`);
+
+      const totalPaymentYear = Number(response.paramObjectsMap.receiptAmont[0]?.paymentAmt || 0);
+      setTotalPaymentYear(totalPaymentYear);
+    } catch (error) {
+      console.error('Error fetching dashboard cost:', error);
+    }
+  }, [finYear, orgId, isYearly]);
+
   useEffect(() => {
     getDashboardRevenue();
     getDashboardCost();
-  }, [getDashboardRevenue, getDashboardCost]);
+    getDashboardReceipt();
+    getDashboardPayment();
+  }, [getDashboardRevenue, getDashboardCost, getDashboardReceipt, getDashboardPayment]);
 
   useEffect(() => {
     const fetchTopCustomerData = async () => {
@@ -523,15 +574,17 @@ const DashboardNew = () => {
           let parties = response.paramObjectsMap.partyMasterVO || [];
 
           parties = parties
-            .map((party, index) => ({
-              name: `${index + 1}. ${party.partyName}`, // Prefix with numbers 1-5
+            .map((party) => ({
+              name: party.partyName, // Full name for tooltip
+              shortName: party.partyShortName || "", // Show empty if shortName is missing
               amount: parseFloat(party.amt || 0) / 100000,
             }))
             .sort((a, b) => b.amount - a.amount)
             .slice(0, 5); // Limit to top 5 customers
 
-          const labels = parties.map((party) => party.name);
+          const labels = parties.map((party) => party.shortName); // Use empty string if shortName is missing
           const amounts = parties.map((party) => party.amount);
+          const tooltips = parties.map((party) => party.name);
 
           setChartData({
             labels,
@@ -548,6 +601,7 @@ const DashboardNew = () => {
                 ],
                 borderColor: "#fff",
                 borderWidth: 2,
+                tooltips, // Store tooltips separately
               },
             ],
           });
@@ -559,7 +613,6 @@ const DashboardNew = () => {
         setChartData(null);
       }
     };
-
     fetchTopCustomerData();
   }, [orgId, isYearly]);
 
@@ -606,8 +659,8 @@ const DashboardNew = () => {
   const financialData = [
     { stats: 'PM', statsPercentage: '+4.6%', title: 'Revenue', monthly: totalOrderYear, yearly: totalOrderYear },
     { stats: 'PM', statsPercentage: '-7.4%', title: 'Cost', monthly: totalCostYear, yearly: totalCostYear },
-    { stats: 'PM', statsPercentage: '0%', title: 'Receipt', monthly: 0, yearly: 0 },
-    { stats: 'PM', statsPercentage: '0%', title: 'Payment', monthly: 0, yearly: 0 }
+    { stats: 'PM', statsPercentage: '0%', title: 'Receipt', monthly: totalReceiptYear, yearly: totalReceiptYear },
+    { stats: 'PM', statsPercentage: '0%', title: 'Payment', monthly: totalPaymentYear, yearly: totalPaymentYear }
   ];
 
   return (
