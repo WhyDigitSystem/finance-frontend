@@ -921,14 +921,13 @@ const Receipt = () => {
                               <th className="px-2 py-2 text-white text-center">Ex. Rate</th> */}
                               <th className="px-2 py-2 text-white text-center">Bill Amount</th>
                               <th className="px-2 py-2 text-white text-center">TAX</th>
-                              <th className="px-2 py-2 text-white text-center">Net Payable</th>
+                              <th className="px-2 py-2 text-white text-center">Net Receivable</th>
                               <th className="px-2 py-2 text-white text-center">TDS</th>
                               <th className="px-2 py-2 text-white text-center">Outstanding Bal</th>
                               <th className="px-2 py-2 text-white text-center">Settled Amt</th>
                             </tr>
                           </thead>
                           <tbody>
-                            {/* {Array.isArray(inVoiceDetailsData) && */}
                             {inVoiceDetailsData.map((row, index) => (
                               <tr key={row.id}>
                                 <td className="border px-2 py-2 text-center">
