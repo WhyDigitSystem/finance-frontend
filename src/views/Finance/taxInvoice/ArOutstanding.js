@@ -28,16 +28,14 @@ function ArOutstanding() {
     date: false,
     partyName: false,
     branch: false,
-    division: false,
-    option: false,
+    dueDate: false,
   });
 
   const [visibleSections, setVisibleSections] = useState({
     date: false,
     partyName: false,
     branch: false,
-    division: false,
-    option: false,
+    dueDate: false,
   });
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
@@ -51,40 +49,30 @@ function ArOutstanding() {
   };
   
   const [formData, setFormData] = useState({
-    // fromDate: null,
     asOnDate: null,
-    // dateRange: [null, null],
     partyName: 'All',
     branch: 'All',
-    division: 'All',
-    option: '',
+    dueDate: null,
   });
   const [fieldErrors, setFieldErrors] = useState({
-    // fromDate: '',
     asOnDate: '',
     partyName: '',
     branch: '',
-    division: '',
-    option: '',
+    dueDate: '',
   });
   const handleClear = () => {
     setListView(false);
     setFormData({
-      // dateRange: [null, null],
-      // fromDate: null,
       asOnDate: null,
       partyName: 'All',
       branch: 'All',
-      division: 'All',
-      option: '',
+      dueDate: null,
     });
     setFieldErrors({
-      // fromDate: '',
       asOnDate: '',
       partyName: '',
       branch: '',
-      division: '',
-      option: '',
+      dueDate: '',
     });
     setRowData([]);
   };
@@ -102,8 +90,8 @@ function ArOutstanding() {
   };
   const getpartyName = async () => {
     try {
-      const response = await apiCalls('get', `/master/getAllGroupLedgerByOrgId?orgId=${orgId}`);
-      setpartyNameList(response.paramObjectsMap.groupLedgerVO);
+      const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=customer`);
+      setpartyNameList(response.paramObjectsMap.partyMasterVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -118,36 +106,19 @@ function ArOutstanding() {
         partyName: "All",
       }));
     } else {
-      const selectedEmp = partyNameList.find((emp) => emp.accountGroupName === value);
+      const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
   
       if (selectedEmp) {
         console.log('Selected party:', selectedEmp);
         setFormData((prevData) => ({
           ...prevData,
-          partyName: selectedEmp.accountGroupName,
+          partyName: selectedEmp.partyName,
         }));
       } else {
         console.log('No Account found with the given code:', value);
       }
     }
   };
-  
-  // const handleSelectAccountChange = (e) => {
-  //   const value = e.target.value;
-  //   console.log('Selected Account value:', value);
-  //   const selectedEmp = accountNameList.find((emp) => emp.accountGroupName === value);
-
-  //   if (selectedEmp) {
-  //     console.log('Selected party:', selectedEmp);
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       accountName: selectedEmp.accountGroupName,
-  //     }));
-  //   } else {
-  //     console.log('No Account found with the given code:', value);
-  //   }
-  // };
-
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
   
@@ -182,16 +153,16 @@ function ArOutstanding() {
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
   const reportColumns = [
-    { accessorKey: 'vId', header: 'Customer Code', size: 140 },
-    { accessorKey: 'vDate', header: 'Customer', size: 140 },
-    { accessorKey: 'opbal', header: 'Outstanding', size: 140 },
-    { accessorKey: 'ncAmount', header: 'Unadjusted', size: 140 },
-    { accessorKey: 'ndAmount', header: 'Total Due', size: 140 },
-    { accessorKey: 'dbAmount', header: 'Below 30 Days', size: 140 },
-    { accessorKey: 'dbAmount', header: 'Days 30 - 60', size: 140 },
-    { accessorKey: 'dbAmount', header: 'Days 60 - 90', size: 140 },
-    { accessorKey: 'dbAmount', header: 'Days 90 - 120', size: 140 },
-    { accessorKey: 'dbAmount', header: 'Days 120+', size: 140 },
+    { accessorKey: 'subledgercode', header: 'Customer Code', size: 140 },
+    { accessorKey: 'subledgername', header: 'Customer', size: 140 },
+    { accessorKey: 'outstanding', header: 'Outstanding', size: 140 },
+    { accessorKey: 'unadjusted', header: 'Unadjusted', size: 140 },
+    { accessorKey: 'amount', header: 'Total Due', size: 140 },
+    { accessorKey: 'mslab1', header: 'Below 30 Days', size: 140 },
+    { accessorKey: 'mslab2', header: 'Days 30 - 60', size: 140 },
+    { accessorKey: 'mslab3', header: 'Days 60 - 90', size: 140 },
+    { accessorKey: 'mslab4', header: 'Days 90 - 120', size: 140 },
+    { accessorKey: 'mslab5', header: 'Days 120+', size: 140 },
   ];
   const handleGo = async () => {
     const errors = {};
@@ -205,20 +176,20 @@ function ArOutstanding() {
       setIsLoading(true);
       try {
         let response;
-        if(formData.asOnDate){
+        if(formData.dueDate){
           response = await apiCalls(
             'get',
-            `/master/getAllLedgerReport?partyName=${formData.partyName}&branch=${formData.branch}&orgId=${orgId}&asOnDate=${formData.asOnDate}`
+            `/arapAdjustments/GetArapAdjustments?asondt=${formData.asOnDate}&branch=${formData.branch}&orgId=${orgId}&partyName=${formData.partyName}&pdate=${formData.dueDate}`
           );
         }else {
           response = await apiCalls(
             'get',
-            `/master/getAllLedgerReport?&partyName=${formData.partyName}&orgId=${orgId}&branch=${formData.branch}`
+            `/arapAdjustments/GetArapAdjustments?asondt=${formData.asOnDate}&partyName=${formData.partyName}&orgId=${orgId}&branch=${formData.branch}`
           );
         }
         if (response.status === true) {
           console.log('Response:', response);
-          setRowData(response.paramObjectsMap.partyMasterVO || '');
+          setRowData(response.paramObjectsMap.mapp || '');
           setIsLoading(false);
           setListView(true);
         } else {
@@ -267,14 +238,8 @@ function ArOutstanding() {
               </div>
               <div className="col-md-2 mb-3">
                 <FormControlLabel
-                  control={<Checkbox checked={selectedSections.division}  onChange={handleCheckboxChange} name="division" color="secondary" />}
-                  label="Division"
-                />
-              </div>
-              <div className="col-md-2 mb-3">
-                <FormControlLabel
-                  control={<Checkbox checked={selectedSections.option}  onChange={handleCheckboxChange} name="option" color="secondary" />}
-                  label="Option"
+                  control={<Checkbox checked={selectedSections.dueDate}  onChange={handleCheckboxChange} name="dueDate" color="secondary" />}
+                  label="Due Date"
                 />
               </div>
               <div className="col-md-2 mb-3">
@@ -291,22 +256,6 @@ function ArOutstanding() {
               </div>
               {visibleSections.date && (
                 <>
-                  
-                  {/* <div className="col-md-3 mb-3">
-                    <FormControl fullWidth variant="filled" size="small">
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker
-                          label="From Date"
-                          value={formData.fromDate ? dayjs(formData.fromDate, 'YYYY-MM-DD') : null}
-                          onChange={(date) => handleDateChange('fromDate', date)}
-                          slotProps={{
-                            textField: { size: 'small', clearable: true, error: fieldErrors.fromDate, helperText: fieldErrors.fromDate }
-                          }}
-                          format="DD-MM-YYYY"
-                        />
-                      </LocalizationProvider>
-                    </FormControl>
-                  </div> */}
                   <div className="col-md-3 mb-3">
                      <FormControl fullWidth variant="filled" size="small">
                       <LocalizationProvider dateAdapter={AdapterDayjs}> 
@@ -316,6 +265,25 @@ function ArOutstanding() {
                           onChange={(date) => handleDateChange('asOnDate', date)}
                           slotProps={{
                             textField: { size: 'small', clearable: true, error: fieldErrors.asOnDate, helperText: fieldErrors.asOnDate }
+                          }}
+                          format="DD-MM-YYYY"
+                        />
+                       </LocalizationProvider>
+                    </FormControl> 
+                  </div>
+                </>
+              )}
+              {visibleSections.dueDate && (
+                <>
+                  <div className="col-md-3 mb-3">
+                     <FormControl fullWidth variant="filled" size="small">
+                      <LocalizationProvider dateAdapter={AdapterDayjs}> 
+                         <DatePicker 
+                          label="Due Date"
+                          value={formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : null}
+                          onChange={(date) => handleDateChange('dueDate', date)}
+                          slotProps={{
+                            textField: { size: 'small', clearable: true, error: fieldErrors.dueDate, helperText: fieldErrors.dueDate }
                           }}
                           format="DD-MM-YYYY"
                         />
@@ -339,63 +307,15 @@ function ArOutstanding() {
                     <MenuItem value="All">All</MenuItem>
 
                     {partyNameList?.map((row) => (
-                      <MenuItem key={row.id} value={row.accountGroupName}>
-                        {row.accountGroupName}
+                      <MenuItem key={row.id} value={row.partyName}>
+                        {row.partyName}
                       </MenuItem>
                     ))}
                   </Select>
                   {fieldErrors.partyName && <FormHelperText>{fieldErrors.partyName}</FormHelperText>}
                 </FormControl>
               </div>
-              )}
-              {visibleSections.division && ( 
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.division}>
-                  <InputLabel id="division-label">Division</InputLabel>
-                  <Select
-                  type='text'
-                    labelId="division-label"
-                    label="division"
-                    value={formData.division}
-                    onChange={handleSelectAccountChange}
-                    name="division"
-                  >
-                    <MenuItem value="All">All</MenuItem>
-
-                    {divisionList?.map((row) => (
-                      <MenuItem key={row.id} value={row.accountGroupName}>
-                        {row.accountGroupName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.division && <FormHelperText>{fieldErrors.division}</FormHelperText>}
-                </FormControl>
-              </div>
-              )}
-              {visibleSections.option && ( 
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.option}>
-                  <InputLabel id="option-label">Option</InputLabel>
-                  <Select
-                  type='text'
-                    labelId="option-label"
-                    label="option"
-                    value={formData.option}
-                    onChange={handleSelectAccountChange}
-                    name="option"
-                  >
-                    <MenuItem value="All">All</MenuItem>
-
-                    {optionList?.map((row) => (
-                      <MenuItem key={row.id} value={row.accountGroupName}>
-                        {row.accountGroupName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.option && <FormHelperText>{fieldErrors.option}</FormHelperText>}
-                </FormControl>
-              </div>
-              )}             
+              )}            
               {visibleSections.branch && ( 
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
@@ -408,7 +328,6 @@ function ArOutstanding() {
                     name="branch"
                   >
                     <MenuItem value="All">All</MenuItem>
-
                     {branchList?.map((row) => (
                       <MenuItem key={row.id} value={row.branch}>
                         {row.branch}
@@ -419,7 +338,7 @@ function ArOutstanding() {
                 </FormControl>
               </div>
               )}
-              {(visibleSections.date || visibleSections.partyName || visibleSections.branch) && (
+              {(visibleSections.date || visibleSections.partyName || visibleSections.branch || visibleSections.dueDate) && (
                 <div className="col-md-3 mb-3">
                   <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>

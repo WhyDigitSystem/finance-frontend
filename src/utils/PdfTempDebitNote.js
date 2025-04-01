@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import QRCodeComponent from './QRCode';
 import apiCalls from 'apicall';
 
-const GeneratePdfTempDN = ({ row, callBackFunction }) => {
+const GeneratePdfTempDN = ({ row, callBackFunction, modalClose }) => {
   const [open, setOpen] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState('');
   const [bankDetails, setBankDetails] = useState([]);
@@ -122,8 +122,8 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
           }
         }
       }
-
       pdf.save(`Tax-Invoice_${row.docId}.pdf`);
+      handleClose();
     } else {
       console.error("Element not found: 'pdf-content'");
     }
@@ -673,7 +673,7 @@ const GeneratePdfTempDN = ({ row, callBackFunction }) => {
         <Button onClick={handleDownloadPdf} color="primary" variant="contained" startIcon={<DownloadIcon />}>
           PDF
         </Button>
-        <Button onClick={handleClose} color="secondary">
+        <Button onClick={modalClose} color="secondary">
           Close
         </Button>
       </DialogActions>

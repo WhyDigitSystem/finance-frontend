@@ -3,6 +3,7 @@ import apiCalls from 'apicall';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import 'react-tabs/style/react-tabs.css';
 import 'react-toastify/dist/ReactToastify.css';
 import ClearIcon from '@mui/icons-material/Clear';
@@ -501,12 +502,9 @@ const CostDebitNote = () => {
         'put',
         `/costdebitnote/approveCostDebitNote?action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${editId}&orgId=${orgId}`
       );
-
       console.log('API Response:==>', result);
-
       if (result.status) {
         const listValueVO = result.paramObjectsMap.costDebitNoteVO;
-
         setFormData((prevState) => ({
           ...prevState,
           ...listValueVO,
@@ -555,7 +553,8 @@ const CostDebitNote = () => {
           listValueVO.approveStatus === 'Approved' ? 'Cost Debit Note Approved successfully' : 'Cost Debit Note Rejected successfully'
         );
       } else {
-        console.error('API Error:', result.data);
+        console.error('API Error:', result.errorMessage);
+        showToast('error', "Approve Failed")
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -665,8 +664,8 @@ const CostDebitNote = () => {
   };
 
   const GeneratePdf = (row) => {
-    console.log('PDF-Data =>', row.original);
-    setPdfData(row.original);
+    console.log('PDF-Data =>', listViewData);
+    {formData.approveStatus === "Approved" ? setPdfData(formData) : setPdfData(listViewData);}
     setDownloadPdf(true);
   };
 
@@ -1646,6 +1645,7 @@ const CostDebitNote = () => {
               <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
               <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
               <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+              {(listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf}/>)}
             </div>
 
             {editId && !showForm && formData.mode === 'SUBMIT' && (
@@ -3422,11 +3422,11 @@ const CostDebitNote = () => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllCostDebitNoteById}
-              isPdf={true}
-              GeneratePdf={GeneratePdf}
+              // isPdf={true}
+              // GeneratePdf={GeneratePdf}
             />
           )}
-          {downloadPdf && <GeneratePdfTempDN row={pdfData} />}
+          {downloadPdf && <GeneratePdfTempDN row={pdfData} modalClose={() => setDownloadPdf(false)} />}
         </div>
       </div>
       <ConfirmationModal

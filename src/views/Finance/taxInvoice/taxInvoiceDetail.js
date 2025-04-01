@@ -5,6 +5,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { toWords } from 'number-to-words';
 import { TabContext } from '@mui/lab';
 import TabList from '@mui/lab/TabList';
@@ -318,8 +319,7 @@ const TaxInvoiceDetails = () => {
       console.log('API Response:==>', result);
 
       if (result.status === true) {
-        setData(result.paramObjectsMap.taxInvoiceVO);
-
+        setData(result.paramObjectsMap.taxInvoiceVO.reverse());
         console.log('TAX INVOICE:==>', result);
       } else {
         // Handle error
@@ -647,6 +647,7 @@ const TaxInvoiceDetails = () => {
     setChargeCodeList([]);
     setChargeCodeCache(new Map());
     setPartyCurrencyList([]);
+    setListViewData('');
     setWithdrawalsTableErrors({
       sno: '',
       chargeCode: '',
@@ -955,8 +956,8 @@ const TaxInvoiceDetails = () => {
   }, [addressType]);
 
   const GeneratePdf = (row) => {
-    console.log('PDF-Data =>', row.original);
-    setPdfData(row.original);
+    console.log('PDF-Data =>', listViewData);
+    {formData.approveStatus === "Approved" ? setPdfData(formData) : setPdfData(listViewData);}
     setDownloadPdf(true);
   };
 
@@ -1391,10 +1392,9 @@ const TaxInvoiceDetails = () => {
     setlistView(false);
     try {
       const result = await apiCalls('get', `/taxInvoice/getTaxInvoiceById?id=${row.original.id}`);
-
+      setListViewData(result.paramObjectsMap.taxInvoiceVO);
       if (result.status === true) {
         const listValueVO = result.paramObjectsMap.taxInvoiceVO;
-        setListViewData(result.paramObjectsMap.taxInvoiceVO);
         setEditId(row.original.id);
         getStateName(listValueVO.partyId);
         // setGstTableData(row.original.taxInvoiceGstVO);
@@ -1846,7 +1846,8 @@ const TaxInvoiceDetails = () => {
               {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
               <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
               <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-              <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+              {listViewData.approveStatus === 'Approved' ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
+              {(listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf}/>)}
             </div>
             {editId && !listView && (formData.status.toUpperCase() === 'TAX' || listViewData.status.toUpperCase() === 'TAX') && (
               // {editId && !listView && (
@@ -3739,10 +3740,10 @@ const TaxInvoiceDetails = () => {
               columns={columns}
               blockEdit={true}
               toEdit={getTaxInvoiceById}
-              isPdf={true}
-              GeneratePdf={GeneratePdf}
+              // isPdf={true}
+              // GeneratePdf={GeneratePdf}
             />
-            {downloadPdf && <GeneratePdfTemp row={pdfData} modalClose={() => setDownloadPdf(false)} />}
+            
           </div>
         )}
       </div>
@@ -3752,7 +3753,8 @@ const TaxInvoiceDetails = () => {
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={handleConfirmAction}
         onCancel={handleCloseModal}
-      />
+        />
+        {downloadPdf && <GeneratePdfTemp row={pdfData} modalClose={() => setDownloadPdf(false)} />}
     </>
   );
 };

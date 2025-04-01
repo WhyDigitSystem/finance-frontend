@@ -5,6 +5,7 @@ import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import SearchIcon from '@mui/icons-material/Search';
 import { TabContext } from '@mui/lab';
 import TabList from '@mui/lab/TabList';
@@ -368,6 +369,7 @@ const IrnCreditNote = () => {
   };
 
   const handleClear = () => {
+    setListViewById('');
     setFormData({
       voucherNo: '',
       voucherDate: null,
@@ -1245,10 +1247,10 @@ const IrnCreditNote = () => {
   }, [formData.partyType]);
 
   const listViewColumns = [
+    { accessorKey: 'docId', header: 'Doc No', size: 140 },
+    { accessorKey: 'partyName', header: 'Party Name', size: 140 },
     { accessorKey: 'status', header: 'Status', size: 140 },
     { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
-    { accessorKey: 'docId', header: 'Doc No', size: 140 },
-    { accessorKey: 'partyName', header: 'Party Name', size: 140 }
     // { accessorKey: 'partyCode', header: 'Party Code', size: 140 },
     // { accessorKey: 'partyType', header: 'Party Type', size: 140 },
     // { accessorKey: 'voucherNo', header: 'Voucher No', size: 140 },
@@ -1256,8 +1258,8 @@ const IrnCreditNote = () => {
   ];
 
   const GeneratePdf = (row) => {
-    console.log('PDF-Data =>', row.original);
-    setPdfData(row.original);
+    console.log('PDF-Data =>', listViewById);
+    setPdfData(listViewById);
     setDownloadPdf(true);
   };
   useEffect(() => {
@@ -1438,6 +1440,7 @@ const IrnCreditNote = () => {
               <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
               <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
               {listViewById.approveStatus === 'Approved' ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
+              {(listViewById.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf}/>)}
             </div>
             {editId && !listView && (formData.status.toUpperCase() === 'TAX' || listViewById.status === 'TAX') && (
               // {editId && !listView && (
@@ -1502,10 +1505,10 @@ const IrnCreditNote = () => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getIrnCreditById}
-              isPdf={true}
-              GeneratePdf={GeneratePdf}
+              // isPdf={true}
+              // GeneratePdf={GeneratePdf}
             />
-            {downloadPdf && <GeneratePdfTempIRN row={pdfData} />}
+            
           </div>
         ) : (
           <>
@@ -3391,6 +3394,7 @@ const IrnCreditNote = () => {
         onCancel={handleCloseModal}
       />
       <ToastContainer />
+      {downloadPdf && <GeneratePdfTempIRN row={pdfData} modalClose={() => setDownloadPdf(false)} />}
     </div>
   );
 };

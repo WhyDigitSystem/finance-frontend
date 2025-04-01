@@ -7,7 +7,6 @@ import ActionButton from 'utils/ActionButton';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
-import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
@@ -18,26 +17,13 @@ function ArAging() {
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
-  const [partyNameList, setpartyNameList] = useState([]);
-  const [branchList, setbranchList] = useState([]);
-  const [optionList, setoptionList] = useState([]);
-  const [divisionList, setdivisionList] = useState([]);
+  const [customerNameList, setcustomerNameList] = useState([]);
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
   const [selectedSections, setSelectedSections] = useState({
     date: false,
-    partyName: false,
-    branch: false,
-    division: false,
-    option: false,
-  });
-
-  const [visibleSections, setVisibleSections] = useState({
-    date: false,
-    partyName: false,
-    branch: false,
-    division: false,
-    option: false,
+    customerName: false,
+    dueDate: false,
   });
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
@@ -46,64 +32,38 @@ function ArAging() {
       [name]: checked
     }));
   };
-  const handleProceed = () => {
-    setVisibleSections({ ...selectedSections });
-  };
   
   const [formData, setFormData] = useState({
-    // fromDate: null,
     asOnDate: null,
-    // dateRange: [null, null],
-    partyName: 'All',
-    branch: 'All',
-    division: 'All',
-    option: '',
+    customerName: 'All',
+    dueDate: null
   });
   const [fieldErrors, setFieldErrors] = useState({
-    // fromDate: '',
     asOnDate: '',
-    partyName: '',
-    branch: '',
-    division: '',
-    option: '',
+    customerName: '',
+    dueDate: ''
   });
   const handleClear = () => {
     setListView(false);
     setFormData({
-      // dateRange: [null, null],
-      // fromDate: null,
       asOnDate: null,
-      partyName: 'All',
-      branch: 'All',
-      division: 'All',
-      option: '',
+      customerName: 'All',
+      dueDate: null
     });
     setFieldErrors({
-      // fromDate: '',
       asOnDate: '',
-      partyName: '',
-      branch: '',
-      division: '',
-      option: '',
+      customerName: '',
+      dueDate: ''
     });
     setRowData([]);
   };
   useEffect(() => {
-    getAllBranches();
-    getpartyName();
+    getcustomerName();
   }, []);
-  const getAllBranches = async () => {
+  const getcustomerName = async () => {
     try {
-      const branchData = await getAllActiveBranches(orgId);
-      setbranchList(branchData);
-    } catch (error) {
-      console.error('Error fetching country data:', error);
-    }
-  };
-  const getpartyName = async () => {
-    try {
-      const response = await apiCalls('get', `/master/getAllGroupLedgerByOrgId?orgId=${orgId}`);
-      setpartyNameList(response.paramObjectsMap.groupLedgerVO);
+      const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=customer`);
+      setcustomerNameList(response.paramObjectsMap.partyMasterVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -115,39 +75,21 @@ function ArAging() {
     if (value === "All") {
       setFormData((prevData) => ({
         ...prevData,
-        partyName: "All",
+        customerName: "All",
       }));
     } else {
-      const selectedEmp = partyNameList.find((emp) => emp.accountGroupName === value);
-  
-      if (selectedEmp) {
-        console.log('Selected party:', selectedEmp);
+      const selectedParty = customerNameList.find((emp) => emp.partyName === value);
+      if (selectedParty) {
+        console.log('Selected party:', selectedParty);
         setFormData((prevData) => ({
           ...prevData,
-          partyName: selectedEmp.accountGroupName,
+          customerName: selectedParty.partyName,
         }));
       } else {
         console.log('No Account found with the given code:', value);
       }
     }
   };
-  
-  // const handleSelectAccountChange = (e) => {
-  //   const value = e.target.value;
-  //   console.log('Selected Account value:', value);
-  //   const selectedEmp = accountNameList.find((emp) => emp.accountGroupName === value);
-
-  //   if (selectedEmp) {
-  //     console.log('Selected party:', selectedEmp);
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       accountName: selectedEmp.accountGroupName,
-  //     }));
-  //   } else {
-  //     console.log('No Account found with the given code:', value);
-  //   }
-  // };
-
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
   
@@ -155,72 +97,53 @@ function ArAging() {
       ...prevErrors,
       [name]: '',
     }));
-  
-    if (name === 'branch') {
-      if (value === "All") {
-        setFormData((prevData) => ({
-          ...prevData,
-          branch: "All",
-        }));
-      } else {
-        const selectedBranch = branchList.find((br) => br.branch === value);
-        setFormData((prevData) => ({
-          ...prevData,
-          branch: selectedBranch ? selectedBranch.branch : '',
-        }));
-      }
-    } else {
       let inputValue = value;
       if (type === 'text' || type === 'textarea') {
         inputValue = value.toUpperCase();
       }
       setFormData((prevData) => ({ ...prevData, [name]: inputValue }));
-    }
   };
   const handleDateChange = (field, date) => {
-    const formattedDate = dayjs(date).format('YYYY-MM-DD') || null;
+    const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
-  };
+  };  
   const reportColumns = [
-    { accessorKey: 'vId', header: 'Invoice No', size: 140 },
-    { accessorKey: 'vDate', header: 'Date', size: 140 },
-    { accessorKey: 'dueDate', header: 'Due Date', size: 140 },
-    { accessorKey: 'partyName', header: 'Inv. Amt', size: 300 },
-    { accessorKey: 'opbal', header: 'Outstanding', size: 140 },
-    { accessorKey: 'ndAmount', header: 'Total Due', size: 140 },
-    { accessorKey: 'ncAmount', header: 'Unadjusted', size: 140 },
-    { accessorKey: 'dbAmount', header: 'Below 30 Days', size: 140 },
-    { accessorKey: 'dbAmount', header: 'Days 30 - 60', size: 140 },
-    { accessorKey: 'dbAmount', header: 'Days 60 - 90', size: 140 },
-    { accessorKey: 'dbAmount', header: 'Days 90 - 120', size: 140 },
-    { accessorKey: 'dbAmount', header: 'Days 120+', size: 140 },
+    { accessorKey: 'docid', header: '# Invoice', size: 140 },
+    { accessorKey: 'docdate', header: 'Date', size: 140 },
+    { accessorKey: 'duedate', header: 'Due Date', size: 140 },
+    { accessorKey: 'amount', header: 'Inv. Amt', size: 300 },
+    { accessorKey: 'outstanding', header: 'Outstanding', size: 140 },
+    { accessorKey: 'totaldue', header: 'Total Due', size: 140 },
+    { accessorKey: 'unadjusted', header: 'Unadjusted', size: 140 },
+    { accessorKey: 'mslab1', header: 'Below 30 Days', size: 140 },
+    { accessorKey: 'mslab2', header: 'Days 30 - 60', size: 140 },
+    { accessorKey: 'mslab3', header: 'Days 60 - 90', size: 140 },
+    { accessorKey: 'mslab4', header: 'Days 90 - 120', size: 140 },
+    { accessorKey: 'mslab5', header: 'Days 120+', size: 140 },
   ];
   const handleGo = async () => {
     const errors = {};
     // if (!formData.partyName) {
     //   errors.partyName = 'Sub ledger name is required';
     // }
-    // if (!formData.branch) {
-    //   errors.branch = 'Branch Code is required';
-    // }
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       try {
         let response;
-        if(formData.asOnDate){
+        if(formData.dueDate){
           response = await apiCalls(
             'get',
-            `/master/getAllLedgerReport?partyName=${formData.partyName}&branch=${formData.branch}&orgId=${orgId}&asOnDate=${formData.asOnDate}`
+            `/arapAdjustments/GetArapAgeing?asondate=${formData.asOnDate}&orgId=${orgId}&partyname=${formData.customerName}&pdate=${formData.dueDate}`
           );
         }else {
           response = await apiCalls(
             'get',
-            `/master/getAllLedgerReport?&partyName=${formData.partyName}&orgId=${orgId}&branch=${formData.branch}`
+            `/arapAdjustments/GetArapAgeing?asondate=${formData.asOnDate}&orgId=${orgId}&partyname=${formData.customerName}`
           );
         }
         if (response.status === true) {
-          console.log('Response:', response);
-          setRowData(response.paramObjectsMap.partyMasterVO || '');
+          console.log('Response:', response.paramObjectsMap);
+          setRowData(response.paramObjectsMap.mapp || '');
           setIsLoading(false);
           setListView(true);
         } else {
@@ -257,30 +180,18 @@ function ArAging() {
               </div>
               <div className="col-md-2 mb-3">
                 <FormControlLabel
-                  control={<Checkbox checked={selectedSections.partyName} onChange={handleCheckboxChange} name="partyName" color="secondary" />}
-                  label="Party Name"
+                  control={<Checkbox checked={selectedSections.customerName} onChange={handleCheckboxChange} name="customerName" color="secondary" />}
+                  label="Customer Name"
                 />
               </div>
               <div className="col-md-2 mb-3">
                 <FormControlLabel
-                  control={<Checkbox checked={selectedSections.branch}  onChange={handleCheckboxChange} name="branch" color="secondary" />}
-                  label="Branch"
+                  control={<Checkbox checked={selectedSections.dueDate}  onChange={handleCheckboxChange} name="dueDate" color="secondary" />}
+                  label="Due Date"
                 />
               </div>
               <div className="col-md-2 mb-3">
-                <FormControlLabel
-                  control={<Checkbox checked={selectedSections.division}  onChange={handleCheckboxChange} name="division" color="secondary" />}
-                  label="Division"
-                />
-              </div>
-              <div className="col-md-2 mb-3">
-                <FormControlLabel
-                  control={<Checkbox checked={selectedSections.option}  onChange={handleCheckboxChange} name="option" color="secondary" />}
-                  label="Option"
-                />
-              </div>
-              <div className="col-md-2 mb-3">
-                <Button
+                {/* <Button
                   onClick={handleProceed}
                   color="secondary"
                   variant="contained"
@@ -288,27 +199,11 @@ function ArAging() {
                   disabled={isLoading}
                 >
                   Proceed
-                </Button>
+                </Button> */}
               </div>
               </div>
-              {visibleSections.date && (
+              {selectedSections.date && (
                 <>
-                  
-                  {/* <div className="col-md-3 mb-3">
-                    <FormControl fullWidth variant="filled" size="small">
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker
-                          label="From Date"
-                          value={formData.fromDate ? dayjs(formData.fromDate, 'YYYY-MM-DD') : null}
-                          onChange={(date) => handleDateChange('fromDate', date)}
-                          slotProps={{
-                            textField: { size: 'small', clearable: true, error: fieldErrors.fromDate, helperText: fieldErrors.fromDate }
-                          }}
-                          format="DD-MM-YYYY"
-                        />
-                      </LocalizationProvider>
-                    </FormControl>
-                  </div> */}
                   <div className="col-md-3 mb-3">
                      <FormControl fullWidth variant="filled" size="small">
                       <LocalizationProvider dateAdapter={AdapterDayjs}> 
@@ -326,102 +221,48 @@ function ArAging() {
                   </div>
                 </>
               )}
-              {visibleSections.partyName && ( 
+              {selectedSections.customerName && ( 
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.partyName}>
-                  <InputLabel id="partyName-label">Party Name</InputLabel>
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customerName}>
+                  <InputLabel id="customerName-label">Customer Name</InputLabel>
                   <Select
                   type='text'
-                    labelId="partyName-label"
-                    label="partyName"
-                    value={formData.partyName}
+                    labelId="customerName-label"
+                    label="customerName"
+                    value={formData.customerName}
                     onChange={handleSelectAccountChange}
-                    name="partyName"
+                    name="customerName"
                   >
                     <MenuItem value="All">All</MenuItem>
 
-                    {partyNameList?.map((row) => (
-                      <MenuItem key={row.id} value={row.accountGroupName}>
-                        {row.accountGroupName}
+                    {customerNameList?.map((row) => (
+                      <MenuItem key={row.id} value={row.partyName}>
+                        {row.partyName}
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.partyName && <FormHelperText>{fieldErrors.partyName}</FormHelperText>}
+                  {fieldErrors.customerName && <FormHelperText>{fieldErrors.customerName}</FormHelperText>}
                 </FormControl>
               </div>
+              )}           
+              {selectedSections.dueDate && ( 
+                  <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled" size="small">
+                   <LocalizationProvider dateAdapter={AdapterDayjs}> 
+                      <DatePicker 
+                       label="Due Date"
+                       value={formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : null}
+                       onChange={(date) => handleDateChange('dueDate', date)}
+                       slotProps={{
+                         textField: { size: 'small', clearable: true, error: fieldErrors.dueDate, helperText: fieldErrors.dueDate }
+                       }}
+                       format="DD-MM-YYYY"
+                     />
+                    </LocalizationProvider>
+                 </FormControl> 
+               </div>
               )}
-              {visibleSections.division && ( 
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.division}>
-                  <InputLabel id="division-label">Division</InputLabel>
-                  <Select
-                  type='text'
-                    labelId="division-label"
-                    label="division"
-                    value={formData.division}
-                    onChange={handleSelectAccountChange}
-                    name="division"
-                  >
-                    <MenuItem value="All">All</MenuItem>
-
-                    {divisionList?.map((row) => (
-                      <MenuItem key={row.id} value={row.accountGroupName}>
-                        {row.accountGroupName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.division && <FormHelperText>{fieldErrors.division}</FormHelperText>}
-                </FormControl>
-              </div>
-              )}
-              {visibleSections.option && ( 
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.option}>
-                  <InputLabel id="option-label">Option</InputLabel>
-                  <Select
-                  type='text'
-                    labelId="option-label"
-                    label="option"
-                    value={formData.option}
-                    onChange={handleSelectAccountChange}
-                    name="option"
-                  >
-                    <MenuItem value="All">All</MenuItem>
-
-                    {optionList?.map((row) => (
-                      <MenuItem key={row.id} value={row.accountGroupName}>
-                        {row.accountGroupName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.option && <FormHelperText>{fieldErrors.option}</FormHelperText>}
-                </FormControl>
-              </div>
-              )}             
-              {visibleSections.branch && ( 
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
-                  <InputLabel id="branch-label">Branch</InputLabel>
-                  <Select
-                    labelId="branch-label"
-                    label="branch"
-                    value={formData.branch}
-                    onChange={handleInputChange}
-                    name="branch"
-                  >
-                    <MenuItem value="All">All</MenuItem>
-
-                    {branchList?.map((row) => (
-                      <MenuItem key={row.id} value={row.branch}>
-                        {row.branch}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.branch && <FormHelperText>{fieldErrors.branch}</FormHelperText>}
-                </FormControl>
-              </div>
-              )}
-              {(visibleSections.date || visibleSections.partyName || visibleSections.branch) && (
+              {(selectedSections.date || selectedSections.customerName || selectedSections.dueDate) && (
                 <div className="col-md-3 mb-3">
                   <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>

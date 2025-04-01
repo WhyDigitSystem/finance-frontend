@@ -21,14 +21,17 @@ function PaymentReport() {
   const [partyNameList, setPartyNameList] = useState([]);
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
+    const [branchCodeList, setBranchCodeList] = useState([]);
   const [selectedSections, setSelectedSections] = useState({
     date: false,
     vendor: false,
+    branchCode: false,
   });
 
   const [visibleSections, setVisibleSections] = useState({
     date: false,
     vendor: false,
+    branchCode: false,
   });
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
@@ -46,13 +49,15 @@ function PaymentReport() {
     toDate: null,
     // dateRange: [null, null],
     vendor: 'All',
-    vendorCode:'All'
+    vendorCode:'All',
+    branchCode: 'All',
   });
   const [fieldErrors, setFieldErrors] = useState({
     fromDate: '',
     toDate: '',
     vendor: '',
     vendorCode:'',
+    branchCode: '',
   });
   const handleClear = () => {
     setListView(false);
@@ -62,12 +67,14 @@ function PaymentReport() {
       toDate: null,
       vendor: 'All',
       vendorCode: 'All',
+      branchCode: 'All',
     });
     setFieldErrors({
       fromDate: '',
       toDate: '',
       vendor: '',
       vendorCode: '',
+      branchCode: '',
     });
     setRowData([]);
   };
@@ -87,7 +94,14 @@ function PaymentReport() {
       console.log('No party found with the given code:', value);
     }
   };
-
+  const getAllBranches = async () => {
+    try {
+      const branchData = await getAllActiveBranches(orgId);
+      setBranchCodeList(branchData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
   const handleInputChange = (e) => {
     const { name, value, type, selectionStart, selectionEnd } = e.target;
   
@@ -122,6 +136,7 @@ function PaymentReport() {
   };
   useEffect(() => {
     getPartyName();
+    getAllBranches();
   }, []);
 
   const getPartyName = async () => {
@@ -167,17 +182,17 @@ function PaymentReport() {
         if(formData.fromDate && formData.toDate){
           response = await apiCalls(
             'get',
-            `/taxInvoice/getReportDetailsForSalesRegister?finyear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyCode=${formData.vendorCode}&toDate=${formData.toDate}`
+            `/reportController/getPaymentRegisterReport?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyCode=${formData.vendorCode}toDate=${formData.toDate}&fromDate=${formData.fromDate}`
           );
         }else {
           response = await apiCalls(
             'get',
-            `/taxInvoice/getReportDetailsForSalesRegister?finyear=${finYear}&orgId=${orgId}&partyCode=${formData.vendorCode}`
+            `/reportController/getPaymentRegisterReport?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyCode=${formData.vendorCode}`
           );
         }
         if (response.status === true) {
           console.log('Response:', response);
-          setRowData(response.paramObjectsMap.taxInvoiceVO);
+          setRowData(response.paramObjectsMap.paymentReport);
           setIsLoading(false);
           setListView(true);
         } else {
@@ -219,6 +234,12 @@ function PaymentReport() {
                 />
               </div>
               <div className="col-md-2 mb-1">
+                <FormControlLabel
+                  control={<Checkbox checked={selectedSections.branchCode} onChange={handleCheckboxChange} name="branchCode" color="secondary" />}
+                  label="Branch Code"
+                />
+              </div>
+              <div className="col-md-2 mb-1">
                 <Button
                   onClick={handleProceed}
                   color="secondary"
@@ -232,7 +253,6 @@ function PaymentReport() {
               </div>
               {visibleSections.date && (
                 <>
-                  
                   <div className="col-md-3 mb-3">
                     <FormControl fullWidth variant="filled" size="small">
                       <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -288,7 +308,30 @@ function PaymentReport() {
                 </FormControl>
               </div>
               )}
-              {(visibleSections.date || visibleSections.vendor) && (
+              {visibleSections.branchCode && ( 
+              <div className="col-md-3 mb-2">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchCode}>
+                  <InputLabel id="branchCode-label">Branch Code</InputLabel>
+                  <Select
+                    labelId="branchCode-label"
+                    label="Branch Code"
+                    value={formData.branchCode}
+                    onChange={handleSelectPartyChange}
+                    name="branchCode"
+                  >
+                    <MenuItem value="All">All</MenuItem>
+
+                    {branchCodeList?.map((row) => (
+                      <MenuItem key={row.id} value={row.branchCode}>
+                        {row.branchCode}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.branchCode && <FormHelperText>{fieldErrors.branchCode}</FormHelperText>}
+                </FormControl>
+              </div>
+              )}
+              {(visibleSections.date || visibleSections.vendor || visibleSections.branchCode) && (
                 <div className="col-md-3 mb-2">
                   <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>

@@ -1,6 +1,7 @@
 import React from 'react';
 import { TextField, Checkbox, FormControlLabel, FormHelperText, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import { Card, CardContent } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import ClearIcon from '@mui/icons-material/Clear';
 import ActionButton from 'utils/ActionButton';
@@ -22,43 +23,26 @@ function TaxRegister() {
   const [partyNameList, setPartyNameList] = useState([]);
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
-  const [selectedSections, setSelectedSections] = useState({
+  const [criteria, setCriteria] = useState({
     date: false,
-    branchCode: false,
     customer: false,
+    branch: false,
   });
-
-  const [visibleSections, setVisibleSections] = useState({
-    date: false,
-    branchCode: false,
-    customer: false,
-  });
-  const handleCheckboxChange = (event) => {
-    const { name, checked } = event.target;
-    setSelectedSections((prevState) => ({
-      ...prevState,
-      [name]: checked
-    }));
-  };
-  const handleProceed = () => {
-    setVisibleSections({ ...selectedSections });
-  };
-  
-  const [formData, setFormData] = useState({
-    fromDate: null,
-    toDate: null,
-    // dateRange: [null, null],
-    branchCode: 'All',
-    customer: 'All',
-    customerCode:'All'
-  });
+  const [filters, setFilters] = useState({ fromDate: "", toDate: "", customer: "All", branch: "All", customerCode:"All" });
   const [fieldErrors, setFieldErrors] = useState({
-    fromDate: '',
-    toDate: '',
-    branchCode: '',
-    customer: '',
-    customerCode:'',
+    fromDate: "",
+    toDate: "",
+    customer: "",
+    branch: "",
+    customerCode:""
   });
+  const handleCriteriaChange = (event) => {
+    setCriteria({ ...criteria, [event.target.name]: event.target.checked });
+  };
+
+  const handleInputChange = (event) => {
+    setFilters({ ...filters, [event.target.name]: event.target.value });
+  };
   const handleClear = () => {
     setListView(false);
     // setVisibleSections({
@@ -66,26 +50,26 @@ function TaxRegister() {
     //   branchCode: false,
     //   customer: false,
     // });
-    // setSelectedSections({
-    //   date: false,
-    //   branchCode: false,
-    //   customer: false,
-    // });
-    setFormData({
+    setCriteria({
+      date: false,
+      branch: false,
+      customer: false,
+    });
+    setFilters({
       // dateRange: [null, null],
       fromDate: null,
       toDate: null,
-      branchCode: 'All',
+      branch: 'All',
       customer: 'All',
       customerCode: 'All',
     });
-    setFieldErrors({
-      fromDate: '',
-      toDate: '',
-      customer: '',
-      customerCode: '',
-      branchCode: '',
-    });
+    // setFieldErrors({
+    //   fromDate: '',
+    //   toDate: '',
+    //   customer: '',
+    //   customerCode: '',
+    //   branchCode: '',
+    // });
     setRowData([]);
   };
   const handleSelectPartyChange = (e) => {
@@ -93,14 +77,14 @@ function TaxRegister() {
     console.log('Selected employeeCode value:', value);
     const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
     if (value === "All") {
-      setFormData((prevData) => ({
+      setFilters((prevData) => ({
         ...prevData,
         customer: "All",
       }));
     } else {
     if (selectedEmp) {
       console.log('Selected party:', selectedEmp);
-      setFormData((prevData) => ({
+      setFilters((prevData) => ({
         ...prevData,
         customer: selectedEmp.partyName,
         customerCode: selectedEmp.partyCode,
@@ -110,54 +94,9 @@ function TaxRegister() {
     }
   }
   };
-
-  const handleInputChange = (e) => {
-    const { name, value, type, selectionStart, selectionEnd } = e.target;
-  
-    setFieldErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: '',
-    }));
-  
-    if (name === 'branchCode') {
-      if (value === "All") {
-        setFormData((prevData) => ({
-          ...prevData,
-          branchCode: "All",
-        }));
-      } else {
-        const selectedBranch = branchCodeList.find((br) => br.branchCode === value);
-        setFormData((prevData) => ({
-          ...prevData,
-          branchCode: selectedBranch ? selectedBranch.branchCode : '',
-        }));
-      }
-    } else {
-      let inputValue = value;
-      if (type === 'text' || type === 'textarea') {
-        inputValue = value.toUpperCase();
-      }
-      setFormData((prevData) => ({ ...prevData, [name]: inputValue }));
-  
-      setTimeout(() => {
-        const inputElement = document.getElementsByName(name)[0];
-        if (inputElement && inputElement.setSelectionRange) {
-          inputElement.setSelectionRange(selectionStart, selectionEnd);
-        }
-      }, 0);
-    }
-  };
-  // const handleDateChange = (newValue) => {
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     dateRange: newValue,
-  //   }));
-  //   console.log("date range",formData.dateRange);
-    
-  // };
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date).format('YYYY-MM-DD') || null;
-    setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+    setFilters((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
   useEffect(() => {
     getAllBranches();
@@ -208,10 +147,10 @@ function TaxRegister() {
     ];
   const handleGo = async () => {
     const errors = {};
-    // if (!formData.partyName) {
+    // if (!filters.partyName) {
     //   errors.partyName = 'Sub ledger name is required';
     // }
-    // if (!formData.branchCode) {
+    // if (!filters.branchCode) {
     //   errors.branchCode = 'Branch Code is required';
     // }
 
@@ -220,15 +159,15 @@ function TaxRegister() {
       setListView(false);
       try {
         let response;
-        if(formData.fromDate && formData.toDate){
+        if(filters.fromDate && filters.toDate){
           response = await apiCalls(
             'get',
-            `/taxInvoice/getReportDetailsForSalesRegister?branchCode=${formData.branchCode}&finyear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyCode=${formData.customerCode}&toDate=${formData.toDate}`
+            `/taxInvoice/getReportDetailsForSalesRegister?branchCode=${filters.branch}&finyear=${finYear}&fromDate=${filters.fromDate}&orgId=${orgId}&partyCode=${filters.customerCode}&toDate=${filters.toDate}`
           );
         }else {
           response = await apiCalls(
             'get',
-            `/taxInvoice/getReportDetailsForSalesRegister?branchCode=${formData.branchCode}&finyear=${finYear}&orgId=${orgId}&partyCode=${formData.customerCode}`
+            `/taxInvoice/getReportDetailsForSalesRegister?branchCode=${filters.branch}&finyear=${finYear}&orgId=${orgId}&partyCode=${filters.customerCode}`
           );
         }
         if (response.status === true) {
@@ -246,152 +185,159 @@ function TaxRegister() {
         setIsLoading(false);
       }
     } else {
-      setFieldErrors(errors);
+      // setFieldErrors(errors);
     }
   };
   return(
     <>
-      <div className="card w-full bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-        {/* <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Search" icon={SearchIcon} isLoading={isLoading} onClick={handleGo} margin="0 10px 0 10px" />
+      <Card sx={{ padding: 1, boxShadow: 3 }}>
+        <CardContent sx={{ padding: 1}}>
+          <div>
+            <h5>Select Criteria to Generate Report</h5>
           </div>
-        </div> */}
-        <>
-            <div className="row">
-              <div className="row">
-              <div className="col-md-2
-               mb-2">
-                <FormControlLabel
-                  control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
-                  label="Date"
-                />
-              </div>
-              <div className="col-md-2 mb-1">
-                <FormControlLabel
-                  control={<Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />}
-                  label="Customer"
-                />
-              </div>
-              <div className="col-md-2 mb-1">
-                <FormControlLabel
-                  control={<Checkbox checked={selectedSections.branchCode}  onChange={handleCheckboxChange} name="branchCode" color="secondary" />}
-                  label="Branch Code"
-                />
-              </div>
-              <div className="col-md-2 mb-1">
-                <Button
-                  onClick={handleProceed}
-                  color="secondary"
-                  variant="contained"
-                  style={{ textTransform: 'none', padding: '4px 8px', marginTop: '6px' }}
-                  disabled={isLoading}
-                >
-                  Proceed
-                </Button>
-              </div>
-              </div>
-              {visibleSections.date && (
-                <>
-                  
-                  <div className="col-md-3 mb-3">
-                    <FormControl fullWidth variant="filled" size="small">
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker
-                          label="From Date"
-                          value={formData.fromDate ? dayjs(formData.fromDate, 'YYYY-MM-DD') : null}
-                          onChange={(date) => handleDateChange('fromDate', date)}
-                          slotProps={{
-                            textField: { size: 'small', clearable: true, error: fieldErrors.fromDate, helperText: fieldErrors.fromDate }
-                          }}
-                          format="DD-MM-YYYY"
-                        />
-                      </LocalizationProvider>
-                    </FormControl>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                     <FormControl fullWidth variant="filled" size="small">
-                      <LocalizationProvider dateAdapter={AdapterDayjs}> 
-                         <DatePicker 
-                          label="To Date"
-                          value={formData.toDate ? dayjs(formData.toDate, 'YYYY-MM-DD') : null}
-                          onChange={(date) => handleDateChange('toDate', date)}
-                          slotProps={{
-                            textField: { size: 'small', clearable: true, error: fieldErrors.toDate, helperText: fieldErrors.toDate }
-                          }}
-                          format="DD-MM-YYYY"
-                        />
-                       </LocalizationProvider>
-                    </FormControl> 
-                  </div>
-                </>
-              )}
-              {visibleSections.branchCode && ( 
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchCode}>
-                  <InputLabel id="branchCode-label">Branch Code</InputLabel>
-                  <Select
-                    labelId="branchCode-label"
-                    label="branchCode"
-                    value={formData.branchCode}
-                    onChange={handleInputChange}
-                    name="branchCode"
-                  >
-                    <MenuItem value="All">All</MenuItem>
-
-                    {branchCodeList?.map((row) => (
-                      <MenuItem key={row.id} value={row.branchCode}>
-                        {row.branchCode}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.branchCode && <FormHelperText>{fieldErrors.branchCode}</FormHelperText>}
-                </FormControl>
-              </div>
-              )}
-              {visibleSections.customer && ( 
-              <div className="col-md-3 mb-2">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
-                  <InputLabel id="customer-label">Customer</InputLabel>
-                  <Select
-                    labelId="customer-label"
-                    label="customer"
-                    value={formData.customer}
-                    onChange={handleSelectPartyChange}
-                    name="customer"
-                  >
-                    <MenuItem value="All">All</MenuItem>
-
-                    {partyNameList?.map((row) => (
-                      <MenuItem key={row.id} value={row.partyName}>
-                        {row.partyName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.customer && <FormHelperText>{fieldErrors.customer}</FormHelperText>}
-                </FormControl>
-              </div>
-              )}
-              {(visibleSections.date || visibleSections.branchCode || visibleSections.customer) && (
-                <div className="col-md-3 mb-2">
-                  <div className="row d-flex ml">
-                    <div className="d-flex flex-wrap justify-content-start mb-3 mt-1" style={{ marginBottom: '20px' }}>
-                      <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
-                      <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                    </div>
-                  </div>
-                </div>
-              )}
+          <div className="row align-items-center mb-3">
+            <div className="col-md-2">
+              <FormControlLabel
+                control={<Checkbox checked={criteria.date} onChange={handleCriteriaChange} name="date" />}
+                label="Date"
+              />
             </div>
-          </>
-        {listView && (
+            {criteria.date && (
+              <>
+                <div className="col-md-3">
+                  <FormControl fullWidth variant="filled" size="small">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="From Date"
+                        value={filters.fromDate ? dayjs(filters.fromDate, 'YYYY-MM-DD', true) : null}
+                        onChange={(date) => handleDateChange('fromDate', date)}
+                        format="DD-MM-YYYY"
+                        slotProps={{
+                          textField: { 
+                            size: 'small', 
+                            error: fieldErrors.fromDate, 
+                            helperText: fieldErrors.fromDate 
+                          }
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
+                <div className="col-md-3">
+                  <FormControl fullWidth variant="filled" size="small">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="To Date"
+                        value={filters.toDate ? dayjs(filters.toDate, 'YYYY-MM-DD', true) : null}
+                        onChange={(date) => handleDateChange('toDate', date)}
+                        format="DD-MM-YYYY"
+                        slotProps={{
+                          textField: { 
+                            size: 'small', 
+                            error: fieldErrors.toDate, 
+                            helperText: fieldErrors.toDate 
+                          }
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* Customer Selection */}
+          <div className="row align-items-center mb-3">
+            <div className="col-md-2">
+              <FormControlLabel
+                control={<Checkbox checked={criteria.customer} onChange={handleCriteriaChange} name="customer" />}
+                label="Customer"
+              />
+            </div>
+            {criteria.customer && (
+              <div className="col-md-3">
+              <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
+                <InputLabel id="customer-label">Customer</InputLabel>
+                <Select
+                  labelId="customer-label"
+                  label="customer"
+                  value={filters.customer}
+                  onChange={handleSelectPartyChange}
+                  name="customer"
+                >
+                  <MenuItem value="All">All</MenuItem>
+
+                  {partyNameList?.map((row) => (
+                    <MenuItem key={row.id} value={row.partyName}>
+                      {row.partyName}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {fieldErrors.customer && <FormHelperText>{fieldErrors.customer}</FormHelperText>}
+              </FormControl>
+            </div>
+            )}
+          </div>
+
+          <div className="row align-items-center mb-3">
+            <div className="col-md-2">
+              <FormControlLabel
+                control={<Checkbox checked={criteria.branch} onChange={handleCriteriaChange} name="branch" />}
+                label="Branch"
+              />
+            </div>
+            {criteria.branch && (
+              <div className="col-md-3">
+              <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchCode}>
+                <InputLabel id="branchCode-label">Branch Code</InputLabel>
+                <Select
+                  labelId="branchCode-label"
+                  label="branchCode"
+                  value={filters.branch}
+                  onChange={handleInputChange}
+                  name="branchCode"
+                >
+                  <MenuItem value="All">All</MenuItem>
+                  {branchCodeList?.map((row) => (
+                    <MenuItem key={row.id} value={row.branchCode}>
+                      {row.branchCode}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {fieldErrors.branchCode && <FormHelperText>{fieldErrors.branchCode}</FormHelperText>}
+              </FormControl>
+            </div>
+            )}
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: "1rem" }}>
+          <Button 
+          variant="contained" 
+          onClick={handleGo} 
+          sx={{ backgroundColor: "#34449b", color: "white", '&:hover': { backgroundColor: "#2a3a8b" } }}
+        >
+          📊 Generate Report
+        </Button>
+            <Button 
+              variant="outlined" 
+              color="secondary" 
+              onClick={handleClear}
+              // onClick={() => { 
+              //   setCriteria({ date: false, customer: false, branch: false }); 
+              //   setFilters({ fromDate: "", toDate: "", customer: "", branch: "" }); 
+              // }}
+            >
+              ❌ Reset
+            </Button>
+          </div>
+          {listView && (
           <div>
             <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
           </div>
         )}
-  </div>
+        </CardContent>
+      </Card>
     </>
+
   )
 }
 

@@ -155,7 +155,7 @@ const GlobalSection = () => {
 
   const getGlobalParameter = async () => {
     try {
-      const result = await apiCalls('get', `GlobalParam/globalparam/username?orgid=${orgId}&userId=${userId}`);
+      const result = await apiCalls('get', `GlobalParam/globalparam/username?orgid=${orgId}&userid=${userId}`);
       const globalParameterVO = result.paramObjectsMap.globalParam;
       setGlobalParameter(globalParameterVO);
       // setCustomerValue(globalParameterVO.customer);
@@ -187,7 +187,7 @@ const GlobalSection = () => {
       branchcode: branchValue,
       finYear: finYearValue,
       // warehouse: warehouseValue,
-      userid: userId,
+      userid: parseInt(userId),
       orgId
     };
     try {
