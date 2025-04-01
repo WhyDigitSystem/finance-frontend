@@ -31,6 +31,7 @@ const TaxInvoiceDetails = () => {
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
   const [downloadPdf, setDownloadPdf] = useState(false);
   const [pdfData, setPdfData] = useState([]);
+  const [confirmData, setConfirmData] = useState([]);
   const [listView, setlistView] = useState(false);
   const [editId, setEditId] = useState('');
   const [partyId, setPartyId] = useState('');
@@ -245,6 +246,7 @@ const TaxInvoiceDetails = () => {
         );
 
         const listValueVO = result.paramObjectsMap.taxInvoiceVO;
+        setConfirmData(result.paramObjectsMap.taxInvoiceVO);
         getAddessType(listValueVO.placeOfSupply, listValueVO.stateCode, listValueVO.partyId);
         setFormData({
           docId: listValueVO.docId,
@@ -957,7 +959,8 @@ const TaxInvoiceDetails = () => {
 
   const GeneratePdf = (row) => {
     console.log('PDF-Data =>', listViewData);
-    {formData.approveStatus === "Approved" ? setPdfData(formData) : setPdfData(listViewData);}
+    // setPdfData(listViewData)
+    {confirmData.approveStatus === "Approved" ? setPdfData(confirmData) : setPdfData(listViewData);}
     setDownloadPdf(true);
   };
 

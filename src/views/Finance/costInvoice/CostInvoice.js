@@ -8,6 +8,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import SearchIcon from '@mui/icons-material/Search';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -41,6 +42,7 @@ const CostInvoice = () => {
   const [editId, setEditId] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [listViewData, setListViewData] = useState([]);
+  const [confirmData, setConfirmData] = useState([]);
   const [exRates, setExRates] = useState([]);
   const [partyName, setPartyName] = useState([]);
   const [partyId, setPartyId] = useState('');
@@ -185,6 +187,7 @@ const CostInvoice = () => {
   ]);
 
   const handleClear = () => {
+    setListViewData('');
     setFormData({
       accuralid: '',
       actBillCurrAmt: '',
@@ -642,8 +645,9 @@ const CostInvoice = () => {
   };
 
   const GeneratePdf = (row) => {
-    console.log('PDF-Data =>', row.original);
-    setPdfData(row.original);
+    console.log('PDF-Data =>', listViewData);
+    // setPdfData(listViewData)
+    {confirmData.approveStatus === "Approved" ? setPdfData(confirmData) : setPdfData(listViewData);}
     setDownloadPdf(true);
   };
 
@@ -681,6 +685,7 @@ const CostInvoice = () => {
             : 'Cost Invoice Rejected Successfully'
         );
         const listValueVO = result.paramObjectsMap.costInvoiceVO;
+        setConfirmData(result.paramObjectsMap.costInvoiceVO);
         setFormData({
           accuralid: listValueVO.accuralid,
           actBillCurrAmt: listValueVO.actBillCurrAmt,
@@ -1728,9 +1733,8 @@ const CostInvoice = () => {
               <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
               <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
               <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
-              {/* {formData.mode === 'SUBMIT' ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />} */}
+              {(listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf}/>)}
             </div>
-
             {editId && !showForm && (formData.mode === 'SUBMIT' || listViewData.mode === 'SUBMIT') && (
               <>
                 {formData.approveStatus === 'Approved' && (
@@ -3356,13 +3360,13 @@ const CostInvoice = () => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllCostInvoiceById}
-              isPdf={true}
-              GeneratePdf={GeneratePdf}
+              // isPdf={true}
+              // GeneratePdf={GeneratePdf}
             />
           )}
-          {downloadPdf && <GeneratePdfTemp row={pdfData} modalClose={() => setDownloadPdf(false)} />}
         </div>
       </div>
+          {downloadPdf && <GeneratePdfTemp row={pdfData} modalClose={() => setDownloadPdf(false)} />}
       <ConfirmationModal
         open={modalOpen}
         title="Cost Invoice Approval"

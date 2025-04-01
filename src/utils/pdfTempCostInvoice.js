@@ -9,6 +9,7 @@ import apiCalls from 'apicall';
 const dummyImageURL = 'https://t3.ftcdn.net/jpg/04/62/93/66/240_F_462936689_BpEEcxfgMuYPfTaIAOC1tCDurmsno7Sp.jpg';
 
 const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
+  // console.log("row value",row);
   const [open, setOpen] = useState(false);
   const [companyDetails, setCompanyDetails] = useState([]);
   const [currentDateTime, setCurrentDateTime] = useState('');
@@ -541,7 +542,9 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                     }}
                   >
                     ₹
-                    {parseFloat(row.tdsCostInvoiceVO[0].totTdsWhAmnt).toLocaleString('en-IN', {
+                    {parseFloat(
+                      (Number(row.actBillCurrAmt) - Number(row.actBillLcAmt)).toFixed(2)
+                    ).toLocaleString('en-IN', {
                       minimumFractionDigits: 2,
                       maximumFractionDigits: 2
                     })}

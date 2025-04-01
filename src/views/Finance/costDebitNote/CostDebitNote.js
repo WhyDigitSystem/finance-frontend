@@ -41,6 +41,7 @@ const CostDebitNote = () => {
   const [editId, setEditId] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [exRates, setExRates] = useState([]);
+  const [confirmData, setConfirmData] = useState([]);
   const [originBillVo, setOriginBillVo] = useState([]);
   const [partyName, setPartyName] = useState([]);
   const [partyId, setPartyId] = useState('');
@@ -505,6 +506,7 @@ const CostDebitNote = () => {
       console.log('API Response:==>', result);
       if (result.status) {
         const listValueVO = result.paramObjectsMap.costDebitNoteVO;
+        setConfirmData(result.paramObjectsMap.costDebitNoteVO);
         setFormData((prevState) => ({
           ...prevState,
           ...listValueVO,
@@ -664,8 +666,9 @@ const CostDebitNote = () => {
   };
 
   const GeneratePdf = (row) => {
-    console.log('PDF-Data =>', listViewData);
-    {formData.approveStatus === "Approved" ? setPdfData(formData) : setPdfData(listViewData);}
+    console.log('PDF-Data =>', confirmData);
+    setPdfData(confirmData)
+    // {confirmData.approveStatus === "Approved" ? setPdfData(confirmData) : setPdfData(listViewData);}
     setDownloadPdf(true);
   };
 
