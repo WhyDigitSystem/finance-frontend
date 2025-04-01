@@ -82,17 +82,18 @@ const StatCard = ({ statsPercentage, stats, title, monthlyValue, yearlyValue, co
                     minWidth: "auto",
                     // borderRadius: "8px",
                     // border: "2px solid",
+                    border: !isYearly ? "none" : "none",
                     borderColor: !isYearly ? "#121926" : "transparent",
                     backgroundColor: !isYearly ? "#121926" : "",
                     color: !isYearly ? "white" : "grey.700",
                     fontWeight: "bold",
                     // boxShadow: !isYearly ? "0px 4px 10px rgba(0, 0, 0, 0.2)" : "none",
-                    // transition: "all 0.3s ease",
+                    transition: "all 0.3s ease",
                     "&:hover": {
                       backgroundColor: !isYearly ? "#121926" : "",
-                      // transform: !isYearly ? "scale(1.05)" : "none",
+                      transform: !isYearly ? "scale(1.05)" : "none",
                       border: !isYearly ? "none" : "none",
-                      borderColor: !isYearly ? "#121926" : "transparent",
+                      // borderColor: !isYearly ? "#121926" : "transparent",
                     },
                   }}
                   onClick={() => setIsYearly(false)}
@@ -106,17 +107,17 @@ const StatCard = ({ statsPercentage, stats, title, monthlyValue, yearlyValue, co
                     minWidth: "auto",
                     // borderRadius: "8px",
                     // border: "2px solid",
+                    border: isYearly ? "none" : "none",
                     borderColor: isYearly ? "#121926" : "transparent",
                     backgroundColor: isYearly ? "#121926" : "",
                     color: isYearly ? "white" : "grey.700",
                     fontWeight: "bold",
                     // boxShadow: isYearly ? "0px 4px 10px rgba(0, 0, 0, 0.2)" : "none",
-                    // transition: "all 0.3s ease",
+                    transition: "all 0.3s ease",
                     "&:hover": {
                       backgroundColor: isYearly ? "#121926" : "",
-                      // transform: isYearly ? "scale(1.05)" : "none",
+                      transform: isYearly ? "scale(1.05)" : "none",
                       border: isYearly ? "none" : "none",
-                      borderColor: !isYearly ? "#121926" : "transparent",
                     },
                   }}
                   onClick={() => setIsYearly(true)}
