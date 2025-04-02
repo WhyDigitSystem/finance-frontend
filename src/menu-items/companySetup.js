@@ -85,7 +85,13 @@ const companySetup = {
           url: '/basicMaster/finYear',
           icon: icons3.IconCalendarDollar
         },
-
+        {
+          id: 'screenNames',
+          title: 'Screens',
+          type: 'item',
+          url: '/basicMaster/ScreenNames',
+          icon: icons5.IconAppWindow
+        },
         {
           id: 'documentType',
           title: 'Doc Type',
@@ -107,13 +113,6 @@ const companySetup = {
           url: '/finance/DocumentType/multipleDocumentIdGeneration',
           icon: icons4.IconFileTypeDoc
         },
-        {
-          id: 'screenNames',
-          title: 'Screens',
-          type: 'item',
-          url: '/basicMaster/ScreenNames',
-          icon: icons5.IconAppWindow
-        }
       ]
     }
   ]

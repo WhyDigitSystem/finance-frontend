@@ -465,7 +465,7 @@ const GeneratePdfTempDN = ({ row, callBackFunction, modalClose }) => {
               textAlign: 'right'
             }}
             >
-              Total Taxable Amount:{' '}
+              Total Tax Amount:{' '}
               <span
                 style={{
                   fontStyle: 'normal',
@@ -494,11 +494,10 @@ const GeneratePdfTempDN = ({ row, callBackFunction, modalClose }) => {
                   marginLeft: 3
                 }}
               >
-                -{' '}
-                {/* {parseFloat(row.tdsCostInvoiceVO[0].totTdsWhAmnt).toLocaleString('en-IN', {
+                {parseFloat((row.sumLcAmt - row.netBillLcAmt)).toLocaleString('en-IN', {
                   minimumFractionDigits: 2,
                   maximumFractionDigits: 2
-                })} */}
+                })}
               </span>
             </div>
           </div>
@@ -521,7 +520,7 @@ const GeneratePdfTempDN = ({ row, callBackFunction, modalClose }) => {
                 color: '#333'
               }}
             >
-              {Number(row.totChargesBillCurrAmt).toLocaleString('en-IN')}
+              {Number(row.netBillLcAmt).toLocaleString('en-IN')}
             </span>
           </div>
 
@@ -542,7 +541,7 @@ const GeneratePdfTempDN = ({ row, callBackFunction, modalClose }) => {
                 color: '#333'
               }}
             >
-              {toWords(parseFloat(row.totChargesBillCurrAmt)).toUpperCase()}
+              {toWords(parseFloat(row.netBillLcAmt)).toUpperCase()}
             </span>
           </div>
 

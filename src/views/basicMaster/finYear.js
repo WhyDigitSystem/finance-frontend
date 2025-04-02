@@ -103,16 +103,16 @@ const FinYear = () => {
   const handleInputChange = (e) => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
     const codeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-    const nameRegex = /^[A-Za-z ]*$/;
+    const nameRegex = /^[0-9 ]*$/;
     const numericRegex = /^[0-9- ]*$/;
 
-    if (name === 'finYearId' && !numericRegex.test(value)) {
+    if (name === 'finYearId' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Only Numerics Allowed' });
     } else if (name === 'finYearId' && value.length > 4) {
       setFieldErrors({ ...fieldErrors, [name]: 'Exceeded Max Length' });
     } else if (name === 'finYearIdentifier' && !numericRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Only Numerics Allowed' });
-    } else if (name === 'finYearIdentifier' && value.length > 4) {
+    } else if (name === 'finYearIdentifier' && value.length > 5) {
       setFieldErrors({ ...fieldErrors, [name]: 'Exceeded Max Length' });
     } else {
       setFormData({

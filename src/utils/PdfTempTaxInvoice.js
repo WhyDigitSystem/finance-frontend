@@ -514,16 +514,6 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 <li key={index}>{term}</li>
               ))}
             </ol>
-            {/* <p style={{ lineHeight: '1.6' }}>{companyDetails.termsAndConditions}</p> 
-            <ol>
-              <li>
-                The payment should be made by way of Account Payee Cheque / Demand Draft / NEFT / RTGS in the name of "
-                {localStorage.getItem('companyName')}".
-              </li>
-              <li>Any Discrepancy in the invoice shall be informed within 7 days of the invoice submission.</li>
-              <li>Interest at 2% p.m. or part thereof will be charged if the bill is not paid on the due date.</li>
-              <li>Any dispute is subject to Bangalore Jurisdiction</li>
-            </ol> */}
           </div>
 
           <div style={styles2.container}>

@@ -511,7 +511,7 @@ const MultipleDocumentIdGeneration = () => {
                   <InputLabel id="finYr-label">Fin Year</InputLabel>
                   <Select
                     labelId="finYr-label"
-                    label="finYr"
+                    label="finYear"
                     value={formData.finYr}
                     onChange={handleInputChange}
                     name="finYr"

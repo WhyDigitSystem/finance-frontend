@@ -413,9 +413,7 @@ const ProductService = () => {
                     startIcon={<CloudUploadIcon />}
                     sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
                   >
-                    {/* {logo ? logo.name === '' ? "Logo👉
-                    " : logo.name : 'Upload Logo'} */}
-                    {logo ? (typeof logo === 'object' && logo.name ? logo.name : 'Image') : 'Image'}
+                    {logo ? (typeof logo === 'object' && logo.name ? logo.name : 'Image') : 'Upload Image'}
 
                     <input type="file" hidden accept="image/png, image/jpeg" onChange={handleLogoChange} />
                   </Button>
@@ -429,13 +427,13 @@ const ProductService = () => {
                 <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
                   <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
                     <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }}>
-                      Company Logo
+                      Product Image
                     </Typography>
                     {logo ? (
                       <Box>
                         <Avatar
                           src={typeof logo === 'object' ? URL.createObjectURL(logo) : `data:image/jpeg;base64,${logo}`}
-                          alt="Company Logo"
+                          alt="Product Image"
                           sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }}
                         />
                         <Box display="flex" gap={2} mt={2}>
@@ -458,7 +456,7 @@ const ProductService = () => {
                     ) : (
                       <Box>
                         <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
-                          <Typography variant="caption">Upload Logo</Typography>
+                          <Typography variant="caption">Upload Image</Typography>
                         </Avatar>
                         <Box display="flex" gap={2} mt={2}>
                           <IconButton
