@@ -191,7 +191,7 @@ const TopCustomersChart = ({ chartData }) => {
         ) : (
           <>
             <NoDataAvailable />
-            <Typography sx={{textAlign: 'center'}}>No Data Available</Typography>
+            <Typography sx={{ textAlign: 'center' }}>No Data Available</Typography>
           </>
         )}
       </CardContent>
@@ -380,14 +380,16 @@ const TDSTable = ({ tdsData }) => {
         <TableBody>
           {tdsData.slice(0, 5).map((row, index) => (
             <TableRow key={index} sx={{ background: index % 2 === 0 ? "#E1F5FE" : "#FFFFFF", "&:hover": { background: "#B3E5FC" } }}>
-              <TableCell sx={{ py: 1, textAlign: "center", fontWeight: 500 }}>{index + 1}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: "center", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 130 }}>
-                <span>{row.supplierName}</span>
+              <TableCell sx={{ py: 1, textAlign: "center", fontWeight: 500, fontSize: '0.875rem' }}>{index + 1}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: "center", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 130, fontSize: '0.875rem' }}>
+                {/* <Tooltip title={row.supplierName} arrow> */}
+                  <span>{row.supplierName}</span>
+                {/* </Tooltip> */}
               </TableCell>
-              <TableCell sx={{ py: 1, textAlign: "center" }}>{row.tds9.toLocaleString("en-IN")}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: "center" }}>{row.tds10.toLocaleString("en-IN")}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: "center" }}>{row.tds4.toLocaleString("en-IN")}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: "center", fontWeight: 600 }}>{row.tdsAmount.toLocaleString("en-IN")}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.tds9.toLocaleString("en-IN")}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.tds10.toLocaleString("en-IN")}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.tds4.toLocaleString("en-IN")}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: "center", fontWeight: 600, fontSize: '0.875rem' }}>{row.tdsAmount.toLocaleString("en-IN")}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -512,7 +514,7 @@ export { GSTRTable, TDSTable };
 const DashboardNew = () => {
   const [isYearly, setIsYearly] = useState(false);
   const [totalOrderYear, setTotalOrderYear] = useState(0);
-  const [prevMonthAmt, setPrevMonthAmt] = useState(0);
+  const [revenuePrevMonthAmt, setRevenuePrevMonthAmt] = useState(0);
   const [totalCostYear, setTotalCostYear] = useState(0);
   const [totalReceiptYear, setTotalReceiptYear] = useState(0);
   const [totalPaymentYear, setTotalPaymentYear] = useState(0);
@@ -581,14 +583,14 @@ const DashboardNew = () => {
     }
   }, [finYear, orgId, isYearly]);
 
-  const getDashboardRevenuePreMon = useCallback(async () => {
+  const getRevenuePreviousMonth = useCallback(async () => {
     try {
       const targetMonth = getTargetMonth(isYearly);
 
       const response = await apiCalls('get', `getPercentageDiffFromRevenue?finYear=${finYear}&orgId=${orgId}`);
 
       const totalOrderYear = Number(response.paramObjectsMap.taxInvoiceVO[0]?.amount || 0);
-      setPrevMonthAmt(totalOrderYear);
+      setRevenuePrevMonthAmt(totalOrderYear);
     } catch (error) {
       console.error('Error fetching dashboard revenue:', error);
     }
