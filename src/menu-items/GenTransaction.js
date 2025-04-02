@@ -97,12 +97,12 @@ const transactionChildren = [
     type: 'item',
     url: '/finance/JobCard'
   },
-  {
-    id: 'AdjustmentOffset',
-    title: 'AR Offset',
-    type: 'item',
-    url: '/finance/AdjustmentOffset'
-  },
+  // {
+  //   id: 'AdjustmentOffset',
+  //   title: 'AR Offset',
+  //   type: 'item',
+  //   url: '/finance/AdjustmentOffset'
+  // },
   {
     id: 'deposit',
     title: 'Deposit',

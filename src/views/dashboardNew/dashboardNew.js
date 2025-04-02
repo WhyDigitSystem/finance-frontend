@@ -8,6 +8,10 @@ import {
   ButtonGroup,
   Card,
   CardContent,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   Grid,
   Paper,
   Table,
@@ -34,6 +38,8 @@ import {
 } from 'chart.js';
 import { useCallback, useEffect, useState } from 'react';
 import { Bar, Pie, Line } from 'react-chartjs-2';
+import { Box } from '@mui/system';
+import NoDataAvailable from 'utils/NoData';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, ArcElement, Tooltip, Legend);
 
@@ -177,13 +183,16 @@ const TopCustomersChart = ({ chartData }) => {
   };
 
   return (
-    <Card sx={{ p: 1, boxShadow: 3, borderRadius: 2 }}>
+    <Card sx={{ p: 1, boxShadow: 3, borderRadius: 2, width: "100%", height: "100%" }}>
       <CardContent>
         <Typography variant="h6">Top 5 Customers</Typography>
         {chartData && chartData.labels.length > 0 ? (
           <Bar data={chartData} options={options} />
         ) : (
-          <Typography>No Data Available</Typography>
+          <>
+            <NoDataAvailable />
+            <Typography sx={{textAlign: 'center'}}>No Data Available</Typography>
+          </>
         )}
       </CardContent>
     </Card>
@@ -218,15 +227,18 @@ const SalesDistributionChart = ({ loading, error, salesData }) => {
   };
 
   return (
-    <Card sx={{ p: 3, boxShadow: 3, borderRadius: 2, width: "100%", height: "100%" }}>
-      <CardContent sx={{ width: "100%", height: "300px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <Typography variant="h6" textAlign="center" mb={2}>
+    <Card sx={{ p: 1, boxShadow: 3, borderRadius: 2, width: "100%", height: "100%" }}>
+      <CardContent sx={{ width: "100%", height: "300px", display: "flex", flexDirection: "column" }}>
+        <Typography variant="h6">
           Sales Distribution
         </Typography>
         {loading ? (
           <Typography>Loading...</Typography>
         ) : error ? (
-          <Typography color="error">{error}</Typography>
+          <>
+            <NoDataAvailable />
+            <Typography sx={{ textAlign: 'center' }}>No Data Available</Typography>
+          </>
         ) : (
           <div style={{ position: "relative", width: "100%", height: "100%" }}>
             <Pie data={salesData} options={options} />
@@ -324,83 +336,99 @@ const GSTRTable = () => {
   );
 };
 
-const TDSTable = () => {
-  const tdsData = [
-    { vendor: 'Ven 1', invoiceValue: 200000, tds2: 2000, tds10: 0, tds1: 0, tdsNill: 0 },
-    { vendor: 'Ven 2', invoiceValue: 100000, tds2: 0, tds10: 0, tds1: 0, tdsNill: 0 },
-    { vendor: 'Ven 3', invoiceValue: 50000, tds2: 0, tds10: 5000, tds1: 0, tdsNill: 0 },
-    { vendor: 'Ven 4', invoiceValue: 400000, tds2: 0, tds10: 0, tds1: 4000, tdsNill: 0 },
-    { vendor: 'Ven 5', invoiceValue: 300000, tds2: 3000, tds10: 0, tds1: 0, tdsNill: 0 }
-  ];
+const TDSTable = ({ tdsData }) => {
+  console.log("TDSDATA", tdsData);
+  const [openTdsSummary, setOpenTdsSummary] = useState(false);
 
   return (
     <TableContainer
       component={Paper}
-      sx={{
-        boxShadow: 4,
-        borderRadius: 3,
-        overflow: 'hidden',
-        background: '#F9FAFB'
-      }}
+      sx={{ boxShadow: 4, borderRadius: 3, overflow: "hidden", background: "#F9FAFB" }}
     >
-      {/* Table Title */}
-      <Typography
-        variant="h6"
+      {/* Header with View Button */}
+      <Box
         sx={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
           p: 1,
-          background: 'linear-gradient(135deg, #0288D1, #01579B)',
-          color: '#fff',
-          fontWeight: 'bold',
-          textAlign: 'center',
-          letterSpacing: 1.1
+          background: "linear-gradient(135deg, #0288D1, #01579B)",
+          color: "#fff",
+          fontWeight: "bold",
+          letterSpacing: 1.1,
         }}
       >
-        TDS Summary
-      </Typography>
+        <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "center", color: "white", fontWeight: "bold" }}>
+          TDS Summary
+        </Typography>
+        <Button variant="contained" color="primary" sx={{ height: "30px" }} onClick={() => setOpenTdsSummary(true)}>
+          View
+        </Button>
+      </Box>
 
-      {/* Table Component */}
+      {/* Main Table (Showing Only 5 Records) */}
       <Table size="small">
-        {/* Table Header */}
-        <TableHead sx={{ background: '#0288D1' }}>
+        <TableHead sx={{ background: "#0288D1" }}>
           <TableRow>
-            {['S.No', 'Vendor', 'Invoice (₹)', 'TDS 2% (₹)', 'TDS 10% (₹)', 'TDS 1% (₹)', 'TDS Nil (₹)'].map((header, index) => (
-              <TableCell
-                key={index}
-                sx={{
-                  fontWeight: 'bold',
-                  textAlign: 'center',
-                  color: '#fff',
-                  padding: '8px',
-                  borderBottom: '2px solid #01579B'
-                }}
-              >
+            {["S.No", "Supplier", "TDS 9% (₹)", "TDS 10% (₹)", "TDS 4% (₹)", "TDS Amount (₹)"].map((header, index) => (
+              <TableCell key={index} sx={{ fontWeight: "bold", textAlign: "center", color: "#fff", padding: "8px", borderBottom: "2px solid #01579B" }}>
                 {header}
               </TableCell>
             ))}
           </TableRow>
         </TableHead>
-
-        {/* Table Body */}
         <TableBody>
-          {tdsData.map((row, index) => (
-            <TableRow
-              key={index}
-              sx={{
-                background: index % 2 === 0 ? '#E1F5FE' : '#FFFFFF',
-                '&:hover': { background: '#B3E5FC' }
-              }}
-            >
-              <TableCell sx={{ py: 1, textAlign: 'center', fontWeight: 500 }}>{index + 1}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: 'center' }}>{row.vendor}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: 'center', fontWeight: 600 }}>{row.invoiceValue.toLocaleString('en-IN')}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: 'center' }}>{row.tds2.toLocaleString('en-IN')}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: 'center' }}>{row.tds10.toLocaleString('en-IN')}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: 'center' }}>{row.tds1.toLocaleString('en-IN')}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: 'center' }}>{row.tdsNill.toLocaleString('en-IN')}</TableCell>
+          {tdsData.slice(0, 5).map((row, index) => (
+            <TableRow key={index} sx={{ background: index % 2 === 0 ? "#E1F5FE" : "#FFFFFF", "&:hover": { background: "#B3E5FC" } }}>
+              <TableCell sx={{ py: 1, textAlign: "center", fontWeight: 500 }}>{index + 1}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: "center", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 130 }}>
+                <span>{row.supplierName}</span>
+              </TableCell>
+              <TableCell sx={{ py: 1, textAlign: "center" }}>{row.tds9.toLocaleString("en-IN")}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: "center" }}>{row.tds10.toLocaleString("en-IN")}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: "center" }}>{row.tds4.toLocaleString("en-IN")}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: "center", fontWeight: 600 }}>{row.tdsAmount.toLocaleString("en-IN")}</TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+
+      <Dialog open={openTdsSummary} maxWidth="md" fullWidth onClose={() => setOpenTdsSummary(false)}>
+        <DialogContent>
+          <DialogTitle sx={{ background: "#0288D1", color: "#fff", fontWeight: "bold", textAlign: "center" }}>Full TDS Summary</DialogTitle>
+          <Table size="small">
+            <TableHead sx={{ background: "#0288D1" }}>
+              <TableRow>
+                {["S.No", "Supplier", "TDS 9% (₹)", "TDS 10% (₹)", "TDS 4% (₹)", "TDS Amount (₹)"].map((header, index) => (
+                  <TableCell key={index} sx={{ fontWeight: "bold", textAlign: "center", color: "#fff", padding: "8px", borderBottom: "2px solid #01579B" }}>
+                    {header}
+                  </TableCell>
+                ))}
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {tdsData.map((row, index) => (
+                <TableRow key={index} sx={{ background: index % 2 === 0 ? "#E1F5FE" : "#FFFFFF", "&:hover": { background: "#B3E5FC" } }}>
+                  <TableCell sx={{ py: 1, textAlign: "center", fontWeight: 500 }}>{index + 1}</TableCell>
+                  {/* <TableCell sx={{ py: 1, textAlign: "center", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 130 }}>
+                    <span>{row.supplierName}</span>
+                  </TableCell> */}
+                  <TableCell sx={{ py: 1 }}>{row.supplierName.toLocaleString("en-IN")}</TableCell>
+                  <TableCell sx={{ py: 1, textAlign: "center" }}>{row.tds9.toLocaleString("en-IN")}</TableCell>
+                  <TableCell sx={{ py: 1, textAlign: "center" }}>{row.tds10.toLocaleString("en-IN")}</TableCell>
+                  <TableCell sx={{ py: 1, textAlign: "center" }}>{row.tds4.toLocaleString("en-IN")}</TableCell>
+                  <TableCell sx={{ py: 1, textAlign: "center", fontWeight: 600 }}>{row.tdsAmount.toLocaleString("en-IN")}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </DialogContent>
+        <DialogActions>
+          <Button variant="contained" color="secondary" onClick={() => setOpenTdsSummary(false)}>
+            Close
+          </Button>
+        </DialogActions>
+      </Dialog>
     </TableContainer>
   );
 };
@@ -494,6 +522,7 @@ const DashboardNew = () => {
   const [salesData, setSalesData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [tdsData, setTdsData] = useState([]);
 
   const getTargetMonth = (isYearly) => {
     if (isYearly) return 'ALL';
@@ -530,12 +559,10 @@ const DashboardNew = () => {
     try {
       const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `dashboard/getReceiptAmont?orgId=${orgId}${targetMonth === "ALL" ? `&year=Year` : `&month=month`}`);
+      const response = await apiCalls('get', `dashboard/getReceiptAmont?orgId=${orgId}${targetMonth === "ALL" ? `&year=${finYear}` : `&month=MONTH&year=${finYear}`}`);
 
       const totalReceiptYear = Number(response.paramObjectsMap.receiptAmont[0]?.receiptAmt || 0);
-      // const totalPrevMonthAmt = Number(response.paramObjectsMap.receiptAmont[0]?.preMnthAmt || 0);
       setTotalReceiptYear(totalReceiptYear);
-      // setPrevMonthAmt(totalPrevMonthAmt);
     } catch (error) {
       console.error('Error fetching dashboard cost:', error);
     }
@@ -545,12 +572,25 @@ const DashboardNew = () => {
     try {
       const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `dashboard/getPaymentAmont?orgId=${orgId}${targetMonth === "ALL" ? `&year=Year` : `&month=month`}`);
+      const response = await apiCalls('get', `dashboard/getPaymentAmont?orgId=${orgId}${targetMonth === "ALL" ? `&year=${finYear}` : `&month=MONTH&year=${finYear}`}`);
 
       const totalPaymentYear = Number(response.paramObjectsMap.receiptAmont[0]?.paymentAmt || 0);
       setTotalPaymentYear(totalPaymentYear);
     } catch (error) {
       console.error('Error fetching dashboard cost:', error);
+    }
+  }, [finYear, orgId, isYearly]);
+
+  const getDashboardRevenuePreMon = useCallback(async () => {
+    try {
+      const targetMonth = getTargetMonth(isYearly);
+
+      const response = await apiCalls('get', `getPercentageDiffFromRevenue?finYear=${finYear}&orgId=${orgId}`);
+
+      const totalOrderYear = Number(response.paramObjectsMap.taxInvoiceVO[0]?.amount || 0);
+      setPrevMonthAmt(totalOrderYear);
+    } catch (error) {
+      console.error('Error fetching dashboard revenue:', error);
     }
   }, [finYear, orgId, isYearly]);
 
@@ -566,10 +606,7 @@ const DashboardNew = () => {
       const targetMonth = getTargetMonth(isYearly);
 
       try {
-        const response = await apiCalls(
-          "get",
-          `/master/getMonthlyAndYearWiseData?orgId=${orgId}${targetMonth === "ALL" ? `&year=Year` : `&month=month`}`
-        );
+        const response = await apiCalls('get', `master/getMonthlyAndYearWiseData?orgId=${orgId}${targetMonth === "ALL" ? `&finYear=${finYear}` : `&month=MONTH&finYear=${finYear}`}`);
 
         if (response?.status && response?.paramObjectsMap?.partyMasterVO) {
           let parties = response.paramObjectsMap.partyMasterVO || [];
@@ -624,7 +661,7 @@ const DashboardNew = () => {
       try {
         const response = await apiCalls(
           "get",
-          `/master/getSalesDistributionData?orgId=${orgId}${targetMonth === "ALL" ? `&year=Year` : `&month=month`}`
+          `/master/getSalesDistributionData?orgId=${orgId}${targetMonth === "ALL" ? `&finYear=${finYear}` : `&month=MONTH&finYear=${finYear}`}`
         );
 
         if (response?.status && response?.paramObjectsMap?.partyMasterVO) {
@@ -654,6 +691,22 @@ const DashboardNew = () => {
     };
 
     fetchSalesData();
+  }, [orgId, isYearly]);
+
+  useEffect(() => {
+    const fetchTdsData = async () => {
+      const targetMonth = getTargetMonth(isYearly);
+      try {
+        const response = await apiCalls('get', `dashboard/getTdsSummary?orgId=${orgId}${targetMonth === "ALL" ? `&finYear=${finYear}` : `&month=MONTH&finYear=${finYear}`}`)
+        if (response?.status && response?.paramObjectsMap?.receiptAmont) {
+          setTdsData(response.paramObjectsMap.receiptAmont || []);
+          console.log("TDSdata", response)
+        }
+      } catch (error) {
+        console.error("Error fetching TDS data:", error);
+      }
+    };
+    fetchTdsData();
   }, [orgId, isYearly]);
 
   // Update financial data dynamically
@@ -692,7 +745,7 @@ const DashboardNew = () => {
         <GSTRTable />
       </Grid>
       <Grid item xs={12} md={6}>
-        <TDSTable />
+        <TDSTable tdsData={tdsData} />
       </Grid>
       <Grid item xs={12} md={6}>
         <LineChart />
