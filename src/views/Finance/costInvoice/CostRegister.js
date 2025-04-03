@@ -282,7 +282,7 @@ function CostRegister() {
                   label="Branch"
                 />
               </div>
-              <div className="col-md-2 mb-1">
+              {/* <div className="col-md-2 mb-1">
                 <Button
                   onClick={handleProceed}
                   color="secondary"
@@ -292,9 +292,9 @@ function CostRegister() {
                 >
                   Proceed
                 </Button>
-              </div>
+              </div> */}
             </div>
-            {visibleSections.date && (
+            {selectedSections.date && (
               <>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled" size="small">
@@ -328,7 +328,7 @@ function CostRegister() {
                 </div>
               </>
             )}
-            {visibleSections.branchCode && (
+            {selectedSections.branchCode && (
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchCode}>
                   <InputLabel id="branchCode-label">Branch Code</InputLabel>
@@ -351,7 +351,7 @@ function CostRegister() {
                 </FormControl>
               </div>
             )}
-            {visibleSections.customer && (
+            {selectedSections.customer && (
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
                   <InputLabel id="customer">Vendor</InputLabel>
@@ -374,7 +374,7 @@ function CostRegister() {
                 </FormControl>
               </div>
             )}
-            {(visibleSections.date || visibleSections.branchCode || visibleSections.customer) && (
+            {(selectedSections.date || selectedSections.branchCode || selectedSections.customer) && (
               <div className="col-md-3 mb-2">
                 <div className="row d-flex ml">
                   <div className="d-flex flex-wrap justify-content-start mb-3 mt-1" style={{ marginBottom: '20px' }}>

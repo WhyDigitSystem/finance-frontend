@@ -278,7 +278,7 @@ function PartyLedger() {
         </div> */}
         <>
           <div className="row mb-2">
-            <div
+            {/* <div
               className="col-md-2
                mb-2"
             >
@@ -286,7 +286,7 @@ function PartyLedger() {
                 control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                 label="Date"
               />
-            </div>
+            </div> */}
             <div className="col-md-2 mb-1">
               <FormControlLabel
                 control={<Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />}
@@ -307,7 +307,7 @@ function PartyLedger() {
                 label="With Details"
               />
             </div> */}
-            <div className="col-md-2 mb-1">
+            {/* <div className="col-md-2 mb-1">
               <Button
                 onClick={handleProceed}
                 color="secondary"
@@ -317,10 +317,10 @@ function PartyLedger() {
               >
                 Proceed
               </Button>
-            </div>
+            </div> */}
           </div>
           <div className="row">
-            {visibleSections.date && (
+            {/* {selectedSections.date && ( */}
               <>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled" size="small">
@@ -353,8 +353,8 @@ function PartyLedger() {
                   </FormControl>
                 </div>
               </>
-            )}
-            {visibleSections.branch && (
+            {/* )} */}
+            {selectedSections.branch && (
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
                   <InputLabel id="branch-label">Branch</InputLabel>
@@ -371,7 +371,7 @@ function PartyLedger() {
                 </FormControl>
               </div>
             )}
-            {visibleSections.customer && (
+            {selectedSections.customer && (
               <>
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.partyType}>
@@ -436,7 +436,7 @@ function PartyLedger() {
                 </FormControl>
               </div>
             )} */}
-            {(visibleSections.date || visibleSections.branch || visibleSections.customer) && (
+            {/* {(selectedSections.date || selectedSections.branch || selectedSections.customer) && ( */}
               <div className="col-md-3 mb-2">
                 <div className="row d-flex ml">
                   <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
@@ -445,7 +445,7 @@ function PartyLedger() {
                   </div>
                 </div>
               </div>
-            )}
+            {/* )} */}
           </div>
         </>
         {listView && (

@@ -242,7 +242,7 @@ function ArOutstanding() {
                   label="Due Date"
                 />
               </div>
-              <div className="col-md-2 mb-3">
+              {/* <div className="col-md-2 mb-3">
                 <Button
                   onClick={handleProceed}
                   color="secondary"
@@ -252,9 +252,9 @@ function ArOutstanding() {
                 >
                   Proceed
                 </Button>
+              </div> */}
               </div>
-              </div>
-              {visibleSections.date && (
+              {selectedSections.date && (
                 <>
                   <div className="col-md-3 mb-3">
                      <FormControl fullWidth variant="filled" size="small">
@@ -273,7 +273,7 @@ function ArOutstanding() {
                   </div>
                 </>
               )}
-              {visibleSections.dueDate && (
+              {selectedSections.dueDate && (
                 <>
                   <div className="col-md-3 mb-3">
                      <FormControl fullWidth variant="filled" size="small">
@@ -292,7 +292,7 @@ function ArOutstanding() {
                   </div>
                 </>
               )}
-              {visibleSections.partyName && ( 
+              {selectedSections.partyName && ( 
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.partyName}>
                   <InputLabel id="partyName-label">Party Name</InputLabel>
@@ -316,7 +316,7 @@ function ArOutstanding() {
                 </FormControl>
               </div>
               )}            
-              {visibleSections.branch && ( 
+              {selectedSections.branch && ( 
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
                   <InputLabel id="branch-label">Branch</InputLabel>
@@ -338,7 +338,7 @@ function ArOutstanding() {
                 </FormControl>
               </div>
               )}
-              {(visibleSections.date || visibleSections.partyName || visibleSections.branch || visibleSections.dueDate) && (
+              {(selectedSections.date || selectedSections.partyName || selectedSections.branch || selectedSections.dueDate) && (
                 <div className="col-md-3 mb-3">
                   <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>

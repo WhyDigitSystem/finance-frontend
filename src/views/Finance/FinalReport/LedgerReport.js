@@ -248,13 +248,13 @@ function TaxRegister() {
         <>
             <div className="row">
               <div className="row">
-              <div className="col-md-2
+              {/* <div className="col-md-2
                mb-2">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                   label="Date"
                 />
-              </div>
+              </div> */}
               <div className="col-md-2 mb-1">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.accountName} onChange={handleCheckboxChange} name="accountName" color="secondary" />}
@@ -273,7 +273,7 @@ function TaxRegister() {
                   label="Branch Code"
                 />
               </div>
-              <div className="col-md-2 mb-1">
+              {/* <div className="col-md-2 mb-1">
                 <Button
                   onClick={handleProceed}
                   color="secondary"
@@ -283,9 +283,9 @@ function TaxRegister() {
                 >
                   Proceed
                 </Button>
+              </div> */}
               </div>
-              </div>
-              {visibleSections.date && (
+              {/* {selectedSections.date && ( */}
                 <>
                   
                   <div className="col-md-3 mb-3">
@@ -319,8 +319,8 @@ function TaxRegister() {
                     </FormControl> 
                   </div>
                 </>
-              )}
-              {visibleSections.accountName && ( 
+              {/* )} */}
+              {selectedSections.accountName && ( 
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.accountName}>
                   <InputLabel id="accountName-label">Account Name</InputLabel>
@@ -363,7 +363,7 @@ function TaxRegister() {
                 </FormControl>
               </div>
               )} */}
-              {visibleSections.branchCode && ( 
+              {selectedSections.branchCode && ( 
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchCode}>
                   <InputLabel id="branchCode-label">Branch Code</InputLabel>
@@ -386,7 +386,7 @@ function TaxRegister() {
                 </FormControl>
               </div>
               )}
-              {(visibleSections.date || visibleSections.accountName || visibleSections.branchCode) && (
+              {/* {(visibleSections.date || visibleSections.accountName || visibleSections.branchCode) && ( */}
                 <div className="col-md-3 mb-2">
                   <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
@@ -395,7 +395,7 @@ function TaxRegister() {
                     </div>
                   </div>
                 </div>
-              )}
+              {/* )} */}
             </div>
           </>
         {listView && (

@@ -254,7 +254,7 @@ function ReceiptReport() {
                   label="Customer"
                 />
               </div>
-              <div className="col-md-2 mb-1">
+              {/* <div className="col-md-2 mb-1">
                 <Button
                   onClick={handleProceed}
                   color="secondary"
@@ -264,9 +264,9 @@ function ReceiptReport() {
                 >
                   Proceed
                 </Button>
-              </div>
+              </div> */}
             </div>
-            {visibleSections.date && (
+            {selectedSections.date && (
               <>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled" size="small">
@@ -300,7 +300,7 @@ function ReceiptReport() {
                 </div>
               </>
             )}
-            {visibleSections.customer && (
+            {selectedSections.customer && (
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
                   <InputLabel id="customer-label">Customer</InputLabel>
@@ -323,7 +323,7 @@ function ReceiptReport() {
                 </FormControl>
               </div>
             )}
-            {(visibleSections.date || visibleSections.customer) && (
+            {(selectedSections.date || selectedSections.customer) && (
               <div className="col-md-3 mb-2">
                 <div className="row d-flex ml">
                   <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>

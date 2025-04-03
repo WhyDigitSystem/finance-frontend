@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 
 // material-ui
-import { Avatar, Box, ButtonBase } from '@mui/material';
+import { Avatar, Box, ButtonBase,Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
 // project imports
@@ -16,6 +16,7 @@ import GlobalSection from './GlobalSection';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import apiCalls from 'apicall';
+
 
 // ==============================|| MAIN NAVBAR / HEADER ||============================== //
 
@@ -137,8 +138,20 @@ const Header = ({ handleLeftDrawerToggle }) => {
           <input type="file" hidden accept="image/png, image/jpeg" onChange={handleLogoChange} />
         </Avatar>
 
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+  <h6 style={{ marginTop: '-12px', marginBottom: 1 }}>
+    {localStorage.getItem('companyName')}
+  </h6>
+  <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+  <Chip 
+    label={`${localStorage.getItem('finYear')} | ${localStorage.getItem('branch')}`} 
+    size="small" 
+    color="primary" 
+    sx={{ fontSize: '11px', height: '20px' }} 
+  />
+</div>
 
-        <h6>{localStorage.getItem('companyName')}</h6>
+</div>
       </div>
       <NotificationSection />
       <GlobalSection />

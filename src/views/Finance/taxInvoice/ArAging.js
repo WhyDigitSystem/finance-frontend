@@ -276,7 +276,7 @@ function ArAging() {
           </>
         {listView && (
           <div className="mt-4">
-            <CommonReportTable data={rowData} columns={reportColumns} />
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView}/>
           </div>
         )}
   </div>

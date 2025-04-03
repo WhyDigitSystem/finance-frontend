@@ -239,7 +239,7 @@ function PaymentReport() {
                   label="Branch Code"
                 />
               </div>
-              <div className="col-md-2 mb-1">
+              {/* <div className="col-md-2 mb-1">
                 <Button
                   onClick={handleProceed}
                   color="secondary"
@@ -249,9 +249,9 @@ function PaymentReport() {
                 >
                   Proceed
                 </Button>
+              </div> */}
               </div>
-              </div>
-              {visibleSections.date && (
+              {selectedSections.date && (
                 <>
                   <div className="col-md-3 mb-3">
                     <FormControl fullWidth variant="filled" size="small">
@@ -285,7 +285,7 @@ function PaymentReport() {
                   </div>
                 </>
               )}
-              {visibleSections.vendor && ( 
+              {selectedSections.vendor && ( 
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.vendor}>
                   <InputLabel id="vendor-label">Vendor</InputLabel>
@@ -308,7 +308,7 @@ function PaymentReport() {
                 </FormControl>
               </div>
               )}
-              {visibleSections.branchCode && ( 
+              {selectedSections.branchCode && ( 
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchCode}>
                   <InputLabel id="branchCode-label">Branch Code</InputLabel>
@@ -331,7 +331,7 @@ function PaymentReport() {
                 </FormControl>
               </div>
               )}
-              {(visibleSections.date || visibleSections.vendor || visibleSections.branchCode) && (
+              {(selectedSections.date || selectedSections.vendor || selectedSections.branchCode) && (
                 <div className="col-md-3 mb-2">
                   <div className="row d-flex ml">
                     <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
