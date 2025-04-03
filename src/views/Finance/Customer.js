@@ -57,7 +57,7 @@ export const Customer = () => {
     bussinessType: '',
     bussinessCate: '',
     accType: 'RECEIVABLE',
-    currency: '',
+    currency: 'INR',
     createdBy: loginUserName,
     orgId: orgId
   });
@@ -544,7 +544,7 @@ export const Customer = () => {
       bussinessType: '',
       bussinessCate: '',
       accType: 'RECEIVABLE',
-      currency: ''
+      currency: 'INR'
     });
     setFieldErrors({
       customerName: '',
@@ -1318,9 +1318,7 @@ export const Customer = () => {
                     name="currency"
                     value={formData.currency}
                   >
-                    {/* Automatically select the single option if only one currency exists */}
                     {currencies.length === 1 ? (
-                      // .filter((row) => row.currency === 'INR')
                       <MenuItem key={currencies[0].id} value={currencies[0].currency}>
                         {currencies[0].currency}
                       </MenuItem>
