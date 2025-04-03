@@ -193,7 +193,9 @@ const GlobalSection = () => {
     try {
       const result = await apiCalls('put', `GlobalParam/globalparam`, formData);
       showToast('success', 'Global Parameter updated successfully');
-      // setOpen(false);
+      setTimeout(() => {
+        window.location.reload();
+      }, 400);
       console.log('Test', result);
     } catch (err) {
       console.log('error', err);
