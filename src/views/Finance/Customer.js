@@ -10,7 +10,9 @@ import TextField from '@mui/material/TextField';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
+// import DatePicker from 'react-datepicker';
 import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -457,41 +459,25 @@ export const Customer = () => {
     handleBulkUploadClose();
     getAllCustomerByOrgId();
   };
-
   const handleInputChange = (e) => {
     const { name, value, checked, type, selectionStart, selectionEnd } = e.target;
-
     const nameRegex = /^[A-Za-z ]*$/;
-    // const codeRegex = /^[a-zA-Z0-9- ]*$/;
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
     let formattedValue = value;
-
     if (name === 'panNo' || name === 'gstIn') {
       formattedValue = value.toUpperCase();
     }
-
     if (name === 'panNo' && formattedValue.length > 11) return;
-
     let errorMessage = '';
-
-    // PAN validation
     if (name === 'panNo') {
       if (formattedValue.length === 11 && !panRegex.test(formattedValue)) {
         errorMessage = 'Invalid PAN format (e.g., ABCDE1234F)';
       }
     }
-
-    // Customer Code validation
-    // if (name === "customerCode") {
-    //   if (!codeRegex.test(value)) {
-    //     errorMessage = "Only Alphanumeric characters and Hyphen (-) allowed";
-    //   } else if (value.length > 10) {
-    //     errorMessage = "Exceeded Maximum Length (10)";
-    //   }
-    // }
-
-    // Customer Name validation
+    if (name === 'gstIn' && (!/^[A-Za-z0-9 ]*$/.test(value) || value.length === 16)) {
+          errorMessage = 'GSTIN must be exactly 15 characters long';
+        }
     if (name === 'customerName') {
       if (!nameRegex.test(value)) {
         errorMessage = 'Only Alphabets Allowed';
@@ -527,7 +513,6 @@ export const Customer = () => {
       // }, 0);
     }
   };
-
   const handleClear = () => {
     setEditId('');
     setFormData({
@@ -604,7 +589,7 @@ export const Customer = () => {
     setPartyCurrencyMappingErrors([]);
     setPartyCurrencyMapping([
       {
-        transCurrency: ''
+        transCurrency: 'INR'
       }
     ]);
   };
@@ -920,7 +905,7 @@ export const Customer = () => {
   const [partyCurrencyMapping, setPartyCurrencyMapping] = useState([
     {
       id: Date.now(),
-      transCurrency: ''
+      transCurrency: 'INR'
     }
   ]);
 
@@ -1030,8 +1015,8 @@ export const Customer = () => {
         customerCode: formData.customerCode,
         gstIn: formData.gstIn,
         panNo: formData.panNo,
-        creditLimit: formData.creditLimit,
-        creditDays: formData.creditDays,
+        creditLimit: parseInt(formData.creditLimit),
+        creditDays: parseInt(formData.creditDays),
         creditTerms: formData.creditTerms,
         taxRegistered: formData.gstRegistered,
         bussinessType: formData.bussinessType,
@@ -1041,7 +1026,7 @@ export const Customer = () => {
         active: true,
         approved: true,
         createdBy: loginUserName,
-        orgId: orgId,
+        orgId: parseInt(orgId),
         customersAddressDTO: customersAddressVO,
         customersStateDTO: customersStateVO,
         customerSalesPersonDTO: customerSalesPersonVO,
@@ -1151,9 +1136,22 @@ export const Customer = () => {
                   // helperText={fieldErrors.shortName}
                 />
               </div>
-
-
               <div className="col-md-3 mb-3">
+                <FormControl variant="outlined" fullWidth size="small">
+                  <InputLabel id="gstRegistered">Tax Registered</InputLabel>
+                  <Select
+                    labelId="gstRegistered"
+                    label="Tax Registered"
+                    name="gstRegistered"
+                    value={formData.gstRegistered}
+                    onChange={handleInputChange}
+                  >
+                    <MenuItem value="YES">YES</MenuItem>
+                    <MenuItem value="NO">NO</MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
+              {formData.gstRegistered === 'YES' && <div className="col-md-3 mb-3">
                 <TextField
                   id="gstIn"
                   fullWidth
@@ -1162,12 +1160,10 @@ export const Customer = () => {
                   size="small"
                   value={formData.gstIn}
                   onChange={handleInputChange}
-                  // error={fieldErrors.gstIn}
-                  // helperText={fieldErrors.gstIn}
-                  inputProps={{ maxLength: 15 }}
+                  error={fieldErrors.gstIn}
+                  helperText={fieldErrors.gstIn}
                 />
-              </div>
-
+              </div>}
               <div className="col-md-3 mb-3">
                 <TextField
                   id="panNo"
@@ -1177,11 +1173,10 @@ export const Customer = () => {
                   size="small"
                   value={formData.panNo}
                   onChange={handleInputChange}
-                // error={Boolean(fieldErrors.panNo)}
-                // helperText={fieldErrors.panNo}
+                  error={fieldErrors.panNo}
+                  helperText={fieldErrors.panNo}
                 />
               </div>
-
               <div className="col-md-3 mb-3">
                 <TextField
                   id="creditLimit"
@@ -1192,11 +1187,8 @@ export const Customer = () => {
                   type="number"
                   value={formData.creditLimit}
                   onChange={handleInputChange}
-                // error={fieldErrors.creditLimit}
-                // helperText={fieldErrors.creditLimit}
                 />
               </div>
-
               <div className="col-md-3 mb-3">
                 <TextField
                   id="creditDays"
@@ -1207,11 +1199,8 @@ export const Customer = () => {
                   type="number"
                   value={formData.creditDays}
                   onChange={handleInputChange}
-                // error={fieldErrors.creditDays}
-                // helperText={fieldErrors.creditDays}
                 />
               </div>
-
               <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" fullWidth size="small">
                   <InputLabel id="creditTerms">Credit Terms</InputLabel>
@@ -1227,23 +1216,6 @@ export const Customer = () => {
                     <MenuItem value="CREDIT">CREDIT</MenuItem>
                   </Select>
                   {/* {fieldErrors.creditTerms && <FormHelperText>{fieldErrors.creditTerms}</FormHelperText>} */}
-                </FormControl>
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControl variant="outlined" fullWidth size="small">
-                  <InputLabel id="gstRegistered">Tax Registered</InputLabel>
-                  <Select
-                    labelId="gstRegistered"
-                    label="Tax Registered"
-                    name="gstRegistered"
-                    value={formData.gstRegistered}
-                    onChange={handleInputChange}
-                  >
-                    <MenuItem value="YES">YES</MenuItem>
-                    <MenuItem value="NO">NO</MenuItem>
-                  </Select>
-                  {/* {fieldErrors.gstRegistered && <FormHelperText>{fieldErrors.gstRegistered}</FormHelperText>} */}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -1361,7 +1333,7 @@ export const Customer = () => {
                                 <th className="table-header">State</th>
                                 <th className="table-header">State Code</th>
                                 <th className="table-header">State No</th>
-                                <th className="table-header">Reg No</th>
+                                {formData.gstRegistered === 'YES' && <th className="table-header">Reg No</th>}
                                 <th className="table-header">Contact Person</th>
                                 <th className="table-header">Contact Phone No</th>
                                 <th className="table-header">Contact Email</th>
@@ -1461,7 +1433,7 @@ export const Customer = () => {
                                     )}
                                   </td>
 
-                                  <td className="border px-2 py-2">
+                                  {formData.gstRegistered === 'YES' && <td className="border px-2 py-2">
                                     <input
                                       type="text"
                                       value={row.gstIn}
@@ -1488,8 +1460,7 @@ export const Customer = () => {
                                     {partyStateDataErrors[index]?.gstIn && (
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].gstIn}</div>
                                     )}
-                                  </td>
-
+                                  </td>}
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
@@ -1711,7 +1682,7 @@ export const Customer = () => {
                                     <input
                                       type="text"
                                       value={row.businessPlace}
-                                      maxLength={15}
+                                      maxLength={80}
                                       onChange={(e) => {
                                         const value = e.target.value;
                                         setPartyAddressData((prev) =>
@@ -1766,8 +1737,6 @@ export const Customer = () => {
                                         disabled
                                         onChange={(e) => {
                                           const isChecked = e.target.checked;
-
-                                          // Update the state with the new value for the specific row
                                           setPartyAddressData((prev) => prev.map((r) => (r.id === row.id ? { ...r, sez: isChecked } : r)));
                                         }}
                                         sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' }, marginLeft: '25px' }}
@@ -2051,7 +2020,7 @@ export const Customer = () => {
                                   </td>
 
                                   <td className="border px-2 py-2">
-                                    <div className="w-100">
+                                    {/* <div className="w-100"> */}
                                       <DatePicker
                                         selected={row.effectiveFrom}
                                         // selected={
@@ -2093,7 +2062,7 @@ export const Customer = () => {
                                           {partySalesPersonErrors[index].effectiveFrom}
                                         </div>
                                       )}
-                                    </div>
+                                    {/* </div> */}
                                   </td>
 
                                   <td className="border px-2 py-2">

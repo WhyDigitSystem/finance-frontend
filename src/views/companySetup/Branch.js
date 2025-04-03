@@ -147,6 +147,7 @@ const Branch = () => {
     const branchNameRegex = /^[A-Za-z0-9@_\-* ]*$/;
     const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
     const alphanumericRegex = /^[A-Za-z0-9 ]*$/;
+    const alphanumerichyRegex = /^[A-Za-z0-9- ]*$/;
     const numericRegex = /^[0-9]*$/;
 
     let newValue = value.toUpperCase();
@@ -159,7 +160,7 @@ const Branch = () => {
         error = 'Exceeded Max Length';
       }
     } else if (name === 'branchName') {
-      if (!alphanumericRegex.test(value)) {
+      if (!alphanumerichyRegex.test(value)) {
         error = 'Only Alphanumerics allowed';
       } else if (value.length > 10) {
         error = 'Exceeded Max Length';
@@ -245,7 +246,7 @@ const Branch = () => {
   const handleSave = async () => {
     const errors = {};
     if (!formData.branchCode) {
-      errors.branchCode = 'Company Code is required';
+      errors.branchCode = 'Branch Code is required';
     }
     if (!formData.branchName) {
       errors.branchName = 'Company is required';
