@@ -40,8 +40,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { Bar, Pie, Line } from 'react-chartjs-2';
 import { Box } from '@mui/system';
 import NoDataAvailable from 'utils/NoData';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, Title, ArcElement, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ChartDataLabels, Title, ArcElement, Tooltip, Legend);
 
 // Background colors for cards
 const cardColors = [
@@ -58,8 +59,21 @@ const icons = [
   <LocalMallOutlinedIcon fontSize="inherit" /> // Accounts Payable
 ];
 
-const StatCard = ({ statsPercentage, stats, title, monthlyValue, yearlyValue, color, icon, isYearly, setIsYearly, showToggle }) => {
+const StatCard = ({ statsPercentageMonthly, statsPercentageYearly, stats, title, monthlyValue, yearlyValue, color, icon, isYearly, setIsYearly, showToggle }) => {
   const theme = useTheme();
+
+  const getPercentageChange = (current, previous) => {
+    if (!previous || previous === 0) return "N/A";
+    const change = ((current - previous) / previous) * 100;
+    return change.toFixed(2); // You can adjust decimal places
+  };
+
+  const percentageChange = isYearly
+    ? getPercentageChange(yearlyValue, statsPercentageYearly)
+    : getPercentageChange(monthlyValue, statsPercentageMonthly);
+
+  const isPositive = percentageChange !== "N/A" && parseFloat(percentageChange) >= 0;
+
 
   return (
     <Card sx={{ backgroundImage: color, color: '#fff', p: 1, boxShadow: 3, borderRadius: 2 }}>
@@ -138,45 +152,66 @@ const StatCard = ({ statsPercentage, stats, title, monthlyValue, yearlyValue, co
           {title}
         </Typography>
         <Typography variant="h3" fontWeight="bold">
-          {isYearly ? `₹${Math.round(yearlyValue).toLocaleString('en-IN')}` : `₹${Math.round(monthlyValue).toLocaleString('en-IN')}`}
+          {isYearly
+            ? `₹${Math.round(yearlyValue).toLocaleString('en-IN')}`
+            : `₹${Math.round(monthlyValue).toLocaleString('en-IN')}`}
         </Typography>
+
         <hr style={{ margin: '10px' }} />
+
         <Grid container justifyContent="space-between" alignItems="center">
           <Typography variant="h5">{stats}</Typography>
-          <Typography variant="h5">{statsPercentage}</Typography>
+          <Typography variant="h5" sx={{ color: 'balck' }}>
+            {percentageChange !== "N/A" && (
+              <>
+                {isPositive ? '+' : ''}
+                {percentageChange}%
+              </>
+            )}
+          </Typography>
         </Grid>
+
       </CardContent>
     </Card>
   );
 };
 
 const TopCustomersChart = ({ chartData }) => {
+
   const options = {
     responsive: true,
     plugins: {
-      legend: { position: "top" },
-      tooltip: {
-        callbacks: {
-          label: (tooltipItem) => {
-            const dataset = tooltipItem.dataset;
-            const index = tooltipItem.dataIndex;
-            const amount = tooltipItem.raw;
-            const fullName = dataset.tooltips[index];
-
-            return `${fullName}: ₹${amount.toLocaleString("en-IN")}`;
-          },
+      datalabels: {
+        color: '#000',
+        anchor: 'end',
+        align: 'top',
+        clip: false,
+        formatter: (value) => `${value}L`,
+        font: {
+          weight: 'bold',
+          size: 12,
         },
-      },
+      }
     },
+
     scales: {
       x: {
         ticks: {
-          autoSkip: false, // Ensures all labels are displayed
-          maxRotation: 0, // Set rotation to 0 (keeps text straight)
-          minRotation: 0, // Prevents any rotation
+          autoSkip: false,
+          maxRotation: 0,
+          minRotation: 0,
           font: {
-            size: 12, // Adjust font size if necessary
+            size: 12,
           },
+        },
+      },
+      y: {
+        beginAtZero: true,
+        min: 0,
+        max: 120, 
+        ticks: {
+          stepSize: 10,
+          callback: (value) => `${value.toFixed(2)}L`,
         },
       },
     },
@@ -187,7 +222,7 @@ const TopCustomersChart = ({ chartData }) => {
       <CardContent>
         <Typography variant="h6">Top 5 Customers</Typography>
         {chartData && chartData.labels.length > 0 ? (
-          <Bar data={chartData} options={options} />
+          <Bar data={chartData} options={options} plugins={[ChartDataLabels]} />
         ) : (
           <>
             <NoDataAvailable />
@@ -218,11 +253,23 @@ const SalesDistributionChart = ({ loading, error, salesData }) => {
       tooltip: {
         callbacks: {
           label: (tooltipItem) => {
-            let value = tooltipItem.raw;
-            return `₹${value.toLocaleString("en-IN")}`;
+            const value = tooltipItem.raw;
+            return `₹${value.toLocaleString("en-IN")}L`;
           },
         },
+        bodyFont: {
+          weight: 'bold',
+          size: 13
+        }
       },
+      datalabels: {
+        color: '#000',
+        font: {
+          weight: 'bold',
+          size: 12
+        },
+        formatter: (value) => `${value}L`
+      }
     },
   };
 
@@ -241,7 +288,7 @@ const SalesDistributionChart = ({ loading, error, salesData }) => {
           </>
         ) : (
           <div style={{ position: "relative", width: "100%", height: "100%" }}>
-            <Pie data={salesData} options={options} />
+            <Pie data={salesData} options={options} plugins={[ChartDataLabels]} />
           </div>
         )}
       </CardContent>
@@ -370,7 +417,7 @@ const TDSTable = ({ tdsData }) => {
       <Table size="small">
         <TableHead sx={{ background: "#0288D1" }}>
           <TableRow>
-            {["S.No", "Supplier", "TDS 9% (₹)", "TDS 10% (₹)", "TDS 4% (₹)", "TDS Amount (₹)"].map((header, index) => (
+            {["S.No", "Supplier", "TDS 9%", "TDS 10%", "TDS 4%", "TDS Amount (₹)"].map((header, index) => (
               <TableCell key={index} sx={{ fontWeight: "bold", textAlign: "center", color: "#fff", padding: "8px", borderBottom: "2px solid #01579B" }}>
                 {header}
               </TableCell>
@@ -381,11 +428,10 @@ const TDSTable = ({ tdsData }) => {
           {tdsData.slice(0, 5).map((row, index) => (
             <TableRow key={index} sx={{ background: index % 2 === 0 ? "#E1F5FE" : "#FFFFFF", "&:hover": { background: "#B3E5FC" } }}>
               <TableCell sx={{ py: 1, textAlign: "center", fontWeight: 500, fontSize: '0.875rem' }}>{index + 1}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: "center", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 130, fontSize: '0.875rem' }}>
-                {/* <Tooltip title={row.supplierName} arrow> */}
-                  <span>{row.supplierName}</span>
-                {/* </Tooltip> */}
-              </TableCell>
+              {/* <TableCell sx={{ py: 1, textAlign: "center", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 130, fontSize: '0.875rem' }}>
+                <span>{row.supplierName}</span>
+              </TableCell> */}
+              <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.shortName.toLocaleString("en-IN")}</TableCell>
               <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.tds9.toLocaleString("en-IN")}</TableCell>
               <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.tds10.toLocaleString("en-IN")}</TableCell>
               <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.tds4.toLocaleString("en-IN")}</TableCell>
@@ -515,8 +561,13 @@ const DashboardNew = () => {
   const [isYearly, setIsYearly] = useState(false);
   const [totalOrderYear, setTotalOrderYear] = useState(0);
   const [revenuePrevMonthAmt, setRevenuePrevMonthAmt] = useState(0);
+  const [revenuePrevYearAmt, setRevenuePrevYearAmt] = useState(0);
   const [totalCostYear, setTotalCostYear] = useState(0);
+  const [costPrevMonthAmt, setCostPrevMonthAmt] = useState(0);
+  const [costPrevYearAmt, setCostPrevYearAmt] = useState(0);
   const [totalReceiptYear, setTotalReceiptYear] = useState(0);
+  const [receiptPrevMonthAmt, setReceiptPrevMonthAmt] = useState(0);
+  const [receiptPrevYearAmt, setReceiptPrevYearAmt] = useState(0);
   const [totalPaymentYear, setTotalPaymentYear] = useState(0);
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -535,7 +586,7 @@ const DashboardNew = () => {
     try {
       const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `taxInvoice/getDsahboardRevenue?billMonth=${targetMonth}&finYear=${finYear}&orgId=${orgId}`);
+      const response = await apiCalls('get', `taxInvoice/getDsahboardRevenue?&finYear=${finYear}&orgId=${orgId}${targetMonth === "ALL" ? `&billMonth=YEAR` : `&billMonth=MONTH`}`);
 
       const totalOrderYear = Number(response.paramObjectsMap.taxInvoiceVO[0]?.amount || 0);
       setTotalOrderYear(totalOrderYear);
@@ -587,12 +638,44 @@ const DashboardNew = () => {
     try {
       const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `getPercentageDiffFromRevenue?finYear=${finYear}&orgId=${orgId}`);
+      const response = await apiCalls('get', `dashboard/getPercentageDiffFromRevenue?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&year=YEAR` : `&month=MONTH`}`);
 
-      const totalOrderYear = Number(response.paramObjectsMap.taxInvoiceVO[0]?.amount || 0);
-      setRevenuePrevMonthAmt(totalOrderYear);
+      const totalOrderMonth = Number(response.paramObjectsMap.Revenue[0]?.preMonth || 0);
+      const totalOrderYear = Number(response.paramObjectsMap.Revenue[0]?.preYear || 0);
+      setRevenuePrevMonthAmt(totalOrderMonth);
+      setRevenuePrevYearAmt(totalOrderYear);
     } catch (error) {
       console.error('Error fetching dashboard revenue:', error);
+    }
+  }, [finYear, orgId, isYearly]);
+
+  const getCostPreviousMonth = useCallback(async () => {
+    try {
+      const targetMonth = getTargetMonth(isYearly);
+
+      const response = await apiCalls('get', `dashboard/getPercentageDiffFromCost?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&year=YEAR` : `&month=MONTH`}`);
+
+      const totalOrderMonth = Number(response.paramObjectsMap.cost[0]?.preMonth || 0);
+      const totalOrderYear = Number(response.paramObjectsMap.cost[0]?.preYear || 0);
+      setCostPrevMonthAmt(totalOrderMonth);
+      setCostPrevYearAmt(totalOrderYear);
+    } catch (error) {
+      console.error('Error fetching dashboard Cost:', error);
+    }
+  }, [finYear, orgId, isYearly]);
+
+  const getReceiptPreviousMonth = useCallback(async () => {
+    try {
+      const targetMonth = getTargetMonth(isYearly);
+
+      const response = await apiCalls('get', `dashboard/getPercentageFromReceipt?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&month=YEAR` : `&month=MONTH`}`);
+
+      const totalOrderMonth = Number(response.paramObjectsMap.receipt[0]?.preMonth || 0);
+      const totalOrderYear = Number(response.paramObjectsMap.receipt[0]?.preYear || 0);
+      setReceiptPrevMonthAmt(totalOrderMonth);
+      setReceiptPrevYearAmt(totalOrderYear);
+    } catch (error) {
+      console.error('Error fetching dashboard Cost:', error);
     }
   }, [finYear, orgId, isYearly]);
 
@@ -601,7 +684,10 @@ const DashboardNew = () => {
     getDashboardCost();
     getDashboardReceipt();
     getDashboardPayment();
-  }, [getDashboardRevenue, getDashboardCost, getDashboardReceipt, getDashboardPayment]);
+    getRevenuePreviousMonth();
+    getCostPreviousMonth();
+    getReceiptPreviousMonth();
+  }, [getDashboardRevenue, getDashboardCost, getDashboardReceipt, getDashboardPayment, getRevenuePreviousMonth, getCostPreviousMonth, getReceiptPreviousMonth]);
 
   useEffect(() => {
     const fetchTopCustomerData = async () => {
@@ -670,13 +756,13 @@ const DashboardNew = () => {
           const sales = response.paramObjectsMap.partyMasterVO;
 
           const labels = sales.map((item) => item.product);
-          const data = sales.map((item) => parseFloat(item.amt || 0));
+          const data = sales.map((item) => parseFloat((item.amt || 0) / 100000).toFixed(2));
 
           setSalesData({
             labels,
             datasets: [
               {
-                label: "Sales",
+                label: "Sales (in Lakhs)",
                 data,
                 backgroundColor: ["#33B5E5", "#FF5733", "#33D68A", "#FFC107", "#8E44AD"],
               },
@@ -699,10 +785,10 @@ const DashboardNew = () => {
     const fetchTdsData = async () => {
       const targetMonth = getTargetMonth(isYearly);
       try {
-        const response = await apiCalls('get', `dashboard/getTdsSummary?orgId=${orgId}${targetMonth === "ALL" ? `&finYear=${finYear}` : `&month=MONTH&finYear=${finYear}`}`)
+        const response = await apiCalls('get', `dashboard/getTdsSummary?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&month=YEAR` : `&month=MONTH`}`);
         if (response?.status && response?.paramObjectsMap?.receiptAmont) {
           setTdsData(response.paramObjectsMap.receiptAmont || []);
-          console.log("TDSdata", response)
+          console.log("TDS data", response)
         }
       } catch (error) {
         console.error("Error fetching TDS data:", error);
@@ -713,10 +799,10 @@ const DashboardNew = () => {
 
   // Update financial data dynamically
   const financialData = [
-    { stats: 'PM', statsPercentage: '+4.6%', title: 'Revenue', monthly: totalOrderYear, yearly: totalOrderYear },
-    { stats: 'PM', statsPercentage: '-7.4%', title: 'Cost', monthly: totalCostYear, yearly: totalCostYear },
-    { stats: 'PM', statsPercentage: '0%', title: 'Receipt', monthly: totalReceiptYear, yearly: totalReceiptYear },
-    { stats: 'PM', statsPercentage: '0%', title: 'Payment', monthly: totalPaymentYear, yearly: totalPaymentYear }
+    { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: revenuePrevMonthAmt, statsPercentageYearly: revenuePrevYearAmt, title: 'Revenue', monthly: totalOrderYear, yearly: totalOrderYear },
+    { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: costPrevMonthAmt, statsPercentageYearly: costPrevYearAmt, title: 'Cost', monthly: totalCostYear, yearly: totalCostYear },
+    { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: receiptPrevMonthAmt, statsPercentageYearly: receiptPrevYearAmt, title: 'Receipt', monthly: totalReceiptYear, yearly: totalReceiptYear },
+    { stats: !isYearly ? "PM" : "PY", statsPercentage: '0%', title: 'Payment', monthly: totalPaymentYear, yearly: totalPaymentYear }
   ];
 
   return (
@@ -724,7 +810,8 @@ const DashboardNew = () => {
       {financialData.map((data, index) => (
         <Grid item xs={12} sm={6} md={3} key={data.title}>
           <StatCard
-            statsPercentage={data.statsPercentage}
+            statsPercentageMonthly={data.statsPercentageMonthly}
+            statsPercentageYearly={data.statsPercentageYearly}
             stats={data.stats}
             title={data.title}
             monthlyValue={data.monthly}

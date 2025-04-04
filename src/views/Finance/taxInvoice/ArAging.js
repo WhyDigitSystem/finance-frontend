@@ -32,7 +32,7 @@ function ArAging() {
       [name]: checked
     }));
   };
-  
+
   const [formData, setFormData] = useState({
     asOnDate: null,
     customerName: 'All',
@@ -71,7 +71,7 @@ function ArAging() {
   const handleSelectAccountChange = (e) => {
     const value = e.target.value;
     console.log('Selected Account value:', value);
-  
+
     if (value === "All") {
       setFormData((prevData) => ({
         ...prevData,
@@ -92,21 +92,21 @@ function ArAging() {
   };
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
-  
+
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
       [name]: '',
     }));
-      let inputValue = value;
-      if (type === 'text' || type === 'textarea') {
-        inputValue = value.toUpperCase();
-      }
-      setFormData((prevData) => ({ ...prevData, [name]: inputValue }));
+    let inputValue = value;
+    if (type === 'text' || type === 'textarea') {
+      inputValue = value.toUpperCase();
+    }
+    setFormData((prevData) => ({ ...prevData, [name]: inputValue }));
   };
   const handleDateChange = (field, date) => {
     const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
-  };  
+  };
   const reportColumns = [
     { accessorKey: 'docid', header: '# Invoice', size: 110 },
     { accessorKey: 'docdate', header: 'Date', size: 90 },
@@ -123,19 +123,25 @@ function ArAging() {
   ];
   const handleGo = async () => {
     const errors = {};
-    // if (!formData.partyName) {
-    //   errors.partyName = 'Sub ledger name is required';
-    // }
+    if (!formData.asOnDate) {
+      errors.asOnDate = 'As on Date is required';
+    }
+    if (!formData.customerName) {
+      errors.customerName = 'Customer is required';
+    }
+    if (!formData.dueDate) {
+      errors.dueDate = 'Due Date is required';
+    }
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       try {
         let response;
-        if(formData.dueDate){
+        if (formData.dueDate) {
           response = await apiCalls(
             'get',
             `/arapAdjustments/GetArapAgeing?asondate=${formData.asOnDate}&orgId=${orgId}&partyname=${formData.customerName}&pdate=${formData.dueDate}`
           );
-        }else {
+        } else {
           response = await apiCalls(
             'get',
             `/arapAdjustments/GetArapAgeing?asondate=${formData.asOnDate}&orgId=${orgId}&partyname=${formData.customerName}`
@@ -159,7 +165,7 @@ function ArAging() {
       setFieldErrors(errors);
     }
   };
-  return(
+  return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         {/* <div className="row d-flex ml">
@@ -169,8 +175,8 @@ function ArAging() {
           </div>
         </div> */}
         <>
+          <div className="row">
             <div className="row">
-              <div className="row">
               <div className="col-md-2
                mb-3">
                 <FormControlLabel
@@ -186,7 +192,7 @@ function ArAging() {
               </div>
               <div className="col-md-2 mb-3">
                 <FormControlLabel
-                  control={<Checkbox checked={selectedSections.dueDate}  onChange={handleCheckboxChange} name="dueDate" color="secondary" />}
+                  control={<Checkbox checked={selectedSections.dueDate} onChange={handleCheckboxChange} name="dueDate" color="secondary" />}
                   label="Due Date"
                 />
               </div>
@@ -201,32 +207,32 @@ function ArAging() {
                   Proceed
                 </Button> */}
               </div>
-              </div>
-              {selectedSections.date && (
-                <>
-                  <div className="col-md-3 mb-3">
-                     <FormControl fullWidth variant="filled" size="small">
-                      <LocalizationProvider dateAdapter={AdapterDayjs}> 
-                         <DatePicker 
-                          label="As On Date"
-                          value={formData.asOnDate ? dayjs(formData.asOnDate, 'YYYY-MM-DD') : null}
-                          onChange={(date) => handleDateChange('asOnDate', date)}
-                          slotProps={{
-                            textField: { size: 'small', clearable: true, error: fieldErrors.asOnDate, helperText: fieldErrors.asOnDate }
-                          }}
-                          format="DD-MM-YYYY"
-                        />
-                       </LocalizationProvider>
-                    </FormControl> 
-                  </div>
-                </>
-              )}
-              {selectedSections.customerName && ( 
+            </div>
+            {selectedSections.date && (
+              <>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled" size="small">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="As On Date"
+                        value={formData.asOnDate ? dayjs(formData.asOnDate, 'YYYY-MM-DD') : null}
+                        onChange={(date) => handleDateChange('asOnDate', date)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true, error: fieldErrors.asOnDate, helperText: fieldErrors.asOnDate }
+                        }}
+                        format="DD-MM-YYYY"
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
+              </>
+            )}
+            {selectedSections.customerName && (
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customerName}>
                   <InputLabel id="customerName-label">Customer Name</InputLabel>
                   <Select
-                  type='text'
+                    type='text'
                     labelId="customerName-label"
                     label="customerName"
                     value={formData.customerName}
@@ -244,42 +250,42 @@ function ArAging() {
                   {fieldErrors.customerName && <FormHelperText>{fieldErrors.customerName}</FormHelperText>}
                 </FormControl>
               </div>
-              )}           
-              {selectedSections.dueDate && ( 
-                  <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled" size="small">
-                   <LocalizationProvider dateAdapter={AdapterDayjs}> 
-                      <DatePicker 
-                       label="Due Date"
-                       value={formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : null}
-                       onChange={(date) => handleDateChange('dueDate', date)}
-                       slotProps={{
-                         textField: { size: 'small', clearable: true, error: fieldErrors.dueDate, helperText: fieldErrors.dueDate }
-                       }}
-                       format="DD-MM-YYYY"
-                     />
-                    </LocalizationProvider>
-                 </FormControl> 
-               </div>
-              )}
-              {(selectedSections.date || selectedSections.customerName || selectedSections.dueDate) && (
-                <div className="col-md-3 mb-3">
-                  <div className="row d-flex ml">
-                    <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
-                      <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
-                      <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                    </div>
+            )}
+            {selectedSections.dueDate && (
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled" size="small">
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Due Date"
+                      value={formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : null}
+                      onChange={(date) => handleDateChange('dueDate', date)}
+                      slotProps={{
+                        textField: { size: 'small', clearable: true, error: fieldErrors.dueDate, helperText: fieldErrors.dueDate }
+                      }}
+                      format="DD-MM-YYYY"
+                    />
+                  </LocalizationProvider>
+                </FormControl>
+              </div>
+            )}
+            {(selectedSections.date || selectedSections.customerName || selectedSections.dueDate) && (
+              <div className="col-md-3 mb-3">
+                <div className="row d-flex ml">
+                  <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
+                    <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
+                    <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                   </div>
                 </div>
-              )}
-            </div>
-          </>
+              </div>
+            )}
+          </div>
+        </>
         {listView && (
           <div className="mt-4">
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView}/>
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
           </div>
         )}
-  </div>
+      </div>
     </>
   )
 }
