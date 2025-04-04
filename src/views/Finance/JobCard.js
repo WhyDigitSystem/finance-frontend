@@ -66,6 +66,7 @@ export const JobCard = () => {
     customer: '',
     customerCode: '',
     operationClosed: '',
+    service:'',
     financeClosed: '',
     date: dayjs(),
     salesCategory: 'MANAGEMENT',
@@ -90,6 +91,7 @@ export const JobCard = () => {
     date: new Date(),
     financeClosed: '',
     salesPerson: '',
+    service:'',
     closedOn: null,
     closed: false,
     income: '',
@@ -195,6 +197,7 @@ export const JobCard = () => {
   const handleClear = async () => {
     setFormData({
       customer: '',
+      service:'',
       customerCode: '',
       operationClosed: '',
       financeClosed: '',
@@ -226,6 +229,7 @@ export const JobCard = () => {
     setFieldErrors({
       customer: '',
       customerCode: '',
+      service:'',
       operationClosed: '',
       financeClosed: '',
       closedOn: null,
