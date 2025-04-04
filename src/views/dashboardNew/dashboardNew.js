@@ -431,7 +431,7 @@ const TDSTable = ({ tdsData }) => {
               {/* <TableCell sx={{ py: 1, textAlign: "center", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 130, fontSize: '0.875rem' }}>
                 <span>{row.supplierName}</span>
               </TableCell> */}
-              <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.shortName.toLocaleString("en-IN")}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.shortName}</TableCell>
               <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.tds9.toLocaleString("en-IN")}</TableCell>
               <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.tds10.toLocaleString("en-IN")}</TableCell>
               <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.tds4.toLocaleString("en-IN")}</TableCell>
