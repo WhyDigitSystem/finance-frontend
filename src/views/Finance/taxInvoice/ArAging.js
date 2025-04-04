@@ -108,18 +108,18 @@ function ArAging() {
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };  
   const reportColumns = [
-    { accessorKey: 'docid', header: '# Invoice', size: 140 },
-    { accessorKey: 'docdate', header: 'Date', size: 140 },
-    { accessorKey: 'duedate', header: 'Due Date', size: 140 },
-    { accessorKey: 'amount', header: 'Inv. Amt', size: 300 },
-    { accessorKey: 'outstanding', header: 'Outstanding', size: 140 },
-    { accessorKey: 'totaldue', header: 'Total Due', size: 140 },
-    { accessorKey: 'unadjusted', header: 'Unadjusted', size: 140 },
-    { accessorKey: 'mslab1', header: 'Below 30 Days', size: 140 },
-    { accessorKey: 'mslab2', header: 'Days 30 - 60', size: 140 },
-    { accessorKey: 'mslab3', header: 'Days 60 - 90', size: 140 },
-    { accessorKey: 'mslab4', header: 'Days 90 - 120', size: 140 },
-    { accessorKey: 'mslab5', header: 'Days 120+', size: 140 },
+    { accessorKey: 'docid', header: '# Invoice', size: 110 },
+    { accessorKey: 'docdate', header: 'Date', size: 90 },
+    { accessorKey: 'duedate', header: 'Due Date', size: 90 },
+    { accessorKey: 'amount', header: 'Inv. Amt', size: 120 },
+    { accessorKey: 'outstanding', header: 'Outstanding', size: 110 },
+    { accessorKey: 'totaldue', header: 'Total Due', size: 110 },
+    { accessorKey: 'unadjusted', header: 'Unadjusted', size: 110 },
+    { accessorKey: 'mslab1', header: 'Below 30 Days', size: 120 },
+    { accessorKey: 'mslab2', header: 'Days 30 - 60', size: 120 },
+    { accessorKey: 'mslab3', header: 'Days 60 - 90', size: 120 },
+    { accessorKey: 'mslab4', header: 'Days 90 - 120', size: 120 },
+    { accessorKey: 'mslab5', header: 'Days 120+', size: 120 },
   ];
   const handleGo = async () => {
     const errors = {};

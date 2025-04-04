@@ -317,10 +317,11 @@ const CostDebitNote = () => {
   };
 
   const listViewColumns = [
+    { accessorKey: 'docId', header: 'Doc No', size: 140 },
+    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 },
     { accessorKey: 'mode', header: 'Mode', size: 140 },
     { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
-    { accessorKey: 'docId', header: 'Doc No', size: 140 },
-    { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 }
   ];
 
   useEffect(() => {

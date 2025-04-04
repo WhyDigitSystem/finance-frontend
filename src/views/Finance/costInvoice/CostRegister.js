@@ -190,12 +190,12 @@ function CostRegister() {
     { accessorKey: 'gstPercent', header: 'GST Percent', size: 80 },
     { accessorKey: 'billAmount', header: 'Bill Amount', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
     { accessorKey: 'tax', header: 'TAX', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'totalAmount', header: 'Charges', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'totalAmount', header: 'Total Amount', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
     { accessorKey: 'tds', header: 'TDS', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
     { accessorKey: 'partyPayable', header: 'Party Payable', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'outputIgst', header: 'IGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'outputCgst', header: 'CGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'outputSgst', header: 'SGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  }
+    // { accessorKey: 'outputIgst', header: 'IGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    // { accessorKey: 'outputCgst', header: 'CGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    // { accessorKey: 'outputSgst', header: 'SGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  }
   ];
   const handleGo = async () => {
     const errors = {};

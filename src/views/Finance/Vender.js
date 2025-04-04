@@ -1102,6 +1102,7 @@ export const Vender = () => {
                     onChange={handleInputChange}
                   >
                     <MenuItem value="PROPRIETORSHIP">PROPRIETORSHIP</MenuItem>
+                    <MenuItem value="INDIVIDUAL">INDIVIDUAL</MenuItem>
                     <MenuItem value="PARTNERSHIP">PARTNERSHIP</MenuItem>
                     <MenuItem value="PRIVATE LIMITED">PRIVATE LIMITED</MenuItem>
                     <MenuItem value="LLP">LLP</MenuItem>

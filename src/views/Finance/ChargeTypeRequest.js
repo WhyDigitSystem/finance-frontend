@@ -604,7 +604,6 @@ export const ChargeTypeRequest = () => {
                   )}
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
                 <TextField
                   id="outlined-textarea"

@@ -629,11 +629,11 @@ const ARadjustmentOffset = () => {
     { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
     { accessorKey: 'receiptDocId', header: 'Receipt Doc Id', size: 140 },
     { accessorKey: 'receiptDocDate', header: 'Receipt Doc Date', size: 140 },
+    { accessorKey: 'totalSettled', header: 'Total Settled', size: 140 },
+    { accessorKey: 'onAccount', header: 'On Account', size: 140 },
     { accessorKey: 'subLedgerType', header: 'Subledger Type', size: 140 },
     { accessorKey: 'subLedgerName', header: 'Subledger Name', size: 140 },
     { accessorKey: 'subLedgerCode', header: 'Subledger Code', size: 140 },
-    { accessorKey: 'totalSettled', header: 'Total Settled', size: 140 },
-    { accessorKey: 'onAccount', header: 'On Account', size: 140 }
   ];
 
   return (

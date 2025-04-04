@@ -198,12 +198,14 @@ const TaxInvoiceDetails = () => {
   ]);
 
   const columns = [
-    { accessorKey: 'status', header: 'Status', size: 140 },
-    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
     { accessorKey: 'vid', header: 'Invoice No', size: 140 },
     { accessorKey: 'vdate', header: 'Invoice Date', size: 140 },
+    { accessorKey: 'docId', header: 'Doc No', size: 140 },
+    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'partyName', header: 'Party Name', size: 140 },
+    { accessorKey: 'status', header: 'Status', size: 140 },
+    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
     // { accessorKey: 'docDate', header: 'Prof.Inv.Date', size: 140 },
-    { accessorKey: 'partyName', header: 'Party Name', size: 140 }
     // { accessorKey: 'partyCode', header: 'Party Code', size: 140 }
   ];
 
@@ -321,7 +323,7 @@ const TaxInvoiceDetails = () => {
       console.log('API Response:==>', result);
 
       if (result.status === true) {
-        setData(result.paramObjectsMap.taxInvoiceVO.reverse());
+        setData(result.paramObjectsMap.taxInvoiceVO);
         console.log('TAX INVOICE:==>', result);
       } else {
         // Handle error
@@ -3412,9 +3414,9 @@ const TaxInvoiceDetails = () => {
                                         }}
                                         format="DD-MM-YYYY"
                                         onChange={(newValue) => {
-                                          setTaxInvoiceAnnexure((prev) =>
-                                            prev.map((r) =>
-                                              r.id === row.id ? { ...r, transDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
+                                          setTaxInvoiceAnnexure((prev) => 
+                                            prev.map((r, i) => 
+                                              i === index ? { ...r, transDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
                                             )
                                           );
                                           setTaxInvoiceAnnexureErrors((prev) => {
@@ -3432,7 +3434,6 @@ const TaxInvoiceDetails = () => {
                                             className={taxInvoiceAnnexureErrors[index]?.transDate ? 'error form-control' : 'form-control'}
                                           />
                                         )}
-                                        // minDate={dayjs()}
                                       />
                                     </LocalizationProvider>
                                     {taxInvoiceAnnexureErrors[index]?.transDate && (
@@ -3441,7 +3442,6 @@ const TaxInvoiceDetails = () => {
                                       </div>
                                     )}
                                   </td>
-
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"

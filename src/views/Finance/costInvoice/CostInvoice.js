@@ -447,11 +447,11 @@ const CostInvoice = () => {
   };
 
   const listViewColumns = [
-    { accessorKey: 'mode', header: 'Mode', size: 140 },
-    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
     { accessorKey: 'vid', header: 'Invoice No', size: 140 },
     { accessorKey: 'vdate', header: 'Invoice Date', size: 140 },
-    { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 }
+    { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 },
+    { accessorKey: 'mode', header: 'Mode', size: 140 },
+    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
   ];
 
   const handleOpenModalApprove = () => {

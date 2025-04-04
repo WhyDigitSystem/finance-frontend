@@ -264,10 +264,11 @@ const RCostInvoicegna = () => {
   //   setDownloadPdf(true);
   // };
   const listViewColumns = [
+    { accessorKey: 'docId', header: 'R Cost Invoice No', size: 140 },
+    { accessorKey: 'docDate', header: 'Date', size: 140 },
+    { accessorKey: 'partyName', header: 'Party Name', size: 140 },
     { accessorKey: 'mode', header: 'Mode', size: 140 },
     { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
-    { accessorKey: 'docId', header: 'R Cost Invoice No', size: 140 },
-    { accessorKey: 'partyName', header: 'Party Name', size: 140 }
   ];
   const handleOpenModalApprove = () => {
     setModalOpen(true);
