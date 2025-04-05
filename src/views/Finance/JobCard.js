@@ -66,7 +66,7 @@ export const JobCard = () => {
     customer: '',
     customerCode: '',
     operationClosed: '',
-    service:'',
+    service: '',
     financeClosed: '',
     date: dayjs(),
     salesCategory: 'MANAGEMENT',
@@ -91,7 +91,7 @@ export const JobCard = () => {
     date: new Date(),
     financeClosed: '',
     salesPerson: '',
-    service:'',
+    service: '',
     closedOn: null,
     closed: false,
     income: '',
@@ -197,7 +197,7 @@ export const JobCard = () => {
   const handleClear = async () => {
     setFormData({
       customer: '',
-      service:'',
+      service: '',
       customerCode: '',
       operationClosed: '',
       financeClosed: '',
@@ -229,7 +229,7 @@ export const JobCard = () => {
     setFieldErrors({
       customer: '',
       customerCode: '',
-      service:'',
+      service: '',
       operationClosed: '',
       financeClosed: '',
       closedOn: null,
@@ -509,7 +509,7 @@ export const JobCard = () => {
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
-        <div className="d-flex flex-wrap justify-content-start mb-4">
+        <div className="d-flex flex-wrap justify-content-end mb-4">
           {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
           <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />

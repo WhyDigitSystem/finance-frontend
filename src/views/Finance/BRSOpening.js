@@ -122,31 +122,30 @@ const BRSOpening = () => {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const inputValue = type === 'checkbox' ? checked : value;
-  
+
     // Update the formData with the new value
     setFormData((prevFormData) => ({
       ...prevFormData,
-      [name]: inputValue,
+      [name]: inputValue
     }));
-  
+
     // Reset the field error for the current field
     setFieldErrors((prevFieldErrors) => ({
       ...prevFieldErrors,
-      [name]: false,
+      [name]: false
     }));
-  
+
     // If the currency field is being changed, update exRate based on the selected currency's sellingExRate
     if (name === 'currency') {
       const selectedCurrency = currencies.find((currency) => currency.currency === value);
       if (selectedCurrency) {
         setFormData((prevFormData) => ({
           ...prevFormData,
-          exRate: selectedCurrency.sellingExRate,
+          exRate: selectedCurrency.sellingExRate
         }));
       }
     }
   };
-  
 
   const handleDateChange = (name, date) => {
     setFormData({ ...formData, [name]: date });
@@ -347,7 +346,7 @@ const BRSOpening = () => {
 
   useEffect(() => {
     if (currencies.length === 1) {
-      handleInputChange({ target: { name: "currency", value: currencies[0].currency } });
+      handleInputChange({ target: { name: 'currency', value: currencies[0].currency } });
     }
   }, [currencies]);
 
@@ -355,7 +354,7 @@ const BRSOpening = () => {
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-2 " style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-end mb-2 " style={{ marginBottom: '20px' }}>
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
@@ -523,7 +522,7 @@ const BRSOpening = () => {
                   name="receiptAmount"
                   label="Receipt Amount"
                   variant="outlined"
-                  type='number'
+                  type="number"
                   size="small"
                   value={formData.receiptAmount}
                   onChange={handleInputChange}
@@ -539,7 +538,7 @@ const BRSOpening = () => {
                   label="Payment Amount"
                   variant="outlined"
                   size="small"
-                  type='number'
+                  type="number"
                   value={formData.paymentAmount}
                   onChange={handleInputChange}
                   fullWidth

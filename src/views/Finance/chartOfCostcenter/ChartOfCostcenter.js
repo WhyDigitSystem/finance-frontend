@@ -401,7 +401,7 @@ export const ChartOfCostcenter = () => {
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
             {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
@@ -682,15 +682,13 @@ export const ChartOfCostcenter = () => {
                                           const nameRegex = /^[A-Za-z0-9/ \-]*$/;
                                           if (nameRegex.test(value)) {
                                             setDetailsTableData((prev) =>
-                                              prev.map((r) =>
-                                                r.id === row.id ? { ...r, costCenterCode: value } : r
-                                              )
+                                              prev.map((r) => (r.id === row.id ? { ...r, costCenterCode: value } : r))
                                             );
                                             setDetailsTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                costCenterCode: !value ? 'Cost Center Name is required' : '',
+                                                costCenterCode: !value ? 'Cost Center Name is required' : ''
                                               };
                                               return newErrors;
                                             });
@@ -699,7 +697,7 @@ export const ChartOfCostcenter = () => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                costCenterCode: 'Invalid Format',
+                                                costCenterCode: 'Invalid Format'
                                               };
                                               return newErrors;
                                             });
@@ -722,15 +720,13 @@ export const ChartOfCostcenter = () => {
                                           const nameRegex = /^[A-Za-z0-9/ \-]*$/;
                                           if (nameRegex.test(value)) {
                                             setDetailsTableData((prev) =>
-                                              prev.map((r) =>
-                                                r.id === row.id ? { ...r, costCenterName: value } : r
-                                              )
+                                              prev.map((r) => (r.id === row.id ? { ...r, costCenterName: value } : r))
                                             );
                                             setDetailsTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                costCenterName: !value ? 'Cost Center Name is required' : '',
+                                                costCenterName: !value ? 'Cost Center Name is required' : ''
                                               };
                                               return newErrors;
                                             });
@@ -739,7 +735,7 @@ export const ChartOfCostcenter = () => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                costCenterName: 'Invalid format',
+                                                costCenterName: 'Invalid format'
                                               };
                                               return newErrors;
                                             });
@@ -761,16 +757,12 @@ export const ChartOfCostcenter = () => {
                                           const value = e.target.value;
                                           const numericRegex = /^[0-9]*$/;
                                           if (numericRegex.test(value)) {
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) =>
-                                                r.id === row.id ? { ...r, credit: value } : r
-                                              )
-                                            );
+                                            setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, credit: value } : r)));
                                             setDetailsTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                credit: !value ? 'Credit is required' : '',
+                                                credit: !value ? 'Credit is required' : ''
                                               };
                                               return newErrors;
                                             });
@@ -779,7 +771,7 @@ export const ChartOfCostcenter = () => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                credit: 'Only numeric characters are allowed',
+                                                credit: 'Only numeric characters are allowed'
                                               };
                                               return newErrors;
                                             });
@@ -801,16 +793,12 @@ export const ChartOfCostcenter = () => {
                                           const value = e.target.value;
                                           const numericRegex = /^[0-9]*$/;
                                           if (numericRegex.test(value)) {
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) =>
-                                                r.id === row.id ? { ...r, debit: value } : r
-                                              )
-                                            );
+                                            setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, debit: value } : r)));
                                             setDetailsTableErrors((prev) => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                debit: !value ? 'Debit is required' : '',
+                                                debit: !value ? 'Debit is required' : ''
                                               };
                                               return newErrors;
                                             });
@@ -819,7 +807,7 @@ export const ChartOfCostcenter = () => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                debit: 'Only numeric characters are allowed',
+                                                debit: 'Only numeric characters are allowed'
                                               };
                                               return newErrors;
                                             });

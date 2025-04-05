@@ -152,19 +152,17 @@ const ReconcileCash = () => {
   };
 
   const handleSave = async () => {
-   
     const errors = {};
 
     // Check for empty fields and set error messages
     if (!formData.cashAccount) {
       errors.cashAccount = 'Cash Account is required.';
     }
-  
+
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors); // Update the field errors state
       return;
     }
-  
 
     console.log('FormData=>', formData);
 
@@ -264,7 +262,7 @@ const ReconcileCash = () => {
           dn8: listValueVO.dn8 || 0,
           dn8Amt: listValueVO.dn8Amt || 0,
           docId: listValueVO.docId,
-           docDate: listValueVO.docDate ? dayjs(listValueVO.docDate, 'YYYY-MM-DD') : dayjs(),
+          docDate: listValueVO.docDate ? dayjs(listValueVO.docDate, 'YYYY-MM-DD') : dayjs(),
           id: listValueVO.id || 0,
           orgId: listValueVO.orgId || 0,
           remarks: listValueVO.remarks || '',
@@ -280,7 +278,6 @@ const ReconcileCash = () => {
       console.error('Error fetching data:', error);
     }
   };
-  
 
   const handleClear = () => {
     setFormData({
@@ -304,11 +301,11 @@ const ReconcileCash = () => {
       dn7: 0,
       dn7Amt: 0,
       dn8: 0,
-      dn8Amt: 0, 
+      dn8Amt: 0,
       id: 0,
       remarks: '',
       totalPhyAmount: 0,
-       docDate: dayjs(),
+      docDate: dayjs()
     });
     setFieldErrors({
       active: true,
@@ -331,10 +328,10 @@ const ReconcileCash = () => {
       dn7: 0,
       dn7Amt: 0,
       dn8: 0,
-      dn8Amt: 0, 
+      dn8Amt: 0,
       remarks: '',
-      totalPhyAmount: 0, 
-      docDate: null,
+      totalPhyAmount: 0,
+      docDate: null
     });
     setEditId('');
     getNewCashpDocId();
@@ -372,14 +369,14 @@ const ReconcileCash = () => {
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
-        <Grid container spacing={2} alignItems="center">
-          <div className="d-flex flex-wrap justify-content-start p-2">
-            {/* <ActionButton title="Search" icon={SearchIcon} onClick={handleSearch} /> */}
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} loading={loading} />
-          </div>
-        </Grid>
+        {/* <Grid container spacing={2} alignItems="center"> */}
+        <div className="d-flex flex-wrap justify-content-end  p-2">
+          {/* <ActionButton title="Search" icon={SearchIcon} onClick={handleSearch} /> */}
+          <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+          <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} loading={loading} />
+        </div>
+        {/* </Grid> */}
         {showForm ? (
           <>
             {/* Form Section */}
@@ -412,31 +409,29 @@ const ReconcileCash = () => {
               </Grid>
 
               <Grid item xs={12} sm={6} md={3}>
-  <FormControl fullWidth size="small" error={!!fieldErrors.cashAccount}>
-    <InputLabel id="cashAccount-label" required>
-      Cash Account
-    </InputLabel>
-    <Select
-      labelId="cashAccount-label"
-      value={formData.cashAccount}
-      onChange={(e) => {
-        setFormData({ ...formData, cashAccount: e.target.value });
-        setFieldErrors({ ...fieldErrors, cashAccount: '' }); // Clear error on change
-      }}
-      label="Cash Account"
-    >
-      {bankName &&
-        bankName.map((bank, index) => (
-          <MenuItem key={index} value={bank.accountgroupname}>
-            {bank.accountgroupname}
-          </MenuItem>
-        ))}
-    </Select>
-    {fieldErrors.cashAccount && (
-      <FormHelperText>{fieldErrors.cashAccount}</FormHelperText>
-    )}
-  </FormControl>
-</Grid>
+                <FormControl fullWidth size="small" error={!!fieldErrors.cashAccount}>
+                  <InputLabel id="cashAccount-label" required>
+                    Cash Account
+                  </InputLabel>
+                  <Select
+                    labelId="cashAccount-label"
+                    value={formData.cashAccount}
+                    onChange={(e) => {
+                      setFormData({ ...formData, cashAccount: e.target.value });
+                      setFieldErrors({ ...fieldErrors, cashAccount: '' }); // Clear error on change
+                    }}
+                    label="Cash Account"
+                  >
+                    {bankName &&
+                      bankName.map((bank, index) => (
+                        <MenuItem key={index} value={bank.accountgroupname}>
+                          {bank.accountgroupname}
+                        </MenuItem>
+                      ))}
+                  </Select>
+                  {fieldErrors.cashAccount && <FormHelperText>{fieldErrors.cashAccount}</FormHelperText>}
+                </FormControl>
+              </Grid>
               <Grid item xs={12} sm={6} md={3}>
                 <TextField
                   label="Balance as per Books"

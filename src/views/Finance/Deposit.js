@@ -250,7 +250,7 @@ const Deposit = () => {
   }, []);
   useEffect(() => {
     if (allbankName.length === 1) {
-      handleInputChange({ target: { name: "bankName", value: allbankName[0].accountgroupname } });
+      handleInputChange({ target: { name: 'bankName', value: allbankName[0].accountgroupname } });
     }
   }, [allbankName]);
 
@@ -586,7 +586,7 @@ const Deposit = () => {
       </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
             {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
@@ -872,8 +872,8 @@ const Deposit = () => {
                                               row.accountName
                                                 ? allAccountName.find((a) => a.accountName === row.accountName)
                                                 : allAccountName.length === 1
-                                                ? allAccountName[0]
-                                                : null
+                                                  ? allAccountName[0]
+                                                  : null
                                             }
                                             // value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
                                             onChange={(event, newValue) => {

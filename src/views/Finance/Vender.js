@@ -631,17 +631,13 @@ export const Vender = () => {
       console.error('stateList is not an array:', stateList);
       return [];
     }
-    const selectedStates = new Set(
-      partyStateData
-        .filter((row) => row.id !== currentRowId)
-        .map((row) => row.state) 
-    );
-  
+    const selectedStates = new Set(partyStateData.filter((row) => row.id !== currentRowId).map((row) => row.state));
+
     return stateList
       .filter((state) => !selectedStates.has(state.stateName))
       .map((state) => ({
         id: state.id,
-        stateName: state.stateName,
+        stateName: state.stateName
       }));
   };
   const [partyStateData, setPartyStateData] = useState([
@@ -974,7 +970,7 @@ export const Vender = () => {
         <ToastContainer />
       </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
-        <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+        <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
           {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
           <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
@@ -1064,22 +1060,22 @@ export const Vender = () => {
                   {/* {fieldErrors.gstRegistered && <FormHelperText>{fieldErrors.gstRegistered}</FormHelperText>} */}
                 </FormControl>
               </div>
-              {formData.gstRegistered === 'YES'&&
-              <div className="col-md-3 mb-3">
-                <TextField
-                  id="gstIn"
-                  fullWidth
-                  name="gstIn"
-                  label="Reg No"
-                  size="small"
-                  value={formData.gstIn}
-                  onChange={handleInputChange}
-                  error={fieldErrors.gstIn}
-                  helperText={fieldErrors.gstIn}
-                  inputProps={{ maxLength: 15 }}
-                />
-              </div>
-              }
+              {formData.gstRegistered === 'YES' && (
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="gstIn"
+                    fullWidth
+                    name="gstIn"
+                    label="Reg No"
+                    size="small"
+                    value={formData.gstIn}
+                    onChange={handleInputChange}
+                    error={fieldErrors.gstIn}
+                    helperText={fieldErrors.gstIn}
+                    inputProps={{ maxLength: 15 }}
+                  />
+                </div>
+              )}
               <div className="col-md-3 mb-3">
                 <TextField
                   id="panNo"
@@ -1178,7 +1174,7 @@ export const Vender = () => {
                                 <th className="table-header">State</th>
                                 <th className="table-header">State Code</th>
                                 <th className="table-header">State No</th>
-                                {formData.gstRegistered === 'YES' &&<th className="table-header">Reg No</th>}
+                                {formData.gstRegistered === 'YES' && <th className="table-header">Reg No</th>}
                                 <th className="table-header">Contact Person</th>
                                 <th className="table-header">Contact Phone No</th>
                                 <th className="table-header">Contact Email</th>
@@ -1277,29 +1273,29 @@ export const Vender = () => {
                                       <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].stateNo}</div>
                                     )}
                                   </td>
-                                  {formData.gstRegistered === 'YES' &&
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.gstIn}
-                                      style={{ width: '150px' }}
-                                      maxLength={15}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstIn: value } : r)));
-                                        setPartyStateDataErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = { ...newErrors[index], gstIn: !value ? 'Reg No is required' : '' };
-                                          return newErrors;
-                                        });
-                                      }}
-                                      className={partyStateDataErrors[index]?.gstIn ? 'error form-control' : 'form-control'}
-                                    />
-                                    {partyStateDataErrors[index]?.gstIn && (
-                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].gstIn}</div>
-                                    )}
-                                  </td>
-                                  }
+                                  {formData.gstRegistered === 'YES' && (
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.gstIn}
+                                        style={{ width: '150px' }}
+                                        maxLength={15}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstIn: value } : r)));
+                                          setPartyStateDataErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], gstIn: !value ? 'Reg No is required' : '' };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={partyStateDataErrors[index]?.gstIn ? 'error form-control' : 'form-control'}
+                                      />
+                                      {partyStateDataErrors[index]?.gstIn && (
+                                        <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].gstIn}</div>
+                                      )}
+                                    </td>
+                                  )}
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
@@ -1409,7 +1405,7 @@ export const Vender = () => {
                                 <th className="table-header">State</th>
                                 <th className="table-header">City</th>
                                 <th className="table-header">Business Place</th>
-                                {formData.gstRegistered === 'YES'&&<th className="table-header">State Reg No</th>}
+                                {formData.gstRegistered === 'YES' && <th className="table-header">State Reg No</th>}
                                 <th className="table-header">Address Type</th>
                                 <th className="table-header">Address Line1</th>
                                 <th className="table-header">Address Line2</th>
@@ -1520,29 +1516,34 @@ export const Vender = () => {
                                       </div>
                                     )}
                                   </td>
-                                  {formData.gstRegistered === 'YES'&&
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.stateGstIn}
-                                      maxLength={15}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        setPartyAddressData((prev) => prev.map((r) => (r.id === row.id ? { ...r, stateGstIn: value } : r)));
-                                        setPartyAddressDataErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = { ...newErrors[index], stateGstIn: !value ? 'State Gst In is required' : '' };
-                                          return newErrors;
-                                        });
-                                      }}
-                                      className={partyAddressDataErrors[index]?.stateGstIn ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
-                                    />
-                                    {partyAddressDataErrors[index]?.stateGstIn && (
-                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].stateGstIn}</div>
-                                    )}
-                                  </td>
-                                  }
+                                  {formData.gstRegistered === 'YES' && (
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.stateGstIn}
+                                        maxLength={15}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setPartyAddressData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, stateGstIn: value } : r))
+                                          );
+                                          setPartyAddressDataErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              stateGstIn: !value ? 'State Gst In is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={partyAddressDataErrors[index]?.stateGstIn ? 'error form-control' : 'form-control'}
+                                        style={{ width: '150px' }}
+                                      />
+                                      {partyAddressDataErrors[index]?.stateGstIn && (
+                                        <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].stateGstIn}</div>
+                                      )}
+                                    </td>
+                                  )}
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"

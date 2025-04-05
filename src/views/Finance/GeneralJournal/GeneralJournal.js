@@ -186,7 +186,6 @@ const GeneralJournal = () => {
             subledgerName: row.subledgerName
           }))
         );
-        
 
         console.log('DataToEdit', glVO);
       } else {
@@ -210,7 +209,7 @@ const GeneralJournal = () => {
     try {
       const response = await apiCalls('get', `/transaction/getAccountNameFromGroup?orgId=${orgId}`);
       console.log('API Response:', response);
-  
+
       if (response.status === true) {
         // Populating the account names
         setAllAccountName(response.paramObjectsMap.generalJournalVO);
@@ -222,13 +221,13 @@ const GeneralJournal = () => {
       console.error('Error fetching data:', error);
     }
   };
-  
+
   // Handler for updating account name in table data
   const handleAccountNameChange = (event, newValue, rowId) => {
     const value = newValue ? newValue.accountName : ''; // Get account name from selection
-    setDetailsTableData(prev =>
-      prev.map(row =>
-        row.id === rowId ? { ...row, accountName: value } : row // Update specific row
+    setDetailsTableData((prev) =>
+      prev.map(
+        (row) => (row.id === rowId ? { ...row, accountName: value } : row) // Update specific row
       )
     );
   };
@@ -516,7 +515,7 @@ const GeneralJournal = () => {
       </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
             {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
@@ -814,26 +813,26 @@ const GeneralJournal = () => {
                                           </div>
                                         )}
                                       </td> */}
-                                     <td>
-  <Autocomplete
-    options={allAccountName}  // Array of account names
-    getOptionLabel={(option) => option.accountName || ''}  // Label for each option
-    groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')} // Group by first letter of account name
-    value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null} // Set the value based on accountName
-    onChange={(event, newValue) => handleAccountNameChange(event, newValue, row.id)} // Handle change
-    size="small"
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        label="Account Name"
-        variant="outlined"
-        error={!!detailsTableErrors[index]?.accountName} // Display error if any
-        helperText={detailsTableErrors[index]?.accountName} // Helper text for errors
-      />
-    )}
-    sx={{ width: 250 }}
-  />
-</td>
+                                      <td>
+                                        <Autocomplete
+                                          options={allAccountName} // Array of account names
+                                          getOptionLabel={(option) => option.accountName || ''} // Label for each option
+                                          groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')} // Group by first letter of account name
+                                          value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null} // Set the value based on accountName
+                                          onChange={(event, newValue) => handleAccountNameChange(event, newValue, row.id)} // Handle change
+                                          size="small"
+                                          renderInput={(params) => (
+                                            <TextField
+                                              {...params}
+                                              label="Account Name"
+                                              variant="outlined"
+                                              error={!!detailsTableErrors[index]?.accountName} // Display error if any
+                                              helperText={detailsTableErrors[index]?.accountName} // Helper text for errors
+                                            />
+                                          )}
+                                          sx={{ width: 250 }}
+                                        />
+                                      </td>
 
                                       <td className="border px-2 py-2">
                                         <input

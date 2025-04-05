@@ -82,8 +82,8 @@ export const State = () => {
   };
 
   const handleExcelFileDownload = () => {
-    console.log("Downloading Excel...");  // Debugging step
-    console.log("List View Data:", listViewData); // Check if data exists
+    console.log('Downloading Excel...'); // Debugging step
+    console.log('List View Data:', listViewData); // Check if data exists
 
     if (!listViewData || listViewData.length === 0) {
       showToast('error', 'No data available to download');
@@ -95,8 +95,8 @@ export const State = () => {
         'State Code': stateCode,
         'State Name': stateName,
         'State Number': stateNumber,
-        'Country': country,
-        'Active': (active === true || active === 'Active') ? 'Yes' : 'No'
+        Country: country,
+        Active: active === true || active === 'Active' ? 'Yes' : 'No'
       }));
 
       const worksheet = XLSX.utils.json_to_sheet(filteredData);
@@ -284,19 +284,13 @@ export const State = () => {
       const tableRows = [];
 
       listViewData.forEach(({ stateCode, stateName, stateNumber, country, active }) => {
-        tableRows.push([
-          stateCode,
-          stateName,
-          stateNumber,
-          country,
-          (active === true || active === 'Active') ? 'Yes' : 'No'
-        ]);
+        tableRows.push([stateCode, stateName, stateNumber, country, active === true || active === 'Active' ? 'Yes' : 'No']);
       });
 
       doc.autoTable({
         head: [tableColumn],
         body: tableRows,
-        startY: 20,
+        startY: 20
       });
 
       doc.save('State_List.pdf');
@@ -313,7 +307,7 @@ export const State = () => {
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
             {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
@@ -338,7 +332,7 @@ export const State = () => {
             {/* <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} />
             <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} /> */}
             {listView && (
-              <div className='ps-2'>
+              <div className="ps-2">
                 <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} />
                 <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} />
               </div>

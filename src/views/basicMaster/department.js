@@ -18,7 +18,7 @@ export const Department = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     active: true,
     department: '',
@@ -73,7 +73,6 @@ export const Department = () => {
           departmentCode: particularDepartment.departmentCode,
           active: particularDepartment.active === 'Active' ? true : false
         });
-        
       } else {
         console.error('API Error');
       }
@@ -186,7 +185,7 @@ export const Department = () => {
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />

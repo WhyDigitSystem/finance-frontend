@@ -261,9 +261,7 @@ const AdjustmentJournal = () => {
 
     if (table === detailsTableData) {
       return (
-        !lastRow.accountName ||
-        !lastRow.subLedgerCode ||
-        !lastRow.subledgerName 
+        !lastRow.accountName || !lastRow.subLedgerCode || !lastRow.subledgerName
         //||  !lastRow.debitAmount ||
         // !lastRow.creditBase ||
         // !lastRow.creditAmount ||
@@ -281,7 +279,7 @@ const AdjustmentJournal = () => {
           ...newErrors[table.length - 1],
           accountName: !table[table.length - 1].accountName ? 'Account Name is required' : '',
           subledgerName: !table[table.length - 1].subledgerName ? 'Sub Ledger Name is required' : '',
-          subLedgerCode: !table[table.length - 1].subLedgerCode ? 'Sub Ledger Code is required' : '',
+          subLedgerCode: !table[table.length - 1].subLedgerCode ? 'Sub Ledger Code is required' : ''
           // debitAmount: !table[table.length - 1].debitAmount ? 'Debit is required' : '',
           // creditAmount: !table[table.length - 1].creditAmount ? 'Credit is required' : '',
           // debitBase: !table[table.length - 1].debitBase ? 'Debit Base is required' : '',
@@ -304,16 +302,14 @@ const AdjustmentJournal = () => {
 
   const handleDebitChange = (e, row, index) => {
     const value = e.target.value;
-  
+
     if (/^\d{0,20}$/.test(value)) {
       setDetailsTableData((prev) =>
         prev.map((r) =>
-          r.id === row.id
-            ? { ...r, debitAmount: value, creditAmount: value ? 0 : '', debitBase: value, creditBase: value ? 0 : '' }
-            : r
+          r.id === row.id ? { ...r, debitAmount: value, creditAmount: value ? 0 : '', debitBase: value, creditBase: value ? 0 : '' } : r
         )
       );
-  
+
       setDetailsTableErrors((prev) => {
         const newErrors = [...prev];
         newErrors[index] = {
@@ -325,20 +321,17 @@ const AdjustmentJournal = () => {
       });
     }
   };
-  
 
   const handleCreditChange = (e, row, index) => {
     const value = e.target.value;
-  
+
     if (/^\d{0,20}$/.test(value)) {
       setDetailsTableData((prev) =>
         prev.map((r) =>
-          r.id === row.id
-            ? { ...r, creditAmount: value, debitAmount: value ? 0 : '', creditBase: value, debitBase: value ? 0 : '' }
-            : r
+          r.id === row.id ? { ...r, creditAmount: value, debitAmount: value ? 0 : '', creditBase: value, debitBase: value ? 0 : '' } : r
         )
       );
-  
+
       setDetailsTableErrors((prev) => {
         const newErrors = [...prev];
         newErrors[index] = {
@@ -400,48 +393,48 @@ const AdjustmentJournal = () => {
     setDetailsTableErrors(newTableErrors);
 
     if (Object.keys(errors).length === 0 && detailTableDataValid) {
-          const AdjustmentJournalVO = detailsTableData.map((row) => ({
-            ...(editId && { id: row.id }),
-            accountsName: row.accountName,
-            creditAmount: parseInt(row.creditAmount),
-            debitAmount: parseInt(row.debitAmount),
-            debitBase: parseInt(row.debitBase),
-            creditBase: parseInt(row.creditBase),
-            subLedgerCode: row.subLedgerCode,
-            subledgerName: row.subledgerName
+      const AdjustmentJournalVO = detailsTableData.map((row) => ({
+        ...(editId && { id: row.id }),
+        accountsName: row.accountName,
+        creditAmount: parseInt(row.creditAmount),
+        debitAmount: parseInt(row.debitAmount),
+        debitBase: parseInt(row.debitBase),
+        creditBase: parseInt(row.creditBase),
+        subLedgerCode: row.subLedgerCode,
+        subledgerName: row.subledgerName
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
         branch: branch,
-              branchCode: branchCode,
-              createdBy: loginUserName,
-              finYear: finYear,
-              orgId: orgId,
-              accountParticularsDTO: AdjustmentJournalVO,
-              adjustmentType: formData.adjustmentType,
-              currency: formData.currency,
-              exRate: parseInt(formData.exRate),
-              refDate: dayjs(formData.refDate).format('YYYY-MM-DD'),
-              refNo: formData.refNo,
-              suppRefDate: dayjs(formData.suppRefDate).format('YYYY-MM-DD'),
-              suppRefNo: formData.suppRefNo,
-              remarks: formData.remarks
+        branchCode: branchCode,
+        createdBy: loginUserName,
+        finYear: finYear,
+        orgId: orgId,
+        accountParticularsDTO: AdjustmentJournalVO,
+        adjustmentType: formData.adjustmentType,
+        currency: formData.currency,
+        exRate: parseInt(formData.exRate),
+        refDate: dayjs(formData.refDate).format('YYYY-MM-DD'),
+        refNo: formData.refNo,
+        suppRefDate: dayjs(formData.suppRefDate).format('YYYY-MM-DD'),
+        suppRefNo: formData.suppRefNo,
+        remarks: formData.remarks
       };
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-              const response = await apiCalls('put', `transaction/updateCreateAdjustmentJournal`, saveFormData);
-              if (response.status === true) {
-                console.log('Response:', response);
-                showToast('success', editId ? 'Adjustment Journal Updated Successfully' : 'Adjustment Journal Created successfully');
-                getAllAdjustmentJournalByOrgId();
-                handleClear();
-              } else {
-                showToast('error', response.paramObjectsMap.message || 'Adjustment Journal creation failed');
-              }
-            } catch (error) {
-              console.error('Error:', error);
-              showToast('error', 'Adjustment Journal creation failed');
-            }
+        const response = await apiCalls('put', `transaction/updateCreateAdjustmentJournal`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? 'Adjustment Journal Updated Successfully' : 'Adjustment Journal Created successfully');
+          getAllAdjustmentJournalByOrgId();
+          handleClear();
+        } else {
+          showToast('error', response.paramObjectsMap.message || 'Adjustment Journal creation failed');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Adjustment Journal creation failed');
+      }
     } else {
       setFieldErrors(errors);
     }
@@ -522,7 +515,7 @@ const AdjustmentJournal = () => {
       </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
             {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />

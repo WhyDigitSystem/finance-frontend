@@ -108,39 +108,39 @@ const FundTransfer = () => {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const inputValue = type === 'checkbox' ? checked : value;
-  
+
     // Validation for "amount" and "amtBase" fields to allow only numbers
     if ((name === 'amount' || name === 'amtBase') && !/^\d*$/.test(value)) {
       setFieldErrors((prevFieldErrors) => ({
         ...prevFieldErrors,
-        [name]: 'Only numbers are allowed for this field',
+        [name]: 'Only numbers are allowed for this field'
       }));
       return; // Exit the function without setting the value
     }
-  
+
     // Prevent selecting the same bank in "Transfer To" and "Corporate A/C"
     if (name === 'transferTo' && value === formData.corpAccount) {
       setFieldErrors((prevFieldErrors) => ({
         ...prevFieldErrors,
-        [name]: 'Cannot select the same bank as Corporate A/C',
+        [name]: 'Cannot select the same bank as Corporate A/C'
       }));
       setFormData((prevFormData) => ({
         ...prevFormData,
-        [name]: '',
+        [name]: ''
       }));
       return;
     } else if (name === 'corpAccount' && value === formData.transferTo) {
       setFieldErrors((prevFieldErrors) => ({
         ...prevFieldErrors,
-        [name]: 'Cannot select the same bank as Transfer To',
+        [name]: 'Cannot select the same bank as Transfer To'
       }));
       setFormData((prevFormData) => ({
         ...prevFormData,
-        [name]: '',
+        [name]: ''
       }));
       return;
     }
-  
+
     // Set exRate when currency changes
     if (name === 'currency') {
       const selectedCurrency = currencies.find((currency) => currency.currency === value);
@@ -148,27 +148,26 @@ const FundTransfer = () => {
         setFormData((prevFormData) => ({
           ...prevFormData,
           currency: value,
-          exRate: selectedCurrency.sellingExRate,
+          exRate: selectedCurrency.sellingExRate
         }));
         setFieldErrors((prevFieldErrors) => ({
           ...prevFieldErrors,
-          currency: false,
+          currency: false
         }));
         return;
       }
     }
-  
+
     // Clear any existing error and set the field value normally
     setFormData((prevFormData) => ({
       ...prevFormData,
-      [name]: inputValue,
+      [name]: inputValue
     }));
     setFieldErrors((prevFieldErrors) => ({
       ...prevFieldErrors,
-      [name]: false,
+      [name]: false
     }));
   };
-  
 
   const handleDateChange = (name, date) => {
     setFormData({ ...formData, [name]: date });
@@ -234,17 +233,17 @@ const FundTransfer = () => {
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
-  }; 
+  };
 
   useEffect(() => {
     if (currencies.length === 1) {
-      handleInputChange({ target: { name: "currency", value: currencies[0].currency } });
+      handleInputChange({ target: { name: 'currency', value: currencies[0].currency } });
     }
   }, [currencies]);
 
   useEffect(() => {
     if (currencies.length === 1) {
-      handleInputChange({ target: { name: "currency", value: currencies[0].currency } });
+      handleInputChange({ target: { name: 'currency', value: currencies[0].currency } });
     }
   }, [currencies]);
 
@@ -259,7 +258,6 @@ const FundTransfer = () => {
       console.log('API Response:', response);
       if (response.status === true) {
         setListViewData(response.paramObjectsMap.fundTransferVO.reverse());
-     
       } else {
         console.error('API Error:', response);
       }
@@ -406,7 +404,7 @@ const FundTransfer = () => {
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml" style={{ marginBottom: '20px' }}>
-          <div className="d-flex flex-wrap justify-content-start mb-2 " style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-end mb-2 " style={{ marginBottom: '20px' }}>
             {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />

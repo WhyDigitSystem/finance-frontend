@@ -357,8 +357,7 @@ const ReconcileCorp = () => {
     if (!withdrawalsTableData || withdrawalsTableData.length === 0) {
       detailsTableDataValid = false;
       setWithdrawalsTableErrors([{ general: 'detail Table Data is required' }]);
-    }
-    else {
+    } else {
       const newTableErrors = withdrawalsTableData.map((row, index) => {
         const rowErrors = {};
         if (!row.voucherNo) {
@@ -392,7 +391,7 @@ const ReconcileCorp = () => {
     setFormDataErrors(errors);
 
     if (Object.keys(errors).length === 0 && detailsTableDataValid) {
-    // if (detailsTableDataValid) {
+      // if (detailsTableDataValid) {
       setIsLoading(true);
 
       const detailsVo = withdrawalsTableData.map((row) => ({
@@ -486,17 +485,15 @@ const ReconcileCorp = () => {
       console.error('Error fetching data:', error);
     }
   };
-  
+
   const handleDepositChange = (e, row, index) => {
     const value = e.target.value;
-  
+
     if (/^\d{0,20}$/.test(value)) {
       setWithdrawalsTableData((prev) =>
-        prev.map((r) =>
-          r.id === row.id ? { ...r, deposit: value, withdrawal: value === '0' ? '' : '0' } : r
-        )
+        prev.map((r) => (r.id === row.id ? { ...r, deposit: value, withdrawal: value === '0' ? '' : '0' } : r))
       );
-  
+
       setWithdrawalsTableErrors((prev) => {
         const newErrors = [...prev];
         newErrors[index] = {
@@ -506,21 +503,19 @@ const ReconcileCorp = () => {
         };
         return newErrors;
       });
-  
+
       // calculateTotals(); // Recalculate totals
     }
   };
-  
+
   const handleWithdrawalChange = (e, row, index) => {
     const value = e.target.value;
-  
+
     if (/^\d{0,20}$/.test(value)) {
       setWithdrawalsTableData((prev) =>
-        prev.map((r) =>
-          r.id === row.id ? { ...r, withdrawal: value, deposit: value === '0' ? '' : '0' } : r
-        )
+        prev.map((r) => (r.id === row.id ? { ...r, withdrawal: value, deposit: value === '0' ? '' : '0' } : r))
       );
-  
+
       setWithdrawalsTableErrors((prev) => {
         const newErrors = [...prev];
         newErrors[index] = {
@@ -530,7 +525,7 @@ const ReconcileCorp = () => {
         };
         return newErrors;
       });
-  
+
       // calculateTotals(); // Recalculate totals
     }
   };
@@ -538,8 +533,8 @@ const ReconcileCorp = () => {
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
-      <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start p-2">
+        <div className="row d-flex ml">
+          <div className="d-flex flex-wrap justify-content-end p-2">
             {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
@@ -633,20 +628,20 @@ const ReconcileCorp = () => {
             </div>
             <>
               <div className="row mt-2">
-                  <Box sx={{ width: '100%' }}>
-                    <Tabs
-                      value={value}
-                      onChange={handleChangeTab}
-                      textColor="secondary"
-                      indicatorColor="secondary"
-                      aria-label="secondary tabs example"
-                    >
-                      <Tab value={0} label="Details" />
-                    </Tabs>
-                  </Box>
-                  <Box sx={{ padding: 2 }}>
-                    {value === 0 && (
-                      <>
+                <Box sx={{ width: '100%' }}>
+                  <Tabs
+                    value={value}
+                    onChange={handleChangeTab}
+                    textColor="secondary"
+                    indicatorColor="secondary"
+                    aria-label="secondary tabs example"
+                  >
+                    <Tab value={0} label="Details" />
+                  </Tabs>
+                </Box>
+                <Box sx={{ padding: 2 }}>
+                  {value === 0 && (
+                    <>
                       <div className="row d-flex ml">
                         <div className="mb-1">
                           <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
@@ -663,13 +658,27 @@ const ReconcileCorp = () => {
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                       S.No
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>Voucher No</th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '230px' }}>Voucher Date</th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>Chq/DD No</th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '230px' }}>Chq/DD Date</th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>Deposit</th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>Withdrawal</th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>Bank Ref</th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                      Voucher No
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '230px' }}>
+                                      Voucher Date
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                      Chq/DD No
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '230px' }}>
+                                      Chq/DD Date
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                      Deposit
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                      Withdrawal
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                      Bank Ref
+                                    </th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -698,7 +707,6 @@ const ReconcileCorp = () => {
                                           <input
                                             type="text"
                                             value={row.voucherNo}
-                                            
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const regex = /^[a-zA-Z0-9\s- /]*$/;
@@ -720,9 +728,7 @@ const ReconcileCorp = () => {
                                                 return newErrors;
                                               });
                                             }}
-                                            className={
-                                              withdrawalsTableErrors[index]?.voucherNo ? 'error form-control' : 'form-control'
-                                            }
+                                            className={withdrawalsTableErrors[index]?.voucherNo ? 'error form-control' : 'form-control'}
                                           />
                                           {withdrawalsTableErrors[index]?.voucherNo && (
                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -756,7 +762,7 @@ const ReconcileCorp = () => {
                                                   const newErrors = [...prev];
                                                   newErrors[index] = {
                                                     ...newErrors[index],
-                                                    voucherDate: !newValue ? 'Voucher Date is required' : '',
+                                                    voucherDate: !newValue ? 'Voucher Date is required' : ''
                                                   };
                                                   return newErrors;
                                                 });
@@ -766,9 +772,7 @@ const ReconcileCorp = () => {
                                                   {...params}
                                                   // size="small"
                                                   className={
-                                                    withdrawalsTableErrors[index]?.voucherDate
-                                                      ? 'error form-control'
-                                                      : 'form-control'
+                                                    withdrawalsTableErrors[index]?.voucherDate ? 'error form-control' : 'form-control'
                                                   }
                                                 />
                                               )}
@@ -786,7 +790,6 @@ const ReconcileCorp = () => {
                                           <input
                                             type="text"
                                             value={row.chequeNo}
-                                            
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const numericRegex = /^[0-9]*$/;
@@ -796,13 +799,19 @@ const ReconcileCorp = () => {
                                                 );
                                                 setWithdrawalsTableErrors((prev) => {
                                                   const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], chequeNo: !value ? 'Cheque No is required' : '' };
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    chequeNo: !value ? 'Cheque No is required' : ''
+                                                  };
                                                   return newErrors;
                                                 });
                                               } else {
                                                 setWithdrawalsTableErrors((prev) => {
                                                   const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], chequeNo: 'Only numeric characters are allowed' };
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    chequeNo: 'Only numeric characters are allowed'
+                                                  };
                                                   return newErrors;
                                                 });
                                               }
@@ -841,7 +850,7 @@ const ReconcileCorp = () => {
                                                   const newErrors = [...prev];
                                                   newErrors[index] = {
                                                     ...newErrors[index],
-                                                    chequeDate: !newValue ? 'Voucher Date is required' : '',
+                                                    chequeDate: !newValue ? 'Voucher Date is required' : ''
                                                   };
                                                   return newErrors;
                                                 });
@@ -851,9 +860,7 @@ const ReconcileCorp = () => {
                                                   {...params}
                                                   // size="small"
                                                   className={
-                                                    withdrawalsTableErrors[index]?.chequeDate
-                                                      ? 'error form-control'
-                                                      : 'form-control'
+                                                    withdrawalsTableErrors[index]?.chequeDate ? 'error form-control' : 'form-control'
                                                   }
                                                 />
                                               )}
@@ -871,7 +878,6 @@ const ReconcileCorp = () => {
                                           <input
                                             type="text"
                                             value={row.deposit}
-                                            
                                             onChange={(e) => handleDepositChange(e, row, index)}
                                             // onChange={(e) => {
                                             //   const value = e.target.value;
@@ -916,7 +922,6 @@ const ReconcileCorp = () => {
                                           <input
                                             type="text"
                                             value={row.withdrawal}
-                                            
                                             onChange={(e) => handleWithdrawalChange(e, row, index)}
                                             // onChange={(e) => {
                                             //   const value = e.target.value;
@@ -959,16 +964,13 @@ const ReconcileCorp = () => {
                                           <input
                                             type="text"
                                             value={row.bankRef}
-                                            
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const regex = /^[a-zA-Z0-9\s-/]*$/; // Allow letters, numbers, spaces, and dashes
 
                                               if (regex.test(value)) {
                                                 setWithdrawalsTableData((prev) => {
-                                                  const updatedData = prev.map((r) =>
-                                                    r.id === row.id ? { ...r, bankRef: value } : r
-                                                  );
+                                                  const updatedData = prev.map((r) => (r.id === row.id ? { ...r, bankRef: value } : r));
                                                   return updatedData;
                                                 });
 
@@ -991,9 +993,7 @@ const ReconcileCorp = () => {
                                                 });
                                               }
                                             }}
-                                            className={
-                                              withdrawalsTableErrors[index]?.bankRef ? 'error form-control' : 'form-control'
-                                            }
+                                            className={withdrawalsTableErrors[index]?.bankRef ? 'error form-control' : 'form-control'}
                                           />
                                           {withdrawalsTableErrors[index]?.bankRef && (
                                             <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1001,7 +1001,6 @@ const ReconcileCorp = () => {
                                             </div>
                                           )}
                                         </td>
-
 
                                         {/* <td className="border px-2 py-2">
                                           <input
@@ -1042,9 +1041,9 @@ const ReconcileCorp = () => {
                           </div>
                         </div>
                       </div>
-                      </>
-                      )}
-                  </Box>
+                    </>
+                  )}
+                </Box>
               </div>
             </>
           </>

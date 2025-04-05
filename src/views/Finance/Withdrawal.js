@@ -52,7 +52,7 @@ const Withdrawal = () => {
     totalDebitAmount: 0,
     totalAmount: 0,
     remarks: '',
-    status:''
+    status: ''
   });
   const [fieldErrors, setFieldErrors] = useState({
     withdrawalMode: '',
@@ -70,7 +70,7 @@ const Withdrawal = () => {
     totalDebitAmount: 0,
     totalAmount: 0,
     remarks: '',
-    status:''
+    status: ''
   });
   const [detailsTableData, setDetailsTableData] = useState([
     {
@@ -252,7 +252,6 @@ const Withdrawal = () => {
     getAllbankName();
     getAllAccountName();
   }, []);
-  
 
   useEffect(() => {
     const totalDebit = detailsTableData.reduce((sum, row) => sum + Number(row.debit || 0), 0);
@@ -416,7 +415,7 @@ const Withdrawal = () => {
         chequeDate: dayjs(formData.chequeDate).format('YYYY-MM-DD'),
         chequeBank: formData.chequeBank,
         remarks: formData.remarks,
-        status: formData.status,
+        status: formData.status
         // totalDebitAmount: formData.totalDebitAmount
       };
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -546,7 +545,7 @@ const Withdrawal = () => {
       </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
             {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
@@ -769,13 +768,7 @@ const Withdrawal = () => {
                 <div className="col-md-3 mb-3">
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
                     <InputLabel id="status">Status</InputLabel>
-                    <Select
-                      labelId="status"
-                      label="Status"
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      name="status"
-                    >
+                    <Select labelId="status" label="Status" value={formData.status} onChange={handleInputChange} name="status">
                       <MenuItem value="EDIT">EDIT</MenuItem>
                       <MenuItem value="SUBMIT">SUBMIT</MenuItem>
                     </Select>
@@ -849,8 +842,8 @@ const Withdrawal = () => {
                                               row.accountName
                                                 ? allAccountName.find((a) => a.accountName === row.accountName)
                                                 : allAccountName.length === 1
-                                                ? allAccountName[0]
-                                                : null
+                                                  ? allAccountName[0]
+                                                  : null
                                             }
                                             onChange={(event, newValue) => {
                                               const value = newValue ? newValue.accountName : '';

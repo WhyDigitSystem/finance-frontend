@@ -142,9 +142,9 @@ export const Customer = () => {
       prev.map((r) =>
         r.id === row.id
           ? {
-            ...r,
-            transCurrency: value
-          }
+              ...r,
+              transCurrency: value
+            }
           : r
       )
     );
@@ -476,8 +476,8 @@ export const Customer = () => {
       }
     }
     if (name === 'gstIn' && (!/^[A-Za-z0-9 ]*$/.test(value) || value.length === 16)) {
-          errorMessage = 'GSTIN must be exactly 15 characters long';
-        }
+      errorMessage = 'GSTIN must be exactly 15 characters long';
+    }
     if (name === 'customerName') {
       if (!nameRegex.test(value)) {
         errorMessage = 'Only Alphabets Allowed';
@@ -674,11 +674,11 @@ export const Customer = () => {
       prev.map((r) =>
         r.id === row.id
           ? {
-            ...r,
-            state: value,
-            stateCode: selectedState ? selectedState.stateCode : '',
-            stateNo: selectedState ? selectedState.stateNumber : ''
-          }
+              ...r,
+              state: value,
+              stateCode: selectedState ? selectedState.stateCode : '',
+              stateNo: selectedState ? selectedState.stateNumber : ''
+            }
           : r
       )
     );
@@ -713,10 +713,10 @@ export const Customer = () => {
       prev.map((r) =>
         r.id === row.id
           ? {
-            ...r,
-            salesPerson: selectedName,
-            empCode: selectedEmployee ? selectedEmployee.employeeCode : ''
-          }
+              ...r,
+              salesPerson: selectedName,
+              empCode: selectedEmployee ? selectedEmployee.employeeCode : ''
+            }
           : r
       )
     );
@@ -1060,7 +1060,7 @@ export const Customer = () => {
         <ToastContainer />
       </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
-        <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
+        <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
           {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
           <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
@@ -1118,8 +1118,8 @@ export const Customer = () => {
                   value={formData.customerCode}
                   onChange={handleInputChange}
                   disabled
-                // error={fieldErrors.customerCode}
-                // helperText={fieldErrors.customerCode}
+                  // error={fieldErrors.customerCode}
+                  // helperText={fieldErrors.customerCode}
                 />
               </div>
 
@@ -1151,19 +1151,21 @@ export const Customer = () => {
                   </Select>
                 </FormControl>
               </div>
-              {formData.gstRegistered === 'YES' && <div className="col-md-3 mb-3">
-                <TextField
-                  id="gstIn"
-                  fullWidth
-                  name="gstIn"
-                  label="Reg No"
-                  size="small"
-                  value={formData.gstIn}
-                  onChange={handleInputChange}
-                  error={fieldErrors.gstIn}
-                  helperText={fieldErrors.gstIn}
-                />
-              </div>}
+              {formData.gstRegistered === 'YES' && (
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="gstIn"
+                    fullWidth
+                    name="gstIn"
+                    label="Reg No"
+                    size="small"
+                    value={formData.gstIn}
+                    onChange={handleInputChange}
+                    error={fieldErrors.gstIn}
+                    helperText={fieldErrors.gstIn}
+                  />
+                </div>
+              )}
               <div className="col-md-3 mb-3">
                 <TextField
                   id="panNo"
@@ -1433,34 +1435,36 @@ export const Customer = () => {
                                     )}
                                   </td>
 
-                                  {formData.gstRegistered === 'YES' && <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.gstIn}
-                                      maxLength={15}
-                                      style={{ width: '180px' }}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstIn: value } : r)));
-                                        setPartyStateDataErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = {
-                                            ...newErrors[index],
-                                            gstIn: !value
-                                              ? 'Reg No is required'
-                                              : !gstRegex.test(value)
-                                                ? 'Reg No must be exactly 15 alphanumeric characters'
-                                                : ''
-                                          };
-                                          return newErrors;
-                                        });
-                                      }}
-                                      className={partyStateDataErrors[index]?.gstIn ? 'error form-control' : 'form-control'}
-                                    />
-                                    {partyStateDataErrors[index]?.gstIn && (
-                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].gstIn}</div>
-                                    )}
-                                  </td>}
+                                  {formData.gstRegistered === 'YES' && (
+                                    <td className="border px-2 py-2">
+                                      <input
+                                        type="text"
+                                        value={row.gstIn}
+                                        maxLength={15}
+                                        style={{ width: '180px' }}
+                                        onChange={(e) => {
+                                          const value = e.target.value;
+                                          setPartyStateData((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstIn: value } : r)));
+                                          setPartyStateDataErrors((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              gstIn: !value
+                                                ? 'Reg No is required'
+                                                : !gstRegex.test(value)
+                                                  ? 'Reg No must be exactly 15 alphanumeric characters'
+                                                  : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        className={partyStateDataErrors[index]?.gstIn ? 'error form-control' : 'form-control'}
+                                      />
+                                      {partyStateDataErrors[index]?.gstIn && (
+                                        <div style={{ color: 'red', fontSize: '12px' }}>{partyStateDataErrors[index].gstIn}</div>
+                                      )}
+                                    </td>
+                                  )}
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
@@ -2021,47 +2025,47 @@ export const Customer = () => {
 
                                   <td className="border px-2 py-2">
                                     {/* <div className="w-100"> */}
-                                      <DatePicker
-                                        selected={row.effectiveFrom}
-                                        // selected={
-                                        //     row.effectiveFrom
-                                        //         ? dayjs(row.effectiveFrom, 'YYYY-MM-DD').isValid()
-                                        //             ? dayjs(row.effectiveFrom, 'YYYY-MM-DD').toDate()
-                                        //             : null
-                                        //         : null
-                                        // }
-                                        className={partySalesPersonErrors[index]?.effectiveFrom ? 'error form-control' : 'form-control'}
-                                        onChange={(date) => {
-                                          setPartySalesPersonTagging((prev) =>
-                                            prev.map((r) =>
-                                              r.id === row.id
-                                                ? {
+                                    <DatePicker
+                                      selected={row.effectiveFrom}
+                                      // selected={
+                                      //     row.effectiveFrom
+                                      //         ? dayjs(row.effectiveFrom, 'YYYY-MM-DD').isValid()
+                                      //             ? dayjs(row.effectiveFrom, 'YYYY-MM-DD').toDate()
+                                      //             : null
+                                      //         : null
+                                      // }
+                                      className={partySalesPersonErrors[index]?.effectiveFrom ? 'error form-control' : 'form-control'}
+                                      onChange={(date) => {
+                                        setPartySalesPersonTagging((prev) =>
+                                          prev.map((r) =>
+                                            r.id === row.id
+                                              ? {
                                                   ...r,
                                                   effectiveFrom: date,
                                                   effectiveTill: date > r.effectiveTill ? null : r.effectiveTill
                                                 }
-                                                : r
-                                            )
-                                          );
-                                          setPartySalesPersonErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              effectiveFrom: !date ? 'Effective From is required' : '',
-                                              effectiveTill:
-                                                date && row.effectiveTill && date > row.effectiveTill ? '' : newErrors[index]?.effectiveTill
-                                            };
-                                            return newErrors;
-                                          });
-                                        }}
-                                        dateFormat="dd-MM-yyyy"
-                                        minDate={new Date()}
-                                      />
-                                      {partySalesPersonErrors[index]?.effectiveFrom && (
-                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                          {partySalesPersonErrors[index].effectiveFrom}
-                                        </div>
-                                      )}
+                                              : r
+                                          )
+                                        );
+                                        setPartySalesPersonErrors((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = {
+                                            ...newErrors[index],
+                                            effectiveFrom: !date ? 'Effective From is required' : '',
+                                            effectiveTill:
+                                              date && row.effectiveTill && date > row.effectiveTill ? '' : newErrors[index]?.effectiveTill
+                                          };
+                                          return newErrors;
+                                        });
+                                      }}
+                                      dateFormat="dd-MM-yyyy"
+                                      minDate={new Date()}
+                                    />
+                                    {partySalesPersonErrors[index]?.effectiveFrom && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {partySalesPersonErrors[index].effectiveFrom}
+                                      </div>
+                                    )}
                                     {/* </div> */}
                                   </td>
 

@@ -451,7 +451,7 @@ const CostInvoice = () => {
     { accessorKey: 'vdate', header: 'Invoice Date', size: 140 },
     { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 },
     { accessorKey: 'mode', header: 'Mode', size: 140 },
-    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
+    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 }
   ];
 
   const handleOpenModalApprove = () => {
@@ -647,7 +647,9 @@ const CostInvoice = () => {
   const GeneratePdf = (row) => {
     console.log('PDF-Data =>', listViewData);
     // setPdfData(listViewData)
-    {confirmData.approveStatus === "Approved" ? setPdfData(confirmData) : setPdfData(listViewData);}
+    {
+      confirmData.approveStatus === 'Approved' ? setPdfData(confirmData) : setPdfData(listViewData);
+    }
     setDownloadPdf(true);
   };
 
@@ -1733,7 +1735,9 @@ const CostInvoice = () => {
               <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
               <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
               <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
-              {(listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf}/>)}
+              {(listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (
+                <ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />
+              )}
             </div>
             {editId && !showForm && (formData.mode === 'SUBMIT' || listViewData.mode === 'SUBMIT') && (
               <>
@@ -3366,7 +3370,7 @@ const CostInvoice = () => {
           )}
         </div>
       </div>
-          {downloadPdf && <GeneratePdfTemp row={pdfData} modalClose={() => setDownloadPdf(false)} />}
+      {downloadPdf && <GeneratePdfTemp row={pdfData} modalClose={() => setDownloadPdf(false)} />}
       <ConfirmationModal
         open={modalOpen}
         title="Cost Invoice Approval"

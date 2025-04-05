@@ -15,15 +15,14 @@ import Select from '@mui/material/Select';
 import CommonListViewTable from '../../views/basicMaster/CommonListViewTable';
 
 const HsnSacCode = () => {
-
   const [formData, setFormData] = useState({
     active: true,
-    type:'',
-    code:'',
-    description:'',
-    igst:'',
-    cgst:'',
-    sgst:''
+    type: '',
+    code: '',
+    description: '',
+    igst: '',
+    cgst: '',
+    sgst: ''
   });
   const [fieldErrors, setFieldErrors] = useState({});
   const [showForm, setShowForm] = useState(true);
@@ -80,7 +79,7 @@ const HsnSacCode = () => {
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     let inputValue = type === 'checkbox' ? checked : value;
-    if (name === 'code' ) {
+    if (name === 'code') {
       if (!/^\d*$/.test(inputValue)) {
         setFieldErrors((prevErrors) => ({
           ...prevErrors,
@@ -113,22 +112,22 @@ const HsnSacCode = () => {
       ...prevFormData,
       [name]: inputValue
     }));
-  };  
+  };
 
   const handleCheckboxChange = (event) => {
     console.log(event.target.checked);
-    
+
     setFormData({ ...formData, active: event.target.checked });
   };
   const handleClear = () => {
     setFormData({
       active: true,
-      type:'',
-      code:'',
-      description:'',
-      igst:'',
-      cgst:'',
-      sgst:''
+      type: '',
+      code: '',
+      description: '',
+      igst: '',
+      cgst: '',
+      sgst: ''
     });
     setEditId('');
     setFieldErrors({});
@@ -172,7 +171,7 @@ const HsnSacCode = () => {
         orgId: parseInt(orgId),
         createdBy: loginUserName
       };
-      
+
       console.log('Saving HSN code with payload:', formDataToSend);
       try {
         const result = await apiCalls('put', '/master/updateCreateHSNSacCode', formDataToSend);
@@ -198,7 +197,7 @@ const HsnSacCode = () => {
         <ToastContainer />
       </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
-        <div className="d-flex flex-wrap justify-content-start mb-4">
+        <div className="d-flex flex-wrap justify-content-end mb-4">
           {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
           <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
@@ -208,29 +207,29 @@ const HsnSacCode = () => {
         {showForm ? (
           <div className="row d-flex align-items-center">
             <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Type
-                  </InputLabel>
-                  <Select
-                    labelId="statusLabel"
-                    value={formData.type}
-                    onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    label={
-                      <span>
-                        Type <span className="asterisk">*</span>
-                      </span>
-                    }
-                    required
-                    error={!!fieldErrors.type}
-                    helperText={fieldErrors.type}
-                    // disabled={formData.type === 'TAX' || !editId}
-                  >
-                    <MenuItem value="HSN">HSN</MenuItem>
-                    <MenuItem value="SAC">SAC</MenuItem>
-                  </Select>
-                </FormControl>
-              </div>
+              <FormControl fullWidth size="small">
+                <InputLabel id="demo-simple-select-label" required>
+                  Type
+                </InputLabel>
+                <Select
+                  labelId="statusLabel"
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  label={
+                    <span>
+                      Type <span className="asterisk">*</span>
+                    </span>
+                  }
+                  required
+                  error={!!fieldErrors.type}
+                  helperText={fieldErrors.type}
+                  // disabled={formData.type === 'TAX' || !editId}
+                >
+                  <MenuItem value="HSN">HSN</MenuItem>
+                  <MenuItem value="SAC">SAC</MenuItem>
+                </Select>
+              </FormControl>
+            </div>
             <div className="col-md-3 mb-3">
               <FormControl fullWidth variant="filled">
                 <TextField
@@ -269,63 +268,51 @@ const HsnSacCode = () => {
                 />
               </FormControl>
             </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled">
-                    <TextField
-                      id="igst"
-                      name="igst"
-                      label={
-                        <span>
-                          IGST
-                        </span>
-                      }
-                      size="small"
-                      value={formData.igst}
-                      onChange={handleInputChange}
-                      inputProps={{ maxLength: 30 }}
-                      error={!!fieldErrors.igst}
-                      helperText={fieldErrors.igst}
-                    />
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled">
-                    <TextField
-                      id="sgst"
-                      name="sgst"
-                      label={
-                        <span>
-                          SGST
-                        </span>
-                      }
-                      size="small"
-                      value={formData.sgst}
-                      onChange={handleInputChange}
-                      inputProps={{ maxLength: 30 }}
-                      error={!!fieldErrors.sgst}
-                      helperText={fieldErrors.sgst}
-                    />
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled">
-                    <TextField
-                      id="cgst"
-                      name="cgst"
-                      label={
-                        <span>
-                          CGST
-                        </span>
-                      }
-                      size="small"
-                      value={formData.cgst}
-                      onChange={handleInputChange}
-                      inputProps={{ maxLength: 30 }}
-                      error={!!fieldErrors.cgst}
-                      helperText={fieldErrors.cgst}
-                    />
-                  </FormControl>
-                </div>
+            <div className="col-md-3 mb-3">
+              <FormControl fullWidth variant="filled">
+                <TextField
+                  id="igst"
+                  name="igst"
+                  label={<span>IGST</span>}
+                  size="small"
+                  value={formData.igst}
+                  onChange={handleInputChange}
+                  inputProps={{ maxLength: 30 }}
+                  error={!!fieldErrors.igst}
+                  helperText={fieldErrors.igst}
+                />
+              </FormControl>
+            </div>
+            <div className="col-md-3 mb-3">
+              <FormControl fullWidth variant="filled">
+                <TextField
+                  id="sgst"
+                  name="sgst"
+                  label={<span>SGST</span>}
+                  size="small"
+                  value={formData.sgst}
+                  onChange={handleInputChange}
+                  inputProps={{ maxLength: 30 }}
+                  error={!!fieldErrors.sgst}
+                  helperText={fieldErrors.sgst}
+                />
+              </FormControl>
+            </div>
+            <div className="col-md-3 mb-3">
+              <FormControl fullWidth variant="filled">
+                <TextField
+                  id="cgst"
+                  name="cgst"
+                  label={<span>CGST</span>}
+                  size="small"
+                  value={formData.cgst}
+                  onChange={handleInputChange}
+                  inputProps={{ maxLength: 30 }}
+                  error={!!fieldErrors.cgst}
+                  helperText={fieldErrors.cgst}
+                />
+              </FormControl>
+            </div>
             <div className="col-md-4 mb-2">
               <FormGroup>
                 <FormControlLabel control={<Checkbox checked={formData.active} onChange={handleCheckboxChange} />} label="Active" />
@@ -333,12 +320,7 @@ const HsnSacCode = () => {
             </div>
           </div>
         ) : (
-          <CommonListViewTable
-              data={data}
-              columns={columns}
-              blockEdit={true}
-              toEdit={getAllSacCodeById}
-            />
+          <CommonListViewTable data={data} columns={columns} blockEdit={true} toEdit={getAllSacCodeById} />
           // <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getAllSacCodeById} />
         )}
       </div>
