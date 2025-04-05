@@ -42,7 +42,7 @@ const CostCenter = () => {
 
   const handleInputChange = (e) => {
     const { name, value, checked, type } = e.target;
-  
+
     // Handle checkboxes separately
     if (type === 'checkbox') {
       setFormValues((prev) => ({
@@ -51,14 +51,14 @@ const CostCenter = () => {
       }));
       return;
     }
-   
+
     if (name === 'dimensionType' || name === 'valueDescription') {
-      const uppercasedValue = value.toUpperCase(); 
+      const uppercasedValue = value.toUpperCase();
       setFormValues((prev) => ({
         ...prev,
         [name]: uppercasedValue
       }));
-  
+
       if (!uppercasedValue) {
         setValidationErrors((prev) => ({
           ...prev,
@@ -72,16 +72,16 @@ const CostCenter = () => {
       }
       return;
     }
-   
+
     const uppercasedValue = value.toUpperCase();
-     
+
     if (name === 'valueCode') {
-      const filteredValue = uppercasedValue.replace(/[^0-9\s]/g, ''); 
+      const filteredValue = uppercasedValue.replace(/[^0-9\s]/g, '');
       setFormValues((prev) => ({
         ...prev,
         [name]: filteredValue
       }));
-  
+
       if (uppercasedValue !== filteredValue) {
         setValidationErrors((prev) => ({
           ...prev,
@@ -100,9 +100,8 @@ const CostCenter = () => {
       }
       return;
     }
-   
   };
-  
+
   const columns = [
     { accessorKey: 'dimensionType', header: 'Dimension Type', size: 140 },
     { accessorKey: 'valueCode', header: 'Value Code', size: 140 },
@@ -202,7 +201,7 @@ const CostCenter = () => {
     <div>
       <ToastContainer />
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
-        <div className="d-flex flex-wrap justify-content-start mb-4">
+        <div className="d-flex flex-wrap justify-content-end mb-4">
           {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
           <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
           <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
@@ -211,7 +210,7 @@ const CostCenter = () => {
         {showForm ? (
           <>
             <div className="row d-flex">
-            <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="dimensionType"
