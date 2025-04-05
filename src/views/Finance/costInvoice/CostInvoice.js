@@ -622,6 +622,7 @@ const CostInvoice = () => {
         `/costInvoice/getAllCostInvoiceByOrgId?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}`
       );
       setData(result.paramObjectsMap.costInvoiceVO.reverse() || []);
+      setShowForm(true);
       console.log('costInvoiceVO', result);
     } catch (err) {
       console.log('error', err);
@@ -766,14 +767,14 @@ const CostInvoice = () => {
         setChargeDetails(
           listValueVO.gstLines
             ? listValueVO.gstLines.map((row) => ({
-                id: row.id,
-                chargeCode: row.chargeCode,
-                chargeDesc: row.chargeName,
-                gChargeCode: row.govChargeCode,
-                gstPercent: row.gstpercent,
-                sac: row.sac,
-                lcAmount: row.lcAmt
-              }))
+              id: row.id,
+              chargeCode: row.chargeCode,
+              chargeDesc: row.chargeName,
+              gChargeCode: row.govChargeCode,
+              gstPercent: row.gstpercent,
+              sac: row.sac,
+              lcAmount: row.lcAmt
+            }))
             : []
         );
         setShowChargeDetails(true);
@@ -883,12 +884,12 @@ const CostInvoice = () => {
         setTdsCostInvoiceDTO(
           Array.isArray(costVO.tdsCostInvoiceVO)
             ? costVO.tdsCostInvoiceVO.map((row) => ({
-                id: row.id,
-                section: row.section,
-                tdsWithHolding: row.tdsWithHolding,
-                tdsWithHoldingPer: row.tdsWithHoldingPer,
-                totTdsWhAmnt: row.totTdsWhAmnt
-              }))
+              id: row.id,
+              section: row.section,
+              tdsWithHolding: row.tdsWithHolding,
+              tdsWithHoldingPer: row.tdsWithHoldingPer,
+              totTdsWhAmnt: row.totTdsWhAmnt
+            }))
             : []
         );
         // setTdsCostInvoiceDTO(
@@ -1730,69 +1731,98 @@ const CostInvoice = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
-            <div className="d-flex">
-              {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
-              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-              <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
-              {(listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (
-                <ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />
+            <div className=" justify-content-start">
+              {editId && !showForm && (formData.mode === 'SUBMIT' || listViewData.mode === 'SUBMIT') && (
+                <>
+                  {formData.approveStatus === 'Approved' && (
+                    <Stack direction="row" spacing={2}>
+                      <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
+                      <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
+                    </Stack>
+                  )}
+                  {formData.approveStatus === 'Rejected' && (
+                    <Stack direction="row" spacing={2}>
+                      <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
+                      <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
+                    </Stack>
+                  )}
+                  {/* {formData.mode === 'SUBMIT' && formData.approveStatus === null && ( */}
+                  {listViewData.mode === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                    <div className="d-flex" style={{ marginRight: '30px' }}>
+                      <Button
+                        variant="outlined"
+                        startIcon={<CheckCircleIcon />}
+                        size="small"
+                        style={{
+                          borderColor: '#4CAF50',
+                          color: '#4CAF50',
+                          fontWeight: 'bold',
+                          textTransform: 'none',
+                          padding: '2px 8px',
+                          fontSize: '0.8rem',
+                          marginRight: '10px'
+                        }}
+                        onClick={handleOpenModalApprove}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        startIcon={<CancelIcon />}
+                        size="small"
+                        style={{
+                          borderColor: '#F44336',
+                          color: '#F44336',
+                          fontWeight: 'bold',
+                          textTransform: 'none',
+                          padding: '2px 8px',
+                          fontSize: '0.8rem'
+                        }}
+                        onClick={handleOpenModalReject}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
-            {editId && !showForm && (formData.mode === 'SUBMIT' || listViewData.mode === 'SUBMIT') && (
-              <>
-                {formData.approveStatus === 'Approved' && (
-                  <Stack direction="row" spacing={2}>
-                    <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
-                    <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
-                  </Stack>
-                )}
-                {formData.approveStatus === 'Rejected' && (
-                  <Stack direction="row" spacing={2}>
-                    <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
-                    <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
-                  </Stack>
-                )}
-                {/* {formData.mode === 'SUBMIT' && formData.approveStatus === null && ( */}
-                {listViewData.mode === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
-                  <div className="d-flex" style={{ marginRight: '30px' }}>
-                    <Button
-                      variant="outlined"
-                      startIcon={<CheckCircleIcon />}
-                      size="small"
-                      style={{
-                        borderColor: '#4CAF50',
-                        color: '#4CAF50',
-                        fontWeight: 'bold',
-                        textTransform: 'none',
-                        padding: '2px 8px',
-                        fontSize: '0.8rem',
-                        marginRight: '10px'
-                      }}
-                      onClick={handleOpenModalApprove}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      startIcon={<CancelIcon />}
-                      size="small"
-                      style={{
-                        borderColor: '#F44336',
-                        color: '#F44336',
-                        fontWeight: 'bold',
-                        textTransform: 'none',
-                        padding: '2px 8px',
-                        fontSize: '0.8rem'
-                      }}
-                      onClick={handleOpenModalReject}
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                )}
-              </>
-            )}
+            <div className="d-flex justify-content-end">
+              {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
+              {showForm && (
+                <Button
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  size="small"
+                  sx={{
+                    borderColor: '#1e88e5',
+                    backgroundColor: '#e3f2fd',
+                    color: '#5e35b1',
+                    fontWeight: 'bold',
+                    textTransform: 'none',
+                    px: 2,
+                    py: 0.5,
+                    fontSize: '0.8rem',
+                    borderRadius: '8px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    mr: 1.25,
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      borderColor: '#1565c0',
+                      backgroundColor: '#bbdefb',
+                      color: '#1565c0',
+                    },
+                  }}
+                  onClick={handleView}
+                >
+                  New
+                </Button>
+              )}
+              {!showForm && (<ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />)}
+              {!showForm && (<ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />)}
+              {listViewData.approveStatus === 'Approved' || showForm ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
+              {(listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />)}
+            </div>
           </div>
           {!showForm && (
             <>
@@ -2868,7 +2898,7 @@ const CostInvoice = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.exRate && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2910,7 +2940,7 @@ const CostInvoice = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.fcAmount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2952,7 +2982,7 @@ const CostInvoice = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.lcAmount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2993,7 +3023,7 @@ const CostInvoice = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.billAmt ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.billAmt && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3034,7 +3064,7 @@ const CostInvoice = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.sac ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.sac && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3092,7 +3122,7 @@ const CostInvoice = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.gst ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.gst && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3364,8 +3394,8 @@ const CostInvoice = () => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllCostInvoiceById}
-              // isPdf={true}
-              // GeneratePdf={GeneratePdf}
+            // isPdf={true}
+            // GeneratePdf={GeneratePdf}
             />
           )}
         </div>
@@ -3377,7 +3407,7 @@ const CostInvoice = () => {
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={handleConfirmAction}
         onCancel={handleCloseModal}
-        // onCancel={() => setModalOpen(false)}
+      // onCancel={() => setModalOpen(false)}
       />
     </>
   );

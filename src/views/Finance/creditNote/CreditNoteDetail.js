@@ -873,6 +873,7 @@ const IrnCreditNote = () => {
 
       if (response.status === true) {
         setListViewData(response.paramObjectsMap.irnCreditVO.reverse());
+        setListView(true);
       } else {
         console.error('API Error:', response);
       }
@@ -1435,67 +1436,99 @@ const IrnCreditNote = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <div className="row">
           <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
-            <div className="d-flex">
-              {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
-              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-              {listViewById.approveStatus === 'Approved' ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
-              {(listViewById.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf}/>)}
+            <div className="justify-content-start">
+              {editId && !listView && (formData.status.toUpperCase() === 'TAX' || listViewById.status === 'TAX') && (
+                // {editId && !listView && (
+                <>
+                  {formData.approveStatus === 'Approved' && (
+                    <Stack direction="row" spacing={2}>
+                      <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
+                      <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
+                    </Stack>
+                  )}
+                  {formData.approveStatus === 'Rejected' && (
+                    <Stack direction="row" spacing={2}>
+                      <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
+                      <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
+                    </Stack>
+                  )}
+                  {listViewById.status === 'TAX' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                    <div className="d-flex" style={{ marginRight: '30px' }}>
+                      <Button
+                        variant="outlined"
+                        startIcon={<CheckCircleIcon />}
+                        size="small"
+                        style={{
+                          borderColor: '#4CAF50',
+                          color: '#4CAF50',
+                          fontWeight: 'bold',
+                          textTransform: 'none',
+                          padding: '2px 8px',
+                          fontSize: '0.8rem',
+                          marginRight: '10px'
+                        }}
+                        onClick={handleOpenModalApprove}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        startIcon={<CancelIcon />}
+                        size="small"
+                        style={{
+                          borderColor: '#F44336',
+                          color: '#F44336',
+                          fontWeight: 'bold',
+                          textTransform: 'none',
+                          padding: '2px 8px',
+                          fontSize: '0.8rem'
+                        }}
+                        onClick={handleOpenModalReject}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-            {editId && !listView && (formData.status.toUpperCase() === 'TAX' || listViewById.status === 'TAX') && (
-              // {editId && !listView && (
-              <>
-                {formData.approveStatus === 'Approved' && (
-                  <Stack direction="row" spacing={2}>
-                    <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
-                    <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
-                  </Stack>
-                )}
-                {formData.approveStatus === 'Rejected' && (
-                  <Stack direction="row" spacing={2}>
-                    <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
-                    <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
-                  </Stack>
-                )}
-                {listViewById.status === 'TAX' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
-                  <div className="d-flex" style={{ marginRight: '30px' }}>
-                    <Button
-                      variant="outlined"
-                      startIcon={<CheckCircleIcon />}
-                      size="small"
-                      style={{
-                        borderColor: '#4CAF50',
-                        color: '#4CAF50',
-                        fontWeight: 'bold',
-                        textTransform: 'none',
-                        padding: '2px 8px',
-                        fontSize: '0.8rem',
-                        marginRight: '10px'
-                      }}
-                      onClick={handleOpenModalApprove}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      startIcon={<CancelIcon />}
-                      size="small"
-                      style={{
-                        borderColor: '#F44336',
-                        color: '#F44336',
-                        fontWeight: 'bold',
-                        textTransform: 'none',
-                        padding: '2px 8px',
-                        fontSize: '0.8rem'
-                      }}
-                      onClick={handleOpenModalReject}
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                )}
-              </>
-            )}
+            <div className="d-flex justify-content-start">
+              {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
+              {listView && (
+                <Button
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  size="small"
+                  sx={{
+                    borderColor: '#1e88e5',
+                    backgroundColor: '#e3f2fd',
+                    color: '#5e35b1',
+                    fontWeight: 'bold',
+                    textTransform: 'none',
+                    px: 2,
+                    py: 0.5,
+                    fontSize: '0.8rem',
+                    borderRadius: '8px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    mr: 1.25,
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      borderColor: '#1565c0',
+                      backgroundColor: '#bbdefb',
+                      color: '#1565c0',
+                    },
+                  }}
+                  onClick={handleView}
+                >
+                  Add
+                </Button>
+              )}
+
+              {!listView && (<ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />)}
+              {!listView && (<ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />)}
+              {listViewById.approveStatus === 'Approved' || listView ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
+              {(listViewById.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />)}
+            </div>
           </div>
         </div>
         {listView ? (
@@ -1505,10 +1538,10 @@ const IrnCreditNote = () => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getIrnCreditById}
-              // isPdf={true}
-              // GeneratePdf={GeneratePdf}
+            // isPdf={true}
+            // GeneratePdf={GeneratePdf}
             />
-            
+
           </div>
         ) : (
           <>
@@ -1660,7 +1693,7 @@ const IrnCreditNote = () => {
                     value={formData.vid}
                     onChange={(e) => setFormData({ ...formData, vid: e.target.value })}
                     error={!!fieldErrors.vid}
-                    // helperText={fieldErrors.pincode}
+                  // helperText={fieldErrors.pincode}
                   />
                 </FormControl>
               </div>
@@ -3026,8 +3059,8 @@ const IrnCreditNote = () => {
                               value={formData.totalTaxableAmountLc}
                               onChange={handleInputChange}
                               inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.netLCAmt}
-                              // helperText={fieldErrors.netLCAmt}
+                            // error={!!fieldErrors.netLCAmt}
+                            // helperText={fieldErrors.netLCAmt}
                             />
                           </FormControl>
                         </div>

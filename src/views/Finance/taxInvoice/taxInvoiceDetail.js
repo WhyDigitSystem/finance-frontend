@@ -24,6 +24,7 @@ import ConfirmationModal from 'utils/confirmationPopup';
 import GeneratePdfTemp from 'utils/PdfTempTaxInvoice';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+// import AddIcon from '@mui/icons-material/Add';
 import GstTable from './GstTable';
 
 const TaxInvoiceDetails = () => {
@@ -324,6 +325,7 @@ const TaxInvoiceDetails = () => {
 
       if (result.status === true) {
         setData(result.paramObjectsMap.taxInvoiceVO);
+        setlistView(true);
         console.log('TAX INVOICE:==>', result);
       } else {
         // Handle error
@@ -962,7 +964,7 @@ const TaxInvoiceDetails = () => {
   const GeneratePdf = (row) => {
     console.log('PDF-Data =>', listViewData);
     // setPdfData(listViewData)
-    {confirmData.approveStatus === "Approved" ? setPdfData(confirmData) : setPdfData(listViewData);}
+    { confirmData.approveStatus === "Approved" ? setPdfData(confirmData) : setPdfData(listViewData); }
     setDownloadPdf(true);
   };
 
@@ -1523,7 +1525,7 @@ const TaxInvoiceDetails = () => {
 
   const handleList = () => {
     setlistView(!listView);
-    handleClear();
+    // handleClear();
   };
 
   // const handleSelectChange = (e) => {
@@ -1590,16 +1592,16 @@ const TaxInvoiceDetails = () => {
     const annexureVO = isAnnexureEmpty
       ? null
       : taxInvoiceAnnexure.map((row) => ({
-          ...(editId && { id: row.id }),
-          amount: row.amount,
-          dsec: row.dsec,
-          kitId: row.kitId,
-          qty: row.qty,
-          rate: row.rate,
-          skuType: row.skuType,
-          transDate: row.transDate ? dayjs(row.transDate).format('YYYY-MM-DD') : null,
-          transNo: row.transNo
-        }));
+        ...(editId && { id: row.id }),
+        amount: row.amount,
+        dsec: row.dsec,
+        kitId: row.kitId,
+        qty: row.qty,
+        rate: row.rate,
+        skuType: row.skuType,
+        transDate: row.transDate ? dayjs(row.transDate).format('YYYY-MM-DD') : null,
+        transNo: row.transNo
+      }));
 
     const saveFormData = {
       ...(editId && { id: editId }),
@@ -1846,73 +1848,126 @@ const TaxInvoiceDetails = () => {
       <ToastComponent />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row">
-          <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
-            <div className="d-flex">
-              {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
-              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
-              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-              {listViewData.approveStatus === 'Approved' ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
-              {(listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf}/>)}
+          <div className="d-flex flex-wrap justify-content-between mb-4" >
+            <div className="justify-content-start mb-0">
+              {editId && !listView && (formData.status.toUpperCase() === 'TAX' || listViewData.status.toUpperCase() === 'TAX') && (
+                // {editId && !listView && (
+                <>
+                  {formData.approveStatus === 'Approved' && (
+                    <Stack direction="row" spacing={2}>
+                      <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
+                      <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
+                    </Stack>
+                  )}
+                  {formData.approveStatus === 'Rejected' && (
+                    <Stack direction="row" spacing={2}>
+                      <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
+                      <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
+                    </Stack>
+                  )}
+                  {/* {listViewData.status === 'TAX' && (formData.approveStatus === 'Rejected' || formData.approveStatus === 'Approved') &&( */}
+                  {listViewData.status === 'TAX' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                    <div className="d-flex" style={{ marginRight: '30px' }}>
+                      <Button
+                        variant="outlined"
+                        startIcon={<CheckCircleIcon />}
+                        size="small"
+                        style={{
+                          borderColor: '#4CAF50',
+                          color: '#4CAF50',
+                          fontWeight: 'bold',
+                          textTransform: 'none',
+                          padding: '2px 8px',
+                          fontSize: '0.8rem',
+                          marginRight: '10px'
+                        }}
+                        onClick={handleOpenModalApprove}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        startIcon={<CancelIcon />}
+                        size="small"
+                        style={{
+                          borderColor: '#F44336',
+                          color: '#F44336',
+                          fontWeight: 'bold',
+                          textTransform: 'none',
+                          padding: '2px 8px',
+                          fontSize: '0.8rem'
+                        }}
+                        onClick={handleOpenModalReject}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-            {editId && !listView && (formData.status.toUpperCase() === 'TAX' || listViewData.status.toUpperCase() === 'TAX') && (
-              // {editId && !listView && (
-              <>
-                {formData.approveStatus === 'Approved' && (
-                  <Stack direction="row" spacing={2}>
-                    <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
-                    <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
-                  </Stack>
-                )}
-                {formData.approveStatus === 'Rejected' && (
-                  <Stack direction="row" spacing={2}>
-                    <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
-                    <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
-                  </Stack>
-                )}
-                {/* {listViewData.status === 'TAX' && (formData.approveStatus === 'Rejected' || formData.approveStatus === 'Approved') &&( */}
-                {listViewData.status === 'TAX' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
-                  <div className="d-flex" style={{ marginRight: '30px' }}>
-                    <Button
-                      variant="outlined"
-                      startIcon={<CheckCircleIcon />}
-                      size="small"
-                      style={{
-                        borderColor: '#4CAF50',
-                        color: '#4CAF50',
-                        fontWeight: 'bold',
-                        textTransform: 'none',
-                        padding: '2px 8px',
-                        fontSize: '0.8rem',
-                        marginRight: '10px'
-                      }}
-                      onClick={handleOpenModalApprove}
-                    >
-                      Approve
-                    </Button>
-                    <Button
-                      variant="outlined"
-                      startIcon={<CancelIcon />}
-                      size="small"
-                      style={{
-                        borderColor: '#F44336',
-                        color: '#F44336',
-                        fontWeight: 'bold',
-                        textTransform: 'none',
-                        padding: '2px 8px',
-                        fontSize: '0.8rem'
-                      }}
-                      onClick={handleOpenModalReject}
-                    >
-                      Reject
-                    </Button>
-                  </div>
-                )}
-              </>
-            )}
-          </div>
+            <div className="justify-content-end">
+              {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
+              {/* <ActionButton title="Add" icon={AddIcon} /> */}
+              {listView && (
+                <Button
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  size="small"
+                  sx={{
+                    borderColor: '#1e88e5',
+                    backgroundColor: '#e3f2fd',
+                    color: '#5e35b1',
+                    fontWeight: 'bold',
+                    textTransform: 'none',
+                    px: 2,
+                    py: 0.5,
+                    fontSize: '0.8rem',
+                    borderRadius: '8px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    mr: 1.25,
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      borderColor: '#1565c0',
+                      backgroundColor: '#bbdefb',
+                      color: '#1565c0',
+                    },
+                  }}
+                  onClick={handleList}
+                >
+                  New
+                </Button>
+              )}
+              {!listView && (
+                <ActionButton
+                  title="List View"
+                  icon={FormatListBulletedTwoToneIcon}
+                  onClick={handleList}
+                />
+              )}
+              {!listView && (<ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />)}
+              {listViewData.approveStatus === 'Approved' || listView ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
+              {(listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />)}
+            </div>
 
+          </div>
+          {listView && (
+            <div>
+              {/* <CommonTable data={data} columns={columns} editCallback={editCity} countryVO={countryVO} stateVO={stateVO} /> */}
+
+              <CommonListViewTable
+                data={data && data}
+                columns={columns}
+                blockEdit={true}
+                toEdit={getTaxInvoiceById}
+              // isPdf={true}
+              // GeneratePdf={GeneratePdf}
+              />
+
+            </div>
+          )}
           {!listView && (
-            <div className="d-flex flex-wrap justify-content-start row">
+            <div className="d-flex flex-wrap justify-content-start row mt-0">
               {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
@@ -2078,7 +2133,7 @@ const TaxInvoiceDetails = () => {
                     value={formData.vid}
                     onChange={(e) => setFormData({ ...formData, vid: e.target.value })}
                     error={!!errors.vid}
-                    // helperText={errors.pincode}
+                  // helperText={errors.pincode}
                   />
                 </FormControl>
               </div>
@@ -2138,7 +2193,7 @@ const TaxInvoiceDetails = () => {
                     value={formData.stateNo}
                     onChange={(e) => setFormData({ ...formData, stateNo: e.target.value })}
                     error={!!errors.stateNo}
-                    // helperText={errors.partyCode}
+                  // helperText={errors.partyCode}
                   />
                 </FormControl>
               </div>
@@ -2153,7 +2208,7 @@ const TaxInvoiceDetails = () => {
                     value={formData.recipientGSTIN}
                     onChange={(e) => setFormData({ ...formData, recipientGSTIN: e.target.value })}
                     error={!!errors.recipientGSTIN}
-                    // helperText={errors.partyCode}
+                  // helperText={errors.partyCode}
                   />
                 </FormControl>
               </div>
@@ -2224,7 +2279,7 @@ const TaxInvoiceDetails = () => {
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                     error={!!errors.address}
-                    // helperText={errors.address || `${formData.address.length}/50`}
+                  // helperText={errors.address || `${formData.address.length}/50`}
                   />
                 </FormControl>
               </div>
@@ -2241,7 +2296,7 @@ const TaxInvoiceDetails = () => {
                     value={formData.pinCode}
                     onChange={(e) => setFormData({ ...formData, pinCode: e.target.value })}
                     error={!!errors.pinCode}
-                    // helperText={errors.pincode}
+                  // helperText={errors.pincode}
                   />
                 </FormControl>
               </div>
@@ -2258,7 +2313,7 @@ const TaxInvoiceDetails = () => {
                     value={formData.gstType}
                     // onChange={(e) => setFormData({ ...formData, gstType: e.target.value })}
                     error={!!errors.gstType}
-                    // helperText={errors.pincode}
+                  // helperText={errors.pincode}
                   />
                 </FormControl>
               </div>
@@ -2398,7 +2453,7 @@ const TaxInvoiceDetails = () => {
                     onChange={(e) => setFormData({ ...formData, creditDays: e.target.value })}
                     error={!!errors.creditDays}
                     disabled
-                    // helperText={errors.pincode}
+                  // helperText={errors.pincode}
                   />
                 </FormControl>
               </div>
@@ -2475,7 +2530,7 @@ const TaxInvoiceDetails = () => {
                     onChange={(e) => setFormData({ ...formData, invoiceNo: e.target.value })}
                     error={!!errors.invoiceNo}
                     disabled
-                    // helperText={errors.pincode}
+                  // helperText={errors.pincode}
                   />
                 </FormControl>
               </div>
@@ -2507,7 +2562,7 @@ const TaxInvoiceDetails = () => {
                     value={formData.remarks}
                     onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                     error={!!errors.remarks}
-                    // helperText={errors.remarks || `${formData.remarks.length}/50`}
+                  // helperText={errors.remarks || `${formData.remarks.length}/50`}
                   />
                 </FormControl>
               </div>
@@ -2945,7 +3000,7 @@ const TaxInvoiceDetails = () => {
                                       // }}
                                       onChange={(e) => handleTableInputChange(index, 'qty', e.target.value)}
                                       className={withdrawalsTableErrors[index]?.qty ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.qty && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2988,7 +3043,7 @@ const TaxInvoiceDetails = () => {
                                       // }}
                                       onChange={(e) => handleTableInputChange(index, 'rate', e.target.value)}
                                       className={withdrawalsTableErrors[index]?.rate ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.rate && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3078,7 +3133,7 @@ const TaxInvoiceDetails = () => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.exRate && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3117,7 +3172,7 @@ const TaxInvoiceDetails = () => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.fcAmount && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3159,7 +3214,7 @@ const TaxInvoiceDetails = () => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.lcAmount && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3197,7 +3252,7 @@ const TaxInvoiceDetails = () => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.billAmount ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.billAmount && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3236,7 +3291,7 @@ const TaxInvoiceDetails = () => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.sac ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.sac && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3278,7 +3333,7 @@ const TaxInvoiceDetails = () => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.GSTPercent ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.GSTPercent && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3317,7 +3372,7 @@ const TaxInvoiceDetails = () => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.gst ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.gst && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3414,8 +3469,8 @@ const TaxInvoiceDetails = () => {
                                         }}
                                         format="DD-MM-YYYY"
                                         onChange={(newValue) => {
-                                          setTaxInvoiceAnnexure((prev) => 
-                                            prev.map((r, i) => 
+                                          setTaxInvoiceAnnexure((prev) =>
+                                            prev.map((r, i) =>
                                               i === index ? { ...r, transDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
                                             )
                                           );
@@ -3734,21 +3789,7 @@ const TaxInvoiceDetails = () => {
             </Box>
           </div>
         )}
-        {listView && (
-          <div>
-            {/* <CommonTable data={data} columns={columns} editCallback={editCity} countryVO={countryVO} stateVO={stateVO} /> */}
 
-            <CommonListViewTable
-              data={data && data}
-              columns={columns}
-              blockEdit={true}
-              toEdit={getTaxInvoiceById}
-              // isPdf={true}
-              // GeneratePdf={GeneratePdf}
-            />
-            
-          </div>
-        )}
       </div>
       <ConfirmationModal
         open={modalOpen}
@@ -3756,8 +3797,8 @@ const TaxInvoiceDetails = () => {
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={handleConfirmAction}
         onCancel={handleCloseModal}
-        />
-        {downloadPdf && <GeneratePdfTemp row={pdfData} modalClose={() => setDownloadPdf(false)} />}
+      />
+      {downloadPdf && <GeneratePdfTemp row={pdfData} modalClose={() => setDownloadPdf(false)} />}
     </>
   );
 };

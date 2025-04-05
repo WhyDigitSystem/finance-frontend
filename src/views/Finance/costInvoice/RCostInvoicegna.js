@@ -1060,7 +1060,7 @@ const RCostInvoicegna = () => {
       </div>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
             <div className="d-flex">
               <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
               <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />

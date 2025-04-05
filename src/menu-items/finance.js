@@ -1,9 +1,9 @@
 // assets
-import { IconKey } from '@tabler/icons-react';
+import { IconBriefcase } from '@tabler/icons-react';
 
 // constant
 const icons = {
-  IconKey
+  IconBriefcase
 };
 
 // const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
@@ -37,7 +37,7 @@ const finance = {
       id: 'finance',
       title: 'Business Master',
       type: 'collapse',
-      icon: icons.IconKey,
+      icon: icons.IconBriefcase,
       children: [
         {
           id: 'partyMaster',

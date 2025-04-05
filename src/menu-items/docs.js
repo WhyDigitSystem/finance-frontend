@@ -3,7 +3,7 @@ import {
   IconCashBanknote,
   IconDatabaseStar,
   IconKey,
-  IconWorldPin,
+  IconFiles,
   IconUserPlus,
   IconBuildingFactory2,
   IconIdBadge2,
@@ -12,12 +12,9 @@ import {
 
 // constant
 const icons = {
-  IconKey
+  IconFiles
 };
 
-const icons1 = {
-  IconWorldPin
-};
 
 // ==============================|| DASHBOARD MENU ITEMS ||============================== //
 
@@ -31,7 +28,7 @@ const docs = {
       id: 'ar',
       title: 'Docs',
       type: 'collapse',
-      icon: icons.IconKey,
+      icon: icons.IconFiles,
 
       children: [
         {

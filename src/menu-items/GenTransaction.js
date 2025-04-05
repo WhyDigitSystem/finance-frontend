@@ -1,9 +1,9 @@
 // assets
-import { IconKey } from '@tabler/icons-react';
+import { IconRepeat } from '@tabler/icons-react';
 
 // constant
 const icons = {
-  IconKey
+  IconRepeat
 };
 
 // const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
@@ -128,7 +128,7 @@ const genTransaction = {
       id: 'transaction',
       title: 'Transaction',
       type: 'collapse',
-      icon: icons.IconKey,
+      icon: icons.IconRepeat,
       children: transactionChildren
     }
   ]

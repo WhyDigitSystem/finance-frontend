@@ -208,7 +208,7 @@ const TopCustomersChart = ({ chartData }) => {
       y: {
         beginAtZero: true,
         min: 0,
-        max: 120, 
+        max: 120,
         ticks: {
           stepSize: 10,
           callback: (value) => `${value.toFixed(2)}L`,
@@ -235,10 +235,17 @@ const TopCustomersChart = ({ chartData }) => {
 };
 
 const SalesDistributionChart = ({ loading, error, salesData }) => {
-
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: {
+        top: 30,
+        bottom: 30,
+        left: 10,
+        right: 10,
+      },
+    },
     plugins: {
       legend: {
         position: "bottom",
@@ -258,36 +265,68 @@ const SalesDistributionChart = ({ loading, error, salesData }) => {
           },
         },
         bodyFont: {
-          weight: 'bold',
-          size: 13
-        }
+          weight: "bold",
+          size: 13,
+        },
       },
       datalabels: {
-        color: '#000',
+        anchor: "end",
+        align: "end",
+        offset: 8, // Reduced to bring labels closer to slices
+        color: "#000",
         font: {
-          weight: 'bold',
-          size: 12
+          weight: "bold",
+          size: 12,
         },
-        formatter: (value) => `${value}L`
-      }
+        formatter: (value) => `${value}L`,
+        borderColor: "#000",
+        borderWidth: 1,
+        borderRadius: 4,
+        backgroundColor: "white",
+        padding: 4,
+        clamp: true,
+        clip: false,
+      },
     },
   };
 
   return (
-    <Card sx={{ p: 1, boxShadow: 3, borderRadius: 2, width: "100%", height: "100%" }}>
-      <CardContent sx={{ width: "100%", height: "300px", display: "flex", flexDirection: "column" }}>
-        <Typography variant="h6">
-          Sales Distribution
-        </Typography>
+    <Card
+      sx={{
+        p: 1,
+        boxShadow: 3,
+        borderRadius: 2,
+        width: "100%",
+        height: "100%",
+      }}
+    >
+      <CardContent
+        sx={{
+          width: "100%",
+          height: "350px", // Increased for label space
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Typography variant="h6">Sales Distribution</Typography>
         {loading ? (
           <Typography>Loading...</Typography>
         ) : error ? (
           <>
             <NoDataAvailable />
-            <Typography sx={{ textAlign: 'center' }}>No Data Available</Typography>
+            <Typography sx={{ textAlign: "center" }}>
+              No Data Available
+            </Typography>
           </>
         ) : (
-          <div style={{ position: "relative", width: "100%", height: "100%" }}>
+          <div
+            style={{
+              position: "relative",
+              marginTop: "20px",
+              width: "100%",
+              height: "100%",
+            }}
+          >
             <Pie data={salesData} options={options} plugins={[ChartDataLabels]} />
           </div>
         )}
