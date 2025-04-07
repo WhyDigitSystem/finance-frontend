@@ -895,7 +895,7 @@ const UrCostInvoicegna = () => {
         ...prevData,
         stateCode: selectedStateCode.stateCode,
         state: selectedStateCode.state,
-        supplierGstIn: gstIn,
+        // supplierGstIn: gstIn,
       }));
       getAddressType(formData.supplierCode, selectedStateCode.state)
     } else if (selectedAddressType) {
@@ -1008,7 +1008,7 @@ const UrCostInvoicegna = () => {
       errors.supplierBillNo = 'Supplier Bill No is required';
     }
     if (!formData.supplierPlace) {
-      errors.supplierPlace = 'Supplier GstInCode is required';
+      errors.supplierPlace = 'Supplier Place is required';
     }
     if (!formData.supplierName) {
       errors.supplierName = 'Supplier Name is required';
