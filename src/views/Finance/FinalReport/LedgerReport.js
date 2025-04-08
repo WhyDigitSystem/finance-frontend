@@ -178,16 +178,16 @@ function TaxRegister() {
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
   const reportColumns = [
-    { accessorKey: 'vId', header: 'Invoice No', size: 140 },
-    { accessorKey: 'vDate', header: 'Date', size: 140 },
-    { accessorKey: 'partyName', header: 'Particulars', size: 300 },
-    { accessorKey: 'opbal', header: 'Opening Balance', size: 140 },
+    { accessorKey: 'Vid', header: 'Invoice No', size: 140 },
+    { accessorKey: 'Vdate', header: 'Date', size: 140 },
+    { accessorKey: 'PartyName', header: 'Particulars', size: 300 },
+    { accessorKey: 'OpBal', header: 'Opening Balance', size: 140 },
     { accessorKey: 'ndAmount', header: 'Debit(INR)', size: 140 },
-    { accessorKey: 'ncAmount', header: 'Credit(INR)', size: 140 },
+    { accessorKey: 'NcAmount', header: 'Credit(INR)', size: 140 },
     { accessorKey: 'dbAmount', header: 'Debit', size: 140 },
-    { accessorKey: 'crAmount', header: 'Credit', size: 140 },
-    { accessorKey: 'clBal', header: 'Closing Balance', size: 140 },
-    // { accessorKey: 'currency', header: 'Currency', size: 140 },
+    { accessorKey: 'CrAmount', header: 'Credit', size: 140 },
+    { accessorKey: 'ClBal', header: 'Closing Balance', size: 140 },
+    // { accessorKey: 'Currency', header: 'Currency', size: 140 },
     // { accessorKey: '', header: 'Narration', size: 140 },
   ];
   const handleGo = async () => {
@@ -400,7 +400,7 @@ function TaxRegister() {
           </>
         {listView && (
           <div>
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"Ledger Report"} />
           </div>
         )}
   </div>

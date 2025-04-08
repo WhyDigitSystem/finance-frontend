@@ -9,11 +9,6 @@ import {
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { textAlign } from '@mui/system';
-const csvConfig = mkConfig({
-  fieldSeparator: ',',
-  decimalSeparator: '.',
-  useKeysAsHeaders: true
-});
 
 const formatDate = (value) => {
   return value ? dayjs(value).format('DD-MM-YYYY') : '-';
@@ -34,12 +29,19 @@ const applyDateFormattingToColumns = (columns) => {
   });
 };
 
-const CommonReportTable = ({ columns, data, isListView}) => {
+const CommonReportTable = ({ columns, data, isListView, fileName}) => {
   const handleExportRows = (rows) => {
     const rowData = rows.map((row) => row.original);
     const csv = generateCsv(csvConfig)(rowData);
     download(csvConfig)(csv);
   };
+
+  const csvConfig = mkConfig({
+    fieldSeparator: ',',
+    decimalSeparator: '.',
+    useKeysAsHeaders: true,
+    filename: fileName
+  });
 
   const handleExportData = () => {
     const csv = generateCsv(csvConfig)(data);
@@ -191,7 +193,7 @@ const CommonReportTable = ({ columns, data, isListView}) => {
       muiTableContainerProps={{
         sx: {
           width: "100vw",
-          height: "100vh",
+          // height: "100vh",
           maxWidth: "100%",
           maxHeight: "100%",
           background: "#FFFFFF",

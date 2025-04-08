@@ -337,7 +337,7 @@ function ReceiptReport() {
         </>
         {listView && (
           <div>
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"Receipt Register"} />
           </div>
         )}
       </div>

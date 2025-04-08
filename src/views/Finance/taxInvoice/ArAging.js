@@ -282,7 +282,7 @@ function ArAging() {
         </>
         {listView && (
           <div className="mt-4">
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"AR Aging"} />
           </div>
         )}
       </div>

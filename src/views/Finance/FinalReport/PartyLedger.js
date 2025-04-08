@@ -206,20 +206,20 @@ function PartyLedger() {
     }
   };
   const reportColumns = [
-    { accessorKey: 'vId', header: 'Invoice No', size: 140 },
-    { accessorKey: 'vDate', header: 'Date', size: 140 },
-    { accessorKey: 'opbal', header: 'Opening Balance', size: 140 },
-    // { accessorKey: 'refno', header: 'Reference No', size: 140 },
-    // { accessorKey: 'refdate', header: 'Reference Date', size: 140 },
-    // { accessorKey: 'supplierrefno', header: 'Supp Reference No', size: 140 },
-    // { accessorKey: 'supplierrefdate', header: 'Supp Reference Date', size: 140 },
+    { accessorKey: 'Vid', header: 'Invoice No', size: 140 },
+    { accessorKey: 'Vdate', header: 'Date', size: 140 },
+    { accessorKey: 'OpBal', header: 'Opening Balance', size: 140 },
+    // { accessorKey: 'RefNo', header: 'Reference No', size: 140 },
+    // { accessorKey: 'RefDate', header: 'Reference Date', size: 140 },
+    // { accessorKey: 'SupplierRefNo', header: 'Supp Reference No', size: 140 },
+    // { accessorKey: 'SupplieRefDate', header: 'Supp Reference Date', size: 140 },
     // { accessorKey: 'partyType', header: 'Particulars', size: 140 },
-    // { accessorKey: 'currency', header: 'Currency', size: 140 },
-    { accessorKey: 'dbAmount', header: 'Debit', size: 140 },
-    { accessorKey: 'crAmount', header: 'Credit', size: 140 },
-    // { accessorKey: 'billdbAmount', header: 'Debit', size: 140 },
-    // { accessorKey: 'billcrAmount', header: 'Credit', size: 140 },
-    { accessorKey: 'clBal', header: 'Closing Balance', size: 140 }
+    // { accessorKey: 'Currency', header: 'Currency', size: 140 },
+    { accessorKey: 'DbAmount', header: 'Debit', size: 140 },
+    { accessorKey: 'CrAmount', header: 'Credit', size: 140 },
+    // { accessorKey: 'BillDbAmount', header: 'Debit', size: 140 },
+    // { accessorKey: 'BillCrAmount', header: 'Credit', size: 140 },
+    { accessorKey: 'ClBal', header: 'Closing Balance', size: 140 }
   ];
   const handleGo = async () => {
     const errors = {};
@@ -450,7 +450,7 @@ function PartyLedger() {
         </>
         {listView && (
           <div>
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"Party Ledger"} />
           </div>
         )}
       </div>

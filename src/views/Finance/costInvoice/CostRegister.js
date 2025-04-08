@@ -388,7 +388,7 @@ function CostRegister() {
         </>
         {listView && (
           <div>
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"Cost Register"} />
           </div>
         )}
       </div>

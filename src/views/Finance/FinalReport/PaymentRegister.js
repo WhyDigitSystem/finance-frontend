@@ -345,7 +345,7 @@ function PaymentReport() {
           </>
         {listView && (
           <div>
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} />
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"Payment Register"} />
           </div>
         )}
   </div>

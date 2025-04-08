@@ -62,17 +62,17 @@ const icons = [
 const StatCard = ({ statsPercentageMonthly, statsPercentageYearly, stats, title, monthlyValue, yearlyValue, color, icon, isYearly, setIsYearly, showToggle }) => {
   const theme = useTheme();
 
-  const getPercentageChange = (current, previous) => {
-    if (!previous || previous === 0) return "N/A";
-    const change = ((current - previous) / previous) * 100;
-    return change.toFixed(2); // You can adjust decimal places
-  };
+  // const getPercentageChange = (current, previous) => {
+  //   if (!previous || previous === 0) return "N/A";
+  //   const change = ((current - previous) / previous) * 100;
+  //   return change.toFixed(2); // You can adjust decimal places
+  // };
 
-  const percentageChange = isYearly
-    ? getPercentageChange(yearlyValue, statsPercentageYearly)
-    : getPercentageChange(monthlyValue, statsPercentageMonthly);
+  // const percentageChange = isYearly
+  //   ? getPercentageChange(yearlyValue, statsPercentageYearly)
+  //   : getPercentageChange(monthlyValue, statsPercentageMonthly);
 
-  const isPositive = percentageChange !== "N/A" && parseFloat(percentageChange) >= 0;
+  // const isPositive = percentageChange !== "N/A" && parseFloat(percentageChange) >= 0;
 
 
   return (
@@ -162,12 +162,15 @@ const StatCard = ({ statsPercentageMonthly, statsPercentageYearly, stats, title,
         <Grid container justifyContent="space-between" alignItems="center">
           <Typography variant="h5">{stats}</Typography>
           <Typography variant="h5" sx={{ color: 'balck' }}>
-            {percentageChange !== "N/A" && (
+            {/* {percentageChange !== "N/A" && (
               <>
                 {isPositive ? '+' : ''}
                 {percentageChange}%
               </>
-            )}
+            )} */}
+            {isYearly
+              ? `₹${Math.round(statsPercentageYearly).toLocaleString('en-IN')}`
+              : `₹${Math.round(statsPercentageMonthly).toLocaleString('en-IN')}`}
           </Typography>
         </Grid>
 
@@ -598,16 +601,26 @@ export { GSTRTable, TDSTable };
 
 const DashboardNew = () => {
   const [isYearly, setIsYearly] = useState(false);
+  const [totalOrderMonth, setTotalOrderMonth] = useState(0);
   const [totalOrderYear, setTotalOrderYear] = useState(0);
   const [revenuePrevMonthAmt, setRevenuePrevMonthAmt] = useState(0);
   const [revenuePrevYearAmt, setRevenuePrevYearAmt] = useState(0);
+
+  const [totalCostMonth, setTotalCostMonth] = useState(0);
   const [totalCostYear, setTotalCostYear] = useState(0);
   const [costPrevMonthAmt, setCostPrevMonthAmt] = useState(0);
   const [costPrevYearAmt, setCostPrevYearAmt] = useState(0);
+
+  const [totalReceiptMonth, setTotalReceiptMonth] = useState(0);
   const [totalReceiptYear, setTotalReceiptYear] = useState(0);
   const [receiptPrevMonthAmt, setReceiptPrevMonthAmt] = useState(0);
   const [receiptPrevYearAmt, setReceiptPrevYearAmt] = useState(0);
+
+  const [totalPaymentMonth, setTotalPaymentMonth] = useState(0);
   const [totalPaymentYear, setTotalPaymentYear] = useState(0);
+  const [paymentPrevMonthAmt, setPaymentPrevMonthAmt] = useState(0);
+  const [paymentPrevYearAmt, setPaymentPrevYearAmt] = useState(0);
+
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [chartData, setChartData] = useState(null);
@@ -625,10 +638,18 @@ const DashboardNew = () => {
     try {
       const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `taxInvoice/getDsahboardRevenue?&finYear=${finYear}&orgId=${orgId}${targetMonth === "ALL" ? `&billMonth=YEAR` : `&billMonth=MONTH`}`);
+      const response = await apiCalls('get', `dashboard/getPercentageDiffFromRevenue?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&year=YEAR` : `&month=MONTH`}`);
 
-      const totalOrderYear = Number(response.paramObjectsMap.taxInvoiceVO[0]?.amount || 0);
-      setTotalOrderYear(totalOrderYear);
+      // const totalOrderYear = Number(response.paramObjectsMap.taxInvoiceVO[0]?.amount || 0);
+      // setTotalOrderYear(totalOrderYear);
+      const totalRevenueCurMonth = Number(response.paramObjectsMap.Revenue[0]?.curMonth || 0);
+      const totalRevenueCurYear = Number(response.paramObjectsMap.Revenue[0]?.curYear || 0);
+      const totalRevenuePreMonth = Number(response.paramObjectsMap.Revenue[0]?.preMonth || 0);
+      const totalRevenuePreYear = Number(response.paramObjectsMap.Revenue[0]?.preYear || 0);
+      setTotalOrderMonth(totalRevenueCurMonth);
+      setTotalOrderYear(totalRevenueCurYear);
+      setRevenuePrevMonthAmt(totalRevenuePreMonth);
+      setRevenuePrevYearAmt(totalRevenuePreYear);
     } catch (error) {
       console.error('Error fetching dashboard revenue:', error);
     }
@@ -638,10 +659,18 @@ const DashboardNew = () => {
     try {
       const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `costInvoice/getDsahboardCost?billMonth=${targetMonth}&finYear=${finYear}&orgId=${orgId}`);
+      const response = await apiCalls('get', `dashboard/getPercentageDiffFromCost?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&year=YEAR` : `&month=MONTH`}`);
 
-      const totalCostYear = Number(response.paramObjectsMap.cost[0]?.amount || 0);
-      setTotalCostYear(totalCostYear);
+      // const totalCostYear = Number(response.paramObjectsMap.cost[0]?.amount || 0);
+      // setTotalCostYear(totalCostYear);
+      const totalCostCurMonth = Number(response.paramObjectsMap.cost[0]?.curMonth || 0);
+      const totalCostCurYear = Number(response.paramObjectsMap.cost[0]?.curYear || 0);
+      const totalCostPreMonth = Number(response.paramObjectsMap.cost[0]?.preMonth || 0);
+      const totalCostPreYear = Number(response.paramObjectsMap.cost[0]?.preYear || 0);
+      setTotalCostMonth(totalCostCurMonth);
+      setTotalCostYear(totalCostCurYear);
+      setCostPrevMonthAmt(totalCostPreMonth);
+      setCostPrevYearAmt(totalCostPreYear);
     } catch (error) {
       console.error('Error fetching dashboard cost:', error);
     }
@@ -651,10 +680,18 @@ const DashboardNew = () => {
     try {
       const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `dashboard/getReceiptAmont?orgId=${orgId}${targetMonth === "ALL" ? `&year=${finYear}` : `&month=MONTH&year=${finYear}`}`);
+      const response = await apiCalls('get', `dashboard/getPercentageFromReceipt?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&month=YEAR` : `&month=MONTH`}`);
 
-      const totalReceiptYear = Number(response.paramObjectsMap.receiptAmont[0]?.receiptAmt || 0);
-      setTotalReceiptYear(totalReceiptYear);
+      // const totalReceiptYear = Number(response.paramObjectsMap.receiptAmont[0]?.receiptAmt || 0);
+      // setTotalReceiptYear(totalReceiptYear);
+      const totalReceiptCurMonth = Number(response.paramObjectsMap.receipt[0]?.curMonth || 0);
+      const totalReceiptCurYear = Number(response.paramObjectsMap.receipt[0]?.curYear || 0);
+      const totalReceiptPreMonth = Number(response.paramObjectsMap.receipt[0]?.preMonth || 0);
+      const totalReceiptPreYear = Number(response.paramObjectsMap.receipt[0]?.preYear || 0);
+      setTotalReceiptMonth(totalReceiptCurMonth);
+      setTotalReceiptYear(totalReceiptCurYear);
+      setReceiptPrevMonthAmt(totalReceiptPreMonth);
+      setReceiptPrevYearAmt(totalReceiptPreYear);
     } catch (error) {
       console.error('Error fetching dashboard cost:', error);
     }
@@ -664,69 +701,89 @@ const DashboardNew = () => {
     try {
       const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `dashboard/getPaymentAmont?orgId=${orgId}${targetMonth === "ALL" ? `&year=${finYear}` : `&month=MONTH&year=${finYear}`}`);
+      const response = await apiCalls('get', `dashboard/getPercentageFromPayment?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&month=YEAR` : `&month=MONTH`}`);
 
-      const totalPaymentYear = Number(response.paramObjectsMap.receiptAmont[0]?.paymentAmt || 0);
-      setTotalPaymentYear(totalPaymentYear);
+      // const totalPaymentYear = Number(response.paramObjectsMap.receiptAmont[0]?.paymentAmt || 0);
+      // setTotalPaymentYear(totalPaymentYear);
+      const totalPaymentCurMonth = Number(response.paramObjectsMap.Payment[0]?.curMonth || 0);
+      const totalPaymentCurYear = Number(response.paramObjectsMap.Payment[0]?.curYear || 0);
+      const totalPaymentPreMonth = Number(response.paramObjectsMap.Payment[0]?.preMonth || 0);
+      const totalPaymentPreYear = Number(response.paramObjectsMap.Payment[0]?.preYear || 0);
+      setTotalPaymentMonth(totalPaymentCurMonth);
+      setTotalPaymentYear(totalPaymentCurYear);
+      setPaymentPrevMonthAmt(totalPaymentPreMonth);
+      setPaymentPrevYearAmt(totalPaymentPreYear);
     } catch (error) {
       console.error('Error fetching dashboard cost:', error);
     }
   }, [finYear, orgId, isYearly]);
 
-  const getRevenuePreviousMonth = useCallback(async () => {
-    try {
-      const targetMonth = getTargetMonth(isYearly);
+  // const getRevenuePreviousMonth = useCallback(async () => {
+  //   try {
+  //     const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `dashboard/getPercentageDiffFromRevenue?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&year=YEAR` : `&month=MONTH`}`);
+  //     const response = await apiCalls('get', `dashboard/getPercentageDiffFromRevenue?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&year=YEAR` : `&month=MONTH`}`);
 
-      const totalOrderMonth = Number(response.paramObjectsMap.Revenue[0]?.preMonth || 0);
-      const totalOrderYear = Number(response.paramObjectsMap.Revenue[0]?.preYear || 0);
-      setRevenuePrevMonthAmt(totalOrderMonth);
-      setRevenuePrevYearAmt(totalOrderYear);
-    } catch (error) {
-      console.error('Error fetching dashboard revenue:', error);
-    }
-  }, [finYear, orgId, isYearly]);
+  //     const totalOrderMonth = Number(response.paramObjectsMap.Revenue[0]?.preMonth || 0);
+  //     const totalOrderYear = Number(response.paramObjectsMap.Revenue[0]?.preYear || 0);
+  //     setRevenuePrevMonthAmt(totalOrderMonth);
+  //     setRevenuePrevYearAmt(totalOrderYear);
+  //   } catch (error) {
+  //     console.error('Error fetching dashboard revenue:', error);
+  //   }
+  // }, [finYear, orgId, isYearly]);
 
-  const getCostPreviousMonth = useCallback(async () => {
-    try {
-      const targetMonth = getTargetMonth(isYearly);
+  // const getCostPreviousMonth = useCallback(async () => {
+  //   try {
+  //     const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `dashboard/getPercentageDiffFromCost?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&year=YEAR` : `&month=MONTH`}`);
+  //     const response = await apiCalls('get', `dashboard/getPercentageDiffFromCost?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&year=YEAR` : `&month=MONTH`}`);
 
-      const totalOrderMonth = Number(response.paramObjectsMap.cost[0]?.preMonth || 0);
-      const totalOrderYear = Number(response.paramObjectsMap.cost[0]?.preYear || 0);
-      setCostPrevMonthAmt(totalOrderMonth);
-      setCostPrevYearAmt(totalOrderYear);
-    } catch (error) {
-      console.error('Error fetching dashboard Cost:', error);
-    }
-  }, [finYear, orgId, isYearly]);
+  //     const totalOrderMonth = Number(response.paramObjectsMap.cost[0]?.preMonth || 0);
+  //     const totalOrderYear = Number(response.paramObjectsMap.cost[0]?.preYear || 0);
+  //     setCostPrevMonthAmt(totalOrderMonth);
+  //     setCostPrevYearAmt(totalOrderYear);
+  //   } catch (error) {
+  //     console.error('Error fetching dashboard Cost:', error);
+  //   }
+  // }, [finYear, orgId, isYearly]);
 
-  const getReceiptPreviousMonth = useCallback(async () => {
-    try {
-      const targetMonth = getTargetMonth(isYearly);
+  // const getReceiptPreviousMonth = useCallback(async () => {
+  //   try {
+  //     const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `dashboard/getPercentageFromReceipt?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&month=YEAR` : `&month=MONTH`}`);
+  //     const response = await apiCalls('get', `dashboard/getPercentageFromReceipt?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&month=YEAR` : `&month=MONTH`}`);
 
-      const totalOrderMonth = Number(response.paramObjectsMap.receipt[0]?.preMonth || 0);
-      const totalOrderYear = Number(response.paramObjectsMap.receipt[0]?.preYear || 0);
-      setReceiptPrevMonthAmt(totalOrderMonth);
-      setReceiptPrevYearAmt(totalOrderYear);
-    } catch (error) {
-      console.error('Error fetching dashboard Cost:', error);
-    }
-  }, [finYear, orgId, isYearly]);
+  //     const totalOrderMonth = Number(response.paramObjectsMap.receipt[0]?.preMonth || 0);
+  //     const totalOrderYear = Number(response.paramObjectsMap.receipt[0]?.preYear || 0);
+  //     setReceiptPrevMonthAmt(totalOrderMonth);
+  //     setReceiptPrevYearAmt(totalOrderYear);
+  //   } catch (error) {
+  //     console.error('Error fetching dashboard Cost:', error);
+  //   }
+  // }, [finYear, orgId, isYearly]);
+
+  // const getPaymentPreviousMonth = useCallback(async () => {
+  //   try {
+  //     const targetMonth = getTargetMonth(isYearly);
+
+  //     const response = await apiCalls('get', `dashboard/getPercentageFromPayment?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&month=YEAR` : `&month=MONTH`}`);
+
+  //     const totalOrderMonth = Number(response.paramObjectsMap.Payment[0]?.preMonth || 0);
+  //     const totalOrderYear = Number(response.paramObjectsMap.Payment[0]?.preYear || 0);
+  //     setPaymentPrevMonthAmt(totalOrderMonth);
+  //     setPaymentPrevYearAmt(totalOrderYear);
+  //   } catch (error) {
+  //     console.error('Error fetching dashboard Cost:', error);
+  //   }
+  // }, [finYear, orgId, isYearly]);
 
   useEffect(() => {
     getDashboardRevenue();
     getDashboardCost();
     getDashboardReceipt();
     getDashboardPayment();
-    getRevenuePreviousMonth();
-    getCostPreviousMonth();
-    getReceiptPreviousMonth();
-  }, [getDashboardRevenue, getDashboardCost, getDashboardReceipt, getDashboardPayment, getRevenuePreviousMonth, getCostPreviousMonth, getReceiptPreviousMonth]);
+  }, [getDashboardRevenue, getDashboardCost, getDashboardReceipt, getDashboardPayment]);
 
   useEffect(() => {
     const fetchTopCustomerData = async () => {
@@ -838,10 +895,10 @@ const DashboardNew = () => {
 
   // Update financial data dynamically
   const financialData = [
-    { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: revenuePrevMonthAmt, statsPercentageYearly: revenuePrevYearAmt, title: 'Revenue', monthly: totalOrderYear, yearly: totalOrderYear },
-    { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: costPrevMonthAmt, statsPercentageYearly: costPrevYearAmt, title: 'Cost', monthly: totalCostYear, yearly: totalCostYear },
-    { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: receiptPrevMonthAmt, statsPercentageYearly: receiptPrevYearAmt, title: 'Receipt', monthly: totalReceiptYear, yearly: totalReceiptYear },
-    { stats: !isYearly ? "PM" : "PY", statsPercentage: '0%', title: 'Payment', monthly: totalPaymentYear, yearly: totalPaymentYear }
+    { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: revenuePrevMonthAmt, statsPercentageYearly: revenuePrevYearAmt, title: 'Revenue', monthly: totalOrderMonth, yearly: totalOrderYear },
+    { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: costPrevMonthAmt, statsPercentageYearly: costPrevYearAmt, title: 'Cost', monthly: totalCostMonth, yearly: totalCostYear },
+    { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: receiptPrevMonthAmt, statsPercentageYearly: receiptPrevYearAmt, title: 'Receipt', monthly: totalReceiptMonth, yearly: totalReceiptYear },
+    { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: paymentPrevMonthAmt, statsPercentageYearly: paymentPrevYearAmt, title: 'Payment', monthly: totalPaymentMonth, yearly: totalPaymentYear }
   ];
 
   return (
