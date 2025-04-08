@@ -24,7 +24,6 @@ import ConfirmationModal from 'utils/confirmationPopup';
 import GeneratePdfTemp from 'utils/PdfTempTaxInvoice';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
-// import AddIcon from '@mui/icons-material/Add';
 import GstTable from './GstTable';
 
 const TaxInvoiceDetails = () => {
@@ -45,7 +44,6 @@ const TaxInvoiceDetails = () => {
   const [chargeType, setChargeType] = useState([]);
   const [chargeCodeList, setChargeCodeList] = useState([]);
   const [chargeCodeCache, setChargeCodeCache] = useState(new Map());
-  const [currencyList, setCurrencyList] = useState([]);
   const [partyCurrencyList, setPartyCurrencyList] = useState([]);
   const [jobCardNo, setJobCardNo] = useState([]);
   const [gstTableData, setGstTableData] = useState({});
@@ -247,7 +245,6 @@ const TaxInvoiceDetails = () => {
             ? 'TaxInvoice Approved successfully'
             : 'TaxInvoice Rejected successfully'
         );
-
         const listValueVO = result.paramObjectsMap.taxInvoiceVO;
         setConfirmData(result.paramObjectsMap.taxInvoiceVO);
         getAddessType(listValueVO.placeOfSupply, listValueVO.stateCode, listValueVO.partyId);
@@ -305,6 +302,7 @@ const TaxInvoiceDetails = () => {
         });
         handleCloseModal();
         getAllTaxInvoice();
+        setlistView(!listView);
         console.log('TAX INVOICE:==>', result);
       } else {
         console.error('API Error:', result.data);
@@ -316,7 +314,6 @@ const TaxInvoiceDetails = () => {
 
   const getAllTaxInvoice = async () => {
     try {
-      // const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/transaction/getTaxInvoiceByActive`);
       const result = await apiCalls(
         'get',
         `/taxInvoice/getAllTaxInvoiceByFinYearAndBranchCode?orgId=${orgId}&branchCode=${loginBranchCode}&finYear=${finYear}`
@@ -912,6 +909,9 @@ const TaxInvoiceDetails = () => {
         stateNo: defaultStateCode.stateNo,
         recipientGSTIN: defaultStateCode.recipientGSTIN
       }));
+      if (defaultStateCode.stateCode) {
+        setErrors((prev) => ({ ...prev, stateCode: '' }));
+      }
       getPlaceOfSupply(defaultStateCode.stateCode);
       setStateCode(defaultStateCode.stateCode);
       getGSTType(defaultStateCode.stateCode);
@@ -932,6 +932,9 @@ const TaxInvoiceDetails = () => {
         ...prevData,
         placeOfSupply: defaultPlaceOfSupply.placeOfSupply
       }));
+      if (defaultPlaceOfSupply.placeOfSupply) {
+        setErrors((prev) => ({ ...prev, placeOfSupply: '' }));
+      }
       getAddessType(defaultPlaceOfSupply.placeOfSupply, stateCode);
     }
   }, [placeOfSupply]);
@@ -943,9 +946,6 @@ const TaxInvoiceDetails = () => {
         ...prevData,
         jobNo: defaultJobCardNo.jobCard
       }));
-      // getAddessType(defaultPlaceOfSupply.placeOfSupply);
-      console.log('useEffect jobNo', formData.jobCard);
-      console.log('useEffect jobNo', defaultJobCardNo.jobCard);
     }
   }, [jobCardNo]);
 
@@ -958,6 +958,9 @@ const TaxInvoiceDetails = () => {
         address: defaultAddressType.address,
         pinCode: defaultAddressType.pinCode
       }));
+      if (defaultAddressType.addressType) {
+        setErrors((prev) => ({ ...prev, addressType: '' }));
+      }
     }
   }, [addressType]);
 
@@ -1239,17 +1242,12 @@ const TaxInvoiceDetails = () => {
   };
 
   const handleSelectPartyChange = (e) => {
-    const value = e.target.value; // Get the selected value (employeeCode)
+    const value = e.target.value;  
     console.log('Selected employeeCode value:', value);
-
-    // Log each item in the empList to confirm the field names
     partyNameList.forEach((emp, index) => {
       console.log(`Employee ${index}:`, emp);
     });
-
-    // Find the selected employee from empList based on employeeCode
-    const selectedEmp = partyNameList.find((emp) => emp.partyName === value); // Check if 'empCode' is correct
-
+    const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
     if (selectedEmp) {
       console.log('Selected Employee:', selectedEmp);
       setFormData((prevData) => ({
@@ -1257,6 +1255,10 @@ const TaxInvoiceDetails = () => {
         partyName: selectedEmp.partyName,
         partyCode: selectedEmp.partyCode,
         partyId: selectedEmp.id
+      }));
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        partyName:''
       }));
       getCreditDays(selectedEmp.partyCode);
       getJobCardNo(selectedEmp.partyCode);
@@ -1283,10 +1285,14 @@ const TaxInvoiceDetails = () => {
         stateNo: selectedEmp.stateNo,
         recipientGSTIN: selectedEmp.recipientGSTIN
       }));
-
       getPlaceOfSupply(selectedEmp.stateCode);
       setStateCode(selectedEmp.stateCode);
       getGSTType(selectedEmp.stateCode);
+      if (formData.stateCode || stateName === 1) {
+        setErrors((prevErrors) => ({
+          ...prevErrors,
+          stateCode: ''
+        }))}
     } else {
       console.log('No employee found with the given code:', value); // Log if no employee is found
     }
@@ -1322,16 +1328,14 @@ const TaxInvoiceDetails = () => {
       }));
       getAddessType(selectedEmp.placeOfSupply, stateCode);
     } else {
-      console.log('No employee found with the given code:', value); // Log if no employee is found
+      console.log('No employee found with the given code:', value);
     }
   };
 
   const handleSelectAddressTypeChange = (e) => {
-    const value = e.target.value; // Get the selected value (employeeCode)
+    const value = e.target.value;
     console.log('Selected employeeCode value:', value);
-
-    // Find the selected employee from empList based on employeeCode
-    const selectedEmp = addressType.find((emp) => emp.addressType === value); // Check if 'empCode' is correct
+    const selectedEmp = addressType.find((emp) => emp.addressType === value);
 
     if (selectedEmp) {
       console.log('Selected Employee:', selectedEmp);
@@ -1341,9 +1345,19 @@ const TaxInvoiceDetails = () => {
         address: selectedEmp.address,
         pinCode: selectedEmp.pinCode
       }));
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        addressType:''
+      }));
     } else {
-      console.log('No employee found with the given code:', value); // Log if no employee is found
+      console.log('No employee found with the given code:', value);
     }
+    
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        addressType: formData.addressType ? '' : 'Address Type is required',
+      }));
+    
   };
 
   // const handleChangeField = (e) => {
@@ -1525,9 +1539,8 @@ const TaxInvoiceDetails = () => {
 
   const handleList = () => {
     setlistView(!listView);
-    // handleClear();
+    handleClear();
   };
-
   // const handleSelectChange = (e) => {
   //   const value = e.target.value; // Get the selected value (employeeCode)
   //   console.log('Selected employeeCode value:', value);
@@ -1950,7 +1963,7 @@ const TaxInvoiceDetails = () => {
               )}
               {!listView && (<ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />)}
               {listViewData.approveStatus === 'Approved' || listView ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
-              {(listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />)}
+              {!listView && ((listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />))}
             </div>
 
           </div>
@@ -2087,23 +2100,21 @@ const TaxInvoiceDetails = () => {
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label-party">Party Name</InputLabel>
+                  <InputLabel id="demo-simple-select-label-party" error={!!errors.partyName}>Party Name</InputLabel>
                   <Select
                     labelId="demo-simple-select-label-party"
                     id="demo-simple-select-party"
                     label="Party Name"
                     required
-                    // value={formData.partyName}
                     value={formData.partyName || (partyNameList.length === 1 ? partyNameList[0].partyName : '')}
                     onChange={handleSelectPartyChange}
                     error={!!errors.partyName}
-                    helperText={errors.partyName}
                     disabled={formData.status === 'TAX'}
                   >
                     {partyNameList &&
                       partyNameList.map((par, index) => (
                         <MenuItem key={index} value={par.partyName}>
-                          {par.partyName} {/* Display employee code */}
+                          {par.partyName}
                         </MenuItem>
                       ))}
                   </Select>
@@ -2134,7 +2145,12 @@ const TaxInvoiceDetails = () => {
                     required
                     inputProps={{ maxLength: 30 }}
                     value={formData.vid}
-                    onChange={(e) => setFormData({ ...formData, vid: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, vid: e.target.value });
+                      if (e.target.value) {
+                        setErrors((prev) => ({ ...prev, vid: '' }));
+                      }
+                    }}
                     error={!!errors.vid}
                     helperText={errors.vid}
                   />
@@ -2148,39 +2164,41 @@ const TaxInvoiceDetails = () => {
                       disabled={editId}
                       format="DD-MM-YYYY"
                       slotProps={{
-                        textField: { size: 'small', clearable: true }
+                        textField: { size: 'small', clearable: true, error: errors.vdate, helperText: errors.vdate }
                       }}
                       value={formData.vdate ? dayjs(formData.vdate) : null}
-                      onChange={(newValue) => setFormData({ ...formData, vdate: newValue })}
+                      onChange={(newValue) => {
+                        setFormData({ ...formData, vdate: newValue })
+                        if (newValue) {
+                          setErrors((prev) => ({ ...prev, vdate: '' }));
+                        }
+                      }}
                     />
                   </LocalizationProvider>
-                  {errors.vdate && <FormHelperText style={{ color: 'red' }}>{errors.vdate}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
+                  <InputLabel id="demo-simple-select-label" error={!!errors.stateCode} required>
                     State Code
                   </InputLabel>
                   <Select
                     labelId="addressTypeLabel"
-                    // value={formData.stateCode}
                     value={formData.stateCode || (stateName.length === 1 ? stateName[0].stateCode : '')}
                     onChange={handleSelectStateChange}
                     label="State Code"
                     required
                     error={!!errors.stateCode}
-                    helperText={errors.stateCode}
                     disabled={formData.status === 'TAX'}
                   >
                     {stateName?.length > 0 ? (
                       stateName.map((par, index) => (
                         <MenuItem key={index} value={par.stateCode}>
-                          {par.stateCode} {/* Display stateCode and stateName */}
+                          {par.stateCode}
                         </MenuItem>
                       ))
                     ) : (
-                      <MenuItem disabled>No states available</MenuItem> // Fallback option
+                      <MenuItem disabled>No states available</MenuItem>
                     )}
                   </Select>
                   {errors.stateCode && <FormHelperText style={{ color: 'red' }}>{errors.stateCode}</FormHelperText>}
@@ -2195,8 +2213,6 @@ const TaxInvoiceDetails = () => {
                     inputProps={{ maxLength: 30 }}
                     value={formData.stateNo}
                     onChange={(e) => setFormData({ ...formData, stateNo: e.target.value })}
-                    error={!!errors.stateNo}
-                  // helperText={errors.partyCode}
                   />
                 </FormControl>
               </div>
@@ -2210,32 +2226,28 @@ const TaxInvoiceDetails = () => {
                     inputProps={{ maxLength: 30 }}
                     value={formData.recipientGSTIN}
                     onChange={(e) => setFormData({ ...formData, recipientGSTIN: e.target.value })}
-                    error={!!errors.recipientGSTIN}
-                  // helperText={errors.partyCode}
                   />
                 </FormControl>
               </div>
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
+                  <InputLabel id="demo-simple-select-label" error={!!errors.placeOfSupply} required>
                     Place Of Supply
                   </InputLabel>
                   <Select
                     labelId="addressTypeLabel"
                     disabled={formData.status === 'TAX'}
-                    // value={formData.placeOfSupply}
                     value={formData.placeOfSupply || (placeOfSupply.length === 1 ? placeOfSupply[0].placeOfSupply : '')}
                     onChange={handleSelectPlaceChange}
                     label="Place Of Supply"
                     required
                     error={!!errors.placeOfSupply}
-                    helperText={errors.placeOfSupply}
                   >
                     {placeOfSupply &&
                       placeOfSupply.map((par, index) => (
                         <MenuItem key={index} value={par.placeOfSupply}>
-                          {par.placeOfSupply} {/* Display employee code */}
+                          {par.placeOfSupply}
                         </MenuItem>
                       ))}
                   </Select>
@@ -2245,24 +2257,22 @@ const TaxInvoiceDetails = () => {
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
+                  <InputLabel id="demo-simple-select-label" error={!!errors.addressType} required>
                     Address Type
                   </InputLabel>
                   <Select
                     labelId="addressTypeLabel"
                     disabled={formData.status === 'TAX'}
-                    // value={formData.addressType}
                     value={formData.addressType || (addressType.length === 1 ? addressType[0].addressType : '')}
                     onChange={handleSelectAddressTypeChange}
                     label="Address Type"
                     required
                     error={!!errors.addressType}
-                    helperText={errors.addressType}
                   >
                     {addressType &&
                       addressType.map((par, index) => (
                         <MenuItem key={index} value={par.addressType}>
-                          {par.addressType} {/* Display employee code */}
+                          {par.addressType}
                         </MenuItem>
                       ))}
                   </Select>

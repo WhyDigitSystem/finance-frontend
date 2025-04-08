@@ -675,7 +675,7 @@ const CostInvoice = () => {
     try {
       const result = await apiCalls(
         'put',
-        `/costInvoice/approveCostInvoice?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}`
+        `/costInvoice/approveCostInvoice?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${docId}&id=${formData.id}`
       );
       console.log('API Response:==>', result);
       if (result.status === true) {
@@ -688,6 +688,7 @@ const CostInvoice = () => {
         );
         const listValueVO = result.paramObjectsMap.costInvoiceVO;
         setConfirmData(result.paramObjectsMap.costInvoiceVO);
+        setDocId(listValueVO.docId);
         setFormData({
           accuralid: listValueVO.accuralid,
           actBillCurrAmt: listValueVO.actBillCurrAmt,
@@ -700,7 +701,7 @@ const CostInvoice = () => {
           currency: listValueVO.currency,
           dueDate: listValueVO.dueDate ? dayjs(listValueVO.dueDate) : null,
           docDate: listValueVO.docDate ? dayjs(listValueVO.docDate) : null,
-          docId: listValueVO.docId,
+          // docId: listValueVO.docId,
           exRate: listValueVO.exRate,
           gstInputLcAmt: listValueVO.gstInputLcAmt,
           gstType: listValueVO.gstType,
@@ -804,6 +805,7 @@ const CostInvoice = () => {
         // getTdsDetailsFromPartyMasterSpecialTDS(costVO.supplierCode);
         getStateName(costVO.supplierId);
         getPlaceOfSupply(costVO.supplierGstInCode);
+        setDocId(costVO.docId)
         setFormData({
           accuralid: costVO.accuralid,
           address: costVO.address,
@@ -824,7 +826,7 @@ const CostInvoice = () => {
           customer: costVO.customer,
           dueDate: costVO.dueDate ? dayjs(costVO.dueDate) : null,
           docDate: costVO.docDate ? dayjs(costVO.docDate) : null,
-          docId: costVO.docId,
+          // docId: costVO.docId,
           exRate: costVO.exRate,
           finYear: finYear,
           gstInputLcAmt: costVO.gstInputLcAmt,
