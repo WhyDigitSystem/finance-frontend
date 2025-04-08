@@ -1557,9 +1557,12 @@ const TaxInvoiceDetails = () => {
     if (!formData.placeOfSupply) {
       errors.placeOfSupply = 'Place of Supply is required';
     }
-    // if (!formData.supplierBillDate) {
-    //   errors.supplierBillDate = 'Supplier Bill Date is required';
-    // }
+    if (!formData.vid) {
+      errors.vid = 'V Id is required';
+    }
+    if (!formData.vdate) {
+      errors.vdate = 'V Date is required';
+    }
 
     if (Object.keys(errors).length > 0) {
       setErrors(errors);
@@ -2133,7 +2136,7 @@ const TaxInvoiceDetails = () => {
                     value={formData.vid}
                     onChange={(e) => setFormData({ ...formData, vid: e.target.value })}
                     error={!!errors.vid}
-                  // helperText={errors.pincode}
+                    helperText={errors.vid}
                   />
                 </FormControl>
               </div>

@@ -239,6 +239,7 @@ const CommonReportTable = ({ columns, data, isListView}) => {
                 padding: '0',
                 marginTop: '6px',
                 color: "white",
+                title: "Download",
                 backgroundColor: "#34449b",
                 '&:hover': { backgroundColor: "#2d3e98" } // Optional hover effect
               }}

@@ -9,7 +9,6 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import SearchIcon from '@mui/icons-material/Search';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { FormControl, FormHelperText, Checkbox, FormControlLabel, FormLabel, InputLabel, MenuItem, Select } from '@mui/material';
@@ -42,6 +41,7 @@ const CostInvoice = () => {
   const [editId, setEditId] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [listViewData, setListViewData] = useState([]);
+  const [docId, setDocId] = useState('');
   const [confirmData, setConfirmData] = useState([]);
   const [exRates, setExRates] = useState([]);
   const [partyName, setPartyName] = useState([]);
@@ -87,7 +87,6 @@ const CostInvoice = () => {
     currency: 'INR',
     customer: '',
     docDate: dayjs(),
-    docId: '',
     dueDate: null,
     exRate: 1,
     finYear: '',
@@ -635,11 +634,11 @@ const CostInvoice = () => {
         'get',
         `/costInvoice/getCostInvoiceDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
-      setFormData((prevData) => ({
-        ...prevData,
-        docId: response.paramObjectsMap.taxInvoiceDocId,
-        docDate: dayjs()
-      }));
+      setDocId(response.paramObjectsMap.taxInvoiceDocId);
+      // setDocId((prevData) => ({
+      //   ...prevData,
+      //   docId: response.paramObjectsMap.taxInvoiceDocId
+      // }));
     } catch (error) {
       console.error('Error fetching invoice:', error);
     }
@@ -1829,16 +1828,14 @@ const CostInvoice = () => {
               <div className="row d-flex ml">
                 <div className="col-md-3 mb-3">
                   <TextField
-                    id="outlined-textarea-zip"
-                    // label="Document Id"
                     label="Cost Invoice No"
                     variant="outlined"
                     size="small"
                     fullWidth
                     name="docId"
-                    value={formData.docId}
+                    value={docId}
                     disabled
-                    inputProps={{ maxLength: 10 }}
+                    inputProps={{ maxLength: 15 }}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
