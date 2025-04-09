@@ -302,11 +302,12 @@ const TaxInvoiceDetails = () => {
         });
         handleCloseModal();
         getAllTaxInvoice();
-        setlistView(!listView);
+        // setlistView(!listView);
         console.log('TAX INVOICE:==>', result);
       } else {
         console.error('API Error:', result.data);
       }
+      
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -1446,7 +1447,7 @@ const TaxInvoiceDetails = () => {
           dueDate: listValueVO.dueDate ? dayjs(listValueVO.dueDate) : null,
           gstType: listValueVO.gstType,
           invoiceDate: listValueVO.invoiceDate ? dayjs(listValueVO.invoiceDate) : null,
-          invoiceNo: listValueVO.invoiceNo,
+          invoiceNo: listValueVO.invoiceNo ? listValueVO.invoiceNo : '',
           jobNo: listValueVO.jobOrderNo,
           partyCode: listValueVO.partyCode,
           partyId: listValueVO.partyId,
@@ -1540,6 +1541,7 @@ const TaxInvoiceDetails = () => {
   const handleList = () => {
     setlistView(!listView);
     handleClear();
+    getAllTaxInvoice();
   };
   // const handleSelectChange = (e) => {
   //   const value = e.target.value; // Get the selected value (employeeCode)
