@@ -181,23 +181,23 @@ function TaxRegister() {
     }
   };
   const reportColumns = [
-    { accessorKey: 'jobOrderNo', header: 'Job No', size: 100 },
-    { accessorKey: 'vId', header: '# Invoice', size: 100 },
-    { accessorKey: 'vDate', header: 'Date', size: 100 },
-    { accessorKey: 'billToParty', header: 'Customer', size: 240 },
-    { accessorKey: 'billAmount', header: 'Amount', size: 80,     Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+    { accessorKey: 'JobOrderNo', header: 'Job No', size: 100 },
+    { accessorKey: 'Vid', header: '# Invoice', size: 100 },
+    { accessorKey: 'Vdate', header: 'Date', size: 100 },
+    { accessorKey: 'BillToParty', header: 'Customer', size: 240 },
+    { accessorKey: 'BillAmount', header: 'Amount', size: 80,     Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
       {cell.getValue() !== undefined && cell.getValue() !== null 
         ? Number(cell.getValue()).toLocaleString('en-IN') 
         : '-'}
       </div>)},
-    { accessorKey: 'totalTaxAmountLC', header: 'TAX Amount', size: 80,
+    { accessorKey: 'TotalTaxAmountLC', header: 'TAX Amount', size: 80,
       Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
        {cell.getValue() !== undefined && cell.getValue() !== null 
          ? Number(cell.getValue()).toLocaleString('en-IN') 
          : '-'}
        </div>)}, 
     {
-      accessorKey: 'totalInvAmountLC',
+      accessorKey: 'TotalInvAmountLC',
       header: 'Total Amount',
       size: 80,
       Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
@@ -223,12 +223,12 @@ function TaxRegister() {
         if(formData.fromDate && formData.toDate){
           response = await apiCalls(
             'get',
-            `/taxInvoice/getReportDetailsForSalesRegister?branchCode=${formData.branchCode}&finyear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyCode=${formData.customerCode}&toDate=${formData.toDate}`
+            `/taxInvoice/getReportDetailsForSalesRegister?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyCode=${formData.customerCode}&toDate=${formData.toDate}`
           );
         }else {
           response = await apiCalls(
             'get',
-            `/taxInvoice/getReportDetailsForSalesRegister?branchCode=${formData.branchCode}&finyear=${finYear}&orgId=${orgId}&partyCode=${formData.customerCode}`
+            `/taxInvoice/getReportDetailsForSalesRegister?branchCode=${formData.branchCode}&orgId=${orgId}&partyCode=${formData.customerCode}`
           );
         }
         if (response.status === true) {

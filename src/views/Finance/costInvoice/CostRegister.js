@@ -182,20 +182,20 @@ function CostRegister() {
     }
   };
   const reportColumns = [
-    { accessorKey: 'vid', header: 'Cost Invoice No', size: 80 },
-    { accessorKey: 'vdate', header: 'Date', size: 80 },
-    { accessorKey: 'supplierName', header: 'Party Name', size: 80 },
-    { accessorKey: 'supplierGstin', header: 'Reg In', size: 80 },
-    { accessorKey: 'gstType', header: 'GST Type', size: 80 },
-    { accessorKey: 'gstPercent', header: 'GST Percent', size: 80 },
-    { accessorKey: 'billAmount', header: 'Bill Amount', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'tax', header: 'TAX', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'totalAmount', header: 'Total Amount', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'tds', header: 'TDS', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    { accessorKey: 'partyPayable', header: 'Party Payable', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    // { accessorKey: 'outputIgst', header: 'IGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    // { accessorKey: 'outputCgst', header: 'CGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
-    // { accessorKey: 'outputSgst', header: 'SGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  }
+    { accessorKey: 'Vid', header: 'Cost Invoice No', size: 80 },
+    { accessorKey: 'Vdate', header: 'Date', size: 80 },
+    { accessorKey: 'SupplierName', header: 'Party Name', size: 80 },
+    { accessorKey: 'SupplierGstin', header: 'Reg In', size: 80 },
+    { accessorKey: 'GstType', header: 'GST Type', size: 80 },
+    { accessorKey: 'GstPercent', header: 'GST Percent', size: 80 },
+    { accessorKey: 'BillAmount', header: 'Bill Amount', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'Tax', header: 'TAX', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'TotalAmount', header: 'Total Amount', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'Tds', header: 'TDS', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    { accessorKey: 'PartyPayable', header: 'Party Payable', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    // { accessorKey: 'OutputIgst', header: 'IGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    // { accessorKey: 'OutputCgst', header: 'CGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
+    // { accessorKey: 'OutputSgst', header: 'SGST - O/P', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  }
   ];
   const handleGo = async () => {
     const errors = {};
@@ -221,12 +221,12 @@ function CostRegister() {
         if (formData.fromDate && formData.toDate) {
           response = await apiCalls(
             'get',
-            `/rCostInvoiceGna/getRegisterCostInvoiceReport?branchCode=${formData.branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&toDate=${formData.toDate}&partyCode=${formData.customerCode}`
+            `/rCostInvoiceGna/getRegisterCostInvoiceReport?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&toDate=${formData.toDate}&partyCode=${formData.customerCode}`
           );
         } else {
           response = await apiCalls(
             'get',
-            `/rCostInvoiceGna/getRegisterCostInvoiceReport?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyCode=${formData.customerCode}`
+            `/rCostInvoiceGna/getRegisterCostInvoiceReport?branchCode=${formData.branchCode}&orgId=${orgId}&partyCode=${formData.customerCode}`
           );
         }
         if (response.status === true) {

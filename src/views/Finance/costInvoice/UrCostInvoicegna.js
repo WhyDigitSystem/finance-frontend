@@ -2203,7 +2203,7 @@ const UrCostInvoicegna = () => {
                                 size="small"
                                 name="tdsPer"
                                 type="number"
-                                disabled
+                                disabled={formData.mode === 'SUBMIT'}
                                 inputProps={{ maxLength: 30 }}
                                 value={tdsCostInvoiceDTO[index]?.tdsPer || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
