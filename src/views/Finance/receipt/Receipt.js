@@ -570,6 +570,7 @@ const Receipt = () => {
           showToast('success', editId ? 'Receipt Updated Successfully' : 'Receipt created successfully');
           handleClear();
           getAllReceipt();
+          getReceiptDocId();
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Receipt creation failed');
         }

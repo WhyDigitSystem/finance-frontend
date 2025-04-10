@@ -507,7 +507,7 @@ export const ChargeTypeRequest = () => {
         approved: formData.approved,
         localChargeDescripition: formData.localChargeDescripition,
         serviceAccountCode: formData.serviceAccountCode,
-        sacDescripition: formData.sacDescripition,
+        sacDescripition: formData.chargeDescription,
         salesAccount: formData.salesAccount,
         purchaseAccount: formData.purchaseAccount,
         taxable: formData.taxable,

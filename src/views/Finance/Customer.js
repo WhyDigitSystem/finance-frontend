@@ -10,7 +10,7 @@ import TextField from '@mui/material/TextField';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
 import { useEffect, useState } from 'react';
-// import DatePicker from 'react-datepicker';
+import { getAllActiveCountries } from 'utils/CommonFunctions';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import 'react-tabs/style/react-tabs.css';
@@ -45,6 +45,7 @@ export const Customer = () => {
   const [loading, setLoading] = useState(false);
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const gstRegex = /^[0-9A-Z]{15}$/;
+  const [countryList, setCountryList] = useState([]);
   const [formData, setFormData] = useState({
     active: true,
     customerName: '',
@@ -53,6 +54,7 @@ export const Customer = () => {
     gstIn: '',
     panNo: '',
     creditLimit: '',
+    country: '',
     creditDays: '',
     creditTerms: '',
     gstRegistered: '',
@@ -99,6 +101,7 @@ export const Customer = () => {
     shortName: '',
     gstIn: '',
     panNo: '',
+    country: '',
     creditLimit: '',
     creditDays: '',
     creditTerms: '',
@@ -293,10 +296,21 @@ export const Customer = () => {
       setLoading(false);
     }
   };
-
-  const getAllStates = async () => {
+  useEffect(() => {
+    getAllStates();
+    const fetchData = async () => {
+      try {
+        const countryData = await getAllActiveCountries(orgId);
+        setCountryList(countryData);
+      } catch (error) {
+        console.error('Error fetching country data:', error);
+      }
+    };
+    fetchData();
+  }, []);
+  const getAllStates = async (country) => {
     try {
-      const stateData = await getAllActiveStatesByCountry('INDIA', orgId);
+      const stateData = await getAllActiveStatesByCountry(country, orgId);
       setStateList(stateData || []);
     } catch (error) {
       console.error('Error fetching states:', error);
@@ -485,7 +499,9 @@ export const Customer = () => {
         errorMessage = 'Exceeded Maximum Length (50)';
       }
     }
-
+    if (name === "country") {
+      getAllStates(value); 
+    }
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
       [name]: errorMessage
@@ -1307,6 +1323,25 @@ export const Customer = () => {
                   {fieldErrors.currency && <FormHelperText style={{ color: 'red' }}>Currency is required</FormHelperText>}
                 </FormControl>
               </div>
+              <div className="col-md-3 mb-3">
+  <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.country}>
+    <InputLabel id="country-label">Country</InputLabel>
+    <Select
+      labelId="country-label"
+      label="Country"
+      value={formData.country}
+      onChange={handleInputChange}
+      name="country"
+    >
+      {countryList?.map((row) => (
+        <MenuItem key={row.id} value={row.countryName}>
+          {row.countryName}
+        </MenuItem>
+      ))}
+    </Select>
+    {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
+  </FormControl>
+</div>
             </div>
 
             <div className="row mt-2">

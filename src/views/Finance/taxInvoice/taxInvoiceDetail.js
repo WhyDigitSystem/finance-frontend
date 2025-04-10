@@ -1541,7 +1541,7 @@ const TaxInvoiceDetails = () => {
   const handleList = () => {
     setlistView(!listView);
     handleClear();
-    getAllTaxInvoice();
+    // getAllTaxInvoice();
   };
   // const handleSelectChange = (e) => {
   //   const value = e.target.value; // Get the selected value (employeeCode)
