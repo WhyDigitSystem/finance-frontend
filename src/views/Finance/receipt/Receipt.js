@@ -30,7 +30,7 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { useTheme } from '@mui/material/styles';
-import { Box } from '@mui/system';
+import { Box, padding } from '@mui/system';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonListViewTable from '../../basicMaster/CommonListViewTable';
 
@@ -180,8 +180,8 @@ const Receipt = () => {
     setFormData({
       paymentMode: '',
       transactionMethod: '',
-      docId: '',
-      docDate: '',
+      // docId: '',
+      docDate: dayjs(),
       type: '',
       customerName: '',
       customerCode: '',
@@ -199,8 +199,6 @@ const Receipt = () => {
     setFieldErrors({
       paymentMode: '',
       transactionMethod: '',
-      docId: '',
-      docDate: '',
       type: '',
       customerName: '',
       customerCode: '',
@@ -231,7 +229,7 @@ const Receipt = () => {
         settled: '',
       }
     ]);
-    setInvoiceDetailsError({
+    setInvoiceDetailsError([{
       invNo: '',
       invDate: '',
       // refNo: '',
@@ -244,7 +242,8 @@ const Receipt = () => {
       tds: '',
       outstanding: '',
       settled: '',
-    });
+    }]);
+    getReceiptDocId();
   };
 
   const handleChange = (event, newValue) => {
@@ -367,10 +366,10 @@ const Receipt = () => {
         const receiptVO = response.paramObjectsMap.receiptReceivableVO[0];
 
         setFormData({
-          paymentMode: receiptVO.paymentType,
+          paymentMode: receiptVO.receiptType,
           bankChargeAcc: receiptVO.bankChargeAcc,
           docId: receiptVO.docId,
-          docDate: dayjs(receiptVO.docDate, 'DD-MM-YYYY').format('YYYY-MM-DD'), // Convert to correct format
+          docDate: dayjs(receiptVO.docDate),
           bankCharges: receiptVO.bankCharges,
           inCurrencyBnkChargs: receiptVO.inCurrencyBnkChargs,
           type: receiptVO.type,
@@ -379,7 +378,7 @@ const Receipt = () => {
           chequeBank: receiptVO.chequeBank,
           customerName: receiptVO.customerName,
           customerCode: receiptVO.customerCode,
-          transactionMethod: receiptVO.transactionMethod,
+          transactionMethod: receiptVO.receiptType1,
           bankCashAcc: receiptVO.bankCashAcc,
           chequeUtiNo: receiptVO.chequeUtiNo,
           chequeUtiDate: receiptVO.chequeUtiDate ? dayjs(receiptVO.chequeUtiDate, 'YYYY-MM-DD').format('YYYY-MM-DD') : null,
@@ -915,7 +914,7 @@ const Receipt = () => {
                                 S.No
                               </th>
                               <th className="px-2 py-2 text-white text-center"># Invoice</th>
-                              <th className="px-2 py-2 text-white text-center">Date</th>
+                              <th className="px-2 py-2 text-white text-center" style={{ border: 'none' }}>Date</th>
                               {/* <th className="px-2 py-2 text-white text-center">Ref No</th>
                                <th className="px-2 py-2 text-white text-center">Ref Date</th> 
                                <th className="px-2 py-2 text-white text-center">Curr.</th>
@@ -980,34 +979,50 @@ const Receipt = () => {
                                     </div>
                                   )}
                                 </td>
-
-                                <td className="border px-2 py-2">
-                                  <input
-                                    type="date"
-                                    value={row.invDate}
-                                    onChange={(e) => {
-                                      const date = e.target.value;
-                                      setInVoiceDetailsData((prev) =>
-                                        prev.map((r) =>
-                                          r.id === row.id ? { ...r, invDate: date, endDate: date > r.endDate ? '' : r.endDate } : r
-                                        )
-                                      );
-                                      setInvoiceDetailsError((prev) => {
-                                        const newErrors = [...prev];
-                                        newErrors[index] = {
-                                          ...newErrors[index],
-                                          invDate: !date ? 'Invoice Date is required' : ''
-                                        };
-                                        return newErrors;
-                                      });
-                                    }}
-                                    className={invoiceDetailsError[index]?.invDate ? 'error form-control' : 'form-control'}
-                                  />
-                                  {invoiceDetailsError[index]?.invDate && (
-                                    <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                      {invoiceDetailsError[index].invDate}
-                                    </div>
-                                  )}
+                                <td style={{ border: 'none', padding: '1px 2px', verticalAlign: 'middle' }}>
+                                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                    <DatePicker
+                                      value={
+                                        row.invDate
+                                          ? dayjs(row.invDate, 'YYYY-MM-DD').isValid()
+                                            ? dayjs(row.invDate, 'YYYY-MM-DD')
+                                            : null
+                                          : null
+                                      }
+                                      format="DD-MM-YYYY"
+                                      onChange={(newValue) => {
+                                        setInVoiceDetailsData((prev) =>
+                                          prev.map((r) =>
+                                            r.id === row.id
+                                              ? { ...r, invDate: newValue ? newValue.format('YYYY-MM-DD') : null }
+                                              : r
+                                          )
+                                        );
+                                        setInvoiceDetailsError((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = {
+                                            ...newErrors[index],
+                                            invDate: !newValue ? 'Inv Date is required' : '',
+                                          };
+                                          return newErrors;
+                                        });
+                                      }}
+                                      slotProps={{
+                                        textField: {
+                                          // size: 'small',
+                                          className: invoiceDetailsError[index]?.invDate
+                                            ? 'error form-control'
+                                            : 'form-control',
+                                          style: { width: '200px', padding:'0px' },
+                                        },
+                                      }}
+                                    />
+                                    {invoiceDetailsError[index]?.invDate && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {invoiceDetailsError[index].invDate}
+                                      </div>
+                                    )}
+                                  </LocalizationProvider>
                                 </td>
                                 {/* <td className="border px-2 py-2">
                                   <input
@@ -1049,7 +1064,7 @@ const Receipt = () => {
 
                                       setInVoiceDetailsData((prev) =>
                                         prev.map((r) =>
-                                          r.id === row.id ? { ...r, refDate: date, endDate: date > r.endDate ? '' : r.endDate } : r
+                                          r.id === row.id ? { ...r, refDate: date, refDate: date > r.refDate ? '' : r.refDate } : r
                                         )
                                       );
 
@@ -1218,7 +1233,7 @@ const Receipt = () => {
                                         );
                                         setInvoiceDetailsError((prev) => {
                                           const newErrors = [...prev];
-                                          newErrors[index] = { ...newErrors[index], chargeAmt: !value ? 'Bill Amt is required' : '' };
+                                          newErrors[index] = { ...newErrors[index], chargeAmt: 'Only numbers are allowed' };
                                           return newErrors;
                                         });
                                       } else {
