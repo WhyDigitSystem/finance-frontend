@@ -294,6 +294,13 @@ const GeneralJournal = () => {
     console.log('formattedDate', formattedDate);
     // const formattedDate = dayjs(date).format('YYYY-MM-DD');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+    //sheik edit
+    // if (field === 'refDate') {
+    //   setFieldErrors((prevErrors) => ({
+    //     ...prevErrors,
+    //     refDate: ''
+    //   }));
+    // }
   };
 
   const handleClear = () => {
@@ -414,12 +421,12 @@ const GeneralJournal = () => {
     if (!formData.status) {
       errors.status = 'Status is required';
     }
-    if (!formData.refNo) {
-      errors.refNo = 'Ref No is required';
-    }
-    if (!formData.refDate) {
-      errors.refDate = 'Ref Date is required';
-    }
+    // if (!formData.refNo) {
+    //   errors.refNo = 'Ref No is required';
+    // }
+    // if (!formData.refDate) {
+    //   errors.refDate = 'Ref Date is required';
+    // }
     if (!formData.voucherSubType) {
       errors.voucherSubType = 'Voucher Sub Type is required';
     }
@@ -623,11 +630,12 @@ const GeneralJournal = () => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="outlined-textarea-zip"
-                    label={
-                      <span>
-                        Reference No <span className="asterisk">*</span>
-                      </span>
-                    }
+                    // label={
+                    //   <span>
+                    //     Reference No <span className="asterisk">*</span>
+                    //   </span>
+                    // }/
+                    label="Reference No" //sheik edit
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -635,7 +643,10 @@ const GeneralJournal = () => {
                     disabled={isDisabled}
                     value={formData.refNo}
                     onChange={handleInputChange}
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.refNo ? 'Ref No is required' : ''}</span>}
+                    // required
+                    // helperText={<span style={{ color: 'red' }}>{fieldErrors.refNo ? 'Ref No is required' : ''}</span>}
+                    // error={!!fieldErrors.refNo} //sheik edit
+                    // helperText={fieldErrors.refNo} //sheik edit
                     inputProps={{ maxLength: 40 }}
                   />
                 </div>
@@ -653,7 +664,8 @@ const GeneralJournal = () => {
                         format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
-                    {fieldErrors.refDate && <p className="dateErrMsg">Ref Date is required</p>}
+
+                    {/* {fieldErrors.refDate && <p className="dateErrMsg">Ref Date is required</p>} */}
                   </FormControl>
                 </div>
                 {/* <div className="col-md-3 mb-3">
