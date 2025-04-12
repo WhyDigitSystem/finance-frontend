@@ -178,8 +178,8 @@ const Receipt = () => {
 
   const handleClear = () => {
     setFormData({
-      paymentMode: '',
-      transactionMethod: '',
+      paymentMode: 'Bank Receipt',
+      transactionMethod: 'NEFT',
       // docId: '',
       docDate: dayjs(),
       type: '',
@@ -341,7 +341,7 @@ const Receipt = () => {
 
   const getAllReceipt = async () => {
     try {
-      const response = await apiCalls('get', `arreceivable/getAllReceiptByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `arreceivable/getAllReceiptByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
       console.log('API Response:', response);
 
       if (response.status === true) {
@@ -629,10 +629,12 @@ const Receipt = () => {
       totalAmount += parseFloat((row.amount) || 0);
     });
     const totalSettled = inVoiceDetailsData.reduce((acc, row) => acc + parseFloat(row.settled || 0), 0);
+    const totalAmt = inVoiceDetailsData.reduce((acc, row) => acc + parseFloat(row.chargeAmt || 0), 0);
     setFormData((prev) => ({
       ...prev,
-      netAmount: totalSettled,
-      onAccount: formData.receiptAmt === 0 ? formData.receiptAmt : (formData.receiptAmt - totalSettled).toFixed(2),
+      // netAmount: totalSettled,
+      netAmount: totalAmt,
+      onAccount: formData.receiptAmt === 0 ? 0 : (totalAmt - formData.receiptAmt).toFixed(2),
     }));
     setInVoiceDetailsData((prev) =>
       prev.map((r) => {
@@ -979,8 +981,8 @@ const Receipt = () => {
                                     </div>
                                   )}
                                 </td>
-                                <td style={{ border: 'none', padding: '1px 2px', verticalAlign: 'middle' }}>
-                                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                                <td style={{ border: 'none', padding: '1px 2px' }}>
+                                  <LocalizationProvider dateAdapter={AdapterDayjs} >
                                     <DatePicker
                                       value={
                                         row.invDate
@@ -1009,13 +1011,32 @@ const Receipt = () => {
                                       }}
                                       slotProps={{
                                         textField: {
-                                          // size: 'small',
-                                          className: invoiceDetailsError[index]?.invDate
-                                            ? 'error form-control'
-                                            : 'form-control',
-                                          style: { width: '200px', padding:'0px' },
+                                          InputProps: {
+                                            sx: {
+                                              '& input': {
+                                                padding: '9px 8px',
+                                                fontSize: '14px',
+                                              },
+                                            },
+                                          },
+                                          sx: {
+                                            width: '200px',
+                                            padding: '8px',
+                                          },
                                         },
-                                      }}
+                                      }}                                      
+                                      // slotProps={{
+                                      //   textField: {
+                                      //     className: invoiceDetailsError[index]?.invDate
+                                      //       ? 'error form-control'
+                                      //       : 'form-control',
+                                      //     style: {
+                                      //       width: '200px',
+                                      //       border: 'none',
+                                      //       padding: '0px', // reduce padding for compact height
+                                      //     },
+                                      //   },
+                                      // }}                                      
                                     />
                                     {invoiceDetailsError[index]?.invDate && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
