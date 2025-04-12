@@ -15,7 +15,7 @@ const getMenuItems = () => {
 
   // Define default menu items
   const defaultMenuItems = {
-    items: [dashboard, companySetup, admin, basicMaster, finance, genTransaction, ar, ap, finalReport, docs]
+    items: [dashboard, companySetup, admin, basicMaster, genTransaction, ar, ap, finalReport, docs]
   };
 
   // Define menu items based on localStorage value
@@ -26,7 +26,7 @@ const getMenuItems = () => {
       };
     case 'admin': // Correctly match the value
       return {
-        items: [dashboard, companySetup, admin, basicMaster, finance, genTransaction, ar, ap, finalReport, docs]
+        items: [dashboard, companySetup, admin, basicMaster, genTransaction, ar, ap, finalReport, docs]
       };
     case 'SADMIN':
       return {

@@ -34,7 +34,7 @@ const ar = {
   children: [
     {
       id: 'ar',
-      title: 'Account Receivable',
+      title: 'Sales',
       type: 'collapse',
       icon: icons.IconFileDollar,
 

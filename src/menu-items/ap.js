@@ -38,7 +38,7 @@ const ap = {
   children: [
     {
       id: 'ap',
-      title: 'Accounts Payable',
+      title: 'Purchase',
       type: 'collapse',
       icon: icons.IconFileInvoice,
 
