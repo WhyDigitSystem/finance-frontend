@@ -266,7 +266,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                   )}
                   {companyDetails.gst && (
                     <div className="d-flex flex-row" style={{ fontSize: '13px' }}>
-                      GST IN: {companyDetails.gst}
+                      REG IN: {companyDetails.gst}
                     </div>
                   )}
                   <div style={{ width: 198 }}>
@@ -285,7 +285,6 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             <div style={{ marginRight: '100px' }}>
               <strong style={{ fontSize: '20px' }}>TAX INVOICE</strong>
             </div>
-            {/* <div>{localStorage.getItem('branch')}</div> */}
             <div>
               <div className="mb-2">
                 Invoice <strong className="">: {row.vid}</strong>
@@ -322,7 +321,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             </div>
             <div>
               <div>
-                Due date
+                Due Date
                 <strong style={{ textAlign: 'right' }}> : {row.dueDate ? dayjs(row.dueDate).format('DD-MM-YYYY') : 'N/A'}</strong>
               </div>
             </div>

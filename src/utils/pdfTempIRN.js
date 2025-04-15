@@ -112,6 +112,7 @@ const GeneratePdfTempIRN = ({ row, callBackFunction, modalClose }) => {
     if (row) {
       handleOpen();
       getBankDetailsByOrgId();
+      getCompanyDetails();
     }
     console.log('RowData =>', row);
 
@@ -125,29 +126,29 @@ const GeneratePdfTempIRN = ({ row, callBackFunction, modalClose }) => {
     const formattedTime = now.toLocaleTimeString('en-GB'); // Format time as HH:MM:SS
     setCurrentDateTime(`${formattedDate} ${formattedTime}`);
   }, [row, callBackFunction]);
-    const getBankDetailsByOrgId = async () => {
-      try {
-        const response = await apiCalls('get', `/commonmaster/getBankDetailsByOrgId?orgId=${orgId}`);
-        setBankDetails(response.paramObjectsMap.bankDetailsVO[0]);
-        console.log('setBankDetails =>', response.paramObjectsMap.bankDetailsVO);
-      } catch (error) {
-        console.error('Error fetching invoice:', error);
+  const getBankDetailsByOrgId = async () => {
+    try {
+      const response = await apiCalls('get', `/commonmaster/getBankDetailsByOrgId?orgId=${orgId}`);
+      setBankDetails(response.paramObjectsMap.bankDetailsVO[0]);
+      console.log('setBankDetails =>', response.paramObjectsMap.bankDetailsVO);
+    } catch (error) {
+      console.error('Error fetching invoice:', error);
+    }
+  };
+  const getCompanyDetails = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+
+      if (response.status === true) {
+        setCompanyDetails(response.paramObjectsMap.companyVO[0]);
+        console.log('getCompanyDetails:', response.paramObjectsMap.companyVO[0]);
+      } else {
+        console.error('API Error:', response);
       }
-    };
-    const getCompanyDetails = async () => {
-      try {
-        const response = await apiCalls('get', `commonmaster/company/${orgId}`);
-  
-        if (response.status === true) {
-          setCompanyDetails(response.paramObjectsMap.companyVO[0]);
-          console.log('getCompanyDetails:', response.paramObjectsMap.companyVO[0]);
-        } else {
-          console.error('API Error:', response);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   return (
     <Dialog
@@ -195,25 +196,42 @@ const GeneratePdfTempIRN = ({ row, callBackFunction, modalClose }) => {
                 />
                 <div className="ms-2">
                   <strong>{localStorage.getItem('companyName')}</strong>
-                  <div style={{ width: 198 }}>
-                    <span style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '11px', lineHeight: '0.1' }}>
-                      {companyDetails.address}
-                    </span>
-                  </div>
+                  {companyDetails.cin && (
+                    <div className="d-flex flex-row" style={{ fontSize: '13px' }}>
+                      CIN: {companyDetails.cin}
+                    </div>
+                  )}
                   {companyDetails.gst && (
-                    <div className="d-flex flex-row mb-1" style={{ fontSize: '13px' }}>
-                      Reg IN: {companyDetails.gst}
+                    <div className="d-flex flex-row " style={{ fontSize: '13px' }}>
+                      REG IN: {companyDetails.gst}
+                    </div>
+                  )}
+                  <div style={{ width: 198 }}>
+                    <p style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '10px', lineHeight: '1.6', marginBottom: 0 }}>
+                      {companyDetails.address}
+                    </p>
+                  </div>
+                  {companyDetails.city && (
+                    <div className="d-flex flex-row" style={{ fontSize: '13px' }}>
+                      {companyDetails.city} - {companyDetails.zip}
                     </div>
                   )}
                 </div>
               </div>
             )}
-            <div>
-              <strong>Credit Note</strong>
+            <div style={{ marginRight: '100px' }}>
+              <strong style={{ fontSize: '20px' }}>CREDIT NOTE</strong>
             </div>
-            <div>{localStorage.getItem('branch')}</div>
-          </div>
+            <div>
+              <div className="mb-2">
+                Invoice : <strong>{row.vid}</strong>
+              </div>
 
+              <div>
+                Date : <strong>{row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}</strong>
+              </div>
+            </div>
+          </div>
           {/* <!-- Details Section --> */}
           <div
             style={{
@@ -225,26 +243,33 @@ const GeneratePdfTempIRN = ({ row, callBackFunction, modalClose }) => {
             }}
           >
             <div>
+              <div>Bill To</div>
+
               <div>
-                <strong>Invoice No:</strong>
-                {row.vid}
+                <strong>{row.partyName}</strong>
               </div>
-              <div>
-                <strong>Invoice Date: </strong>
-                {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}
-              </div>
-            </div>
-            <div>
-              <div>
-                Due date
-                <strong style={{ textAlign: 'right' }}> : {row.dueDate ? dayjs(row.dueDate).format('DD-MM-YYYY') : 'N/A'}</strong>
-              </div>
+
+              <div>REG IN: {row.recipientGSTIN}</div>
               <div>
                 Place Of Supply
                 <strong> : {row.stateNo}</strong>
               </div>
+
+              <div style={{ width: 300, marginBottom: 4 }}>
+                <p style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '12px', lineHeight: '1.6', marginBottom: 0 }}>
+                  {row.address}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <div>
+                Due Date
+                <strong style={{ textAlign: 'right' }}> : {row.dueDate ? dayjs(row.dueDate).format('DD-MM-YYYY') : 'N/A'}</strong>
+              </div>
             </div>
           </div>
+
           <div
             style={{
               marginBottom: '20px',
@@ -255,16 +280,9 @@ const GeneratePdfTempIRN = ({ row, callBackFunction, modalClose }) => {
             }}
           >
             <div>
-              <div>Bill To</div>
-              <div>
-                <strong>{row.partyName}</strong>
-              </div>
-              <div style={{ width: 300, marginBottom: 4 }}>
+              {/* <div style={{ width: 300, marginBottom: 4 }}>
                 <span style={{ textWrap: 'auto', textOverflow: 'ellipsis' }}>{row.address}</span>
-              </div>
-              <div>
-                <strong className="mb-2">Reg IN:</strong> {row.recipientGSTIN}
-              </div>
+              </div> */}
             </div>
           </div>
 
@@ -287,9 +305,6 @@ const GeneratePdfTempIRN = ({ row, callBackFunction, modalClose }) => {
               <tr style={{ backgroundColor: '#673ab7', color: '#fff' }}>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>HSN/SAC</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Description</th>
-                {/* <th style={{ border: '1px solid #000000', padding: '10px' }}>Cur</th>
-                <th style={{ border: '1px solid #000000', padding: '10px' }}>Ex.Rt</th> */}
-                {/* <th style={{ border: '1px solid #000000', padding: '10px' }}>Apply On</th> */}
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Qty</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>Rate</th>
                 <th style={{ border: '1px solid #000000', padding: '10px' }}>FC Amount</th>
@@ -353,11 +368,7 @@ const GeneratePdfTempIRN = ({ row, callBackFunction, modalClose }) => {
               </div>
             </div>
             <div className="d-flex flex-column">
-              <div
-              // style={{
-              //   fontStyle: 'italic'
-              // }}
-              >
+              <div>
                 Sub Total:{' '}
                 <span
                   style={{
@@ -371,11 +382,7 @@ const GeneratePdfTempIRN = ({ row, callBackFunction, modalClose }) => {
                   {parseFloat(row.totalChargeAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
               </div>
-              <div
-              // style={{
-              //   fontStyle: 'italic'
-              // }}
-              >
+              <div>
                 {row.gstType === 'INTER' ? 'Total  IGST:' : 'Total CGST:'}
                 {''}
                 <span
@@ -393,51 +400,46 @@ const GeneratePdfTempIRN = ({ row, callBackFunction, modalClose }) => {
             </div>
           </div>
           {row.remarks ? (
-          <div
-            style={{
-              marginBottom: '10px',
-              display: 'flex',
-              justifyContent: 'space-between',
-              fontSize: '14px',
-              color: '#555'
-            }}
-          >
-            <div>
-              <strong>Remarks :</strong>
-            </div>
-          </div>
-                    ) : (
-                      ''
-                    )}
             <div
               style={{
-                textAlign: 'right',
-                fontWeight: 'bold',
+                marginBottom: '10px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                fontSize: '14px',
+                color: '#555'
+              }}
+            >
+              <div>
+                <strong>Remarks :</strong>
+              </div>
+            </div>
+          ) : (
+            ''
+          )}
+          <div
+            style={{
+              textAlign: 'right',
+              fontWeight: 'bold',
+              fontSize: '14px',
+              color: '#333'
+            }}
+          >
+            Total:{' '}
+            <span
+              style={{
                 fontSize: '14px',
                 color: '#333'
               }}
             >
-              Total:{' '}
-              <span
-                style={{
-                  // fontWeight: 'normal',
-                  fontSize: '14px',
-                  color: '#333'
-                }}
-              >
-                {parseFloat(row.totalInvAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-            </div>
-            <div style={{ fontSize: '12px' }}>
+              {parseFloat(row.totalInvAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+            </span>
+          </div>
+          <div style={{ fontSize: '12px' }}>
             <strong>Terms & Conditions :</strong>
             <ol style={{ lineHeight: '1.6' }}>
-              <li>
-                The payment should be made by way of Account Payee Cheque / Demand Draft / NEFT / RTGS in the name of "
-                {localStorage.getItem('companyName')}".
-              </li>
-              <li>Any Discrepancy in the invoice shall be informed within 7 days of the invoice submission.</li>
-              <li>Interest at 2% p.m. or part thereof will be charged if the bill is not paid on the due date.</li>
-              <li>Any dispute is subject to Bangalore Jurisdiction</li>
+              {companyDetails.termsAndConditions?.split('\n').map((term, index) => (
+                <li key={index}>{term}</li>
+              ))}
             </ol>
           </div>
 
@@ -505,10 +507,10 @@ const GeneratePdfTempIRN = ({ row, callBackFunction, modalClose }) => {
             <div className="d-flex justify-content-center">
               <div className="d-flex justify-content-between mb-3">
                 <div className="me-3">
-                  <strong>Invoice No : {row.vid}</strong>
+                  <strong>Invoice: {row.vid}</strong>
                 </div>
                 <div>
-                  <strong>Invoice Date : {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}</strong>
+                  <strong>Date: {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}</strong>
                 </div>
               </div>
             </div>

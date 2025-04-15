@@ -38,7 +38,7 @@ const ap = {
   children: [
     {
       id: 'ap',
-      title: 'Accounts Payable',
+      title: 'Purchase',
       type: 'collapse',
       icon: icons.IconFileInvoice,
 
@@ -101,13 +101,14 @@ const ap = {
           id: 'paymentRegister',
           title: 'AP Outstanding',
           type: 'item',
-          url: '/finance/paymentRegister/PaymentRegister'
+          url: '/Finance/paymentRegister/PaymentRegister'
         },
+
         {
-          id: 'paymentRegister',
-          title: 'AP Aging',
+          id: 'apAging',
+          title: 'AP Ageing',
           type: 'item',
-          url: '/finance/paymentRegister/APaging'
+          url: '/Finance/paymentRegister/APaging'
         }
       ]
       // .filter((item) => allowedScreenIds.includes(item.id))

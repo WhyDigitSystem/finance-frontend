@@ -577,7 +577,7 @@ const AdjustmentJournal = () => {
                     <InputLabel id="Currency">
                       {
                         <span>
-                          Currency <span className="asterisk">*</span>
+                          Currency
                         </span>
                       }
                     </InputLabel>

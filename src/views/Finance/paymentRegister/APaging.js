@@ -7,8 +7,8 @@ import ActionButton from 'utils/ActionButton';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
 import dayjs from 'dayjs';
-
-export const PaymentRegister = () => {
+// check box
+const APaging = () => {
   const [selectedSections, setSelectedSections] = useState({
     partyName: false,
     date: false,
@@ -53,6 +53,17 @@ export const PaymentRegister = () => {
     setFormData({ partyName: 'All', date: null, division: 'All', option: 'All', branchName: 'All' });
     setSelectedSections({ partyName: false, date: false, division: false, option: false, branchName: false });
   };
+
+  // List View Headers:
+  const reportColumns = [
+    { accessorKey: 'partyName', header: 'Party Name', size: 110 },
+    { accessorKey: 'docdate', header: 'Date', size: 90 },
+    { accessorKey: 'division', header: 'Division', size: 120 },
+    { accessorKey: 'option', header: 'Option', size: 110 },
+    { accessorKey: 'branchName', header: 'Branch Name', size: 110 }
+  ];
+
+  const [listView, setListView] = useState(false);
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -200,4 +211,4 @@ export const PaymentRegister = () => {
   );
 };
 
-export default PaymentRegister;
+export default APaging;
