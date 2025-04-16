@@ -597,7 +597,7 @@ const StackedBarChart = () => {
   );
 };
 
-export { GSTRTable, TDSTable };
+// export { GSTRTable, TDSTable };
 
 const DashboardNew = () => {
   const [isYearly, setIsYearly] = useState(false);
@@ -926,12 +926,12 @@ const DashboardNew = () => {
       <Grid item xs={12} md={6}>
         <SalesDistributionChart salesData={salesData} loading={loading} error={error} />
       </Grid>
-      <Grid item xs={12} md={6}>
+      {/* <Grid item xs={12} md={6}>
         <GSTRTable />
       </Grid>
       <Grid item xs={12} md={6}>
         <TDSTable tdsData={tdsData} />
-      </Grid>
+      </Grid> */}
       <Grid item xs={12} md={6}>
         <LineChart />
       </Grid>

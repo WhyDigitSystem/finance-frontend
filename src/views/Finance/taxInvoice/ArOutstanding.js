@@ -154,7 +154,7 @@ function ArOutstanding() {
   };
   const reportColumns = [
     { accessorKey: 'subledgercode', header: 'Customer Code', size: 140 },
-    { accessorKey: 'subledgername', header: 'Customer', size: 140 },
+    { accessorKey: 'name', header: 'Customer', size: 140 },
     { accessorKey: 'outstanding', header: 'Outstanding', size: 140 },
     { accessorKey: 'unadjusted', header: 'Unadjusted', size: 140 },
     { accessorKey: 'amount', header: 'Total Due', size: 140 },
@@ -352,7 +352,7 @@ function ArOutstanding() {
           </>
         {listView && (
           <div className="mt-4">
-            <CommonReportTable data={rowData} columns={reportColumns} fileName={"AR Outstanding"}/>
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"AR Outstanding"}/>
           </div>
         )}
   </div>

@@ -63,7 +63,7 @@ const basicMaster = {
   children: [
     {
       id: 'basicMaster',
-      title: 'Master',
+      title: 'Admin',
       type: 'collapse',
       icon: icons7.IconLayoutDashboard,
       children: [
@@ -72,15 +72,7 @@ const basicMaster = {
           title: 'Basic Master',
           type: 'collapse',
           icon: icons2.IconDatabaseStar,
-
           children: [
-            // {
-            //   id: 'branch',
-            //   title: 'Branch',
-            //   type: 'item',
-            //   url: '/company/branch'
-            // },
-
             {
               id: 'country',
               title: 'Country',
@@ -178,6 +170,12 @@ const basicMaster = {
               url: '/finance/vendor'
             },
             {
+              id: 'listOfValues',
+              title: 'List Of Values',
+              type: 'item',
+              url: '/finance/listOfValues/listOfValues'
+            },
+            {
               id: 'group',
               title: 'COA',
               type: 'item',
@@ -190,22 +188,10 @@ const basicMaster = {
               url: '/finance/tdsMaster/TdsMaster'
             },
             {
-              id: 'taxMaster',
-              title: 'Tax',
-              type: 'item',
-              url: '/finance/taxMaster'
-            },
-            {
               id: 'hsnSacCode',
               title: 'HSN SAC',
               type: 'item',
               url: '/finance/HsnSacCode'
-            },
-            {
-              id: 'productService',
-              title: 'Product Service',
-              type: 'item',
-              url: '/finance/ProductService'
             },
             {
               id: 'chargeTypeRequest',
@@ -214,17 +200,24 @@ const basicMaster = {
               url: '/finance/ChargeTypeRequest'
             },
             {
+              id: 'taxMaster',
+              title: 'Tax',
+              type: 'item',
+              url: '/finance/taxMaster'
+            },
+            {
+              id: 'productService',
+              title: 'Product Service',
+              type: 'item',
+              url: '/finance/ProductService'
+            },
+            {
               id: 'costCenter',
               title: 'Cost Center Values',
               type: 'item',
               url: '/finance/costcenter/CostCentre'
             },
-            {
-              id: 'listOfValues',
-              title: 'List Of Values',
-              type: 'item',
-              url: '/finance/listOfValues/listOfValues'
-            },
+
             {
               id: 'createPartyMaster',
               title: 'Create Party',

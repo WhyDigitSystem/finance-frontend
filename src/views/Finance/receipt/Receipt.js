@@ -5,35 +5,38 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox';
+import { Button, Typography, TextField } from '@mui/material';
+import Paper from '@mui/material/Paper';
+import Draggable from 'react-draggable';
 import { useEffect, useRef, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
-
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import 'react-tabs/style/react-tabs.css';
-
-// import CommonListViewTable from '../basicMaster/CommonListViewTable';
-
-// import { AiOutlineSearch, AiOutlineWallet } from "react-icons/ai";
-// import { BsListTask } from "react-icons/bs";
-
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import { useTheme } from '@mui/material/styles';
 import { Box, padding } from '@mui/system';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonListViewTable from '../../basicMaster/CommonListViewTable';
-
+function PaperComponent(props) {
+  return (
+    <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
+      <Paper {...props} />
+    </Draggable>
+  );
+}
 const Receipt = () => {
   // const buttonStyle = {
   //   fontSize: '20px' // Adjust the font size as needed
@@ -53,7 +56,12 @@ const Receipt = () => {
   const [branch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-
+  const [branchNameGrid, setBranchNameGrid] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectAll, setSelectAll] = useState(false);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [finYearGrid, setFinYearGrid] = useState('');
+  const [fillGridData, setFillGridData] = useState([]);
   const [formData, setFormData] = useState({
     paymentMode: 'Bank Receipt',
     transactionMethod: 'NEFT',
@@ -213,22 +221,7 @@ const Receipt = () => {
       remarks: '',
       onAccount: '',
     });
-    setInVoiceDetailsData([
-      {
-        invNo: '',
-        invDate: null,
-        // refNo: '',
-        // refDate: null,
-        currency: 'INR',
-        exRate: 1,
-        amount: '',
-        gstAmt: '',
-        chargeAmt: '',
-        tds: '',
-        outstanding: '',
-        settled: '',
-      }
-    ]);
+    setInVoiceDetailsData([]);
     setInvoiceDetailsError([{
       invNo: '',
       invDate: '',
@@ -657,6 +650,79 @@ const Receipt = () => {
     //   }))
     // );
   };
+    const handleFullGrid = () => {
+      if (formData.customerCode) {
+        setModalOpen(true);
+        getAllFillGrid();
+      }else{
+        setModalOpen(false);
+        showToast('warning', formData.customerName ? `${formData.customerCode} has No Data` : 'Please Select Customer Name');
+      }
+    };
+    const handleCloseModal = () => {
+      setModalOpen(false);
+    };
+    const handleSelectAll = () => {
+      if (selectAll) {
+        setSelectedRows([]);
+      } else {
+        setSelectedRows(fillGridData.map((_, index) => index));
+      }
+      setSelectAll(!selectAll);
+    };
+    const handleSubmitSelectedRows = async () => {
+      const selectedData = selectedRows.map((index) => fillGridData[index]);
+    
+      const newData = selectedData
+        .filter((data) => {
+          return !inVoiceDetailsData.some(
+            (item) => item.invNo === data.vId && item.invDate === data.vDatae
+          );
+        })
+        .map((data) => ({
+          // id: Date.now(),
+          invNo: data.vId || '',
+          invDate: data.vDatae ? dayjs(data.vDatae).format('YYYY-MM-DD') : null,
+          amount: data.amount || '',
+          gstAmt: data.tax || '',
+          chargeAmt: data.netReceivable || '',
+          tds: data.tds || '',
+          outstanding: data.outstandingBal || '',
+          settled: data.settledAmt || ''
+        }));
+    
+      if (newData.length < selectedData.length) {
+        showToast('warning', 'Some of the selected items are already added!');
+      }
+    
+      if (newData.length === 0) {
+        return;
+      }
+    
+      setInVoiceDetailsData((prev) => [...prev, ...newData]);
+      console.log('New Data added:', newData);
+      setSelectedRows([]);
+      setSelectAll(false);
+      handleCloseModal();
+    };    
+  const getAllFillGrid = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/arreceivable/getReciptFillGrid?orgId=${orgId}&partyCode=${formData.customerCode}`
+        );
+
+      console.log('API Response:', response);
+
+      if (response.status === true) {
+        setFillGridData(response.paramObjectsMap.reciptFillGrid);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
   return (
     <div>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
@@ -902,6 +968,7 @@ const Receipt = () => {
                 <div className="row d-flex ml" style={{ marginTop: '5px' }}>
                   <div className="mb-1">
                     <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                    <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />                  
                   </div>
                   <div className="row mt-2">
                     <div className="col-lg-12">
@@ -1452,6 +1519,87 @@ const Receipt = () => {
                 </div>
               )}
             </Box>
+                    <Dialog
+                      open={modalOpen}
+                      maxWidth={'md'}
+                      fullWidth={true}
+                      onClose={handleCloseModal}
+                      PaperComponent={PaperComponent}
+                      aria-labelledby="draggable-dialog-title"
+                    >
+                      <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
+                        <h6>Grid Details</h6>
+                      </DialogTitle>
+                      <DialogContent className="pb-0">
+                        <div className="row">
+                          <div className="col-lg-12">
+                            <div className="table-responsive">
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr style={{ backgroundColor: '#673AB7' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                      <Checkbox checked={selectAll} onChange={handleSelectAll} />
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                      S.No
+                                    </th>
+                                    <th className="table-header"># Invoice</th>
+                                    <th className="table-header">Date</th>
+                                    <th className="table-header">Bill Amount</th>
+                                    <th className="table-header">Tax</th>
+                                    <th className="table-header">Net Receivable</th>
+                                    <th className="table-header">TDS</th>
+                                    <th className="table-header">Outstanding Bal</th>
+                                    <th className="table-header">Settled Amt</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {fillGridData?.map((row, index) => (
+                                    <tr key={row.id}>
+                                      <td className="border p-0 text-center">
+                                        <Checkbox
+                                          checked={selectedRows.includes(index)}
+                                          onChange={(e) => {
+                                            const isChecked = e.target.checked;
+                                            setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
+                                          }}
+                                        />
+                                      </td>
+                                      <td className="text-center">{index + 1}</td>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.vId || ''}
+                                      </td>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.vDatae ? dayjs(row.vDatae).format('DD-MM-YYYY') : ''}
+                                      </td>
+                                      {/* <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.docCode || ''}
+                                      </td>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.prefixField || ''}
+                                      </td> */}
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </DialogContent>
+                      <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
+                        <Button onClick={handleCloseModal} sx={{ color: '#673AB7' }}>
+                          Cancel
+                        </Button>
+                        <Button
+                          color="secondary"
+                          onClick={handleSubmitSelectedRows}
+                          variant="contained"
+                          sx={{ backgroundColor: '#673AB7' }}
+                        >
+                          Proceed
+                        </Button>
+                      </DialogActions>
+                    </Dialog>
           </>
         )}
       </div>
