@@ -29,7 +29,7 @@ const finalReport =  {
   children: [
     {
       id: 'report',
-      title: 'Report',
+      title: 'Reports',
       type: 'collapse',
       icon: icons.IconCopyright,
       children: [

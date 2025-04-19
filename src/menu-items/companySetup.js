@@ -59,7 +59,7 @@ const companySetup = {
   children: [
     {
       id: 'companySetup',
-      title: 'Setup',
+      title: 'IT ADMIN',
       type: 'collapse',
       icon: icons2.IconSettingsPlus,
 

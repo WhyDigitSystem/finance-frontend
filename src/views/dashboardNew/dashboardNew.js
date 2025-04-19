@@ -313,7 +313,7 @@ const SalesDistributionChart = ({ loading, error, salesData }) => {
           flexDirection: "column",
         }}
       >
-        <Typography variant="h6">Sales Distribution</Typography>
+        <Typography variant="h6">Sales Distribution Product Wise</Typography>
         {loading ? (
           <Typography>Loading...</Typography>
         ) : error ? (
