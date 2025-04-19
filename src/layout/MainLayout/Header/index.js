@@ -9,6 +9,7 @@ import LogoSection from '../LogoSection';
 import NotificationSection from './NotificationSection';
 import ProfileSection from './ProfileSection';
 import SearchSection from './SearchSection';
+import HAISection from './HAISection/haisection';
 
 // assets
 import { IconMenu2 } from '@tabler/icons-react';
@@ -96,6 +97,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
 
       {/* header search */}
       <SearchSection />
+      <HAISection/>
       <Box sx={{ flexGrow: 1 }} />
       {/* Remove or adjust this Box component to reduce space */}
       {/* <Box sx={{ flexGrow: 1 }} /> */}

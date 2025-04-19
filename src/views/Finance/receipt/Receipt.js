@@ -38,29 +38,21 @@ function PaperComponent(props) {
   );
 }
 const Receipt = () => {
-  // const buttonStyle = {
-  //   fontSize: '20px' // Adjust the font size as needed
-  // };
+  const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [branch, setLoginBranch] = useState(localStorage.getItem('branch'));
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [value, setValue] = useState(0);
-
-  const theme = useTheme();
-  const anchorRef = useRef(null);
   const [editId, setEditId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   const [currencies, setCurrencies] = useState([]);
   const [allCustomerName, setAllCustomerName] = useState([]);
-  const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
-  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
-  const [branch, setLoginBranch] = useState(localStorage.getItem('branch'));
-  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [branchNameGrid, setBranchNameGrid] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [selectAll, setSelectAll] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
-  const [finYearGrid, setFinYearGrid] = useState('');
   const [fillGridData, setFillGridData] = useState([]);
   const [formData, setFormData] = useState({
     paymentMode: 'Bank Receipt',
@@ -80,15 +72,6 @@ const Receipt = () => {
     grossAmount: '',
     remarks: '',
     onAccount: '',
-
-    // bankChargeAcc: '',
-    // bankCharges: '',
-    // inCurrencyBnkChargs: '',
-    // inCurrencyTdsAmt: '',
-    // chequeBank: '',
-    // bankCashAcc: '',
-    // currencyAmount: '',
-    // receivedFrom: '',
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -111,24 +94,7 @@ const Receipt = () => {
     onAccount: '',
   });
 
-  const [inVoiceDetailsData, setInVoiceDetailsData] = useState([
-    {
-      id: Date.now(),
-      invNo: '',
-      invDate: null,
-      // refNo: '',
-      // refDate: null,
-      currency: 'INR',
-      exRate: 1,
-      amount: '',
-      gstAmt: '',
-      chargeAmt: '',
-      tds: '',
-      outstanding: '',
-      settled: '',
-    }
-  ]);
-
+  const [inVoiceDetailsData, setInVoiceDetailsData] = useState([]);
   const [invoiceDetailsError, setInvoiceDetailsError] = useState([
     {
       invNo: '',
@@ -259,7 +225,7 @@ const Receipt = () => {
       amount: '',
       gstAmt: '',
       chargeAmt: '',
-      tds: '',
+      tds: 0,
       outstanding: '',
       settled: '',
     };
@@ -435,75 +401,14 @@ const Receipt = () => {
     }));
 
     let hasTableErrors = false;
-
     tableErrors.forEach((err) => {
       if (Object.values(err).some((error) => error)) {
         hasTableErrors = true;
       }
     });
-
-    // Check for empty fields and set error messages
-    // if (!formData.paymentMode) {
-    //   errors.paymentMode = 'Receipt Type Bank is required';
-    // }
-    // if (!formData.bankChargeAcc) {
-    //   errors.bankChargeAcc = 'Bank Charge Acc is required';
-    // }
-    // if (!formData.docId) {
-    //   errors.docId = 'Document ID is required';
-    // }
-    // if (!formData.docDate) {
-    //   errors.docDate = 'Document Date is required';
-    // }
-    // if (!formData.bankCharges) {
-    //   errors.bankCharges = 'Bank Charges is required';
-    // }
-    // if (!formData.inCurrencyBnkChargs) {
-    //   errors.inCurrencyBnkChargs = 'In Currency Bank Charges is required';
-    // }
-    // if (!formData.type) {
-    //   errors.type = 'Type is required';
-    // }
-    // if (!formData.tdsAmt) {
-    //   errors.tdsAmt = 'Tds Amount is required';
-    // }
-    // if (!formData.inCurrencyTdsAmt) {
-    //   errors.inCurrencyTdsAmt = 'In Currency Tds Amount is required';
-    // }
     if (!formData.customerName) {
       errors.customerName = 'Customer Name is required';
     }
-    // if (!formData.chequeBank) {
-    //   errors.chequeBank = 'Cheque Bank is required';
-    // }
-    // if (!formData.customerCode) {
-    //   errors.customerCode = 'Customer Code is required';
-    // }
-    // if (!formData.transactionMethod) {
-    //   errors.transactionMethod = 'Receipt Type is required';
-    // }
-    // if (!formData.bankCashAcc) {
-    //   errors.bankCashAcc = 'Bank/Cash/Acc is required';
-    // }
-    // if (!formData.chequeUtiNo) {
-    //   errors.chequeUtiNo = 'Cheque/Uti No is required';
-    // }
-    // if (!formData.chequeUtiDate) {
-    //   errors.chequeUtiDate = 'Cheque/Uti Dt is required';
-    // }
-    // if (!formData.receiptAmt) {
-    //   errors.receiptAmt = 'Receipt Amount is required';
-    // }
-    // if (!formData.currency) {
-    //   errors.currency = 'Currency is required';
-    // }
-    // if (!formData.currencyAmount) {
-    //   errors.currencyAmount = 'Currency Amount is required';
-    // }
-    // if (!formData.receivedFrom) {
-    //   errors.receivedFrom = 'Received From is required';
-    // }
-
     setFieldErrors(errors);
     setInvoiceDetailsError(tableErrors);
 
@@ -550,8 +455,6 @@ const Receipt = () => {
         cancelRemarks: '',
         chequeUtiNo: formData.chequeUtiNo,
         chequeUtiDate: formData.chequeUtiDate ? dayjs(formData.chequeUtiDate).format('YYYY-MM-DD') : null,
-        // netAmount: formData.netAmount,
-        // onAccount: formData.onAccount,
         remarks: formData.remarks,
         receiptInvDetailaDTO: receiptInvDetailVo
       };
@@ -616,40 +519,29 @@ const Receipt = () => {
   useEffect(() => {
     calculateTotals();
   }, [inVoiceDetailsData, formData.receiptAmt]);
+  // useEffect(() => {
+  //   calculate();
+  // }, [inVoiceDetailsData.tds, inVoiceDetailsData.chargeAmt]);
   const calculateTotals = () => {
     let totalAmount = 0;
-    inVoiceDetailsData.forEach((row) => {
-      totalAmount += parseFloat((row.amount) || 0);
-    });
     const totalSettled = inVoiceDetailsData.reduce((acc, row) => acc + parseFloat(row.settled || 0), 0);
-    const totalAmt = inVoiceDetailsData.reduce((acc, row) => acc + parseFloat(row.chargeAmt || 0), 0);
-    setFormData((prev) => ({
-      ...prev,
-      // netAmount: totalSettled,
-      netAmount: totalAmt,
-      onAccount: formData.receiptAmt === 0 ? 0 : (totalAmt - formData.receiptAmt).toFixed(2),
-    }));
-    setInVoiceDetailsData((prev) =>
-      prev.map((r) => {
-        let validAmount = parseFloat(r.chargeAmt || 0);
-        let settledAmount = parseFloat(r.settled || 0);
-        if (validAmount < settledAmount) {
-          setInvoiceDetailsError("Payable Amount should be greater than Settled Amount");
-          return {...r};
-        }
-        return {
-          ...r,
-          tds: parseFloat(r.amount - r.chargeAmt) || 0,
-        };
-      })
+    inVoiceDetailsData.forEach((row) => {
+      totalAmount += parseFloat(row.amount || 0);
+    });
+    const totalAmt = inVoiceDetailsData.reduce(
+      (acc, row) => acc + parseFloat(row.chargeAmt || 0),
+      0
     );
-    // setInVoiceDetailsData((prev) =>
-    //   prev.map((r) => ({
-    //     ...r,
-    //     tds: parseFloat(r.amount - r.chargeAmt),
-    //   }))
-    // );
-  };
+    setFormData((prev) => {
+      const receiptAmt = parseFloat(prev.receiptAmt || 0);
+      const onAccount = receiptAmt < totalAmt ? 0 : (receiptAmt - totalAmt).toFixed(2);
+      return {
+        ...prev,
+        netAmount: totalAmt,
+        onAccount: onAccount,
+      };
+    });
+  };  
     const handleFullGrid = () => {
       if (formData.customerCode) {
         setModalOpen(true);
@@ -672,23 +564,20 @@ const Receipt = () => {
     };
     const handleSubmitSelectedRows = async () => {
       const selectedData = selectedRows.map((index) => fillGridData[index]);
-    
       const newData = selectedData
         .filter((data) => {
           return !inVoiceDetailsData.some(
-            (item) => item.invNo === data.vId && item.invDate === data.vDatae
+            (item) => item.invNo === data.vid && item.invDate === data.vdate
           );
         })
         .map((data) => ({
-          // id: Date.now(),
-          invNo: data.vId || '',
-          invDate: data.vDatae ? dayjs(data.vDatae).format('YYYY-MM-DD') : null,
-          amount: data.amount || '',
-          gstAmt: data.tax || '',
-          chargeAmt: data.netReceivable || '',
-          tds: data.tds || '',
-          outstanding: data.outstandingBal || '',
-          settled: data.settledAmt || ''
+          id: Date.now() + Math.random(), 
+          invNo: data.vid || '',
+          invDate: data.vdate ? dayjs(data.vdate).format('YYYY-MM-DD') : null,
+          amount: data.billamount || '',
+          gstAmt: data.gstamount || '',
+          chargeAmt: parseFloat(data.gstamount) + parseFloat(data.billamount) || '',
+          tds: 0,
         }));
     
       if (newData.length < selectedData.length) {
@@ -698,7 +587,6 @@ const Receipt = () => {
       if (newData.length === 0) {
         return;
       }
-    
       setInVoiceDetailsData((prev) => [...prev, ...newData]);
       console.log('New Data added:', newData);
       setSelectedRows([]);
@@ -967,7 +855,7 @@ const Receipt = () => {
               {value === 0 && (
                 <div className="row d-flex ml" style={{ marginTop: '5px' }}>
                   <div className="mb-1">
-                    <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                    {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
                     <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />                  
                   </div>
                   <div className="row mt-2">
@@ -990,8 +878,8 @@ const Receipt = () => {
                               <th className="px-2 py-2 text-white text-center">Ex. Rate</th> */}
                               <th className="px-2 py-2 text-white text-center">Bill Amount</th>
                               <th className="px-2 py-2 text-white text-center">TAX</th>
-                              <th className="px-2 py-2 text-white text-center">Net Receivable</th>
                               <th className="px-2 py-2 text-white text-center">TDS</th>
+                              <th className="px-2 py-2 text-white text-center">Net Receivable</th>
                               <th className="px-2 py-2 text-white text-center">Outstanding Bal</th>
                               <th className="px-2 py-2 text-white text-center">Settled Amt</th>
                             </tr>
@@ -1091,19 +979,7 @@ const Receipt = () => {
                                             padding: '8px',
                                           },
                                         },
-                                      }}                                      
-                                      // slotProps={{
-                                      //   textField: {
-                                      //     className: invoiceDetailsError[index]?.invDate
-                                      //       ? 'error form-control'
-                                      //       : 'form-control',
-                                      //     style: {
-                                      //       width: '200px',
-                                      //       border: 'none',
-                                      //       padding: '0px', // reduce padding for compact height
-                                      //     },
-                                      //   },
-                                      // }}                                      
+                                      }}                                     
                                     />
                                     {invoiceDetailsError[index]?.invDate && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1311,44 +1187,7 @@ const Receipt = () => {
                                 <td className="border px-2 py-2">
                                   <input
                                     type="text"
-                                    value={row.chargeAmt}
-                                    onChange={(e) => {
-                                      const value = e.target.value;
-                                      const isNumeric = /^[0-9]*$/;
-                                      if (isNumeric.test(value)) {
-                                        setInVoiceDetailsData((prev) =>
-                                          prev.map((r) => (r.id === row.id ? { ...r, chargeAmt: value } : r))
-                                        );
-                                        setInvoiceDetailsError((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = { ...newErrors[index], chargeAmt: 'Only numbers are allowed' };
-                                          return newErrors;
-                                        });
-                                      } else {
-                                        setInvoiceDetailsError((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = {
-                                            ...newErrors[index],
-                                            chargeAmt: 'Only numbers are allowed'
-                                          };
-                                          return newErrors;
-                                        });
-                                      }
-                                    }}
-                                    className={invoiceDetailsError[index]?.chargeAmt ? 'error form-control' : 'form-control'}
-                                    style={{ width: '150px' }}
-                                  />
-                                  {invoiceDetailsError[index]?.chargeAmt && (
-                                    <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                      {invoiceDetailsError[index].chargeAmt}
-                                    </div>
-                                  )}
-                                </td>
-                                <td className="border px-2 py-2">
-                                  <input
-                                    type="text"
                                     value={row.tds}
-                                    disabled
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9]*$/;
@@ -1381,6 +1220,42 @@ const Receipt = () => {
                                   {invoiceDetailsError[index]?.tds && (
                                     <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                       {invoiceDetailsError[index].tds}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="border px-2 py-2">
+                                  <input
+                                    type="text"
+                                    value={row.chargeAmt}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      const isNumeric = /^[0-9]*$/;
+                                      if (isNumeric.test(value)) {
+                                        setInVoiceDetailsData((prev) =>
+                                          prev.map((r) => (r.id === row.id ? { ...r, chargeAmt: value } : r))
+                                        );
+                                        setInvoiceDetailsError((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = { ...newErrors[index], chargeAmt: 'Only numbers are allowed' };
+                                          return newErrors;
+                                        });
+                                      } else {
+                                        setInvoiceDetailsError((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = {
+                                            ...newErrors[index],
+                                            chargeAmt: 'Only numbers are allowed'
+                                          };
+                                          return newErrors;
+                                        });
+                                      }
+                                    }}
+                                    className={invoiceDetailsError[index]?.chargeAmt ? 'error form-control' : 'form-control'}
+                                    style={{ width: '150px' }}
+                                  />
+                                  {invoiceDetailsError[index]?.chargeAmt && (
+                                    <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                      {invoiceDetailsError[index].chargeAmt}
                                     </div>
                                   )}
                                 </td>
@@ -1424,30 +1299,59 @@ const Receipt = () => {
                                   )}
                                 </td>
                                 <td className="border px-2 py-2">
-                                  <input
-                                    type="text"
-                                    value={row.settled}
-                                    onChange={(e) => {
-                                      const value = e.target.value;
-                                      const isNumeric = /^[0-9.]*$/;
-                                      if (isNumeric.test(value)) {
-                                        setInVoiceDetailsData((prev) => prev.map((r) => (r.id === row.id ? { ...r, settled: value } : r)));
-                                        setInvoiceDetailsError((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = { ...newErrors[index], settled: !value ? 'Settled is required' : '' };
-                                          return newErrors;
-                                        });
-                                      } else {
-                                        setInvoiceDetailsError((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = { ...newErrors[index], settled: 'Only numbers are allowed' };
-                                          return newErrors;
-                                        });
-                                      }
-                                    }}
-                                    className={invoiceDetailsError[index]?.settled ? 'error form-control' : 'form-control'}
-                                    style={{ width: '150px' }}
-                                  />
+                                <input
+                                  type="text"
+                                  value={row.settled}
+                                  disabled={!formData.receiptAmt || parseFloat(formData.receiptAmt) === 0}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    const isNumeric = /^[0-9.]*$/;
+
+                                    if (!isNumeric.test(value)) {
+                                      setInvoiceDetailsError((prev) => {
+                                        const newErrors = [...prev];
+                                        newErrors[index] = { ...newErrors[index], settled: 'Only numbers are allowed' };
+                                        return newErrors;
+                                      });
+                                      return;
+                                    }
+
+                                    const newValue = parseFloat(value || 0);
+                                    const totalOtherSettled = inVoiceDetailsData.reduce((sum, r) =>
+                                      r.id !== row.id ? sum + parseFloat(r.settled || 0) : sum, 0
+                                    );
+
+                                    const totalSettledAfterChange = totalOtherSettled + newValue;
+                                    const maxReceiptAmt = parseFloat(formData.receiptAmt || 0);
+                                    const maxChargeAmt = parseFloat(row.chargeAmt || 0);
+
+                                    let errorMsg = '';
+                                    if (newValue > maxChargeAmt) {
+                                      errorMsg = `Settled cannot exceed Net Receivable (${maxChargeAmt})`;
+                                    } else if (totalSettledAfterChange > maxReceiptAmt) {
+                                      errorMsg = `Total settled exceeds Receipt Amount (${maxReceiptAmt})`;
+                                    }
+
+                                    if (errorMsg) {
+                                      setInvoiceDetailsError((prev) => {
+                                        const newErrors = [...prev];
+                                        newErrors[index] = { ...newErrors[index], settled: errorMsg };
+                                        return newErrors;
+                                      });
+                                      return;
+                                    }
+                                    setInVoiceDetailsData((prev) =>
+                                      prev.map((r) => (r.id === row.id ? { ...r, settled: value } : r))
+                                    );
+                                    setInvoiceDetailsError((prev) => {
+                                      const newErrors = [...prev];
+                                      newErrors[index] = { ...newErrors[index], settled: '' };
+                                      return newErrors;
+                                    });
+                                  }}
+                                  className={invoiceDetailsError[index]?.settled ? 'error form-control' : 'form-control'}
+                                  style={{ width: '150px' }}
+                                />
                                   {invoiceDetailsError[index]?.settled && (
                                     <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                       {invoiceDetailsError[index].settled}
@@ -1548,9 +1452,6 @@ const Receipt = () => {
                                     <th className="table-header">Bill Amount</th>
                                     <th className="table-header">Tax</th>
                                     <th className="table-header">Net Receivable</th>
-                                    <th className="table-header">TDS</th>
-                                    <th className="table-header">Outstanding Bal</th>
-                                    <th className="table-header">Settled Amt</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -1567,17 +1468,20 @@ const Receipt = () => {
                                       </td>
                                       <td className="text-center">{index + 1}</td>
                                       <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.vId || ''}
+                                        {row.vid || ''}
                                       </td>
                                       <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.vDatae ? dayjs(row.vDatae).format('DD-MM-YYYY') : ''}
-                                      </td>
-                                      {/* <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.docCode || ''}
+                                        {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : ''}
                                       </td>
                                       <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.prefixField || ''}
-                                      </td> */}
+                                        {row.billamount || ''}
+                                      </td> 
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstamount || ''}
+                                      </td>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {parseFloat(row.gstamount) + parseFloat(row.billamount) || 0}
+                                      </td>
                                     </tr>
                                   ))}
                                 </tbody>

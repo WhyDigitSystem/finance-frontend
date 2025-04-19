@@ -41,6 +41,8 @@ import { Bar, Pie, Line } from 'react-chartjs-2';
 import { Box } from '@mui/system';
 import NoDataAvailable from 'utils/NoData';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+// import { Card, CardContent, Typography } from '@mui/material';
+// import { Line } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ChartDataLabels, Title, ArcElement, Tooltip, Legend);
 
@@ -522,28 +524,70 @@ const TDSTable = ({ tdsData }) => {
     </TableContainer>
   );
 };
+// Mapping of month numbers to names
+const monthMap = {
+  1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr',
+  5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Aug',
+  9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec'
+};
 
-const LineChart = () => {
-  const data = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [
-      {
-        label: 'Sales',
-        data: [30, 45, 28, 50, 60, 70],
-        borderColor: 'blue',
-        backgroundColor: 'rgba(0, 0, 255, 0.2)',
-        tension: 0.4
-      }
-    ]
+const LineChart = ({ chartSalesData }) => {
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          font: {
+            size: 12,
+          },
+        },
+      },
+      // tooltip: {
+      //   callbacks: {
+      //     label: (tooltipItem) => `₹${tooltipItem.raw.toLocaleString('en-IN')}`,
+      //   },
+      // },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        // ticks: {
+        //   callback: (value) => `₹${value.toLocaleString('en-IN')}`,
+        //   font: {
+        //     size: 12,
+        //   },
+        // },
+      },
+      x: {
+        ticks: {
+          font: {
+            size: 12,
+          },
+        },
+      },
+    },
   };
-
-  // return <Line data={data} />;
+console.log(chartSalesData);
   return (
-    <Card sx={{ p: 1, boxShadow: 3, borderRadius: 2 }}>
-      <CardContent>
-        <Typography variant="h6"></Typography>
-        {/* <Bar data={data} options={options} /> */}
-        <Line data={data} />
+    <Card sx={{ p: 1, boxShadow: 3, borderRadius: 2, height: 400 }}>
+      <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Typography variant="h6" gutterBottom>
+          Monthly Sales by Customer
+        </Typography>
+        <Box sx={{ flexGrow: 1 }}>
+        {chartSalesData && chartSalesData.datasets.length > 0 ? (
+          <Line data={chartSalesData} options={options} />
+        ) : (
+          <>
+            <NoDataAvailable />
+            <Typography sx={{ textAlign: "center" }}>
+              No Data Available
+            </Typography>
+        </>
+        )}
+        </Box>
       </CardContent>
     </Card>
   );
@@ -621,9 +665,11 @@ const DashboardNew = () => {
   const [paymentPrevMonthAmt, setPaymentPrevMonthAmt] = useState(0);
   const [paymentPrevYearAmt, setPaymentPrevYearAmt] = useState(0);
 
+  const [chartData, setChartData] = useState(null);
+  const [chartSalesData, setSalesChartData] = useState(null);
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [chartData, setChartData] = useState(null);
+  const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [salesData, setSalesData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -797,14 +843,14 @@ const DashboardNew = () => {
 
           parties = parties
             .map((party) => ({
-              name: party.partyName, // Full name for tooltip
-              shortName: party.partyShortName || "", // Show empty if shortName is missing
+              name: party.partyName,
+              shortName: party.partyShortName || "",
               amount: parseFloat(party.amt || 0) / 100000,
             }))
             .sort((a, b) => b.amount - a.amount)
-            .slice(0, 5); // Limit to top 5 customers
+            .slice(0, 5);
 
-          const labels = parties.map((party) => party.shortName); // Use empty string if shortName is missing
+          const labels = parties.map((party) => party.shortName);
           const amounts = parties.map((party) => party.amount);
           const tooltips = parties.map((party) => party.name);
 
@@ -893,6 +939,42 @@ const DashboardNew = () => {
     fetchTdsData();
   }, [orgId, isYearly]);
 
+  useEffect(() => {
+    const fetchSalesChartData = async () => {
+      try {
+        const res = await apiCalls('get', `/dashboard/getSalesMonthWiseData?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
+        const apiData = res.paramObjectsMap?.Payment || [];
+        console.log("Api Data", res);
+        const labels = Array.from({ length: 12 }, (_, i) => i + 1).map(i => monthMap[i]);
+        const customers = [...new Set(apiData.map(item => item.partyShortName))];
+  
+        const datasets = customers.map((customer, idx) => {
+          const monthlySales = Array(12).fill(0);
+          apiData
+            .filter(entry => entry.partyShortName === customer)
+            .forEach(entry => {
+              monthlySales[entry.month - 1] = entry.amount;
+            });
+          const colors = ['blue', 'green', 'orange', 'purple', 'red', 'brown', 'teal', 'magenta', 'gray', 'navy'];
+          const color = colors[idx % colors.length];
+          return {
+            label: customer,
+            data: monthlySales,
+            borderColor: color,
+            backgroundColor: `${color}`,
+            tension: 0.4,
+          };
+        });
+  
+        setSalesChartData({ labels, datasets });
+      } catch (err) {
+        console.error('Error fetching sales chart data:', err);
+      }
+    };
+  
+    fetchSalesChartData();
+  }, [branchCode, finYear, orgId]);  
+
   // Update financial data dynamically
   const financialData = [
     { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: revenuePrevMonthAmt, statsPercentageYearly: revenuePrevYearAmt, title: 'Revenue', monthly: totalOrderMonth, yearly: totalOrderYear },
@@ -933,7 +1015,7 @@ const DashboardNew = () => {
         <TDSTable tdsData={tdsData} />
       </Grid> */}
       <Grid item xs={12} md={6}>
-        <LineChart />
+      <LineChart chartSalesData={chartSalesData} />
       </Grid>
       <Grid item xs={12} md={6}>
         <StackedBarChart />
