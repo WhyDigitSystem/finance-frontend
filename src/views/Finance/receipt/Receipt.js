@@ -264,8 +264,6 @@ const Receipt = () => {
       try {
         const currencyData = await getAllActiveCurrency(orgId);
         setCurrencies(currencyData);
-
-        console.log('currency', currencyData);
       } catch (error) {
         console.error('Error fetching country data:', error);
       }
@@ -286,8 +284,6 @@ const Receipt = () => {
         'get',
         `arreceivable/getCustomerNameAndCodeForReceipt?orgId=${orgId}`
       );
-      console.log('API Response:', response);
-
       if (response.status === true) {
         setAllCustomerName(response.paramObjectsMap.PartyMasterVO);
       } else {
@@ -301,8 +297,6 @@ const Receipt = () => {
   const getAllReceipt = async () => {
     try {
       const response = await apiCalls('get', `arreceivable/getAllReceiptByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
-      console.log('API Response:', response);
-
       if (response.status === true) {
         setListViewData(response.paramObjectsMap.receiptReceivableVO.reverse());
       } else {
@@ -314,9 +308,7 @@ const Receipt = () => {
   };
 
   const getReceiptById = async (row) => {
-    console.log('first', row);
     setEditId(row.original.id);
-    // setShowForm(true);
     setInvoiceDetailsError({});
     try {
       const response = await apiCalls('get', `/arreceivable/getAllReceiptById?id=${row.original.id}`);
@@ -426,10 +418,10 @@ const Receipt = () => {
         exRate: parseFloat(row.exRate),
         amount: parseFloat(row.amount),
         gstAmt: parseFloat(row.gstAmt),
+        tds: parseFloat(row.tds) || 0,
+        settled: parseFloat(row.settled) || 0,
         // chargeAmt: parseFloat(row.chargeAmt),
-        tds: parseFloat(row.tds),
         // outstanding: parseFloat(row.outstanding),
-        settled: parseFloat(row.settled),
         // refDate: row.refDate ? formatDate(new Date(row.refDate)) : null,
         // refNo: row.refNo,
       }));
@@ -523,25 +515,37 @@ const Receipt = () => {
   //   calculate();
   // }, [inVoiceDetailsData.tds, inVoiceDetailsData.chargeAmt]);
   const calculateTotals = () => {
-    let totalAmount = 0;
-    const totalSettled = inVoiceDetailsData.reduce((acc, row) => acc + parseFloat(row.settled || 0), 0);
-    inVoiceDetailsData.forEach((row) => {
-      totalAmount += parseFloat(row.amount || 0);
-    });
-    const totalAmt = inVoiceDetailsData.reduce(
-      (acc, row) => acc + parseFloat(row.chargeAmt || 0),
-      0
-    );
-    setFormData((prev) => {
-      const receiptAmt = parseFloat(prev.receiptAmt || 0);
-      const onAccount = receiptAmt < totalAmt ? 0 : (receiptAmt - totalAmt).toFixed(2);
+    let totalChargeAmt = 0;
+  
+    const updatedInvoiceDetails = inVoiceDetailsData.map((row) => {
+      const billAmount = parseFloat(row.amount || 0);
+      const gstAmt = parseFloat(row.gstAmt || 0);
+      const tdsPercent = parseFloat(row.tds || 0);
+      const settledAmt = parseFloat(row.settled || 0);
+  
+      const gross = billAmount + gstAmt;
+      const tdsAmt = (gross * tdsPercent) / 100;
+      const netReceivable = gross - tdsAmt;
+      const outstandingAmt = netReceivable - settledAmt;
+      totalChargeAmt += netReceivable;
+  
       return {
-        ...prev,
-        netAmount: totalAmt,
-        onAccount: onAccount,
+        ...row,
+        chargeAmt: netReceivable.toFixed(2),
+        outstanding: outstandingAmt.toFixed(2)
       };
     });
+  
+    const receiptAmt = parseFloat(formData.receiptAmt || 0);
+    const onAccount = receiptAmt < totalChargeAmt ? 0 : (receiptAmt - totalChargeAmt).toFixed(2);
+    setInVoiceDetailsData(updatedInvoiceDetails);
+    setFormData((prev) => ({
+      ...prev,
+      netAmount: totalChargeAmt.toFixed(2),
+      onAccount
+    }));
   };  
+     
     const handleFullGrid = () => {
       if (formData.customerCode) {
         setModalOpen(true);
@@ -588,7 +592,6 @@ const Receipt = () => {
         return;
       }
       setInVoiceDetailsData((prev) => [...prev, ...newData]);
-      console.log('New Data added:', newData);
       setSelectedRows([]);
       setSelectAll(false);
       handleCloseModal();
@@ -599,9 +602,6 @@ const Receipt = () => {
         'get',
         `/arreceivable/getReciptFillGrid?orgId=${orgId}&partyCode=${formData.customerCode}`
         );
-
-      console.log('API Response:', response);
-
       if (response.status === true) {
         setFillGridData(response.paramObjectsMap.reciptFillGrid);
       } else {
@@ -638,6 +638,7 @@ const Receipt = () => {
                     id="paymentMode"
                     name="paymentMode"
                     required
+                    disabled = {editId}
                     value={formData.paymentMode}
                     label="Receipt Type"
                     onChange={handleInputChange}
@@ -660,6 +661,7 @@ const Receipt = () => {
                     required
                     value={formData.transactionMethod}
                     label="Transaction Method"
+                    disabled = {editId}
                     onChange={handleInputChange}
                   >
                     <MenuItem value={'NEFT'}>NEFT</MenuItem>
@@ -726,6 +728,7 @@ const Receipt = () => {
                     labelId="customerName"
                     id="customerName"
                     label="Customer Name"
+                    disabled = {editId}
                     onChange={handleInputChange}
                     name="customerName"
                     value={formData.customerName}
@@ -744,6 +747,7 @@ const Receipt = () => {
                   <TextField
                     id="inVoiceDetailsDataAmt"
                     name="tdsAmt"
+                    disabled = {editId}
                     label="TDS Amount"
                     size="small"
                     value={formData.tdsAmt}
@@ -761,6 +765,7 @@ const Receipt = () => {
                     name="receiptAmt"
                     label="Receipt Amount"
                     size="small"
+                    disabled = {editId}
                     value={formData.receiptAmt}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
@@ -789,8 +794,9 @@ const Receipt = () => {
                   <TextField
                     id="chequeUtiNo"
                     name="chequeUtiNo"
-                    label="UTI No"
+                    label="UTR No"
                     size="small"
+                    disabled = {editId}
                     value={formData.chequeUtiNo}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 100 }}
@@ -804,6 +810,7 @@ const Receipt = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="UTI Date"
+                    disabled = {editId}
                       value={formData.chequeUtiDate ? dayjs(formData.chequeUtiDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('chequeUtiDate', date)}
                       slotProps={{
@@ -909,6 +916,7 @@ const Receipt = () => {
                                   <input
                                     type="text"
                                     value={row.invNo}
+                                    disabled
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const regex = /^[a-zA-Z0-9\s/-]*$/;
@@ -946,6 +954,7 @@ const Receipt = () => {
                                             : null
                                           : null
                                       }
+                                      disabled
                                       format="DD-MM-YYYY"
                                       onChange={(newValue) => {
                                         setInVoiceDetailsData((prev) =>
@@ -1121,6 +1130,7 @@ const Receipt = () => {
                                   <input
                                     type="text"
                                     value={row.amount}
+                                    disabled
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9.]*$/;
@@ -1152,6 +1162,7 @@ const Receipt = () => {
                                   <input
                                     type="text"
                                     value={row.gstAmt}
+                                    disabled
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9]*$/;
@@ -1188,6 +1199,7 @@ const Receipt = () => {
                                   <input
                                     type="text"
                                     value={row.tds}
+                                    disabled = {editId}
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9]*$/;
@@ -1227,6 +1239,7 @@ const Receipt = () => {
                                   <input
                                     type="text"
                                     value={row.chargeAmt}
+                                    disabled
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9]*$/;
@@ -1263,6 +1276,7 @@ const Receipt = () => {
                                   <input
                                     type="text"
                                     value={row.outstanding}
+                                    disabled = {editId}
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9]*$/;
@@ -1302,7 +1316,7 @@ const Receipt = () => {
                                 <input
                                   type="text"
                                   value={row.settled}
-                                  disabled={!formData.receiptAmt || parseFloat(formData.receiptAmt) === 0}
+                                  disabled={(!formData.receiptAmt || parseFloat(formData.receiptAmt) === 0) || editId}
                                   onChange={(e) => {
                                     const value = e.target.value;
                                     const isNumeric = /^[0-9.]*$/;
