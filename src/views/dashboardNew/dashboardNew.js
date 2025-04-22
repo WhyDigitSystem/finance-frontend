@@ -294,7 +294,7 @@ const SalesDistributionChart = ({ loading, error, salesData }) => {
         // borderColor: '#000',
         // borderWidth: 1,
         // borderRadius: 4,
-        backgroundColor: 'white',
+        backgroundColor: 'transparent',
         padding: 4,
         clamp: true,
         clip: false

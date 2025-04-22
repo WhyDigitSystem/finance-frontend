@@ -723,21 +723,6 @@ const ARadjustmentOffset = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="subledgerType"
-                    name="subledgerType"
-                    label="Subledger Type"
-                    size="small"
-                    value={formData.subledgerType}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.subledgerType}
-                    helperText={fieldErrors.subledgerType}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
                   <InputLabel id="currency">Currency</InputLabel>
                   <Select
@@ -757,39 +742,20 @@ const ARadjustmentOffset = () => {
                   {fieldErrors.currency && <FormHelperText>{fieldErrors.currency}</FormHelperText>}
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
                     id="exRate"
                     name="exRate"
-                    label="Ex. rate"
+                    label="Ex. Rate"
                     size="small"
                     value={formData.exRate}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
-                    // error={!!fieldErrors.exRate}
-                    // helperText={fieldErrors.exRate}
                     disabled
                   />
                 </FormControl>
               </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="subledgerName"
-                    name="subledgerName"
-                    label="Subledger Name"
-                    size="small"
-                    value={formData.subledgerName}
-                    onChange={handleInputChange}
-                    error={!!fieldErrors.subledgerName}
-                    helperText={fieldErrors.subledgerName}
-                  />
-                </FormControl>
-              </div>
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -805,39 +771,7 @@ const ARadjustmentOffset = () => {
                   />
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="supplierRefNo"
-                    name="supplierRefNo"
-                    label="Supplier Ref No"
-                    size="small"
-                    value={formData.supplierRefNo}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.supplierRefNo}
-                    helperText={fieldErrors.supplierRefNo}
-                  />
-                </FormControl>
-              </div>
-
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="subledgerCode"
-                    name="subledgerCode"
-                    label="Subledger Code"
-                    size="small"
-                    value={formData.subledgerCode}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.subledgerCode}
-                    helperText={fieldErrors.subledgerCode}
-                  />
-                </FormControl>
-              </div>
             </div>
-            {/* </div> */}
 
             {/* <div className="card w-full p-6 bg-base-100 shadow-xl mt-2" style={{ padding: '20px' }}> */}
             <Tabs
