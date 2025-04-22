@@ -151,6 +151,7 @@ const Receipt = () => {
   };
 
   const handleClear = () => {
+    setEditId('')
     setFormData({
       paymentMode: 'Bank Receipt',
       transactionMethod: 'NEFT',
@@ -213,41 +214,41 @@ const Receipt = () => {
     setListView(!listView);
   };
 
-  const handleAddRow = () => {
-    const newRow = {
-      id: Date.now(),
-      invNo: '',
-      invDate: null,
-      // refNo: '',
-      // refDate: null,
-      currency: 'INR',
-      exRate: 1,
-      amount: '',
-      gstAmt: '',
-      chargeAmt: '',
-      tds: 0,
-      outstanding: '',
-      settled: '',
-    };
-    setInVoiceDetailsData([...inVoiceDetailsData, newRow]);
-    setInvoiceDetailsError([
-      ...invoiceDetailsError,
-      {
-        invNo: '',
-        invDate: '',
-        // refNo: '',
-        // refDate: null,
-        currency: '',
-        exRate: '',
-        amount: '',
-        gstAmt: '',
-        chargeAmt: '',
-        tds: '',
-        outstanding: '',
-        settled: '',
-      }
-    ]);
-  };
+  // const handleAddRow = () => {
+  //   const newRow = {
+  //     id: Date.now(),
+  //     invNo: '',
+  //     invDate: null,
+  //     // refNo: '',
+  //     // refDate: null,
+  //     currency: 'INR',
+  //     exRate: 1,
+  //     amount: '',
+  //     gstAmt: '',
+  //     chargeAmt: '',
+  //     tds: 0,
+  //     outstanding: '',
+  //     settled: '',
+  //   };
+  //   setInVoiceDetailsData([...inVoiceDetailsData, newRow]);
+  //   setInvoiceDetailsError([
+  //     ...invoiceDetailsError,
+  //     {
+  //       invNo: '',
+  //       invDate: '',
+  //       // refNo: '',
+  //       // refDate: null,
+  //       currency: '',
+  //       exRate: '',
+  //       amount: '',
+  //       gstAmt: '',
+  //       chargeAmt: '',
+  //       tds: '',
+  //       outstanding: '',
+  //       settled: '',
+  //     }
+  //   ]);
+  // };
 
   const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
     const rowIndex = table.findIndex((row) => row.id === id);
@@ -296,7 +297,7 @@ const Receipt = () => {
 
   const getAllReceipt = async () => {
     try {
-      const response = await apiCalls('get', `arreceivable/getAllReceiptByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
+      const response = await apiCalls('get', `arreceivable/getAllReceiptReceivableByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
       if (response.status === true) {
         setListViewData(response.paramObjectsMap.receiptReceivableVO.reverse());
       } else {
@@ -315,7 +316,6 @@ const Receipt = () => {
       if (response.status === true) {
         setListView(false);
         const receiptVO = response.paramObjectsMap.receiptReceivableVO[0];
-
         setFormData({
           paymentMode: receiptVO.receiptType,
           bankChargeAcc: receiptVO.bankChargeAcc,
@@ -365,13 +365,10 @@ const Receipt = () => {
 
   const formatDate = (date) => {
     const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0'); // Months are zero-indexed
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const year = date.getFullYear();
     return `${year}-${month}-${day}`;
   };
-
-  const currentDate = new Date();
-
   const handleSave = async () => {
     const errors = {};
     const tableErrors = inVoiceDetailsData.map((row) => ({
@@ -511,18 +508,16 @@ const Receipt = () => {
   useEffect(() => {
     calculateTotals();
   }, [inVoiceDetailsData, formData.receiptAmt]);
-  // useEffect(() => {
-  //   calculate();
-  // }, [inVoiceDetailsData.tds, inVoiceDetailsData.chargeAmt]);
   const calculateTotals = () => {
     let totalChargeAmt = 0;
+    let totalSettledAmt = 0;
   
     const updatedInvoiceDetails = inVoiceDetailsData.map((row) => {
       const billAmount = parseFloat(row.amount || 0);
       const gstAmt = parseFloat(row.gstAmt || 0);
       const tdsPercent = parseFloat(row.tds || 0);
       const settledAmt = parseFloat(row.settled || 0);
-  
+      totalSettledAmt += settledAmt;
       const gross = billAmount + gstAmt;
       const tdsAmt = (gross * tdsPercent) / 100;
       const netReceivable = gross - tdsAmt;
@@ -537,12 +532,13 @@ const Receipt = () => {
     });
   
     const receiptAmt = parseFloat(formData.receiptAmt || 0);
-    const onAccount = receiptAmt < totalChargeAmt ? 0 : (receiptAmt - totalChargeAmt).toFixed(2);
+    const onAccount = receiptAmt >= totalSettledAmt ? receiptAmt - totalSettledAmt : 0;
+    // const onAccount = receiptAmt < totalSettledAmt ? 0 : (receiptAmt - totalChargeAmt).toFixed(2);
     setInVoiceDetailsData(updatedInvoiceDetails);
     setFormData((prev) => ({
       ...prev,
       netAmount: totalChargeAmt.toFixed(2),
-      onAccount
+      onAccount: onAccount
     }));
   };  
      
@@ -885,7 +881,7 @@ const Receipt = () => {
                               <th className="px-2 py-2 text-white text-center">Ex. Rate</th> */}
                               <th className="px-2 py-2 text-white text-center">Bill Amount</th>
                               <th className="px-2 py-2 text-white text-center">TAX</th>
-                              <th className="px-2 py-2 text-white text-center">TDS</th>
+                              <th className="px-2 py-2 text-white text-center">TDS %</th>
                               <th className="px-2 py-2 text-white text-center">Net Receivable</th>
                               <th className="px-2 py-2 text-white text-center">Outstanding Bal</th>
                               <th className="px-2 py-2 text-white text-center">Settled Amt</th>
