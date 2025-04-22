@@ -63,7 +63,11 @@ const basicMaster = {
   children: [
     {
       id: 'basicMaster',
+<<<<<<< HEAD
       title: 'Master',
+=======
+      title: 'Admin',
+>>>>>>> 41a4875f600d64d081f0a6b6d27aeacf4fc9abd0
       type: 'collapse',
       icon: icons7.IconLayoutDashboard,
       children: [
@@ -72,6 +76,7 @@ const basicMaster = {
           title: 'Basic Master',
           type: 'collapse',
           icon: icons2.IconDatabaseStar,
+<<<<<<< HEAD
 
           children: [
             // {
@@ -225,6 +230,154 @@ const basicMaster = {
               type: 'item',
               url: '/finance/listOfValues/listOfValues'
             },
+=======
+          children: [
+            {
+              id: 'country',
+              title: 'Country',
+              type: 'item',
+              url: '/basicMaster/country',
+              icon: icons1.IconWorldPin
+            },
+            {
+              id: 'state',
+              title: 'State',
+              type: 'item',
+              url: '/basicMaster/state',
+              icon: icons1.IconWorldPin
+            },
+            {
+              id: 'city',
+              title: 'City',
+              type: 'item',
+              url: '/basicMaster/city',
+              icon: icons1.IconWorldPin
+            },
+            {
+              id: 'currency',
+              title: 'Currency',
+              type: 'item',
+              url: '/basicMaster/currency',
+              icon: icons3.IconCashBanknote
+            },
+            {
+              id: 'region',
+              title: 'Region',
+              type: 'item',
+              url: '/basicMaster/RegionMaster',
+              icon: icons9.IconMapQuestion
+            },
+            {
+              id: 'department',
+              title: 'Department',
+              type: 'item',
+              url: '/basicMaster/Department',
+              icon: icons4.IconBuildingFactory2
+            },
+            {
+              id: 'designation',
+              title: 'Designation',
+              type: 'item',
+              url: '/basicMaster/Designation',
+              icon: icons6.IconIdBadge2
+            },
+            {
+              id: 'employee',
+              title: 'Employee',
+              type: 'item',
+              url: '/basicMaster/employee',
+              icon: icons5.IconUserPlus
+              // <IconUserPlus stroke={2} />
+            }
+            // {
+            //   id: 'finYear',
+            //   title: 'FinYear',
+            //   type: 'item',
+            //   url: '/basicMaster/finYear'
+            // },
+            // {
+            //   id: 'roles',
+            //   title: 'Roles',
+            //   type: 'item',
+            //   url: '/basicMaster/roles'
+            // }
+          ]
+          // .filter((item) => allowedScreenIds.includes(item.id))
+        },
+        {
+          id: 'finance',
+          title: 'Business Master',
+          type: 'collapse',
+          icon: icons8.IconBriefcase,
+          children: [
+            {
+              id: 'partyMaster',
+              title: 'Party',
+              type: 'item',
+              url: '/finance/partyMaster'
+            },
+            {
+              id: 'customer',
+              title: 'Customer',
+              type: 'item',
+              url: '/finance/customer'
+            },
+            {
+              id: 'vendor',
+              title: 'Vendor',
+              type: 'item',
+              url: '/finance/vendor'
+            },
+            {
+              id: 'listOfValues',
+              title: 'List Of Values',
+              type: 'item',
+              url: '/finance/listOfValues/listOfValues'
+            },
+            {
+              id: 'group',
+              title: 'COA',
+              type: 'item',
+              url: '/finance/Group'
+            },
+            {
+              id: 'tdsMaster',
+              title: 'TDS',
+              type: 'item',
+              url: '/finance/tdsMaster/TdsMaster'
+            },
+            {
+              id: 'hsnSacCode',
+              title: 'HSN SAC',
+              type: 'item',
+              url: '/finance/HsnSacCode'
+            },
+            {
+              id: 'chargeTypeRequest',
+              title: 'Charges',
+              type: 'item',
+              url: '/finance/ChargeTypeRequest'
+            },
+            {
+              id: 'taxMaster',
+              title: 'Tax',
+              type: 'item',
+              url: '/finance/taxMaster'
+            },
+            {
+              id: 'productService',
+              title: 'Product Service',
+              type: 'item',
+              url: '/finance/ProductService'
+            },
+            {
+              id: 'costCenter',
+              title: 'Cost Center Values',
+              type: 'item',
+              url: '/finance/costcenter/CostCentre'
+            },
+
+>>>>>>> 41a4875f600d64d081f0a6b6d27aeacf4fc9abd0
             {
               id: 'createPartyMaster',
               title: 'Create Party',

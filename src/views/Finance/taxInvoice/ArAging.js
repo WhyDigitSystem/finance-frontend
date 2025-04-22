@@ -110,7 +110,8 @@ function ArAging() {
   const reportColumns = [
     { accessorKey: 'docid', header: '# Invoice', size: 110 },
     { accessorKey: 'docdate', header: 'Date', size: 90 },
-    { accessorKey: 'duedate', header: 'Due Date', size: 90 },
+    { accessorKey: 'name', header: 'Party Name', size: 90 },
+    // { accessorKey: 'duedate', header: 'Due Date', size: 90 },
     { accessorKey: 'amount', header: 'Inv. Amt', size: 120 },
     { accessorKey: 'outstanding', header: 'Outstanding', size: 110 },
     { accessorKey: 'totaldue', header: 'Total Due', size: 110 },

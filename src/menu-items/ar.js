@@ -1,6 +1,6 @@
 // assets
 import { IconKey } from '@tabler/icons-react';
-import { IconFileDollar } from "@tabler/icons-react";
+import { IconFileDollar } from '@tabler/icons-react';
 
 // constant
 const icons = {

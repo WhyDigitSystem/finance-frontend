@@ -184,12 +184,15 @@ function TaxRegister() {
     { accessorKey: 'JobOrderNo', header: 'Job No', size: 100 },
     { accessorKey: 'Vid', header: '# Invoice', size: 100 },
     { accessorKey: 'Vdate', header: 'Date', size: 100 },
-    { accessorKey: 'BillToParty', header: 'Customer', size: 240 },
+    { accessorKey: 'BillToParty', header: 'Customer', size: 140 },
     { accessorKey: 'BillAmount', header: 'Amount', size: 80,     Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
       {cell.getValue() !== undefined && cell.getValue() !== null 
         ? Number(cell.getValue()).toLocaleString('en-IN') 
         : '-'}
-      </div>)},
+      </div>),
+        muiTableHeadCellProps: {
+          align: 'right'
+        }},
     { accessorKey: 'TotalTaxAmountLC', header: 'TAX Amount', size: 80,
       Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
        {cell.getValue() !== undefined && cell.getValue() !== null 

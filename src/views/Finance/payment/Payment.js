@@ -55,16 +55,16 @@ const Payment = () => {
     tdsAcc: '',
     tdsAmt: '',
     bankChargeAcc: '',
-    chequeNo:'',
+    chequeNo: '',
     chequeDate: null,
     payTo: '',
     currency: 'INR',
     docId: '',
     docDate: dayjs(),
-    netAmount:'',
-    onAccount:'',
-    remarks:'',
-    bankCashAcc: '',
+    netAmount: '',
+    onAccount: '',
+    remarks: '',
+    bankCashAcc: ''
   });
 
   const [formDataErrors, setFormDataErrors] = useState({
@@ -78,15 +78,15 @@ const Payment = () => {
     tdsAcc: '',
     tdsAmt: '',
     bankChargeAcc: '',
-    chequeNo:'',
+    chequeNo: '',
     chequeDate: null,
     payTo: '',
     currency: '',
     docId: '',
     docDate: dayjs(),
-    netAmount:'',
-    onAccount:'',
-    remarks:''
+    netAmount: '',
+    onAccount: '',
+    remarks: ''
   });
 
   const [withdrawalsTableData, setWithdrawalsTableData] = useState([
@@ -101,7 +101,7 @@ const Payment = () => {
       currency: 'INR',
       amount: '',
       outstanding: '',
-      settled: '',
+      settled: ''
     }
   ]);
 
@@ -117,7 +117,7 @@ const Payment = () => {
       currency: '',
       amount: '',
       outstanding: '',
-      settled: '',
+      settled: ''
     }
   ]);
   useEffect(() => {
@@ -162,10 +162,7 @@ const Payment = () => {
 
   const getPartName = async () => {
     try {
-      const response = await apiCalls(
-        'get',
-        `/payable/getPartyNameAndPartyCode?orgId=${orgId}`
-      );
+      const response = await apiCalls('get', `/payable/getPartyNameAndPartyCode?orgId=${orgId}`);
       setPartyName(response.paramObjectsMap.PartyMasterVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -192,7 +189,7 @@ const Payment = () => {
       currency: 'INR',
       amount: '',
       outstanding: '',
-      settled: '',
+      settled: ''
     };
     setWithdrawalsTableData([...withdrawalsTableData, newRow]);
     setWithdrawalsTableErrors([
@@ -208,7 +205,7 @@ const Payment = () => {
         currency: '',
         amount: '',
         outstanding: '',
-        settled: '',
+        settled: ''
       }
     ]);
   };
@@ -219,7 +216,7 @@ const Payment = () => {
 
   const handleClear = () => {
     setFormData({
-      bankCashAcc:'',
+      bankCashAcc: '',
       paymentType: 'BANK PAYMENT',
       partyName: '',
       partyCode: '',
@@ -230,15 +227,15 @@ const Payment = () => {
       tdsAcc: '',
       tdsAmt: '',
       bankChargeAcc: '',
-      chequeNo:'',
+      chequeNo: '',
       chequeDate: null,
       payTo: '',
       currency: 'INR',
       docId: '',
       docDate: dayjs(),
-      netAmount:'',
-      onAccount:'',
-      remarks:''
+      netAmount: '',
+      onAccount: '',
+      remarks: ''
     });
     setWithdrawalsTableData([
       {
@@ -253,7 +250,7 @@ const Payment = () => {
         amount: '',
         currency: 'INR',
         outstanding: '',
-        settled: '',
+        settled: ''
       }
     ]);
     setWithdrawalsTableErrors([
@@ -268,7 +265,7 @@ const Payment = () => {
         currency: '',
         amount: '',
         outstanding: '',
-        settled: '',
+        settled: ''
       }
     ]);
     setFormDataErrors([
@@ -283,15 +280,16 @@ const Payment = () => {
         tdsAcc: '',
         tdsAmt: '',
         bankChargeAcc: '',
-        chequeNo:'',
+        chequeNo: '',
         chequeDate: null,
         payTo: '',
         currency: '',
         docId: '',
         docDate: dayjs(),
-        netAmount:'',
-        onAccount:'',
-        remarks:''      }
+        netAmount: '',
+        onAccount: '',
+        remarks: ''
+      }
     ]);
     setEditId('');
     getPaymentDocId();
@@ -324,7 +322,7 @@ const Payment = () => {
         currency: row.currency,
         amount: parseInt(row.amount),
         outstanding: parseInt(row.outstanding),
-        settled: parseInt(row.settled),
+        settled: parseInt(row.settled)
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
@@ -404,7 +402,7 @@ const Payment = () => {
           currency: listValueVO.currency,
           chequeNo: listValueVO.chequeNo,
           chequeDate: listValueVO.chequeDate,
-          currencyAmt: listValueVO.currencyAmt,
+          currencyAmt: listValueVO.currencyAmt
         });
         setWithdrawalsTableData(
           listValueVO.paymentInvDtlsVO.map((cl) => ({
@@ -418,7 +416,7 @@ const Payment = () => {
             currency: cl.currency,
             amount: cl.amount,
             outstanding: cl.outstanding,
-            settled: cl.settled,
+            settled: cl.settled
           }))
         );
         console.log('DataToEdit', listValueVO);
@@ -441,7 +439,13 @@ const Payment = () => {
     { accessorKey: 'gstIn', header: 'Reg In', size: 140 }
   ];
   const handleSelectChange = (e) => {
-    const value = e.target.value;
+    const { name, value } = e.target;
+    if (name === 'partyName') {
+      setFormDataErrors((prevErrors) => ({
+        ...prevErrors,
+        partyName: ''
+      }));
+    }
     console.log('Selected employeeCode value:', value);
     partyName.forEach((emp, index) => {
       console.log(`Employee ${index}:`, emp);
@@ -467,15 +471,14 @@ const Payment = () => {
         ...prevData,
         gstState: selectedEmp.stateCode,
         gstIn: selectedEmp.gstin,
-        currency: selectedEmp.currency,
+        currency: selectedEmp.currency
       }));
-    }
-    else if (selectedEmp) {
+    } else if (selectedEmp) {
       setFormData((prevData) => ({
         ...prevData,
         gstState: selectedEmp.stateCode,
         gstIn: selectedEmp.gstin,
-        currency: selectedEmp.currency,
+        currency: selectedEmp.currency
       }));
     } else {
       console.log('No employee found with the given code:', value);
@@ -487,13 +490,13 @@ const Payment = () => {
   const calculateTotals = () => {
     let totalAmount = 0;
     withdrawalsTableData.forEach((row) => {
-      totalAmount += parseFloat((row.amount) || 0);
+      totalAmount += parseFloat(row.amount || 0);
     });
     const totalSettled = withdrawalsTableData.reduce((acc, row) => acc + parseFloat(row.settled || 0), 0);
     setFormData((prev) => ({
       ...prev,
       netAmount: totalSettled,
-      onAccount: formData.paymentAmt === 0 ? formData.paymentAmt : (formData.paymentAmt - totalSettled).toFixed(2),
+      onAccount: formData.paymentAmt === 0 ? formData.paymentAmt : (formData.paymentAmt - totalSettled).toFixed(2)
     }));
   };
   return (
@@ -501,13 +504,13 @@ const Payment = () => {
       <ToastContainer />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex">
-          <Grid container spacing={2} alignItems="center">
-            <div className="d-flex flex-wrap justify-content-start p-2">
-              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
-              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-              <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
-            </div>
-          </Grid>
+          {/* <Grid container spacing={2} alignItems="center"> */}
+          <div className="d-flex flex-wrap justify-content-end p-2">
+            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+          </div>
+          {/* </Grid> */}
 
           {showForm ? (
             <>
@@ -563,6 +566,7 @@ const Payment = () => {
                       labelId="demo-simple-select-label-party"
                       id="demo-simple-select-party"
                       label="Party Name"
+                      name="partyName"
                       required
                       value={formData.partyName || (partyName.length === 1 ? partyName[0].partyName : '')}
                       onChange={handleSelectChange}
@@ -596,7 +600,7 @@ const Payment = () => {
                       {gstState.length > 0 &&
                         gstState.map((par, index) => (
                           <MenuItem key={index} value={par.stateCode}>
-                            {par.stateCode} 
+                            {par.stateCode}
                           </MenuItem>
                         ))}
                     </Select>
@@ -629,7 +633,15 @@ const Payment = () => {
                       label="Payment Amount"
                       size="small"
                       value={formData.paymentAmt}
-                      onChange={(e) => setFormData({ ...formData, paymentAmt: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, paymentAmt: e.target.value });
+                        // if (e.target.value) {
+                        setFormDataErrors((prevErrors) => ({
+                          ...prevErrors,
+                          paymentAmt: ''
+                        }));
+                        // }
+                      }}
                       inputProps={{ maxLength: 30 }}
                       error={!!formDataErrors.paymentAmt}
                       helperText={formDataErrors.paymentAmt}
@@ -664,38 +676,38 @@ const Payment = () => {
                     />
                   </FormControl>
                 </div>
-              <div className="col-md-6 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="chequeNo"
-                    name="chequeNo"
-                    label="UTI No"
-                    size="small"
-                    value={formData.chequeNo}
-                    onChange={(e) => setFormData({ ...formData, chequeNo: e.target.value })}
-                    inputProps={{ maxLength: 100 }}
-                    error={!!formDataErrors.chequeNo}
-                    helperText={formDataErrors.chequeNo}
-                  />
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth>
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="UTI Date"
-                      value={formData.chequeDate ? dayjs(formData.chequeDate, 'YYYY-MM-DD') : null}
-                      onChange={(newValue) => setFormData({ ...formData, chequeDate: newValue })}
-                      slotProps={{
-                        textField: { size: 'small', clearable: true }
-                      }}
-                      format="DD-MM-YYYY"
-                      error={!!formDataErrors.chequeDate}
-                      helperText={formDataErrors.chequeDate ? formDataErrors.chequeDate : ''}
+                <div className="col-md-6 mb-3">
+                  <FormControl fullWidth variant="filled">
+                    <TextField
+                      id="chequeNo"
+                      name="chequeNo"
+                      label="UTI No"
+                      size="small"
+                      value={formData.chequeNo}
+                      onChange={(e) => setFormData({ ...formData, chequeNo: e.target.value })}
+                      inputProps={{ maxLength: 100 }}
+                      error={!!formDataErrors.chequeNo}
+                      helperText={formDataErrors.chequeNo}
                     />
-                  </LocalizationProvider>
-                </FormControl>
-              </div>
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="UTI Date"
+                        value={formData.chequeDate ? dayjs(formData.chequeDate, 'YYYY-MM-DD') : null}
+                        onChange={(newValue) => setFormData({ ...formData, chequeDate: newValue })}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true }
+                        }}
+                        format="DD-MM-YYYY"
+                        error={!!formDataErrors.chequeDate}
+                        helperText={formDataErrors.chequeDate ? formDataErrors.chequeDate : ''}
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField
@@ -714,7 +726,7 @@ const Payment = () => {
                   <TabContext value={value}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                       <TabList onChange={handleChangeTab} textColor="secondary" indicatorColor="secondary">
-                        <Tab label="Account Particulars" value="1" />                 
+                        <Tab label="Account Particulars" value="1" />
                         <Tab label="Summary" value="2" />
                       </TabList>
                     </Box>

@@ -5,55 +5,55 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
-import TextField from '@mui/material/TextField';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox';
+import { Button, Typography, TextField } from '@mui/material';
+import Paper from '@mui/material/Paper';
+import Draggable from 'react-draggable';
 import { useEffect, useRef, useState } from 'react';
 import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
-
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import 'react-tabs/style/react-tabs.css';
-
-// import CommonListViewTable from '../basicMaster/CommonListViewTable';
-
-// import { AiOutlineSearch, AiOutlineWallet } from "react-icons/ai";
-// import { BsListTask } from "react-icons/bs";
-
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import { useTheme } from '@mui/material/styles';
 import { Box, padding } from '@mui/system';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonListViewTable from '../../basicMaster/CommonListViewTable';
-
+function PaperComponent(props) {
+  return (
+    <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
+      <Paper {...props} />
+    </Draggable>
+  );
+}
 const Receipt = () => {
-  // const buttonStyle = {
-  //   fontSize: '20px' // Adjust the font size as needed
-  // };
+  const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [branch, setLoginBranch] = useState(localStorage.getItem('branch'));
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [value, setValue] = useState(0);
-
-  const theme = useTheme();
-  const anchorRef = useRef(null);
   const [editId, setEditId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   const [currencies, setCurrencies] = useState([]);
   const [allCustomerName, setAllCustomerName] = useState([]);
-  const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
-  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
-  const [branch, setLoginBranch] = useState(localStorage.getItem('branch'));
-  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectAll, setSelectAll] = useState(false);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const [fillGridData, setFillGridData] = useState([]);
   const [formData, setFormData] = useState({
     paymentMode: 'Bank Receipt',
     transactionMethod: 'NEFT',
@@ -72,15 +72,6 @@ const Receipt = () => {
     grossAmount: '',
     remarks: '',
     onAccount: '',
-
-    // bankChargeAcc: '',
-    // bankCharges: '',
-    // inCurrencyBnkChargs: '',
-    // inCurrencyTdsAmt: '',
-    // chequeBank: '',
-    // bankCashAcc: '',
-    // currencyAmount: '',
-    // receivedFrom: '',
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -103,24 +94,7 @@ const Receipt = () => {
     onAccount: '',
   });
 
-  const [inVoiceDetailsData, setInVoiceDetailsData] = useState([
-    {
-      id: Date.now(),
-      invNo: '',
-      invDate: null,
-      // refNo: '',
-      // refDate: null,
-      currency: 'INR',
-      exRate: 1,
-      amount: '',
-      gstAmt: '',
-      chargeAmt: '',
-      tds: '',
-      outstanding: '',
-      settled: '',
-    }
-  ]);
-
+  const [inVoiceDetailsData, setInVoiceDetailsData] = useState([]);
   const [invoiceDetailsError, setInvoiceDetailsError] = useState([
     {
       invNo: '',
@@ -213,22 +187,7 @@ const Receipt = () => {
       remarks: '',
       onAccount: '',
     });
-    setInVoiceDetailsData([
-      {
-        invNo: '',
-        invDate: null,
-        // refNo: '',
-        // refDate: null,
-        currency: 'INR',
-        exRate: 1,
-        amount: '',
-        gstAmt: '',
-        chargeAmt: '',
-        tds: '',
-        outstanding: '',
-        settled: '',
-      }
-    ]);
+    setInVoiceDetailsData([]);
     setInvoiceDetailsError([{
       invNo: '',
       invDate: '',
@@ -266,7 +225,7 @@ const Receipt = () => {
       amount: '',
       gstAmt: '',
       chargeAmt: '',
-      tds: '',
+      tds: 0,
       outstanding: '',
       settled: '',
     };
@@ -305,8 +264,6 @@ const Receipt = () => {
       try {
         const currencyData = await getAllActiveCurrency(orgId);
         setCurrencies(currencyData);
-
-        console.log('currency', currencyData);
       } catch (error) {
         console.error('Error fetching country data:', error);
       }
@@ -327,8 +284,6 @@ const Receipt = () => {
         'get',
         `arreceivable/getCustomerNameAndCodeForReceipt?orgId=${orgId}`
       );
-      console.log('API Response:', response);
-
       if (response.status === true) {
         setAllCustomerName(response.paramObjectsMap.PartyMasterVO);
       } else {
@@ -342,8 +297,6 @@ const Receipt = () => {
   const getAllReceipt = async () => {
     try {
       const response = await apiCalls('get', `arreceivable/getAllReceiptByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
-      console.log('API Response:', response);
-
       if (response.status === true) {
         setListViewData(response.paramObjectsMap.receiptReceivableVO.reverse());
       } else {
@@ -355,9 +308,7 @@ const Receipt = () => {
   };
 
   const getReceiptById = async (row) => {
-    console.log('first', row);
     setEditId(row.original.id);
-    // setShowForm(true);
     setInvoiceDetailsError({});
     try {
       const response = await apiCalls('get', `/arreceivable/getAllReceiptById?id=${row.original.id}`);
@@ -442,75 +393,14 @@ const Receipt = () => {
     }));
 
     let hasTableErrors = false;
-
     tableErrors.forEach((err) => {
       if (Object.values(err).some((error) => error)) {
         hasTableErrors = true;
       }
     });
-
-    // Check for empty fields and set error messages
-    // if (!formData.paymentMode) {
-    //   errors.paymentMode = 'Receipt Type Bank is required';
-    // }
-    // if (!formData.bankChargeAcc) {
-    //   errors.bankChargeAcc = 'Bank Charge Acc is required';
-    // }
-    // if (!formData.docId) {
-    //   errors.docId = 'Document ID is required';
-    // }
-    // if (!formData.docDate) {
-    //   errors.docDate = 'Document Date is required';
-    // }
-    // if (!formData.bankCharges) {
-    //   errors.bankCharges = 'Bank Charges is required';
-    // }
-    // if (!formData.inCurrencyBnkChargs) {
-    //   errors.inCurrencyBnkChargs = 'In Currency Bank Charges is required';
-    // }
-    // if (!formData.type) {
-    //   errors.type = 'Type is required';
-    // }
-    // if (!formData.tdsAmt) {
-    //   errors.tdsAmt = 'Tds Amount is required';
-    // }
-    // if (!formData.inCurrencyTdsAmt) {
-    //   errors.inCurrencyTdsAmt = 'In Currency Tds Amount is required';
-    // }
     if (!formData.customerName) {
       errors.customerName = 'Customer Name is required';
     }
-    // if (!formData.chequeBank) {
-    //   errors.chequeBank = 'Cheque Bank is required';
-    // }
-    // if (!formData.customerCode) {
-    //   errors.customerCode = 'Customer Code is required';
-    // }
-    // if (!formData.transactionMethod) {
-    //   errors.transactionMethod = 'Receipt Type is required';
-    // }
-    // if (!formData.bankCashAcc) {
-    //   errors.bankCashAcc = 'Bank/Cash/Acc is required';
-    // }
-    // if (!formData.chequeUtiNo) {
-    //   errors.chequeUtiNo = 'Cheque/Uti No is required';
-    // }
-    // if (!formData.chequeUtiDate) {
-    //   errors.chequeUtiDate = 'Cheque/Uti Dt is required';
-    // }
-    // if (!formData.receiptAmt) {
-    //   errors.receiptAmt = 'Receipt Amount is required';
-    // }
-    // if (!formData.currency) {
-    //   errors.currency = 'Currency is required';
-    // }
-    // if (!formData.currencyAmount) {
-    //   errors.currencyAmount = 'Currency Amount is required';
-    // }
-    // if (!formData.receivedFrom) {
-    //   errors.receivedFrom = 'Received From is required';
-    // }
-
     setFieldErrors(errors);
     setInvoiceDetailsError(tableErrors);
 
@@ -528,10 +418,10 @@ const Receipt = () => {
         exRate: parseFloat(row.exRate),
         amount: parseFloat(row.amount),
         gstAmt: parseFloat(row.gstAmt),
-        chargeAmt: parseFloat(row.chargeAmt),
-        tds: parseFloat(row.tds),
-        outstanding: parseFloat(row.outstanding),
-        settled: parseFloat(row.settled),
+        tds: parseFloat(row.tds) || 0,
+        settled: parseFloat(row.settled) || 0,
+        // chargeAmt: parseFloat(row.chargeAmt),
+        // outstanding: parseFloat(row.outstanding),
         // refDate: row.refDate ? formatDate(new Date(row.refDate)) : null,
         // refNo: row.refNo,
       }));
@@ -557,8 +447,6 @@ const Receipt = () => {
         cancelRemarks: '',
         chequeUtiNo: formData.chequeUtiNo,
         chequeUtiDate: formData.chequeUtiDate ? dayjs(formData.chequeUtiDate).format('YYYY-MM-DD') : null,
-        // netAmount: formData.netAmount,
-        // onAccount: formData.onAccount,
         remarks: formData.remarks,
         receiptInvDetailaDTO: receiptInvDetailVo
       };
@@ -623,39 +511,105 @@ const Receipt = () => {
   useEffect(() => {
     calculateTotals();
   }, [inVoiceDetailsData, formData.receiptAmt]);
+  // useEffect(() => {
+  //   calculate();
+  // }, [inVoiceDetailsData.tds, inVoiceDetailsData.chargeAmt]);
   const calculateTotals = () => {
-    let totalAmount = 0;
-    inVoiceDetailsData.forEach((row) => {
-      totalAmount += parseFloat((row.amount) || 0);
+    let totalChargeAmt = 0;
+  
+    const updatedInvoiceDetails = inVoiceDetailsData.map((row) => {
+      const billAmount = parseFloat(row.amount || 0);
+      const gstAmt = parseFloat(row.gstAmt || 0);
+      const tdsPercent = parseFloat(row.tds || 0);
+      const settledAmt = parseFloat(row.settled || 0);
+  
+      const gross = billAmount + gstAmt;
+      const tdsAmt = (gross * tdsPercent) / 100;
+      const netReceivable = gross - tdsAmt;
+      const outstandingAmt = netReceivable - settledAmt;
+      totalChargeAmt += netReceivable;
+  
+      return {
+        ...row,
+        chargeAmt: netReceivable.toFixed(2),
+        outstanding: outstandingAmt.toFixed(2)
+      };
     });
-    const totalSettled = inVoiceDetailsData.reduce((acc, row) => acc + parseFloat(row.settled || 0), 0);
-    const totalAmt = inVoiceDetailsData.reduce((acc, row) => acc + parseFloat(row.chargeAmt || 0), 0);
+  
+    const receiptAmt = parseFloat(formData.receiptAmt || 0);
+    const onAccount = receiptAmt < totalChargeAmt ? 0 : (receiptAmt - totalChargeAmt).toFixed(2);
+    setInVoiceDetailsData(updatedInvoiceDetails);
     setFormData((prev) => ({
       ...prev,
-      // netAmount: totalSettled,
-      netAmount: totalAmt,
-      onAccount: formData.receiptAmt === 0 ? 0 : (totalAmt - formData.receiptAmt).toFixed(2),
+      netAmount: totalChargeAmt.toFixed(2),
+      onAccount
     }));
-    setInVoiceDetailsData((prev) =>
-      prev.map((r) => {
-        let validAmount = parseFloat(r.chargeAmt || 0);
-        let settledAmount = parseFloat(r.settled || 0);
-        if (validAmount < settledAmount) {
-          setInvoiceDetailsError("Payable Amount should be greater than Settled Amount");
-          return {...r};
-        }
-        return {
-          ...r,
-          tds: parseFloat(r.amount - r.chargeAmt) || 0,
-        };
-      })
-    );
-    // setInVoiceDetailsData((prev) =>
-    //   prev.map((r) => ({
-    //     ...r,
-    //     tds: parseFloat(r.amount - r.chargeAmt),
-    //   }))
-    // );
+  };  
+     
+    const handleFullGrid = () => {
+      if (formData.customerCode) {
+        setModalOpen(true);
+        getAllFillGrid();
+      }else{
+        setModalOpen(false);
+        showToast('warning', formData.customerName ? `${formData.customerCode} has No Data` : 'Please Select Customer Name');
+      }
+    };
+    const handleCloseModal = () => {
+      setModalOpen(false);
+    };
+    const handleSelectAll = () => {
+      if (selectAll) {
+        setSelectedRows([]);
+      } else {
+        setSelectedRows(fillGridData.map((_, index) => index));
+      }
+      setSelectAll(!selectAll);
+    };
+    const handleSubmitSelectedRows = async () => {
+      const selectedData = selectedRows.map((index) => fillGridData[index]);
+      const newData = selectedData
+        .filter((data) => {
+          return !inVoiceDetailsData.some(
+            (item) => item.invNo === data.vid && item.invDate === data.vdate
+          );
+        })
+        .map((data) => ({
+          id: Date.now() + Math.random(), 
+          invNo: data.vid || '',
+          invDate: data.vdate ? dayjs(data.vdate).format('YYYY-MM-DD') : null,
+          amount: data.billamount || '',
+          gstAmt: data.gstamount || '',
+          chargeAmt: parseFloat(data.gstamount) + parseFloat(data.billamount) || '',
+          tds: 0,
+        }));
+    
+      if (newData.length < selectedData.length) {
+        showToast('warning', 'Some of the selected items are already added!');
+      }
+    
+      if (newData.length === 0) {
+        return;
+      }
+      setInVoiceDetailsData((prev) => [...prev, ...newData]);
+      setSelectedRows([]);
+      setSelectAll(false);
+      handleCloseModal();
+    };    
+  const getAllFillGrid = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/arreceivable/getReciptFillGrid?orgId=${orgId}&partyCode=${formData.customerCode}`
+        );
+      if (response.status === true) {
+        setFillGridData(response.paramObjectsMap.reciptFillGrid);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
   return (
     <div>
@@ -684,6 +638,7 @@ const Receipt = () => {
                     id="paymentMode"
                     name="paymentMode"
                     required
+                    disabled = {editId}
                     value={formData.paymentMode}
                     label="Receipt Type"
                     onChange={handleInputChange}
@@ -706,6 +661,7 @@ const Receipt = () => {
                     required
                     value={formData.transactionMethod}
                     label="Transaction Method"
+                    disabled = {editId}
                     onChange={handleInputChange}
                   >
                     <MenuItem value={'NEFT'}>NEFT</MenuItem>
@@ -772,6 +728,7 @@ const Receipt = () => {
                     labelId="customerName"
                     id="customerName"
                     label="Customer Name"
+                    disabled = {editId}
                     onChange={handleInputChange}
                     name="customerName"
                     value={formData.customerName}
@@ -790,6 +747,7 @@ const Receipt = () => {
                   <TextField
                     id="inVoiceDetailsDataAmt"
                     name="tdsAmt"
+                    disabled = {editId}
                     label="TDS Amount"
                     size="small"
                     value={formData.tdsAmt}
@@ -807,6 +765,7 @@ const Receipt = () => {
                     name="receiptAmt"
                     label="Receipt Amount"
                     size="small"
+                    disabled = {editId}
                     value={formData.receiptAmt}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
@@ -835,8 +794,9 @@ const Receipt = () => {
                   <TextField
                     id="chequeUtiNo"
                     name="chequeUtiNo"
-                    label="UTI No"
+                    label="UTR No"
                     size="small"
+                    disabled = {editId}
                     value={formData.chequeUtiNo}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 100 }}
@@ -850,6 +810,7 @@ const Receipt = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="UTI Date"
+                    disabled = {editId}
                       value={formData.chequeUtiDate ? dayjs(formData.chequeUtiDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('chequeUtiDate', date)}
                       slotProps={{
@@ -901,7 +862,8 @@ const Receipt = () => {
               {value === 0 && (
                 <div className="row d-flex ml" style={{ marginTop: '5px' }}>
                   <div className="mb-1">
-                    <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                    {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
+                    <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />                  
                   </div>
                   <div className="row mt-2">
                     <div className="col-lg-12">
@@ -923,8 +885,8 @@ const Receipt = () => {
                               <th className="px-2 py-2 text-white text-center">Ex. Rate</th> */}
                               <th className="px-2 py-2 text-white text-center">Bill Amount</th>
                               <th className="px-2 py-2 text-white text-center">TAX</th>
-                              <th className="px-2 py-2 text-white text-center">Net Receivable</th>
                               <th className="px-2 py-2 text-white text-center">TDS</th>
+                              <th className="px-2 py-2 text-white text-center">Net Receivable</th>
                               <th className="px-2 py-2 text-white text-center">Outstanding Bal</th>
                               <th className="px-2 py-2 text-white text-center">Settled Amt</th>
                             </tr>
@@ -954,6 +916,7 @@ const Receipt = () => {
                                   <input
                                     type="text"
                                     value={row.invNo}
+                                    disabled
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const regex = /^[a-zA-Z0-9\s/-]*$/;
@@ -991,6 +954,7 @@ const Receipt = () => {
                                             : null
                                           : null
                                       }
+                                      disabled
                                       format="DD-MM-YYYY"
                                       onChange={(newValue) => {
                                         setInVoiceDetailsData((prev) =>
@@ -1024,19 +988,7 @@ const Receipt = () => {
                                             padding: '8px',
                                           },
                                         },
-                                      }}                                      
-                                      // slotProps={{
-                                      //   textField: {
-                                      //     className: invoiceDetailsError[index]?.invDate
-                                      //       ? 'error form-control'
-                                      //       : 'form-control',
-                                      //     style: {
-                                      //       width: '200px',
-                                      //       border: 'none',
-                                      //       padding: '0px', // reduce padding for compact height
-                                      //     },
-                                      //   },
-                                      // }}                                      
+                                      }}                                     
                                     />
                                     {invoiceDetailsError[index]?.invDate && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1178,6 +1130,7 @@ const Receipt = () => {
                                   <input
                                     type="text"
                                     value={row.amount}
+                                    disabled
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9.]*$/;
@@ -1209,6 +1162,7 @@ const Receipt = () => {
                                   <input
                                     type="text"
                                     value={row.gstAmt}
+                                    disabled
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9]*$/;
@@ -1244,44 +1198,8 @@ const Receipt = () => {
                                 <td className="border px-2 py-2">
                                   <input
                                     type="text"
-                                    value={row.chargeAmt}
-                                    onChange={(e) => {
-                                      const value = e.target.value;
-                                      const isNumeric = /^[0-9]*$/;
-                                      if (isNumeric.test(value)) {
-                                        setInVoiceDetailsData((prev) =>
-                                          prev.map((r) => (r.id === row.id ? { ...r, chargeAmt: value } : r))
-                                        );
-                                        setInvoiceDetailsError((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = { ...newErrors[index], chargeAmt: 'Only numbers are allowed' };
-                                          return newErrors;
-                                        });
-                                      } else {
-                                        setInvoiceDetailsError((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = {
-                                            ...newErrors[index],
-                                            chargeAmt: 'Only numbers are allowed'
-                                          };
-                                          return newErrors;
-                                        });
-                                      }
-                                    }}
-                                    className={invoiceDetailsError[index]?.chargeAmt ? 'error form-control' : 'form-control'}
-                                    style={{ width: '150px' }}
-                                  />
-                                  {invoiceDetailsError[index]?.chargeAmt && (
-                                    <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                      {invoiceDetailsError[index].chargeAmt}
-                                    </div>
-                                  )}
-                                </td>
-                                <td className="border px-2 py-2">
-                                  <input
-                                    type="text"
                                     value={row.tds}
-                                    disabled
+                                    disabled = {editId}
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9]*$/;
@@ -1320,7 +1238,45 @@ const Receipt = () => {
                                 <td className="border px-2 py-2">
                                   <input
                                     type="text"
+                                    value={row.chargeAmt}
+                                    disabled
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      const isNumeric = /^[0-9]*$/;
+                                      if (isNumeric.test(value)) {
+                                        setInVoiceDetailsData((prev) =>
+                                          prev.map((r) => (r.id === row.id ? { ...r, chargeAmt: value } : r))
+                                        );
+                                        setInvoiceDetailsError((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = { ...newErrors[index], chargeAmt: 'Only numbers are allowed' };
+                                          return newErrors;
+                                        });
+                                      } else {
+                                        setInvoiceDetailsError((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = {
+                                            ...newErrors[index],
+                                            chargeAmt: 'Only numbers are allowed'
+                                          };
+                                          return newErrors;
+                                        });
+                                      }
+                                    }}
+                                    className={invoiceDetailsError[index]?.chargeAmt ? 'error form-control' : 'form-control'}
+                                    style={{ width: '150px' }}
+                                  />
+                                  {invoiceDetailsError[index]?.chargeAmt && (
+                                    <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                      {invoiceDetailsError[index].chargeAmt}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="border px-2 py-2">
+                                  <input
+                                    type="text"
                                     value={row.outstanding}
+                                    disabled = {editId}
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9]*$/;
@@ -1357,30 +1313,59 @@ const Receipt = () => {
                                   )}
                                 </td>
                                 <td className="border px-2 py-2">
-                                  <input
-                                    type="text"
-                                    value={row.settled}
-                                    onChange={(e) => {
-                                      const value = e.target.value;
-                                      const isNumeric = /^[0-9.]*$/;
-                                      if (isNumeric.test(value)) {
-                                        setInVoiceDetailsData((prev) => prev.map((r) => (r.id === row.id ? { ...r, settled: value } : r)));
-                                        setInvoiceDetailsError((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = { ...newErrors[index], settled: !value ? 'Settled is required' : '' };
-                                          return newErrors;
-                                        });
-                                      } else {
-                                        setInvoiceDetailsError((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = { ...newErrors[index], settled: 'Only numbers are allowed' };
-                                          return newErrors;
-                                        });
-                                      }
-                                    }}
-                                    className={invoiceDetailsError[index]?.settled ? 'error form-control' : 'form-control'}
-                                    style={{ width: '150px' }}
-                                  />
+                                <input
+                                  type="text"
+                                  value={row.settled}
+                                  disabled={(!formData.receiptAmt || parseFloat(formData.receiptAmt) === 0) || editId}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    const isNumeric = /^[0-9.]*$/;
+
+                                    if (!isNumeric.test(value)) {
+                                      setInvoiceDetailsError((prev) => {
+                                        const newErrors = [...prev];
+                                        newErrors[index] = { ...newErrors[index], settled: 'Only numbers are allowed' };
+                                        return newErrors;
+                                      });
+                                      return;
+                                    }
+
+                                    const newValue = parseFloat(value || 0);
+                                    const totalOtherSettled = inVoiceDetailsData.reduce((sum, r) =>
+                                      r.id !== row.id ? sum + parseFloat(r.settled || 0) : sum, 0
+                                    );
+
+                                    const totalSettledAfterChange = totalOtherSettled + newValue;
+                                    const maxReceiptAmt = parseFloat(formData.receiptAmt || 0);
+                                    const maxChargeAmt = parseFloat(row.chargeAmt || 0);
+
+                                    let errorMsg = '';
+                                    if (newValue > maxChargeAmt) {
+                                      errorMsg = `Settled cannot exceed Net Receivable (${maxChargeAmt})`;
+                                    } else if (totalSettledAfterChange > maxReceiptAmt) {
+                                      errorMsg = `Total settled exceeds Receipt Amount (${maxReceiptAmt})`;
+                                    }
+
+                                    if (errorMsg) {
+                                      setInvoiceDetailsError((prev) => {
+                                        const newErrors = [...prev];
+                                        newErrors[index] = { ...newErrors[index], settled: errorMsg };
+                                        return newErrors;
+                                      });
+                                      return;
+                                    }
+                                    setInVoiceDetailsData((prev) =>
+                                      prev.map((r) => (r.id === row.id ? { ...r, settled: value } : r))
+                                    );
+                                    setInvoiceDetailsError((prev) => {
+                                      const newErrors = [...prev];
+                                      newErrors[index] = { ...newErrors[index], settled: '' };
+                                      return newErrors;
+                                    });
+                                  }}
+                                  className={invoiceDetailsError[index]?.settled ? 'error form-control' : 'form-control'}
+                                  style={{ width: '150px' }}
+                                />
                                   {invoiceDetailsError[index]?.settled && (
                                     <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                       {invoiceDetailsError[index].settled}
@@ -1452,6 +1437,87 @@ const Receipt = () => {
                 </div>
               )}
             </Box>
+                    <Dialog
+                      open={modalOpen}
+                      maxWidth={'md'}
+                      fullWidth={true}
+                      onClose={handleCloseModal}
+                      PaperComponent={PaperComponent}
+                      aria-labelledby="draggable-dialog-title"
+                    >
+                      <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
+                        <h6>Grid Details</h6>
+                      </DialogTitle>
+                      <DialogContent className="pb-0">
+                        <div className="row">
+                          <div className="col-lg-12">
+                            <div className="table-responsive">
+                              <table className="table table-bordered">
+                                <thead>
+                                  <tr style={{ backgroundColor: '#673AB7' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                      <Checkbox checked={selectAll} onChange={handleSelectAll} />
+                                    </th>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                      S.No
+                                    </th>
+                                    <th className="table-header"># Invoice</th>
+                                    <th className="table-header">Date</th>
+                                    <th className="table-header">Bill Amount</th>
+                                    <th className="table-header">Tax</th>
+                                    <th className="table-header">Net Receivable</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {fillGridData?.map((row, index) => (
+                                    <tr key={row.id}>
+                                      <td className="border p-0 text-center">
+                                        <Checkbox
+                                          checked={selectedRows.includes(index)}
+                                          onChange={(e) => {
+                                            const isChecked = e.target.checked;
+                                            setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
+                                          }}
+                                        />
+                                      </td>
+                                      <td className="text-center">{index + 1}</td>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.vid || ''}
+                                      </td>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : ''}
+                                      </td>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.billamount || ''}
+                                      </td> 
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstamount || ''}
+                                      </td>
+                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {parseFloat(row.gstamount) + parseFloat(row.billamount) || 0}
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </DialogContent>
+                      <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
+                        <Button onClick={handleCloseModal} sx={{ color: '#673AB7' }}>
+                          Cancel
+                        </Button>
+                        <Button
+                          color="secondary"
+                          onClick={handleSubmitSelectedRows}
+                          variant="contained"
+                          sx={{ backgroundColor: '#673AB7' }}
+                        >
+                          Proceed
+                        </Button>
+                      </DialogActions>
+                    </Dialog>
           </>
         )}
       </div>

@@ -1,8 +1,8 @@
 // assets
 import { IconKey } from '@tabler/icons-react';
-import { MdOutlinePayment } from "react-icons/md";
-import { IconFileInvoice } from "@tabler/icons-react";
-import { BiCreditCard } from "react-icons/bi";
+import { MdOutlinePayment } from 'react-icons/md';
+import { IconFileInvoice } from '@tabler/icons-react';
+import { BiCreditCard } from 'react-icons/bi';
 
 // constant
 const icons = {
@@ -99,9 +99,16 @@ const ap = {
         // },
         {
           id: 'paymentRegister',
-          title: 'AP Outstanding with aging Report',
+          title: 'AP Outstanding',
           type: 'item',
-          url: '/finance/paymentRegister/PaymentRegister'
+          url: '/Finance/paymentRegister/PaymentRegister'
+        },
+
+        {
+          id: 'apAging',
+          title: 'AP Ageing',
+          type: 'item',
+          url: '/Finance/paymentRegister/APaging'
         }
       ]
       // .filter((item) => allowedScreenIds.includes(item.id))

@@ -41,6 +41,8 @@ import { Bar, Pie, Line } from 'react-chartjs-2';
 import { Box } from '@mui/system';
 import NoDataAvailable from 'utils/NoData';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
+// import { Card, CardContent, Typography } from '@mui/material';
+// import { Line } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ChartDataLabels, Title, ArcElement, Tooltip, Legend);
 
@@ -59,7 +61,19 @@ const icons = [
   <LocalMallOutlinedIcon fontSize="inherit" /> // Accounts Payable
 ];
 
-const StatCard = ({ statsPercentageMonthly, statsPercentageYearly, stats, title, monthlyValue, yearlyValue, color, icon, isYearly, setIsYearly, showToggle }) => {
+const StatCard = ({
+  statsPercentageMonthly,
+  statsPercentageYearly,
+  stats,
+  title,
+  monthlyValue,
+  yearlyValue,
+  color,
+  icon,
+  isYearly,
+  setIsYearly,
+  showToggle
+}) => {
   const theme = useTheme();
 
   // const getPercentageChange = (current, previous) => {
@@ -73,7 +87,6 @@ const StatCard = ({ statsPercentageMonthly, statsPercentageYearly, stats, title,
   //   : getPercentageChange(monthlyValue, statsPercentageMonthly);
 
   // const isPositive = percentageChange !== "N/A" && parseFloat(percentageChange) >= 0;
-
 
   return (
     <Card sx={{ backgroundImage: color, color: '#fff', p: 1, boxShadow: 3, borderRadius: 2 }}>
@@ -99,22 +112,22 @@ const StatCard = ({ statsPercentageMonthly, statsPercentageYearly, stats, title,
                   sx={{
                     px: 1,
                     // py: 1.2,
-                    minWidth: "auto",
+                    minWidth: 'auto',
                     // borderRadius: "8px",
                     // border: "2px solid",
-                    border: !isYearly ? "none" : "none",
-                    borderColor: !isYearly ? "#121926" : "transparent",
-                    backgroundColor: !isYearly ? "#121926" : "",
-                    color: !isYearly ? "white" : "grey.700",
-                    fontWeight: "bold",
+                    border: !isYearly ? 'none' : 'none',
+                    borderColor: !isYearly ? '#121926' : 'transparent',
+                    backgroundColor: !isYearly ? '#121926' : '',
+                    color: !isYearly ? 'white' : 'grey.700',
+                    fontWeight: 'bold',
                     // boxShadow: !isYearly ? "0px 4px 10px rgba(0, 0, 0, 0.2)" : "none",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      backgroundColor: !isYearly ? "#121926" : "",
-                      transform: !isYearly ? "scale(1.05)" : "none",
-                      border: !isYearly ? "none" : "none",
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: !isYearly ? '#121926' : '',
+                      transform: !isYearly ? 'scale(1.05)' : 'none',
+                      border: !isYearly ? 'none' : 'none'
                       // borderColor: !isYearly ? "#121926" : "transparent",
-                    },
+                    }
                   }}
                   onClick={() => setIsYearly(false)}
                 >
@@ -124,21 +137,21 @@ const StatCard = ({ statsPercentageMonthly, statsPercentageYearly, stats, title,
                   sx={{
                     px: 1,
                     // py: 1.2,
-                    minWidth: "auto",
+                    minWidth: 'auto',
                     // borderRadius: "8px",
                     // border: "2px solid",
-                    border: isYearly ? "none" : "none",
-                    borderColor: isYearly ? "#121926" : "transparent",
-                    backgroundColor: isYearly ? "#121926" : "",
-                    color: isYearly ? "white" : "grey.700",
-                    fontWeight: "bold",
+                    border: isYearly ? 'none' : 'none',
+                    borderColor: isYearly ? '#121926' : 'transparent',
+                    backgroundColor: isYearly ? '#121926' : '',
+                    color: isYearly ? 'white' : 'grey.700',
+                    fontWeight: 'bold',
                     // boxShadow: isYearly ? "0px 4px 10px rgba(0, 0, 0, 0.2)" : "none",
-                    transition: "all 0.3s ease",
-                    "&:hover": {
-                      backgroundColor: isYearly ? "#121926" : "",
-                      transform: isYearly ? "scale(1.05)" : "none",
-                      border: isYearly ? "none" : "none",
-                    },
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      backgroundColor: isYearly ? '#121926' : '',
+                      transform: isYearly ? 'scale(1.05)' : 'none',
+                      border: isYearly ? 'none' : 'none'
+                    }
                   }}
                   onClick={() => setIsYearly(true)}
                 >
@@ -152,9 +165,7 @@ const StatCard = ({ statsPercentageMonthly, statsPercentageYearly, stats, title,
           {title}
         </Typography>
         <Typography variant="h3" fontWeight="bold">
-          {isYearly
-            ? `₹${Math.round(yearlyValue).toLocaleString('en-IN')}`
-            : `₹${Math.round(monthlyValue).toLocaleString('en-IN')}`}
+          {isYearly ? `₹${Math.round(yearlyValue).toLocaleString('en-IN')}` : `₹${Math.round(monthlyValue).toLocaleString('en-IN')}`}
         </Typography>
 
         <hr style={{ margin: '10px' }} />
@@ -173,14 +184,12 @@ const StatCard = ({ statsPercentageMonthly, statsPercentageYearly, stats, title,
               : `₹${Math.round(statsPercentageMonthly).toLocaleString('en-IN')}`}
           </Typography>
         </Grid>
-
       </CardContent>
     </Card>
   );
 };
 
 const TopCustomersChart = ({ chartData }) => {
-
   const options = {
     responsive: true,
     plugins: {
@@ -192,8 +201,8 @@ const TopCustomersChart = ({ chartData }) => {
         formatter: (value) => `${value}L`,
         font: {
           weight: 'bold',
-          size: 12,
-        },
+          size: 12
+        }
       }
     },
 
@@ -204,9 +213,9 @@ const TopCustomersChart = ({ chartData }) => {
           maxRotation: 0,
           minRotation: 0,
           font: {
-            size: 12,
-          },
-        },
+            size: 12
+          }
+        }
       },
       y: {
         beginAtZero: true,
@@ -214,14 +223,14 @@ const TopCustomersChart = ({ chartData }) => {
         max: 120,
         ticks: {
           stepSize: 10,
-          callback: (value) => `${value.toFixed(2)}L`,
-        },
-      },
-    },
+          callback: (value) => `${value.toFixed(2)}L`
+        }
+      }
+    }
   };
 
   return (
-    <Card sx={{ p: 1, boxShadow: 3, borderRadius: 2, width: "100%", height: "100%" }}>
+    <Card sx={{ p: 1, boxShadow: 3, borderRadius: 2, width: '100%', height: '100%' }}>
       <CardContent>
         <Typography variant="h6">Top 5 Customers</Typography>
         {chartData && chartData.labels.length > 0 ? (
@@ -246,51 +255,51 @@ const SalesDistributionChart = ({ loading, error, salesData }) => {
         top: 30,
         bottom: 30,
         left: 10,
-        right: 10,
-      },
+        right: 10
+      }
     },
     plugins: {
       legend: {
-        position: "bottom",
+        position: 'bottom',
         labels: {
           boxWidth: 12,
           padding: 10,
           usePointStyle: true,
-          font: { size: 12 },
+          font: { size: 12 }
         },
-        align: "start",
+        align: 'start'
       },
       tooltip: {
         callbacks: {
           label: (tooltipItem) => {
             const value = tooltipItem.raw;
-            return `₹${value.toLocaleString("en-IN")}L`;
-          },
+            return `₹${value.toLocaleString('en-IN')}L`;
+          }
         },
         bodyFont: {
-          weight: "bold",
-          size: 13,
-        },
+          weight: 'bold',
+          size: 13
+        }
       },
       datalabels: {
-        anchor: "end",
-        align: "end",
+        anchor: 'end',
+        align: 'end',
         offset: 8, // Reduced to bring labels closer to slices
-        color: "#000",
+        color: '#000',
         font: {
-          weight: "bold",
-          size: 12,
+          weight: 'bold',
+          size: 12
         },
-        formatter: (value) => `${value}L`,
-        borderColor: "#000",
-        borderWidth: 1,
-        borderRadius: 4,
-        backgroundColor: "white",
+        formatter: (value) => `${Math.floor(value)}L`,
+        // borderColor: '#000',
+        // borderWidth: 1,
+        // borderRadius: 4,
+        backgroundColor: 'transparent',
         padding: 4,
         clamp: true,
-        clip: false,
-      },
-    },
+        clip: false
+      }
+    }
   };
 
   return (
@@ -299,35 +308,33 @@ const SalesDistributionChart = ({ loading, error, salesData }) => {
         p: 1,
         boxShadow: 3,
         borderRadius: 2,
-        width: "100%",
-        height: "100%",
+        width: '100%',
+        height: '100%'
       }}
     >
       <CardContent
         sx={{
-          width: "100%",
-          height: "350px", // Increased for label space
-          display: "flex",
-          flexDirection: "column",
+          width: '100%',
+          height: '350px', // Increased for label space
+          display: 'flex',
+          flexDirection: 'column'
         }}
       >
-        <Typography variant="h6">Sales Distribution</Typography>
+        <Typography variant="h6">Sales Distribution Product Wise</Typography>
         {loading ? (
           <Typography>Loading...</Typography>
         ) : error ? (
           <>
             <NoDataAvailable />
-            <Typography sx={{ textAlign: "center" }}>
-              No Data Available
-            </Typography>
+            <Typography sx={{ textAlign: 'center' }}>No Data Available</Typography>
           </>
         ) : (
           <div
             style={{
-              position: "relative",
-              marginTop: "20px",
-              width: "100%",
-              height: "100%",
+              position: 'relative',
+              marginTop: '20px',
+              width: '100%',
+              height: '100%'
             }}
           >
             <Pie data={salesData} options={options} plugins={[ChartDataLabels]} />
@@ -426,41 +433,41 @@ const GSTRTable = () => {
 };
 
 const TDSTable = ({ tdsData }) => {
-  console.log("TDSDATA", tdsData);
+  console.log('TDSDATA', tdsData);
   const [openTdsSummary, setOpenTdsSummary] = useState(false);
 
   return (
-    <TableContainer
-      component={Paper}
-      sx={{ boxShadow: 4, borderRadius: 3, overflow: "hidden", background: "#F9FAFB" }}
-    >
+    <TableContainer component={Paper} sx={{ boxShadow: 4, borderRadius: 3, overflow: 'hidden', background: '#F9FAFB' }}>
       {/* Header with View Button */}
       <Box
         sx={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
           p: 1,
-          background: "linear-gradient(135deg, #0288D1, #01579B)",
-          color: "#fff",
-          fontWeight: "bold",
-          letterSpacing: 1.1,
+          background: 'linear-gradient(135deg, #0288D1, #01579B)',
+          color: '#fff',
+          fontWeight: 'bold',
+          letterSpacing: 1.1
         }}
       >
-        <Typography variant="h6" sx={{ flexGrow: 1, textAlign: "center", color: "white", fontWeight: "bold" }}>
+        <Typography variant="h6" sx={{ flexGrow: 1, textAlign: 'center', color: 'white', fontWeight: 'bold' }}>
           TDS Summary
         </Typography>
-        <Button variant="contained" color="primary" sx={{ height: "30px" }} onClick={() => setOpenTdsSummary(true)}>
+        <Button variant="contained" color="primary" sx={{ height: '30px' }} onClick={() => setOpenTdsSummary(true)}>
           View
         </Button>
       </Box>
 
       {/* Main Table (Showing Only 5 Records) */}
       <Table size="small">
-        <TableHead sx={{ background: "#0288D1" }}>
+        <TableHead sx={{ background: '#0288D1' }}>
           <TableRow>
-            {["S.No", "Supplier", "TDS 9%", "TDS 10%", "TDS 4%", "TDS Amount (₹)"].map((header, index) => (
-              <TableCell key={index} sx={{ fontWeight: "bold", textAlign: "center", color: "#fff", padding: "8px", borderBottom: "2px solid #01579B" }}>
+            {['S.No', 'Supplier', 'TDS 9%', 'TDS 10%', 'TDS 4%', 'TDS Amount (₹)'].map((header, index) => (
+              <TableCell
+                key={index}
+                sx={{ fontWeight: 'bold', textAlign: 'center', color: '#fff', padding: '8px', borderBottom: '2px solid #01579B' }}
+              >
                 {header}
               </TableCell>
             ))}
@@ -468,16 +475,18 @@ const TDSTable = ({ tdsData }) => {
         </TableHead>
         <TableBody>
           {tdsData.slice(0, 5).map((row, index) => (
-            <TableRow key={index} sx={{ background: index % 2 === 0 ? "#E1F5FE" : "#FFFFFF", "&:hover": { background: "#B3E5FC" } }}>
-              <TableCell sx={{ py: 1, textAlign: "center", fontWeight: 500, fontSize: '0.875rem' }}>{index + 1}</TableCell>
+            <TableRow key={index} sx={{ background: index % 2 === 0 ? '#E1F5FE' : '#FFFFFF', '&:hover': { background: '#B3E5FC' } }}>
+              <TableCell sx={{ py: 1, textAlign: 'center', fontWeight: 500, fontSize: '0.875rem' }}>{index + 1}</TableCell>
               {/* <TableCell sx={{ py: 1, textAlign: "center", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 130, fontSize: '0.875rem' }}>
                 <span>{row.supplierName}</span>
               </TableCell> */}
-              <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.shortName}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.tds9.toLocaleString("en-IN")}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.tds10.toLocaleString("en-IN")}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: "center", fontSize: '0.875rem' }}>{row.tds4.toLocaleString("en-IN")}</TableCell>
-              <TableCell sx={{ py: 1, textAlign: "center", fontWeight: 600, fontSize: '0.875rem' }}>{row.tdsAmount.toLocaleString("en-IN")}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: 'center', fontSize: '0.875rem' }}>{row.shortName}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: 'center', fontSize: '0.875rem' }}>{row.tds9.toLocaleString('en-IN')}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: 'center', fontSize: '0.875rem' }}>{row.tds10.toLocaleString('en-IN')}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: 'center', fontSize: '0.875rem' }}>{row.tds4.toLocaleString('en-IN')}</TableCell>
+              <TableCell sx={{ py: 1, textAlign: 'center', fontWeight: 600, fontSize: '0.875rem' }}>
+                {row.tdsAmount.toLocaleString('en-IN')}
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -485,12 +494,15 @@ const TDSTable = ({ tdsData }) => {
 
       <Dialog open={openTdsSummary} maxWidth="md" fullWidth onClose={() => setOpenTdsSummary(false)}>
         <DialogContent>
-          <DialogTitle sx={{ background: "#0288D1", color: "#fff", fontWeight: "bold", textAlign: "center" }}>Full TDS Summary</DialogTitle>
+          <DialogTitle sx={{ background: '#0288D1', color: '#fff', fontWeight: 'bold', textAlign: 'center' }}>Full TDS Summary</DialogTitle>
           <Table size="small">
-            <TableHead sx={{ background: "#0288D1" }}>
+            <TableHead sx={{ background: '#0288D1' }}>
               <TableRow>
-                {["S.No", "Supplier", "TDS 9% (₹)", "TDS 10% (₹)", "TDS 4% (₹)", "TDS Amount (₹)"].map((header, index) => (
-                  <TableCell key={index} sx={{ fontWeight: "bold", textAlign: "center", color: "#fff", padding: "8px", borderBottom: "2px solid #01579B" }}>
+                {['S.No', 'Supplier', 'TDS 9% (₹)', 'TDS 10% (₹)', 'TDS 4% (₹)', 'TDS Amount (₹)'].map((header, index) => (
+                  <TableCell
+                    key={index}
+                    sx={{ fontWeight: 'bold', textAlign: 'center', color: '#fff', padding: '8px', borderBottom: '2px solid #01579B' }}
+                  >
                     {header}
                   </TableCell>
                 ))}
@@ -498,16 +510,16 @@ const TDSTable = ({ tdsData }) => {
             </TableHead>
             <TableBody>
               {tdsData.map((row, index) => (
-                <TableRow key={index} sx={{ background: index % 2 === 0 ? "#E1F5FE" : "#FFFFFF", "&:hover": { background: "#B3E5FC" } }}>
-                  <TableCell sx={{ py: 1, textAlign: "center", fontWeight: 500 }}>{index + 1}</TableCell>
+                <TableRow key={index} sx={{ background: index % 2 === 0 ? '#E1F5FE' : '#FFFFFF', '&:hover': { background: '#B3E5FC' } }}>
+                  <TableCell sx={{ py: 1, textAlign: 'center', fontWeight: 500 }}>{index + 1}</TableCell>
                   {/* <TableCell sx={{ py: 1, textAlign: "center", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", maxWidth: 130 }}>
                     <span>{row.supplierName}</span>
                   </TableCell> */}
-                  <TableCell sx={{ py: 1 }}>{row.supplierName.toLocaleString("en-IN")}</TableCell>
-                  <TableCell sx={{ py: 1, textAlign: "center" }}>{row.tds9.toLocaleString("en-IN")}</TableCell>
-                  <TableCell sx={{ py: 1, textAlign: "center" }}>{row.tds10.toLocaleString("en-IN")}</TableCell>
-                  <TableCell sx={{ py: 1, textAlign: "center" }}>{row.tds4.toLocaleString("en-IN")}</TableCell>
-                  <TableCell sx={{ py: 1, textAlign: "center", fontWeight: 600 }}>{row.tdsAmount.toLocaleString("en-IN")}</TableCell>
+                  <TableCell sx={{ py: 1 }}>{row.supplierName.toLocaleString('en-IN')}</TableCell>
+                  <TableCell sx={{ py: 1, textAlign: 'center' }}>{row.tds9.toLocaleString('en-IN')}</TableCell>
+                  <TableCell sx={{ py: 1, textAlign: 'center' }}>{row.tds10.toLocaleString('en-IN')}</TableCell>
+                  <TableCell sx={{ py: 1, textAlign: 'center' }}>{row.tds4.toLocaleString('en-IN')}</TableCell>
+                  <TableCell sx={{ py: 1, textAlign: 'center', fontWeight: 600 }}>{row.tdsAmount.toLocaleString('en-IN')}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -522,28 +534,77 @@ const TDSTable = ({ tdsData }) => {
     </TableContainer>
   );
 };
+// Mapping of month numbers to names
+const monthMap = {
+  1: 'Jan',
+  2: 'Feb',
+  3: 'Mar',
+  4: 'Apr',
+  5: 'May',
+  6: 'Jun',
+  7: 'Jul',
+  8: 'Aug',
+  9: 'Sep',
+  10: 'Oct',
+  11: 'Nov',
+  12: 'Dec'
+};
 
-const LineChart = () => {
-  const data = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [
-      {
-        label: 'Sales',
-        data: [30, 45, 28, 50, 60, 70],
-        borderColor: 'blue',
-        backgroundColor: 'rgba(0, 0, 255, 0.2)',
-        tension: 0.4
+const LineChart = ({ chartSalesData }) => {
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: {
+          font: {
+            size: 12
+          }
+        }
       }
-    ]
+      // tooltip: {
+      //   callbacks: {
+      //     label: (tooltipItem) => `₹${tooltipItem.raw.toLocaleString('en-IN')}`,
+      //   },
+      // },
+    },
+    scales: {
+      y: {
+        beginAtZero: true
+        // ticks: {
+        //   callback: (value) => `₹${value.toLocaleString('en-IN')}`,
+        //   font: {
+        //     size: 12,
+        //   },
+        // },
+      },
+      x: {
+        ticks: {
+          font: {
+            size: 12
+          }
+        }
+      }
+    }
   };
-
-  // return <Line data={data} />;
+  console.log(chartSalesData);
   return (
-    <Card sx={{ p: 1, boxShadow: 3, borderRadius: 2 }}>
-      <CardContent>
-        <Typography variant="h6"></Typography>
-        {/* <Bar data={data} options={options} /> */}
-        <Line data={data} />
+    <Card sx={{ p: 1, boxShadow: 3, borderRadius: 2, height: 400 }}>
+      <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Typography variant="h6" gutterBottom>
+          Monthly Sales by Customer
+        </Typography>
+        <Box sx={{ flexGrow: 1 }}>
+          {chartSalesData && chartSalesData.datasets.length > 0 ? (
+            <Line data={chartSalesData} options={options} />
+          ) : (
+            <>
+              <NoDataAvailable />
+              <Typography sx={{ textAlign: 'center' }}>No Data Available</Typography>
+            </>
+          )}
+        </Box>
       </CardContent>
     </Card>
   );
@@ -597,7 +658,7 @@ const StackedBarChart = () => {
   );
 };
 
-export { GSTRTable, TDSTable };
+// export { GSTRTable, TDSTable };
 
 const DashboardNew = () => {
   const [isYearly, setIsYearly] = useState(false);
@@ -621,9 +682,11 @@ const DashboardNew = () => {
   const [paymentPrevMonthAmt, setPaymentPrevMonthAmt] = useState(0);
   const [paymentPrevYearAmt, setPaymentPrevYearAmt] = useState(0);
 
+  const [chartData, setChartData] = useState(null);
+  const [chartSalesData, setSalesChartData] = useState(null);
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-  const [chartData, setChartData] = useState(null);
+  const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [salesData, setSalesData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -638,7 +701,10 @@ const DashboardNew = () => {
     try {
       const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `dashboard/getPercentageDiffFromRevenue?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&year=YEAR` : `&month=MONTH`}`);
+      const response = await apiCalls(
+        'get',
+        `dashboard/getPercentageDiffFromRevenue?orgId=${orgId}&finYear=${finYear}${targetMonth === 'ALL' ? `&year=YEAR` : `&month=MONTH`}`
+      );
 
       // const totalOrderYear = Number(response.paramObjectsMap.taxInvoiceVO[0]?.amount || 0);
       // setTotalOrderYear(totalOrderYear);
@@ -659,7 +725,10 @@ const DashboardNew = () => {
     try {
       const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `dashboard/getPercentageDiffFromCost?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&year=YEAR` : `&month=MONTH`}`);
+      const response = await apiCalls(
+        'get',
+        `dashboard/getPercentageDiffFromCost?orgId=${orgId}&finYear=${finYear}${targetMonth === 'ALL' ? `&year=YEAR` : `&month=MONTH`}`
+      );
 
       // const totalCostYear = Number(response.paramObjectsMap.cost[0]?.amount || 0);
       // setTotalCostYear(totalCostYear);
@@ -680,7 +749,10 @@ const DashboardNew = () => {
     try {
       const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `dashboard/getPercentageFromReceipt?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&month=YEAR` : `&month=MONTH`}`);
+      const response = await apiCalls(
+        'get',
+        `dashboard/getPercentageFromReceipt?orgId=${orgId}&finYear=${finYear}${targetMonth === 'ALL' ? `&month=YEAR` : `&month=MONTH`}`
+      );
 
       // const totalReceiptYear = Number(response.paramObjectsMap.receiptAmont[0]?.receiptAmt || 0);
       // setTotalReceiptYear(totalReceiptYear);
@@ -701,7 +773,10 @@ const DashboardNew = () => {
     try {
       const targetMonth = getTargetMonth(isYearly);
 
-      const response = await apiCalls('get', `dashboard/getPercentageFromPayment?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&month=YEAR` : `&month=MONTH`}`);
+      const response = await apiCalls(
+        'get',
+        `dashboard/getPercentageFromPayment?orgId=${orgId}&finYear=${finYear}${targetMonth === 'ALL' ? `&month=YEAR` : `&month=MONTH`}`
+      );
 
       // const totalPaymentYear = Number(response.paramObjectsMap.receiptAmont[0]?.paymentAmt || 0);
       // setTotalPaymentYear(totalPaymentYear);
@@ -790,21 +865,24 @@ const DashboardNew = () => {
       const targetMonth = getTargetMonth(isYearly);
 
       try {
-        const response = await apiCalls('get', `master/getMonthlyAndYearWiseData?orgId=${orgId}${targetMonth === "ALL" ? `&finYear=${finYear}` : `&month=MONTH&finYear=${finYear}`}`);
+        const response = await apiCalls(
+          'get',
+          `master/getMonthlyAndYearWiseData?orgId=${orgId}${targetMonth === 'ALL' ? `&finYear=${finYear}` : `&month=MONTH&finYear=${finYear}`}`
+        );
 
         if (response?.status && response?.paramObjectsMap?.partyMasterVO) {
           let parties = response.paramObjectsMap.partyMasterVO || [];
 
           parties = parties
             .map((party) => ({
-              name: party.partyName, // Full name for tooltip
-              shortName: party.partyShortName || "", // Show empty if shortName is missing
-              amount: parseFloat(party.amt || 0) / 100000,
+              name: party.partyName,
+              shortName: party.partyShortName || '',
+              amount: parseFloat(party.amt || 0) / 100000
             }))
             .sort((a, b) => b.amount - a.amount)
-            .slice(0, 5); // Limit to top 5 customers
+            .slice(0, 5);
 
-          const labels = parties.map((party) => party.shortName); // Use empty string if shortName is missing
+          const labels = parties.map((party) => party.shortName);
           const amounts = parties.map((party) => party.amount);
           const tooltips = parties.map((party) => party.name);
 
@@ -812,26 +890,20 @@ const DashboardNew = () => {
             labels,
             datasets: [
               {
-                label: "Total Amount in Lakhs",
+                label: 'Total Amount in Lakhs',
                 data: amounts,
-                backgroundColor: [
-                  "#33D68A",
-                  "#FF5733",
-                  "#33B5E5",
-                  "#FFC107",
-                  "#8E44AD",
-                ],
-                borderColor: "#fff",
+                backgroundColor: ['#33D68A', '#FF5733', '#33B5E5', '#FFC107', '#8E44AD'],
+                borderColor: '#fff',
                 borderWidth: 2,
-                tooltips, // Store tooltips separately
-              },
-            ],
+                tooltips // Store tooltips separately
+              }
+            ]
           });
         } else {
           setChartData(null);
         }
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error('Error fetching data:', error);
         setChartData(null);
       }
     };
@@ -844,8 +916,8 @@ const DashboardNew = () => {
 
       try {
         const response = await apiCalls(
-          "get",
-          `/master/getSalesDistributionData?orgId=${orgId}${targetMonth === "ALL" ? `&finYear=${finYear}` : `&month=MONTH&finYear=${finYear}`}`
+          'get',
+          `/master/getSalesDistributionData?orgId=${orgId}${targetMonth === 'ALL' ? `&finYear=${finYear}` : `&month=MONTH&finYear=${finYear}`}`
         );
 
         if (response?.status && response?.paramObjectsMap?.partyMasterVO) {
@@ -858,17 +930,17 @@ const DashboardNew = () => {
             labels,
             datasets: [
               {
-                label: "Sales (in Lakhs)",
+                label: 'Sales (in Lakhs)',
                 data,
-                backgroundColor: ["#33B5E5", "#FF5733", "#33D68A", "#FFC107", "#8E44AD"],
-              },
-            ],
+                backgroundColor: ['#33B5E5', '#FF5733', '#33D68A', '#FFC107', '#8E44AD']
+              }
+            ]
           });
         } else {
-          setError("No data available");
+          setError('No data available');
         }
       } catch (err) {
-        setError("Error fetching data");
+        setError('Error fetching data');
       } finally {
         setLoading(false);
       }
@@ -881,24 +953,91 @@ const DashboardNew = () => {
     const fetchTdsData = async () => {
       const targetMonth = getTargetMonth(isYearly);
       try {
-        const response = await apiCalls('get', `dashboard/getTdsSummary?orgId=${orgId}&finYear=${finYear}${targetMonth === "ALL" ? `&month=YEAR` : `&month=MONTH`}`);
+        const response = await apiCalls(
+          'get',
+          `dashboard/getTdsSummary?orgId=${orgId}&finYear=${finYear}${targetMonth === 'ALL' ? `&month=YEAR` : `&month=MONTH`}`
+        );
         if (response?.status && response?.paramObjectsMap?.receiptAmont) {
           setTdsData(response.paramObjectsMap.receiptAmont || []);
-          console.log("TDS data", response)
+          console.log('TDS data', response);
         }
       } catch (error) {
-        console.error("Error fetching TDS data:", error);
+        console.error('Error fetching TDS data:', error);
       }
     };
     fetchTdsData();
   }, [orgId, isYearly]);
 
+  useEffect(() => {
+    const fetchSalesChartData = async () => {
+      try {
+        const res = await apiCalls('get', `/dashboard/getSalesMonthWiseData?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
+        const apiData = res.paramObjectsMap?.Payment || [];
+        console.log('Api Data', res);
+        const labels = Array.from({ length: 12 }, (_, i) => i + 1).map((i) => monthMap[i]);
+        const customers = [...new Set(apiData.map((item) => item.partyShortName))];
+
+        const datasets = customers.map((customer, idx) => {
+          const monthlySales = Array(12).fill(0);
+          apiData
+            .filter((entry) => entry.partyShortName === customer)
+            .forEach((entry) => {
+              monthlySales[entry.month - 1] = entry.amount;
+            });
+          const colors = ['blue', 'green', 'orange', 'purple', 'red', 'brown', 'teal', 'magenta', 'gray', 'navy'];
+          const color = colors[idx % colors.length];
+          return {
+            label: customer,
+            data: monthlySales,
+            borderColor: color,
+            backgroundColor: `${color}`,
+            tension: 0.4
+          };
+        });
+
+        setSalesChartData({ labels, datasets });
+      } catch (err) {
+        console.error('Error fetching sales chart data:', err);
+      }
+    };
+
+    fetchSalesChartData();
+  }, [branchCode, finYear, orgId]);
+
   // Update financial data dynamically
   const financialData = [
-    { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: revenuePrevMonthAmt, statsPercentageYearly: revenuePrevYearAmt, title: 'Revenue', monthly: totalOrderMonth, yearly: totalOrderYear },
-    { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: costPrevMonthAmt, statsPercentageYearly: costPrevYearAmt, title: 'Cost', monthly: totalCostMonth, yearly: totalCostYear },
-    { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: receiptPrevMonthAmt, statsPercentageYearly: receiptPrevYearAmt, title: 'Receipt', monthly: totalReceiptMonth, yearly: totalReceiptYear },
-    { stats: !isYearly ? "PM" : "PY", statsPercentageMonthly: paymentPrevMonthAmt, statsPercentageYearly: paymentPrevYearAmt, title: 'Payment', monthly: totalPaymentMonth, yearly: totalPaymentYear }
+    {
+      stats: !isYearly ? 'PM' : 'PY',
+      statsPercentageMonthly: revenuePrevMonthAmt,
+      statsPercentageYearly: revenuePrevYearAmt,
+      title: 'Revenue',
+      monthly: totalOrderMonth,
+      yearly: totalOrderYear
+    },
+    {
+      stats: !isYearly ? 'PM' : 'PY',
+      statsPercentageMonthly: costPrevMonthAmt,
+      statsPercentageYearly: costPrevYearAmt,
+      title: 'Cost',
+      monthly: totalCostMonth,
+      yearly: totalCostYear
+    },
+    {
+      stats: !isYearly ? 'PM' : 'PY',
+      statsPercentageMonthly: receiptPrevMonthAmt,
+      statsPercentageYearly: receiptPrevYearAmt,
+      title: 'Receipt',
+      monthly: totalReceiptMonth,
+      yearly: totalReceiptYear
+    },
+    {
+      stats: !isYearly ? 'PM' : 'PY',
+      statsPercentageMonthly: paymentPrevMonthAmt,
+      statsPercentageYearly: paymentPrevYearAmt,
+      title: 'Payment',
+      monthly: totalPaymentMonth,
+      yearly: totalPaymentYear
+    }
   ];
 
   return (
@@ -926,14 +1065,14 @@ const DashboardNew = () => {
       <Grid item xs={12} md={6}>
         <SalesDistributionChart salesData={salesData} loading={loading} error={error} />
       </Grid>
-      <Grid item xs={12} md={6}>
+      {/* <Grid item xs={12} md={6}>
         <GSTRTable />
       </Grid>
       <Grid item xs={12} md={6}>
         <TDSTable tdsData={tdsData} />
-      </Grid>
+      </Grid> */}
       <Grid item xs={12} md={6}>
-        <LineChart />
+        <LineChart chartSalesData={chartSalesData} />
       </Grid>
       <Grid item xs={12} md={6}>
         <StackedBarChart />

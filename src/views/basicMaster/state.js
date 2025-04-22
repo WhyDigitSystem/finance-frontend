@@ -140,7 +140,7 @@ export const State = () => {
     const { name, value, selectionStart, selectionEnd, type } = e.target;
     const codeRegex = /^[a-zA-Z]*$/;
     const nameRegex = /^[A-Za-z ]*$/;
-    const numericRegex = /^[0-9]*$/;
+    const numericRegex = /^[0-9A-Za-z- ]*$/;
 
     if (name === 'stateCode' && !codeRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Only Alphabets Allowed' });
@@ -148,8 +148,8 @@ export const State = () => {
       setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 2' });
     } else if (name === 'stateNo' && !numericRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Only Numerics Allowed' });
-    } else if (name === 'stateNo' && value.length > 3) {
-      setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 3' });
+    } else if (name === 'stateNo' && value.length > 5) {
+      setFieldErrors({ ...fieldErrors, [name]: 'Max Length is 5' });
     } else if (name === 'stateName' && !nameRegex.test(value)) {
       setFieldErrors({ ...fieldErrors, [name]: 'Only Alphabets Allowed' });
     } else if (name === 'stateName' && value.length > 40) {

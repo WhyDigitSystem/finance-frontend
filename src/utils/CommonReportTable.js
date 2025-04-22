@@ -168,7 +168,7 @@ const CommonReportTable = ({ columns, data, isListView, fileName}) => {
             fontSize: "13px",
             borderBottom: "2px solid #D1D5DB",
           },
-          align: "left",
+          align: "center",
         },
         muiTableBodyCellProps: {
           sx: {
