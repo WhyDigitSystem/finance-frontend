@@ -98,7 +98,8 @@ const ap = {
         //   url: '/finance/paymentRegister/PaymentRegister'
         // },
         {
-          id: 'paymentRegister',
+          // id: 'paymentRegister',
+          id: 'Ap OutSstanding',
           title: 'AP Outstanding',
           type: 'item',
           url: '/Finance/paymentRegister/PaymentRegister'

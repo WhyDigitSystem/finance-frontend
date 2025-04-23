@@ -321,7 +321,7 @@ const CostDebitNote = () => {
     { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
     { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 },
     { accessorKey: 'mode', header: 'Mode', size: 140 },
-    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
+    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 }
   ];
 
   useEffect(() => {
@@ -388,29 +388,31 @@ const CostDebitNote = () => {
       }));
 
       setChargerCostInvoice(
-        (selectedBill.chargerCostInvoiceVO || []).map((row) => ({
-          id: row.id,
-          jobNo: row.jobNo,
-          chargeName: row.chargeName,
-          chargeCode: row.chargeCode,
-          chargeLedger: row.ledger,
-          sac: row.sac,
-          contType: row.contType,
-          currency: row.currency,
-          exRate: row.exRate,
-          fcAmt: row.fcAmt,
-          gst: row.gst,
-          billAmt: row.billAmt,
-          gstPercent: row.gstpercent,
-          lcAmt: row.lcAmt,
-          ledger: row.ledger,
-          govChargeCode: row.govChargeCode,
-          exempted: row.exempted,
-          qty: row.qty,
-          rate: row.rate,
-          taxable: row.taxable,
-          description: row.description
-        }))
+        (selectedBill.chargerCostInvoiceVO || [])
+          .filter((row) => !row.chargeName?.toLowerCase().trim().startsWith('input igst'))
+          .map((row) => ({
+            id: row.id,
+            jobNo: row.jobNo,
+            chargeName: row.chargeName,
+            chargeCode: row.chargeCode,
+            chargeLedger: row.ledger,
+            sac: row.sac,
+            contType: row.contType,
+            currency: row.currency,
+            exRate: row.exRate,
+            fcAmt: row.fcAmt,
+            gst: row.gst,
+            billAmt: row.billAmt,
+            gstPercent: row.gstpercent,
+            lcAmt: row.lcAmt,
+            ledger: row.ledger,
+            govChargeCode: row.govChargeCode,
+            exempted: row.exempted,
+            qty: row.qty,
+            rate: row.rate,
+            taxable: row.taxable,
+            description: row.description
+          }))
       );
 
       setTdsCostInvoice(
@@ -558,7 +560,7 @@ const CostDebitNote = () => {
         );
       } else {
         console.error('API Error:', result.errorMessage);
-        showToast('error', "Approve Failed")
+        showToast('error', 'Approve Failed');
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -669,7 +671,7 @@ const CostDebitNote = () => {
 
   const GeneratePdf = (row) => {
     console.log('PDF-Data =>', confirmData);
-    setPdfData(confirmData)
+    setPdfData(confirmData);
     // {confirmData.approveStatus === "Approved" ? setPdfData(confirmData) : setPdfData(listViewData);}
     setDownloadPdf(true);
   };
@@ -1724,18 +1726,24 @@ const CostDebitNote = () => {
                     '&:hover': {
                       borderColor: '#1565c0',
                       backgroundColor: '#bbdefb',
-                      color: '#1565c0',
-                    },
+                      color: '#1565c0'
+                    }
                   }}
                   onClick={handleView}
                 >
                   Add
                 </Button>
               )}
-              {!showForm && (<ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />)}
-              {!showForm && (<ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />)}
-              {listViewData.approveStatus === 'Approved' || showForm ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
-              {(listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />)}
+              {!showForm && <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />}
+              {!showForm && <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />}
+              {listViewData.approveStatus === 'Approved' || showForm ? (
+                ''
+              ) : (
+                <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+              )}
+              {(listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (
+                <ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />
+              )}
             </div>
           </div>
           {!showForm && (
@@ -2548,20 +2556,20 @@ const CostDebitNote = () => {
                                                 (charge) => charge.chargeName === row.chargeName && charge.taxable === null
                                               )
                                             ) && (
-                                                <ActionButton
-                                                  title="Delete"
-                                                  icon={DeleteIcon}
-                                                  onClick={() =>
-                                                    handleDeleteRow(
-                                                      row.id,
-                                                      chargerCostInvoice,
-                                                      setChargerCostInvoice,
-                                                      costInvoiceErrors,
-                                                      setCostInvoiceErrors
-                                                    )
-                                                  }
-                                                />
-                                              )}
+                                              <ActionButton
+                                                title="Delete"
+                                                icon={DeleteIcon}
+                                                onClick={() =>
+                                                  handleDeleteRow(
+                                                    row.id,
+                                                    chargerCostInvoice,
+                                                    setChargerCostInvoice,
+                                                    costInvoiceErrors,
+                                                    setCostInvoiceErrors
+                                                  )
+                                                }
+                                              />
+                                            )}
                                           </td>
 
                                           <td className="text-center">
@@ -2657,7 +2665,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.description ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.description && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2905,7 +2913,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.exRate && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2947,7 +2955,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.fcAmount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3036,7 +3044,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.billAmt ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.billAmt && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3077,7 +3085,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.sac ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.sac && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3120,7 +3128,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.gstPercent ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.gstPercent && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3162,7 +3170,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.gst ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.gst && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3263,6 +3271,7 @@ const CostDebitNote = () => {
                                 name="tdsWithHoldingPer"
                                 type="number"
                                 disabled
+                                // disabled={formData.mode === 'SUBMIT' || !!formData.originBill}
                                 inputProps={{ maxLength: 30 }}
                                 value={tdsCostInvoice[index]?.tdsWithHoldingPer || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoice', index)}
@@ -3457,8 +3466,8 @@ const CostDebitNote = () => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllCostDebitNoteById}
-            // isPdf={true}
-            // GeneratePdf={GeneratePdf}
+              // isPdf={true}
+              // GeneratePdf={GeneratePdf}
             />
           )}
           {downloadPdf && <GeneratePdfTempDN row={pdfData} modalClose={() => setDownloadPdf(false)} />}

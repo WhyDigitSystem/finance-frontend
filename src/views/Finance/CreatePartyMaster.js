@@ -57,6 +57,8 @@ const CreatePartyMaster = () => {
     if (name === 'partyTypeCode') {
       if (newValue.length > 10) {
         newValue = newValue.slice(0, 10); // Restrict to 10 characters
+      } else {
+        delete errors.partyTypeCode;
       }
     }
 

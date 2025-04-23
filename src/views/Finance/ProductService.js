@@ -76,7 +76,8 @@ const ProductService = () => {
       console.log('Img Upload Response:', response);
 
       if (response.status === true) {
-        showToast('success', response.message || 'Image Uploaded successfully!');
+        // showToast('success', response.message || 'Image Uploaded successfully!');
+        console.log('success', response.message || 'Image Uploaded successfully!');
       } else {
         console.warn('Img upload failed:', response);
         showToast('error', 'Img upload failed');
