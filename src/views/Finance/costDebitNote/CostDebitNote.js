@@ -388,31 +388,29 @@ const CostDebitNote = () => {
       }));
 
       setChargerCostInvoice(
-        (selectedBill.chargerCostInvoiceVO || [])
-          .filter((row) => !row.chargeName?.toLowerCase().trim().startsWith('input igst'))
-          .map((row) => ({
-            id: row.id,
-            jobNo: row.jobNo,
-            chargeName: row.chargeName,
-            chargeCode: row.chargeCode,
-            chargeLedger: row.ledger,
-            sac: row.sac,
-            contType: row.contType,
-            currency: row.currency,
-            exRate: row.exRate,
-            fcAmt: row.fcAmt,
-            gst: row.gst,
-            billAmt: row.billAmt,
-            gstPercent: row.gstpercent,
-            lcAmt: row.lcAmt,
-            ledger: row.ledger,
-            govChargeCode: row.govChargeCode,
-            exempted: row.exempted,
-            qty: row.qty,
-            rate: row.rate,
-            taxable: row.taxable,
-            description: row.description
-          }))
+        (selectedBill.chargerCostInvoiceVO || []).map((row) => ({
+          id: row.id,
+          jobNo: row.jobNo,
+          chargeName: row.chargeName,
+          chargeCode: row.chargeCode,
+          chargeLedger: row.ledger,
+          sac: row.sac,
+          contType: row.contType,
+          currency: row.currency,
+          exRate: row.exRate,
+          fcAmt: row.fcAmt,
+          gst: row.gst,
+          billAmt: row.billAmt,
+          gstPercent: row.gstpercent,
+          lcAmt: row.lcAmt,
+          ledger: row.ledger,
+          govChargeCode: row.govChargeCode,
+          exempted: row.exempted,
+          qty: row.qty,
+          rate: row.rate,
+          taxable: row.taxable,
+          description: row.description
+        }))
       );
 
       setTdsCostInvoice(
@@ -975,40 +973,52 @@ const CostDebitNote = () => {
         product: selectedBill.product
       }));
       setChargerCostInvoice(
-        (selectedBill.chargerCostInvoiceVO || []).map((row) => ({
-          id: row.id,
-          jobNo: row.jobNo,
-          chargeName: row.chargeName,
-          chargeCode: row.chargeCode,
-          chargeLedger: row.ledger,
-          sac: row.sac,
-          contType: row.contType,
-          currency: row.currency,
-          exRate: row.exRate,
-          fcAmt: row.fcAmt,
-          gst: row.gst,
-          billAmt: row.billAmt,
-          gstPercent: row.gstpercent,
-          lcAmt: row.lcAmt,
-          ledger: row.ledger,
-          govChargeCode: row.govChargeCode,
-          exempted: row.exempted,
-          qty: row.qty,
-          rate: row.rate,
-          taxable: row.taxable,
-          description: row.description
-        }))
+        (selectedBill.chargerCostInvoiceVO || [])
+          .filter((row) => !row.chargeName?.trim().toUpperCase().startsWith('INPUT'))
+          .map((row) => ({
+            id: row.id,
+            jobNo: row.jobNo,
+            chargeName: row.chargeName,
+            chargeCode: row.chargeCode,
+            chargeLedger: row.ledger,
+            sac: row.sac,
+            contType: row.contType,
+            currency: row.currency,
+            exRate: row.exRate,
+            fcAmt: row.fcAmt,
+            gst: row.gst,
+            billAmt: row.billAmt,
+            gstPercent: row.gstpercent,
+            lcAmt: row.lcAmt,
+            ledger: row.ledger,
+            govChargeCode: row.govChargeCode,
+            exempted: row.exempted,
+            qty: row.qty,
+            rate: row.rate,
+            taxable: row.taxable,
+            description: row.description
+          }))
       );
-
       setTdsCostInvoice(
-        (selectedBill.tdsCostInvoiceVO || []).map((row) => ({
-          id: row.id,
-          section: row.section,
-          tdsWithHolding: row.tdsWithHolding,
-          tdsWithHoldingPer: row.tdsWithHoldingPer,
-          totTdsWhAmnt: row.totTdsWhAmnt
-        }))
+        Array.isArray(selectedBill.tdsCostInvoiceVO)
+          ? selectedBill.tdsCostInvoiceVO.map((row) => ({
+              id: row.id,
+              section: row.section,
+              tdsWithHolding: row.tdsWithHolding,
+              tdsWithHoldingPer: row.tdsWithHoldingPer,
+              totTdsWhAmnt: row.totTdsWhAmnt
+            }))
+          : []
       );
+      // setTdsCostInvoice(
+      //   (selectedBill.tdsCostInvoiceVO || []).map((row) => ({
+      //     id: row.id,
+      //     section: row.section,
+      //     tdsWithHolding: row.tdsWithHolding,
+      //     tdsWithHoldingPer: row.tdsWithHoldingPer,
+      //     totTdsWhAmnt: row.totTdsWhAmnt
+      //   }))
+      // );
 
       setChargeDetails(
         (selectedBill.gstLines || []).map((row) => ({
