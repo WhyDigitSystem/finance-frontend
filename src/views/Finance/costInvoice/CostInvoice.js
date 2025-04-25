@@ -729,7 +729,8 @@ const CostInvoice = () => {
           totChargesLcAmt: listValueVO.totChargesLcAmt,
           vid: listValueVO.vid,
           vdate: listValueVO.vdate ? dayjs(listValueVO.vdate) : null,
-          utrRef: listValueVO.utrRef
+          utrRef: listValueVO.utrRef,
+          orgId: orgId
         });
         setChargerCostInvoice(
           listValueVO.chargerCostInvoiceVO.map((row) => ({

@@ -406,8 +406,6 @@ const Receipt = () => {
       setIsLoading(true);
 
       const receiptInvDetailVo = inVoiceDetailsData.map((row) => ({
-        // id: item.id || 0, // If id exists, otherwise 0
-
         ...(editId && { id: row.id }),
         invNo: row.invNo,
         invDate: row.invDate ? formatDate(new Date(row.invDate)) : null,
@@ -506,27 +504,30 @@ const Receipt = () => {
     }
   };
   useEffect(() => {
+    if(!editId){
     calculateTotals();
-  }, [inVoiceDetailsData, formData.receiptAmt]);
+  }}, [inVoiceDetailsData, formData.receiptAmt]);
   const calculateTotals = () => {
     let totalChargeAmt = 0;
     let totalSettledAmt = 0;
   
-    const updatedInvoiceDetails = inVoiceDetailsData.map((row) => {
+    const updatedInvoiceDetails = inVoiceDetailsData.map((row, index) => {
       const billAmount = parseFloat(row.amount || 0);
       const gstAmt = parseFloat(row.gstAmt || 0);
+      const chargeAmount = parseFloat(row.chargeAmt || 0);
       const tdsPercent = parseFloat(row.tds || 0);
       const settledAmt = parseFloat(row.settled || 0);
       totalSettledAmt += settledAmt;
       const gross = billAmount + gstAmt;
       const tdsAmt = (gross * tdsPercent) / 100;
-      const netReceivable = gross - tdsAmt;
+      const netReceivable = chargeAmount - tdsAmt; 
       const outstandingAmt = netReceivable - settledAmt;
       totalChargeAmt += netReceivable;
   
       return {
         ...row,
-        chargeAmt: netReceivable.toFixed(2),
+        // chargeAmt: netReceivable.toFixed(2),
+        tdsAmt: netReceivable.toFixed(2),
         outstanding: outstandingAmt.toFixed(2)
       };
     });
@@ -564,6 +565,7 @@ const Receipt = () => {
     };
     const handleSubmitSelectedRows = async () => {
       const selectedData = selectedRows.map((index) => fillGridData[index]);
+      console.log("charge amt", selectedData);
       const newData = selectedData
         .filter((data) => {
           return !inVoiceDetailsData.some(
@@ -576,8 +578,7 @@ const Receipt = () => {
           invDate: data.vdate ? dayjs(data.vdate).format('YYYY-MM-DD') : null,
           amount: data.billamount || '',
           gstAmt: data.gstamount || '',
-          chargeAmt: parseFloat(data.gstamount) + parseFloat(data.billamount) || '',
-          tds: 0,
+          chargeAmt: data.chargeAmt || ''
         }));
     
       if (newData.length < selectedData.length) {
@@ -596,7 +597,7 @@ const Receipt = () => {
     try {
       const response = await apiCalls(
         'get',
-        `/arreceivable/getReciptFillGrid?orgId=${orgId}&partyCode=${formData.customerCode}`
+        `/arreceivable/getReciptFillGrid?orgId=${orgId}&branchCode=${branchCode}&partyCode=${formData.customerCode}`
         );
       if (response.status === true) {
         setFillGridData(response.paramObjectsMap.reciptFillGrid);
@@ -859,7 +860,7 @@ const Receipt = () => {
                 <div className="row d-flex ml" style={{ marginTop: '5px' }}>
                   <div className="mb-1">
                     {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
-                    <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />                  
+                    {!editId && <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />} 
                   </div>
                   <div className="row mt-2">
                     <div className="col-lg-12">
@@ -1452,7 +1453,13 @@ const Receipt = () => {
                                 <thead>
                                   <tr style={{ backgroundColor: '#673AB7' }}>
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                      <Checkbox checked={selectAll} onChange={handleSelectAll} />
+                                      <Checkbox sx={{
+                                        color: 'white',
+                                        '&.Mui-checked': {
+                                          color: 'white', 
+                                        },
+                                      }}
+                                      checked={selectAll} onChange={handleSelectAll} />
                                     </th>
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                       S.No
@@ -1469,6 +1476,11 @@ const Receipt = () => {
                                     <tr key={row.id}>
                                       <td className="border p-0 text-center">
                                         <Checkbox
+                                        sx={{
+                                          // borderColor: 'white',
+                                          // color: 'white'
+                                          backgroundColor: 'white'
+                                        }}
                                           checked={selectedRows.includes(index)}
                                           onChange={(e) => {
                                             const isChecked = e.target.checked;
@@ -1490,7 +1502,7 @@ const Receipt = () => {
                                         {row.gstamount || ''}
                                       </td>
                                       <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {parseFloat(row.gstamount) + parseFloat(row.billamount) || 0}
+                                        {row.chargeAmt || 0}
                                       </td>
                                     </tr>
                                   ))}

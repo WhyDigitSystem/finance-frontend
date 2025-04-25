@@ -756,10 +756,8 @@ const CostDebitNote = () => {
           totChargesLcAmt: costVO?.totChargesLcAmt || '',
           utrRef: costVO?.utrRef || ''
         });
-
-        // Correct Mapping of Charges
         setChargerCostInvoice(
-          costVO?.chargerCostDebitNoteVO?.map((row) => ({
+          costVO?.normalCharges?.map((row) => ({
             id: row?.id || '',
             billAmt: row?.billAmt || '',
             chargeCode: row?.chargeCode || '',
@@ -782,8 +780,6 @@ const CostDebitNote = () => {
             description: row?.description || ''
           })) || []
         );
-
-        // Correct Mapping of TDS
         setTdsCostInvoice(
           costVO?.tdsCostDebitNoteVO?.map((row) => ({
             id: row?.id || '',
@@ -793,10 +789,8 @@ const CostDebitNote = () => {
             totTdsWhAmnt: row?.totTdsWhAmnt || ''
           })) || []
         );
-
-        // Correct Mapping of GST Lines
         setChargeDetails(
-          costVO?.tdsCostDebitNoteVO?.map((row) => ({
+          costVO?.gstLines?.map((row) => ({
             id: row?.id || '',
             chargeCode: row?.chargeCode || '',
             chargeDesc: row?.chargeName || '',
@@ -806,7 +800,6 @@ const CostDebitNote = () => {
             lcAmt: row?.lcAmt || ''
           })) || []
         );
-
         setShowChargeDetails(true);
         console.log('DataToEdit', costVO);
       } else {

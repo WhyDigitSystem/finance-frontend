@@ -60,16 +60,12 @@ const ARadjustmentOffset = () => {
     active: true,
     docNo: '',
     docDate: dayjs(),
+    customerName:'',
     receiptDocId: '',
     receiptDocDate: null,
-    subledgerType: '',
-    currency: '',
-    exRate: 1.00,
-    subledgerName: '',
+    currency: 'INR',
+    exRate: 1,
     amount: '',
-    supplierRefNo: '',
-    subledgerCode: '',
-    gainorLoss: '',
     totalSettled: '',
     roundOfAmount: '',
     onAccount: '',
@@ -80,14 +76,10 @@ const ARadjustmentOffset = () => {
     active: true,
     receiptDocId: '',
     receiptDocDate: null,
-    subledgerType: '',
+    customerName:'',
     currency: '',
     exRate: '',
-    subledgerName: '',
     amount: '',
-    supplierRefNo: '',
-    subledgerCode: '',
-    gainorLoss: '',
     totalSettled: '',
     roundOfAmount: '',
     onAccount: '',
@@ -99,16 +91,13 @@ const ARadjustmentOffset = () => {
       id: Date.now(),
       invNo: '',
       invDate: null,
-      refNo: '',
-      refDate: null,
-      currency: '',
-      exRate: '',
+      // refNo: '',
+      // refDate: null,
+      currency: 'INR',
+      exRate: '1',
       amount: '',
       outStanding: '',
       settled: '',
-      setExRate: '',
-      tnxSettled: '',
-      gainAmt: ''
     }
   ]);
 
@@ -116,16 +105,13 @@ const ARadjustmentOffset = () => {
     {
       invNo: '',
       invDate: null,
-      refNo: '',
-      refDate: null,
+      // refNo: '',
+      // refDate: null,
       currency: '',
       exRate: '',
       amount: '',
       outStanding: '',
       settled: '',
-      setExRate: '',
-      tnxSettled: '',
-      gainAmt: ''
     }
   ]);
 
@@ -623,6 +609,21 @@ const ARadjustmentOffset = () => {
       }
     }
   };
+  const getAllCustomerName = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `arreceivable/getCustomerNameAndCodeForReceipt?orgId=${orgId}`
+      );
+      if (response.status === true) {
+        setAllCustomerName(response.paramObjectsMap.PartyMasterVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
   const listViewColumns = [
     { accessorKey: 'docId', header: 'Doc No', size: 140 },
@@ -681,6 +682,27 @@ const ARadjustmentOffset = () => {
                       format="DD-MM-YYYY"
                     />
                   </LocalizationProvider>
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customerName}>
+                  <InputLabel id="demo-simple-select-label">Customer Name</InputLabel>
+                  <Select
+                    labelId="customerName"
+                    id="customerName"
+                    label="Customer Name"
+                    disabled = {editId}
+                    onChange={handleInputChange}
+                    name="customerName"
+                    value={formData.customerName}
+                  >
+                    {allCustomerName.map((customer) => (
+                      <MenuItem key={customer.id} value={customer.customerName}>
+                        {customer.customerName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.customerName && <FormHelperText>{fieldErrors.customerName}</FormHelperText>}{' '}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -803,19 +825,15 @@ const ARadjustmentOffset = () => {
                               <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                 S.No
                               </th>
-                              <th className="px-2 py-2 text-white text-center">Invoice Number</th>
-                              <th className="px-2 py-2 text-white text-center">Invoice Date</th>
-                              <th className="px-2 py-2 text-white text-center">Ref No</th>
-                              <th className="px-2 py-2 text-white text-center">Ref Date</th>
-                              <th className="px-2 py-2 text-white text-center">Curr.</th>
+                              <th className="px-2 py-2 text-white text-center"># Invoice</th>
+                              <th className="px-2 py-2 text-white text-center">Date</th>
+                              {/* <th className="px-2 py-2 text-white text-center">Ref No</th>
+                              <th className="px-2 py-2 text-white text-center">Ref Date</th> */}
+                              <th className="px-2 py-2 text-white text-center">Currency</th>
                               <th className="px-2 py-2 text-white text-center">Ex. Rate</th>
-                              <th className="px-2 py-2 text-white text-center">Inv. Amount</th>
-                              <th className="px-2 py-2 text-white text-center">outStanding</th>
+                              <th className="px-2 py-2 text-white text-center">Inv. Amt</th>
+                              <th className="px-2 py-2 text-white text-center">OutStanding</th>
                               <th className="px-2 py-2 text-white text-center">Settled</th>
-                              <th className="px-2 py-2 text-white text-center">set. Ex. Rate</th>
-                              <th className="px-2 py-2 text-white text-center">Txn Settled</th>
-                              <th className="px-2 py-2 text-white text-center">Gain or Loss</th>
-                              {/* <th className="px-2 py-2 text-white text-center">Remarks</th> */}
                             </tr>
                           </thead>
                           <tbody>
@@ -872,7 +890,6 @@ const ARadjustmentOffset = () => {
                                       </div>
                                     )}
                                   </td>
-
                                   <td className="border px-2 py-2">
                                     <input
                                       type="date"
@@ -890,7 +907,7 @@ const ARadjustmentOffset = () => {
                                           const newErrors = [...prev];
                                           newErrors[index] = {
                                             ...newErrors[index],
-                                            invDate: !date ? 'Invoice Date is required' : ''
+                                            invDate: !date ? 'Date is required' : ''
                                           };
                                           return newErrors;
                                         });
@@ -903,7 +920,7 @@ const ARadjustmentOffset = () => {
                                       </div>
                                     )}
                                   </td>
-                                  <td className="border px-2 py-2">
+                                  {/* <td className="border px-2 py-2">
                                     <input
                                       type="text"
                                       value={row.refNo}
@@ -963,7 +980,7 @@ const ARadjustmentOffset = () => {
                                         {invoiceDetailsError[index].refDate}
                                       </div>
                                     )}
-                                  </td>
+                                  </td> */}
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
@@ -1135,133 +1152,6 @@ const ARadjustmentOffset = () => {
                                       </div>
                                     )}
                                   </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.setExRate}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        const isNumeric = /^[0-9]*$/;
-
-                                        if (isNumeric.test(value)) {
-                                          setInVoiceDetailsData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, setExRate: value } : r))
-                                          );
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              setExRate: !value ? 'Rec Ex Rate is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        } else {
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              setExRate: 'Only numbers are allowed'
-                                            };
-                                            return newErrors;
-                                          });
-                                        }
-                                      }}
-                                      className={invoiceDetailsError[index]?.setExRate ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
-                                    />
-                                    {invoiceDetailsError[index]?.setExRate && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {invoiceDetailsError[index].setExRate}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.tnxSettled}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        const isNumeric = /^[0-9]*$/;
-
-                                        if (isNumeric.test(value)) {
-                                          setInVoiceDetailsData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, tnxSettled: value } : r))
-                                          );
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              tnxSettled: !value ? 'Txn Settled is required' : ''
-                                            };
-                                            return newErrors;
-                                          });
-                                        } else {
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              tnxSettled: 'Only numbers are allowed'
-                                            };
-                                            return newErrors;
-                                          });
-                                        }
-                                      }}
-                                      className={invoiceDetailsError[index]?.tnxSettled ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
-                                    />
-                                    {invoiceDetailsError[index]?.tnxSettled && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {invoiceDetailsError[index].tnxSettled}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.gainAmt}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        const isNumeric = /^[0-9]*$/;
-                                        if (isNumeric.test(value)) {
-                                          setInVoiceDetailsData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, gainAmt: value } : r))
-                                          );
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], gainAmt: !value ? 'Gain or Loss is required' : '' };
-                                            return newErrors;
-                                          });
-                                        } else {
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], gainAmt: 'Only numbers are allowed' };
-                                            return newErrors;
-                                          });
-                                        }
-                                      }}
-                                      className={invoiceDetailsError[index]?.gainAmt ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
-
-                                      // onKeyDown={(e) => handleKeyDown(e, row, inVoiceDetailsData)}
-                                    />
-                                    {invoiceDetailsError[index]?.gainAmt && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {invoiceDetailsError[index].gainAmt}
-                                      </div>
-                                    )}
-                                  </td>
-                                  {/* <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.remarks}
-                                      className="form-control"
-                                      style={{ width: '150px' }}
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        setInVoiceDetailsData((prev) => prev.map((r) => (r.id === row.id ? { ...r, remarks: value } : r)));
-                                      }}
-                                    />
-                                  </td> */}
                                 </tr>
                               ))}
                           </tbody>

@@ -411,7 +411,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                     color: '#333'
                   }}
                 >
-                  {row.billCurr} {row.amountInWords.toUpperCase()}
+                  {row.amountInWords.toUpperCase()}
                 </span>
               </div>
               {row.remarks ? (

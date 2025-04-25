@@ -60,7 +60,6 @@ const icons = [
   <AccountBalanceWalletOutlinedIcon fontSize="inherit" />, // Accounts Receivable
   <LocalMallOutlinedIcon fontSize="inherit" /> // Accounts Payable
 ];
-
 const StatCard = ({
   statsPercentageMonthly,
   statsPercentageYearly,
@@ -108,7 +107,8 @@ const StatCard = ({
           {showToggle && (
             <Grid item>
               <ButtonGroup size="small">
-                <Button
+                {
+                  <Button
                   sx={{
                     px: 1,
                     // py: 1.2,
@@ -132,7 +132,7 @@ const StatCard = ({
                   onClick={() => setIsYearly(false)}
                 >
                   Month
-                </Button>
+                </Button>}
                 <Button
                   sx={{
                     px: 1,
@@ -231,7 +231,14 @@ const TopCustomersChart = ({ chartData }) => {
 
   return (
     <Card sx={{ p: 1, boxShadow: 3, borderRadius: 2, width: '100%', height: '100%' }}>
-      <CardContent>
+      <CardContent          
+        sx={{
+          width: '100%',
+          height: '350px',
+          display: 'flex',
+          flexDirection: 'column'
+        }}
+        >
         <Typography variant="h6">Top 5 Customers</Typography>
         {chartData && chartData.labels.length > 0 ? (
           <Bar data={chartData} options={options} plugins={[ChartDataLabels]} />
@@ -290,7 +297,7 @@ const SalesDistributionChart = ({ loading, error, salesData }) => {
           weight: 'bold',
           size: 12
         },
-        formatter: (value) => `${Math.floor(value)}L`,
+        formatter: (value) => `${value}L`,
         // borderColor: '#000',
         // borderWidth: 1,
         // borderRadius: 4,
@@ -323,12 +330,7 @@ const SalesDistributionChart = ({ loading, error, salesData }) => {
         <Typography variant="h6">Sales Distribution Product Wise</Typography>
         {loading ? (
           <Typography>Loading...</Typography>
-        ) : error ? (
-          <>
-            <NoDataAvailable />
-            <Typography sx={{ textAlign: 'center' }}>No Data Available</Typography>
-          </>
-        ) : (
+        ) : salesData && salesData.labels?.length > 0 && salesData.datasets?.[0]?.data?.length > 0 ? (
           <div
             style={{
               position: 'relative',
@@ -339,6 +341,11 @@ const SalesDistributionChart = ({ loading, error, salesData }) => {
           >
             <Pie data={salesData} options={options} plugins={[ChartDataLabels]} />
           </div>
+        ) : (
+          <>
+            <NoDataAvailable />
+            <Typography sx={{ textAlign: 'center' }}>No Data Available</Typography>
+          </>
         )}
       </CardContent>
     </Card>
@@ -549,8 +556,54 @@ const monthMap = {
   11: 'Nov',
   12: 'Dec'
 };
+const BarChart = ({ chartSalesData, customerColorMap }) => {
+  if (!chartSalesData || !chartSalesData.labels || !chartSalesData.datasets) {
+    return (
+      <Card sx={{ p: 1, boxShadow: 3, borderRadius: 2, height: 400 }}>
+        <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+          <Typography variant="h6" gutterBottom>
+            Monthly Sales by Customer
+          </Typography>
+          <Box sx={{ flexGrow: 1 }}>
+            <Typography sx={{ textAlign: 'center' }}>No Data Available</Typography>
+          </Box>
+        </CardContent>
+      </Card>
+    );
+  }
 
-const LineChart = ({ chartSalesData }) => {
+  const currentMonthIndex = new Date().getMonth(); // 0 = Jan
+  const last3Indices = [currentMonthIndex - 3, currentMonthIndex - 2, currentMonthIndex - 1].map(i =>
+    i >= 0 ? i : 12 + i
+  );
+
+  const labels = last3Indices.map(i => chartSalesData.labels[i]);
+
+  const top3Datasets = [...chartSalesData.datasets]
+    .map((dataset) => ({
+      ...dataset,
+      total: dataset.data.reduce((sum, val) => sum + val, 0)
+    }))
+    .sort((a, b) => b.total - a.total)
+    .slice(0, 3)
+    .map((dataset) => {
+      const filteredData = last3Indices.map(i => dataset.data[i]);
+      return {
+        ...dataset,
+        data: filteredData,
+        backgroundColor: filteredData.map(() =>
+          customerColorMap?.[dataset.label] || 'gray'
+        )
+      };
+    });
+
+  const customData = {
+    labels,
+    datasets: top3Datasets
+  };
+  const allValues = top3Datasets.flatMap(d => d.data);
+  const maxY = Math.max(...allValues);
+  const paddedMax = Math.ceil(maxY / 1000000) * 1000000 + 100000; 
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -562,54 +615,51 @@ const LineChart = ({ chartSalesData }) => {
             size: 12
           }
         }
+      },
+      tooltip: {
+        callbacks: {
+          label: (tooltipItem) => {
+            const valueInLakhs = tooltipItem.raw / 100000;
+            return `₹${valueInLakhs.toFixed(2)}L`;
+          }
+        }
+      },
+      datalabels: {
+        anchor: 'end',
+        align: 'top',
+        color: '#000',
+        font: {
+          weight: 'bold',
+          size: 12
+        },
+        formatter: (value) => `${(value / 100000).toFixed(2)}L`
       }
-      // tooltip: {
-      //   callbacks: {
-      //     label: (tooltipItem) => `₹${tooltipItem.raw.toLocaleString('en-IN')}`,
-      //   },
-      // },
     },
     scales: {
       y: {
-        beginAtZero: true
-        // ticks: {
-        //   callback: (value) => `₹${value.toLocaleString('en-IN')}`,
-        //   font: {
-        //     size: 12,
-        //   },
-        // },
-      },
-      x: {
+        beginAtZero: true,
+        max: paddedMax,
         ticks: {
-          font: {
-            size: 12
-          }
+          stepSize: 100000,
+          callback: (value) => `${(value / 100000).toFixed(2)}L`
         }
       }
     }
-  };
-  console.log(chartSalesData);
+  };  
+
   return (
     <Card sx={{ p: 1, boxShadow: 3, borderRadius: 2, height: 400 }}>
       <CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
         <Typography variant="h6" gutterBottom>
-          Monthly Sales by Customer
+          Sales in Last 3 Months
         </Typography>
         <Box sx={{ flexGrow: 1 }}>
-          {chartSalesData && chartSalesData.datasets.length > 0 ? (
-            <Line data={chartSalesData} options={options} />
-          ) : (
-            <>
-              <NoDataAvailable />
-              <Typography sx={{ textAlign: 'center' }}>No Data Available</Typography>
-            </>
-          )}
+          <Bar data={customData} options={options} plugins={[ChartDataLabels]} />
         </Box>
       </CardContent>
     </Card>
   );
 };
-
 const StackedBarChart = () => {
   const data = {
     labels: ['January', 'February', 'March', 'April'],
@@ -667,6 +717,7 @@ const DashboardNew = () => {
   const [revenuePrevMonthAmt, setRevenuePrevMonthAmt] = useState(0);
   const [revenuePrevYearAmt, setRevenuePrevYearAmt] = useState(0);
 
+  const [customerColorMap, setCustomerColorMap] = useState({});
   const [totalCostMonth, setTotalCostMonth] = useState(0);
   const [totalCostYear, setTotalCostYear] = useState(0);
   const [costPrevMonthAmt, setCostPrevMonthAmt] = useState(0);
@@ -703,7 +754,7 @@ const DashboardNew = () => {
 
       const response = await apiCalls(
         'get',
-        `dashboard/getPercentageDiffFromRevenue?orgId=${orgId}&finYear=${finYear}${targetMonth === 'ALL' ? `&year=YEAR` : `&month=MONTH`}`
+        `dashboard/getPercentageDiffFromRevenue?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}&Year=YEAR&Month=MONTH`
       );
 
       // const totalOrderYear = Number(response.paramObjectsMap.taxInvoiceVO[0]?.amount || 0);
@@ -727,7 +778,7 @@ const DashboardNew = () => {
 
       const response = await apiCalls(
         'get',
-        `dashboard/getPercentageDiffFromCost?orgId=${orgId}&finYear=${finYear}${targetMonth === 'ALL' ? `&year=YEAR` : `&month=MONTH`}`
+        `dashboard/getPercentageDiffFromCost?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}${targetMonth === 'ALL' ? `&year=YEAR` : `&month=MONTH`}`
       );
 
       // const totalCostYear = Number(response.paramObjectsMap.cost[0]?.amount || 0);
@@ -751,7 +802,7 @@ const DashboardNew = () => {
 
       const response = await apiCalls(
         'get',
-        `dashboard/getPercentageFromReceipt?orgId=${orgId}&finYear=${finYear}${targetMonth === 'ALL' ? `&month=YEAR` : `&month=MONTH`}`
+        `dashboard/getPercentageFromReceipt?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}${targetMonth === 'ALL' ? `&month=YEAR` : `&month=MONTH`}`
       );
 
       // const totalReceiptYear = Number(response.paramObjectsMap.receiptAmont[0]?.receiptAmt || 0);
@@ -775,7 +826,7 @@ const DashboardNew = () => {
 
       const response = await apiCalls(
         'get',
-        `dashboard/getPercentageFromPayment?orgId=${orgId}&finYear=${finYear}${targetMonth === 'ALL' ? `&month=YEAR` : `&month=MONTH`}`
+        `dashboard/getPercentageFromPayment?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}${targetMonth === 'ALL' ? `&month=YEAR` : `&month=MONTH`}`
       );
 
       // const totalPaymentYear = Number(response.paramObjectsMap.receiptAmont[0]?.paymentAmt || 0);
@@ -867,7 +918,7 @@ const DashboardNew = () => {
       try {
         const response = await apiCalls(
           'get',
-          `master/getMonthlyAndYearWiseData?orgId=${orgId}${targetMonth === 'ALL' ? `&finYear=${finYear}` : `&month=MONTH&finYear=${finYear}`}`
+          `master/getMonthlyAndYearWiseData?orgId=${orgId}&branchCode=${branchCode}${targetMonth === 'ALL' ? `&finYear=${finYear}&month=ALL` : `&month=MONTH&finYear=${finYear}`}`
         );
 
         if (response?.status && response?.paramObjectsMap?.partyMasterVO) {
@@ -885,20 +936,40 @@ const DashboardNew = () => {
           const labels = parties.map((party) => party.shortName);
           const amounts = parties.map((party) => party.amount);
           const tooltips = parties.map((party) => party.name);
-
+          const colors = ['#33D68A', '#FF5733', '#33B5E5', '#FFC107', '#8E44AD'];
+          const colorMap = {};
+          labels.forEach((label, idx) => {
+            colorMap[label] = colors[idx];
+          });
+          setCustomerColorMap(colorMap);
+          
           setChartData({
             labels,
             datasets: [
               {
                 label: 'Total Amount in Lakhs',
                 data: amounts,
-                backgroundColor: ['#33D68A', '#FF5733', '#33B5E5', '#FFC107', '#8E44AD'],
+                backgroundColor: labels.map(label => colorMap[label]),
                 borderColor: '#fff',
                 borderWidth: 2,
-                tooltips // Store tooltips separately
+                tooltips
               }
             ]
           });
+          
+          // setChartData({
+          //   labels,
+          //   datasets: [
+          //     {
+          //       label: 'Total Amount in Lakhs',
+          //       data: amounts,
+          //       backgroundColor: ['#33D68A', '#FF5733', '#33B5E5', '#FFC107', '#8E44AD'],
+          //       borderColor: '#fff',
+          //       borderWidth: 2,
+          //       tooltips // Store tooltips separately
+          //     }
+          //   ]
+          // });
         } else {
           setChartData(null);
         }
@@ -917,7 +988,7 @@ const DashboardNew = () => {
       try {
         const response = await apiCalls(
           'get',
-          `/master/getSalesDistributionData?orgId=${orgId}${targetMonth === 'ALL' ? `&finYear=${finYear}` : `&month=MONTH&finYear=${finYear}`}`
+          `/master/getSalesDistributionData?orgId=${orgId}&branchCode=${branchCode}${targetMonth === 'ALL' ? `&finYear=${finYear}&month=ALL` : `&finYear=${finYear}&month=MONTH`}`
         );
 
         if (response?.status && response?.paramObjectsMap?.partyMasterVO) {
@@ -1071,9 +1142,9 @@ const DashboardNew = () => {
       <Grid item xs={12} md={6}>
         <TDSTable tdsData={tdsData} />
       </Grid> */}
-      <Grid item xs={12} md={6}>
-        <LineChart chartSalesData={chartSalesData} />
-      </Grid>
+    <Grid item xs={12} md={6}>
+      <BarChart chartSalesData={chartSalesData} customerColorMap={customerColorMap} />
+    </Grid>
       <Grid item xs={12} md={6}>
         <StackedBarChart />
       </Grid>
