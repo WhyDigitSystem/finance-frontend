@@ -75,7 +75,7 @@ const Payment = () => {
     docDate: dayjs(),
     netAmount: '',
     onAccount: '',
-    remarks: '',
+    remarks: ''
   });
 
   const [formDataErrors, setFormDataErrors] = useState({
@@ -109,9 +109,9 @@ const Payment = () => {
       refNo: '',
       refDate: '',
       currency: '',
-      exRate:'',
-      gstAmount:'',
-      chargeAmt:'',
+      exRate: '',
+      gstAmount: '',
+      chargeAmt: '',
       amount: '',
       outstanding: '',
       settled: ''
@@ -245,9 +245,9 @@ const Payment = () => {
         supplierRefDate: '',
         supplierRefNo: '',
         currency: '',
-        exRate:'',
-        gstAmount:'',
-        chargeAmt:'',
+        exRate: '',
+        gstAmount: '',
+        chargeAmt: '',
         amount: '',
         outstanding: '',
         settled: ''
@@ -469,13 +469,12 @@ const Payment = () => {
     }
   };
   useEffect(() => {
-    if(!editId)
-    calculateTotals();
+    if (!editId) calculateTotals();
   }, [withdrawalsTableData, formData.paymentAmt]);
   const calculateTotals = () => {
     let totalChargeAmt = 0;
     let totalSettledAmt = 0;
-  
+
     const updatedInvoiceDetails = withdrawalsTableData.map((row, index) => {
       const billAmount = parseFloat(row.amount || 0);
       const gstAmt = parseFloat(row.gstAmt || 0);
@@ -485,10 +484,10 @@ const Payment = () => {
       totalSettledAmt += settledAmt;
       const gross = billAmount + gstAmt;
       const tdsAmt = (gross * tdsPercent) / 100;
-      const netReceivable = chargeAmount - tdsAmt; 
+      const netReceivable = chargeAmount - tdsAmt;
       const outstandingAmt = netReceivable - settledAmt;
       totalChargeAmt += netReceivable;
-  
+
       return {
         ...row,
         // chargeAmt: netReceivable.toFixed(2),
@@ -496,7 +495,7 @@ const Payment = () => {
         outstanding: outstandingAmt.toFixed(2)
       };
     });
-  
+
     const paymentAmt = parseFloat(formData.paymentAmt || 0);
     const onAccount = paymentAmt >= totalSettledAmt ? paymentAmt - totalSettledAmt : 0;
     setWithdrawalsTableData(updatedInvoiceDetails);
@@ -505,68 +504,66 @@ const Payment = () => {
       netAmount: totalChargeAmt.toFixed(2),
       onAccount: onAccount
     }));
-  }; 
-    const handleFullGrid = () => {
-      if (formData.partyCode) {
+  };
+  const handleFullGrid = () => {
+    if (formData.partyCode) {
       // if (formData.partyCode && formData.gstState) {
-        setModalOpen(true);
-        getAllFillGrid();
-      }else{
-        setModalOpen(false);
-        // showToast('warning', (formData.partyName && formData.gstState) ? `${formData.partyName} has No Data` : 'Please Select Party Name & Reg State');
-        showToast('warning', formData.partyName ? `${formData.partyName} has No Data` : 'Please Select Party Name');
-      }
-    };
-    const handleCloseModal = () => {
+      setModalOpen(true);
+      getAllFillGrid();
+    } else {
       setModalOpen(false);
-    };
-    const handleSelectAll = () => {
-      if (selectAll) {
-        setSelectedRows([]);
-      } else {
-        setSelectedRows(fillGridData.map((_, index) => index));
-      }
-      setSelectAll(!selectAll);
-    };
-    const handleSubmitSelectedRows = async () => {
-      const selectedData = selectedRows.map((index) => fillGridData[index]);
-      const newData = selectedData
-        .filter((data) => {
-          return !withdrawalsTableData.some(
-            (item) => item.invNo === data.vid && item.invDate === data.vdate
-          );
-        })
-        .map((data) => ({
-          id: Date.now() + Math.random(), 
-          invNo: data.vid || '',
-          invDate: data.vdate ? dayjs(data.vdate).format('YYYY-MM-DD') : null,
-          currency: data.acccurrency || '',
-          exRate: data.exrate || '',
-          refNo: data.refno || '',
-          refDate: data.refdate || '',
-          amount: data.billamount || '',
-          gstAmount: parseFloat(data.gstamount) || 0,
-          chargeAmt: data.chargeAmt || ''
-        }));
-    
-      if (newData.length < selectedData.length) {
-        showToast('warning', 'Some of the selected items are already added!');
-      }
-      if (newData.length === 0) {
-        return;
-      }
-      setWithdrawalsTableData((prev) => [...prev, ...newData]);
+      // showToast('warning', (formData.partyName && formData.gstState) ? `${formData.partyName} has No Data` : 'Please Select Party Name & Reg State');
+      showToast('warning', formData.partyName ? `${formData.partyName} has No Data` : 'Please Select Party Name');
+    }
+  };
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+  const handleSelectAll = () => {
+    if (selectAll) {
       setSelectedRows([]);
-      setSelectAll(false);
-      handleCloseModal();
-    };    
+    } else {
+      setSelectedRows(fillGridData.map((_, index) => index));
+    }
+    setSelectAll(!selectAll);
+  };
+  const handleSubmitSelectedRows = async () => {
+    const selectedData = selectedRows.map((index) => fillGridData[index]);
+    const newData = selectedData
+      .filter((data) => {
+        return !withdrawalsTableData.some((item) => item.invNo === data.vid && item.invDate === data.vdate);
+      })
+      .map((data) => ({
+        id: Date.now() + Math.random(),
+        invNo: data.vid || '',
+        invDate: data.vdate ? dayjs(data.vdate).format('YYYY-MM-DD') : null,
+        currency: data.acccurrency || '',
+        exRate: data.exrate || '',
+        refNo: data.refno || '',
+        refDate: data.refdate || '',
+        amount: data.billamount || '',
+        gstAmount: parseFloat(data.gstamount) || 0,
+        chargeAmt: data.chargeAmt || ''
+      }));
+
+    if (newData.length < selectedData.length) {
+      showToast('warning', 'Some of the selected items are already added!');
+    }
+    if (newData.length === 0) {
+      return;
+    }
+    setWithdrawalsTableData((prev) => [...prev, ...newData]);
+    setSelectedRows([]);
+    setSelectAll(false);
+    handleCloseModal();
+  };
   const getAllFillGrid = async () => {
     try {
       const response = await apiCalls(
         'get',
         `/payable/getPaymentFillGrid?branchCode=${branchCode}&orgId=${orgId}&partyCode=${formData.partyCode}`
         // `/payable/getPaymentFillGrid?branchCode=${branchCode}&orgId=${orgId}&partyCode=${formData.partyCode}&stateCode=${formData.gstState}`
-        );
+      );
       if (response.status === true) {
         setFillGridData(response.paramObjectsMap.paymentfillgrid);
       } else {
@@ -795,10 +792,10 @@ const Payment = () => {
                     </Box>
                     <TabPanel value="1">
                       <div className="row d-flex ml">
-                      <div className="mb-1">
-                    {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
-                    <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />                  
-                  </div>
+                        <div className="mb-1">
+                          {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
+                          <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
+                        </div>
                         <div className="row mt-2">
                           <div className="col-lg-12">
                             <div className="table-responsive">
@@ -850,7 +847,7 @@ const Payment = () => {
                                           <input
                                             type="text"
                                             value={row.invNo}
-                                            style={{ width: '100px' }}
+                                            style={{ width: '170px' }}
                                             disabled
                                             onChange={(e) => {
                                               const value = e.target.value;
@@ -906,7 +903,7 @@ const Payment = () => {
                                             type="text"
                                             disabled
                                             value={row.refNo}
-                                            style={{ width: '100px' }}
+                                            style={{ width: '170px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setWithdrawalsTableData((prev) =>
@@ -959,7 +956,7 @@ const Payment = () => {
                                             type="text"
                                             value={row.amount}
                                             disabled
-                                            style={{ width: '100px' }}
+                                            style={{ width: '120px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const numericRegex = /^[0-9]*$/;
@@ -992,53 +989,56 @@ const Payment = () => {
                                           )}
                                         </td>
                                         <td className="border px-2 py-2">
-                                  <input
-                                    type="text"
-                                    value={row.gstAmount}
-                                    disabled
-                                    onChange={(e) => {
-                                      const value = e.target.value;
-                                      const isNumeric = /^[0-9]*$/;
-                                      if (isNumeric.test(value)) {
-                                        setWithdrawalsTableData((prev) =>
-                                          prev.map((r) => (r.id === row.id ? { ...r, gstAmount: value } : r))
-                                        );
-                                        setWithdrawalsTableErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = { ...newErrors[index], gstAmount: !value ? 'Tax Amt is required' : '' };
-                                          return newErrors;
-                                        });
-                                      } else {
-                                        setWithdrawalsTableErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = {
-                                            ...newErrors[index],
-                                            gstAmount: 'Only numbers are allowed'
-                                          };
-                                          return newErrors;
-                                        });
-                                      }
-                                    }}
-                                    className={withdrawalsTableErrors[index]?.gstAmount ? 'error form-control' : 'form-control'}
-                                    style={{ width: '150px' }}
-                                  />
-                                  {withdrawalsTableErrors[index]?.gstAmount && (
-                                    <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                      {withdrawalsTableErrors[index].gstAmount}
-                                    </div>
-                                  )}
-                                </td>
+                                          <input
+                                            type="text"
+                                            value={row.gstAmount}
+                                            disabled
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const isNumeric = /^[0-9]*$/;
+                                              if (isNumeric.test(value)) {
+                                                setWithdrawalsTableData((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, gstAmount: value } : r))
+                                                );
+                                                setWithdrawalsTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    gstAmount: !value ? 'Tax Amt is required' : ''
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setWithdrawalsTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    gstAmount: 'Only numbers are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={withdrawalsTableErrors[index]?.gstAmount ? 'error form-control' : 'form-control'}
+                                            style={{ width: '150px' }}
+                                          />
+                                          {withdrawalsTableErrors[index]?.gstAmount && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {withdrawalsTableErrors[index].gstAmount}
+                                            </div>
+                                          )}
+                                        </td>
                                         <td className="border px-2 py-2">
                                           <select
                                             value={row.currency}
-                                            style={{ width: '150px' }}
+                                            style={{ width: '100px' }}
                                             disabled
                                             onChange={(e) => {
                                               const selectedCurrency = e.target.value;
                                               const updatedCurrencyData = [...withdrawalsTableData];
                                               updatedCurrencyData[index] = {
                                                 ...updatedCurrencyData[index],
-                                                currency: selectedCurrency,
+                                                currency: selectedCurrency
                                               };
                                               setWithdrawalsTableData(updatedCurrencyData);
                                             }}
@@ -1057,81 +1057,83 @@ const Payment = () => {
                                           )}
                                         </td>
                                         <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.exRate}
-                                      disabled
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        const isNumeric = /^[0-9]*$/;
+                                          <input
+                                            type="text"
+                                            value={row.exRate}
+                                            disabled
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const isNumeric = /^[0-9]*$/;
 
-                                        if (isNumeric.test(value)) {
-                                          setWithdrawalsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r)));
-                                          setWithdrawalsTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], exRate: !value ? 'Ex Rate is required' : '' };
-                                            return newErrors;
-                                          });
-                                        } else {
-                                          setWithdrawalsTableErrors((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], exRate: 'Only numbers are allowed' };
-                                            return newErrors;
-                                          });
-                                        }
-                                      }}
-                                      className={withdrawalsTableErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
-                                    />
-                                    {withdrawalsTableErrors[index]?.exRate && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {withdrawalsTableErrors[index].exRate}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2">
-                                  <input
-                                    type="text"
-                                    value={row.chargeAmt}
-                                    disabled
-                                    onChange={(e) => {
-                                      const value = e.target.value;
-                                      const isNumeric = /^[0-9]*$/;
-                                      if (isNumeric.test(value)) {
-                                        setWithdrawalsTableData((prev) =>
-                                          prev.map((r) => (r.id === row.id ? { ...r, chargeAmt: value } : r))
-                                        );
-                                        setWithdrawalsTableErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = { ...newErrors[index], chargeAmt: 'Only numbers are allowed' };
-                                          return newErrors;
-                                        });
-                                      } else {
-                                        setWithdrawalsTableErrors((prev) => {
-                                          const newErrors = [...prev];
-                                          newErrors[index] = {
-                                            ...newErrors[index],
-                                            chargeAmt: 'Only numbers are allowed'
-                                          };
-                                          return newErrors;
-                                        });
-                                      }
-                                    }}
-                                    className={withdrawalsTableErrors[index]?.chargeAmt ? 'error form-control' : 'form-control'}
-                                    style={{ width: '150px' }}
-                                  />
-                                  {withdrawalsTableErrors[index]?.chargeAmt && (
-                                    <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                      {withdrawalsTableErrors[index].chargeAmt}
-                                    </div>
-                                  )}
-                                </td>
+                                              if (isNumeric.test(value)) {
+                                                setWithdrawalsTableData((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r))
+                                                );
+                                                setWithdrawalsTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = { ...newErrors[index], exRate: !value ? 'Ex Rate is required' : '' };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setWithdrawalsTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = { ...newErrors[index], exRate: 'Only numbers are allowed' };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={withdrawalsTableErrors[index]?.exRate ? 'error form-control' : 'form-control'}
+                                            style={{ width: '100px' }}
+                                          />
+                                          {withdrawalsTableErrors[index]?.exRate && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {withdrawalsTableErrors[index].exRate}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.chargeAmt}
+                                            disabled
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              const isNumeric = /^[0-9]*$/;
+                                              if (isNumeric.test(value)) {
+                                                setWithdrawalsTableData((prev) =>
+                                                  prev.map((r) => (r.id === row.id ? { ...r, chargeAmt: value } : r))
+                                                );
+                                                setWithdrawalsTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = { ...newErrors[index], chargeAmt: 'Only numbers are allowed' };
+                                                  return newErrors;
+                                                });
+                                              } else {
+                                                setWithdrawalsTableErrors((prev) => {
+                                                  const newErrors = [...prev];
+                                                  newErrors[index] = {
+                                                    ...newErrors[index],
+                                                    chargeAmt: 'Only numbers are allowed'
+                                                  };
+                                                  return newErrors;
+                                                });
+                                              }
+                                            }}
+                                            className={withdrawalsTableErrors[index]?.chargeAmt ? 'error form-control' : 'form-control'}
+                                            style={{ width: '130px' }}
+                                          />
+                                          {withdrawalsTableErrors[index]?.chargeAmt && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {withdrawalsTableErrors[index].chargeAmt}
+                                            </div>
+                                          )}
+                                        </td>
                                         <td className="border px-2 py-2">
                                           <input
                                             type="text"
                                             disabled
                                             value={row.outstanding}
-                                            style={{ width: '100px' }}
+                                            style={{ width: '120px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               const numericRegex = /^[0-9]*$/;
@@ -1268,73 +1270,76 @@ const Payment = () => {
                     </TabPanel>
                   </TabContext>
                 </Box>
-                    {/* {fillGridData && fillGridData.length > 0 ?  */}
-                    <Dialog
-                      open={modalOpen}
-                      maxWidth={'md'}
-                      fullWidth={true}
-                      onClose={handleCloseModal}
-                      PaperComponent={PaperComponent}
-                      aria-labelledby="draggable-dialog-title"
-                    >
-                      <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
-                        <h6>Grid Details</h6>
-                      </DialogTitle>
-                      <DialogContent className="pb-0">
-                        <div className="row">
-                          <div className="col-lg-12">
-                            <div className="table-responsive">
-                              <table className="table table-bordered">
-                                <thead>
-                                  <tr style={{ backgroundColor: '#673AB7' }}>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                      <Checkbox sx={{
-                                        color: 'white',
-                                        '&.Mui-checked': {
-                                          color: 'white', 
-                                        },
+                {/* {fillGridData && fillGridData.length > 0 ?  */}
+                <Dialog
+                  open={modalOpen}
+                  maxWidth={'md'}
+                  fullWidth={true}
+                  onClose={handleCloseModal}
+                  PaperComponent={PaperComponent}
+                  aria-labelledby="draggable-dialog-title"
+                >
+                  <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
+                    <h6>Grid Details</h6>
+                  </DialogTitle>
+                  <DialogContent className="pb-0">
+                    <div className="row">
+                      <div className="col-lg-12">
+                        <div className="table-responsive">
+                          <table className="table table-bordered">
+                            <thead>
+                              <tr style={{ backgroundColor: '#673AB7' }}>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                  <Checkbox
+                                    sx={{
+                                      color: 'white',
+                                      '&.Mui-checked': {
+                                        color: 'white'
+                                      }
+                                    }}
+                                    checked={selectAll}
+                                    onChange={handleSelectAll}
+                                  />
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                  S.No
+                                </th>
+                                <th className="table-header"># Invoice</th>
+                                <th className="table-header">Date</th>
+                                <th className="table-header">Bill Amount</th>
+                                <th className="table-header">Tax</th>
+                                <th className="table-header">Net Receivable</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {fillGridData?.map((row, index) => (
+                                <tr key={row.id}>
+                                  <td className="border p-0 text-center">
+                                    <Checkbox
+                                      checked={selectedRows.includes(index)}
+                                      onChange={(e) => {
+                                        const isChecked = e.target.checked;
+                                        setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
                                       }}
-                                      checked={selectAll} onChange={handleSelectAll} />
-                                    </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                      S.No
-                                    </th>
-                                    <th className="table-header"># Invoice</th>
-                                    <th className="table-header">Date</th>
-                                    <th className="table-header">Bill Amount</th>
-                                    <th className="table-header">Tax</th>
-                                    <th className="table-header">Net Receivable</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {fillGridData?.map((row, index) => (
-                                    <tr key={row.id}>
-                                      <td className="border p-0 text-center">
-                                        <Checkbox
-                                          checked={selectedRows.includes(index)}
-                                          onChange={(e) => {
-                                            const isChecked = e.target.checked;
-                                            setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
-                                          }}
-                                        />
-                                      </td>
-                                      <td className="text-center">{index + 1}</td>
-                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.vid || ''}
-                                      </td>
-                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : ''}
-                                      </td>
-                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.billamount || ''}
-                                      </td> 
-                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstamount || ''}
-                                      </td>
-                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeAmt || 0}
-                                      </td>
-                                      {/* <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                    />
+                                  </td>
+                                  <td className="text-center">{index + 1}</td>
+                                  <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                    {row.vid || ''}
+                                  </td>
+                                  <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                    {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : ''}
+                                  </td>
+                                  <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                    {row.billamount || ''}
+                                  </td>
+                                  <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                    {row.gstamount || ''}
+                                  </td>
+                                  <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                    {row.chargeAmt || 0}
+                                  </td>
+                                  {/* <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                         {row.chargeAmt || 0}
                                       </td>
                                       <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
@@ -1346,29 +1351,24 @@ const Payment = () => {
                                       <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                         {row.chargeAmt || 0}
                                       </td> */}
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
-                      </DialogContent>
-                      <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
-                        <Button onClick={handleCloseModal} sx={{ color: '#673AB7' }}>
-                          Cancel
-                        </Button>
-                        <Button
-                          color="secondary"
-                          onClick={handleSubmitSelectedRows}
-                          variant="contained"
-                          sx={{ backgroundColor: '#673AB7' }}
-                        >
-                          Proceed
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
-                    {/*   : showToast('warning','No Data Found for Selected Customer')} */}
+                      </div>
+                    </div>
+                  </DialogContent>
+                  <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
+                    <Button onClick={handleCloseModal} sx={{ color: '#673AB7' }}>
+                      Cancel
+                    </Button>
+                    <Button color="secondary" onClick={handleSubmitSelectedRows} variant="contained" sx={{ backgroundColor: '#673AB7' }}>
+                      Proceed
+                    </Button>
+                  </DialogActions>
+                </Dialog>
+                {/*   : showToast('warning','No Data Found for Selected Customer')} */}
               </div>
             </>
           ) : (

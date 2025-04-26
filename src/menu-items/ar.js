@@ -1,10 +1,40 @@
 // assets
 import { IconKey } from '@tabler/icons-react';
 import { IconFileDollar } from '@tabler/icons-react';
+import {
+  RequestQuoteOutlined,
+  CreditScoreOutlined,
+  AssignmentOutlined,
+  ReceiptLongOutlined,
+  SyncAltOutlined,
+  PendingActionsOutlined,
+  TimelapseOutlined
+} from '@mui/icons-material';
 
 // constant
 const icons = {
   IconFileDollar
+};
+const icons1 = {
+  RequestQuoteOutlined
+};
+const icons2 = {
+  CreditScoreOutlined
+};
+const icons3 = {
+  AssignmentOutlined
+};
+const icons4 = {
+  ReceiptLongOutlined
+};
+const icons5 = {
+  SyncAltOutlined
+};
+const icons6 = {
+  PendingActionsOutlined
+};
+const icons7 = {
+  TimelapseOutlined
 };
 
 // const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
@@ -62,32 +92,37 @@ const ar = {
           id: 'taxInvoiceDetail',
           title: 'Tax Invoice',
           type: 'item',
-          url: '/finance/taxInvoice/taxInvoiceDetail'
+          url: '/finance/taxInvoice/taxInvoiceDetail',
+          icon: icons1.RequestQuoteOutlined
         },
         {
           id: 'creditNoteDetail',
           title: 'Credit Note',
           type: 'item',
-          url: '/finance/creditNote/creditNoteDetail'
+          url: '/finance/creditNote/creditNoteDetail',
+          icon: icons2.CreditScoreOutlined
         },
         {
           id: 'taxRegister',
           title: 'Sales Register',
           type: 'item',
-          url: '/finance/taxInvoice/TaxRegister'
+          url: '/finance/taxInvoice/TaxRegister',
+          icon: icons3.AssignmentOutlined
         },
         {
           id: 'receipt',
           title: 'Receipt',
           type: 'item',
-          url: '/finance/receipt/Receipt'
+          url: '/finance/receipt/Receipt',
+          icon: icons4.ReceiptLongOutlined
         },
 
         {
           id: 'adjustmentOffset',
           title: 'AR Offset',
           type: 'item',
-          url: '/finance/AR-adjustment'
+          url: '/finance/AR-adjustment',
+          icon: icons5.SyncAltOutlined
         },
         // {
         //   id: 'customerLedger',
@@ -99,13 +134,15 @@ const ar = {
           id: 'Outstanding',
           title: 'AR Outstanding',
           type: 'item',
-          url: '/finance/AR-outstanding'
+          url: '/finance/AR-outstanding',
+          icon: icons6.PendingActionsOutlined
         },
         {
           id: 'aging',
           title: 'AR Aging',
           type: 'item',
-          url: '/finance/AR-aging'
+          url: '/finance/AR-aging',
+          icon: icons7.TimelapseOutlined
         }
       ]
       // .filter((item) => allowedScreenIds.includes(item.id))

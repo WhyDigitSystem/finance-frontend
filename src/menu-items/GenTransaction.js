@@ -1,10 +1,19 @@
 // assets
 import { IconRepeat } from '@tabler/icons-react';
+import { BuildCircleOutlined, CreditCardOutlined, MenuBookOutlined, ArticleOutlined, ReceiptLongOutlined } from '@mui/icons-material';
 
 // constant
 const icons = {
   IconRepeat
 };
+const icons1 = {
+  BuildCircleOutlined
+};
+
+const icons2 = { CreditCardOutlined };
+const icons3 = { MenuBookOutlined };
+const icons4 = { ArticleOutlined };
+const icons5 = { ReceiptLongOutlined };
 
 // const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
 
@@ -35,13 +44,14 @@ const transactionChildren = [
     id: 'finance',
     title: 'Operations',
     type: 'collapse',
-    // icon: icons8.IconBriefcase,
+    icon: icons1.BuildCircleOutlined,
     children: [
       {
         id: 'JobCard',
         title: 'Card',
         type: 'item',
-        url: '/finance/JobCard'
+        url: '/finance/JobCard',
+        icon: icons2.CreditCardOutlined
       }
     ]
   },
@@ -50,18 +60,21 @@ const transactionChildren = [
     title: 'GNA',
     type: 'collapse',
     // icon: icons7.IconLayoutDashboard,
+    icon: icons3.MenuBookOutlined,
     children: [
       {
         id: 'generalJournal',
         title: 'General Journal',
         type: 'item',
-        url: '/finance/GeneralJournal/GeneralJournal'
+        url: '/finance/GeneralJournal/GeneralJournal',
+        icon: icons4.ArticleOutlined
       },
       {
         id: 'adjustmentJournal',
         title: 'Adjustment Journal',
         type: 'item',
-        url: '/finance/AdjustmentJournal'
+        url: '/finance/AdjustmentJournal',
+        icon: icons5.ReceiptLongOutlined
       }
     ]
   }

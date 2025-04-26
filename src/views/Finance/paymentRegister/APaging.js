@@ -45,8 +45,8 @@ const APaging = () => {
   };
 
   const allClearData = () => {
-    setFormData({ partyName: 'All', date: null });
-    setSelectedSections({ partyName: false, date: false });
+    setFormData({ partyName: 'All', date: dayjs().format('YYYY-MM-DD') });
+    setSelectedSections({ partyName: false, date: true });
     setFieldErrors({});
     setListView(false);
     setRowData([]);

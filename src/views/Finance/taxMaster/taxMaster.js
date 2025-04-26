@@ -159,7 +159,7 @@ const TaxMaster = () => {
           errorMessage = 'Invalid Format';
         }
         break;
-      case 'taxslab':
+      case 'taxSlab':
         if (!numericRegex.test(value)) {
           errorMessage = 'Invalid Format';
         } else if (value.length > 3) {

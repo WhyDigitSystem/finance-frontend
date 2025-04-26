@@ -72,8 +72,8 @@ const APaging = () => {
 
   // clear button
   const allClearData = () => {
-    setFormData({ partyName: 'All', date: null }); //division: 'All', option: 'All', branchName: 'All'
-    setSelectedSections({ partyName: false, date: false }); // division: false, option: false, branchName: false
+    setFormData({ partyName: 'All', date: dayjs().format('YYYY-MM-DD') }); //division: 'All', option: 'All', branchName: 'All'
+    setSelectedSections({ partyName: false, date: true }); // division: false, option: false, branchName: false
     setFieldErrors({});
   };
 
