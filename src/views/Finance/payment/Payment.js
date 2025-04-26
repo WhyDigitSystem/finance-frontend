@@ -385,7 +385,9 @@ const Payment = () => {
           currency: listValueVO.currency,
           chequeNo: listValueVO.chequeNo,
           chequeDate: listValueVO.chequeDate,
-          currencyAmt: listValueVO.currencyAmt
+          currencyAmt: listValueVO.currencyAmt,
+          onAccount: listValueVO.onAccount,
+          netAmount: listValueVO.netAmount
         });
         setWithdrawalsTableData(
           listValueVO.paymentInvDtlsVO.map((cl) => ({
