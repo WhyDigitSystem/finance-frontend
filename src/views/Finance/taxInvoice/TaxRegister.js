@@ -182,6 +182,9 @@ function TaxRegister() {
   };
   const reportColumns = [
     { accessorKey: 'JobOrderNo', header: 'Job No', size: 100 },
+    { accessorKey: 'docId', header: 'Doc Id', size: 100 },
+    { accessorKey: 'docDate', header: 'Date', size: 100 },
+    { accessorKey: 'screenCode', header: 'Screen', size: 100 },
     { accessorKey: 'Vid', header: '# Invoice', size: 100 },
     { accessorKey: 'Vdate', header: 'Date', size: 100 },
     { accessorKey: 'BillToParty', header: 'Customer', size: 140 },

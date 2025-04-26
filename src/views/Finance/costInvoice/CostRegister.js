@@ -184,10 +184,12 @@ function CostRegister() {
   const reportColumns = [
     { accessorKey: 'Vid', header: 'Cost Invoice No', size: 80 },
     { accessorKey: 'Vdate', header: 'Date', size: 80 },
+    { accessorKey: 'DocId', header: 'Doc Id', size: 80 },
+    { accessorKey: 'DocDate', header: 'Date', size: 80 },
+    { accessorKey: 'ScreenCode', header: 'Screen Code', size: 80 },
     { accessorKey: 'SupplierName', header: 'Party Name', size: 80 },
     { accessorKey: 'SupplierGstin', header: 'Reg In', size: 80 },
     { accessorKey: 'GstType', header: 'GST Type', size: 80 },
-    { accessorKey: 'GstPercent', header: 'GST Percent', size: 80 },
     { accessorKey: 'BillAmount', header: 'Bill Amount', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
     { accessorKey: 'Tax', header: 'TAX', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },
     { accessorKey: 'TotalAmount', header: 'Total Amount', size: 80, Cell: ({ cell }) => cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'  },

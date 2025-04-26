@@ -109,8 +109,8 @@ const Payment = () => {
       refNo: '',
       refDate: '',
       currency: '',
-      exrate:'',
-      gstamount:'',
+      exRate:'',
+      gstAmount:'',
       chargeAmt:'',
       amount: '',
       outstanding: '',
@@ -245,8 +245,8 @@ const Payment = () => {
         supplierRefDate: '',
         supplierRefNo: '',
         currency: '',
-        exrate:'',
-        gstamount:'',
+        exRate:'',
+        gstAmount:'',
         chargeAmt:'',
         amount: '',
         outstanding: '',
@@ -303,11 +303,11 @@ const Payment = () => {
         refNo: row.refNo,
         refDate: row.refDate,
         currency: row.currency,
-        exRate: parseInt(row.exrate),
+        exRate: row.exRate,
         amount: parseInt(row.amount),
-        gstAmt: row.gstamount,
+        gstAmount: parseInt(row.gstAmount),
         // chargeAmt: row.chargeAmt,
-        outstanding: parseInt(row.outstanding),
+        outStanding: parseInt(row.outstanding),
         settled: parseInt(row.settled)
       }));
       const saveFormData = {
@@ -395,9 +395,9 @@ const Payment = () => {
             refNo: cl.refNo,
             refDate: cl.refDate ? dayjs(cl.refDate) : null,
             currency: cl.currency,
-            exRate: cl.exrate,
+            exRate: cl.exRate,
             chargeAmt: cl.chargeAmt,
-            gstamount: cl.gstamount,
+            gstAmount: cl.gstAmount,
             amount: cl.amount,
             outstanding: cl.outstanding,
             settled: cl.settled
@@ -530,7 +530,6 @@ const Payment = () => {
     };
     const handleSubmitSelectedRows = async () => {
       const selectedData = selectedRows.map((index) => fillGridData[index]);
-      console.log("charge amt", selectedData);
       const newData = selectedData
         .filter((data) => {
           return !withdrawalsTableData.some(
@@ -546,7 +545,7 @@ const Payment = () => {
           refNo: data.refno || '',
           refDate: data.refdate || '',
           amount: data.billamount || '',
-          gstAmt: data.gstamount || '',
+          gstAmount: parseFloat(data.gstamount) || 0,
           chargeAmt: data.chargeAmt || ''
         }));
     
@@ -852,6 +851,7 @@ const Payment = () => {
                                             type="text"
                                             value={row.invNo}
                                             style={{ width: '100px' }}
+                                            disabled
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setWithdrawalsTableData((prev) =>
@@ -877,6 +877,7 @@ const Payment = () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             type="date"
+                                            disabled
                                             value={row.invDate ? dayjs(row.invDate).format('YYYY-MM-DD') : ''}
                                             onChange={(e) => {
                                               const date = e.target.value;
@@ -903,6 +904,7 @@ const Payment = () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             type="text"
+                                            disabled
                                             value={row.refNo}
                                             style={{ width: '100px' }}
                                             onChange={(e) => {
@@ -927,6 +929,7 @@ const Payment = () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             type="date"
+                                            disabled
                                             value={row.refDate ? dayjs(row.refDate).format('YYYY-MM-DD') : ''}
                                             onChange={(e) => {
                                               const date = e.target.value;
@@ -955,6 +958,7 @@ const Payment = () => {
                                           <input
                                             type="text"
                                             value={row.amount}
+                                            disabled
                                             style={{ width: '100px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
@@ -990,18 +994,18 @@ const Payment = () => {
                                         <td className="border px-2 py-2">
                                   <input
                                     type="text"
-                                    value={row.gstAmt}
+                                    value={row.gstAmount}
                                     disabled
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9]*$/;
                                       if (isNumeric.test(value)) {
                                         setWithdrawalsTableData((prev) =>
-                                          prev.map((r) => (r.id === row.id ? { ...r, gstAmt: value } : r))
+                                          prev.map((r) => (r.id === row.id ? { ...r, gstAmount: value } : r))
                                         );
                                         setWithdrawalsTableErrors((prev) => {
                                           const newErrors = [...prev];
-                                          newErrors[index] = { ...newErrors[index], gstAmt: !value ? 'Tax Amt is required' : '' };
+                                          newErrors[index] = { ...newErrors[index], gstAmount: !value ? 'Tax Amt is required' : '' };
                                           return newErrors;
                                         });
                                       } else {
@@ -1009,18 +1013,18 @@ const Payment = () => {
                                           const newErrors = [...prev];
                                           newErrors[index] = {
                                             ...newErrors[index],
-                                            gstAmt: 'Only numbers are allowed'
+                                            gstAmount: 'Only numbers are allowed'
                                           };
                                           return newErrors;
                                         });
                                       }
                                     }}
-                                    className={withdrawalsTableErrors[index]?.gstAmt ? 'error form-control' : 'form-control'}
+                                    className={withdrawalsTableErrors[index]?.gstAmount ? 'error form-control' : 'form-control'}
                                     style={{ width: '150px' }}
                                   />
-                                  {withdrawalsTableErrors[index]?.gstAmt && (
+                                  {withdrawalsTableErrors[index]?.gstAmount && (
                                     <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                      {withdrawalsTableErrors[index].gstAmt}
+                                      {withdrawalsTableErrors[index].gstAmount}
                                     </div>
                                   )}
                                 </td>
@@ -1028,6 +1032,7 @@ const Payment = () => {
                                           <select
                                             value={row.currency}
                                             style={{ width: '150px' }}
+                                            disabled
                                             onChange={(e) => {
                                               const selectedCurrency = e.target.value;
                                               const updatedCurrencyData = [...withdrawalsTableData];
@@ -1055,6 +1060,7 @@ const Payment = () => {
                                     <input
                                       type="text"
                                       value={row.exRate}
+                                      disabled
                                       onChange={(e) => {
                                         const value = e.target.value;
                                         const isNumeric = /^[0-9]*$/;
@@ -1123,6 +1129,7 @@ const Payment = () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             type="text"
+                                            disabled
                                             value={row.outstanding}
                                             style={{ width: '100px' }}
                                             onChange={(e) => {
@@ -1163,6 +1170,7 @@ const Payment = () => {
                                           <input
                                             type="text"
                                             value={row.settled}
+                                            disabled={editId}
                                             style={{ width: '100px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
