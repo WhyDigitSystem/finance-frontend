@@ -1178,7 +1178,7 @@ const Payment = () => {
                                             style={{ width: '100px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
-                                              const numericRegex = /^[0-9]*$/;
+                                              const numericRegex = /^[0-9.]*$/;
                                               if (numericRegex.test(value)) {
                                                 setWithdrawalsTableData((prev) =>
                                                   prev.map((r) => (r.id === row.id ? { ...r, settled: value } : r))
