@@ -69,7 +69,6 @@ const Receipt = () => {
     currency: 'INR',
     receiptAmt: '',
     netAmount: '',
-    grossAmount: '',
     remarks: '',
     onAccount: '',
   });
@@ -89,7 +88,6 @@ const Receipt = () => {
     currency: '',
     receiptAmt: '',
     netAmount: '',
-    grossAmount: '',
     remarks: '',
     onAccount: '',
   });
@@ -99,8 +97,8 @@ const Receipt = () => {
     {
       invNo: '',
       invDate: '',
-      // refNo: '',
-      // refDate: null,
+      refNo: '',
+      refDate: null,
       currency: '',
       exRate: '',
       amount: '',
@@ -167,7 +165,6 @@ const Receipt = () => {
       currency: '',
       receiptAmt: '',
       netAmount: '',
-      grossAmount: '',
       remarks: '',
       onAccount: '',
     });
@@ -336,7 +333,9 @@ const Receipt = () => {
           receiptAmt: receiptVO.receiptAmt,
           currency: receiptVO.currency,
           currencyAmount: receiptVO.currencyAmount,
-          receivedFrom: receiptVO.receivedFrom
+          receivedFrom: receiptVO.receivedFrom,
+          onAccount: receiptVO.onAccount,
+          netAmount: receiptVO.netAmount
         });
         setInVoiceDetailsData(
           receiptVO.receiptInvDetailsVO.map((invoiceData) => ({
@@ -372,21 +371,6 @@ const Receipt = () => {
   const handleSave = async () => {
     const errors = {};
     const tableErrors = inVoiceDetailsData.map((row) => ({
-      // invNo: !row.invNo ? 'Invoice No is required' : '',
-      // invDate: !row.invDate ? 'Invoice Date is required' : '',
-      // refNo: !row.refNo ? 'Ref No is required' : '',
-      // refDate: !row.refDate ? 'Ref Date is required' : '',
-      // masterRef: !row.masterRef ? 'Master Ref is required' : '',
-      // houseRef: !row.houseRef ? 'House Ref is required' : '',
-      // currency: !row.currency ? 'Currency is required' : '',
-      // exRate: !row.exRate ? 'Ex Rate is required' : '',
-      // amount: !row.amount ? 'Amount is required' : '',
-      // chargeAmt: !row.chargeAmt ? 'Chargeable Amount is required' : '',
-      // outstanding: !row.outstanding ? 'Outstanding is required' : '',
-      // settled: !row.settled ? 'Settled is required' : '',
-      // recExRate: !row.recExRate ? 'Rec Ex Rate is required' : '',
-      // txnSettled: !row.txnSettled ? 'Txn Settled is required' : '',
-      // gainAmt: !row.gainAmt ? 'Gain or Loss is required' : ''
     }));
 
     let hasTableErrors = false;
@@ -415,10 +399,10 @@ const Receipt = () => {
         gstAmt: parseFloat(row.gstAmt),
         tds: parseFloat(row.tds) || 0,
         settled: parseFloat(row.settled) || 0,
-        // chargeAmt: parseFloat(row.chargeAmt),
-        // outstanding: parseFloat(row.outstanding),
-        // refDate: row.refDate ? formatDate(new Date(row.refDate)) : null,
-        // refNo: row.refNo,
+        chargeAmt: parseFloat(row.chargeAmt),
+        outstanding: parseFloat(row.outstanding),
+        refDate: row.refDate ? formatDate(new Date(row.refDate)) : null,
+        refNo: row.refNo,
       }));
 
       const saveFormData = {
@@ -438,8 +422,7 @@ const Receipt = () => {
         tdsAmt: parseInt(formData.tdsAmt),
         receiptAmt: parseInt(formData.receiptAmt),
         currency: formData.currency,
-        cancel: true,
-        cancelRemarks: '',
+        cancel: false,
         chequeUtiNo: formData.chequeUtiNo,
         chequeUtiDate: formData.chequeUtiDate ? dayjs(formData.chequeUtiDate).format('YYYY-MM-DD') : null,
         remarks: formData.remarks,
@@ -468,7 +451,7 @@ const Receipt = () => {
   const listViewColumns = [
     // { accessorKey: 'paymentMode', header: 'Receipt Type', size: 140 },
     // { accessorKey: 'bankChargeAcc', header: 'Bank Charges Account', size: 140 },
-    // { accessorKey: 'docId', header: 'Doc Id', size: 140 },
+    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
     // { accessorKey: 'type', header: 'Type', size: 140 },
     // { accessorKey: 'tdsAmt', header: 'TDS Amount', size: 140 },
     { accessorKey: 'customerName', header: 'Customer Name', size: 140 },
@@ -519,14 +502,15 @@ const Receipt = () => {
       const settledAmt = parseFloat(row.settled || 0);
       totalSettledAmt += settledAmt;
       const gross = billAmount + gstAmt;
-      const tdsAmt = (gross * tdsPercent) / 100;
+      let tdsAmt = 0;
+      if (tdsPercent) {
+        tdsAmt = (gross * tdsPercent) / 100;
+      }
       const netReceivable = chargeAmount - tdsAmt; 
       const outstandingAmt = netReceivable - settledAmt;
       totalChargeAmt += netReceivable;
-  
       return {
         ...row,
-        // chargeAmt: netReceivable.toFixed(2),
         tdsAmt: netReceivable.toFixed(2),
         outstanding: outstandingAmt.toFixed(2)
       };
@@ -534,15 +518,13 @@ const Receipt = () => {
   
     const receiptAmt = parseFloat(formData.receiptAmt || 0);
     const onAccount = receiptAmt >= totalSettledAmt ? receiptAmt - totalSettledAmt : 0;
-    // const onAccount = receiptAmt < totalSettledAmt ? 0 : (receiptAmt - totalChargeAmt).toFixed(2);
     setInVoiceDetailsData(updatedInvoiceDetails);
     setFormData((prev) => ({
       ...prev,
       netAmount: totalChargeAmt.toFixed(2),
       onAccount: onAccount
     }));
-  };  
-     
+  }; 
     const handleFullGrid = () => {
       if (formData.customerCode) {
         setModalOpen(true);
@@ -578,13 +560,15 @@ const Receipt = () => {
           invDate: data.vdate ? dayjs(data.vdate).format('YYYY-MM-DD') : null,
           amount: data.billamount || '',
           gstAmt: data.gstamount || '',
-          chargeAmt: data.chargeAmt || ''
+          chargeAmt: data.chargeAmt || '',
+          currency: data.acccurrency || '',
+          exRate: data.exrate || '',
+          refDate: data.refate ? dayjs(data.refate).format('YYYY-MM-DD') : null,
+          refNo: data.refNo || ''
         }));
-    
       if (newData.length < selectedData.length) {
         showToast('warning', 'Some of the selected items are already added!');
       }
-    
       if (newData.length === 0) {
         return;
       }
@@ -806,7 +790,7 @@ const Receipt = () => {
                 <FormControl fullWidth>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="UTI Date"
+                      label="UTR Date"
                     disabled = {editId}
                       value={formData.chequeUtiDate ? dayjs(formData.chequeUtiDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('chequeUtiDate', date)}
