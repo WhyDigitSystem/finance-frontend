@@ -70,7 +70,6 @@ const ARadjustmentOffset = () => {
     receiptDocDate: null,
     amount: '',
     totalSettled: '',
-    roundOfAmount: '',
     onAccount: '',
     narration: ''
   });
@@ -83,7 +82,6 @@ const ARadjustmentOffset = () => {
     customerCode: '',
     amount: '',
     totalSettled: '',
-    roundOfAmount: '',
     onAccount: '',
     narration: ''
   });
@@ -129,27 +127,6 @@ const ARadjustmentOffset = () => {
       setFormData({ ...formData, [name]: inputValue });
       setFieldErrors({ ...fieldErrors, [name]: false });
     }
-    setFormData((prev) => {
-      const updatedFormData = { ...prev, [name]: inputValue };
-  
-      // const totalSettled = inVoiceDetailsData.reduce(
-      //   (sum, row) => sum + (parseFloat(row.settled) || 0),
-      //   0
-      // );
-  
-      // const roundedTotalSettled = Math.round(totalSettled);
-      
-      // const roundOfAmount = (totalSettled - roundedTotalSettled).toFixed(2);
-  
-      // if (name === "amount") {
-      //   updatedFormData.onAccount = totalSettled - Math.abs(parseFloat(value) || 0);
-      // }
-      
-      // updatedFormData.totalSettled = totalSettled;
-      // updatedFormData.roundOfAmount = roundOfAmount;
-      return updatedFormData;
-    });
-  
     setFieldErrors((prev) => ({
       ...prev,
       [name]: false,
@@ -186,7 +163,6 @@ const ARadjustmentOffset = () => {
     });
   
     const amount = parseFloat(formData.amount || 0);
-    const round = totalChargeAmt.toFixed(2) - totalChargeAmt
     const onAccount = amount >= totalSettledAmt ? amount - totalSettledAmt : 0;
     setInVoiceDetailsData(updatedInvoiceDetails);
     setFormData((prev) => ({
@@ -194,7 +170,6 @@ const ARadjustmentOffset = () => {
       totalSettled: totalSettledAmt.toFixed(2),
       netAmount: totalChargeAmt.toFixed(2),
       onAccount: onAccount.toFixed(2),
-      roundOfAmount: 1 - round
     }));
   }; 
 
@@ -212,7 +187,6 @@ const ARadjustmentOffset = () => {
       receiptDocDate: null,
       amount: '',
       totalSettled: '',
-      roundOfAmount: '',
       onAccount: '',
       narration: ''
     });
@@ -222,7 +196,6 @@ const ARadjustmentOffset = () => {
       receiptDocDate: null,
       amount: '',
       totalSettled: '',
-      roundOfAmount: '',
       onAccount: '',
       narration: ''
     });
@@ -355,7 +328,6 @@ const ARadjustmentOffset = () => {
           subledgerCode: receiptVO.subLedgerCode,
           gainorLoss: receiptVO.forexGainOrLoss,
           totalSettled: receiptVO.totalSettled,
-          roundOfAmount: receiptVO.roundOffAmount,
           onAccount: receiptVO.onAccount,
           narration: receiptVO.narration,
         });
@@ -802,6 +774,7 @@ const ARadjustmentOffset = () => {
                                   <input
                                     type="text"
                                     value={row.refNo}
+                                    disabled
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const regex = /^[a-zA-Z0-9\s-]*$/;
@@ -833,6 +806,7 @@ const ARadjustmentOffset = () => {
                                   <input
                                     type="date"
                                     value={row.refDate}
+                                    disabled
                                     onChange={(e) => {
                                       const date = e.target.value;
 
@@ -863,6 +837,7 @@ const ARadjustmentOffset = () => {
                                     <input
                                       type="text"
                                       value={row.currency}
+                                      disabled
                                       onChange={(e) => {
                                         const value = e.target.value;
                                         const regex = /^[a-zA-Z0-9\s-]*$/;
@@ -899,6 +874,7 @@ const ARadjustmentOffset = () => {
                                     <input
                                       type="text"
                                       value={row.exRate}
+                                      disabled
                                       onChange={(e) => {
                                         const value = e.target.value;
                                         const isNumeric = /^[0-9]*$/;
@@ -1037,7 +1013,7 @@ const ARadjustmentOffset = () => {
                                   <input
                                     type="text"
                                     value={row.outStanding}
-                                    disabled = {editId}
+                                    disabled
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9]*$/;
@@ -1505,26 +1481,12 @@ const ARadjustmentOffset = () => {
                           name="totalSettled"
                           label="Total Setteled"
                           size="small"
+                          disabled
                           value={formData.totalSettled}
                           onChange={handleInputChange}
                           inputProps={{ maxLength: 30 }}
                           error={!!fieldErrors.totalSettled}
                           helperText={fieldErrors.totalSettled}
-                        />
-                      </FormControl>
-                    </div>
-                    <div className="col-md-3 mb-3">
-                      <FormControl fullWidth variant="filled">
-                        <TextField
-                          id="roundOfAmount"
-                          name="roundOfAmount"
-                          label="Round Of Amount"
-                          size="small"
-                          value={formData.roundOfAmount}
-                          onChange={handleInputChange}
-                          inputProps={{ maxLength: 30 }}
-                          error={!!fieldErrors.roundOfAmount}
-                          helperText={fieldErrors.roundOfAmount}
                         />
                       </FormControl>
                     </div>
@@ -1540,12 +1502,13 @@ const ARadjustmentOffset = () => {
                         />
                       </FormControl>
                     </div>
-                    <div className="col-md-3 mb-3">
+                    <div className="col-md-6 mb-3">
                       <FormControl fullWidth variant="filled">
                         <TextField
                           id="narration"
                           name="narration"
                           label="Narration"
+                          multiline
                           size="small"
                           value={formData.narration}
                           onChange={handleInputChange}

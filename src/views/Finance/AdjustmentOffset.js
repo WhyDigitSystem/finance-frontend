@@ -866,18 +866,18 @@ const AdjustmentOffset = () => {
                               <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                 S.No
                               </th>
-                              <th className="px-2 py-2 text-white text-center">Invoice Number</th>
-                              <th className="px-2 py-2 text-white text-center">Invoice Date</th>
+                              <th className="px-2 py-2 text-white text-center"># Invoice</th>
+                              <th className="px-2 py-2 text-white text-center">Date</th>
                               <th className="px-2 py-2 text-white text-center">Ref No</th>
                               <th className="px-2 py-2 text-white text-center">Ref Date</th>
-                              <th className="px-2 py-2 text-white text-center">Curr.</th>
+                              <th className="px-2 py-2 text-white text-center">Currency</th>
                               <th className="px-2 py-2 text-white text-center">Ex. Rate</th>
                               <th className="px-2 py-2 text-white text-center">Inv. Amount</th>
-                              <th className="px-2 py-2 text-white text-center">outStanding</th>
+                              <th className="px-2 py-2 text-white text-center">OutStanding</th>
                               <th className="px-2 py-2 text-white text-center">Settled</th>
-                              <th className="px-2 py-2 text-white text-center">set. Ex. Rate</th>
+                              {/* <th className="px-2 py-2 text-white text-center">set. Ex. Rate</th>
                               <th className="px-2 py-2 text-white text-center">Txn Settled</th>
-                              <th className="px-2 py-2 text-white text-center">Gain or Loss</th>
+                              <th className="px-2 py-2 text-white text-center">Gain or Loss</th> */}
                               {/* <th className="px-2 py-2 text-white text-center">Remarks</th> */}
                             </tr>
                           </thead>

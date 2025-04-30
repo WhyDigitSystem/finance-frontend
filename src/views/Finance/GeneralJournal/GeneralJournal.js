@@ -523,7 +523,6 @@ const GeneralJournal = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
-            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" disabled={isDisabled} icon={SaveIcon} onClick={handleSave} />
@@ -569,7 +568,7 @@ const GeneralJournal = () => {
                       labelId="voucherSubType-label"
                       label="Voucher Sub Type"
                       value={formData.voucherSubType}
-                      disabled={isDisabled}
+                      disabled={editId}
                       onChange={handleInputChange}
                       name="voucherSubType"
                     >
@@ -592,8 +591,7 @@ const GeneralJournal = () => {
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
                       label="Currency"
-                      // disabled={isDisabled}
-                      disabled
+                      disabled={editId}
                       onChange={handleInputChange}
                       name="currency"
                       value={formData.currency}
@@ -640,7 +638,7 @@ const GeneralJournal = () => {
                     size="small"
                     fullWidth
                     name="refNo"
-                    disabled={isDisabled}
+                    disabled={editId}
                     value={formData.refNo}
                     onChange={handleInputChange}
                     // required
@@ -656,7 +654,7 @@ const GeneralJournal = () => {
                       <DatePicker
                         label="Reference Date"
                         value={formData.refDate}
-                        disabled={isDisabled}
+                        disabled={editId}
                         onChange={(date) => handleDateChange('refDate', date)}
                         slotProps={{
                           textField: { size: 'small', clearable: true }
@@ -664,34 +662,8 @@ const GeneralJournal = () => {
                         format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
-
-                    {/* {fieldErrors.refDate && <p className="dateErrMsg">Ref Date is required</p>} */}
                   </FormControl>
                 </div>
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
-                    <InputLabel id="status-label">
-                      {
-                        <span>
-                          Status <span className="asterisk">*</span>
-                        </span>
-                      }
-                    </InputLabel>
-                    <Select
-                      labelId="status-label"
-                      label="Status"
-                      required
-                      disabled={isDisabled}
-                      value={formData.status}
-                      onChange={handleInputChange}
-                      name="status"
-                    >
-                      <MenuItem value="EDIT">EDIT</MenuItem>
-                      <MenuItem value="SUBMIT">SUBMIT</MenuItem>
-                    </Select>
-                    {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
-                  </FormControl>
-                </div> */}
               </div>
 
               <div className="row d-flex">
@@ -702,7 +674,7 @@ const GeneralJournal = () => {
                       label="Remarks"
                       size="small"
                       name="remarks"
-                      disabled={isDisabled}
+                      disabled={editId}
                       value={formData.remarks}
                       multiline
                       minRows={2}
@@ -769,88 +741,32 @@ const GeneralJournal = () => {
                                       <td className="text-center">
                                         <div className="pt-2">{index + 1}</div>
                                       </td>
-                                      {/* <td className="border px-2 py-2">
-                                        <select
-                                          value={row.accountName}
-                                          disabled={isDisabled}
-                                          style={{ width: '150px' }}
-                                          className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
-                                          onChange={(e) =>
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: e.target.value } : r))
-                                            )
-                                          }
-                                        >
-                                          <option value="">-- Select --</option>
-                                          {accountNames.map((item) => (
-                                            <option key={item.id} value={item.accountName}>
-                                              {item.accountName}
-                                            </option>
-                                          ))}
-                                        </select>
-                                        {detailsTableErrors[index]?.accountName && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].accountName}
-                                          </div>
-                                        )}
-                                      </td> */}
-                                      {/* <td className="border px-2 py-2">
-                                        <select
-                                          value={row.accountName || (accountNames.length === 1 ? accountNames[0].accountName : '')}
-                                          disabled={isDisabled}
-                                          style={{ width: '150px' }}
-                                          className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
-                                          onChange={(e) =>
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: e.target.value } : r))
-                                            )
-                                          }
-                                        >
-                                          <option value="">-- Select --</option>
-                                          {accountNames
-                                            .filter(
-                                              (item) =>
-                                                !detailsTableData.some((tableRow) => tableRow.accountName === item.accountName) ||
-                                                row.accountName === item.accountName
-                                            )
-                                            .map((item) => (
-                                              <option key={item.accountName} value={item.accountName}>
-                                                {item.accountName}
-                                              </option>
-                                            ))}
-                                        </select>
-                                        {detailsTableErrors[index]?.accountName && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].accountName}
-                                          </div>
-                                        )}
-                                      </td> */}
                                       <td>
                                         <Autocomplete
-                                          options={allAccountName} // Array of account names
-                                          getOptionLabel={(option) => option.accountName || ''} // Label for each option
-                                          groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')} // Group by first letter of account name
-                                          value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null} // Set the value based on accountName
-                                          onChange={(event, newValue) => handleAccountNameChange(event, newValue, row.id)} // Handle change
+                                          options={allAccountName}
+                                          disabled={editId}
+                                          getOptionLabel={(option) => option.accountName || ''}
+                                          groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')}
+                                          value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
+                                          onChange={(event, newValue) => handleAccountNameChange(event, newValue, row.id)}
                                           size="small"
                                           renderInput={(params) => (
                                             <TextField
                                               {...params}
                                               label="Account Name"
                                               variant="outlined"
-                                              error={!!detailsTableErrors[index]?.accountName} // Display error if any
-                                              helperText={detailsTableErrors[index]?.accountName} // Helper text for errors
+                                              error={!!detailsTableErrors[index]?.accountName}
+                                              helperText={detailsTableErrors[index]?.accountName}
                                             />
                                           )}
                                           sx={{ width: 250 }}
                                         />
                                       </td>
-
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
                                           value={row.subledgerName}
-                                          disabled={isDisabled}
+                                          disabled={editId}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailsTableData((prev) =>
@@ -877,7 +793,7 @@ const GeneralJournal = () => {
                                         <input
                                           type="text"
                                           value={row.subLedgerCode}
-                                          disabled={isDisabled}
+                                          disabled={editId}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailsTableData((prev) =>
@@ -900,104 +816,31 @@ const GeneralJournal = () => {
                                           </div>
                                         )}
                                       </td>
-                                      {/* <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.debitAmount}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-
-                                            if (/^\d{0,20}$/.test(value)) {
-                                              setDetailsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, debitAmount: value } : r))
-                                              );
-
-                                              setDetailsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  debitAmount: !value ? 'Debit Amount is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          maxLength="20"
-                                          className={detailsTableErrors[index]?.debitAmount ? 'error form-control' : 'form-control'}
-                                        />
-                                        {detailsTableErrors[index]?.debitAmount && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].debitAmount}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.creditAmount}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-
-                                            if (/^\d{0,20}$/.test(value)) {
-                                              setDetailsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, creditAmount: value } : r))
-                                              );
-
-                                              setDetailsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  creditAmount: !value ? 'Credit Amount is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          maxLength="20"
-                                          className={detailsTableErrors[index]?.creditAmount ? 'error form-control' : 'form-control'}
-                                        />
-                                        {detailsTableErrors[index]?.creditAmount && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].creditAmount}
-                                          </div>
-                                        )}
-                                      </td> */}
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
                                           value={row.debitAmount}
-                                          disabled={isDisabled}
+                                          disabled={editId}
                                           onChange={(e) => handleDebitChange(e, row, index)}
                                           maxLength="20"
                                           className={detailsTableErrors[index]?.debitAmount ? 'error form-control' : 'form-control'}
                                         />
-                                        {/* {detailsTableErrors[index]?.debitAmount && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].debitAmount}
-                                          </div>
-                                        )} */}
                                       </td>
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
                                           value={row.creditAmount}
-                                          disabled={isDisabled}
+                                          disabled={editId}
                                           onChange={(e) => handleCreditChange(e, row, index)}
                                           maxLength="20"
                                           className={detailsTableErrors[index]?.creditAmount ? 'error form-control' : 'form-control'}
                                         />
-                                        {/* {detailsTableErrors[index]?.creditAmount && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].creditAmount}
-                                          </div>
-                                        )} */}
                                       </td>
-
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
                                           value={row.narration}
-                                          disabled={isDisabled}
+                                          disabled={editId}
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailsTableData((prev) =>
