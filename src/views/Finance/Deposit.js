@@ -564,7 +564,8 @@ const Deposit = () => {
     if (!errorMessage) {
       setFormData((prevFormData) => ({
         ...prevFormData,
-        [name]: value.toUpperCase()
+        [name]: value
+        // [name]: value.toUpperCase()
       }));
 
       // Preserve the cursor position for text-based inputs
@@ -867,7 +868,7 @@ const Deposit = () => {
                                           <Autocomplete
                                             options={allAccountName}
                                             getOptionLabel={(option) => option.accountName || ''}
-                                            groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')}
+                                            // groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')}
                                             value={
                                               row.accountName
                                                 ? allAccountName.find((a) => a.accountName === row.accountName)

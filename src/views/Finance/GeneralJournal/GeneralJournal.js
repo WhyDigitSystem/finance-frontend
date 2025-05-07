@@ -19,7 +19,6 @@ import Box from '@mui/material/Box';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import apiCalls from 'apicall';
-import { getAllActiveCurrency } from 'utils/CommonFunctions';
 
 const GeneralJournal = () => {
   const [showForm, setShowForm] = useState(true);
@@ -31,7 +30,7 @@ const GeneralJournal = () => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [value, setValue] = useState(0);
   const [editId, setEditId] = useState('');
-  // const [accountNames, setAccountNames] = useState([]);
+  const [allSubLedgerName, setAllSubLedgerName] = useState({});
   const [allAccountName, setAllAccountName] = useState([]);
 
   const [currencies, setCurrencies] = useState([]);
@@ -77,11 +76,12 @@ const GeneralJournal = () => {
     {
       id: 1,
       accountName: '',
+      subledgerName: '',
+      subLedgerCode: '',
       creditAmount: '',
       debitAmount: '',
       narration: '',
-      subLedgerCode: '',
-      subledgerName: ''
+      subledgerNameOptions: []
     }
   ]);
   const [detailsTableErrors, setDetailsTableErrors] = useState([
@@ -94,19 +94,22 @@ const GeneralJournal = () => {
       subledgerName: ''
     }
   ]);
-
+  const getCurrencyandExRate = async () => {
+  try {
+    const response = await apiCalls('get', `transaction/getCurrencyAndExrateDetails?orgId=${orgId}`);
+    if (response.status === true) {
+      setCurrencies(response.paramObjectsMap.currencyVO);
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const currencyData = await getAllActiveCurrency(orgId);
-        setCurrencies(currencyData);
-        console.log('currency', currencyData);
-      } catch (error) {
-        console.error('Error fetching country data:', error);
-      }
-    };
-
-    fetchData();
+    getCurrencyandExRate();
     getGeneralJournalDocId();
     getAllGeneralJournalByOrgId();
     getAccountNameFromGroup();
@@ -154,11 +157,9 @@ const GeneralJournal = () => {
     setShowForm(true);
     try {
       const result = await apiCalls('get', `/transaction/getGeneralJournalById?id=${row.original.id}`);
-
       if (result) {
         const glVO = result.paramObjectsMap.generalJournalVO[0];
         setEditId(row.original.id);
-
         setFormData({
           voucherSubType: glVO.voucherSubType || '',
           id: glVO.id || '',
@@ -173,12 +174,11 @@ const GeneralJournal = () => {
           status: glVO.status || '',
           totalDebitAmount: glVO.totalDebitAmount || '',
           totalCreditAmount: glVO.totalCreditAmount || ''
-          // active: glVO.active || false,
         });
         setDetailsTableData(
           glVO.particularsJournalVO.map((row) => ({
             id: row.id,
-            accountName: row.accountsName || '', // Assign accountsName to accountName
+            accountName: row.accountsName || '',
             creditAmount: row.creditAmount,
             debitAmount: row.debitAmount,
             narration: row.narration,
@@ -186,7 +186,6 @@ const GeneralJournal = () => {
             subledgerName: row.subledgerName
           }))
         );
-
         console.log('DataToEdit', glVO);
       } else {
         // Handle erro
@@ -195,25 +194,13 @@ const GeneralJournal = () => {
       console.error('Error fetching data:', error);
     }
   };
-
-  // const getAccountNameFromGroup = async () => {
-  //   try {
-  //     const response = await apiCalls('get', `/transaction/getAccountNameFromGroup?orgId=${orgId}`);
-  //     setAccountNames(response.paramObjectsMap.generalJournalVO);
-  //     console.log('generalJournalVO', response.paramObjectsMap.generalJournalVO);
-  //   } catch (error) {
-  //     console.error('Error fetching gate passes:', error);
-  //   }
-  // };
   const getAccountNameFromGroup = async () => {
     try {
-      const response = await apiCalls('get', `/transaction/getAccountNameFromGroup?orgId=${orgId}`);
+      const response = await apiCalls('get', `/transaction/getAccountNameFromGroupLedgerGeneral?OrgId=${orgId}`);
       console.log('API Response:', response);
-
       if (response.status === true) {
-        // Populating the account names
-        setAllAccountName(response.paramObjectsMap.generalJournalVO);
-        console.log('Account Name', response.paramObjectsMap.generalJournalVO);
+        setAllAccountName(response.paramObjectsMap.GeneralJournalVO);
+        console.log('Account Name', response.paramObjectsMap.GeneralJournalVO);
       } else {
         console.error('API Error:', response);
       }
@@ -221,55 +208,120 @@ const GeneralJournal = () => {
       console.error('Error fetching data:', error);
     }
   };
-
-  // Handler for updating account name in table data
-  const handleAccountNameChange = (event, newValue, rowId) => {
-    const value = newValue ? newValue.accountName : ''; // Get account name from selection
-    setDetailsTableData((prev) =>
-      prev.map(
-        (row) => (row.id === rowId ? { ...row, accountName: value } : row) // Update specific row
-      )
-    );
+  const getSubledgerName = async (accountName, rowIndex) => {
+    try {
+      const response = await apiCalls('get', `/transaction/getSubLedgerNameFromPartyMaster?accountName=${accountName}&OrgId=${orgId}`);
+      console.log('API Response:', response);
+  
+      if (response.status === true) {
+        const updatedData = [...detailsTableData];
+        updatedData[rowIndex].subledgerNameOptions = response.paramObjectsMap.GeneralJournalVO || [];
+        updatedData[rowIndex].subledgerName = '';
+        updatedData[rowIndex].subLedgerCode = '';
+        setDetailsTableData(updatedData);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const handleAccountNameChange = (e, rowIndex) => {
+    const selectedAccountName = e.target.value;
+    const updatedData = [...detailsTableData];
+    updatedData[rowIndex].accountName = selectedAccountName;
+    updatedData[rowIndex].subledgerName = '';
+    updatedData[rowIndex].subLedgerCode = '';
+    updatedData[rowIndex].subledgerNameOptions = [];
+    setDetailsTableData(updatedData);
+    getSubledgerName(selectedAccountName, rowIndex);
+  }; 
+  // const handleSubledgerChange = (e, rowIndex) => {
+  //   const selectedSubledgerName = e.target.value;
+  //   const updatedData = [...detailsTableData];
+  //   const subledgerOptions = updatedData[rowIndex].subledgerNameOptions;
+  //   const selectedOption = subledgerOptions.find(
+  //     (option) => option.subLedgerName === selectedSubledgerName
+  //   );
+  // console.log("Subledger",selectedSubledgerName);
+  
+  //   updatedData[rowIndex].subledgerName = selectedSubledgerName;
+  //   updatedData[rowIndex].subLedgerCode = selectedOption?.subLedgerCode || '';
+  
+  //   setDetailsTableData(updatedData);
+  // };
+  const handleSubledgerChange = (selectedOption, rowIndex) => {
+    const updatedData = [...detailsTableData];
+  
+    if (selectedOption) {
+      updatedData[rowIndex].subledgerName = selectedOption.subLedgerName;
+      updatedData[rowIndex].subLedgerCode = selectedOption.subLedgerCode;
+    } else {
+      updatedData[rowIndex].subledgerName = '';
+      updatedData[rowIndex].subLedgerCode = '';
+    }
+  
+    setDetailsTableData(updatedData);
   };
   const handleDebitChange = (e, row, index) => {
     const value = e.target.value;
-
+    console.log("Debitamt", value);
     if (/^\d{0,20}$/.test(value)) {
-      setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, debitAmount: value, creditAmount: value ? '0' : '' } : r)));
-
+      setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, debitAmount: value, creditAmount: value ? 0 : '' } : r)));
       setDetailsTableErrors((prev) => {
         const newErrors = [...prev];
         newErrors[index] = {
           ...newErrors[index],
-          debitAmount: !value ? 'Debit Amount is required' : ''
+          debitAmount: value ? value : 'Debit Amount is required'
         };
         return newErrors;
       });
     }
   };
-
   const handleCreditChange = (e, row, index) => {
     const value = e.target.value;
-
+console.log("Creditamt", value);
     if (/^\d{0,20}$/.test(value)) {
-      setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, creditAmount: value, debitAmount: value ? '0' : '' } : r)));
+      setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, creditAmount: value, debitAmount: value ? 0 : '' } : r)));
 
       setDetailsTableErrors((prev) => {
         const newErrors = [...prev];
         newErrors[index] = {
           ...newErrors[index],
-          creditAmount: !value ? 'Credit Amount is required' : ''
+          creditAmount: value ? '' : 'Credit Amount is required'
         };
         return newErrors;
       });
     }
   };
-
+  const handleSelectCurrency = (e) => {
+    const value = e.target.value;  
+    console.log('Selected Currency value:', value);
+    currencies.forEach((curr, index) => {
+      console.log(`Currency ${index}:`, curr);
+    });
+    const selectedCurr = currencies.find((curr) => curr.currency === value);
+    if (selectedCurr) {
+      console.log('Selected Employee:', selectedCurr);
+      setFormData((prevData) => ({
+        ...prevData,
+        currency: selectedCurr.currency,
+        exRate: selectedCurr.buyingExRate,
+        // partyId: selectedCurr.sellingExRate
+      }));
+      setFieldErrors((prevErrors) => ({
+        ...prevErrors,
+        currency:'',
+        exRate:''
+      }));
+    } else {
+      console.log('No Currency found', value);
+    }
+  };
   const handleInputChange = (e) => {
     const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
 
     let errorMessage = '';
-
     if (errorMessage) {
       setFieldErrors({ ...fieldErrors, [name]: errorMessage });
     } else {
@@ -302,7 +354,6 @@ const GeneralJournal = () => {
     //   }));
     // }
   };
-
   const handleClear = () => {
     setFormData({
       docDate: dayjs(),
@@ -317,7 +368,6 @@ const GeneralJournal = () => {
       totalDebitAmount: 0,
       voucherSubType: ''
     });
-    getAllActiveCurrency(orgId);
     setFieldErrors({});
     setDetailsTableData([
       { id: 1, accountName: '', subLedgerCode: '', debitAmount: '', creditAmount: '', narration: '', subledgerName: '' }
@@ -326,19 +376,6 @@ const GeneralJournal = () => {
     setEditId('');
     getGeneralJournalDocId();
   };
-
-  // const handleKeyDown = (e, row, table) => {
-  //   if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
-  //     e.preventDefault();
-  //     if (isLastRowEmpty(table)) {
-  //       displayRowError(table);
-  //     } else {
-  //       if (table === roleTableData) handleAddRow();
-  //       // else handleAddRow1();
-  //     }
-  //   }
-  // };
-
   const handleAddRow = () => {
     if (isLastRowEmpty(detailsTableData)) {
       displayRowError(detailsTableData);
@@ -351,12 +388,12 @@ const GeneralJournal = () => {
       debitAmount: '',
       creditAmount: '',
       narration: '',
-      subledgerName: ''
+      subledgerName: '',
+    subledgerNameOptions: []
     };
     setDetailsTableData([...detailsTableData, newRow]);
     setDetailsTableErrors([...detailsTableErrors, { accountName: '', subLedgerCode: '', subledgerName: '' }]);
   };
-
   const isLastRowEmpty = (table) => {
     const lastRow = table[table.length - 1];
     if (!lastRow) return false;
@@ -373,7 +410,6 @@ const GeneralJournal = () => {
     }
     return false;
   };
-
   const displayRowError = (table) => {
     if (table === detailsTableData) {
       setDetailsTableErrors((prevErrors) => {
@@ -391,7 +427,6 @@ const GeneralJournal = () => {
       });
     }
   };
-
   const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
     const rowIndex = table.findIndex((row) => row.id === id);
     if (rowIndex !== -1) {
@@ -401,15 +436,12 @@ const GeneralJournal = () => {
       setErrorTable(updatedErrors);
     }
   };
-
   const handleView = () => {
     setShowForm(!showForm);
   };
-
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-
   const handleSave = async () => {
     const errors = {};
     if (!formData.currency) {
@@ -418,23 +450,13 @@ const GeneralJournal = () => {
     if (!formData.exRate) {
       errors.exRate = 'Ex Rate is required';
     }
-    if (!formData.status) {
-      errors.status = 'Status is required';
-    }
-    // if (!formData.refNo) {
-    //   errors.refNo = 'Ref No is required';
-    // }
-    // if (!formData.refDate) {
-    //   errors.refDate = 'Ref Date is required';
-    // }
     if (!formData.voucherSubType) {
       errors.voucherSubType = 'Voucher Sub Type is required';
     }
-
     let detailTableDataValid = true;
     const newTableErrors = detailsTableData.map((row) => {
       const rowErrors = {};
-      if (!(row.credit || row.debit === '0' || row.debit || row.credit === '0')) {
+      if (!(row.credit || row.debit === 0 || row.debit || row.credit === 0)) {
         if (!row.accountName) {
           rowErrors.accountName = 'Account Name is required';
           detailTableDataValid = false;
@@ -478,7 +500,7 @@ const GeneralJournal = () => {
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
-        active: formData.active,
+        active: true,
         branch: branch,
         branchCode: branchCode,
         createdBy: loginUserName,
@@ -591,8 +613,8 @@ const GeneralJournal = () => {
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
                       label="Currency"
-                      disabled={editId}
-                      onChange={handleInputChange}
+                      // disabled={editId}
+                      onChange={handleSelectCurrency}
                       name="currency"
                       value={formData.currency}
                     >
@@ -628,11 +650,6 @@ const GeneralJournal = () => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="outlined-textarea-zip"
-                    // label={
-                    //   <span>
-                    //     Reference No <span className="asterisk">*</span>
-                    //   </span>
-                    // }/
                     label="Reference No" //sheik edit
                     variant="outlined"
                     size="small"
@@ -667,7 +684,7 @@ const GeneralJournal = () => {
               </div>
 
               <div className="row d-flex">
-                <div className="col-md-8">
+                <div className="col-md-6">
                   <FormControl fullWidth variant="filled">
                     <TextField
                       id="remarks"
@@ -678,7 +695,7 @@ const GeneralJournal = () => {
                       value={formData.remarks}
                       multiline
                       minRows={2}
-                      inputProps={{ maxLength: 200 }}
+                      inputProps={{ maxLength: 1000 }}
                       onChange={handleInputChange}
                     />
                   </FormControl>
@@ -742,58 +759,55 @@ const GeneralJournal = () => {
                                         <div className="pt-2">{index + 1}</div>
                                       </td>
                                       <td>
-                                        <Autocomplete
-                                          options={allAccountName}
-                                          disabled={editId}
-                                          getOptionLabel={(option) => option.accountName || ''}
-                                          groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')}
-                                          value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}
-                                          onChange={(event, newValue) => handleAccountNameChange(event, newValue, row.id)}
-                                          size="small"
-                                          renderInput={(params) => (
-                                            <TextField
-                                              {...params}
-                                              label="Account Name"
-                                              variant="outlined"
-                                              error={!!detailsTableErrors[index]?.accountName}
-                                              helperText={detailsTableErrors[index]?.accountName}
-                                            />
-                                          )}
-                                          sx={{ width: 250 }}
-                                        />
+                                        <select
+                                        value={row.accountName}
+                                        style={{ width: '150px' }}
+                                        // disabled={formData.status === 'TAX'}
+                                        onChange={(e) => handleAccountNameChange(e, index)}
+                                        className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
+                                      >
+                                        <option value="">--Select--</option>
+                                        {allAccountName &&
+                                          allAccountName.map((currency) => (
+                                            <option key={currency.id} value={currency.accountName}>
+                                              {currency.accountName}
+                                            </option>
+                                          ))}
+                                        </select>
+                                    {detailsTableErrors[index]?.accountName && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {detailsTableErrors[index].accountName}
+                                      </div>
+                                    )}
                                       </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.subledgerName}
-                                          disabled={editId}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, subledgerName: value } : r))
-                                            );
-                                            setDetailsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                subledgerName: !value ? 'Sub Ledger Name is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={detailsTableErrors[index]?.subledgerName ? 'error form-control' : 'form-control'}
-                                        />
-                                        {detailsTableErrors[index]?.subledgerName && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].subledgerName}
-                                          </div>
+                                     <td className="border px-2 py-2">
+                                      <Autocomplete
+                                        options={row.subledgerNameOptions || []}
+                                        getOptionLabel={(option) => option.subLedgerName || ''}
+                                        value={
+                                          row.subledgerNameOptions?.find(
+                                            (option) => option.subLedgerName === row.subledgerName
+                                          ) || null
+                                        }
+                                        onChange={(event, newValue) => {
+                                          handleSubledgerChange(newValue, index);
+                                        }}
+                                        renderInput={(params) => (
+                                          <TextField
+                                            {...params}
+                                            placeholder="Select Subledger"
+                                            size="small"
+                                            error={!!detailsTableErrors[index]?.subledgerName}
+                                            helperText={detailsTableErrors[index]?.subledgerName}
+                                          />
                                         )}
-                                      </td>
+                                      />
+                                    </td>
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
                                           value={row.subLedgerCode}
-                                          disabled={editId}
+                                          disabled
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailsTableData((prev) =>
@@ -803,7 +817,7 @@ const GeneralJournal = () => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                subLedgerCode: !value ? 'Sub Ledger Code is required' : ''
+                                                subLedgerCode: value ? '' : 'Sub Ledger Code is required'
                                               };
                                               return newErrors;
                                             });
