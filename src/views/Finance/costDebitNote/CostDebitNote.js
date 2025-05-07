@@ -552,6 +552,20 @@ const CostDebitNote = () => {
           }))
         );
 
+        setChargeDetails(
+          listValueVO.gstLines
+            ? listValueVO.gstLines.map((row) => ({
+                id: row.id,
+                chargeCode: row.chargeCode,
+                chargeDesc: row.chargeName,
+                gChargeCode: row.govChargeCode,
+                gstPercent: row.gstpercent,
+                sac: row.sac,
+                lcAmt: row.lcAmt
+              }))
+            : []
+        );
+
         showToast(
           listValueVO.approveStatus === 'Approved' ? 'success' : 'error',
           listValueVO.approveStatus === 'Approved' ? 'Cost Debit Note Approved successfully' : 'Cost Debit Note Rejected successfully'
@@ -565,6 +579,7 @@ const CostDebitNote = () => {
     } finally {
       handleCloseModal(); // Ensure the modal always closes
       getAllCostDebitNoteByOrgId();
+      setShowChargeDetails(true);
     }
   };
 
@@ -3188,7 +3203,7 @@ const CostDebitNote = () => {
                                 </tbody>
                               </table>
                             </div>
-                            {/* {showChargeDetails && chargeDetails.length > 0 && (
+                            {showChargeDetails && chargeDetails.length > 0 && (
                               <tr>
                                 <td className="border px-2 py-2">
                                   <table className="table table-bordered mb-0">
@@ -3219,7 +3234,7 @@ const CostDebitNote = () => {
                                   </table>
                                 </td>
                               </tr>
-                            )} */}
+                            )}
                           </div>
                         </div>
                       </div>
