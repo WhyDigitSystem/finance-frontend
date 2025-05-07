@@ -684,7 +684,7 @@ const Withdrawal = () => {
                         {...params}
                         label={
                           <span>
-                            Bank Account <span className="asterisk">*</span>
+                            Bank / Cash A/C <span className="asterisk">*</span>
                           </span>
                         }
                         name="bankName"

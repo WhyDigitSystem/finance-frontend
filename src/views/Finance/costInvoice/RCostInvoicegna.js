@@ -268,7 +268,7 @@ const RCostInvoicegna = () => {
     { accessorKey: 'docDate', header: 'Date', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 },
     { accessorKey: 'mode', header: 'Mode', size: 140 },
-    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
+    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 }
   ];
   const handleOpenModalApprove = () => {
     setModalOpen(true);
@@ -349,7 +349,7 @@ const RCostInvoicegna = () => {
             fcAmount: row.fcAmt,
             lcAmount: row.lcAmt,
             billAmount: row.billAmt,
-            gtaAmount: row.gtaamount
+            gtaAmount: row.gstAmt
           }))
         );
         setTdsCostInvoiceDTO(
@@ -395,13 +395,13 @@ const RCostInvoicegna = () => {
 
     const updatedChargerCostInvoice = chargerCostInvoice.map((item) => ({
       ...item,
-      gstAmt: ((item.gstPer * item.lcAmount) / 100).toFixed(2)
+      gtaAmount: ((item.gstPer * item.lcAmount) / 100).toFixed(2)
     }));
 
     updatedChargerCostInvoice.forEach((row) => {
       totalLcAmount += parseFloat(row.lcAmount || 0);
       totalBillAmt += parseFloat(row.billAmount || 0);
-      totgstAmt += parseFloat(row.gstAmt || 0);
+      totgstAmt += parseFloat(row.gtaAmount || 0);
     });
 
     setChargerCostInvoice(updatedChargerCostInvoice);
@@ -556,7 +556,7 @@ const RCostInvoicegna = () => {
             fcAmount: row.fcAmt,
             lcAmount: row.lcAmt,
             billAmount: row.billAmt,
-            gtaAmount: row.gtaamount
+            gtaAmount: row.gstAmt
           }))
         );
         setTdsCostInvoiceDTO(
@@ -650,15 +650,14 @@ const RCostInvoicegna = () => {
         state: selectedStateCode.state,
         supplierGstIn: selectedStateCode.gstin
       }));
-      getAddressType(formData.partyCode, selectedStateCode.state)
+      getAddressType(formData.partyCode, selectedStateCode.state);
     } else if (selectedAddressType) {
       setFormData((prevData) => ({
         ...prevData,
         addressType: selectedAddressType.addressType
       }));
-      getCityName(formData.partyCode, formData.state, selectedAddressType.addressType)
-    }
-    else {
+      getCityName(formData.partyCode, formData.state, selectedAddressType.addressType);
+    } else {
       console.log('No State Code found with the given code:', value);
     }
   };
@@ -696,7 +695,10 @@ const RCostInvoicegna = () => {
   };
   const getCityName = async (partyCode, state, type) => {
     try {
-      const response = await apiCalls('get', `/rCostInvoiceGna/getCityFromPartyMaster?addressType=${type}&orgId=${orgId}&partyCode=${partyCode}&state=${state}`);
+      const response = await apiCalls(
+        'get',
+        `/rCostInvoiceGna/getCityFromPartyMaster?addressType=${type}&orgId=${orgId}&partyCode=${partyCode}&state=${state}`
+      );
       setCityList(response.paramObjectsMap.partyMasterVO);
       console.log(response.paramObjectsMap.partyMasterVO);
     } catch (error) {
@@ -705,7 +707,10 @@ const RCostInvoicegna = () => {
   };
   const getAddressType = async (partyCode, state) => {
     try {
-      const response = await apiCalls('get', `/rCostInvoiceGna/findByAddressTypeFromPartyAddress?orgId=${orgId}&partyCode=${partyCode}&state=${state}`);
+      const response = await apiCalls(
+        'get',
+        `/rCostInvoiceGna/findByAddressTypeFromPartyAddress?orgId=${orgId}&partyCode=${partyCode}&state=${state}`
+      );
       setAddressTypeList(response.paramObjectsMap.partyMasterVO);
       console.log(response.paramObjectsMap.partyMasterVO);
     } catch (error) {
@@ -939,7 +944,7 @@ const RCostInvoicegna = () => {
         currency: row.currency || '',
         exRate: parseInt(row.exRate),
         gstPer: parseInt(row.gstPer),
-        gtaamount: parseInt(row.gtaAmount),
+        gstAmt: parseInt(row.gtaAmount),
         rate: parseInt(row.rate),
         tdsApplicable: row.tdsApplicable
       }));
@@ -1016,13 +1021,12 @@ const RCostInvoicegna = () => {
             fcAmount: '',
             lcAmount: '',
             billAmount: '',
-            gtaAmount: '',
+            gtaAmount: ''
           };
         }
         return row;
       })
     );
-
   };
 
   // const handleTypeChange = (event) => {
@@ -1062,8 +1066,8 @@ const RCostInvoicegna = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
-            <div className='justify-content-start'>
-              {editId && !showForm && (formData.mode === 'SUBMIT') && (
+            <div className="justify-content-start">
+              {editId && !showForm && formData.mode === 'SUBMIT' && (
                 //  || listViewData.mode === 'SUBMIT'
                 <>
                   {formData.approveStatus === 'Approved' && (
@@ -1141,17 +1145,21 @@ const RCostInvoicegna = () => {
                     '&:hover': {
                       borderColor: '#1565c0',
                       backgroundColor: '#bbdefb',
-                      color: '#1565c0',
-                    },
+                      color: '#1565c0'
+                    }
                   }}
                   onClick={handleView}
                 >
                   New
                 </Button>
               )}
-              {!showForm && (<ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />)}
-              {!showForm && (<ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />)}
-              {listViewData.approveStatus === 'Approved' || showForm ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
+              {!showForm && <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />}
+              {!showForm && <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />}
+              {listViewData.approveStatus === 'Approved' || showForm ? (
+                ''
+              ) : (
+                <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+              )}
               {/* <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} /> */}
             </div>
           </div>
@@ -1220,13 +1228,7 @@ const RCostInvoicegna = () => {
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
-                  <FormControl
-                    fullWidth
-                    size="small"
-                    variant="outlined"
-                    error={!!fieldErrors.mode}
-                    disabled={formData.mode === 'SUBMIT'}
-                  >
+                  <FormControl fullWidth size="small" variant="outlined" error={!!fieldErrors.mode} disabled={formData.mode === 'SUBMIT'}>
                     <InputLabel id="mode-label">Mode</InputLabel>
                     <Select label="Mode" name="mode" value={formData.mode} onChange={handleInputChange}>
                       {editId && <MenuItem value="SUBMIT">SUBMIT</MenuItem>}
@@ -1264,7 +1266,7 @@ const RCostInvoicegna = () => {
                       onChange={handleSelectPartyChange}
                       name="partyName"
                       value={formData.partyName}
-                    // (partyName.length === 1 ? partyName[0].partyName : '')
+                      // (partyName.length === 1 ? partyName[0].partyName : '')
                     >
                       {partyName &&
                         partyName.map((item) => (
@@ -1455,7 +1457,12 @@ const RCostInvoicegna = () => {
                         value={formData.supplierDate ? dayjs(formData.supplierDate, 'YYYY-MM-DD') : null}
                         onChange={(date) => handleDateChange('supplierDate', date)}
                         slotProps={{
-                          textField: { size: 'small', clearable: true, error: fieldErrors.supplierDate, helperText: fieldErrors.supplierDate }
+                          textField: {
+                            size: 'small',
+                            clearable: true,
+                            error: fieldErrors.supplierDate,
+                            helperText: fieldErrors.supplierDate
+                          }
                         }}
                         format="DD-MM-YYYY"
                       />
@@ -1473,7 +1480,7 @@ const RCostInvoicegna = () => {
                       name="currency"
                       value={formData.currency}
                       disabled={formData.mode === 'SUBMIT'}
-                    // || (exRates.length === 1 ? exRates[0].currency : '')
+                      // || (exRates.length === 1 ? exRates[0].currency : '')
                     >
                       {exRates &&
                         exRates.map((item) => (
@@ -1530,7 +1537,8 @@ const RCostInvoicegna = () => {
                           textField: { size: 'small', clearable: true, error: fieldErrors.dueDate, helperText: fieldErrors.dueDate }
                         }}
                         format="DD-MM-YYYY"
-                        disabled={formData.mode === 'SUBMIT'}
+                        // disabled={formData.mode === 'SUBMIT'}
+                        disabled
                       />
                     </LocalizationProvider>
                   </FormControl>
@@ -1539,7 +1547,14 @@ const RCostInvoicegna = () => {
                   {/* <FormControl fullWidth size="small"> */}
                   <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.gstType}>
                     <InputLabel id="demo-simple-select-label">Tax Type</InputLabel>
-                    <Select labelId="gstType" name="gstType" value={formData.gstType} onChange={handleInputChange} label="Tax Type" disabled={formData.mode === 'SUBMIT' || editId}>
+                    <Select
+                      labelId="gstType"
+                      name="gstType"
+                      value={formData.gstType}
+                      onChange={handleInputChange}
+                      label="Tax Type"
+                      disabled={formData.mode === 'SUBMIT' || editId}
+                    >
                       <MenuItem value="INTER">INTER</MenuItem>
                       <MenuItem value="INTRA">INTRA</MenuItem>
                     </Select>
@@ -1991,6 +2006,7 @@ const RCostInvoicegna = () => {
                                               type="text"
                                               value={row.gtaAmount ? row.gtaAmount : ''}
                                               style={{ width: '100px' }}
+                                              disabled
                                               onChange={(e) => {
                                                 const value = e.target.value;
                                                 const numericRegex = /^[0-9]*$/;
@@ -2273,8 +2289,8 @@ const RCostInvoicegna = () => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllRCostInvoiceById}
-            // isPdf={false}
-            // GeneratePdf={GeneratePdf}
+              // isPdf={false}
+              // GeneratePdf={GeneratePdf}
             />
           )}
           {/* {downloadPdf && <GeneratePdfTemp row={pdfData} />} */}
@@ -2286,7 +2302,7 @@ const RCostInvoicegna = () => {
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={handleConfirmAction}
         onCancel={handleCloseModal}
-      // onCancel={() => setModalOpen(false)}
+        // onCancel={() => setModalOpen(false)}
       />
     </>
   );

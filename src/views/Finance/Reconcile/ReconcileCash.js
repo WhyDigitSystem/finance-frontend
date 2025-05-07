@@ -226,7 +226,7 @@ const ReconcileCash = () => {
       const result = await apiCalls('get', `/transaction/getAllReconcileCashById?id=${row.original.id}`);
 
       if (result) {
-        const listValueVO = result.paramObjectsMap.reconcileCashVO[0];
+        const listValueVO = result.paramObjectsMap.reconcileCashVO;
         setEditId(row.original.id);
 
         console.log('Raw docDate:', listValueVO.docDate);
