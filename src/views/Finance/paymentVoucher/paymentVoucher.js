@@ -1,8 +1,7 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import { FormControl, FormHelperText, InputLabel, MenuItem, Select } from '@mui/material';
+import { FormControl, FormHelperText, InputLabel, MenuItem,Autocomplete, Select } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -48,7 +47,7 @@ const PaymentVoucher = () => {
     remarks: '',
     totalCreditAmount: 0,
     totalDebitAmount: 0,
-    voucherSubType: ''
+    voucherSubType: 'BANK PAYMENT'
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -97,24 +96,116 @@ const PaymentVoucher = () => {
       subLedgerName: ''
     }
   ]);
-
+  const getCurrencyandExRate = async () => {
+  try {
+    const response = await apiCalls('get', `transaction/getCurrencyAndExrateDetails?orgId=${orgId}`);
+    if (response.status === true) {
+      setCurrencies(response.paramObjectsMap.currencyVO);
+    } else {
+      console.error('API Error:', response);
+      return response;
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    return error;
+  }
+};
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const currencyData = await getAllActiveCurrency(orgId);
-        setCurrencies(currencyData);
-        console.log('currency', currencyData);
-      } catch (error) {
-        console.error('Error fetching country data:', error);
-      }
-    };
-
-    fetchData();
+    getCurrencyandExRate();
     getAllPaymentVoucherByOrgId();
     getPaymentVoucherDocId();
     getAccountNameFromGroup();
   }, []);
-
+  const handleSelectCurrency = (e) => {
+    const value = e.target.value;  
+    console.log('Selected Currency value:', value);
+    currencies.forEach((curr, index) => {
+      console.log(`Currency ${index}:`, curr);
+    });
+    const selectedCurr = currencies.find((curr) => curr.currency === value);
+    if (selectedCurr) {
+      console.log('Selected Employee:', selectedCurr);
+      setFormData((prevData) => ({
+        ...prevData,
+        currency: selectedCurr.currency,
+        exRate: selectedCurr.buyingExRate,
+        // partyId: selectedCurr.sellingExRate
+      }));
+      setFieldErrors((prevErrors) => ({
+        ...prevErrors,
+        currency:'',
+        exRate:''
+      }));
+    } else {
+      console.log('No Currency found', value);
+    }
+  };
+  const getAccountNameFromGroup = async () => {
+    try {
+      const response = await apiCalls('get', `/transaction/getAccountNameFromGroupLedgerGeneral?OrgId=${orgId}`);
+      console.log('API Response:', response);
+      if (response.status === true) {
+        setAccountNames(response.paramObjectsMap.GeneralJournalVO);
+        console.log('Account Name', response.paramObjectsMap.GeneralJournalVO);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const getSubledgerName = async (accountName, rowIndex) => {
+    try {
+      const response = await apiCalls('get', `/transaction/getSubLedgerNameFromPartyMaster?accountName=${accountName}&OrgId=${orgId}`);
+      console.log('API Response:', response);
+  
+      if (response.status === true) {
+        const updatedData = [...detailsTableData];
+        updatedData[rowIndex].subledgerNameOptions = response.paramObjectsMap.GeneralJournalVO || [];
+        updatedData[rowIndex].subLedgerName = '';
+        updatedData[rowIndex].subLedgerCode = '';
+        setDetailsTableData(updatedData);
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const handleAccountNameChange = (e, rowIndex) => {
+    const selectedAccountName = e.target.value;
+    const updatedData = [...detailsTableData];
+    updatedData[rowIndex].accountName = selectedAccountName;
+    updatedData[rowIndex].subLedgerName = '';
+    updatedData[rowIndex].subLedgerCode = '';
+    updatedData[rowIndex].subledgerNameOptions = [];
+    setDetailsTableData(updatedData);
+    const updatedErrorData = [...detailsTableErrors];
+    if(selectedAccountName){
+      updatedErrorData[rowIndex].accountName = ''
+    }
+    setDetailsTableErrors(updatedErrorData);
+    getSubledgerName(selectedAccountName, rowIndex);
+  };  
+  const handleSubLedgerNameChange = (selectedOption, rowIndex) => {
+    const updatedData = [...detailsTableData];
+    const updatedErrorData = [...detailsTableErrors];
+  
+    if (selectedOption) {
+      updatedData[rowIndex].subLedgerName = selectedOption.subLedgerName;
+      updatedData[rowIndex].subLedgerCode = selectedOption.subLedgerCode;
+    } else {
+      updatedData[rowIndex].subLedgerName = '';
+      updatedData[rowIndex].subLedgerCode = '';
+    }
+    if(selectedOption.subLedgerName){
+      updatedErrorData[rowIndex].subLedgerName = ''
+      updatedErrorData[rowIndex].subLedgerCode = ''
+    }
+  
+    setDetailsTableData(updatedData);
+    setDetailsTableErrors(updatedErrorData);
+  };
   useEffect(() => {
     const totalDebit = detailsTableData.reduce((sum, row) => sum + Number(row.debit || 0), 0);
     const totalCredit = detailsTableData.reduce((sum, row) => sum + Number(row.credit || 0), 0);
@@ -205,15 +296,6 @@ const PaymentVoucher = () => {
     }
   };
 
-  const getAccountNameFromGroup = async () => {
-    try {
-      const response = await apiCalls('get', `/transaction/getAccountNameFromGroup?orgId=${orgId}`);
-      setAccountNames(response.paramObjectsMap.generalJournalVO);
-    } catch (error) {
-      console.error('Error fetching gate passes:', error);
-    }
-  };
-
   const handleDebitChange = (e, row, index) => {
     const value = e.target.value;
 
@@ -293,7 +375,7 @@ const PaymentVoucher = () => {
       remarks: '',
       totalCreditAmount: 0,
       totalDebitAmount: 0,
-      voucherSubType: ''
+      voucherSubType: 'BANK PAYMENT'
     });
     getAllActiveCurrency(orgId);
     setFieldErrors({});
@@ -327,7 +409,8 @@ const PaymentVoucher = () => {
       // debit: '',
       // credit: '',
       narration: '',
-      subLedgerName: ''
+      subLedgerName: '',
+      subledgerNameOptions: []
     };
     setDetailsTableData([...detailsTableData, newRow]);
     setDetailsTableErrors([...detailsTableErrors, { accountName: '', subLedgerCode: '', debit: '', credit: '', subLedgerName: '' }]);
@@ -549,7 +632,7 @@ const PaymentVoucher = () => {
                       onChange={handleInputChange}
                       name="voucherSubType"
                     >
-                      <MenuItem value="BANKPAYMENT">BANK PAYMENT</MenuItem>
+                      <MenuItem value="BANK PAYMENT">BANK PAYMENT</MenuItem>
                       <MenuItem value="CASH">CASH</MenuItem>
                     </Select>
                     {fieldErrors.voucherSubType && <FormHelperText>{fieldErrors.voucherSubType}</FormHelperText>}
@@ -569,9 +652,9 @@ const PaymentVoucher = () => {
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
                       label="Currency"
-                      onChange={handleInputChange}
+                      onChange={handleSelectCurrency}
                       name="currency"
-                      disabled
+                      // disabled
                       value={formData.currency}
                     >
                       {currencies.map((item) => (
@@ -764,90 +847,56 @@ const PaymentVoucher = () => {
                                       <td className="text-center">
                                         <div className="pt-2">{index + 1}</div>
                                       </td>
-                                      {/* <td className="border px-2 py-2">
+                                      <td>
                                         <select
-                                          value={row.accountName}
-                                          style={{ width: '150px' }}
-                                          className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
-                                          onChange={(e) =>
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: e.target.value } : r))
-                                            )
-                                          }
-                                        >
-                                          <option value="">-- Select --</option>
-                                          {accountNames.map((item) => (
-                                            <option key={item.id} value={item.accountName}>
-                                              {item.accountName}
+                                        value={row.accountName}
+                                        style={{ width: '150px' }}
+                                        // disabled={formData.status === 'TAX'}
+                                        onChange={(e) => handleAccountNameChange(e, index)}
+                                        className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
+                                      >
+                                        <option value="">--Select--</option>
+                                        {accountNames &&
+                                          accountNames.map((currency) => (
+                                            <option key={currency.id} value={currency.accountName}>
+                                              {currency.accountName}
                                             </option>
                                           ))}
                                         </select>
-                                        {detailsTableErrors[index]?.accountName && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].accountName}
-                                          </div>
-                                        )}
-                                      </td> */}
-                                      <td className="border px-2 py-2">
-                                        <select
-                                          value={row.accountName || (accountNames.length === 1 ? accountNames[0].accountName : '')}
-                                          style={{ width: '150px' }}
-                                          className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
-                                          onChange={(e) =>
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, accountName: e.target.value } : r))
-                                            )
-                                          }
-                                        >
-                                          <option value="">-- Select --</option>
-                                          {accountNames
-                                            .filter(
-                                              (item) =>
-                                                !detailsTableData.some((tableRow) => tableRow.accountName === item.accountName) ||
-                                                row.accountName === item.accountName
-                                            )
-                                            .map((item) => (
-                                              <option key={item.accountName} value={item.accountName}>
-                                                {item.accountName}
-                                              </option>
-                                            ))}
-                                        </select>
-                                        {detailsTableErrors[index]?.accountName && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].accountName}
-                                          </div>
-                                        )}
+                                    {detailsTableErrors[index]?.accountName && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {detailsTableErrors[index].accountName}
+                                      </div>
+                                    )}
                                       </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.subLedgerName}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, subLedgerName: value } : r))
-                                            );
-                                            setDetailsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                subLedgerName: !value ? 'Sub Ledger Name is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={detailsTableErrors[index]?.subLedgerName ? 'error form-control' : 'form-control'}
-                                        />
-                                        {detailsTableErrors[index]?.subLedgerName && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].subLedgerName}
-                                          </div>
+                                     <td className="border px-2 py-2">
+                                      <Autocomplete
+                                        options={row.subledgerNameOptions || []}
+                                        getOptionLabel={(option) => option.subLedgerName || ''}
+                                        value={
+                                          row.subledgerNameOptions?.find(
+                                            (option) => option.subLedgerName === row.subLedgerName
+                                          ) || null
+                                        }
+                                        onChange={(event, newValue) => {
+                                          handleSubLedgerNameChange(newValue, index);
+                                        }}
+                                        renderInput={(params) => (
+                                          <TextField
+                                            {...params}
+                                            placeholder="Select Subledger"
+                                            size="small"
+                                            error={!!detailsTableErrors[index]?.subLedgerName}
+                                            helperText={detailsTableErrors[index]?.subLedgerName}
+                                          />
                                         )}
-                                      </td>
+                                      />
+                                    </td>
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
                                           value={row.subLedgerCode}
+                                          disabled
                                           onChange={(e) => {
                                             const value = e.target.value;
                                             setDetailsTableData((prev) =>
@@ -857,7 +906,7 @@ const PaymentVoucher = () => {
                                               const newErrors = [...prev];
                                               newErrors[index] = {
                                                 ...newErrors[index],
-                                                subLedgerCode: !value ? 'Sub Ledger Code is required' : ''
+                                                subLedgerCode: value ? '' : 'Sub Ledger Code is required'
                                               };
                                               return newErrors;
                                             });
@@ -870,54 +919,6 @@ const PaymentVoucher = () => {
                                           </div>
                                         )}
                                       </td>
-                                      {/* <td className="border px-2 py-2">
-                                        <input
-                                          type="number"
-                                          value={row.debit}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, debit: value } : r)));
-                                            setDetailsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                debit: !value ? 'Debit is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={detailsTableErrors[index]?.debit ? 'error form-control' : 'form-control'}
-                                        />
-                                        {detailsTableErrors[index]?.debit && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].debit}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="number"
-                                          value={row.credit}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, credit: value } : r)));
-                                            setDetailsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                credit: !value ? 'Credit is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={detailsTableErrors[index]?.credit ? 'error form-control' : 'form-control'}
-                                        />
-                                        {detailsTableErrors[index]?.credit && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].credit}
-                                          </div>
-                                        )}
-                                      </td> */}
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"

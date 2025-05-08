@@ -82,7 +82,8 @@ const AdjustmentJournal = () => {
       creditBase: '',
       debitBase: '',
       subLedgerCode: '',
-      subledgerName: ''
+      subledgerName: '',
+      subledgerNameOptions: []
     }
   ]);
   const [detailsTableErrors, setDetailsTableErrors] = useState([
@@ -290,7 +291,8 @@ const AdjustmentJournal = () => {
       creditBase: '',
       debitBase: '',
       subLedgerCode: '',
-      subledgerName: ''
+      subledgerName: '',
+      subledgerNameOptions: []
     };
     setDetailsTableData([...detailsTableData, newRow]);
     setDetailsTableErrors([
@@ -415,19 +417,18 @@ const AdjustmentJournal = () => {
         rowErrors.subledgerName = 'Sub ledger Name is required';
         detailTableDataValid = false;
       }
-      if (!row.debitAmount) {
+      if (row.debitAmount === '' || row.debitAmount === null || row.debitAmount === undefined) {
         rowErrors.debitAmount = 'Debit Amount is required';
         detailTableDataValid = false;
       }
-      if (!row.creditAmount) {
+      if (row.creditAmount === '' || row.creditAmount === null || row.creditAmount === undefined) {
         rowErrors.creditAmount = 'Credit Amount is required';
-        detailTableDataValid = false;
-      }
-      if (!row.creditBase) {
+      }      
+      if (row.creditBase === '' || row.creditBase === null || row.creditBase === undefined) {
         rowErrors.creditBase = 'Credit Base is required';
         detailTableDataValid = false;
       }
-      if (!row.debitBase) {
+      if (row.debitBase === '' || row.debitBase === null || row.debitBase === undefined) {
         rowErrors.debitBase = 'Debit Base is required';
         detailTableDataValid = false;
       }

@@ -107,63 +107,6 @@ export const DailyRate = () => {
       console.log('error', err);
     }
   };
-
-  const handleInputChange = (e) => {
-    const { name, value, checked, selectionStart, selectionEnd, type } = e.target;
-    const nameRegex = /^[A-Za-z ]*$/;
-    const alphaNumericRegex = /^[A-Za-z0-9]*$/;
-    const numericRegex = /^[0-9]*$/;
-    const branchNameRegex = /^[A-Za-z0-9@_\-*]*$/;
-    const branchCodeRegex = /^[a-zA-Z0-9#_\-\/\\]*$/;
-
-    let errorMessage = '';
-
-    switch (name) {
-      case 'customer':
-      case 'shortName':
-      case 'contactPerson':
-        if (!nameRegex.test(value)) {
-          errorMessage = 'Only alphabetic characters are allowed';
-        }
-        break;
-      default:
-        break;
-    }
-
-    if (errorMessage) {
-      setFieldErrors({ ...fieldErrors, [name]: errorMessage });
-    } else {
-      if (name === 'active') {
-        setFormData({ ...formData, [name]: checked });
-      } else {
-        setFormData({ ...formData, [name]: value.toUpperCase() });
-      }
-
-      setFieldErrors({ ...fieldErrors, [name]: '' });
-
-      // Preserve the cursor position for text-based inputs
-      if (type === 'text' || type === 'textarea') {
-        setTimeout(() => {
-          const inputElement = document.getElementsByName(name)[0];
-          if (inputElement && inputElement.setSelectionRange) {
-            inputElement.setSelectionRange(selectionStart, selectionEnd);
-          }
-        }, 0);
-      }
-    }
-  };
-
-  // const handleKeyDown = (e, row, table) => {
-  //   if (e.key === 'Tab' && row.id === table[table.length - 1].id) {
-  //     e.preventDefault();
-  //     if (isLastRowEmpty(table)) {
-  //       displayRowError(table);
-  //     } else {
-  //       handleAddRow();
-  //     }
-  //   }
-  // };
-
   const handleSelectAll = () => {
     if (selectAll) {
       setSelectedRows([]);
@@ -212,68 +155,11 @@ export const DailyRate = () => {
     setSelectedRows([]);
     setSelectAll(false);
     handleCloseModal();
-
-    // try {
-    //   await Promise.all(
-    //     selectedData.map(async (data, idx) => {
-    //       const simulatedEvent = {
-    //         target: {
-    //           value: data.batchNo
-    //         }
-    //       };
-
-    //       await getBatchNo(data.partNo, data);
-    //     })
-    //   );
-    // } catch (error) {
-    //   console.error('Error processing selected data:', error);
-    // }
   };
 
-  const handleAddRow = () => {
-    if (isLastRowEmpty(detailsTableData)) {
-      displayRowError(detailsTableData);
-      return;
-    }
-    const newRow = {
-      id: Date.now(),
-      currency: '',
-      currencyDescription: '',
-      sellingExRate: '',
-      buyingExrate: ''
-    };
-    setDetailsTableData([...detailsTableData, newRow]);
-    setDetailsTableErrors([...detailsTableErrors, { currency: '', currencyDescription: '', sellingExRate: '', buyingExrate: '' }]);
-  };
-  const isLastRowEmpty = (table) => {
-    const lastRow = table[table.length - 1];
-    if (!lastRow) return false;
-
-    if (table === detailsTableData) {
-      return !lastRow.currency || !lastRow.currencyDescription || !lastRow.sellingExRate || !lastRow.buyingExrate;
-    }
-    return false;
-  };
-
-  const displayRowError = (table) => {
-    if (table === detailsTableData) {
-      setDetailsTableErrors((prevErrors) => {
-        const newErrors = [...prevErrors];
-        newErrors[table.length - 1] = {
-          ...newErrors[table.length - 1],
-          currency: !table[table.length - 1].currency ? 'Currency is required' : '',
-          currencyDescription: !table[table.length - 1].currencyDescription ? 'Currency Desc is required' : '',
-          sellingExRate: !table[table.length - 1].sellingExRate ? 'Selling Ex rate is required' : '',
-          buyingExrate: !table[table.length - 1].buyingExrate ? 'Buying Ex rate is required' : ''
-        };
-        return newErrors;
-      });
-    }
-  };
 
   const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
     const rowIndex = table.findIndex((row) => row.id === id);
-    // If the row exists, proceed to delete
     if (rowIndex !== -1) {
       const updatedData = table.filter((row) => row.id !== id);
       const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
@@ -288,21 +174,6 @@ export const DailyRate = () => {
     setFormData({ ...formData, [name]: formattedDate });
     setFieldErrors({ ...fieldErrors, [name]: false });
   };
-
-  // const handleCurrencyChange = (row, index, event) => {
-  //   const value = event.target.value;
-  //   const selectedCurrency = currencies.find((currency) => currency.currency === value);
-  //   setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, currency: value } : r)));
-  //   setDetailsTableErrors((prev) => {
-  //     const newErrors = [...prev];
-  //     newErrors[index] = {
-  //       ...newErrors[index],
-  //       currency: !value ? 'Currency is required' : ''
-  //     };
-  //     return newErrors;
-  //   });
-  // };
-
   const handleList = () => {
     setShowForm(!showForm);
   };
@@ -378,15 +249,15 @@ export const DailyRate = () => {
           detailsTableDataValid = false;
         }
         if (!row.currencyDescription) {
-          rowErrors.currencyDescription = 'Currency Descripition is required';
+          rowErrors.currencyDescription = 'Currency Desc is required';
           detailsTableDataValid = false;
         }
         if (!row.sellingExRate) {
-          rowErrors.sellingExRate = 'Selling Exrate is required';
+          rowErrors.sellingExRate = 'Selling Ex rate is required';
           detailsTableDataValid = false;
         }
         if (!row.buyingExrate) {
-          rowErrors.buyingExrate = 'Buying Exrate is required';
+          rowErrors.buyingExrate = 'Buying Ex rate is required';
           detailsTableDataValid = false;
         }
 
@@ -417,9 +288,7 @@ export const DailyRate = () => {
         createdBy: loginUserName,
         orgId: orgId
       };
-
       console.log('DATA TO SAVE IS:', saveFormData);
-
       try {
         const response = await apiCalls('put', 'transaction/updateCreateDailyMonthlyExRates', saveFormData);
         if (response.status === true) {
@@ -510,7 +379,6 @@ export const DailyRate = () => {
                 </div>
               )}
             </div>
-            {/* <TableComponent formData={formData} setFormData={setFormData} /> */}
             <div className="row mt-2">
               <Box sx={{ width: '100%' }}>
                 <Tabs
@@ -528,7 +396,6 @@ export const DailyRate = () => {
                   <>
                     <div className="row d-flex ml">
                       <div className="mb-1">
-                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
                         <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
                       </div>
                       <div className="row mt-2">
@@ -569,22 +436,25 @@ export const DailyRate = () => {
                                     <td className="border px-2 py-2">
                                       <select
                                         value={row.currency}
-                                        // style={{ width: '150px' }}
                                         onChange={(e) => {
                                           const selectedCurrency = e.target.value;
                                           const selectedCurrencyData = skuDetails.find(
                                             (currency) => currency.currency === selectedCurrency
                                           );
-
-                                          // Update the selected currency and currencyDescription
                                           const updatedCurrencyData = [...detailsTableData];
                                           updatedCurrencyData[index] = {
                                             ...updatedCurrencyData[index],
                                             currency: selectedCurrency,
                                             currencyDescription: selectedCurrencyData ? selectedCurrencyData.currencyDescription : ''
                                           };
-
+                                          const updatedCurrencyDataError = [...detailsTableErrors];
+                                          updatedCurrencyDataError[index] = {
+                                            ...updatedCurrencyDataError[index],
+                                            currency: '',
+                                            currencyDescription: ''
+                                          };
                                           setDetailsTableData(updatedCurrencyData);
+                                          setDetailsTableErrors(updatedCurrencyDataError);
                                         }}
                                         className={detailsTableErrors[index]?.currency ? 'error form-control' : 'form-control'}
                                       >
