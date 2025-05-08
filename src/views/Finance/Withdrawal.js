@@ -349,9 +349,9 @@ const Withdrawal = () => {
     if (!formData.chequeBank) {
       errors.chequeBank = 'Cheque Bank is required';
     }
-    if (!formData.remarks) {
-      errors.remarks = 'Remarks is required';
-    }
+    // if (!formData.remarks) {
+    //   errors.remarks = 'Remarks is required';
+    // }
     if (!formData.withdrawalMode) {
       errors.withdrawalMode = 'Withdrawal Mode is required';
     }
@@ -375,9 +375,10 @@ const Withdrawal = () => {
         rowErrors.accountName = 'Account Name is required';
         detailTableDataValid = false;
       }
-      if (!row.credit && !row.debit) {
-        rowErrors.credit = 'Credit or Debit is required';
-        rowErrors.debit = 'Credit or Debit is required';
+      // if (!row.credit && !row.debit)
+      if (!row.debit) {
+        // rowErrors.credit = 'Credit or Debit is required';
+        rowErrors.debit = 'Debit is required';
         detailTableDataValid = false;
       }
       if (!row.narration) {
@@ -717,11 +718,12 @@ const Withdrawal = () => {
                       value={formData.currency}
                       disabled
                     >
-                      {currencies.map((item) => (
-                        <MenuItem key={item.id} value={item.currency}>
-                          {item.currency}
-                        </MenuItem>
-                      ))}
+                      {Array.isArray(currencies) &&
+                        currencies.map((item) => (
+                          <MenuItem key={item.id} value={item.currency}>
+                            {item.currency}
+                          </MenuItem>
+                        ))}
                     </Select>
                     {fieldErrors.currency && <FormHelperText style={{ color: 'red' }}>Currency is required</FormHelperText>}
                   </FormControl>
@@ -928,6 +930,7 @@ const Withdrawal = () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.credit}
+                                            disabled
                                             onChange={(e) => handleCreditChange(e, row, index)}
                                             maxLength="20"
                                             className={detailsTableErrors[index]?.credit ? 'error form-control' : 'form-control'}

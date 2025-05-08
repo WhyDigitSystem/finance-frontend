@@ -353,9 +353,9 @@ const Deposit = () => {
     if (!formData.chequeBank) {
       errors.chequeBank = 'Cheque Bank is required';
     }
-    if (!formData.remarks) {
-      errors.remarks = 'Remarks is required';
-    }
+    // if (!formData.remarks) {
+    //   errors.remarks = 'Remarks is required';
+    // }
     if (!formData.depositMode) {
       errors.depositMode = 'Deposit Mode is required';
     }
@@ -384,9 +384,9 @@ const Deposit = () => {
       //   rowErrors.debit = 'Debit is required';
       //   detailTableDataValid = false;
       // }
-      if (!row.credit && !row.debit) {
-        rowErrors.credit = 'Credit or Debit is required';
-        rowErrors.debit = 'Credit or Debit is required';
+      if (!row.credit) {
+        rowErrors.credit = 'Credit is required';
+        // rowErrors.debit = 'Credit or Debit is required';
         detailTableDataValid = false;
       }
       if (!row.narration) {
@@ -907,6 +907,7 @@ const Deposit = () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             value={row.debit}
+                                            disabled
                                             onChange={(e) => handleDebitChange(e, row, index)}
                                             maxLength="20"
                                             className={detailsTableErrors[index]?.debit ? 'error form-control' : 'form-control'}
