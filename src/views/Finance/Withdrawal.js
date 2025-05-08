@@ -317,7 +317,8 @@ const Withdrawal = () => {
           remarks: BwdVO.remarks,
           orgId: BwdVO.orgId,
           totalDebitAmount: BwdVO.totalDebitAmount,
-          totalCreditAmount: BwdVO.totalCreditAmount
+          totalCreditAmount: BwdVO.totalCreditAmount,
+          status: BwdVO.status
           // active: BwdVO.active || false,
         });
         setDetailsTableData(
