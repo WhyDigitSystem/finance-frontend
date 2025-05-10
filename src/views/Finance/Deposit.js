@@ -871,9 +871,9 @@ const Deposit = () => {
                                             // groupBy={(option) => (option.accountName ? option.accountName[0].toUpperCase() : '')}
                                             value={
                                               row.accountName
-                                                ? allAccountName.find((a) => a.accountName === row.accountName)
+                                                ? allAccountName.find((a) => a.accountName === row.accountName) || null
                                                 : allAccountName.length === 1
-                                                  ? allAccountName[0]
+                                                  ? allAccountName
                                                   : null
                                             }
                                             // value={row.accountName ? allAccountName.find((a) => a.accountName === row.accountName) : null}

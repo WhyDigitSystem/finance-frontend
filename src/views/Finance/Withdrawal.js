@@ -845,7 +845,7 @@ const Withdrawal = () => {
                                               row.accountName
                                                 ? allAccountName.find((a) => a.accountName === row.accountName)
                                                 : allAccountName.length === 1
-                                                  ? allAccountName[0]
+                                                  ? allAccountName
                                                   : null
                                             }
                                             onChange={(event, newValue) => {
