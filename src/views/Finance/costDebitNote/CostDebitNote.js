@@ -1469,6 +1469,7 @@ const CostDebitNote = () => {
 
   const handleView = () => {
     setShowForm(!showForm);
+    handleClear();
   };
 
   const handleChange = (event, newValue) => {

@@ -28,6 +28,10 @@ import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } 
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
+import { Chip, Stack } from '@mui/material';
+import CancelIcon from '@mui/icons-material/Cancel';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ConfirmationModal from 'utils/confirmationPopup';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -55,6 +59,10 @@ const Payment = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [fillGridData, setFillGridData] = useState([]);
+  const [approveStatus, setApproveStatus] = useState('');
+  const [modalApprove, setModalApprove] = useState(false);
+  const [confirmData, setConfirmData] = useState([]);
+  const [listViewData, setListViewData] = useState([]);
   const handleChangeTab = (event, newValue) => {
     setValue(newValue);
   };
@@ -75,7 +83,11 @@ const Payment = () => {
     docDate: dayjs(),
     netAmount: '',
     onAccount: '',
-    remarks: ''
+    remarks: '',
+    status: 'EDIT',
+    approveStatus: '',
+    approveBy: '',
+    approveOn: ''
   });
 
   const [formDataErrors, setFormDataErrors] = useState({
@@ -97,7 +109,11 @@ const Payment = () => {
     docDate: dayjs(),
     netAmount: '',
     onAccount: '',
-    remarks: ''
+    remarks: '',
+    status: '',
+    approveStatus: '',
+    approveBy: '',
+    approveOn: ''
   });
 
   const [withdrawalsTableData, setWithdrawalsTableData] = useState([]);
@@ -232,7 +248,11 @@ const Payment = () => {
       docDate: dayjs(),
       netAmount: '',
       onAccount: '',
-      remarks: ''
+      remarks: '',
+      status: 'EDIT',
+      approveStatus: '',
+      approveBy: '',
+      approveOn: ''
     });
     setWithdrawalsTableData([]);
     setWithdrawalsTableErrors([
@@ -273,11 +293,13 @@ const Payment = () => {
         docDate: dayjs(),
         netAmount: '',
         onAccount: '',
-        remarks: ''
+        remarks: '',
+        status: ''
       }
     ]);
     setEditId('');
     getPaymentDocId();
+    setListViewData('');
   };
   const handleList = () => {
     setShowForm(!showForm);
@@ -291,7 +313,14 @@ const Payment = () => {
     if (!formData.paymentAmt) {
       errors.paymentAmt = 'Payment Amount is required';
     }
+
+    if (!formData.status) {
+      errors.status = 'Status is required';
+    }
     setFormDataErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
     let detailsTableDataValid = true;
     if (detailsTableDataValid) {
       setIsLoading(true);
@@ -331,7 +360,8 @@ const Payment = () => {
         orgId: orgId,
         finYear: finYear,
         branch: branch,
-        branchCode: branchCode
+        branchCode: branchCode,
+        status: formData.status
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -365,6 +395,8 @@ const Payment = () => {
 
       if (result) {
         const listValueVO = result.paramObjectsMap.paymentVO[0];
+        // setData(listValueVO);
+        setListViewData(listValueVO);
         setEditId(row.original.id);
         getGSTState(listValueVO.partyName);
         setFormData({
@@ -387,7 +419,11 @@ const Payment = () => {
           chequeDate: listValueVO.chequeDate,
           currencyAmt: listValueVO.currencyAmt,
           onAccount: listValueVO.onAccount,
-          netAmount: listValueVO.netAmount
+          netAmount: listValueVO.netAmount,
+          status: listValueVO.status,
+          approveBy: listValueVO.approveBy,
+          approveOn: listValueVO.approveOn,
+          approveStatus: listValueVO.approveStatus
         });
         setWithdrawalsTableData(
           listValueVO.paymentInvDtlsVO.map((cl) => ({
@@ -422,7 +458,9 @@ const Payment = () => {
     { accessorKey: 'partyCode', header: 'Party Code', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 },
     { accessorKey: 'gstState', header: 'Reg State', size: 140 },
-    { accessorKey: 'gstIn', header: 'Reg In', size: 140 }
+    { accessorKey: 'gstIn', header: 'Reg In', size: 140 },
+    { accessorKey: 'status', header: 'Status', size: 100 },
+    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 }
   ];
   const handleSelectChange = (e) => {
     const { name, value } = e.target;
@@ -470,9 +508,11 @@ const Payment = () => {
       console.log('No employee found with the given code:', value);
     }
   };
+
   useEffect(() => {
-    if (!editId) calculateTotals();
+    if (!editId || editId) calculateTotals();
   }, [withdrawalsTableData, formData.paymentAmt]);
+
   const calculateTotals = () => {
     let totalChargeAmt = 0;
     let totalSettledAmt = 0;
@@ -575,17 +615,202 @@ const Payment = () => {
       console.error('Error fetching data:', error);
     }
   };
+
+  //
+  const handleView = () => {
+    setShowForm(!showForm);
+    handleClear();
+  };
+  const handleOpenModalApprove = () => {
+    setModalApprove(true);
+    setApproveStatus('Approved');
+  };
+  const handleOpenModalReject = () => {
+    setModalApprove(true);
+    setApproveStatus('Rejected');
+  };
+  const handleCloseApprove = () => setModalApprove(false);
+
+  const handleConfirmAction = async () => {
+    try {
+      const result = await apiCalls(
+        'put',
+        `/payable/approvePayment?action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${editId}&orgId=${orgId}`
+      );
+      console.log('API Response:==>', result);
+      if (result.status === true) {
+        // setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
+        showToast(
+          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
+          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved'
+            ? ' Payment Approved Successfully'
+            : 'Payment Rejected Successfully'
+        );
+        const listValueVO = result.paramObjectsMap.taxInvoiceVO;
+        setConfirmData(result.paramObjectsMap.taxInvoiceVO);
+        setFormData({
+          paymentType: listValueVO.paymentType,
+          docId: listValueVO.docId,
+          docDate: listValueVO.docDate,
+          partyCode: listValueVO.partyCode,
+          partyName: listValueVO.partyName,
+          gstState: listValueVO.gstState,
+          gstIn: listValueVO.gstIn,
+          bankCashAcc: listValueVO.bankCashAcc,
+          bankCharges: listValueVO.bankCharges,
+          paymentAmt: listValueVO.paymentAmt,
+          tdsAcc: listValueVO.tdsAcc,
+          tdsAmt: listValueVO.tdsAmt,
+          bankChargeAcc: listValueVO.bankChargeAcc,
+          payTo: listValueVO.payTo,
+          currency: listValueVO.currency,
+          chequeNo: listValueVO.chequeNo,
+          chequeDate: listValueVO.chequeDate,
+          currencyAmt: listValueVO.currencyAmt,
+          onAccount: listValueVO.onAccount,
+          netAmount: listValueVO.netAmount,
+          status: listValueVO.status,
+          approveBy: listValueVO.approveBy,
+          approveOn: listValueVO.approveOn,
+          approveStatus: listValueVO.approveStatus
+        });
+        setWithdrawalsTableData(
+          listValueVO.paymentInvDtlsVO.map((cl) => ({
+            id: cl.id,
+            invNo: cl.invNo,
+            invDate: cl.invDate ? dayjs(cl.invDate) : null,
+            refNo: cl.refNo,
+            refDate: cl.refDate ? dayjs(cl.refDate) : null,
+            currency: cl.currency,
+            exRate: cl.exRate,
+            chargeAmt: cl.chargeAmt,
+            gstAmount: cl.gstAmount,
+            amount: cl.amount,
+            outstanding: cl.outstanding,
+            settled: cl.settled
+          }))
+        );
+        handleCloseApprove();
+        getAllPayment();
+        console.log('Payment:==>', result);
+      } else {
+        console.error('API Error:', result.data);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   return (
     <div>
       <ToastContainer />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex">
-          {/* <Grid container spacing={2} alignItems="center"> */}
-          <div className="d-flex flex-wrap justify-content-end p-2">
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+          {/*  */}
+          <div className="row d-flex align-items-center">
+            <div className="col d-flex justify-content-start align-items-center">
+              {editId && showForm && (listViewData.status === 'SUBMIT' || formData.status === 'SUBMIT') && (
+                <>
+                  {formData.approveStatus === 'Approved' && (
+                    <Stack direction="row" spacing={2}>
+                      <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
+                      <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
+                    </Stack>
+                  )}
+                  {formData.approveStatus === 'Rejected' && (
+                    <Stack direction="row" spacing={2}>
+                      <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
+                      <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
+                    </Stack>
+                  )}
+
+                  {listViewData.status === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                    <div className="d-flex align-items-center">
+                      <Button
+                        variant="outlined"
+                        startIcon={<CheckCircleIcon />}
+                        size="small"
+                        style={{
+                          borderColor: '#4CAF50',
+                          color: '#4CAF50',
+                          fontWeight: 'bold',
+                          textTransform: 'none',
+                          padding: '2px 8px',
+                          fontSize: '0.8rem',
+                          marginRight: '10px'
+                        }}
+                        onClick={handleOpenModalApprove}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        startIcon={<CancelIcon />}
+                        size="small"
+                        style={{
+                          borderColor: '#F44336',
+                          color: '#F44336',
+                          fontWeight: 'bold',
+                          textTransform: 'none',
+                          padding: '2px 8px',
+                          fontSize: '0.8rem'
+                        }}
+                        onClick={handleOpenModalReject}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+            <div className="col d-flex justify-content-end align-items-center gap-2">
+              {!showForm && (
+                <Button
+                  variant="outlined"
+                  startIcon={<AddIcon />}
+                  size="small"
+                  sx={{
+                    borderColor: '#1e88e5',
+                    backgroundColor: '#e3f2fd',
+                    color: '#5e35b1',
+                    fontWeight: 'bold',
+                    textTransform: 'none',
+                    px: 2,
+                    py: 0.5,
+                    fontSize: '0.8rem',
+                    borderRadius: '8px',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                    mr: 1.25,
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      borderColor: '#1565c0',
+                      backgroundColor: '#bbdefb',
+                      color: '#1565c0'
+                    }
+                  }}
+                  onClick={handleView}
+                >
+                  New
+                </Button>
+              )}
+
+              {/*  */}
+              {/* <Grid container spacing={2} alignItems="center"> */}
+              {/*  */}
+              <div className="d-flex flex-wrap justify-content-end ">
+                {showForm && <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />}
+                {showForm && <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />}
+                {listViewData.approveStatus === 'Approved' || !showForm ? (
+                  ''
+                ) : (
+                  <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+                )}
+              </div>
+            </div>
           </div>
+          {/*  */}
+
           {/* </Grid> */}
 
           {showForm ? (
@@ -599,6 +824,7 @@ const Payment = () => {
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
                       label="Payment Mode"
+                      disabled={formData.status === 'SUBMIT'}
                       required
                       value={formData.paymentType}
                       onChange={(e) => setFormData({ ...formData, paymentType: e.target.value })}
@@ -643,6 +869,7 @@ const Payment = () => {
                       id="demo-simple-select-party"
                       label="Party Name"
                       name="partyName"
+                      disabled={editId}
                       required
                       value={formData.partyName || (partyName.length === 1 ? partyName[0].partyName : '')}
                       onChange={handleSelectChange}
@@ -671,6 +898,7 @@ const Payment = () => {
                       label="Reg State"
                       value={formData.gstState || (gstState.length === 1 ? gstState[0].gstState : '')}
                       onChange={handleSelectGst}
+                      disabled={formData.status === 'SUBMIT'}
                       error={!!formDataErrors.gstState}
                     >
                       {gstState.length > 0 &&
@@ -709,6 +937,7 @@ const Payment = () => {
                       label="Payment Amount"
                       size="small"
                       value={formData.paymentAmt}
+                      disabled={formData.status === 'SUBMIT'}
                       onChange={(e) => {
                         setFormData({ ...formData, paymentAmt: e.target.value });
                         // if (e.target.value) {
@@ -731,6 +960,7 @@ const Payment = () => {
                       label="TDS Amount"
                       size="small"
                       value={formData.tdsAmt}
+                      disabled={formData.status === 'SUBMIT'}
                       onChange={(e) => setFormData({ ...formData, tdsAmt: e.target.value })}
                       inputProps={{ maxLength: 30 }}
                       error={!!formDataErrors.tdsAmt}
@@ -746,6 +976,7 @@ const Payment = () => {
                       label="UTR No"
                       size="small"
                       value={formData.chequeNo}
+                      disabled={formData.status === 'SUBMIT'}
                       onChange={(e) => setFormData({ ...formData, chequeNo: e.target.value })}
                       inputProps={{ maxLength: 100 }}
                       error={!!formDataErrors.chequeNo}
@@ -760,6 +991,7 @@ const Payment = () => {
                         label="UTR Date"
                         value={formData.chequeDate ? dayjs(formData.chequeDate, 'YYYY-MM-DD') : null}
                         onChange={(newValue) => setFormData({ ...formData, chequeDate: newValue })}
+                        disabled={formData.status === 'SUBMIT'}
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
@@ -777,9 +1009,27 @@ const Payment = () => {
                       label="Pay To"
                       size="small"
                       value={formData.payTo}
+                      disabled={formData.status === 'SUBMIT'}
                       onChange={(e) => setFormData({ ...formData, payTo: e.target.value })}
                       inputProps={{ maxLength: 30 }}
                     />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="outlined" size="small" error={!!formDataErrors.status}>
+                    <InputLabel id="status-label">Status</InputLabel>
+                    <Select
+                      labelId="status-label"
+                      id="status"
+                      label="Status"
+                      name="status"
+                      value={formData.status}
+                      disabled={formData.status === 'SUBMIT' || !editId}
+                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    >
+                      {editId && <MenuItem value="SUBMIT">SUBMIT</MenuItem>}
+                      <MenuItem value="EDIT">EDIT</MenuItem>
+                    </Select>
                   </FormControl>
                 </div>
               </div>
@@ -794,19 +1044,27 @@ const Payment = () => {
                     </Box>
                     <TabPanel value="1">
                       <div className="row d-flex ml">
-                        <div className="mb-1">
-                          {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
-                          <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
-                        </div>
+                        {formData.status === 'SUBMIT' ? (
+                          ''
+                        ) : (
+                          <div className="mb-1">
+                            {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
+                            <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
+                          </div>
+                        )}
                         <div className="row mt-2">
                           <div className="col-lg-12">
                             <div className="table-responsive">
                               <table className="table table-bordered">
                                 <thead>
                                   <tr style={{ backgroundColor: '#673AB7' }}>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                      Action
-                                    </th>
+                                    {formData.status === 'SUBMIT' ? (
+                                      ''
+                                    ) : (
+                                      <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                        Action
+                                      </th>
+                                    )}
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                       S.No
                                     </th>
@@ -824,391 +1082,449 @@ const Payment = () => {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {Array.isArray(withdrawalsTableData) &&
-                                    withdrawalsTableData.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="border px-2 py-2 text-center">
-                                          <ActionButton
-                                            title="Delete"
-                                            icon={DeleteIcon}
-                                            onClick={() =>
-                                              handleDeleteRow(
-                                                row.id,
-                                                withdrawalsTableData,
-                                                setWithdrawalsTableData,
-                                                withdrawalsTableErrors,
-                                                setWithdrawalsTableErrors
-                                              )
-                                            }
-                                          />
-                                        </td>
-                                        <td className="text-center">
-                                          <div className="pt-2">{index + 1}</div>
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            value={row.invNo}
-                                            style={{ width: '170px' }}
-                                            disabled
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              setWithdrawalsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, invNo: value } : r))
-                                              );
-                                              setWithdrawalsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  invNo: !value ? 'Inv No is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            }}
-                                            className={withdrawalsTableErrors[index]?.invNo ? 'error form-control' : 'form-control'}
-                                          />
-                                          {withdrawalsTableErrors[index]?.invNo && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {withdrawalsTableErrors[index].invNo}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="date"
-                                            disabled
-                                            value={row.invDate ? dayjs(row.invDate).format('YYYY-MM-DD') : ''}
-                                            onChange={(e) => {
-                                              const date = e.target.value;
-                                              setWithdrawalsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, invDate: date } : r))
-                                              );
-                                              setWithdrawalsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  invDate: !date ? 'Inv Date is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            }}
-                                            className={withdrawalsTableErrors[index]?.invDate ? 'error form-control' : 'form-control'}
-                                          />
-                                          {withdrawalsTableErrors[index]?.invDate && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {withdrawalsTableErrors[index].invDate}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            disabled
-                                            value={row.refNo}
-                                            style={{ width: '170px' }}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              setWithdrawalsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, refNo: value } : r))
-                                              );
-                                              setWithdrawalsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], refNo: !value ? 'Ref No is required' : '' };
-                                                return newErrors;
-                                              });
-                                            }}
-                                            className={withdrawalsTableErrors[index]?.refNo ? 'error form-control' : 'form-control'}
-                                          />
-                                          {withdrawalsTableErrors[index]?.refNo && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {withdrawalsTableErrors[index].refNo}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="date"
-                                            disabled
-                                            value={row.refDate ? dayjs(row.refDate).format('YYYY-MM-DD') : ''}
-                                            onChange={(e) => {
-                                              const date = e.target.value;
-                                              setWithdrawalsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, refDate: date } : r))
-                                              );
+                                  {formData.status === 'SUBMIT' ? (
+                                    <>
+                                      {Array.isArray(withdrawalsTableData) &&
+                                        withdrawalsTableData.map((row, index) => (
+                                          <tr key={row.id}>
+                                            <td className="text-center">{index + 1}</td>
+                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                              {row.invNo}
+                                            </td>
+                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                              {row.invDate ? dayjs(row.invDate).format('YYYY-MM-DD') : ''}
+                                            </td>
+                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                              {row.refNo}
+                                            </td>
+                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                              {row.refDate ? dayjs(row.refDate).format('YYYY-MM-DD') : ''}
+                                            </td>
+                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                              {row.amount}
+                                            </td>
+                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                              {row.gstAmount}
+                                            </td>
+                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                              {row.currency}
+                                            </td>
+                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                              {row.exRate}
+                                            </td>
+                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                              {row.chargeAmt}
+                                            </td>
+                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                              {row.outstanding}
+                                            </td>
+                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                              {row.settled}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                    </>
+                                  ) : (
+                                    <>
+                                      {Array.isArray(withdrawalsTableData) &&
+                                        withdrawalsTableData.map((row, index) => (
+                                          <tr key={row.id}>
+                                            <td className="border px-2 py-2 text-center">
+                                              <ActionButton
+                                                title="Delete"
+                                                icon={DeleteIcon}
+                                                onClick={() =>
+                                                  handleDeleteRow(
+                                                    row.id,
+                                                    withdrawalsTableData,
+                                                    setWithdrawalsTableData,
+                                                    withdrawalsTableErrors,
+                                                    setWithdrawalsTableErrors
+                                                  )
+                                                }
+                                              />
+                                            </td>
+                                            <td className="text-center">
+                                              <div className="pt-2">{index + 1}</div>
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                type="text"
+                                                value={row.invNo}
+                                                style={{ width: '170px' }}
+                                                disabled
+                                                onChange={(e) => {
+                                                  const value = e.target.value;
+                                                  setWithdrawalsTableData((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, invNo: value } : r))
+                                                  );
+                                                  setWithdrawalsTableErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      invNo: !value ? 'Inv No is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }}
+                                                className={withdrawalsTableErrors[index]?.invNo ? 'error form-control' : 'form-control'}
+                                              />
+                                              {withdrawalsTableErrors[index]?.invNo && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {withdrawalsTableErrors[index].invNo}
+                                                </div>
+                                              )}
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                type="date"
+                                                disabled
+                                                value={row.invDate ? dayjs(row.invDate).format('YYYY-MM-DD') : ''}
+                                                onChange={(e) => {
+                                                  const date = e.target.value;
+                                                  setWithdrawalsTableData((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, invDate: date } : r))
+                                                  );
+                                                  setWithdrawalsTableErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      invDate: !date ? 'Inv Date is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }}
+                                                className={withdrawalsTableErrors[index]?.invDate ? 'error form-control' : 'form-control'}
+                                              />
+                                              {withdrawalsTableErrors[index]?.invDate && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {withdrawalsTableErrors[index].invDate}
+                                                </div>
+                                              )}
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                type="text"
+                                                disabled
+                                                value={row.refNo}
+                                                style={{ width: '170px' }}
+                                                onChange={(e) => {
+                                                  const value = e.target.value;
+                                                  setWithdrawalsTableData((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, refNo: value } : r))
+                                                  );
+                                                  setWithdrawalsTableErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = { ...newErrors[index], refNo: !value ? 'Ref No is required' : '' };
+                                                    return newErrors;
+                                                  });
+                                                }}
+                                                className={withdrawalsTableErrors[index]?.refNo ? 'error form-control' : 'form-control'}
+                                              />
+                                              {withdrawalsTableErrors[index]?.refNo && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {withdrawalsTableErrors[index].refNo}
+                                                </div>
+                                              )}
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                type="date"
+                                                disabled
+                                                value={row.refDate ? dayjs(row.refDate).format('YYYY-MM-DD') : ''}
+                                                onChange={(e) => {
+                                                  const date = e.target.value;
+                                                  setWithdrawalsTableData((prev) =>
+                                                    prev.map((r) => (r.id === row.id ? { ...r, refDate: date } : r))
+                                                  );
 
-                                              setWithdrawalsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  refDate: !date ? 'Ref Date is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            }}
-                                            className={withdrawalsTableErrors[index]?.refDate ? 'error form-control' : 'form-control'}
-                                          />
-                                          {withdrawalsTableErrors[index]?.refDate && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {withdrawalsTableErrors[index].refDate}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            value={row.amount}
-                                            disabled
-                                            style={{ width: '120px' }}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const numericRegex = /^[0-9]*$/;
-                                              if (numericRegex.test(value)) {
-                                                setWithdrawalsTableData((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, amount: value } : r))
-                                                );
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], amount: !value ? 'Amount is required' : '' };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    amount: 'Only numeric characters are allowed'
+                                                  setWithdrawalsTableErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      refDate: !date ? 'Ref Date is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
+                                                }}
+                                                className={withdrawalsTableErrors[index]?.refDate ? 'error form-control' : 'form-control'}
+                                              />
+                                              {withdrawalsTableErrors[index]?.refDate && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {withdrawalsTableErrors[index].refDate}
+                                                </div>
+                                              )}
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                type="text"
+                                                value={row.amount}
+                                                disabled
+                                                style={{ width: '120px' }}
+                                                onChange={(e) => {
+                                                  const value = e.target.value;
+                                                  const numericRegex = /^[0-9]*$/;
+                                                  if (numericRegex.test(value)) {
+                                                    setWithdrawalsTableData((prev) =>
+                                                      prev.map((r) => (r.id === row.id ? { ...r, amount: value } : r))
+                                                    );
+                                                    setWithdrawalsTableErrors((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = {
+                                                        ...newErrors[index],
+                                                        amount: !value ? 'Amount is required' : ''
+                                                      };
+                                                      return newErrors;
+                                                    });
+                                                  } else {
+                                                    setWithdrawalsTableErrors((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = {
+                                                        ...newErrors[index],
+                                                        amount: 'Only numeric characters are allowed'
+                                                      };
+                                                      return newErrors;
+                                                    });
+                                                  }
+                                                }}
+                                                className={withdrawalsTableErrors[index]?.amount ? 'error form-control' : 'form-control'}
+                                              />
+                                              {withdrawalsTableErrors[index]?.amount && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {withdrawalsTableErrors[index].amount}
+                                                </div>
+                                              )}
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                type="text"
+                                                value={row.gstAmount}
+                                                disabled
+                                                onChange={(e) => {
+                                                  const value = e.target.value;
+                                                  const isNumeric = /^[0-9]*$/;
+                                                  if (isNumeric.test(value)) {
+                                                    setWithdrawalsTableData((prev) =>
+                                                      prev.map((r) => (r.id === row.id ? { ...r, gstAmount: value } : r))
+                                                    );
+                                                    setWithdrawalsTableErrors((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = {
+                                                        ...newErrors[index],
+                                                        gstAmount: !value ? 'Tax Amt is required' : ''
+                                                      };
+                                                      return newErrors;
+                                                    });
+                                                  } else {
+                                                    setWithdrawalsTableErrors((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = {
+                                                        ...newErrors[index],
+                                                        gstAmount: 'Only numbers are allowed'
+                                                      };
+                                                      return newErrors;
+                                                    });
+                                                  }
+                                                }}
+                                                className={withdrawalsTableErrors[index]?.gstAmount ? 'error form-control' : 'form-control'}
+                                                style={{ width: '150px' }}
+                                              />
+                                              {withdrawalsTableErrors[index]?.gstAmount && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {withdrawalsTableErrors[index].gstAmount}
+                                                </div>
+                                              )}
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <select
+                                                value={row.currency}
+                                                style={{ width: '100px' }}
+                                                disabled
+                                                onChange={(e) => {
+                                                  const selectedCurrency = e.target.value;
+                                                  const updatedCurrencyData = [...withdrawalsTableData];
+                                                  updatedCurrencyData[index] = {
+                                                    ...updatedCurrencyData[index],
+                                                    currency: selectedCurrency
                                                   };
-                                                  return newErrors;
-                                                });
-                                              }
-                                            }}
-                                            className={withdrawalsTableErrors[index]?.amount ? 'error form-control' : 'form-control'}
-                                          />
-                                          {withdrawalsTableErrors[index]?.amount && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {withdrawalsTableErrors[index].amount}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            value={row.gstAmount}
-                                            disabled
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const isNumeric = /^[0-9]*$/;
-                                              if (isNumeric.test(value)) {
-                                                setWithdrawalsTableData((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, gstAmount: value } : r))
-                                                );
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    gstAmount: !value ? 'Tax Amt is required' : ''
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    gstAmount: 'Only numbers are allowed'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              }
-                                            }}
-                                            className={withdrawalsTableErrors[index]?.gstAmount ? 'error form-control' : 'form-control'}
-                                            style={{ width: '150px' }}
-                                          />
-                                          {withdrawalsTableErrors[index]?.gstAmount && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {withdrawalsTableErrors[index].gstAmount}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <select
-                                            value={row.currency}
-                                            style={{ width: '100px' }}
-                                            disabled
-                                            onChange={(e) => {
-                                              const selectedCurrency = e.target.value;
-                                              const updatedCurrencyData = [...withdrawalsTableData];
-                                              updatedCurrencyData[index] = {
-                                                ...updatedCurrencyData[index],
-                                                currency: selectedCurrency
-                                              };
-                                              setWithdrawalsTableData(updatedCurrencyData);
-                                            }}
-                                            className={withdrawalsTableErrors[index]?.currency ? 'error form-control' : 'form-control'}
-                                          >
-                                            {gstState?.map((currency, index) => (
-                                              <option key={index} value={currency.currency}>
-                                                {currency.currency}
-                                              </option>
-                                            ))}
-                                          </select>
-                                          {withdrawalsTableErrors[index]?.currency && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {withdrawalsTableErrors[index].currency}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            value={row.exRate}
-                                            disabled
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const isNumeric = /^[0-9]*$/;
+                                                  setWithdrawalsTableData(updatedCurrencyData);
+                                                }}
+                                                className={withdrawalsTableErrors[index]?.currency ? 'error form-control' : 'form-control'}
+                                              >
+                                                {gstState?.map((currency, index) => (
+                                                  <option key={index} value={currency.currency}>
+                                                    {currency.currency}
+                                                  </option>
+                                                ))}
+                                              </select>
+                                              {withdrawalsTableErrors[index]?.currency && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {withdrawalsTableErrors[index].currency}
+                                                </div>
+                                              )}
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                type="text"
+                                                value={row.exRate}
+                                                disabled
+                                                onChange={(e) => {
+                                                  const value = e.target.value;
+                                                  const isNumeric = /^[0-9]*$/;
 
-                                              if (isNumeric.test(value)) {
-                                                setWithdrawalsTableData((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r))
-                                                );
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], exRate: !value ? 'Ex Rate is required' : '' };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], exRate: 'Only numbers are allowed' };
-                                                  return newErrors;
-                                                });
-                                              }
-                                            }}
-                                            className={withdrawalsTableErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                            style={{ width: '100px' }}
-                                          />
-                                          {withdrawalsTableErrors[index]?.exRate && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {withdrawalsTableErrors[index].exRate}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            value={row.chargeAmt}
-                                            disabled
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const isNumeric = /^[0-9]*$/;
-                                              if (isNumeric.test(value)) {
-                                                setWithdrawalsTableData((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, chargeAmt: value } : r))
-                                                );
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], chargeAmt: 'Only numbers are allowed' };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    chargeAmt: 'Only numbers are allowed'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              }
-                                            }}
-                                            className={withdrawalsTableErrors[index]?.chargeAmt ? 'error form-control' : 'form-control'}
-                                            style={{ width: '130px' }}
-                                          />
-                                          {withdrawalsTableErrors[index]?.chargeAmt && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {withdrawalsTableErrors[index].chargeAmt}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            disabled
-                                            value={row.outstanding}
-                                            style={{ width: '120px' }}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const numericRegex = /^[0-9]*$/;
-                                              if (numericRegex.test(value)) {
-                                                setWithdrawalsTableData((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, outstanding: value } : r))
-                                                );
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    outstanding: !value ? 'Outstanding is required' : ''
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    outstanding: 'Only numeric characters are allowed'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              }
-                                            }}
-                                            className={withdrawalsTableErrors[index]?.outstanding ? 'error form-control' : 'form-control'}
-                                          />
-                                          {withdrawalsTableErrors[index]?.outstanding && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {withdrawalsTableErrors[index].outstanding}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            value={row.settled}
-                                            disabled={editId}
-                                            style={{ width: '100px' }}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const numericRegex = /^[0-9.]*$/;
-                                              if (numericRegex.test(value)) {
-                                                setWithdrawalsTableData((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, settled: value } : r))
-                                                );
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = { ...newErrors[index], settled: !value ? 'Settled is required' : '' };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setWithdrawalsTableErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    settled: 'Only numeric characters are allowed'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              }
-                                            }}
-                                            className={withdrawalsTableErrors[index]?.settled ? 'error form-control' : 'form-control'}
-                                          />
-                                          {withdrawalsTableErrors[index]?.settled && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {withdrawalsTableErrors[index].settled}
-                                            </div>
-                                          )}
-                                        </td>
-                                      </tr>
-                                    ))}
+                                                  if (isNumeric.test(value)) {
+                                                    setWithdrawalsTableData((prev) =>
+                                                      prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r))
+                                                    );
+                                                    setWithdrawalsTableErrors((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = {
+                                                        ...newErrors[index],
+                                                        exRate: !value ? 'Ex Rate is required' : ''
+                                                      };
+                                                      return newErrors;
+                                                    });
+                                                  } else {
+                                                    setWithdrawalsTableErrors((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = { ...newErrors[index], exRate: 'Only numbers are allowed' };
+                                                      return newErrors;
+                                                    });
+                                                  }
+                                                }}
+                                                className={withdrawalsTableErrors[index]?.exRate ? 'error form-control' : 'form-control'}
+                                                style={{ width: '100px' }}
+                                              />
+                                              {withdrawalsTableErrors[index]?.exRate && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {withdrawalsTableErrors[index].exRate}
+                                                </div>
+                                              )}
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                type="text"
+                                                value={row.chargeAmt}
+                                                disabled
+                                                onChange={(e) => {
+                                                  const value = e.target.value;
+                                                  const isNumeric = /^[0-9]*$/;
+                                                  if (isNumeric.test(value)) {
+                                                    setWithdrawalsTableData((prev) =>
+                                                      prev.map((r) => (r.id === row.id ? { ...r, chargeAmt: value } : r))
+                                                    );
+                                                    setWithdrawalsTableErrors((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = { ...newErrors[index], chargeAmt: 'Only numbers are allowed' };
+                                                      return newErrors;
+                                                    });
+                                                  } else {
+                                                    setWithdrawalsTableErrors((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = {
+                                                        ...newErrors[index],
+                                                        chargeAmt: 'Only numbers are allowed'
+                                                      };
+                                                      return newErrors;
+                                                    });
+                                                  }
+                                                }}
+                                                className={withdrawalsTableErrors[index]?.chargeAmt ? 'error form-control' : 'form-control'}
+                                                style={{ width: '130px' }}
+                                              />
+                                              {withdrawalsTableErrors[index]?.chargeAmt && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {withdrawalsTableErrors[index].chargeAmt}
+                                                </div>
+                                              )}
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                type="text"
+                                                disabled
+                                                value={row.outstanding}
+                                                style={{ width: '120px' }}
+                                                onChange={(e) => {
+                                                  const value = e.target.value;
+                                                  const numericRegex = /^[0-9]*$/;
+                                                  if (numericRegex.test(value)) {
+                                                    setWithdrawalsTableData((prev) =>
+                                                      prev.map((r) => (r.id === row.id ? { ...r, outstanding: value } : r))
+                                                    );
+                                                    setWithdrawalsTableErrors((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = {
+                                                        ...newErrors[index],
+                                                        outstanding: !value ? 'Outstanding is required' : ''
+                                                      };
+                                                      return newErrors;
+                                                    });
+                                                  } else {
+                                                    setWithdrawalsTableErrors((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = {
+                                                        ...newErrors[index],
+                                                        outstanding: 'Only numeric characters are allowed'
+                                                      };
+                                                      return newErrors;
+                                                    });
+                                                  }
+                                                }}
+                                                className={
+                                                  withdrawalsTableErrors[index]?.outstanding ? 'error form-control' : 'form-control'
+                                                }
+                                              />
+                                              {withdrawalsTableErrors[index]?.outstanding && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {withdrawalsTableErrors[index].outstanding}
+                                                </div>
+                                              )}
+                                            </td>
+                                            <td className="border px-2 py-2">
+                                              <input
+                                                type="text"
+                                                value={row.settled}
+                                                // disabled={editId}
+                                                disabled={formData.status === 'SUBMIT'}
+                                                style={{ width: '100px' }}
+                                                onChange={(e) => {
+                                                  const value = e.target.value;
+                                                  const numericRegex = /^[0-9.]*$/;
+                                                  if (numericRegex.test(value)) {
+                                                    setWithdrawalsTableData((prev) =>
+                                                      prev.map((r) => (r.id === row.id ? { ...r, settled: value } : r))
+                                                    );
+                                                    setWithdrawalsTableErrors((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = {
+                                                        ...newErrors[index],
+                                                        settled: !value ? 'Settled is required' : ''
+                                                      };
+                                                      return newErrors;
+                                                    });
+                                                  } else {
+                                                    setWithdrawalsTableErrors((prev) => {
+                                                      const newErrors = [...prev];
+                                                      newErrors[index] = {
+                                                        ...newErrors[index],
+                                                        settled: 'Only numeric characters are allowed'
+                                                      };
+                                                      return newErrors;
+                                                    });
+                                                  }
+                                                }}
+                                                className={withdrawalsTableErrors[index]?.settled ? 'error form-control' : 'form-control'}
+                                              />
+                                              {withdrawalsTableErrors[index]?.settled && (
+                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                  {withdrawalsTableErrors[index].settled}
+                                                </div>
+                                              )}
+                                            </td>
+                                          </tr>
+                                        ))}
+                                    </>
+                                  )}
                                 </tbody>
                               </table>
                             </div>
@@ -1259,6 +1575,7 @@ const Payment = () => {
                                 name="remarks"
                                 label="Remarks"
                                 size="small"
+                                disabled={formData.status === 'SUBMIT'}
                                 value={formData.remarks}
                                 onChange={(newValue) => setFormData({ ...formData, remarks: newValue })}
                                 inputProps={{ maxLength: 30 }}
@@ -1378,6 +1695,15 @@ const Payment = () => {
           )}
         </div>
       </div>
+      {/*  */}
+      <ConfirmationModal
+        open={modalApprove}
+        title="Payment Approval"
+        message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this payment?`}
+        onConfirm={handleConfirmAction}
+        onCancel={handleCloseApprove}
+      />
+      {/*  */}
     </div>
   );
 };
