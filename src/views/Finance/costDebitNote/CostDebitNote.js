@@ -388,29 +388,31 @@ const CostDebitNote = () => {
       }));
 
       setChargerCostInvoice(
-        (selectedBill.chargerCostInvoiceVO || []).map((row) => ({
-          id: row.id,
-          jobNo: row.jobNo,
-          chargeName: row.chargeName,
-          chargeCode: row.chargeCode,
-          chargeLedger: row.ledger,
-          sac: row.sac,
-          contType: row.contType,
-          currency: row.currency,
-          exRate: row.exRate,
-          fcAmt: row.fcAmt,
-          gst: row.gst,
-          billAmt: row.billAmt,
-          gstPercent: row.gstpercent,
-          lcAmt: row.lcAmt,
-          ledger: row.ledger,
-          govChargeCode: row.govChargeCode,
-          exempted: row.exempted,
-          qty: row.qty,
-          rate: row.rate,
-          taxable: row.taxable,
-          description: row.description
-        }))
+        (selectedBill.chargerCostInvoiceVO || [])
+          .filter((row) => !row.chargeName?.trim().toUpperCase().startsWith('INPUT'))
+          .map((row) => ({
+            id: row.id,
+            jobNo: row.jobNo,
+            chargeName: row.chargeName,
+            chargeCode: row.chargeCode,
+            chargeLedger: row.ledger,
+            sac: row.sac,
+            contType: row.contType,
+            currency: row.currency,
+            exRate: row.exRate,
+            fcAmt: row.fcAmt,
+            gst: row.gst,
+            billAmt: row.billAmt,
+            gstPercent: row.gstpercent,
+            lcAmt: row.lcAmt,
+            ledger: row.ledger,
+            govChargeCode: row.govChargeCode,
+            exempted: row.exempted,
+            qty: row.qty,
+            rate: row.rate,
+            taxable: row.taxable,
+            description: row.description
+          }))
       );
 
       setTdsCostInvoice(
@@ -1781,6 +1783,7 @@ const CostDebitNote = () => {
                     onChange={handleInputChange}
                     disabled
                     inputProps={{ maxLength: 10 }}
+                    InputLabelProps={{ shrink: true }}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
