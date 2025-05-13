@@ -10,6 +10,7 @@ import {
   Button,
   Checkbox,
   Container,
+  FormControl,
   FormControlLabel,
   Grid,
   IconButton,
@@ -30,6 +31,10 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from 'dayjs';
 import { showErrorToast, showSuccessToast } from '../../utils/toastUtils';
 import PoList from './PoList';
 const dummyImageURL = 'https://t3.ftcdn.net/jpg/04/62/93/66/240_F_462936689_BpEEcxfgMuYPfTaIAOC1tCDurmsno7Sp.jpg';
@@ -174,69 +179,63 @@ const PurchaseOrderComponent = React.forwardRef((props, ref) => {
       <Paper ref={ref} elevation={3} sx={{ padding: 4, fontFamily: 'Roboto, sans-serif' }}>
         <Container>
           <Box sx={{ mb: 3 }}>
-            <Grid container spacing={2}>
-              {/* Left Box */}
+            <Grid container spacing={2} alignItems="flex-start">
+              {/* Left Box - Logo */}
               <Grid item xs={2}>
-                <img src="/AI_Packs.png" style={{ width: '150px' }}></img>
-              </Grid>
-              <Grid item xs={5}>
-                <Box sx={{ textAlign: 'left' }}>
-                  {/* <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                    SCM AI-PACKS Private Limited
-                  </Typography> */}
-                  {/* <Typography variant="subtitle1">
-                    #23/1, T C Palya Main road, Hoysala Nagar, Ramamurthy Nagar,
-                    Bangalore - 560010, Karnataka.
-                  </Typography>
-                  <Typography variant="subtitle1">
-                    GSTIN: 29ABMCS1982P1ZA
-                  </Typography> */}
-                  <StyledTextField
-                    fullWidth
-                    sx={{ fontWeight: 'bold', mb: 1, ml: 5 }}
-                    variant="outlined"
-                    multiline
-                    // disabled={editMode}
-                    value={companyAddress}
-                    onChange={(e) => setCompanyAddress(e.target.value)}
-                  />
-                </Box>
+                <img src="/AI_Packs.png" style={{ width: '100%', maxWidth: '120px' }} alt="Company Logo" />
               </Grid>
 
-              {/* Right Box */}
-              <Grid item xs={5} sx={{ textAlign: 'right' }}>
-                <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+              {/* Center Box - Address */}
+              <Grid item xs={6}>
+                <StyledTextField
+                  fullWidth
+                  multiline
+                  minRows={3}
+                  variant="outlined"
+                  value={companyAddress}
+                  onChange={(e) => setCompanyAddress(e.target.value)}
+                  placeholder="Company Address"
+                  sx={{
+                    fontWeight: 'bold',
+                    ml: 1
+                  }}
+                />
+              </Grid>
+
+              {/* Right Box - PO Details */}
+              <Grid item xs={4} sx={{ textAlign: 'right' }}>
+                <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
                   PURCHASE ORDER
                 </Typography>
+
                 <StyledTextField
-                  fullWidth
                   size="small"
                   variant="outlined"
-                  value={props.poNumber}
+                  // value={props.poNumber}
                   placeholder="PO Number"
                   onChange={(e) => props.setPoNumber(e.target.value)}
-                  sx={{
-                    maxWidth: 130,
-                    fontWeight: 'bold'
-                  }}
+                  sx={{ width: '100%', maxWidth: 180, fontWeight: 'bold', mb: 1 }}
                 />
 
-                <br></br>
-                <StyledTextField
-                  fullWidth
-                  size="small"
-                  variant="outlined"
-                  placeholder="Po Date"
-                  value={poDate}
-                  onChange={(e) => setPoDate(e.target.value)}
-                  sx={{
-                    maxWidth: 130,
-                    fontWeight: 'bold'
-                  }}
-                />
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    label="PO Date"
+                    format="DD-MM-YYYY"
+                    slotProps={{
+                      textField: {
+                        size: 'small',
+                        fullWidth: true,
+                        sx: { maxWidth: 180 }
+                      }
+                    }}
+                    // value={poDate}
+                    onChange={(newValue) => setPoDate(newValue)}
+                  />
+                </LocalizationProvider>
               </Grid>
             </Grid>
           </Box>
+
 
           <Grid container spacing={2} sx={{ mb: 1 }}>
             <Grid item xs={6}>
