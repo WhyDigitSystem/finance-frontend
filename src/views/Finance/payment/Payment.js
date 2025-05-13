@@ -63,6 +63,7 @@ const Payment = () => {
   const [modalApprove, setModalApprove] = useState(false);
   const [confirmData, setConfirmData] = useState([]);
   const [listViewData, setListViewData] = useState([]);
+  const [bankName, setBankName] = useState([]);
   const handleChangeTab = (event, newValue) => {
     setValue(newValue);
   };
@@ -87,7 +88,8 @@ const Payment = () => {
     status: 'EDIT',
     approveStatus: '',
     approveBy: '',
-    approveOn: ''
+    approveOn: '',
+    cashAccount: ''
   });
 
   const [formDataErrors, setFormDataErrors] = useState({
@@ -113,7 +115,8 @@ const Payment = () => {
     status: '',
     approveStatus: '',
     approveBy: '',
-    approveOn: ''
+    approveOn: '',
+    cashAccount: ''
   });
 
   const [withdrawalsTableData, setWithdrawalsTableData] = useState([]);
@@ -137,6 +140,7 @@ const Payment = () => {
     getAllPayment();
     getPaymentDocId();
     getPartName();
+    bankList();
   }, []);
 
   useEffect(() => {
@@ -252,7 +256,8 @@ const Payment = () => {
       status: 'EDIT',
       approveStatus: '',
       approveBy: '',
-      approveOn: ''
+      approveOn: '',
+      cashAccount: ''
     });
     setWithdrawalsTableData([]);
     setWithdrawalsTableErrors([
@@ -294,7 +299,8 @@ const Payment = () => {
         netAmount: '',
         onAccount: '',
         remarks: '',
-        status: ''
+        status: '',
+        cashAccount: ''
       }
     ]);
     setEditId('');
@@ -316,6 +322,10 @@ const Payment = () => {
 
     if (!formData.status) {
       errors.status = 'Status is required';
+    }
+
+    if (!formData.cashAccount) {
+      errors.cashAccount = 'Cash Account is required';
     }
     setFormDataErrors(errors);
     if (Object.keys(errors).length > 0) {
@@ -361,7 +371,8 @@ const Payment = () => {
         finYear: finYear,
         branch: branch,
         branchCode: branchCode,
-        status: formData.status
+        status: formData.status,
+        cashAccount: formData.cashAccount
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -423,7 +434,8 @@ const Payment = () => {
           status: listValueVO.status,
           approveBy: listValueVO.approveBy,
           approveOn: listValueVO.approveOn,
-          approveStatus: listValueVO.approveStatus
+          approveStatus: listValueVO.approveStatus,
+          cashAccount: listValueVO.cashAccount
         });
         setWithdrawalsTableData(
           listValueVO.paymentInvDtlsVO.map((cl) => ({
@@ -672,7 +684,8 @@ const Payment = () => {
           status: listValueVO.status,
           approveBy: listValueVO.approveBy,
           approveOn: listValueVO.approveOn,
-          approveStatus: listValueVO.approveStatus
+          approveStatus: listValueVO.approveStatus,
+          cashAccount: listValueVO.cashAccount
         });
         setWithdrawalsTableData(
           listValueVO.paymentInvDtlsVO.map((cl) => ({
@@ -698,6 +711,15 @@ const Payment = () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+
+  const bankList = async () => {
+    try {
+      const response = await apiCalls('get', `/transaction/getBankNameForGroupLedger?orgId=${orgId}`);
+      setBankName(response.paramObjectsMap.accountName);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
     }
   };
 
@@ -862,8 +884,10 @@ const Payment = () => {
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label-party">Party Name</InputLabel>
+                  <FormControl fullWidth size="small" error={!!formDataErrors.partyName}>
+                    <InputLabel required id="demo-simple-select-label-party">
+                      Party Name
+                    </InputLabel>
                     <Select
                       labelId="demo-simple-select-label-party"
                       id="demo-simple-select-party"
@@ -873,7 +897,6 @@ const Payment = () => {
                       required
                       value={formData.partyName || (partyName.length === 1 ? partyName[0].partyName : '')}
                       onChange={handleSelectChange}
-                      error={!!formDataErrors.partyName}
                     >
                       {partyName.length > 0 &&
                         partyName.map((par, index) => (
@@ -936,6 +959,7 @@ const Payment = () => {
                       id="paymentAmount"
                       label="Payment Amount"
                       size="small"
+                      required
                       value={formData.paymentAmt}
                       disabled={formData.status === 'SUBMIT'}
                       onChange={(e) => {
@@ -1017,7 +1041,9 @@ const Payment = () => {
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="outlined" size="small" error={!!formDataErrors.status}>
-                    <InputLabel id="status-label">Status</InputLabel>
+                    <InputLabel id="status-label" required>
+                      Status
+                    </InputLabel>
                     <Select
                       labelId="status-label"
                       id="status"
@@ -1025,13 +1051,46 @@ const Payment = () => {
                       name="status"
                       value={formData.status}
                       disabled={formData.status === 'SUBMIT' || !editId}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, status: e.target.value });
+                        setFormDataErrors({ ...formDataErrors, status: '' });
+                      }}
                     >
                       {editId && <MenuItem value="SUBMIT">SUBMIT</MenuItem>}
                       <MenuItem value="EDIT">EDIT</MenuItem>
                     </Select>
+                    {formDataErrors.status && <FormHelperText>{formDataErrors.status}</FormHelperText>}
                   </FormControl>
                 </div>
+                {/*  */}
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small" error={!!formDataErrors.cashAccount}>
+                    <InputLabel htmlFor="type" required>
+                      Cash Account
+                    </InputLabel>
+                    <Select
+                      labelId="cashAccount-label"
+                      id="cashAccount"
+                      name="cashAccount"
+                      value={formData.cashAccount}
+                      disabled={formData.status === 'SUBMIT'}
+                      onChange={(e) => {
+                        setFormData({ ...formData, cashAccount: e.target.value });
+                        setFormDataErrors({ ...formDataErrors, cashAccount: '' });
+                      }}
+                      label="Cash Account"
+                    >
+                      {bankName &&
+                        bankName.map((bank, index) => (
+                          <MenuItem key={index} value={bank.accountgroupname}>
+                            {bank.accountgroupname}
+                          </MenuItem>
+                        ))}
+                    </Select>
+                    {formDataErrors.cashAccount && <FormHelperText>{formDataErrors.cashAccount}</FormHelperText>}
+                  </FormControl>
+                </div>
+                {/*  */}
               </div>
               <div className="card w-full p-6 bg-base-100 shadow-xl mt-2" style={{ padding: '20px' }}>
                 <Box sx={{ width: '100%', typography: 'body1' }}>
