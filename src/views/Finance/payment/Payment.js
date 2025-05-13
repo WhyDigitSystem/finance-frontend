@@ -89,7 +89,7 @@ const Payment = () => {
     approveStatus: '',
     approveBy: '',
     approveOn: '',
-    cashAccount: ''
+    bankCashAcc: ''
   });
 
   const [formDataErrors, setFormDataErrors] = useState({
@@ -116,7 +116,7 @@ const Payment = () => {
     approveStatus: '',
     approveBy: '',
     approveOn: '',
-    cashAccount: ''
+    bankCashAcc: ''
   });
 
   const [withdrawalsTableData, setWithdrawalsTableData] = useState([]);
@@ -257,7 +257,7 @@ const Payment = () => {
       approveStatus: '',
       approveBy: '',
       approveOn: '',
-      cashAccount: ''
+      bankCashAcc: ''
     });
     setWithdrawalsTableData([]);
     setWithdrawalsTableErrors([
@@ -300,7 +300,7 @@ const Payment = () => {
         onAccount: '',
         remarks: '',
         status: '',
-        cashAccount: ''
+        bankCashAcc: ''
       }
     ]);
     setEditId('');
@@ -324,8 +324,8 @@ const Payment = () => {
       errors.status = 'Status is required';
     }
 
-    if (!formData.cashAccount) {
-      errors.cashAccount = 'Cash Account is required';
+    if (!formData.bankCashAcc) {
+      errors.bankCashAcc = 'Cash Account is required';
     }
     setFormDataErrors(errors);
     if (Object.keys(errors).length > 0) {
@@ -372,7 +372,7 @@ const Payment = () => {
         branch: branch,
         branchCode: branchCode,
         status: formData.status,
-        cashAccount: formData.cashAccount
+        bankCashAcc: formData.bankCashAcc
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -435,7 +435,7 @@ const Payment = () => {
           approveBy: listValueVO.approveBy,
           approveOn: listValueVO.approveOn,
           approveStatus: listValueVO.approveStatus,
-          cashAccount: listValueVO.cashAccount
+          bankCashAcc: listValueVO.bankCashAcc
         });
         setWithdrawalsTableData(
           listValueVO.paymentInvDtlsVO.map((cl) => ({
@@ -685,7 +685,7 @@ const Payment = () => {
           approveBy: listValueVO.approveBy,
           approveOn: listValueVO.approveOn,
           approveStatus: listValueVO.approveStatus,
-          cashAccount: listValueVO.cashAccount
+          bankCashAcc: listValueVO.bankCashAcc
         });
         setWithdrawalsTableData(
           listValueVO.paymentInvDtlsVO.map((cl) => ({
@@ -1064,19 +1064,19 @@ const Payment = () => {
                 </div>
                 {/*  */}
                 <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small" error={!!formDataErrors.cashAccount}>
+                  <FormControl fullWidth size="small" error={!!formDataErrors.bankCashAcc}>
                     <InputLabel htmlFor="type" required>
                       Cash Account
                     </InputLabel>
                     <Select
-                      labelId="cashAccount-label"
-                      id="cashAccount"
-                      name="cashAccount"
-                      value={formData.cashAccount}
+                      labelId="bankCashAcc-label"
+                      id="bankCashAcc"
+                      name="bankCashAcc"
+                      value={formData.bankCashAcc}
                       disabled={formData.status === 'SUBMIT'}
                       onChange={(e) => {
-                        setFormData({ ...formData, cashAccount: e.target.value });
-                        setFormDataErrors({ ...formDataErrors, cashAccount: '' });
+                        setFormData({ ...formData, bankCashAcc: e.target.value });
+                        setFormDataErrors({ ...formDataErrors, bankCashAcc: '' });
                       }}
                       label="Cash Account"
                     >
@@ -1087,7 +1087,7 @@ const Payment = () => {
                           </MenuItem>
                         ))}
                     </Select>
-                    {formDataErrors.cashAccount && <FormHelperText>{formDataErrors.cashAccount}</FormHelperText>}
+                    {formDataErrors.bankCashAcc && <FormHelperText>{formDataErrors.bankCashAcc}</FormHelperText>}
                   </FormControl>
                 </div>
                 {/*  */}
