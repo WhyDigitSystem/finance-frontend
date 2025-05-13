@@ -70,11 +70,11 @@ const APaging = () => {
     setFieldErrors((prev) => ({ ...prev, date: '' }));
   };
 
-  // clear button
   const allClearData = () => {
-    setFormData({ partyName: 'All', date: dayjs().format('YYYY-MM-DD') }); //division: 'All', option: 'All', branchName: 'All'
-    setSelectedSections({ partyName: false, date: true }); // division: false, option: false, branchName: false
+    setFormData({ partyName: 'All', date: dayjs().format('YYYY-MM-DD') });
+    setSelectedSections({ partyName: false, date: true });
     setFieldErrors({});
+    setRowData([]);
   };
 
   useEffect(() => {
@@ -111,12 +111,12 @@ const APaging = () => {
     }
   };
   const reportColumns = [
-    { accessorKey: 'subledgercode', header: 'Vendor Code', size: 140 },
+    { accessorKey: 'subledgerCode', header: 'Vendor Code', size: 140 },
     { accessorKey: 'name', header: 'Vendor', size: 140 },
     { accessorKey: 'amount', header: 'Amount', size: 140 },
     { accessorKey: 'outstanding', header: 'Outstanding', size: 140 },
     { accessorKey: 'unadjusted', header: 'Unadjusted', size: 140 },
-    { accessorKey: 'totaldue', header: 'Total Due', size: 140 },
+    { accessorKey: 'totalDue', header: 'Total Due', size: 140 },
     { accessorKey: 'mslab1', header: 'Below 30 Days', size: 140 },
     { accessorKey: 'mslab2', header: 'Days 30 - 60', size: 140 },
     { accessorKey: 'mslab3', header: 'Days 60 - 90', size: 140 },
@@ -138,10 +138,11 @@ const APaging = () => {
           'get',
           `/payable/getAPOutstanding?Asondate=${formData.date}&orgId=${orgId}&partyname=${formData.partyName}`
         );
-        setpartyNameList(response.paramObjectsMap.APOutstanding);
+        // setpartyNameList(response.paramObjectsMap.APOutstanding);
         if (response.status === true) {
           console.log('Response:', response);
-          setRowData(response.paramObjectsMap.mapp || '');
+          setRowData(response.paramObjectsMap.APOutstanding);
+          console.log(rowData);
           setIsLoading(false);
           setListView(true);
         } else {
