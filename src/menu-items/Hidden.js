@@ -24,6 +24,18 @@ const Hidden = {
           title: 'Reconcile - FX',
           type: 'item',
           url: '/finance/Reconcile/ReconcileCorp'
+        },
+        {
+          id: 'Hidden',
+          title: 'Unit',
+          type: 'item',
+          url: '/finance/Unit'
+        },
+        {
+          id: 'itemmaster',
+          title: 'Item Master',
+          type: 'item',
+          url: '/finance/ItemMaster'
         }
       ]
     }

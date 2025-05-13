@@ -1,5 +1,31 @@
 // assets
-import { IconCashBanknote, IconDatabaseStar, IconKey, IconWorldPin, IconUserPlus, IconBuildingFactory2, IconIdBadge2, IconLayoutDashboard, IconBriefcase, IconMapQuestion } from '@tabler/icons-react';
+import {
+  IconCashBanknote,
+  IconDatabaseStar,
+  IconKey,
+  IconWorldPin,
+  IconUserPlus,
+  IconBuildingFactory2,
+  IconIdBadge2,
+  IconLayoutDashboard,
+  IconBriefcase,
+  IconMapQuestion
+} from '@tabler/icons-react';
+import {
+  GroupsOutlined,
+  PersonPinOutlined,
+  ArchiveOutlined,
+  ChecklistRtlOutlined,
+  AccountBalanceWalletOutlined,
+  AccountBalanceOutlined,
+  QrCodeOutlined,
+  AttachMoneyOutlined,
+  RequestQuoteOutlined,
+  BuildCircleOutlined,
+  AccountTreeOutlined,
+  PersonAddAlt1Outlined,
+  Inventory2Outlined
+} from '@mui/icons-material';
 
 // constant
 const icons = {
@@ -35,6 +61,45 @@ const icons8 = {
 };
 const icons9 = {
   IconMapQuestion
+};
+const icons10 = {
+  GroupsOutlined
+};
+const icons11 = {
+  PersonPinOutlined
+};
+const icons12 = {
+  ArchiveOutlined
+};
+const icons13 = {
+  ChecklistRtlOutlined
+};
+const icons14 = {
+  AccountBalanceWalletOutlined
+};
+const icons15 = {
+  AccountBalanceOutlined
+};
+const icons16 = {
+  QrCodeOutlined
+};
+const icons17 = {
+  AttachMoneyOutlined
+};
+const icons18 = {
+  RequestQuoteOutlined
+};
+const icons19 = {
+  BuildCircleOutlined
+};
+const icons20 = {
+  AccountTreeOutlined
+};
+const icons21 = {
+  PersonAddAlt1Outlined
+};
+const icons22 = {
+  Inventory2Outlined
 };
 
 // const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
@@ -155,74 +220,86 @@ const basicMaster = {
               id: 'partyMaster',
               title: 'Party',
               type: 'item',
-              url: '/finance/partyMaster'
+              url: '/finance/partyMaster',
+              icon: icons10.GroupsOutlined
             },
             {
               id: 'customer',
               title: 'Customer',
               type: 'item',
-              url: '/finance/customer'
+              url: '/finance/customer',
+              icon: icons11.PersonPinOutlined
             },
             {
               id: 'vendor',
               title: 'Vendor',
               type: 'item',
-              url: '/finance/vendor'
+              url: '/finance/vendor',
+              icon: icons12.ArchiveOutlined
             },
             {
               id: 'listOfValues',
               title: 'List Of Values',
               type: 'item',
-              url: '/finance/listOfValues/listOfValues'
+              url: '/finance/listOfValues/listOfValues',
+              icon: icons13.ChecklistRtlOutlined
             },
             {
               id: 'group',
               title: 'COA',
               type: 'item',
-              url: '/finance/Group'
+              url: '/finance/Group',
+              icon: icons14.AccountBalanceWalletOutlined
             },
             {
               id: 'tdsMaster',
               title: 'TDS',
               type: 'item',
-              url: '/finance/tdsMaster/TdsMaster'
+              url: '/finance/tdsMaster/TdsMaster',
+              icon: icons15.AccountBalanceOutlined
             },
             {
               id: 'hsnSacCode',
               title: 'HSN SAC',
               type: 'item',
-              url: '/finance/HsnSacCode'
+              url: '/finance/HsnSacCode',
+              icon: icons16.QrCodeOutlined
             },
             {
               id: 'chargeTypeRequest',
               title: 'Charges',
               type: 'item',
-              url: '/finance/ChargeTypeRequest'
+              url: '/finance/ChargeTypeRequest',
+              icon: icons17.AttachMoneyOutlined
             },
             {
               id: 'taxMaster',
               title: 'Tax',
               type: 'item',
-              url: '/finance/taxMaster'
+              url: '/finance/taxMaster',
+              icon: icons18.RequestQuoteOutlined
             },
             {
               id: 'productService',
               title: 'Product Service',
               type: 'item',
-              url: '/finance/ProductService'
+              url: '/finance/ProductService',
+              icon: icons19.BuildCircleOutlined
             },
             {
               id: 'costCenter',
               title: 'Cost Center Values',
               type: 'item',
-              url: '/finance/costcenter/CostCentre'
+              url: '/finance/costcenter/CostCentre',
+              icon: icons20.AccountTreeOutlined
             },
 
             {
               id: 'createPartyMaster',
               title: 'Create Party',
               type: 'item',
-              url: '/finance/createPartyMaster'
+              url: '/finance/createPartyMaster',
+              icon: icons21.PersonAddAlt1Outlined
             }
           ] // No filter applied
           // .filter((item) => allowedScreenIds.includes(item.id))
