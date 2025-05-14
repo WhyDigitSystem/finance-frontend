@@ -1,778 +1,1097 @@
-import React, { useRef, useEffect, useState, useMemo } from 'react';
-import { useReactToPrint } from 'react-to-print';
-import axios from 'axios';
-import { IoMdClose } from 'react-icons/io';
-import EditIcon from '@mui/icons-material/Edit';
-import { QRCodeSVG } from 'qrcode.react';
-import QRCode from 'qrcode.react';
-import { MaterialReactTable } from 'material-react-table';
-import GetAppIcon from '@mui/icons-material/GetApp';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import IconButton from '@mui/material/IconButton';
-import IssueManifestProvider from '../docs/IssueManifestProvider';
-import { Link } from 'react-router-dom';
-import { FaArrowCircleLeft } from 'react-icons/fa';
+import dayjs from 'dayjs';
+import React, { useState, useEffect } from 'react';
+import { getAllActiveCurrency } from 'utils/CommonFunctions';
+import ClearIcon from '@mui/icons-material/Clear';
+import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import SaveIcon from '@mui/icons-material/Save';
+import SearchIcon from '@mui/icons-material/Search';
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select, Autocomplete } from '@mui/material';
+import TextField from '@mui/material/TextField';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import 'react-tabs/style/react-tabs.css';
+import 'react-toastify/dist/ReactToastify.css';
+import ActionButton from 'utils/ActionButton';
+import ToastComponent, { showToast } from 'utils/toast-component';
+import CommonTable from 'views/basicMaster/CommonTable';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import Box from '@mui/material/Box';
 import AddIcon from '@mui/icons-material/Add';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
+import DeleteIcon from '@mui/icons-material/Delete';
+import apiCalls from 'apicall';
 
 export const MaterialIssueManifest = () => {
-  const componentRef = useRef();
-  const [qrCodeValue, setQrCodeValue] = useState([]);
-  const [watermark, setWatermark] = useState('');
-  const [addMim, setAddMim] = useState(false);
-  const [editMim, setEditMim] = useState(false);
-  const [selectedRowId, setSelectedRowId] = useState(null);
-  const [pdfData, setPdfData] = useState('');
-  const [data, setData] = React.useState([]);
-  const [orgId, setOrgId] = React.useState(localStorage.getItem('orgId'));
-  const [terms, setTerms] = React.useState([]);
-  const [productDetails, setProductDetails] = React.useState([]);
-  const [openDialog, setOpenDialog] = useState(false);
-  const userDetails = localStorage.getItem('userDetails');
+  const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [companyName, setCompanyName] = useState(localStorage.getItem('companyName'));
+  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
 
+  const [allReceiver, setAllReceiver] = useState([]);
+  const [allWarehouse, setAllWarehouse] = useState([]);
+  const [allKitId, setAllKitId] = useState([]);
+  const [allHsnSacCode, setAllHsnSacCode] = useState([]);
+  const [showForm, setShowForm] = useState(true);
+  const [editId, setEditId] = useState('');
+  const [data, setData] = useState(true);
+  const [value, setValue] = useState(0);
+  const [formData, setFormData] = useState({
+    orgId: orgId,
+    transactionNo: '',
+    transactionDate: dayjs(),
+    dispatchDate: dayjs(),
+    transactionType: '',
+    fromWarehouse: '',
+    warehouseAddress: '',
+    customer: '',
+    customerAddress: '',
+    receiverRegIn: '',
+    // sender: sender,
+    amount: '',
+    amountInWords: '',
+    transporterName: '',
+    vehicleNo: '',
+    driverNo: '',
+  });
+  const [fieldErrors, setFieldErrors] = useState({
+    transactionNo: '',
+    transactionDate: dayjs(),
+    dispatchDate: dayjs(),
+    transactionType: '',
+    fromWarehouse: '',
+    warehouseAddress: '',
+    customer: '',
+    customerAddress: '',
+    receiverRegIn: '',
+    // sender: sender,
+    amount: '',
+    amountInWords: '',
+    transporterName: '',
+    vehicleNo: '',
+    driverNo: '',
+  });
+  const [detailsTableData, setDetailsTableData] = useState([
+    {
+      id: 1,
+      kitNo: '',
+      kitName: '',
+      kitQty: '',
+      hsnsacCode: '',
+      productCode: '',
+      productName: '',
+      productQty: '',
+    }
+  ]);
+
+  const [detailsTableErrors, setDetailsTableErrors] = useState([
+    {
+      kitNo: '',
+      kitName: '',
+      kitQty: '',
+      hsnsacCode: '',
+      productCode: '',
+      productName: '',
+      productQty: '',
+    }
+  ]);
+
+  const listViewColumns = [
+    { accessorKey: 'currency', header: 'Currency', size: 140 },
+    { accessorKey: 'exchangeRate', header: 'Ex.Rate', size: 140 },
+    { accessorKey: 'chequeNo', header: 'Ref No', size: 140 },
+    { accessorKey: 'docId', header: 'Document No', size: 140 }
+  ];
   useEffect(() => {
-    getAllDeclarationAndNotes();
-    getAllIssueManifestProvider();
+    getAllServiceAccountCode();
+    getAllCustomerDetails();
   }, []);
 
-  const getAllIssueManifestProvider = async () => {
+  const handleClear = () => {
+    setFormData({
+    transactionNo: '',
+    transactionDate: dayjs(),
+    dispatchDate: dayjs(),
+    transactionType: '',
+    fromWarehouse: '',
+    warehouseAddress: '',
+    customer: '',
+    customerAddress: '',
+    receiverRegIn: '',
+    // sender: sender,
+    amount: 0,
+    amountInWords: '',
+    transporterName: '',
+    vehicleNo: '',
+    driverNo: '',
+    });
+    getAllActiveCurrency(orgId);
+    setFieldErrors({
+    transactionNo: '',
+    transactionDate: dayjs(),
+    dispatchDate: dayjs(),
+    transactionType: '',
+    fromWarehouse: '',
+    warehouseAddress: '',
+    customer: '',
+    customerAddress: '',
+    receiverRegIn: '',
+    // sender: sender,
+    amount: 0,
+    amountInWords: '',
+    transporterName: '',
+    vehicleNo: '',
+    driverNo: '',
+    });
+    setDetailsTableData([{ 
+      id: 1,      
+      kitNo: '',
+      kitName: '',
+      kitQty: '',
+      hsnsacCode: '',
+      productCode: '',
+      productName: '',
+      productQty: '', 
+    }]);
+    setDetailsTableErrors('');
+    setEditId('');
+  };
+
+  const handleView = () => {
+    setShowForm(!showForm);
+  };
+
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+
+  const handleAddRow = () => {
+    // if (isLastRowEmpty(detailsTableData)) {
+    //   displayRowError(detailsTableData);
+    //   return;
+    // }
+    const newRow = {
+      id: Date.now(),
+      kitNo: '',
+      kitName: '',
+      kitQty: '',
+      hsnsacCode: '',
+      productCode: '',
+      productName: '',
+      productQty: '',
+    };
+    setDetailsTableData([...detailsTableData, newRow]);
+    setDetailsTableErrors([...detailsTableErrors, {       
+      kitNo: '',
+      kitName: '',
+      kitQty: '',
+      hsnsacCode: '',
+      productCode: '',
+      productName: '',
+      productQty: ''
+    }]);
+  };
+
+  // const isLastRowEmpty = (table) => {
+  //   const lastRow = table[table.length - 1];
+  //   if (!lastRow) return false;
+
+  //   if (table === detailsTableData) {
+  //     return !lastRow.accountName || !lastRow.narration;
+  //     // !lastRow.credit || !lastRow.debit ||
+  //   }
+  //   return false;
+  // };
+
+  // const displayRowError = (table) => {
+  //   if (table === detailsTableData) {
+  //     setDetailsTableErrors((prevErrors) => {
+  //       const newErrors = [...prevErrors];
+  //       newErrors[table.length - 1] = {
+  //         ...newErrors[table.length - 1],
+  //         accountName: !table[table.length - 1].accountName ? 'Account Name is required' : '',
+  //         // credit: !table[table.length - 1].credit ? 'Credit is required' : '',
+  //         // debit: !table[table.length - 1].debit ? 'Debit is required' : '',
+  //         narration: !table[table.length - 1].narration ? 'Narration is required' : ''
+  //       };
+  //       return newErrors;
+  //     });
+  //   }
+  // };
+
+  const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
+    const rowIndex = table.findIndex((row) => row.id === id);
+    if (rowIndex !== -1) {
+      const updatedData = table.filter((row) => row.id !== id);
+      const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
+      setTable(updatedData);
+      setErrorTable(updatedErrors);
+    }
+  };
+  const handleDateChange = (field, date) => {
+    const formattedDate = dayjs(date);
+    console.log('formattedDate', formattedDate);
+    setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+  };
+  const handleInputChange = (e) => {
+    const { name, value, selectionStart, selectionEnd, type } = e.target;
+    let errorMessage = '';
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: errorMessage
+    }));
+
+    if (!errorMessage) {
+      setFormData((prevFormData) => ({
+        ...prevFormData,
+        [name]: value
+      }));
+      if (type === 'text' || type === 'textarea') {
+        setTimeout(() => {
+          const inputElement = document.getElementsByName(name)[0];
+          if (inputElement && inputElement.setSelectionRange) {
+            inputElement.setSelectionRange(selectionStart, selectionEnd);
+          }
+        }, 0);
+      }
+    }
+  };
+  const getAllServiceAccountCode = async () => {
     try {
-      // const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/oem/getAllIssueManifestProvider`);
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getAllIssueManifestProviderForPendingIR?orgId=${orgId}`);
-
-      if (response.status === 200) {
-        setData(response.data.paramObjectsMap.IssueManifestProviderVO.reverse());
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
+      const result = await apiCalls('get', `/master/getAllActiveSacCodeByOrgId?orgId=${orgId}`);
+      setAllHsnSacCode(result.paramObjectsMap.hSNSacCodeVO || []);
+      console.log('Test sac', result);
+    } catch (err) {
+      console.log('error', err);
     }
   };
-
-  const getAllDeclarationAndNotes = async () => {
+  const getAllCustomerDetails = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/oem/getAllDeclarationAndNotes`);
-
-      if (response.status === 200) {
-        setTerms(response.data.paramObjectsMap.declarationAndNotesVO[0]);
-      }
+      const response = await apiCalls('get', `/master/getAllCustomers?orgId=${orgId}`);
+      setAllReceiver(response.paramObjectsMap.masterVOs);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error fetching gate passes:', error);
     }
   };
-
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-    onBeforeGetContent: async () => {
-      // Ensure watermark is rendered before capturing content
-      await new Promise(resolve => setTimeout(resolve, 50));
-      return true;
-    },
-    onAfterPrint: () => {
-      // Reset watermark after printing (optional)
-      setWatermark('');
+  const getAllManifestByOrgId = async () => {
+    try {
+      const result = await apiCalls('get', `/transaction/getAllBankingDepositByOrgId?orgId=${orgId}`);
+      setData(result.paramObjectsMap.bankingDepositVO.reverse() || []);
+      console.log('bankingDepositVO', result);
+    } catch (err) {
+      console.log('error', err);
     }
-  });
-
-  const handleDownloadPdf = async (watermarkText) => {
-    setWatermark(watermarkText);
-    await new Promise(resolve => setTimeout(resolve, 50));
-
-    const element = componentRef.current;
-    const canvas = await html2canvas(element);
-    const data = canvas.toDataURL('image/png');
-
-    const pdf = new jsPDF();
-    const imgProperties = pdf.getImageProperties(data);
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
-
-    pdf.addImage(data, 'PNG', 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`MaterialIssueManifest_${pdfData.transactionNo}_${watermarkText.replace(' ', '_')}.pdf`);
-
-    setWatermark('');
   };
+  const getAllDepositById = async (row) => {
+    console.log('first', row);
+    setShowForm(true);
+    try {
+      const result = await apiCalls('get', `/transaction/getBankingDepositById?id=${row.original.id}`);
 
-  const handlePrintWithWatermark = async (watermarkText) => {
-    setWatermark(watermarkText);
-    // Wait for React to render the updated watermark
-    await new Promise(resolve => setTimeout(resolve, 50));
-    handlePrint(); // Trigger print
-  };
-
-  const handleDownloadClick = (row) => {
-    getAllIssueManifestProviderById(row.original.id);
-    setOpenDialog(true);
-  };
-  const handleEditRow = (row) => {
-    getAllIssueManifestProviderById(row.original.id);
-    setSelectedRowId(row.original.id);
-    setEditMim(true);
-  };
-
-  const columns = useMemo(
-    () => [
-      {
-        accessorKey: 'actions',
-        header: 'Actions',
-        size: 50,
-        muiTableHeadCellProps: {
-          align: 'center'
-        },
-        muiTableBodyCellProps: {
-          align: 'center'
-        },
-        enableSorting: false,
-        enableColumnOrdering: false,
-        enableEditing: false,
-        Cell: ({ row }) => (
-          <div>
-            <IconButton onClick={() => handleEditRow(row)}>
-              <EditIcon />
-            </IconButton>
-            <IconButton onClick={() => handleDownloadClick(row)}>
-              <GetAppIcon />
-            </IconButton>
-          </div>
-        )
-      },
-
-      {
-        accessorKey: 'receiver',
-        header: 'Receiver',
-        size: 50,
-        muiTableHeadCellProps: {
-          align: 'center'
-        },
-        muiTableBodyCellProps: {
-          align: 'center'
-        }
-      },
-      {
-        accessorKey: 'transactionNo',
-        header: 'Transaction No',
-        size: 50,
-        muiTableHeadCellProps: {
-          align: 'center'
-        },
-        muiTableBodyCellProps: {
-          align: 'center'
-        }
-      },
-      {
-        accessorKey: 'transactionDate',
-        header: 'Transaction Date',
-        size: 50,
-        muiTableHeadCellProps: {
-          align: 'center'
-        },
-        muiTableBodyCellProps: {
-          align: 'center'
-        }
-      }
-    ],
-    []
-  );
-
-  //   const table = MaterialReactTable({
-  //     data,
-  //     columns
-  //   });
-
-  const transformProductDetails = (details) => {
-    const groupedDetails = details.reduce((acc, detail) => {
-      const existingKit = acc.find((kit) => kit.kitId === detail.kitId);
-      const asset = {
-        assetCode: detail.assetCode,
-        assetName: detail.asset,
-        assetQty: detail.assetQty
-      };
-
-      if (existingKit) {
-        existingKit.assets.push(asset);
-      } else {
-        acc.push({
-          kitId: detail.kitId,
-          kitName: detail.kitName,
-          kitQty: detail.kitQty,
-          hsnCode: detail.hsnCode,
-          assets: [asset]
+      if (result) {
+        const DepVO = result.paramObjectsMap.bankingDepositVO[0];
+        setEditId(row.original.id);
+        setFormData({
+          depositMode: DepVO.depositMode,
+          // id: DepVO.id,
+          docDate: DepVO.docDate ? dayjs(DepVO.docDate, 'YYYY-MM-DD') : dayjs(),
+          // docId: DepVO.docId,
+          receivedFrom: DepVO.receivedFrom,
+          chequeNo: DepVO.chequeNo,
+          chequeDate: DepVO.chequeDate ? dayjs(DepVO.chequeDate, 'YYYY-MM-DD') : dayjs(),
+          chequeBank: DepVO.chequeBank,
+          bankName: DepVO.bankAccount,
+          currency: DepVO.currency,
+          exRate: DepVO.exchangeRate,
+          depositAmount: DepVO.depositAmount,
+          totalAmount: DepVO.totalAmount,
+          remarks: DepVO.remarks,
+          orgId: DepVO.orgId,
+          totalDebitAmount: DepVO.totalDebitAmount,
+          totalCreditAmount: DepVO.totalCreditAmount
+          // active: DepVO.active || false,
         });
-      }
+        setDetailsTableData(
+          DepVO.depositparticularsVO.map((row) => ({
+            id: row.id,
+            accountName: row.accountsName,
+            debit: row.debit,
+            credit: row.credit,
+            narration: row.narration
+          }))
+        );
 
-      return acc;
-    }, []);
-
-    return groupedDetails;
-  };
-
-  const getAllIssueManifestProviderById = async (selectedRowId) => {
-    try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getAllIssueManifestProviderById?id=${selectedRowId}`);
-      if (response.status === 200) {
-        const mimData = response.data.paramObjectsMap.IssueManifestProviderVO;
-        setPdfData(mimData);
-        const transformedDetails = transformProductDetails(mimData.issueManifestProviderDetailsVOs);
-        setProductDetails(transformedDetails);
-        const concatenatedData = {
-          TransactionNo: mimData.transactionNo,
-          TransactionDate: mimData.transactionDate,
-          DispatchDate: mimData.dispatchDate,
-          Receiver: mimData.receiver
-        };
-
-        const formattedData = `
-          TransactionNo: ${concatenatedData.TransactionNo},
-          TransactionDate: ${concatenatedData.TransactionDate},
-          DispatchDate: ${concatenatedData.DispatchDate},
-          Receiver: ${concatenatedData.Receiver}
-       `;
-
-        setQrCodeValue(formattedData);
-        console.log('THE QRCODE DATA IS:', formattedData);
+        console.log('DataToEdit', DepVO);
+      } else {
+        // Handle erro
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
+  const handleSave = async () => {
+    const errors = {};
+    // if (!formData.chequeNo) {
+    //   errors.chequeNo = 'Cheque No is required';
+    // }
+
+    let detailTableDataValid = true;
+    const newTableErrors = detailsTableData.map((row) => {
+      const rowErrors = {};
+      // if (!row.accountName) {
+      //   rowErrors.accountName = 'Account Name is required';
+      //   detailTableDataValid = false;
+      // }
+      return rowErrors;
+    });
+    setFieldErrors(errors);
+    setDetailsTableErrors(newTableErrors);
+    if (Object.keys(errors).length === 0 && detailTableDataValid) {
+      const materialIssueVO = detailsTableData.map((row) => ({
+        ...(editId && { id: row.id }),
+        kitNo: row.kitNo,
+        kitName: row.kitName,
+        kitQty: row.kitQty,
+        hsnsacCode: row.hsnsacCode,
+        productCode: row.productCode,
+        productName: row.productName,
+        productQty: row.productQty,
+      }));
+      const saveFormData = {
+        ...(editId && { id: editId }),
+        // active: formData.active,
+        branch: branch,
+        branchCode: branchCode,
+        createdBy: loginUserName,
+        finYear: finYear,
+        orgId: orgId,
+        depositParticularsDTO: materialIssueVO,
+        transactionNo: formData.transactionNo,
+        transactionDate: dayjs(formData.transactionDate).format('YYYY-MM-DD'),
+        dispatchDate: dayjs(formData.dispatchDate).format('YYYY-MM-DD'),
+        transactionType: formData.transactionType,
+        fromWarehouse: formData.fromWarehouse,
+        warehouseAddress: formData.warehouseAddress,
+        customer: formData.customer,
+        customerAddress: formData.customerAddress,
+        receiverRegIn: formData.receiverRegIn,
+        sender: companyName,
+        amount: parseInt(formData.amount),
+        amountInWords: formData.amountInWords,
+        transporterName: formData.transporterName,
+        vehicleNo: formData.vehicleNo,
+        driverNo: formData.driverNo,
+      };
+      console.log('DATA TO SAVE IS:', saveFormData);
+      try {
+        const response = await apiCalls('put', `/transaction/updateCreateBankingDeposit`, saveFormData);
+        if (response.status === true) {
+          console.log('Response:', response);
+          showToast('success', editId ? 'Material Issue Manifest Updated Successfully' : 'Material Issue Manifest Created successfully');
+          getAllManifestByOrgId();
+          handleClear();
+        } else {
+          showToast('error', response.paramObjectsMap.message || 'Material Issue Manifest creation failed');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showToast('error', 'Material Issue Manifest creation failed');
+      }
+    } else {
+      setFieldErrors(errors);
+    }
+  };
+  // const handlePrint = useReactToPrint({
+  //   content: () => componentRef.current,
+  //   onBeforeGetContent: async () => {
+  //     // Ensure watermark is rendered before capturing content
+  //     await new Promise(resolve => setTimeout(resolve, 50));
+  //     return true;
+  //   },
+  //   onAfterPrint: () => {
+  //     // Reset watermark after printing (optional)
+  //     setWatermark('');
+  //   }
+  // });
+
+  // const handleDownloadPdf = async (watermarkText) => {
+  //   setWatermark(watermarkText);
+  //   await new Promise(resolve => setTimeout(resolve, 50));
+
+  //   const element = componentRef.current;
+  //   const canvas = await html2canvas(element);
+  //   const data = canvas.toDataURL('image/png');
+
+  //   const pdf = new jsPDF();
+  //   const imgProperties = pdf.getImageProperties(data);
+  //   const pdfWidth = pdf.internal.pageSize.getWidth();
+  //   const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
+
+  //   pdf.addImage(data, 'PNG', 0, 0, pdfWidth, pdfHeight);
+  //   pdf.save(`MaterialIssueManifest_${pdfData.transactionNo}_${watermarkText.replace(' ', '_')}.pdf`);
+
+  //   setWatermark('');
+  // };
+
+  // const handlePrintWithWatermark = async (watermarkText) => {
+  //   setWatermark(watermarkText);
+  //   // Wait for React to render the updated watermark
+  //   await new Promise(resolve => setTimeout(resolve, 50));
+  //   handlePrint(); // Trigger print
+  // };
+
+  // const handleDownloadClick = (row) => {
+  //   getAllIssueManifestProviderById(row.original.id);
+  //   setOpenDialog(true);
+  // };
+  // const handleEditRow = (row) => {
+  //   getAllIssueManifestProviderById(row.original.id);
+  //   setSelectedRowId(row.original.id);
+  //   setEditMim(true);
+  // };
+  // const transformProductDetails = (details) => {
+  //   const groupedDetails = details.reduce((acc, detail) => {
+  //     const existingKit = acc.find((kit) => kit.kitId === detail.kitId);
+  //     const asset = {
+  //       assetCode: detail.assetCode,
+  //       assetName: detail.asset,
+  //       assetQty: detail.assetQty
+  //     };
+
+  //     if (existingKit) {
+  //       existingKit.assets.push(asset);
+  //     } else {
+  //       acc.push({
+  //         kitId: detail.kitId,
+  //         kitName: detail.kitName,
+  //         kitQty: detail.kitQty,
+  //         hsnCode: detail.hsnCode,
+  //         assets: [asset]
+  //       });
+  //     }
+
+  //     return acc;
+  //   }, []);
+
+  //   return groupedDetails;
+  // };
+
+  // const getAllIssueManifestProviderById = async (selectedRowId) => {
+  //   try {
+  //     const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getAllIssueManifestProviderById?id=${selectedRowId}`);
+  //     if (response.status === 200) {
+  //       const mimData = response.data.paramObjectsMap.IssueManifestProviderVO;
+  //       setPdfData(mimData);
+  //       const transformedDetails = transformProductDetails(mimData.issueManifestProviderDetailsVOs);
+  //       setProductDetails(transformedDetails);
+  //       const concatenatedData = {
+  //         TransactionNo: mimData.transactionNo,
+  //         TransactionDate: mimData.transactionDate,
+  //         DispatchDate: mimData.dispatchDate,
+  //         Receiver: mimData.receiver
+  //       };
+
+  //       const formattedData = `
+  //         TransactionNo: ${concatenatedData.TransactionNo},
+  //         TransactionDate: ${concatenatedData.TransactionDate},
+  //         DispatchDate: ${concatenatedData.DispatchDate},
+  //         Receiver: ${concatenatedData.Receiver}
+  //      `;
+
+  //       setQrCodeValue(formattedData);
+  //       console.log('THE QRCODE DATA IS:', formattedData);
+  //     }
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
   // const handleBack = () => {
   //   setAddMim(false);
   //   setEditMim(false);
   //   getAllIssueManifestProvider();
   // };
-  const handleBack = () => {
-    setAddMim(false);
-    setEditMim(false);
-    getAllIssueManifestProvider();
-  };
 
   return (
     <>
-      <div className="ml-auto me-auto">
-        <div>
-          {(addMim && <IssueManifestProvider addMim={handleBack} />) ||
-            (editMim && <IssueManifestProvider addMim={handleBack} mimId={selectedRowId} />) || (
-              <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
-                {/* BULK UPLOAD AND ADD NEW BUTTON */}
-                <div className="">
-                  {userDetails === 'ROLE_DOCUMENT' ? (
-                    <div className="d-flex justify-content-between mb-4">
-                      <div className="d-flex align-items-center ms-2">
-                        <Link to="/app/welcomedocumentuser">
-                          <FaArrowCircleLeft className="cursor-pointer w-8 h-8" />
-                        </Link>
-                        <p className="text-2xl">
-                          <strong className="ml-4">Material Issue Manifest</strong>
-                        </p>
-                      </div>
-                      <div>
-                        <button className="btn btn-ghost btn-lg text-sm col-xs-1" style={{ color: 'blue' }} onClick={() => setAddMim(true)}>
-                          <img
-                            src="/new.png"
-                            alt="pending-status-icon"
-                            title="add"
-                            style={{
-                              width: 30,
-                              height: 30,
-                              margin: 'auto',
-                              hover: 'pointer'
-                            }}
-                          />
-                          <span className="text-form text-base" style={{ marginLeft: '10px' }}>
-                            MIM
-                          </span>
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="d-flex justify-content-end mb-4">
-                      <button className="btn btn-ghost btn-lg text-sm col-xs-1" style={{ color: 'blue' }} onClick={() => setAddMim(true)}>
-                        <img
-                          src="/new.png"
-                          alt="pending-status-icon"
-                          title="add"
-                          style={{
-                            width: 30,
-                            height: 30,
-                            margin: 'auto',
-                            hover: 'pointer'
-                          }}
-                        />
-                        <span className="text-form text-base" style={{ marginLeft: '10px' }}>
-                          MIM
-                        </span>
-                      </button>
-                    </div>
+      <div>
+        <ToastComponent />
+      </div>
+      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
+        <div className="row d-flex ml">
+          <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
+            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
+            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+          </div>
+
+          {showForm ? (
+            <>
+              <div className="row d-flex ml">
+                <div className="col-md-3 mb-3">
+                  <TextField id="transactionNo" label="Transaction No" variant="outlined" size="small" fullWidth name="transactionNo" value={formData.transactionNo} />
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled" size="small">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="Transaction Date"
+                        value={formData.transactionDate}
+                        onChange={(date) => handleDateChange('transactionDate', date)}
+                        disabled
+                        slotProps={{
+                          textField: { size: 'small', clearable: true }
+                        }}
+                        format="DD-MM-YYYY"
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled" size="small">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="Dispatch Date"
+                        value={formData.dispatchDate}
+                        onChange={(date) => handleDateChange('dispatchDate', date)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true }
+                        }}
+                        format="DD-MM-YYYY"
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="transactionType"
+                    label="Transaction Type"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="transactionType"
+                    value={formData.transactionType}
+                    onChange={handleInputChange}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.transactionType ? fieldErrors.transactionType : ''}</span>}
+                    inputProps={{ maxLength: 40 }}
+                    error={!!fieldErrors.transactionType}
+                  />
+                </div>
+                <div className="col-md-3 mb-3">
+                  <Autocomplete
+                    disablePortal
+                    options={allWarehouse}
+                    getOptionLabel={(option) => option?.warehouseName || ''}
+                    // sx={{ width: '100%' }}
+                    size="small"
+                    value={formData.warehouseName ? allWarehouse.find((c) => c.warehouseName === formData.warehouseName) : null}
+                    onChange={(event, newValue) => {
+                      handleInputChange({
+                        target: {
+                          name: 'warehouseName',
+                          value: newValue ? newValue.warehouseName : ''
+                        }
+                      });
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                    label="Warehouse Name"
+                        name="warehouseName"
+                        error={!!fieldErrors.warehouseName}
+                        helperText={fieldErrors.warehouseName ? fieldErrors.warehouseName : ''}
+                        InputProps={{
+                          ...params.InputProps,
+                          style: { height: 40 }
+                        }}
+                      />
+                    )}
+                  />
+                </div>
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="warehouseAddress"
+                    label="WareHouse Address"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="warehouseAddress"
+                    value={formData.warehouseAddress}
+                    onChange={handleInputChange}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.warehouseddress ? fieldErrors.warehouseddress : ''}</span>}
+                    inputProps={{ maxLength: 40 }}
+                    error={!!fieldErrors.warehouseAddress}
+                  />
+                </div>
+                {/* <div className="col-md-3 mb-3">
+                  <Autocomplete
+                    disablePortal
+                    options={allReceiver}
+                    getOptionLabel={(option) => option?.customer || ''}
+                    // sx={{ width: '100%' }}
+                    size="small"
+                    value={formData.customer ? allReceiver.find((c) => c.customer === formData.customer) : null}
+                    onChange={(event, newValue) => {
+                      handleInputChange({
+                        target: {
+                          name: 'customer',
+                          value: newValue ? newValue.customer : ''
+                        }
+                      });
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                    label="Receiver"
+                        name="customer"
+                        error={!!fieldErrors.customer}
+                        helperText={fieldErrors.customer ? fieldErrors.customer : ''}
+                        InputProps={{
+                          ...params.InputProps,
+                          style: { height: 40 }
+                        }}
+                      />
+                    )}
+                  />
+                </div> */}
+                <div className="col-md-3 mb-3">
+                <Autocomplete
+                  disablePortal
+                  options={allReceiver.map((option, index) => ({ ...option, key: index }))}
+                  getOptionLabel={(option) => option.partyShortName || ''}
+                  sx={{ width: '100%' }}
+                  size="small"
+                  value={formData.customer ? allReceiver.find((c) => c.partyShortName === formData.customer) : null}
+                  onChange={(event, newValue) => {
+                    handleInputChange({
+                      target: {
+                        name: 'customer', value: newValue ? newValue.partyShortName : ''
+                      }
+                    });
+                    const address = newValue?.partyAddressVO?.[0];
+                    const fullAddress = address
+                      ? [address.addressLine1, address.addressLine2, address.addressLine3]
+                        .filter(Boolean)
+                        .join(', ')
+                      : '';
+                    handleInputChange({
+                      target: {
+                        name: 'customerAddress',
+                        value: fullAddress
+                      }
+                    });
+                    handleInputChange({
+                      target: {
+                        name: 'receiverRegIn',
+                        value: newValue ? newValue.gstIn : ''
+                      }
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      name="customer"
+                      label= "Receiver"
+                      InputProps={{
+                        ...params.InputProps,
+                        style: { height: 40 }
+                      }}
+                    />
                   )}
+                />
+              </div>
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="customerAddress"
+                    label="Receiver Address"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="customerAddress"
+                    value={formData.customerAddress}
+                    onChange={handleInputChange}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.customerAddress ? fieldErrors.customerAddress : ''}</span>}
+                    disabled
+                    multiline
+                    error={!!fieldErrors.customerAddress}
+                  />
                 </div>
-
-                {/* LISTVIEW TABLE */}
-                <div className="">
-                  <MaterialReactTable data={data} columns={columns} />
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="receiverRegIn"
+                    label="Receiver Reg In"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="receiverRegIn"
+                    value={formData.receiverRegIn}
+                    onChange={handleInputChange}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.receiverRegIn ? fieldErrors.receiverRegIn : ''}</span>}
+                    inputProps={{ maxLength: 15 }}
+                    error={!!fieldErrors.receiverRegIn}
+                    disabled
+                  />
+                </div>
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="sender"
+                    label="Sender"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="sender"
+                    disabled
+                    value={companyName}
+                    onChange={handleInputChange}
+                  />
+                </div>
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="amount"
+                    type='number'
+                    label="Amount"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="amount"
+                    value={formData.amount}
+                    onChange={handleInputChange}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.amount ? fieldErrors.amount : ''}</span>}
+                    inputProps={{ maxLength: 40 }}
+                    error={!!fieldErrors.amount}
+                  />
+                </div>
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="amountInWords"
+                    label="Amount In Words"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="amountInWords"
+                    value={formData.amountInWords}
+                    onChange={handleInputChange}
+                    disabled
+                  />
+                </div>
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="transporterName"
+                    label="Transporter Name"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="transporterName"
+                    value={formData.transporterName}
+                    onChange={handleInputChange}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.transporterName ? fieldErrors.transporterName : ''}</span>}
+                    inputProps={{ maxLength: 40 }}
+                    error={!!fieldErrors.transporterName}
+                  />
+                </div>
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="vehicleNo"
+                    label= "Vehicle No"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="vehicleNo"
+                    value={formData.vehicleNo}
+                    onChange={handleInputChange}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.vehicleNo ? fieldErrors.vehicleNo : ''}</span>}
+                    // inputProps={{ maxLength: 40 }}
+                    error={!!fieldErrors.vehicleNo}
+                  />
+                </div>
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="driverNo"
+                    label= "Driver No"
+                    type='number'
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="driverNo"
+                    value={formData.driverNo}
+                    onChange={handleInputChange}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.driverNo ? fieldErrors.driverNo : ''}</span>}
+                    inputProps={{ maxLength: 10 }}
+                    error={!!fieldErrors.driverNo}
+                  />
                 </div>
               </div>
-            )}
-          <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="lg">
-            <DialogContent>
-              <style>
-                {`
-              @media print {
-                /* Scale the table content down to fit on the screen */
-                .print-scale {
-              transform: scale(0.9);
-              transform-origin: top left;
-              width: calc(100% / 0.9);
-            }
-
-                .container-sm {
-                  width: 100%;
-                  max-width: 100%;
-                }
-                .card {
-                  box-shadow: none;
-                  border: none;
-                  width: 100%;
-                  page-break-inside: avoid;
-                }
-                .row {
-                  display: flex;
-                  flex-wrap: wrap;
-                }
-                .size {
-                  font-size: 12px;
-                }
-                .col-md-12 {
-                  font-size: 12px;
-                }
-                .col-md-6 {
-                  flex: 0 0 50%;
-                  max-width: 50%;
-                }
-                .col-md-5 {
-                  flex: 0 0 40%;
-                  max-width: 40%;
-                }
-                .col-md-4 {
-                  flex: 0 0 40%;
-                  max-width: 40%;
-                }
-                .col-md-3 {
-                  flex: 0 0 20%;
-                  max-width: 20%;
-                }
-                .text-xl {
-                  font-size: 20px;
-                  margin-top: 0;
-                  margin-bottom: 0.5rem;
-                }
-                .text-center {
-                  text-align: center;
-                }
-                .font-weight-bold {
-                  font-weight: bold;
-                }
-                .table {
-                  width: 100%;
-                  margin-bottom: 1rem;
-                  color: #212529;
-                  border-collapse: collapse;
-                }
-                .table-bordered {
-                  border-collapse: collapse;
-                }
-                .table-bordered th,
-                .table-bordered td {
-                  border: 1px solid #dee2e6;
-                  padding: 0.5rem;
-                  vertical-align: middle;
-                }
-                .mt-5 {
-                  margin-top: 3rem !important;
-                }
-                /* Reduce font size for table cells */
-                .table td,
-                .table th {
-                  font-size: 11px;
-                }
-
-                .watermark.cross {
-                  position: fixed;
-                  opacity: 0.4;
-                  font-size: 4em;
-                  color: #ccc;
-                  z-index: 9999;
-                  pointer-events: none;
-                  top: 50%;
-                  left: 50%;
-                  transform: translate(-50%, -50%) rotate(-45deg);
-                  transform-origin: center center;
-                  white-space: nowrap;
-                }
-
-                /* Hide non-print elements */
-                .non-print {
-                  display: none;
-                }
-              }
-            `}
-              </style>
-              <div className="d-flex justify-content-end">
-                <div className="mr-5">
-                  <button
-                    className="me-2 bg-blue inline-block rounded bg-primary h-fit px-6 pb-2 pt-2.5 text-xs font-medium leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
-                    onClick={() => handleDownloadPdf('Consignee_Copy')}
-                    style={{ marginBottom: '20px' }}
-                  >
-                    Download Consignee Copy
-                  </button>
-                  {/* <button
-                    className="me-2 bg-blue inline-block rounded bg-primary h-fit px-6 pb-2 pt-2.5 text-xs font-medium leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
-                    onClick={() => handleDownloadPdf('Transporter_Copy')}
-                    style={{ marginBottom: '20px' }}
-                  >
-                    Download Transporter Copy
-                  </button>
-                  <button
-                    className="bg-blue inline-block rounded bg-primary h-fit px-6 pb-2 pt-2.5 text-xs font-medium leading-normal text-white shadow-[0_4px_9px_-4px_#3b71ca] transition duration-150 ease-in-out hover:bg-primary-600 hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:bg-primary-600 focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] focus:outline-none focus:ring-0 active:bg-primary-700 active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.3),0_4px_18px_0_rgba(59,113,202,0.2)] dark:shadow-[0_4px_9px_-4px_rgba(59,113,202,0.5)] dark:hover:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:focus:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)] dark:active:shadow-[0_8px_9px_-4px_rgba(59,113,202,0.2),0_4px_18px_0_rgba(59,113,202,0.1)]"
-                    onClick={() => handleDownloadPdf('Consignor_Copy')}
-                    style={{ marginBottom: '20px' }}
-                  >
-                    Download Consignor Copy
-                  </button> */}
-                </div>
-                <div className="">
-                  <IoMdClose onClick={() => setOpenDialog(false)} className="cursor-pointer w-8 h-8 mb-3" />
-                </div>
-              </div>
-              <div className="print-scale" ref={componentRef}>
-                <div className="container-sm">
-                  <div className="card bg-base-100 shadow-xl p-4">
-                    <div className="d-flex justify-content-between">
-                      <div>
-                        <img src="/AI_Packs.png" alt="Your Image" style={{ width: '150px' }} />
-                      </div>
-
-                      <div className="text-center mt-5">
-                        <h1 className="text-xl">
-                          <strong>{pdfData.sender}</strong>
-                        </h1>
-                        <br />
-                        <h3>
-                          <strong>Material Issue Manifest</strong>
-                        </h3>
-                      </div>
-                      {/* <div className="mr-3 mt-4">{qrCodeValue && <QRCodeSVG value={qrCodeValue} size={120} />}</div> */}
-                      <div className="mr-3 mt-4">{qrCodeValue && <QRCode value={qrCodeValue} size={120} />}</div>
-                    </div>
-
-                    <hr />
-
-                    {/* <div className="d-flex justify-content-start"> */}
-                    <div className="d-flex flex-column mt-2">
-                      <div className="d-flex flex-row me-5">
-                        <div className="font-semibold mb-2" style={{ width: 150 }}>
-                          Transaction No:
-                        </div>
-                        <div>{pdfData.transactionNo}</div>
-                      </div>
-                      <div className="d-flex flex-row">
-                        <div className="font-semibold mb-2" style={{ width: 150 }}>
-                          Transaction Date:
-                        </div>
-                        <div>{pdfData.transactionDate}</div>
-                      </div>
-                      <div className="d-flex flex-row">
-                        <div className="font-semibold mb-2" style={{ width: 150 }}>
-                          Dispatch Date:
-                        </div>
-                        <div>{pdfData.dispatchDate}</div>
-                      </div>
-                      <div className="d-flex flex-row">
-                        <div className="font-semibold mb-2" style={{ width: 150 }}>
-                          Transaction Type:
-                        </div>
-                        <div>{pdfData.transactionType}</div>
-                      </div>
-                    </div>
-
-                    {/* Sender and Receiver details */}
-                    <div className="row mt-2">
-                      <div className="col-lg-6 col-md-6 col-sm-12">
-                        <div className="d-flex justify-content-start">
-                          <div className="d-flex flex-column justify-content-between ms-2 me-4">
-                            <div className="mb-2 font-semibold">Sender:</div>
-                            <div className="mb-2 font-semibold">Address:</div>
-                            <div className="mb-2 font-semibold"></div>
+              <>
+                <div className="row mt-2">
+                  <Box sx={{ width: '100%' }}>
+                    <Tabs
+                      value={value}
+                      onChange={handleChange}
+                      textColor="secondary"
+                      indicatorColor="secondary"
+                      aria-label="secondary tabs example"
+                    >
+                      <Tab value={0} label="Account Particulars" />
+                    </Tabs>
+                  </Box>
+                  <Box sx={{ padding: 2 }}>
+                    {value === 0 && (
+                      <>
+                        <div className="row d-flex ml">
+                          <div className="mb-1">
+                            <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
                           </div>
-                          <div className="d-flex flex-column">
-                            {/* <div className="mb-3">{headerData.senderName}</div> */}
-                            <div className="mb-3">{pdfData.sender}</div>
-                            <div className="mb-3">
-                              {pdfData.senderAddress}
-                              <br />
-                            </div>
-                            <div className="mb-2">{pdfData.senderGst}</div>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="col-lg-6 col-md-6 col-sm-12">
-                        <div className="d-flex">
-                          <div className="d-flex flex-column justify-content-between ms-2 me-4">
-                            <div className="mb-2 font-semibold">Receiver:</div>
-                            <div className="mb-2 font-semibold">Address:</div>
-                            <div className="mb-2 font-semibold">GST:</div>
-                          </div>
-                          <div className="d-flex flex-column">
-                            <div className="mb-3">{pdfData.receiver}</div>
-                            <div className="mb-3">
-                              {pdfData.receiverAddress}
-                              <br />
-                            </div>
-                            <div className="mb-3">{pdfData.receiverGst}</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="d-flex row mt-2">
-                      {/* Responsive table */}
-                      <div className="print-table-container">
-                        <div className="table-responsive">
-                          <table className="table table-bordered" style={{ borderCollapse: 'collapse' }}>
-                            <thead>
-                              <tr>
-                                <th
-                                  style={{
-                                    border: '2px solid black',
-                                    textAlign: 'center'
-                                  }}
-                                >
-                                  Kit ID
-                                </th>
-                                <th
-                                  style={{
-                                    border: '2px solid black',
-                                    textAlign: 'center'
-                                  }}
-                                >
-                                  Kit Name
-                                </th>
-                                <th
-                                  style={{
-                                    border: '2px solid black',
-                                    textAlign: 'center'
-                                  }}
-                                >
-                                  KIT QTY
-                                </th>
-                                <th
-                                  style={{
-                                    border: '2px solid black',
-                                    textAlign: 'center'
-                                  }}
-                                >
-                                  HSN Code
-                                </th>
-                                <th
-                                  style={{
-                                    border: '2px solid black',
-                                    textAlign: 'center',
-                                    width: 30
-                                  }}
-                                >
-                                  Product
-                                </th>
-                                <th
-                                  style={{
-                                    border: '2px solid black',
-                                    textAlign: 'center'
-                                  }}
-                                >
-                                  Product Code
-                                </th>
-                                <th
-                                  style={{
-                                    border: '2px solid black',
-                                    textAlign: 'center'
-                                  }}
-                                >
-                                  Product QTY
-                                </th>
-                              </tr>
-                            </thead>
-                            <tbody>
-                              {productDetails.length > 0 &&
-                                productDetails.map((row) => {
-                                  const assetCount = row.assets.length;
-                                  return row.assets.map((asset, index) => (
-                                    <tr key={`${row.kitId}-${index}`}>
-                                      {index === 0 && (
-                                        <>
-                                          <td
-                                            rowSpan={assetCount}
-                                            style={{
-                                              border: '2px solid black',
-                                              textAlign: 'center'
-                                            }}
-                                          >
-                                            {row.kitId}
-                                          </td>
-                                          <td
-                                            rowSpan={assetCount}
-                                            style={{
-                                              border: '2px solid black',
-                                              textAlign: 'center'
-                                            }}
-                                          >
-                                            {row.kitName}
-                                          </td>
-                                          <td
-                                            rowSpan={assetCount}
-                                            style={{
-                                              border: '2px solid black',
-                                              textAlign: 'center'
-                                            }}
-                                          >
-                                            {row.kitQty}
-                                          </td>
-                                          <td
-                                            rowSpan={assetCount}
-                                            style={{
-                                              border: '2px solid black',
-                                              textAlign: 'center'
-                                            }}
-                                          >
-                                            {row.hsnCode}
-                                          </td>
-                                        </>
-                                      )}
-                                      <td
-                                        style={{
-                                          border: '2px solid black',
-                                          textAlign: 'center'
-                                        }}
-                                      >
-                                        {asset.assetName}
-                                      </td>
-                                      <td
-                                        style={{
-                                          border: '2px solid black',
-                                          textAlign: 'center'
-                                        }}
-                                      >
-                                        {asset.assetCode}
-                                      </td>
-                                      <td
-                                        style={{
-                                          border: '2px solid black',
-                                          textAlign: 'center'
-                                        }}
-                                      >
-                                        {asset.assetQty}
-                                      </td>
+                          <div className="row mt-2">
+                            <div className="col-lg-12">
+                              <div className="table-responsive">
+                                <table className="table table-bordered ">
+                                  <thead>
+                                    <tr style={{ backgroundColor: '#673AB7' }}>
+                                      <th className="table-header">Action</th>
+                                      <th className="table-header">S.No</th>
+                                      <th className="table-header">Kit No</th>
+                                      <th className="table-header">Kit Name</th>
+                                      <th className="table-header">Kit Qty</th>
+                                      <th className="table-header">HSN/SAC Code</th>
+                                      <th className="table-header">Product Code</th>
+                                      <th className="table-header">Product Name</th>
+                                      <th className="table-header">Product Qty</th>
                                     </tr>
-                                  ));
-                                })}
-                            </tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Other Details */}
-                    <div className="mt-2">
-                      <div className="d-flex justify-content-between">
-                        <div className="d-flex flex-justify-content-between me-4">
-                          <div className="d-flex flex-column" style={{ width: 150 }}>
-                            <div className="mb-2 font-semibold">Amount In Words:</div>
-                            <div className="mb-2 font-semibold">Transporter:</div>
-                            <div className="mb-2 font-semibold">Vehicle No:</div>
-                            <div className="mb-2 font-semibold">Driver No:</div>
+                                  </thead>
+                                  <tbody>
+                                    {detailsTableData.map((row, index) => (
+                                      <tr key={row.id}>
+                                        <td className="border px-2 py-2 text-center">
+                                          <ActionButton
+                                            title="Delete"
+                                            icon={DeleteIcon}
+                                            onClick={() =>
+                                              handleDeleteRow(
+                                                row.id,
+                                                detailsTableData,
+                                                setDetailsTableData,
+                                                detailsTableErrors,
+                                                setDetailsTableErrors
+                                              )
+                                            }
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <div className="pt-2">{index + 1}</div>
+                                        </td>
+                                        <td>
+                                          <Autocomplete
+                                            options={allKitId}
+                                            getOptionLabel={(option) => option.kitNo || ''}
+                                            value={
+                                              row.kitNo
+                                                ? allKitId.find((a) => a.kitNo === row.kitNo) || null
+                                                : allKitId.length === 1
+                                                  ? allKitId
+                                                  : null
+                                            }
+                                            onChange={(event, newValue) => {
+                                              const value = newValue ? newValue.kitNo : '';
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, kitNo: value } : r))
+                                              );
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  kitNo: !value ? 'Kit No is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            size="small"
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                variant="outlined"
+                                                error={!!detailsTableErrors[index]?.kitNo}
+                                                helperText={detailsTableErrors[index]?.kitNo}
+                                              />
+                                            )}
+                                            sx={{ width: 100 }}
+                                          />
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.kitName}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, kitName: value } : r))
+                                              );
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  kitName: !value ? 'Kit Name is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            className={detailsTableErrors[index]?.kitName ? 'error form-control' : 'form-control'}
+                                          />
+                                          {detailsTableErrors[index]?.kitName && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailsTableErrors[index].kitName}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.kitQty}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, kitQty: value } : r))
+                                              );
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  kitQty: !value ? 'kit Qty is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            className={detailsTableErrors[index]?.kitQty ? 'error form-control' : 'form-control'}
+                                          />
+                                          {detailsTableErrors[index]?.kitQty && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailsTableErrors[index].kitQty}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td>
+                                          <Autocomplete
+                                            options={allHsnSacCode}
+                                            getOptionLabel={(option) => option.code || ''}
+                                            value={
+                                              row.hsnsacCode
+                                                ? allHsnSacCode.find((a) => a.code === row.hsnsacCode) || null
+                                                : allHsnSacCode.length === 1
+                                                  ? allHsnSacCode
+                                                  : null
+                                            }
+                                            onChange={(event, newValue) => {
+                                              const value = newValue ? newValue.code : '';
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, hsnsacCode: value } : r))
+                                              );
+                                            }}
+                                            size="small"
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                variant="outlined"
+                                              />
+                                            )}
+                                            sx={{ width: 130 }}
+                                          />
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.productCode}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, productCode: value } : r))
+                                              );
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  productCode: !value ? 'Product Code is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            className={detailsTableErrors[index]?.productCode ? 'error form-control' : 'form-control'}
+                                          />
+                                          {detailsTableErrors[index]?.productCode && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailsTableErrors[index].productCode}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.productName}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, productName: value } : r))
+                                              );
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  productName: !value ? 'Product Name is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            className={detailsTableErrors[index]?.productName ? 'error form-control' : 'form-control'}
+                                          />
+                                          {detailsTableErrors[index]?.productName && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailsTableErrors[index].productName}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.productQty}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, productQty: value } : r))
+                                              );
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  productQty: !value ? 'Product Qty is required' : ''
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            className={detailsTableErrors[index]?.productQty ? 'error form-control' : 'form-control'}
+                                          />
+                                          {detailsTableErrors[index]?.productQty && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailsTableErrors[index].productQty}
+                                            </div>
+                                          )}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
                           </div>
-                          <div className="d-flex flex-column">
-                            <div className="mb-2 font-normal">{pdfData.amountInWords}</div>
-                            <div className="mb-2 font-normal">{pdfData.transporterName}</div>
-                            <div className="mb-2 font-normal">{pdfData.vehicleeNo}</div>
-                            <div className="mb-2 font-normal">{pdfData.driverPhoneNo}</div>
-                          </div>
                         </div>
-                        <div className="d-flex justify-content-between">
-                          <div className="font-semibold me-5">Amount: </div>
-                          <div className="font-semibold">{pdfData.amount}</div>
-                        </div>
-                      </div>
-                    </div>
-                    <hr />
-
-                    {/* Declaration */}
-                    <div className="row mt-3 mb-2">
-                      <div className="col-lg-2">
-                        <strong style={{ width: 225 }}>Declaration:</strong>
-                      </div>
-                      <div className="col-lg-10">
-                        <p>
-                          {terms.declaration}
-                          {/* The packaging products given on hire shall always remain
-                      the property of SCM AI-PACKS Private Limited and shall not
-                      be used for the purpose otherwise agreed upon. The same
-                      shall be returned at the address notified by SCM AI-PACKS
-                      Private Limited. */}
-                        </p>
-                      </div>
-                    </div>
-                    {/* Note */}
-                    <div className="row mb-3">
-                      <div className="col-lg-2">
-                        <strong style={{ width: 225 }}>Note:</strong>
-                      </div>
-                      <div className="col-lg-10">
-                        <p>
-                          {terms.note1}
-                          {/* 1.The goods listed in the above manifest are used empty
-                      packaging issued to customer on a daily hire basis. The
-                      service is packaging on{" "}
-                      <strong>rental model and not sale to customer.</strong> */}
-                          <strong>{terms.note1Bold}</strong>
-                          <br />
-                          {terms.note2}
-                          {/* 2. No E-Way Bill is required for Empty Cargo Containers.
-                      Refer, Rule 14 of Central Goods and Services Tax (Second
-                      Amendment) Rules, 2018. */}
-                        </p>
-                      </div>
-                    </div>
-                    <hr />
-                    {/* Signatures */}
-                    <div className="d-flex justify-content-between mt-4 mb-5">
-                      <div className="ms-5">
-                        <strong className="size">For Sending Location:</strong>
-                      </div>
-                      <div className="me-5">
-                        <strong className="size">For Receiving Location :</strong>
-                      </div>
-                    </div>
-                    <div className="d-flex justify-content-between mt-5 mb-5">
-                      <div className="d-flex flex-column">
-                        <div className="ms-5">
-                          <strong className="size">Authorized Signature:</strong>
-                        </div>
-                        <div className="ms-4">(Company Seal & Signature)</div>
-                      </div>
-                      <div className="d-flex flex-column">
-                        <div className="ms-4">
-                          <strong className="size">Authorized Signature:</strong>
-                        </div>
-                        <div className="me-5">(Company Seal & Signature)</div>
-                      </div>
-                    </div>
-                    <div className={`watermark cross`}>{watermark}</div>
-                  </div>
+                      </>
+                    )}
+                  </Box>
                 </div>
-              </div>
-            </DialogContent>
-          </Dialog>
+              </>
+            </>
+          ) : (
+            <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getAllDepositById} />
+          )}
         </div>
       </div>
     </>

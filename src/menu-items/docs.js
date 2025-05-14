@@ -32,6 +32,42 @@ const docs = {
 
       children: [
         {
+          id: 'stockBranch',
+          title: 'Stock Branch',
+          type: 'item',
+          url: '/docs/stockBranch'
+        },
+        {
+          id: 'wareHouse',
+          title: 'Warehouse',
+          type: 'item',
+          url: '/docs/wareHouse'
+        },
+        {
+          id: 'assetType',
+          title: 'Asset Type',
+          type: 'item',
+          url: '/docs/assetType'
+        },
+        {
+          id: 'assetCategory',
+          title: 'Asset Category',
+          type: 'item',
+          url: '/docs/assetCategory'
+        },
+        {
+          id: 'createAsset',
+          title: 'Create Asset',
+          type: 'item',
+          url: '/docs/createAsset'
+        },
+        {
+          id: 'createKit',
+          title: 'Create Kit',
+          type: 'item',
+          url: '/docs/createKit'
+        },
+        {
           id: 'materialIssueManifest',
           title: 'Material Issue Manifest',
           type: 'item',
@@ -49,12 +85,6 @@ const docs = {
           type: 'item',
           url: '/docs/purchaseOrder'
         },
-        // {
-        //   id: 'invoice',
-        //   title: 'Invoice',
-        //   type: 'item',
-        //   url: '/docs/Invoice'
-        // },
         {
           id: 'quotation',
           title: 'Quotation',

@@ -5,6 +5,12 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import ArAging from 'views/Finance/taxInvoice/ArAging';
 import ArOutstanding from 'views/Finance/taxInvoice/ArOutstanding';
+const StockBranch = Loadable(lazy(() => import('views/docs/StockBranch')));
+const Warehouse = Loadable(lazy(() => import('views/docs/Warehouse')));
+const AssetType = Loadable(lazy(() => import('views/docs/AssetType')));
+const CreateAsset = Loadable(lazy(() => import('views/docs/CreateAsset')));
+const AssetCategory = Loadable(lazy(() => import('views/docs/AssetCategory')));
+const CreateKit = Loadable(lazy(() => import('views/docs/CreateKit')));
 // import PaymentReport from 'views/Finance/FinalReport/PaymentRegister';
 // import ReceiptReport from 'views/Finance/FinalReport/ReceiptRegister';
 // import DashboardNew from 'views/dashboardNew/dashboardNew';
@@ -128,6 +134,23 @@ const FinanceRoute = {
     {
       path: '/companysetup/companysetup',
       element: <CompanySetup />
+    },
+
+    {
+      path: '/docs/assetType',
+      element: <AssetType />
+    },
+    {
+      path: '/docs/createAsset',
+      element: <CreateAsset />
+    },
+    {
+      path: '/docs/assetCategory',
+      element: <AssetCategory />
+    },
+    {
+      path: '/docs/createKit',
+      element: <CreateKit />
     },
     // {
     //   path: '/company/companyMain',
@@ -473,6 +496,14 @@ const FinanceRoute = {
     {
       path: '/finance/Unit',
       element: <Unit />
+    },
+    {
+      path: '/finance/stockBranch',
+      element: <StockBranch />
+    },
+    {
+      path: '/finance/wareHouse',
+      element: <Warehouse />
     }
   ]
 };
