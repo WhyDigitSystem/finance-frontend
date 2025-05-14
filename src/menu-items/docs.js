@@ -38,10 +38,10 @@ const docs = {
           url: '/docs/stockBranch'
         },
         {
-          id: 'wareHouse',
+          id: 'warehouse',
           title: 'Warehouse',
           type: 'item',
-          url: '/docs/wareHouse'
+          url: '/docs/warehouse'
         },
         {
           id: 'assetType',

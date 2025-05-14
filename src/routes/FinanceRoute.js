@@ -498,11 +498,11 @@ const FinanceRoute = {
       element: <Unit />
     },
     {
-      path: '/finance/stockBranch',
+      path: '/docs/stockBranch',
       element: <StockBranch />
     },
     {
-      path: '/finance/wareHouse',
+      path: '/docs/warehouse',
       element: <Warehouse />
     }
   ]
