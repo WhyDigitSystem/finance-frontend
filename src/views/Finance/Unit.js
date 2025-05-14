@@ -12,7 +12,7 @@ const Unit = () => {
   const [listViewData, setListViewData] = useState([]);
   const [editId, setEditId] = useState(null);
   const orgId = localStorage.getItem('orgId');
-  const createdBy = localStorage.getItem('createdBy');
+  const createdBy = localStorage.getItem('userName');
   const modifiedBy = createdBy;
 
   const [formData, setFormData] = useState({

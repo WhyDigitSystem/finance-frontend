@@ -16,12 +16,14 @@ const ItemMaster = () => {
   const branch = localStorage.getItem('branch');
   const branchCode = localStorage.getItem('branchcode');
   const finYear = localStorage.getItem('finYear');
-  const createdBy = localStorage.getItem('createdBy');
+  const createdBy = localStorage.getItem('userName');
   const modifiedBy = createdBy;
   const [listView, setListView] = useState(true);
   const [editId, setEditId] = useState(null);
   const [listViewData, setListViewData] = useState([]);
   const [unitList, setUnitList] = useState([]);
+  const [hsnCode, setHsnCode] = useState([]);
+  const [partyNameList, setPartyNameList] = useState([]);
   const [formData, setFormData] = useState({
     itemType: '',
     partNo: '',
@@ -221,6 +223,8 @@ const ItemMaster = () => {
   useEffect(() => {
     getAllData();
     unitAllList();
+    getAllHsnSacCode();
+    getPartyMasterByOrgId();
   }, []);
 
   const rowEditgetbyid = async (row) => {
@@ -267,6 +271,23 @@ const ItemMaster = () => {
   ];
   let handleListView = () => {
     setListView(!listView);
+  };
+
+  const getAllHsnSacCode = async () => {
+    try {
+      const result = await apiCalls('get', `/master/getAllHSNSacCodeByOrgId?orgId=${orgId}`);
+      setHsnCode(result.paramObjectsMap.hsnSacCodeVO);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const getPartyMasterByOrgId = async () => {
+    try {
+      const response = await apiCalls('get', `master/getPartyMasterByOrgId?orgId=${orgId}`);
+      setPartyNameList(response.paramObjectsMap.partyMasterVO);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
   };
 
   return (
@@ -375,8 +396,11 @@ const ItemMaster = () => {
                     onChange={handleChange}
                     required
                   >
-                    <MenuItem value="PRODUCT">PRODUCT</MenuItem>
-                    <MenuItem value="SERVICES">SERVICES</MenuItem>
+                    {hsnCode.map((code) => (
+                      <MenuItem key={code.code} value={code.code}>
+                        {code.code}
+                      </MenuItem>
+                    ))}
                   </Select>
                   {fieldErrors.hsnCode && <FormHelperText>{fieldErrors.hsnCode}</FormHelperText>}
                 </FormControl>
@@ -399,7 +423,7 @@ const ItemMaster = () => {
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="outlined" size="small">
-                  <InputLabel htmlFor="customer">Customer</InputLabel>
+                  <InputLabel htmlFor="customer">Party Name</InputLabel>
                   <Select
                     labelId="customer-label"
                     id="customer"
@@ -408,8 +432,11 @@ const ItemMaster = () => {
                     value={formData.customer}
                     onChange={handleChange}
                   >
-                    <MenuItem value="PRODUCT">PRODUCT</MenuItem>
-                    <MenuItem value="SERVICES">SERVICES</MenuItem>
+                    {partyNameList.map((party) => (
+                      <MenuItem key={party.partyName} value={party.partyName}>
+                        {party.partyName}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
               </div>
