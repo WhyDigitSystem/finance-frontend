@@ -540,7 +540,6 @@ const RetrievalIssueManifest = () => {
                   value={formData.transactionType}
                   fullWidth
                   disabled
-                  required
                   onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                 />
               </div>
@@ -675,13 +674,10 @@ const RetrievalIssueManifest = () => {
                         value: newValue ? newValue.locationName : '',
                       },
                     });
-
-                    // ✅ Correct address assignment
-                    const fullAddress = newValue?.address || '';
                     handleInputChange({
                       target: {
                         name: 'warehouseAddress',
-                        value: fullAddress,
+                        value: newValue?.address || '',
                       },
                     });
                   }}
@@ -707,6 +703,9 @@ const RetrievalIssueManifest = () => {
                   value={formData.warehouseAddress}
                   size="small"
                   fullWidth
+                  onChange={(e) =>
+                    setFormData({ ...formData, warehouseAddress: e.target.value })
+                  }
                   disabled
                   multiline={
                     !!formData.warehouseAddress &&
