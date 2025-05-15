@@ -111,24 +111,24 @@ export const CreateAsset = () => {
 
   const handleInputChange = (event) => {
     const { name, value, type, checked } = event.target;
-    const newValue = type === 'checkbox' ? checked : value;
+    const newValue = type === 'checkbox' ? checked : value.toUpperCase(); // Force uppercase
 
     if (name === 'serviceAccountCode') {
-      const selectedService = serviceCode.find((item) => item.code === value);
+      const selectedService = serviceCode.find((item) => item.code === newValue);
       const sacDescription = selectedService ? selectedService.description : '';
 
       setFormData({
         ...formData,
         sacDescripition: sacDescription,
-        serviceAccountCode: selectedService.code
+        serviceAccountCode: selectedService?.code || ''
       });
     } else if (name === 'category') {
-      const selectedCategory = assetCategory.find((item) => item.category === value);
+      const selectedCategory = assetCategory.find((item) => item.category === newValue);
       const categoryCode = selectedCategory ? selectedCategory.categoryCode : '';
 
       setFormData({
         ...formData,
-        category: value,
+        category: newValue,
         categoryCode: categoryCode
       });
     } else {
@@ -508,7 +508,7 @@ export const CreateAsset = () => {
           {showForm ? (
             <div className="row d-flex ml">
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.type}>
+                <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label">Type</InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -525,11 +525,6 @@ export const CreateAsset = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.type && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.type}
-                    </p>
-                  )}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -612,7 +607,7 @@ export const CreateAsset = () => {
                 <h6>Details</h6>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.belongsTo}>
+                <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label">Belongs To</InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -628,15 +623,10 @@ export const CreateAsset = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.belongsTo && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.belongsTo}
-                    </p>
-                  )}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.materialIdentification}>
+                <FormControl size="small" variant="outlined" fullWidth >
                   <InputLabel id="materialIdentification" >
                     Material Identification
                   </InputLabel>
@@ -648,16 +638,15 @@ export const CreateAsset = () => {
                     label="Material Identification"
                     onChange={handleInputChange}
                   >
-                    <MenuItem value={'Plastic'}>Plastic</MenuItem>
-                    <MenuItem value={'Wooden'}>Wooden</MenuItem>
-                    <MenuItem value={'Metal'}>Metal</MenuItem>
-                    <MenuItem value={'Cardboard'}>Cardboard</MenuItem>
+                    <MenuItem value={'PLASTIC'}>PLASTIC</MenuItem>
+                    <MenuItem value={'WOODEN'}>WOODEN</MenuItem>
+                    <MenuItem value={'METAL'}>METAL</MenuItem>
+                    <MenuItem value={'CARDBOARD'}>CARDBOARD</MenuItem>
                   </Select>
-                  {fieldErrors.materialIdentification && <FormHelperText>{fieldErrors.materialIdentification}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.design}>
+                <FormControl size="small" variant="outlined" fullWidth >
                   <InputLabel id="design" >
                     Design
                   </InputLabel>
@@ -669,10 +658,9 @@ export const CreateAsset = () => {
                     label="design"
                     onChange={handleInputChange}
                   >
-                    <MenuItem value={'Only Sleeves foldable'}>Only Sleeves foldable</MenuItem>
-                    <MenuItem value={'With Pallet and foldable'}>With Pallet and foldable</MenuItem>
+                    <MenuItem value={'ONLY SLEEVES FOLDABLE'}>ONLY SLEEVES FOLDABLE</MenuItem>
+                    <MenuItem value={'WITH PALLET AND FOLDABLE'}>WITH PALLET AND FOLDABLE</MenuItem>
                   </Select>
-                  {fieldErrors.design && <FormHelperText>{fieldErrors.design}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -685,8 +673,6 @@ export const CreateAsset = () => {
                   value={formData.manufacturePartCode}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.manufacturePartCode}
-                  helperText={fieldErrors.manufacturePartCode}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -700,8 +686,6 @@ export const CreateAsset = () => {
                   value={formData.eanUpc}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.eanUpc}
-                  helperText={fieldErrors.eanUpc}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -715,8 +699,6 @@ export const CreateAsset = () => {
                   value={formData.grossWeight}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.grossWeight}
-                  helperText={fieldErrors.grossWeight}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -730,8 +712,6 @@ export const CreateAsset = () => {
                   value={formData.chargeableWeight}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.chargeableWeight}
-                  helperText={fieldErrors.chargeableWeight}
                 />
               </div>
               <div className="col-md-12 mb-1" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
@@ -855,8 +835,6 @@ export const CreateAsset = () => {
                   value={formData.expectedLife}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.expectedLife}
-                  helperText={fieldErrors.expectedLife}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -870,8 +848,6 @@ export const CreateAsset = () => {
                   value={formData.maintenancePeriod}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.maintenancePeriod}
-                  helperText={fieldErrors.maintenancePeriod}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -885,12 +861,10 @@ export const CreateAsset = () => {
                   value={formData.expectedTrips}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.expectedTrips}
-                  helperText={fieldErrors.expectedTrips}
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" error={!!fieldErrors.hsnCode}>
+                <FormControl fullWidth size="small" >
                   <InputLabel id="demo-simple-select-label">HSN Code</InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -907,11 +881,6 @@ export const CreateAsset = () => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.hsnCode && (
-                    <p className="error-text" style={{ color: 'red', fontSize: '12px', paddingLeft: '15px', paddingTop: '4px' }}>
-                      {fieldErrors.hsnCode}
-                    </p>
-                  )}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -940,8 +909,6 @@ export const CreateAsset = () => {
                   value={formData.costPrice}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.costPrice}
-                  helperText={fieldErrors.costPrice}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -955,8 +922,6 @@ export const CreateAsset = () => {
                   value={formData.sellPrice}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.sellPrice}
-                  helperText={fieldErrors.sellPrice}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -970,8 +935,6 @@ export const CreateAsset = () => {
                   value={formData.scrapValue}
                   onChange={handleInputChange}
                   className="w-100"
-                  error={!!fieldErrors.scrapValue}
-                  helperText={fieldErrors.scrapValue}
                 />
               </div>
             </div>

@@ -5,7 +5,7 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import SearchIcon from '@mui/icons-material/Search';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Autocomplete, Box, Grid, Tab, TextField } from '@mui/material';
+import { Autocomplete, Box, FormHelperText, Grid, Tab, TextField } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -51,7 +51,7 @@ const RetrievalIssueManifest = () => {
     docId: '',
     docDate: dayjs(),
     dispatchType: null,
-    transactionType: 'Retrieval Docket',
+    transactionType: 'RETRIEVAL DOCKET',
     sender: '',
     senderAddress: '',
     senderGst: '',
@@ -79,6 +79,7 @@ const RetrievalIssueManifest = () => {
     {
       id: '',
       kitName: '',
+      kitNo: '',
       kitQty: '',
       hsnCode: '',
       asset: '',
@@ -232,6 +233,7 @@ const RetrievalIssueManifest = () => {
 
   const handleClear = () => {
     setFormData({
+      docId: '',
       dispatchType: null,
       transactionType: 'Retrieval Docket',
       sender: '',
@@ -243,6 +245,8 @@ const RetrievalIssueManifest = () => {
       vehicleNo: '',
       driverNo: ''
     });
+
+    setFormDataErrors([]);
 
     // Set the table to only have one empty row
     setDetailsKitData([
@@ -275,12 +279,16 @@ const RetrievalIssueManifest = () => {
   };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+
+    // Uppercase only for free text input types
+    const newValue = type === 'text' || type === 'textarea' || typeof type === 'undefined'
+      ? value.toUpperCase()
+      : value;
 
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
-
+      [name]: newValue
     }));
   };
 
@@ -328,8 +336,8 @@ const RetrievalIssueManifest = () => {
     } else {
       const newTableErrors = detailsKitData.map((row) => {
         const rowErrors = {};
-        if (!row.kitName) {
-          rowErrors.kitName = 'Kit Name is required';
+        if (!row.kitNo) {
+          rowErrors.kitNo = 'Kit is required';
           detailsTableDataValid = false;
         }
         if (!row.kitQty) {
@@ -370,7 +378,7 @@ const RetrievalIssueManifest = () => {
         assetCode: row.assetCode,
         assetQty: parseInt(row.assetQty),
         hsnCode: parseInt(row.hsnCode),
-        kitId: row.kitCode,
+        kitId: row.kitNo,
         kitName: row.kitName,
         kitQty: parseInt(row.kitQty),
         bankRef: row.bankRef
@@ -433,7 +441,7 @@ const RetrievalIssueManifest = () => {
           senderAddress: listValueVO.senderAddress || '',
           senderGst: listValueVO.senderGst || '',
           receiverWarehouse: listValueVO.receiver || '',
-          warehouseAddress: listValueVO.receiverAddress || '',
+          receiverAddress: listValueVO.receiverAddress || '',
           transporterName: listValueVO.transporterName || '',
           vehicleNo: listValueVO.vehicleeNo || '',
           driverNo: listValueVO.driverPhoneNo || '',
@@ -441,15 +449,21 @@ const RetrievalIssueManifest = () => {
         });
 
         setDetailsKitData(
-          (listValueVO.retrievalManifestProviderDetailsVOs || []).map((cl, index) => ({
-            id: cl.id || `${Date.now()}-${index}`,
-            kitName: cl.kitName || '',
-            kitQty: cl.kitQty || '',
-            hsnCode: cl.hsnCode || '',
-            asset: cl.asset || '',
-            assetCode: cl.assetCode || '',
-            assetQty: cl.assetQty || ''
-          }))
+          (listValueVO.retrievalManifestProviderDetailsVOs || []).map((cl, index) => {
+            const selectedKit = kitDetails.find((k) => k.kitNo === cl.kitId) || null;
+            return {
+              id: cl.id || `${Date.now()}-${index}`,
+              kitId: cl.kitId || '', // Add this for saving later
+              kitNo: selectedKit?.kitNo || cl.kitId || '', // fallback to cl.kitId
+              kitName: cl.kitName || selectedKit?.kitDesc || '',
+              kitQty: cl.kitQty || selectedKit?.partQty || '',
+              hsnCode: cl.hsnCode || '',
+              asset: cl.asset || selectedKit?.kitAssetVO?.[0]?.assetName || '',
+              assetCode: cl.assetCode || selectedKit?.kitAssetVO?.[0]?.assetCodeId || '',
+              assetQty: cl.assetQty || selectedKit?.kitAssetVO?.[0]?.quantity || '',
+              selectedKit // Ensures Autocomplete shows the value
+            };
+          })
         );
 
         console.log('DataToEdit', listValueVO);
@@ -497,7 +511,7 @@ const RetrievalIssueManifest = () => {
                   size="small"
                   value={formData.docId}
                   fullWidth
-                  onChange={(e) => setFormData({ ...formData, docId: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, docId: e.target.value.toUpperCase() })}
                   error={!!formDataErrors.docId}
                   helperText={formDataErrors.docId}
                 />
@@ -519,19 +533,22 @@ const RetrievalIssueManifest = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled" size="small">
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Dispatch Date"
-                      slotProps={{
-                        textField: { size: 'small', clearable: true }
-                      }}
-                      format="DD-MM-YYYY"
-                      value={formData.dispatchType ? dayjs(formData.dispatchType) : null}
-                      onChange={(newValue) => setFormData({ ...formData, dispatchType: newValue })}
-                    />
-                  </LocalizationProvider>
-                </FormControl>
+                <LocalizationProvider dateAdapter={AdapterDayjs}>
+                  <DatePicker
+                    label="Dispatch Date"
+                    format="DD-MM-YYYY"
+                    value={formData.dispatchType ? dayjs(formData.dispatchType) : null}
+                    onChange={(newValue) => setFormData({ ...formData, dispatchType: newValue })}
+                    slotProps={{
+                      textField: {
+                        size: 'small',
+                        fullWidth: true,
+                        error: !!formDataErrors.dispatchType,
+                        helperText: formDataErrors.dispatchType || ''
+                      }
+                    }}
+                  />
+                </LocalizationProvider>
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
@@ -676,7 +693,7 @@ const RetrievalIssueManifest = () => {
                     });
                     handleInputChange({
                       target: {
-                        name: 'warehouseAddress',
+                        name: 'receiverAddress',
                         value: newValue?.address || '',
                       },
                     });
@@ -699,21 +716,21 @@ const RetrievalIssueManifest = () => {
               <div className="col-md-3 mb-3">
                 <TextField
                   label="Warehouse Address"
-                  name="warehouseAddress"
-                  value={formData.warehouseAddress}
+                  name="receiverAddress"
+                  value={formData.receiverAddress}
                   size="small"
                   fullWidth
                   onChange={(e) =>
-                    setFormData({ ...formData, warehouseAddress: e.target.value })
+                    setFormData({ ...formData, receiverAddress: e.target.value })
                   }
                   disabled
                   multiline={
-                    !!formData.warehouseAddress &&
-                    (formData.warehouseAddress.includes('\n') || formData.warehouseAddress.length > 50)
+                    !!formData.receiverAddress &&
+                    (formData.receiverAddress.includes('\n') || formData.receiverAddress.length > 50)
                   }
                   minRows={
-                    !!formData.warehouseAddress &&
-                      (formData.warehouseAddress.includes('\n') || formData.warehouseAddress.length > 50)
+                    !!formData.receiverAddress &&
+                      (formData.receiverAddress.includes('\n') || formData.receiverAddress.length > 50)
                       ? 2
                       : 1
                   }
@@ -744,6 +761,8 @@ const RetrievalIssueManifest = () => {
                         ...params.InputProps,
                         style: { height: 40 }
                       }}
+                      error={!!formDataErrors.vehicleNo}
+                      helperText={formDataErrors.vehicleNo}
                     />
                   )}
                 />
@@ -754,7 +773,7 @@ const RetrievalIssueManifest = () => {
                   value={formData.vehicleNo}
                   size="small"
                   fullWidth
-                  onChange={(e) => setFormData({ ...formData, vehicleNo: e.target.value })}
+                  onChange={(e) => setFormData({ ...formData, vehicleNo: e.target.value.toUpperCase() })}
                   error={!!formDataErrors.vehicleNo}
                   helperText={formDataErrors.vehicleNo}
                 />
@@ -763,15 +782,28 @@ const RetrievalIssueManifest = () => {
                 <TextField
                   label="Driver No"
                   value={formData.driverNo}
-                  type='number'
+                  type="text"
                   size="small"
                   fullWidth
-                  inputProps={{ maxLength: 10 }}
-                  onChange={(e) => setFormData({ ...formData, driverNo: e.target.value })}
+                  inputProps={{
+                    maxLength: 10,
+                    inputMode: 'numeric', // mobile-friendly numeric keypad
+                    pattern: '[0-9]*'      // enforce digits only
+                  }}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d{0,10}$/.test(value)) {
+                      setFormData({ ...formData, driverNo: value });
+                      setFormDataErrors({ ...formDataErrors, driverNo: '' });
+                    } else {
+                      setFormDataErrors({ ...formDataErrors, driverNo: 'Enter up to 10 digits only' });
+                    }
+                  }}
                   error={!!formDataErrors.driverNo}
                   helperText={formDataErrors.driverNo}
                 />
               </div>
+
             </div>
             <>
               <div className="row mt-2">
@@ -850,32 +882,28 @@ const RetrievalIssueManifest = () => {
                                         <td className="border px-2 py-2">
                                           <Autocomplete
                                             options={kitDetails}
-                                            getOptionLabel={(option) => option.kitNo || ''}
-                                            value={
-                                              kitDetails.find(
-                                                (a) => a.kitNo?.toLowerCase().trim() === row.kitNo?.toLowerCase().trim()
-                                              ) || null
+                                            getOptionLabel={(option) =>
+                                              typeof option === 'string'
+                                                ? option
+                                                : option?.kitNo || ''
                                             }
+                                            value={row.selectedKit || null} // ✅ Correct: use selectedKit for value binding
                                             onChange={(event, newValue) => {
                                               setDetailsKitData((prev) =>
                                                 prev.map((r) =>
                                                   r.id === row.id
                                                     ? {
                                                       ...r,
+                                                      kitId: newValue?.id || '',
                                                       kitNo: newValue?.kitNo || '',
-                                                      kitName: newValue?.kitName || '',
-                                                      kitId: newValue?.kitId || '',
+                                                      kitName: newValue?.kitDesc || '',
                                                       kitQty: newValue?.partQty || '',
                                                       assetCode: newValue?.kitAssetVO?.[0]?.assetCodeId || '',
                                                       asset: newValue?.kitAssetVO?.[0]?.assetName || '',
                                                       assetQty: newValue?.kitAssetVO?.[0]?.quantity || '',
+                                                      selectedKit: newValue || null
                                                     }
                                                     : r
-                                                )
-                                              );
-                                              setDetailsKitErrors((prevErrors) =>
-                                                prevErrors.map((err, idx) =>
-                                                  idx === index ? { ...err, kitName: '', kitQty: '' } : err
                                                 )
                                               );
                                             }}
@@ -884,8 +912,8 @@ const RetrievalIssueManifest = () => {
                                               <TextField
                                                 {...params}
                                                 variant="outlined"
-                                                error={!!detailsKitErrors[index]?.kitName}
-                                                helperText={detailsKitErrors[index]?.kitName}
+                                                error={!!detailsKitErrors[index]?.kitNo}
+                                                helperText={detailsKitErrors[index]?.kitNo}
                                               />
                                             )}
                                             sx={{ width: 250 }}
@@ -923,20 +951,13 @@ const RetrievalIssueManifest = () => {
                                             }}
                                             className={detailsKitErrors[index]?.kitQty ? 'error form-control' : 'form-control'}
                                           />
-                                          {detailsKitErrors[index]?.kitQty && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailsKitErrors[index].kitQty}
-                                            </div>
-                                          )}
                                         </td>
                                         <td>
                                           <Autocomplete
                                             options={allHsnSacCode}
                                             getOptionLabel={(option) => option.code || ''}
-                                            value={allHsnSacCode.find((a) => a.code === row.hsnCode) || null}
+                                            value={allHsnSacCode.find((a) => String(a.code) === String(row.hsnCode)) || null}
                                             onChange={(event, newValue) => {
-                                              console.log("hsnCode", newValue);
-
                                               const value = newValue ? newValue.code : '';
                                               setDetailsKitData((prev) =>
                                                 prev.map((r) => (r.id === row.id ? { ...r, hsnCode: value } : r))
