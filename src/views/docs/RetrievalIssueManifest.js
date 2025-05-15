@@ -43,10 +43,9 @@ const RetrievalIssueManifest = () => {
   const [customerDetails, setCustomerDetails] = useState([]);
   const [allAccountName, setAllAccountName] = useState([]);
   const [allHsnSacCode, setAllHsnSacCode] = useState([]);
-
-  const handleTabSelect = (index) => {
-    setTabIndex(index);
-  };
+  const [kitDetails, setKitDetails] = useState([]);
+  const [receiverDetails, setReceiverDetails] = useState([]);
+  const [allTransporters, setAllTransporters] = useState([]);
 
   const [formData, setFormData] = useState({
     docId: '',
@@ -104,8 +103,9 @@ const RetrievalIssueManifest = () => {
     getAllRetrievalManifestProvider();
     getAllCustomerDetails();
     getAllServiceAccountCode();
-    // getNewBankDocId();
-    // getAllBankName();
+    getAllKitDetails();
+    getAllReceiverDetails();
+    getAllTransporters();
   }, []);
 
   const getAllRetrievalManifestProvider = async () => {
@@ -138,39 +138,34 @@ const RetrievalIssueManifest = () => {
     }
   };
 
+  const getAllKitDetails = async () => {
+    try {
+      const result = await apiCalls('get', `/kitController/getKitByOrgId?orgid=${orgId}`);
+      setKitDetails(result.paramObjectsMap.kitVO || []);
+      console.log('Test sac', result);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
 
-  // const getNewBankDocId = async () => {
-  //   try {
-  //     const response = await apiCalls(
-  //       'get',
-  //       `/transaction/getReconcileBankDocId?branchCode=${loginBranchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
-  //     );
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       docId: response.paramObjectsMap.reconcileBankDocId,
-  //       docDate: dayjs()
-  //     }));
-  //   } catch (error) {
-  //     console.error('Error fetching gate passes:', error);
-  //   }
-  // };
+  const getAllReceiverDetails = async () => {
+    try {
+      const response = await apiCalls('get', `/warehouser/getAllWarehouseByOrgId?orgId=${orgId}`);
+      setReceiverDetails(response.paramObjectsMap.warehouseVO);
 
-  // const handleAddRow = () => {
-  //   setDetailsKitData((prevData) => [
-  //     ...prevData,
-  //     {
-  //       id: prevData.length + 1, // Or use a better ID generation method
-  //       voucherNo: '',
-  //       voucherDate: '',
-  //       chequeNo: '',
-  //       chequeDate: '',
-  //       clearedDate: '',
-  //       withdrawal: '',
-  //       bankRef: '',
-  //       narration: ''
-  //     }
-  //   ]);
-  // };
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+
+  const getAllTransporters = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getAllTransporters?orgid=${orgId}`);
+      setAllTransporters(response.paramObjectsMap.partyTypeVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
 
   const handleAddRow = () => {
     if (isLastRowEmpty(detailsKitData)) {
@@ -311,77 +306,83 @@ const RetrievalIssueManifest = () => {
     console.log('THE HANDLE SAVE IS WORKING');
 
     const errors = {};
-    // if (!formData.bankStmtDate) errors.bankStmtDate = 'Bank Stmt Date is required';
-    // if (!formData.bankAccount) errors.bankAccount = 'Bank Account is required';
-
     let detailsTableDataValid = true;
-    // if (!detailsKitData || detailsKitData.length === 0) {
-    //   detailsTableDataValid = false;
-    //   setDetailsKitErrors([{ general: 'detail Table Data is required' }]);
-    // }
-    // else {
-    //   const newTableErrors = detailsKitData.map((row, index) => {
-    //     const rowErrors = {};
-    //     if (!row.voucherNo) {
-    //       rowErrors.voucherNo = 'VoucherNo is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.voucherDate) {
-    //       rowErrors.voucherDate = 'voucherDate is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.chequeNo) {
-    //       rowErrors.chequeNo = 'cheque No is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.chequeDate) {
-    //       rowErrors.chequeDate = 'cheque Date is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.deposit) {
-    //       rowErrors.deposit = 'deposit is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.withdrawal) {
-    //       rowErrors.withdrawal = 'withdrawal is required';
-    //       detailsTableDataValid = false;
-    //     }
 
-    //     if (row.active === undefined || row.active === null) {
-    //       rowErrors.active = 'Active is required';
-    //       detailsTableDataValid = false;
-    //     }
+    // === FORM DATA VALIDATION ===
+    if (!formData.docId) errors.docId = 'Transaction ID is required';
+    if (!formData.docDate) errors.docDate = 'Transaction Date is required';
+    if (!formData.dispatchType) errors.dispatchType = 'Dispatch Date is required';
+    if (!formData.sender) errors.sender = 'Sender is required';
+    if (!formData.senderAddress) errors.senderAddress = 'Sender Address is required';
+    if (!formData.senderGst) errors.senderGst = 'Sender GST is required';
+    if (!formData.receiverWarehouse) errors.receiverWarehouse = 'Receiver Warehouse is required';
+    if (!formData.receiverAddress) errors.receiverAddress = 'Receiver Address is required';
+    if (!formData.transporterName) errors.transporterName = 'Transporter Name is required';
+    if (!formData.vehicleNo) errors.vehicleNo = 'Vehicle No is required';
+    if (!formData.driverNo) errors.driverNo = 'Driver No is required';
 
-    //     return rowErrors;
-    //   });
-    //   setDetailsKitErrors(newTableErrors);
-    // }
-    // setFormDataErrors(errors);
+    // === DETAILS TABLE VALIDATION ===
+    if (!detailsKitData || detailsKitData.length === 0) {
+      detailsTableDataValid = false;
+      setDetailsKitErrors([{ general: 'Details table data is required' }]);
+    } else {
+      const newTableErrors = detailsKitData.map((row) => {
+        const rowErrors = {};
+        if (!row.kitName) {
+          rowErrors.kitName = 'Kit Name is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.kitQty) {
+          rowErrors.kitQty = 'Kit Qty is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.hsnCode) {
+          rowErrors.hsnCode = 'HSN Code is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.asset) {
+          rowErrors.asset = 'Asset is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.assetCode) {
+          rowErrors.assetCode = 'Asset Code is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.assetQty) {
+          rowErrors.assetQty = 'Asset Qty is required';
+          detailsTableDataValid = false;
+        }
+        return rowErrors;
+      });
 
-    // if (Object.keys(errors).length === 0 && detailsTableDataValid) {
-    if (detailsTableDataValid) {
+      setDetailsKitErrors(newTableErrors);
+    }
+
+    setFormDataErrors(errors); // set error state (use this in your form fields)
+
+    // === ONLY SUBMIT IF VALID ===
+    if (Object.keys(errors).length === 0 && detailsTableDataValid) {
       setIsLoading(true);
 
       const retrievalManifestProviderDetailsVo = detailsKitData.map((row) => ({
         ...(editId && { id: row.id }),
-        voucherNo: row.voucherNo,
-        voucherDate: row.voucherDate,
-        chequeNo: row.chequeNo,
-        chequeDate: row.voucherDate,
-        deposit: parseInt(row.deposit),
-        withdrawal: parseInt(row.withdrawal),
+        asset: row.asset,
+        assetCode: row.assetCode,
+        assetQty: parseInt(row.assetQty),
+        hsnCode: parseInt(row.hsnCode),
+        kitId: row.kitCode,
+        kitName: row.kitName,
+        kitQty: parseInt(row.kitQty),
         bankRef: row.bankRef
-        // active: row.active === 'true' || row.active === true // Convert string 'true' to boolean true if necessary
       }));
 
       const saveFormData = {
         ...(editId && { id: editId }),
         active: formData.active,
-        cancel: true,
         createdBy: loginUserName,
         dispatchDate: formData.dispatchType ? dayjs(formData.dispatchType).format('YYYY-MM-DD') : null,
         driverPhoneNo: formData.driverNo,
-        orgId: orgId,
+        orgId: parseInt(orgId),
         receiver: formData.receiverWarehouse,
         receiverAddress: formData.receiverAddress,
         retrievalManifestProviderDetailsDTO: retrievalManifestProviderDetailsVo,
@@ -395,27 +396,20 @@ const RetrievalIssueManifest = () => {
         vechileNo: formData.vehicleNo
       };
 
-      console.log('DATA TO SAVE IS:', saveFormData);
-
       try {
         const response = await apiCalls('put', '/reportController/createUpdateRetrievalManifest', saveFormData);
         if (response.status === true) {
-          console.log('Response:', response);
           showToast('success', editId ? 'Retrieval Issue Manifest updated successfully' : 'Retrieval Issue Manifest created successfully');
-          // getNewBankDocId();
           handleClear();
-          setIsLoading(false);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Retrieval Issue Manifest creation failed');
-          setIsLoading(false);
         }
       } catch (error) {
         console.error('Error:', error);
         showToast('error', 'Retrieval Issue Manifest creation failed');
-        setIsLoading(false);
       }
-    } else {
-      // setFieldErrors(errors);
+
+      setIsLoading(false);
     }
   };
 
@@ -423,84 +417,47 @@ const RetrievalIssueManifest = () => {
     console.log('first', row);
     setShowForm(true);
     try {
-      const result = await apiCalls('get', `/transaction/getAllReconcileBankById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/reportController/getRetrievalManifestProviderById?id=${row.original.id}`);
 
       if (result) {
-        const listValueVO = result.paramObjectsMap.reconcileBankVO[0];
+        const listValueVO = result.paramObjectsMap.retrievalManifestProviderVO;
         setEditId(row.original.id);
 
+        // Set form data
         setFormData({
-          docId: listValueVO.docId,
-          docDate: listValueVO.docDate, // handle invalid or null dates
-          bankStmtDate: listValueVO.bankStmtDate, //
-          bankAccount: listValueVO.bankAccount,
-          remarks: listValueVO.remarks,
-          totalDeposit: listValueVO.totalDeposit,
-          totalWithdrawal: listValueVO.totalWithdrawal
+          docId: listValueVO.transactionNo || '',
+          docDate: listValueVO.transactionDate || dayjs(),
+          dispatchType: listValueVO.dispatchDate || null,
+          transactionType: listValueVO.transactionType || 'Retrieval Docket',
+          sender: listValueVO.sender || '',
+          senderAddress: listValueVO.senderAddress || '',
+          senderGst: listValueVO.senderGst || '',
+          receiverWarehouse: listValueVO.receiver || '',
+          warehouseAddress: listValueVO.receiverAddress || '',
+          transporterName: listValueVO.transporterName || '',
+          vehicleNo: listValueVO.vehicleeNo || '',
+          driverNo: listValueVO.driverPhoneNo || '',
+          retrievalManifestProviderDetailsVOs: listValueVO.retrievalManifestProviderDetailsVOs
         });
+
         setDetailsKitData(
-          listValueVO.particularsReconcileVO.map((cl) => ({
-            id: cl.id,
-            voucherNo: cl.voucherNo,
-            voucherDate: cl.voucherDate,
-            chequeNo: cl.chequeNo,
-            chequeDate: cl.chequeDate,
-            clearedDate: cl.clearedDate,
-            withdrawal: cl.withdrawal,
-            bankRef: cl.bankRef,
-            deposit: cl.deposit
+          (listValueVO.retrievalManifestProviderDetailsVOs || []).map((cl, index) => ({
+            id: cl.id || `${Date.now()}-${index}`,
+            kitName: cl.kitName || '',
+            kitQty: cl.kitQty || '',
+            hsnCode: cl.hsnCode || '',
+            asset: cl.asset || '',
+            assetCode: cl.assetCode || '',
+            assetQty: cl.assetQty || ''
           }))
         );
 
         console.log('DataToEdit', listValueVO);
       } else {
-        // Handle erro
+        console.error('No result returned from API');
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-    }
-  };
-  const handleDepositChange = (e, row, index) => {
-    const value = e.target.value;
-
-    if (/^\d{0,20}$/.test(value)) {
-      setDetailsKitData((prev) =>
-        prev.map((r) => (r.id === row.id ? { ...r, deposit: value, withdrawal: value === '0' ? '' : '0' } : r))
-      );
-
-      setDetailsKitErrors((prev) => {
-        const newErrors = [...prev];
-        newErrors[index] = {
-          ...newErrors[index],
-          deposit: !value ? 'Deposit Amount is required' : '',
-          withdrawal: value === '0' ? 'Withdrawal Amount is required' : ''
-        };
-        return newErrors;
-      });
-
-      // calculateTotals(); // Recalculate totals
-    }
-  };
-
-  const handleWithdrawalChange = (e, row, index) => {
-    const value = e.target.value;
-
-    if (/^\d{0,20}$/.test(value)) {
-      setDetailsKitData((prev) =>
-        prev.map((r) => (r.id === row.id ? { ...r, withdrawal: value, deposit: value === '0' ? '' : '0' } : r))
-      );
-
-      setDetailsKitErrors((prev) => {
-        const newErrors = [...prev];
-        newErrors[index] = {
-          ...newErrors[index],
-          withdrawal: !value ? 'Withdrawal Amount is required' : '',
-          deposit: value === '0' ? 'Deposit Amount is required' : ''
-        };
-        return newErrors;
-      });
-
-      // calculateTotals(); // Recalculate totals
     }
   };
 
@@ -541,6 +498,8 @@ const RetrievalIssueManifest = () => {
                   value={formData.docId}
                   fullWidth
                   onChange={(e) => setFormData({ ...formData, docId: e.target.value })}
+                  error={!!formDataErrors.docId}
+                  helperText={formDataErrors.docId}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -548,7 +507,6 @@ const RetrievalIssueManifest = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="Transaction Date"
-                      disabled
                       fullWidth
                       slotProps={{
                         textField: { size: 'small', clearable: true }
@@ -586,30 +544,6 @@ const RetrievalIssueManifest = () => {
                   onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label">
-                    Sender
-                  </InputLabel>
-                  <Select
-                    labelId="sender"
-                    value={formData.sender}
-                    onChange={(e) => setFormData({ ...formData, sender: e.target.value })}
-                    label="Sender"
-                  // error={!!errors.bankAccount}
-                  // helperText={errors.bankAccount}
-                  >
-                    {customerDetails &&
-                      customerDetails.map((customer, index) => (
-                        <MenuItem key={index} value={customer.partyShortName}>
-                          {customer.partyShortName}
-                        </MenuItem>
-                      ))}
-                  </Select>
-                </FormControl>
-              </div> */}
-
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
@@ -653,21 +587,26 @@ const RetrievalIssueManifest = () => {
                         ...params.InputProps,
                         style: { height: 40 }
                       }}
+                      error={!!formDataErrors.sender}
+                      helperText={formDataErrors.sender}
                     />
                   )}
                 />
               </div>
-
-              <div className="col-md-3 mb-3">
+              <div className="col-lg-3 col-md-6 mb-2">
                 <TextField
                   label="Sender Address"
                   size="small"
                   disabled
-                  multiline
-                  minRows={2}
-                  value={formData.senderAddress}
                   fullWidth
-                  onChange={(e) => setFormData({ ...formData, senderAddress: e.target.value })}
+                  value={formData.senderAddress}
+                  multiline={formData.senderAddress.includes('\n') || formData.senderAddress.length > 50}
+                  minRows={
+                    formData.senderAddress.includes('\n') || formData.senderAddress.length > 50 ? 2 : 1
+                  }
+                  onChange={(e) =>
+                    setFormData({ ...formData, senderAddress: e.target.value })
+                  }
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -681,47 +620,133 @@ const RetrievalIssueManifest = () => {
                 />
               </div>
 
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label">
-                    Receiver Warehouse
-                  </InputLabel>
-                  <Select
-                    labelId="receiverWarehouse"
-                    value={formData.receiverWarehouse}
-                    onChange={(e) => setFormData({ ...formData, receiverWarehouse: e.target.value })}
-                    label="Receiver Warehouse"
-                  // error={!!errors.bankAccount}
-                  // helperText={errors.bankAccount}
-                  >
-                    {bankName &&
-                      bankName.map((bank, index) => (
-                        <MenuItem key={index} value={bank.accountgroupname}>
-                          {bank.accountgroupname}
-                        </MenuItem>
-                      ))}
-                  </Select>
-                </FormControl>
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Warehouse's Address"
-                  value={formData.warehouseAddress}
+              {/* <div className="col-md-3 mb-3">
+                <Autocomplete
+                  disablePortal
+                  options={receiverDetails.map((option, index) => ({ ...option, key: index }))}
+                  getOptionLabel={(option) => option.locationName || ''}
+                  sx={{ width: '100%' }}
                   size="small"
-                  fullWidth
-                  multiline
-                  minRows={2}
-                  disabled
-                  onChange={(e) => setFormData({ ...formData, warehouseAddress: e.target.value })}
+                  value={formData.receiverWarehouse ? receiverDetails.find((c) => c.locationName === formData.receiverWarehouse) : null}
+                  onChange={(event, newValue) => {
+                    handleInputChange({
+                      target: {
+                        name: 'receiverWarehouse', value: newValue ? newValue.locationName : ''
+                      }
+                    });
+                    handleInputChange({
+                      target: {
+                        name: 'warehouseAddress',
+                        value: newValue ? newValue.address : ''
+                      }
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Receiver Warehouse"
+                      name="receiverWarehouse"
+                      InputProps={{
+                        ...params.InputProps,
+                        style: { height: 40 }
+                      }}
+                      error={!!formDataErrors.receiverWarehouse}
+                      helperText={formDataErrors.receiverWarehouse}
+                    />
+                  )}
+                />
+              </div> */}
+              <div className="col-md-3 mb-3">
+                <Autocomplete
+                  disablePortal
+                  options={receiverDetails.map((option, index) => ({ ...option, key: index }))}
+                  getOptionLabel={(option) => option.locationName || ''}
+                  sx={{ width: '100%' }}
+                  size="small"
+                  value={
+                    formData.receiverWarehouse
+                      ? receiverDetails.find((c) => c.locationName === formData.receiverWarehouse)
+                      : null
+                  }
+                  onChange={(event, newValue) => {
+                    handleInputChange({
+                      target: {
+                        name: 'receiverWarehouse',
+                        value: newValue ? newValue.locationName : '',
+                      },
+                    });
+
+                    // ✅ Correct address assignment
+                    const fullAddress = newValue?.address || '';
+                    handleInputChange({
+                      target: {
+                        name: 'warehouseAddress',
+                        value: fullAddress,
+                      },
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Receiver Warehouse"
+                      name="receiverWarehouse"
+                      InputProps={{
+                        ...params.InputProps,
+                        style: { height: 40 },
+                      }}
+                      error={!!formDataErrors.receiverWarehouse}
+                      helperText={formDataErrors.receiverWarehouse}
+                    />
+                  )}
                 />
               </div>
               <div className="col-md-3 mb-3">
                 <TextField
-                  label="Transporter Name"
-                  value={formData.transporterName}
+                  label="Warehouse Address"
+                  name="warehouseAddress"
+                  value={formData.warehouseAddress}
                   size="small"
                   fullWidth
-                  onChange={(e) => setFormData({ ...formData, transporterName: e.target.value })}
+                  disabled
+                  multiline={
+                    !!formData.warehouseAddress &&
+                    (formData.warehouseAddress.includes('\n') || formData.warehouseAddress.length > 50)
+                  }
+                  minRows={
+                    !!formData.warehouseAddress &&
+                      (formData.warehouseAddress.includes('\n') || formData.warehouseAddress.length > 50)
+                      ? 2
+                      : 1
+                  }
+                />
+              </div>
+
+              <div className="col-md-3 mb-3">
+                <Autocomplete
+                  disablePortal
+                  options={allTransporters.map((option, index) => ({ ...option, key: index }))}
+                  getOptionLabel={(option) => option.partyShortName || ''}
+                  sx={{ width: '100%' }}
+                  size="small"
+                  value={formData.transporterName ? allTransporters.find((c) => c.partyShortName === formData.transporterName) : null}
+                  onChange={(event, newValue) => {
+                    handleInputChange({
+                      target: {
+                        name: 'transporterName', value: newValue ? newValue.partyShortName : ''
+                      }
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      name="transporterName"
+                      label="Transporter Name"
+                      InputProps={{
+                        ...params.InputProps,
+                        style: { height: 40 }
+                      }}
+                    />
+                  )}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -731,6 +756,8 @@ const RetrievalIssueManifest = () => {
                   size="small"
                   fullWidth
                   onChange={(e) => setFormData({ ...formData, vehicleNo: e.target.value })}
+                  error={!!formDataErrors.vehicleNo}
+                  helperText={formDataErrors.vehicleNo}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -742,6 +769,8 @@ const RetrievalIssueManifest = () => {
                   fullWidth
                   inputProps={{ maxLength: 10 }}
                   onChange={(e) => setFormData({ ...formData, driverNo: e.target.value })}
+                  error={!!formDataErrors.driverNo}
+                  helperText={formDataErrors.driverNo}
                 />
               </div>
             </div>
@@ -819,19 +848,36 @@ const RetrievalIssueManifest = () => {
                                         <td className="text-center">
                                           <div className="pt-2">{index + 1}</div>
                                         </td>
-                                        <td>
+                                        <td className="border px-2 py-2">
                                           <Autocomplete
-                                            options={allAccountName}
-                                            getOptionLabel={(option) => option.kitName || ''}
-                                            groupBy={(option) => (option.kitName ? option.kitName[0].toUpperCase() : '')}
-                                            value={row.kitName ? allAccountName.find((a) => a.kitName === row.kitName) : null}
+                                            options={kitDetails}
+                                            getOptionLabel={(option) => option.kitNo || ''}
+                                            value={
+                                              kitDetails.find(
+                                                (a) => a.kitNo?.toLowerCase().trim() === row.kitNo?.toLowerCase().trim()
+                                              ) || null
+                                            }
                                             onChange={(event, newValue) => {
-                                              const value = newValue ? newValue.kitName : '';
                                               setDetailsKitData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, kitName: value } : r))
+                                                prev.map((r) =>
+                                                  r.id === row.id
+                                                    ? {
+                                                      ...r,
+                                                      kitNo: newValue?.kitNo || '',
+                                                      kitName: newValue?.kitName || '',
+                                                      kitId: newValue?.kitId || '',
+                                                      kitQty: newValue?.partQty || '',
+                                                      assetCode: newValue?.kitAssetVO?.[0]?.assetCodeId || '',
+                                                      asset: newValue?.kitAssetVO?.[0]?.assetName || '',
+                                                      assetQty: newValue?.kitAssetVO?.[0]?.quantity || '',
+                                                    }
+                                                    : r
+                                                )
                                               );
                                               setDetailsKitErrors((prevErrors) =>
-                                                prevErrors.map((err, idx) => (idx === index ? { ...err, kitName: '' } : err))
+                                                prevErrors.map((err, idx) =>
+                                                  idx === index ? { ...err, kitName: '', kitQty: '' } : err
+                                                )
                                               );
                                             }}
                                             size="small"
@@ -888,13 +934,7 @@ const RetrievalIssueManifest = () => {
                                           <Autocomplete
                                             options={allHsnSacCode}
                                             getOptionLabel={(option) => option.code || ''}
-                                            value={
-                                              row.hsnCode
-                                                ? allHsnSacCode.find((a) => a.code === row.hsnCode) || null
-                                                : allHsnSacCode.length === 1
-                                                  ? allHsnSacCode
-                                                  : null
-                                            }
+                                            value={allHsnSacCode.find((a) => a.code === row.hsnCode) || null}
                                             onChange={(event, newValue) => {
                                               console.log("hsnCode", newValue);
 
@@ -951,15 +991,16 @@ const RetrievalIssueManifest = () => {
                                           </tbody>
                                         </table> */}
 
-                                        <td className="border px-2 py-2">
-                                          {row.productCode}
+                                        <td className="border px-2 py-2" style={{ alignContent: 'center', textAlign: 'center' }}>
+                                          {row.assetCode}
                                         </td>
-                                        <td className="border px-2 py-2">
-                                          {row.productCode}
+                                        <td className="border px-2 py-2" style={{ alignContent: 'center', textAlign: 'center' }}>
+                                          {row.asset}
                                         </td>
-                                        <td className="border px-2 py-2">
-                                          {row.productCode}
+                                        <td className="border px-2 py-2" style={{ alignContent: 'center', textAlign: 'center' }}>
+                                          {row.assetQty}
                                         </td>
+
                                       </tr>
                                     ))}
                                 </tbody>
