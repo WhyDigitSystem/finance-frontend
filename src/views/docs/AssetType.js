@@ -49,18 +49,23 @@ const AssetType = () => {
     { accessorKey: 'typeCode', header: 'Code', size: 140 },
   ];
   const handleInputChange = (e) => {
-    const { name, value, selectionStart, selectionEnd, type } = e.target;
-    let errorMessage = '';
-    setFieldErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: errorMessage
+  const { name, value, type, selectionStart, selectionEnd } = e.target;
+  let errorMessage = '';
+  if (name === 'name' && !/^[A-Za-z ]*$/.test(value)) {
+    errorMessage = 'Only Alphabets Allowed';
+  }
+  if (name === 'code' && !/^[A-Za-z0-9]*$/.test(value)) {
+    errorMessage = 'Only Alphanumeric Characters Allowed';
+  }
+  setFieldErrors((prevErrors) => ({
+    ...prevErrors,
+    [name]: errorMessage
+  }));
+  if (!errorMessage) {
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value.toUpperCase()
     }));
-
-    if (!errorMessage) {
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        [name]: value
-      }));
       if (type === 'text' || type === 'textarea') {
         setTimeout(() => {
           const inputElement = document.getElementsByName(name)[0];
@@ -93,8 +98,8 @@ const AssetType = () => {
           // branchCode:assetTypeVO. branchCode,
           createdBy: assetTypeVO.loginUserName,
           orgId: assetTypeVO.orgId,
-          name: assetTypeVO.name,
-          code: assetTypeVO.code
+          name: assetTypeVO.assetType,
+          code: assetTypeVO.typeCode
         });
       } else {
         // Handle erro
@@ -118,8 +123,8 @@ const AssetType = () => {
         active: true,
         createdBy: loginUserName,
         orgId: orgId,
-        assetType: formData.assetType,
-        typeCode: formData.typeCode,
+        assetType: formData.name,
+        typeCode: formData.code,
       };
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
@@ -166,6 +171,7 @@ const AssetType = () => {
                     name="name"
                     value={formData.name}
                     onChange={handleInputChange}
+                    inputProps={{ maxLength: 30 }}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.name ? fieldErrors.name : ''}</span>}
                     error={!!fieldErrors.name}
                   />
@@ -179,6 +185,7 @@ const AssetType = () => {
                     fullWidth
                     name="code"
                     value={formData.code}
+                    inputProps={{ maxLength: 10 }}
                     onChange={handleInputChange}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.code ? fieldErrors.code : ''}</span>}
                     error={!!fieldErrors.code}

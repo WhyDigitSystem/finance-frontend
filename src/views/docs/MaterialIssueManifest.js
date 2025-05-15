@@ -33,6 +33,7 @@ export const MaterialIssueManifest = () => {
   const [allWarehouse, setAllWarehouse] = useState([]);
   const [allKitId, setAllKitId] = useState([]);
   const [allHsnSacCode, setAllHsnSacCode] = useState([]);
+  const [allTransporters, setAllTransporters] = useState([]);
   const [showForm, setShowForm] = useState(true);
   const [editId, setEditId] = useState('');
   const [data, setData] = useState(true);
@@ -106,6 +107,9 @@ export const MaterialIssueManifest = () => {
   useEffect(() => {
     getAllServiceAccountCode();
     getAllCustomerDetails();
+    getAllReceiverDetails();
+    getAllKitDetails();
+    getAllTransporters();
   }, []);
 
   const handleClear = () => {
@@ -192,34 +196,6 @@ export const MaterialIssueManifest = () => {
       productQty: ''
     }]);
   };
-
-  // const isLastRowEmpty = (table) => {
-  //   const lastRow = table[table.length - 1];
-  //   if (!lastRow) return false;
-
-  //   if (table === detailsTableData) {
-  //     return !lastRow.accountName || !lastRow.narration;
-  //     // !lastRow.credit || !lastRow.debit ||
-  //   }
-  //   return false;
-  // };
-
-  // const displayRowError = (table) => {
-  //   if (table === detailsTableData) {
-  //     setDetailsTableErrors((prevErrors) => {
-  //       const newErrors = [...prevErrors];
-  //       newErrors[table.length - 1] = {
-  //         ...newErrors[table.length - 1],
-  //         accountName: !table[table.length - 1].accountName ? 'Account Name is required' : '',
-  //         // credit: !table[table.length - 1].credit ? 'Credit is required' : '',
-  //         // debit: !table[table.length - 1].debit ? 'Debit is required' : '',
-  //         narration: !table[table.length - 1].narration ? 'Narration is required' : ''
-  //       };
-  //       return newErrors;
-  //     });
-  //   }
-  // };
-
   const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
     const rowIndex = table.findIndex((row) => row.id === id);
     if (rowIndex !== -1) {
@@ -266,10 +242,35 @@ export const MaterialIssueManifest = () => {
       console.log('error', err);
     }
   };
+const getAllReceiverDetails = async () => {
+    try {
+      const response = await apiCalls('get', `/warehouser/getAllWarehouseByOrgId?orgId=${orgId}`);
+      setAllWarehouse(response.paramObjectsMap.warehouseVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+  const getAllKitDetails = async () => {
+    try {
+      const result = await apiCalls('get', `/kitController/getKitByOrgId?orgid=${orgId}`);
+      setAllKitId(result.paramObjectsMap.kitVO || []);
+      console.log('Test sac', result);
+    } catch (err) {
+      console.log('error', err);
+    }
+  };
   const getAllCustomerDetails = async () => {
     try {
       const response = await apiCalls('get', `/master/getAllCustomers?orgId=${orgId}`);
       setAllReceiver(response.paramObjectsMap.masterVOs);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+  const getAllTransporters = async () => {
+    try {
+      const response = await apiCalls('get', `/master/getAllTransporters?orgid=${orgId}`);
+      setAllTransporters(response.paramObjectsMap.partyTypeVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -367,26 +368,26 @@ export const MaterialIssueManifest = () => {
         createdBy: loginUserName,
         finYear: finYear,
         orgId: orgId,
-        depositParticularsDTO: materialIssueVO,
+        issueManifestProviderDetailsDTO: materialIssueVO,
         transactionNo: formData.transactionNo,
         transactionDate: dayjs(formData.transactionDate).format('YYYY-MM-DD'),
         dispatchDate: dayjs(formData.dispatchDate).format('YYYY-MM-DD'),
         transactionType: formData.transactionType,
         fromWarehouse: formData.fromWarehouse,
         warehouseAddress: formData.warehouseAddress,
-        customer: formData.customer,
-        customerAddress: formData.customerAddress,
-        receiverRegIn: formData.receiverRegIn,
+        receiver: formData.customer,
+        receiverAddress: formData.customerAddress,
+        receiverGst: formData.receiverRegIn,
         sender: companyName,
         amount: parseInt(formData.amount),
         amountInWords: formData.amountInWords,
         transporterName: formData.transporterName,
         vehicleNo: formData.vehicleNo,
-        driverNo: formData.driverNo,
+        driverPhoneNo: formData.driverNo,
       };
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `/transaction/updateCreateBankingDeposit`, saveFormData);
+        const response = await apiCalls('put', `/transaction/createUpdateIssuemanifest`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           showToast('success', editId ? 'Material Issue Manifest Updated Successfully' : 'Material Issue Manifest Created successfully');
@@ -579,83 +580,63 @@ export const MaterialIssueManifest = () => {
                     error={!!fieldErrors.transactionType}
                   />
                 </div>
+
                 <div className="col-md-3 mb-3">
-                  <Autocomplete
-                    disablePortal
-                    options={allWarehouse}
-                    getOptionLabel={(option) => option?.warehouseName || ''}
-                    // sx={{ width: '100%' }}
-                    size="small"
-                    value={formData.warehouseName ? allWarehouse.find((c) => c.warehouseName === formData.warehouseName) : null}
-                    onChange={(event, newValue) => {
-                      handleInputChange({
-                        target: {
-                          name: 'warehouseName',
-                          value: newValue ? newValue.warehouseName : ''
-                        }
-                      });
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                    label="Warehouse Name"
-                        name="warehouseName"
-                        error={!!fieldErrors.warehouseName}
-                        helperText={fieldErrors.warehouseName ? fieldErrors.warehouseName : ''}
-                        InputProps={{
-                          ...params.InputProps,
-                          style: { height: 40 }
-                        }}
-                      />
-                    )}
-                  />
-                </div>
-                <div className="col-md-3 mb-3">
-                  <TextField
-                    id="warehouseAddress"
-                    label="WareHouse Address"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="warehouseAddress"
-                    value={formData.warehouseAddress}
-                    onChange={handleInputChange}
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.warehouseddress ? fieldErrors.warehouseddress : ''}</span>}
-                    inputProps={{ maxLength: 40 }}
-                    error={!!fieldErrors.warehouseAddress}
-                  />
-                </div>
-                {/* <div className="col-md-3 mb-3">
-                  <Autocomplete
-                    disablePortal
-                    options={allReceiver}
-                    getOptionLabel={(option) => option?.customer || ''}
-                    // sx={{ width: '100%' }}
-                    size="small"
-                    value={formData.customer ? allReceiver.find((c) => c.customer === formData.customer) : null}
-                    onChange={(event, newValue) => {
-                      handleInputChange({
-                        target: {
-                          name: 'customer',
-                          value: newValue ? newValue.customer : ''
-                        }
-                      });
-                    }}
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
-                    label="Receiver"
-                        name="customer"
-                        error={!!fieldErrors.customer}
-                        helperText={fieldErrors.customer ? fieldErrors.customer : ''}
-                        InputProps={{
-                          ...params.InputProps,
-                          style: { height: 40 }
-                        }}
-                      />
-                    )}
-                  />
-                </div> */}
+                <Autocomplete
+                  disablePortal
+                  options={allWarehouse.map((option, index) => ({ ...option, key: index }))}
+                  getOptionLabel={(option) => option.locationName || ''}
+                  sx={{ width: '100%' }}
+                  size="small"
+                  value={formData.receiverWarehouse ? allWarehouse.find((c) => c.locationName === formData.receiverWarehouse) : null}
+                  onChange={(event, newValue) => {
+                    handleInputChange({
+                      target: {
+                        name: 'receiverWarehouse', value: newValue ? newValue.locationName : ''
+                      }
+                    });
+                    handleInputChange({
+                      target: {
+                        name: 'warehouseAddress',
+                        value: newValue ? newValue.address : ''
+                      }
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Receiver Warehouse"
+                      name="receiverWarehouse"
+                      InputProps={{
+                        ...params.InputProps,
+                        style: { height: 40 }
+                      }}
+                      error={!!fieldErrors.receiverWarehouse}
+                      helperText={fieldErrors.receiverWarehouse}
+                    />
+                  )}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Warehouse Address"
+                  value={formData.warehouseAddress}
+                  size="small"
+                  fullWidth
+                  disabled
+                  multiline={
+                    !!formData.warehouseAddress &&
+                    (formData.warehouseAddress.includes('\n') || formData.warehouseAddress.length > 50)
+                  }
+                  minRows={
+                    !!formData.warehouseAddress &&
+                      (formData.warehouseAddress.includes('\n') || formData.warehouseAddress.length > 50) ? 2 : 1
+                  }
+                  onChange={(e) =>
+                    setFormData({ ...formData, warehouseAddress: e.target.value })
+                  }
+                />
+              </div>
                 <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
@@ -777,20 +758,33 @@ export const MaterialIssueManifest = () => {
                   />
                 </div>
                 <div className="col-md-3 mb-3">
-                  <TextField
-                    id="transporterName"
-                    label="Transporter Name"
-                    variant="outlined"
-                    size="small"
-                    fullWidth
-                    name="transporterName"
-                    value={formData.transporterName}
-                    onChange={handleInputChange}
-                    helperText={<span style={{ color: 'red' }}>{fieldErrors.transporterName ? fieldErrors.transporterName : ''}</span>}
-                    inputProps={{ maxLength: 40 }}
-                    error={!!fieldErrors.transporterName}
-                  />
-                </div>
+                <Autocomplete
+                  disablePortal
+                  options={allTransporters.map((option, index) => ({ ...option, key: index }))}
+                  getOptionLabel={(option) => option.partyShortName || ''}
+                  sx={{ width: '100%' }}
+                  size="small"
+                  value={formData.transporterName ? allTransporters.find((c) => c.partyShortName === formData.transporterName) : null}
+                  onChange={(event, newValue) => {
+                    handleInputChange({
+                      target: {
+                        name: 'transporterName', value: newValue ? newValue.partyShortName : ''
+                      }
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      name= "transporterName"
+                      label= "Transporter Name"
+                      InputProps={{
+                        ...params.InputProps,
+                        style: { height: 40 }
+                      }}
+                    />
+                  )}
+                />
+              </div>
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="vehicleNo"
@@ -881,41 +875,48 @@ export const MaterialIssueManifest = () => {
                                         <td className="text-center">
                                           <div className="pt-2">{index + 1}</div>
                                         </td>
-                                        <td>
+                                        <td className="border px-2 py-2">
                                           <Autocomplete
                                             options={allKitId}
                                             getOptionLabel={(option) => option.kitNo || ''}
                                             value={
-                                              row.kitNo
-                                                ? allKitId.find((a) => a.kitNo === row.kitNo) || null
-                                                : allKitId.length === 1
-                                                  ? allKitId
-                                                  : null
+                                              allKitId.find(
+                                                (a) => a.kitNo?.toLowerCase().trim() === row.kitNo?.toLowerCase().trim()
+                                              ) || null
                                             }
                                             onChange={(event, newValue) => {
-                                              const value = newValue ? newValue.kitNo : '';
                                               setDetailsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, kitNo: value } : r))
+                                                prev.map((r) =>
+                                                  r.id === row.id
+                                                    ? {
+                                                      ...r,
+                                                      kitNo: newValue?.kitNo || '',
+                                                      kitName: newValue?.kitName || '',
+                                                      kitId: newValue?.kitId || '',
+                                                      kitQty: newValue?.partQty || '',
+                                                      assetCode: newValue?.kitAssetVO?.[0]?.assetCodeId || '',
+                                                      asset: newValue?.kitAssetVO?.[0]?.assetName || '',
+                                                      assetQty: newValue?.kitAssetVO?.[0]?.quantity || '',
+                                                    }
+                                                    : r
+                                                )
                                               );
-                                              setDetailsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  kitNo: !value ? 'Kit No is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
+                                              setDetailsTableErrors((prevErrors) =>
+                                                prevErrors.map((err, idx) =>
+                                                  idx === index ? { ...err, kitName: '', kitQty: '' } : err
+                                                )
+                                              );
                                             }}
                                             size="small"
                                             renderInput={(params) => (
                                               <TextField
                                                 {...params}
                                                 variant="outlined"
-                                                error={!!detailsTableErrors[index]?.kitNo}
-                                                helperText={detailsTableErrors[index]?.kitNo}
+                                                error={!!detailsTableErrors[index]?.kitName}
+                                                helperText={detailsTableErrors[index]?.kitName}
                                               />
                                             )}
-                                            sx={{ width: 100 }}
+                                            sx={{ width: 250 }}
                                           />
                                         </td>
                                         <td className="border px-2 py-2">
