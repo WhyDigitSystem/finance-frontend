@@ -181,7 +181,6 @@ const StockBranch = () => {
                 onChange={handleChange}
                 variant="outlined"
                 size="small"
-                required
                 error={!!fieldErrors.branch}
                 helperText={fieldErrors.branch}
               />
@@ -197,7 +196,6 @@ const StockBranch = () => {
                 onChange={handleChange}
                 variant="outlined"
                 size="small"
-                required
                 error={!!fieldErrors.branchCode}
                 helperText={fieldErrors.branchCode}
               />

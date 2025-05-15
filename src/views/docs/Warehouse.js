@@ -14,8 +14,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AddIcon from '@mui/icons-material/Add';
 import { Button } from '@mui/material';
 import CommonBulkUpload from 'utils/CommonBulkUpload';
-import WhSample from '../../assets/sample-files/WareHouse.xlsx';
-import { Form } from 'react-router-dom';
+import WhSample from '../../assets/sample-files/SampleExcel.xlsx';
 const Warehouse = () => {
   const [listView, setListView] = useState(true);
   const [listViewData, setListViewData] = useState([]);
@@ -55,7 +54,8 @@ const Warehouse = () => {
     const NameRegex = /^[A-Za-z0-9 .-]*$/;
     const unitRegex = /^[A-Za-z0-9 ]*$/;
     const codeRegex = /^[A-Za-z0-9_-]*$/;
-    const addressRegex = /^[A-Za-z0-9\s,.-]*$/;
+    // const addressRegex = /^[A-Za-z0-9\s,.-]*$/;
+    const gstRegex = /^[A-Za-z0-9]*$/;
     const pincodeRegex = /^[0-9]*$/;
 
     let errorMessage = { ...fieldErrors };
@@ -86,13 +86,13 @@ const Warehouse = () => {
         errorMessage.code = '';
       }
     }
-    if (name === 'address') {
-      if (!addressRegex.test(inputValue)) {
-        errorMessage.address = 'Only allowed alphanumeric, hyphen, space, comma, dot';
-      } else if (inputValue.length > 100) {
-        errorMessage.address = 'Max Length 100';
+    if (name === 'gst') {
+      if (!gstRegex.test(inputValue)) {
+        errorMessage.gst = 'Only allowed alphanumeric';
+      } else if (inputValue.length > 15) {
+        errorMessage.gst = 'Max Length 15';
       } else {
-        errorMessage.address = '';
+        errorMessage.gst = '';
       }
     }
 
@@ -143,6 +143,13 @@ const Warehouse = () => {
         errorMessage.stockBranch = 'Stock Branch is required';
       } else {
         errorMessage.stockBranch = '';
+      }
+    }
+    if (name === 'address') {
+      if (!inputValue) {
+        errorMessage.address = 'Address is required';
+      } else {
+        errorMessage.address = '';
       }
     }
 
@@ -308,8 +315,8 @@ const Warehouse = () => {
     { accessorKey: 'stockBranch', header: 'Stock Branch', size: 140 },
     { accessorKey: 'country', header: 'Country', size: 140 },
     { accessorKey: 'state', header: 'State', size: 140 },
-    { accessorKey: 'city', header: 'City', size: 140 },
-    { accessorKey: 'pincode', header: 'Pincode', size: 140 },
+    // { accessorKey: 'city', header: 'City', size: 140 },
+    // { accessorKey: 'pincode', header: 'Pincode', size: 140 },
     { accessorKey: 'gst', header: 'Reg In', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
@@ -457,7 +464,6 @@ const Warehouse = () => {
                 onChange={handleChange}
                 variant="outlined"
                 size="small"
-                required
                 error={!!fieldErrors.locationName}
                 helperText={fieldErrors.locationName}
               />
@@ -473,7 +479,6 @@ const Warehouse = () => {
                 onChange={handleChange}
                 variant="outlined"
                 size="small"
-                required
                 error={!!fieldErrors.locationUnit}
                 helperText={fieldErrors.locationUnit}
               />
@@ -490,7 +495,6 @@ const Warehouse = () => {
                 onChange={handleChange}
                 variant="outlined"
                 size="small"
-                required
                 disabled
                 error={!!fieldErrors.name}
                 helperText={fieldErrors.name}
@@ -508,7 +512,6 @@ const Warehouse = () => {
                 onChange={handleChange}
                 variant="outlined"
                 size="small"
-                required
                 error={!!fieldErrors.code}
                 helperText={fieldErrors.code}
               />
@@ -525,7 +528,6 @@ const Warehouse = () => {
                 onChange={handleChange}
                 variant="outlined"
                 size="small"
-                required
                 error={!!fieldErrors.address}
                 helperText={fieldErrors.address}
               />
@@ -534,18 +536,8 @@ const Warehouse = () => {
 
           <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="outlined" size="small" error={!!fieldErrors.country}>
-              <InputLabel htmlFor="type" required>
-                Country
-              </InputLabel>
-              <Select
-                labelId="country-label"
-                id="country"
-                label="Country"
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-                required
-              >
+              <InputLabel htmlFor="type">Country</InputLabel>
+              <Select labelId="country-label" id="country" label="Country" name="country" value={formData.country} onChange={handleChange}>
                 {/* do not allow duplicate */}
                 {/* {[...new Set(countryAllList.map((c) => c.country))].map((country) => (
                   <MenuItem key={country} value={country}>
@@ -564,10 +556,8 @@ const Warehouse = () => {
 
           <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="outlined" size="small" error={!!fieldErrors.state}>
-              <InputLabel htmlFor="type" required>
-                State
-              </InputLabel>
-              <Select labelId="state-label" id="state" label="State" name="state" value={formData.state} onChange={handleChange} required>
+              <InputLabel htmlFor="type">State</InputLabel>
+              <Select labelId="state-label" id="state" label="State" name="state" value={formData.state} onChange={handleChange}>
                 {stateAllList.map((state) => (
                   <MenuItem key={state.stateName} value={state.stateName}>
                     {state.stateName}
@@ -580,10 +570,8 @@ const Warehouse = () => {
 
           <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="outlined" size="small" error={!!fieldErrors.city}>
-              <InputLabel htmlFor="type" required>
-                City
-              </InputLabel>
-              <Select labelId="city-label" id="city" label="City" name="city" value={formData.city} onChange={handleChange} required>
+              <InputLabel htmlFor="type">City</InputLabel>
+              <Select labelId="city-label" id="city" label="City" name="city" value={formData.city} onChange={handleChange}>
                 {cityAllList.map((city) => (
                   <MenuItem key={city.cityName} value={city.cityName}>
                     {city.cityName}
@@ -603,7 +591,6 @@ const Warehouse = () => {
                 onChange={handleChange}
                 variant="outlined"
                 size="small"
-                required
                 error={!!fieldErrors.pincode}
                 helperText={fieldErrors.pincode}
               />
@@ -611,15 +598,23 @@ const Warehouse = () => {
           </div>
           <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled">
-              <TextField id="gst" label="Reg In" name="gst" value={formData.gst} onChange={handleChange} variant="outlined" size="small" />
+              <TextField
+                id="gst"
+                label="Reg In"
+                name="gst"
+                value={formData.gst}
+                onChange={handleChange}
+                variant="outlined"
+                size="small"
+                error={!!fieldErrors.gst}
+                helperText={fieldErrors.gst}
+              />
             </FormControl>
           </div>
 
           <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="outlined" size="small" error={!!fieldErrors.stockBranch}>
-              <InputLabel htmlFor="type" required>
-                Stock Branch
-              </InputLabel>
+              <InputLabel htmlFor="type">Stock Branch</InputLabel>
               <Select
                 labelId="unit-label"
                 id="stockBranch"
@@ -627,7 +622,6 @@ const Warehouse = () => {
                 name="stockBranch"
                 value={formData.stockBranch}
                 onChange={handleChange}
-                required
               >
                 {allBranchName.map((branch) => (
                   <MenuItem key={branch.branch} value={branch.branch}>
