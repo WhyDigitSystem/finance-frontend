@@ -4,7 +4,7 @@ import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
+import { toWords } from 'number-to-words';
 import { FormControl, FormHelperText, InputLabel, MenuItem, Select, Autocomplete } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
@@ -158,7 +158,15 @@ export const MaterialIssueManifest = () => {
       productName: '',
       productQty: '', 
     }]);
-    setDetailsTableErrors('');
+    setDetailsTableErrors([{
+      kitNo: '',
+      kitName: '',
+      kitQty: '',
+      hsnsacCode: '',
+      productCode: '',
+      productName: '',
+      productQty: '',
+    }]);
     setEditId('');
   };
 
@@ -217,11 +225,18 @@ export const MaterialIssueManifest = () => {
       ...prevErrors,
       [name]: errorMessage
     }));
-
+    if (name === 'amount') {
+      const numericValue = parseFloat(value);
+      if (!isNaN(numericValue)) {
+        formData.amountInWords = toWords(numericValue).replace(/,/g, '').toLocaleUpperCase();
+      } else {
+        formData.amountInWords = '';
+      }
+    }
     if (!errorMessage) {
       setFormData((prevFormData) => ({
         ...prevFormData,
-        [name]: value
+        [name]: value.toUpperCase()
       }));
       if (type === 'text' || type === 'textarea') {
         setTimeout(() => {
@@ -284,46 +299,46 @@ const getAllReceiverDetails = async () => {
       console.log('error', err);
     }
   };
-  const getAllDepositById = async (row) => {
+  const getAllMIMById = async (row) => {
     console.log('first', row);
     setShowForm(true);
     try {
-      const result = await apiCalls('get', `/transaction/getBankingDepositById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/reportController/getAllIssueManifestProviderById?id=${row.original.id}`);
 
       if (result) {
-        const DepVO = result.paramObjectsMap.bankingDepositVO[0];
+        const MIMVO = result.paramObjectsMap.IssueManifestProviderVO;
         setEditId(row.original.id);
+        
         setFormData({
-          depositMode: DepVO.depositMode,
-          // id: DepVO.id,
-          docDate: DepVO.docDate ? dayjs(DepVO.docDate, 'YYYY-MM-DD') : dayjs(),
-          // docId: DepVO.docId,
-          receivedFrom: DepVO.receivedFrom,
-          chequeNo: DepVO.chequeNo,
-          chequeDate: DepVO.chequeDate ? dayjs(DepVO.chequeDate, 'YYYY-MM-DD') : dayjs(),
-          chequeBank: DepVO.chequeBank,
-          bankName: DepVO.bankAccount,
-          currency: DepVO.currency,
-          exRate: DepVO.exchangeRate,
-          depositAmount: DepVO.depositAmount,
-          totalAmount: DepVO.totalAmount,
-          remarks: DepVO.remarks,
-          orgId: DepVO.orgId,
-          totalDebitAmount: DepVO.totalDebitAmount,
-          totalCreditAmount: DepVO.totalCreditAmount
-          // active: DepVO.active || false,
+          transactionNo: MIMVO.transactionNo,
+          transactionDate: MIMVO.transactionDate ? dayjs(MIMVO.transactionDate, 'YYYY-MM-DD') : dayjs(),
+          dispatchDate: MIMVO.dispatchDate ? dayjs(MIMVO.dispatchDate, 'YYYY-MM-DD') : dayjs(),
+          transactionType: MIMVO.transactionType,
+          // sen: MIMVO.sender,
+          // senderAddress: MIMVO.senderAddress,
+          customer: MIMVO.receiver,
+          customerAddress: MIMVO.receiverAddress,
+          receiverRegIn: MIMVO.receiverGst,
+          amountInWords: MIMVO.amountInWords,
+          amount: MIMVO.amount,
+          transporterName: MIMVO.transporterName,
+          orgId: MIMVO.orgId,
+          vehicleNo: MIMVO.vehicleNo,
+          driverNo: MIMVO.driverPhoneNo,
+          createdBy: MIMVO.createdBy,
         });
         setDetailsTableData(
-          DepVO.depositparticularsVO.map((row) => ({
+          MIMVO.issueManifestProviderDetailsVOs.map((row) => ({
             id: row.id,
-            accountName: row.accountsName,
-            debit: row.debit,
-            credit: row.credit,
-            narration: row.narration
+            kitNo: row.kitId,
+            kitName: row.kitName,
+            kitQty: row.kitQty,
+            hsnsacCode: row.hsnCode,
+            productCode: row.assetCode,
+            productName: row.asset,
+            productQty: row.assetQty
           }))
         );
-
-        console.log('DataToEdit', DepVO);
       } else {
         // Handle erro
       }
@@ -334,31 +349,61 @@ const getAllReceiverDetails = async () => {
 
   const handleSave = async () => {
     const errors = {};
-    // if (!formData.chequeNo) {
-    //   errors.chequeNo = 'Cheque No is required';
-    // }
-
+    if (!formData.transactionNo) {
+      errors.transactionNo = 'Transaction No is required';
+    }
+    if (!formData.dispatchDate) {
+      errors.dispatchDate = 'Dispatch Date is required';
+    }
+    if (!formData.fromWarehouse) {
+      errors.fromWarehouse = 'Warehouse is required';
+    }
+    if (!formData.customer) {
+      errors.customer = 'Customer is required';
+    }
+    if (!formData.amount) {
+      errors.amount = 'Amount is required';
+    }
+    if (!formData.amountInWords) {
+      errors.amountInWords = 'Amount In Words is required';
+    }
+    if (!formData.transporterName) {
+      errors.transporterName = 'Transporter Name is required';
+    }
+    if (!formData.vehicleNo) {
+      errors.vehicleNo = 'Vehicle No is required';
+    }
+    if (!formData.driverNo) {
+      errors.driverNo = 'Driver No is required';
+    }
     let detailTableDataValid = true;
     const newTableErrors = detailsTableData.map((row) => {
       const rowErrors = {};
-      // if (!row.accountName) {
-      //   rowErrors.accountName = 'Account Name is required';
-      //   detailTableDataValid = false;
-      // }
+      if (!row.kitNo) {
+        rowErrors.kitNo = 'Kit No is required';
+        detailTableDataValid = false;
+      }
+      if (!row.hsnsacCode) {
+        rowErrors.hsnsacCode = 'HSN/SAC is required';
+        detailTableDataValid = false;
+      }
       return rowErrors;
     });
+    console.log("HandleSave Errors",errors);
+    console.log("HandleSave SubTable Errors",newTableErrors);
+    
     setFieldErrors(errors);
     setDetailsTableErrors(newTableErrors);
     if (Object.keys(errors).length === 0 && detailTableDataValid) {
       const materialIssueVO = detailsTableData.map((row) => ({
         ...(editId && { id: row.id }),
-        kitNo: row.kitNo,
+        kitId: row.kitNo,
         kitName: row.kitName,
         kitQty: row.kitQty,
-        hsnsacCode: row.hsnsacCode,
-        productCode: row.productCode,
-        productName: row.productName,
-        productQty: row.productQty,
+        hsnCode: row.hsnsacCode,
+        assetCode: row.productCode,
+        asset: row.productName,
+        assetQty: row.productQty
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
@@ -383,11 +428,11 @@ const getAllReceiverDetails = async () => {
         amountInWords: formData.amountInWords,
         transporterName: formData.transporterName,
         vehicleNo: formData.vehicleNo,
-        driverPhoneNo: formData.driverNo,
+        driverPhoneNo: formData.driverNo
       };
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
-        const response = await apiCalls('put', `/transaction/createUpdateIssuemanifest`, saveFormData);
+        const response = await apiCalls('put', `/reportController/createUpdateIssuemanifest`, saveFormData);
         if (response.status === true) {
           console.log('Response:', response);
           showToast('success', editId ? 'Material Issue Manifest Updated Successfully' : 'Material Issue Manifest Created successfully');
@@ -513,7 +558,6 @@ const getAllReceiverDetails = async () => {
   //   setEditMim(false);
   //   getAllIssueManifestProvider();
   // };
-
   return (
     <>
       <div>
@@ -532,7 +576,7 @@ const getAllReceiverDetails = async () => {
             <>
               <div className="row d-flex ml">
                 <div className="col-md-3 mb-3">
-                  <TextField id="transactionNo" label="Transaction No" variant="outlined" size="small" fullWidth name="transactionNo" value={formData.transactionNo} />
+                  <TextField id="transactionNo" label="Transaction No" onChange={handleInputChange} variant="outlined" size="small" fullWidth name="transactionNo" value={formData.transactionNo} />
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled" size="small">
@@ -584,15 +628,21 @@ const getAllReceiverDetails = async () => {
                 <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
-                  options={allWarehouse.map((option, index) => ({ ...option, key: index }))}
+                  options={allWarehouse}
                   getOptionLabel={(option) => option.locationName || ''}
+                  isOptionEqualToValue={(option, value) => option.id === value.id} // ✅ Add this line
                   sx={{ width: '100%' }}
                   size="small"
-                  value={formData.receiverWarehouse ? allWarehouse.find((c) => c.locationName === formData.receiverWarehouse) : null}
+                  value={
+                    formData.fromWarehouse
+                      ? allWarehouse.find((c) => c.locationName === formData.fromWarehouse)
+                      : null
+                  }
                   onChange={(event, newValue) => {
                     handleInputChange({
                       target: {
-                        name: 'receiverWarehouse', value: newValue ? newValue.locationName : ''
+                        name: 'fromWarehouse',
+                        value: newValue ? newValue.locationName : ''
                       }
                     });
                     handleInputChange({
@@ -606,13 +656,13 @@ const getAllReceiverDetails = async () => {
                     <TextField
                       {...params}
                       label="Receiver Warehouse"
-                      name="receiverWarehouse"
+                      name="fromWarehouse"
                       InputProps={{
                         ...params.InputProps,
                         style: { height: 40 }
                       }}
-                      error={!!fieldErrors.receiverWarehouse}
-                      helperText={fieldErrors.receiverWarehouse}
+                      error={!!fieldErrors.fromWarehouse}
+                      helperText={fieldErrors.fromWarehouse}
                     />
                   )}
                 />
@@ -638,50 +688,52 @@ const getAllReceiverDetails = async () => {
                 />
               </div>
                 <div className="col-md-3 mb-3">
-                <Autocomplete
-                  disablePortal
-                  options={allReceiver.map((option, index) => ({ ...option, key: index }))}
-                  getOptionLabel={(option) => option.partyShortName || ''}
-                  sx={{ width: '100%' }}
-                  size="small"
-                  value={formData.customer ? allReceiver.find((c) => c.partyShortName === formData.customer) : null}
-                  onChange={(event, newValue) => {
-                    handleInputChange({
-                      target: {
-                        name: 'customer', value: newValue ? newValue.partyShortName : ''
-                      }
-                    });
-                    const address = newValue?.partyAddressVO?.[0];
-                    const fullAddress = address
-                      ? [address.addressLine1, address.addressLine2, address.addressLine3]
-                        .filter(Boolean)
-                        .join(', ')
-                      : '';
-                    handleInputChange({
-                      target: {
-                        name: 'customerAddress',
-                        value: fullAddress
-                      }
-                    });
-                    handleInputChange({
-                      target: {
-                        name: 'receiverRegIn',
-                        value: newValue ? newValue.gstIn : ''
-                      }
-                    });
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      name="customer"
-                      label= "Receiver"
-                      InputProps={{
-                        ...params.InputProps,
-                        style: { height: 40 }
-                      }}
-                    />
-                  )}
-                />
+                  <Autocomplete
+                    disablePortal
+                    options={allReceiver}
+                    getOptionLabel={(option) => option.partyShortName || ''}
+                    isOptionEqualToValue={(option, value) => option.partyCode === value.partyCode} // ✅ FIXED
+                    value={
+                      formData.customer
+                        ? allReceiver.find((c) => c.partyShortName === formData.customer)
+                        : null
+                    }
+                    onChange={(event, newValue) => {
+                      handleInputChange({
+                        target: {
+                          name: 'customer',
+                          value: newValue ? newValue.partyShortName : ''
+                        }
+                      });
+                      const address = newValue?.partyAddressVO?.[0];
+                      const fullAddress = address
+                        ? [address.addressLine1, address.addressLine2, address.addressLine3].filter(Boolean).join(', ')
+                        : '';
+                      handleInputChange({
+                        target: {
+                          name: 'customerAddress',
+                          value: fullAddress
+                        }
+                      });
+                      handleInputChange({
+                        target: {
+                          name: 'receiverRegIn',
+                          value: newValue ? newValue.gstIn : ''
+                        }
+                      });
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        name="customer"
+                        label="Receiver"
+                        InputProps={{
+                          ...params.InputProps,
+                          style: { height: 40 }
+                        }}
+                      />
+                    )}
+                  />
               </div>
                 <div className="col-md-3 mb-3">
                   <TextField
@@ -759,19 +811,36 @@ const getAllReceiverDetails = async () => {
                 </div>
                 <div className="col-md-3 mb-3">
                 <Autocomplete
-                  disablePortal
-                  options={allTransporters.map((option, index) => ({ ...option, key: index }))}
+                  options={allTransporters}
                   getOptionLabel={(option) => option.partyShortName || ''}
-                  sx={{ width: '100%' }}
-                  size="small"
-                  value={formData.transporterName ? allTransporters.find((c) => c.partyShortName === formData.transporterName) : null}
+                  isOptionEqualToValue={(option, value) => option.partyCode === value.partyCode}
+                  value={
+                    formData.transporterName
+                      ? allTransporters.find((c) => c.partyShortName === formData.transporterName)
+                      : null
+                  }
                   onChange={(event, newValue) => {
                     handleInputChange({
                       target: {
-                        name: 'transporterName', value: newValue ? newValue.partyShortName : ''
+                        name: 'transporterName',
+                        value: newValue ? newValue.partyShortName : ''
                       }
                     });
                   }}
+                  // options={allTransporters}
+                  // getOptionLabel={(option) => option.partyShortName || ''}
+                  // isOptionEqualToValue={(option, value) => option.partyShortName === value.transporterName}
+                  
+                  sx={{ width: '100%' }}
+                  size="small"
+                  // value={formData.transporterName ? allTransporters.find((c) => c.partyShortName === formData.transporterName) : null}
+                  // onChange={(event, newValue) => {
+                  //   handleInputChange({
+                  //     target: {
+                  //       name: 'transporterName', value: newValue ? newValue.partyShortName : ''
+                  //     }
+                  //   });
+                  // }}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -810,9 +879,21 @@ const getAllReceiverDetails = async () => {
                     fullWidth
                     name="driverNo"
                     value={formData.driverNo}
-                    onChange={handleInputChange}
+                    inputProps={{
+                    maxLength: 10,
+                    inputMode: 'numeric', // mobile-friendly numeric keypad
+                    pattern: '[0-9]*'      // enforce digits only
+                  }}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (/^\d{0,10}$/.test(value)) {
+                      setFormData({ ...formData, driverNo: value });
+                      setFieldErrors({ ...fieldErrors, driverNo: '' });
+                    } else {
+                      setFieldErrors({ ...fieldErrors, driverNo: 'Enter up to 10 digits only' });
+                    }
+                  }}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.driverNo ? fieldErrors.driverNo : ''}</span>}
-                    inputProps={{ maxLength: 10 }}
                     error={!!fieldErrors.driverNo}
                   />
                 </div>
@@ -878,6 +959,7 @@ const getAllReceiverDetails = async () => {
                                         <td className="border px-2 py-2">
                                           <Autocomplete
                                             options={allKitId}
+                                            disableClearable
                                             getOptionLabel={(option) => option.kitNo || ''}
                                             value={
                                               allKitId.find(
@@ -891,12 +973,12 @@ const getAllReceiverDetails = async () => {
                                                     ? {
                                                       ...r,
                                                       kitNo: newValue?.kitNo || '',
-                                                      kitName: newValue?.kitName || '',
-                                                      kitId: newValue?.kitId || '',
+                                                      kitName: newValue?.kitDesc || '',
                                                       kitQty: newValue?.partQty || '',
-                                                      assetCode: newValue?.kitAssetVO?.[0]?.assetCodeId || '',
-                                                      asset: newValue?.kitAssetVO?.[0]?.assetName || '',
-                                                      assetQty: newValue?.kitAssetVO?.[0]?.quantity || '',
+                                                      hsnsacCode:'',
+                                                      productCode: newValue?.kitAssetVO?.[0]?.assetCodeId || '',
+                                                      productName: newValue?.kitAssetVO?.[0]?.assetName || '',
+                                                      productQty: newValue?.kitAssetVO?.[0]?.quantity || '',
                                                     }
                                                     : r
                                                 )
@@ -916,13 +998,15 @@ const getAllReceiverDetails = async () => {
                                                 helperText={detailsTableErrors[index]?.kitName}
                                               />
                                             )}
-                                            sx={{ width: 250 }}
+                                            sx={{ width: 120 }}
                                           />
                                         </td>
                                         <td className="border px-2 py-2">
                                           <input
                                             type="text"
                                             value={row.kitName}
+                                            disabled
+                                            style={{ width: '120px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>
@@ -948,6 +1032,7 @@ const getAllReceiverDetails = async () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             type="text"
+                                            disabled
                                             value={row.kitQty}
                                             onChange={(e) => {
                                               const value = e.target.value;
@@ -974,6 +1059,8 @@ const getAllReceiverDetails = async () => {
                                         <td>
                                           <Autocomplete
                                             options={allHsnSacCode}
+                                            disableClearable
+                                            // sx={{ width: 120 }}
                                             getOptionLabel={(option) => option.code || ''}
                                             value={
                                               row.hsnsacCode
@@ -1002,6 +1089,7 @@ const getAllReceiverDetails = async () => {
                                           <input
                                             type="text"
                                             value={row.productCode}
+                                            disabled
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>
@@ -1028,6 +1116,8 @@ const getAllReceiverDetails = async () => {
                                           <input
                                             type="text"
                                             value={row.productName}
+                                            disabled
+                                            style={{ width: '180px' }}
                                             onChange={(e) => {
                                               const value = e.target.value;
                                               setDetailsTableData((prev) =>
@@ -1053,6 +1143,7 @@ const getAllReceiverDetails = async () => {
                                         <td className="border px-2 py-2">
                                           <input
                                             type="text"
+                                            disabled
                                             value={row.productQty}
                                             onChange={(e) => {
                                               const value = e.target.value;
@@ -1091,7 +1182,7 @@ const getAllReceiverDetails = async () => {
               </>
             </>
           ) : (
-            <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getAllDepositById} />
+            <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getAllMIMById} />
           )}
         </div>
       </div>
