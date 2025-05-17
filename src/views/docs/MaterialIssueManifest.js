@@ -5,21 +5,37 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import { toWords } from 'number-to-words';
-import { FormControl, FormHelperText, InputLabel, MenuItem, Select, Autocomplete } from '@mui/material';
-import TextField from '@mui/material/TextField';
+import { FormControl } from '@mui/material';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'react-tabs/style/react-tabs.css';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import CommonTable from 'views/basicMaster/CommonTable';
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Autocomplete,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  TableHead,
+  Paper,
+} from '@mui/material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import apiCalls from 'apicall';
+import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import MIMpdf from './MIMpdf';
 
 export const MaterialIssueManifest = () => {
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
@@ -29,6 +45,9 @@ export const MaterialIssueManifest = () => {
   const [companyName, setCompanyName] = useState(localStorage.getItem('companyName'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
 
+  const [mimById, setMIMById] = useState([]);
+  const [downloadPdf, setDownloadPdf] = useState(false);
+  const [pdfData, setPdfData] = useState([]);
   const [allReceiver, setAllReceiver] = useState([]);
   const [allWarehouse, setAllWarehouse] = useState([]);
   const [allKitId, setAllKitId] = useState([]);
@@ -38,6 +57,10 @@ export const MaterialIssueManifest = () => {
   const [editId, setEditId] = useState('');
   const [data, setData] = useState(true);
   const [value, setValue] = useState(0);
+  const [selectedKit, setSelectedKit] = useState(null);
+  const [selectedhsn, setSelectedhsn] = useState(null);
+  const [kitQty, setKitQty] = useState('');
+  const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     orgId: orgId,
     transactionNo: '',
@@ -73,18 +96,7 @@ export const MaterialIssueManifest = () => {
     vehicleNo: '',
     driverNo: '',
   });
-  const [detailsTableData, setDetailsTableData] = useState([
-    {
-      id: 1,
-      kitNo: '',
-      kitName: '',
-      kitQty: '',
-      hsnsacCode: '',
-      productCode: '',
-      productName: '',
-      productQty: '',
-    }
-  ]);
+  const [detailsTableData, setDetailsTableData] = useState([]);
 
   const [detailsTableErrors, setDetailsTableErrors] = useState([
     {
@@ -99,10 +111,11 @@ export const MaterialIssueManifest = () => {
   ]);
 
   const listViewColumns = [
-    { accessorKey: 'currency', header: 'Currency', size: 140 },
-    { accessorKey: 'exchangeRate', header: 'Ex.Rate', size: 140 },
-    { accessorKey: 'chequeNo', header: 'Ref No', size: 140 },
-    { accessorKey: 'docId', header: 'Document No', size: 140 }
+    { accessorKey: 'transactionNo', header: 'Transaction No', size: 140 },
+    { accessorKey: 'transactionDate', header: 'Transaction Date', size: 140 },
+    { accessorKey: 'dispatchDate', header: 'Dispatch Date', size: 140 },
+    { accessorKey: 'receiver', header: 'Receiver', size: 140 },
+    { accessorKey: 'transporterName', header: 'Transporter Name', size: 140 },
   ];
   useEffect(() => {
     getAllServiceAccountCode();
@@ -110,6 +123,7 @@ export const MaterialIssueManifest = () => {
     getAllReceiverDetails();
     getAllKitDetails();
     getAllTransporters();
+    getAllManifestByOrgId();
   }, []);
 
   const handleClear = () => {
@@ -148,16 +162,7 @@ export const MaterialIssueManifest = () => {
     vehicleNo: '',
     driverNo: '',
     });
-    setDetailsTableData([{ 
-      id: 1,      
-      kitNo: '',
-      kitName: '',
-      kitQty: '',
-      hsnsacCode: '',
-      productCode: '',
-      productName: '',
-      productQty: '', 
-    }]);
+    setDetailsTableData([]);
     setDetailsTableErrors([{
       kitNo: '',
       kitName: '',
@@ -168,6 +173,7 @@ export const MaterialIssueManifest = () => {
       productQty: '',
     }]);
     setEditId('');
+
   };
 
   const handleView = () => {
@@ -177,33 +183,37 @@ export const MaterialIssueManifest = () => {
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-
   const handleAddRow = () => {
-    // if (isLastRowEmpty(detailsTableData)) {
-    //   displayRowError(detailsTableData);
-    //   return;
-    // }
-    const newRow = {
-      id: Date.now(),
-      kitNo: '',
-      kitName: '',
-      kitQty: '',
-      hsnsacCode: '',
-      productCode: '',
-      productName: '',
-      productQty: '',
-    };
-    setDetailsTableData([...detailsTableData, newRow]);
-    setDetailsTableErrors([...detailsTableErrors, {       
-      kitNo: '',
-      kitName: '',
-      kitQty: '',
-      hsnsacCode: '',
-      productCode: '',
-      productName: '',
-      productQty: ''
-    }]);
+    setSelectedKit(null);
+    setKitQty('');
+    setOpen(true);
   };
+  // const handleAddRow = () => {
+  //   // if (isLastRowEmpty(detailsTableData)) {
+  //   //   displayRowError(detailsTableData);
+  //   //   return;
+  //   // }
+  //   const newRow = {
+  //     id: Date.now(),
+  //     kitNo: '',
+  //     kitName: '',
+  //     kitQty: '',
+  //     hsnsacCode: '',
+  //     productCode: '',
+  //     productName: '',
+  //     productQty: '',
+  //   };
+  //   setDetailsTableData([...detailsTableData, newRow]);
+  //   setDetailsTableErrors([...detailsTableErrors, {       
+  //     kitNo: '',
+  //     kitName: '',
+  //     kitQty: '',
+  //     hsnsacCode: '',
+  //     productCode: '',
+  //     productName: '',
+  //     productQty: ''
+  //   }]);
+  // };
   const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
     const rowIndex = table.findIndex((row) => row.id === id);
     if (rowIndex !== -1) {
@@ -292,8 +302,8 @@ const getAllReceiverDetails = async () => {
   };
   const getAllManifestByOrgId = async () => {
     try {
-      const result = await apiCalls('get', `/transaction/getAllBankingDepositByOrgId?orgId=${orgId}`);
-      setData(result.paramObjectsMap.bankingDepositVO.reverse() || []);
+      const result = await apiCalls('get', `/reportController/getAllIssueManifestProviderForPendingIR?orgId=${orgId}`);
+      setData(result.paramObjectsMap.IssueManifestProviderVO.reverse() || []);
       console.log('bankingDepositVO', result);
     } catch (err) {
       console.log('error', err);
@@ -304,18 +314,19 @@ const getAllReceiverDetails = async () => {
     setShowForm(true);
     try {
       const result = await apiCalls('get', `/reportController/getAllIssueManifestProviderById?id=${row.original.id}`);
-
       if (result) {
         const MIMVO = result.paramObjectsMap.IssueManifestProviderVO;
         setEditId(row.original.id);
-        
+        setMIMById(result.paramObjectsMap.IssueManifestProviderVO);
+        setPdfData(result.paramObjectsMap.IssueManifestProviderVO);
+        // setDownloadPdf(true);
         setFormData({
           transactionNo: MIMVO.transactionNo,
           transactionDate: MIMVO.transactionDate ? dayjs(MIMVO.transactionDate, 'YYYY-MM-DD') : dayjs(),
           dispatchDate: MIMVO.dispatchDate ? dayjs(MIMVO.dispatchDate, 'YYYY-MM-DD') : dayjs(),
           transactionType: MIMVO.transactionType,
-          // sen: MIMVO.sender,
-          // senderAddress: MIMVO.senderAddress,
+          fromWarehouse: MIMVO.fromWarehouse,
+          warehouseAddress: MIMVO.warehouseAddress,
           customer: MIMVO.receiver,
           customerAddress: MIMVO.receiverAddress,
           receiverRegIn: MIMVO.receiverGst,
@@ -346,7 +357,21 @@ const getAllReceiverDetails = async () => {
       console.error('Error fetching data:', error);
     }
   };
-
+const GeneratePdf = async (row) => {
+  try {
+    const result = await apiCalls('get', `/reportController/getAllIssueManifestProviderById?id=${row.original.id}`);
+    const MIMVO = result.paramObjectsMap.IssueManifestProviderVO;
+    if (MIMVO) {
+      setPdfData(MIMVO);
+      setDownloadPdf(true);
+    } else {
+      showToast('error', 'No PDF data found for this record');
+    }
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    showToast('error', 'Failed to fetch data for PDF');
+  }
+};
   const handleSave = async () => {
     const errors = {};
     if (!formData.transactionNo) {
@@ -369,12 +394,6 @@ const getAllReceiverDetails = async () => {
     }
     if (!formData.transporterName) {
       errors.transporterName = 'Transporter Name is required';
-    }
-    if (!formData.vehicleNo) {
-      errors.vehicleNo = 'Vehicle No is required';
-    }
-    if (!formData.driverNo) {
-      errors.driverNo = 'Driver No is required';
     }
     let detailTableDataValid = true;
     const newTableErrors = detailsTableData.map((row) => {
@@ -413,6 +432,7 @@ const getAllReceiverDetails = async () => {
         createdBy: loginUserName,
         finYear: finYear,
         orgId: orgId,
+        active: true,
         issueManifestProviderDetailsDTO: materialIssueVO,
         transactionNo: formData.transactionNo,
         transactionDate: dayjs(formData.transactionDate).format('YYYY-MM-DD'),
@@ -449,115 +469,36 @@ const getAllReceiverDetails = async () => {
       setFieldErrors(errors);
     }
   };
-  // const handlePrint = useReactToPrint({
-  //   content: () => componentRef.current,
-  //   onBeforeGetContent: async () => {
-  //     // Ensure watermark is rendered before capturing content
-  //     await new Promise(resolve => setTimeout(resolve, 50));
-  //     return true;
-  //   },
-  //   onAfterPrint: () => {
-  //     // Reset watermark after printing (optional)
-  //     setWatermark('');
-  //   }
-  // });
+const handleProceed = () => {
+  if (!selectedKit || !selectedhsn || !kitQty) return;
 
-  // const handleDownloadPdf = async (watermarkText) => {
-  //   setWatermark(watermarkText);
-  //   await new Promise(resolve => setTimeout(resolve, 50));
+  const kitAssets = selectedKit.kitAssetVO || [];
+  const timestamp = Date.now();
 
-  //   const element = componentRef.current;
-  //   const canvas = await html2canvas(element);
-  //   const data = canvas.toDataURL('image/png');
+  const newKitRows = kitAssets.map((asset, idx) => ({
+    id: timestamp + idx,
+    kitNo: selectedKit.kitNo,
+    kitName: selectedKit.kitDesc, 
+    kitQty: parseFloat(kitQty),  
+    hsnsacCode: selectedhsn.code || '',
+    productCode: asset.assetCodeId || '',
+    productName: asset.assetName || '',
+    productQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
+  }));
 
-  //   const pdf = new jsPDF();
-  //   const imgProperties = pdf.getImageProperties(data);
-  //   const pdfWidth = pdf.internal.pageSize.getWidth();
-  //   const pdfHeight = (imgProperties.height * pdfWidth) / imgProperties.width;
+  setDetailsTableData((prev) => [...prev, ...newKitRows]);
+  setOpen(false);
+  setSelectedKit(null);
+  setSelectedhsn(null);
+  setKitQty('');
+};
+const groupedData = detailsTableData.reduce((acc, row) => {
+  const kitKey = row.kitNo;
+  if (!acc[kitKey]) acc[kitKey] = [];
+  acc[kitKey].push(row);
+  return acc;
+}, {});
 
-  //   pdf.addImage(data, 'PNG', 0, 0, pdfWidth, pdfHeight);
-  //   pdf.save(`MaterialIssueManifest_${pdfData.transactionNo}_${watermarkText.replace(' ', '_')}.pdf`);
-
-  //   setWatermark('');
-  // };
-
-  // const handlePrintWithWatermark = async (watermarkText) => {
-  //   setWatermark(watermarkText);
-  //   // Wait for React to render the updated watermark
-  //   await new Promise(resolve => setTimeout(resolve, 50));
-  //   handlePrint(); // Trigger print
-  // };
-
-  // const handleDownloadClick = (row) => {
-  //   getAllIssueManifestProviderById(row.original.id);
-  //   setOpenDialog(true);
-  // };
-  // const handleEditRow = (row) => {
-  //   getAllIssueManifestProviderById(row.original.id);
-  //   setSelectedRowId(row.original.id);
-  //   setEditMim(true);
-  // };
-  // const transformProductDetails = (details) => {
-  //   const groupedDetails = details.reduce((acc, detail) => {
-  //     const existingKit = acc.find((kit) => kit.kitId === detail.kitId);
-  //     const asset = {
-  //       assetCode: detail.assetCode,
-  //       assetName: detail.asset,
-  //       assetQty: detail.assetQty
-  //     };
-
-  //     if (existingKit) {
-  //       existingKit.assets.push(asset);
-  //     } else {
-  //       acc.push({
-  //         kitId: detail.kitId,
-  //         kitName: detail.kitName,
-  //         kitQty: detail.kitQty,
-  //         hsnCode: detail.hsnCode,
-  //         assets: [asset]
-  //       });
-  //     }
-
-  //     return acc;
-  //   }, []);
-
-  //   return groupedDetails;
-  // };
-
-  // const getAllIssueManifestProviderById = async (selectedRowId) => {
-  //   try {
-  //     const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getAllIssueManifestProviderById?id=${selectedRowId}`);
-  //     if (response.status === 200) {
-  //       const mimData = response.data.paramObjectsMap.IssueManifestProviderVO;
-  //       setPdfData(mimData);
-  //       const transformedDetails = transformProductDetails(mimData.issueManifestProviderDetailsVOs);
-  //       setProductDetails(transformedDetails);
-  //       const concatenatedData = {
-  //         TransactionNo: mimData.transactionNo,
-  //         TransactionDate: mimData.transactionDate,
-  //         DispatchDate: mimData.dispatchDate,
-  //         Receiver: mimData.receiver
-  //       };
-
-  //       const formattedData = `
-  //         TransactionNo: ${concatenatedData.TransactionNo},
-  //         TransactionDate: ${concatenatedData.TransactionDate},
-  //         DispatchDate: ${concatenatedData.DispatchDate},
-  //         Receiver: ${concatenatedData.Receiver}
-  //      `;
-
-  //       setQrCodeValue(formattedData);
-  //       console.log('THE QRCODE DATA IS:', formattedData);
-  //     }
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
-  // const handleBack = () => {
-  //   setAddMim(false);
-  //   setEditMim(false);
-  //   getAllIssueManifestProvider();
-  // };
   return (
     <>
       <div>
@@ -692,7 +633,7 @@ const getAllReceiverDetails = async () => {
                     disablePortal
                     options={allReceiver}
                     getOptionLabel={(option) => option.partyShortName || ''}
-                    isOptionEqualToValue={(option, value) => option.partyCode === value.partyCode} // ✅ FIXED
+                    isOptionEqualToValue={(option, value) => option.partyShortName === value.customer}
                     value={
                       formData.customer
                         ? allReceiver.find((c) => c.partyShortName === formData.customer)
@@ -812,35 +753,23 @@ const getAllReceiverDetails = async () => {
                 <div className="col-md-3 mb-3">
                 <Autocomplete
                   options={allTransporters}
-                  getOptionLabel={(option) => option.partyShortName || ''}
-                  isOptionEqualToValue={(option, value) => option.partyCode === value.partyCode}
+                  getOptionLabel={(option) => option.partyName || ''}
+                  isOptionEqualToValue={(option, value) => option?.transporterName === value?.transporterName}
                   value={
                     formData.transporterName
-                      ? allTransporters.find((c) => c.partyShortName === formData.transporterName)
+                      ? allTransporters.find((c) => c.partyName === formData.transporterName)
                       : null
                   }
                   onChange={(event, newValue) => {
                     handleInputChange({
                       target: {
                         name: 'transporterName',
-                        value: newValue ? newValue.partyShortName : ''
+                        value: newValue ? newValue.partyName : ''
                       }
                     });
                   }}
-                  // options={allTransporters}
-                  // getOptionLabel={(option) => option.partyShortName || ''}
-                  // isOptionEqualToValue={(option, value) => option.partyShortName === value.transporterName}
-                  
                   sx={{ width: '100%' }}
                   size="small"
-                  // value={formData.transporterName ? allTransporters.find((c) => c.partyShortName === formData.transporterName) : null}
-                  // onChange={(event, newValue) => {
-                  //   handleInputChange({
-                  //     target: {
-                  //       name: 'transporterName', value: newValue ? newValue.partyShortName : ''
-                  //     }
-                  //   });
-                  // }}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -881,8 +810,8 @@ const getAllReceiverDetails = async () => {
                     value={formData.driverNo}
                     inputProps={{
                     maxLength: 10,
-                    inputMode: 'numeric', // mobile-friendly numeric keypad
-                    pattern: '[0-9]*'      // enforce digits only
+                    inputMode: 'numeric',
+                    pattern: '[0-9]*'
                   }}
                   onChange={(e) => {
                     const value = e.target.value;
@@ -914,267 +843,95 @@ const getAllReceiverDetails = async () => {
                   <Box sx={{ padding: 2 }}>
                     {value === 0 && (
                       <>
-                        <div className="row d-flex ml">
-                          <div className="mb-1">
-                            <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                          </div>
-                          <div className="row mt-2">
-                            <div className="col-lg-12">
-                              <div className="table-responsive">
-                                <table className="table table-bordered ">
-                                  <thead>
-                                    <tr style={{ backgroundColor: '#673AB7' }}>
-                                      <th className="table-header">Action</th>
-                                      <th className="table-header">S.No</th>
-                                      <th className="table-header">Kit No</th>
-                                      <th className="table-header">Kit Name</th>
-                                      <th className="table-header">Kit Qty</th>
-                                      <th className="table-header">HSN/SAC Code</th>
-                                      <th className="table-header">Product Code</th>
-                                      <th className="table-header">Product Name</th>
-                                      <th className="table-header">Product Qty</th>
-                                    </tr>
-                                  </thead>
-                                  <tbody>
-                                    {detailsTableData.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="border px-2 py-2 text-center">
-                                          <ActionButton
-                                            title="Delete"
-                                            icon={DeleteIcon}
-                                            onClick={() =>
-                                              handleDeleteRow(
-                                                row.id,
-                                                detailsTableData,
-                                                setDetailsTableData,
-                                                detailsTableErrors,
-                                                setDetailsTableErrors
-                                              )
-                                            }
-                                          />
-                                        </td>
-                                        <td className="text-center">
-                                          <div className="pt-2">{index + 1}</div>
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <Autocomplete
-                                            options={allKitId}
-                                            disableClearable
-                                            getOptionLabel={(option) => option.kitNo || ''}
-                                            value={
-                                              allKitId.find(
-                                                (a) => a.kitNo?.toLowerCase().trim() === row.kitNo?.toLowerCase().trim()
-                                              ) || null
-                                            }
-                                            onChange={(event, newValue) => {
-                                              setDetailsTableData((prev) =>
-                                                prev.map((r) =>
-                                                  r.id === row.id
-                                                    ? {
-                                                      ...r,
-                                                      kitNo: newValue?.kitNo || '',
-                                                      kitName: newValue?.kitDesc || '',
-                                                      kitQty: newValue?.partQty || '',
-                                                      hsnsacCode:'',
-                                                      productCode: newValue?.kitAssetVO?.[0]?.assetCodeId || '',
-                                                      productName: newValue?.kitAssetVO?.[0]?.assetName || '',
-                                                      productQty: newValue?.kitAssetVO?.[0]?.quantity || '',
-                                                    }
-                                                    : r
-                                                )
-                                              );
-                                              setDetailsTableErrors((prevErrors) =>
-                                                prevErrors.map((err, idx) =>
-                                                  idx === index ? { ...err, kitName: '', kitQty: '' } : err
-                                                )
-                                              );
-                                            }}
-                                            size="small"
-                                            renderInput={(params) => (
-                                              <TextField
-                                                {...params}
-                                                variant="outlined"
-                                                error={!!detailsTableErrors[index]?.kitName}
-                                                helperText={detailsTableErrors[index]?.kitName}
-                                              />
-                                            )}
-                                            sx={{ width: 120 }}
-                                          />
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            value={row.kitName}
-                                            disabled
-                                            style={{ width: '120px' }}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              setDetailsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, kitName: value } : r))
-                                              );
-                                              setDetailsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  kitName: !value ? 'Kit Name is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            }}
-                                            className={detailsTableErrors[index]?.kitName ? 'error form-control' : 'form-control'}
-                                          />
-                                          {detailsTableErrors[index]?.kitName && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailsTableErrors[index].kitName}
-                                            </div>
+                          <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddRow}>
+                            Add Kit
+                          </Button>
+                          <Dialog open={open} onClose={() => setOpen(false)}>
+                            <DialogTitle>Select Kit</DialogTitle>
+                            <DialogContent sx={{ minWidth: 400 }}>
+                              <Autocomplete
+                                options={allKitId}
+                                getOptionLabel={(option) => option.kitNo || ''}
+                                value={selectedKit}
+                                onChange={(e, newValue) => setSelectedKit(newValue)}
+                                renderInput={(params) => <TextField {...params} label="Kit No" margin="dense" fullWidth />}
+                              />
+                              <TextField
+                                label="Kit Name"
+                                margin="dense"
+                                fullWidth
+                                value={selectedKit?.kitDesc || ''}
+                                disabled
+                              />
+                              <TextField
+                                label="Kit Quantity"
+                                margin="dense"
+                                fullWidth
+                                type="number"
+                                value={kitQty}
+                                onChange={(e) => setKitQty(e.target.value)}
+                              />
+                              <Autocomplete
+                                options={allHsnSacCode}
+                                getOptionLabel={(option) => option.code || ''}
+                                value={selectedhsn}
+                                onChange={(e, newValue) => setSelectedhsn(newValue)}
+                                renderInput={(params) => <TextField {...params} label="HSN/SAC" margin="dense" fullWidth />}
+                              />
+                            </DialogContent>
+                            <DialogActions>
+                              <Button onClick={() => setOpen(false)} color="secondary">Cancel</Button>
+                              <Button onClick={handleProceed} color="primary" variant="contained">Proceed</Button>
+                            </DialogActions>
+                          </Dialog>
+                          <TableContainer component={Paper} sx={{ mt: 2 }}>
+                            <Table>
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell>S.No</TableCell>
+                                  <TableCell>Kit No</TableCell>
+                                  <TableCell>Kit Name</TableCell>
+                                  <TableCell>Kit Qty</TableCell>
+                                  <TableCell>Product Code</TableCell>
+                                  <TableCell>Product Name</TableCell>
+                                  <TableCell>Product Qty</TableCell>
+                                </TableRow>
+                              </TableHead>
+                                <TableBody>
+                                  {Object.entries(groupedData).map(([kitNo, kitRows], kitIndex, kitArray) => (
+                                    <React.Fragment key={kitNo}>
+                                      {kitRows.map((row, rowIndex) => (
+                                        <TableRow key={row.id}>
+                                          {rowIndex === 0 && (
+                                            <>
+                                              <TableCell rowSpan={kitRows.length}>{kitIndex + 1}</TableCell>
+                                              <TableCell rowSpan={kitRows.length}>{row.kitNo}</TableCell>
+                                              <TableCell rowSpan={kitRows.length}>{row.kitName}</TableCell>
+                                              <TableCell rowSpan={kitRows.length}>{row.kitQty}</TableCell>
+                                              <TableCell rowSpan={kitRows.length}>{row.hsnsacCode}</TableCell>
+                                            </>
                                           )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            disabled
-                                            value={row.kitQty}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              setDetailsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, kitQty: value } : r))
-                                              );
-                                              setDetailsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  kitQty: !value ? 'kit Qty is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            }}
-                                            className={detailsTableErrors[index]?.kitQty ? 'error form-control' : 'form-control'}
-                                          />
-                                          {detailsTableErrors[index]?.kitQty && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailsTableErrors[index].kitQty}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td>
-                                          <Autocomplete
-                                            options={allHsnSacCode}
-                                            disableClearable
-                                            // sx={{ width: 120 }}
-                                            getOptionLabel={(option) => option.code || ''}
-                                            value={
-                                              row.hsnsacCode
-                                                ? allHsnSacCode.find((a) => a.code === row.hsnsacCode) || null
-                                                : allHsnSacCode.length === 1
-                                                  ? allHsnSacCode
-                                                  : null
-                                            }
-                                            onChange={(event, newValue) => {
-                                              const value = newValue ? newValue.code : '';
-                                              setDetailsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, hsnsacCode: value } : r))
-                                              );
-                                            }}
-                                            size="small"
-                                            renderInput={(params) => (
-                                              <TextField
-                                                {...params}
-                                                variant="outlined"
-                                              />
-                                            )}
-                                            sx={{ width: 130 }}
-                                          />
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            value={row.productCode}
-                                            disabled
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              setDetailsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, productCode: value } : r))
-                                              );
-                                              setDetailsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  productCode: !value ? 'Product Code is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            }}
-                                            className={detailsTableErrors[index]?.productCode ? 'error form-control' : 'form-control'}
-                                          />
-                                          {detailsTableErrors[index]?.productCode && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailsTableErrors[index].productCode}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            value={row.productName}
-                                            disabled
-                                            style={{ width: '180px' }}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              setDetailsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, productName: value } : r))
-                                              );
-                                              setDetailsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  productName: !value ? 'Product Name is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            }}
-                                            className={detailsTableErrors[index]?.productName ? 'error form-control' : 'form-control'}
-                                          />
-                                          {detailsTableErrors[index]?.productName && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailsTableErrors[index].productName}
-                                            </div>
-                                          )}
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            disabled
-                                            value={row.productQty}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              setDetailsTableData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, productQty: value } : r))
-                                              );
-                                              setDetailsTableErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  productQty: !value ? 'Product Qty is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            }}
-                                            className={detailsTableErrors[index]?.productQty ? 'error form-control' : 'form-control'}
-                                          />
-                                          {detailsTableErrors[index]?.productQty && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {detailsTableErrors[index].productQty}
-                                            </div>
-                                          )}
-                                        </td>
-                                      </tr>
-                                    ))}
-                                  </tbody>
-                                </table>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
+
+                                          {rowIndex !== 0 && null}
+
+                                          <TableCell>{row.productCode}</TableCell>
+                                          <TableCell>{row.productName}</TableCell>
+                                          <TableCell>{row.productQty}</TableCell>
+                                        </TableRow>
+                                      ))}
+
+                                      {/* horizontal line */}
+                                      {kitIndex !== kitArray.length - 1 && (
+                                        <TableRow>
+                                          <TableCell colSpan={8} sx={{ borderBottom: '2px solid #ccc' }} />
+                                        </TableRow>
+                                      )}
+                                    </React.Fragment>
+                                  ))}
+                                </TableBody>
+                            </Table>
+
+                          </TableContainer>
                       </>
                     )}
                   </Box>
@@ -1182,8 +939,9 @@ const getAllReceiverDetails = async () => {
               </>
             </>
           ) : (
-            <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getAllMIMById} />
+            <CommonListViewTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getAllMIMById} isPdf={true} GeneratePdf={GeneratePdf} />
           )}
+          {downloadPdf && <MIMpdf row={pdfData} modalClose={() => setDownloadPdf(false)} />}
         </div>
       </div>
     </>
