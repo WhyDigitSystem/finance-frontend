@@ -66,7 +66,7 @@ export const MaterialIssueManifest = () => {
     transactionNo: '',
     transactionDate: dayjs(),
     dispatchDate: dayjs(),
-    transactionType: '',
+    transactionType: 'ISSUE DOCKET',
     fromWarehouse: '',
     warehouseAddress: '',
     customer: '',
@@ -131,7 +131,7 @@ export const MaterialIssueManifest = () => {
     transactionNo: '',
     transactionDate: dayjs(),
     dispatchDate: dayjs(),
-    transactionType: '',
+    transactionType: 'ISSUE DOCKET',
     fromWarehouse: '',
     warehouseAddress: '',
     customer: '',
@@ -365,7 +365,7 @@ const GeneratePdf = async (row) => {
       setPdfData(MIMVO);
       setDownloadPdf(true);
     } else {
-      showToast('error', 'No PDF data found for this record');
+      showToast('error', 'Record is Incomplete Please fill needed Data');
     }
   } catch (error) {
     console.error('Error generating PDF:', error);
@@ -892,6 +892,7 @@ const groupedData = detailsTableData.reduce((acc, row) => {
                                   <TableCell>Kit No</TableCell>
                                   <TableCell>Kit Name</TableCell>
                                   <TableCell>Kit Qty</TableCell>
+                                  <TableCell>HSN/SAC</TableCell>
                                   <TableCell>Product Code</TableCell>
                                   <TableCell>Product Name</TableCell>
                                   <TableCell>Product Qty</TableCell>

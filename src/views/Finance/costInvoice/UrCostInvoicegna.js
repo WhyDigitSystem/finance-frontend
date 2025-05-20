@@ -439,8 +439,8 @@ const UrCostInvoicegna = () => {
         const urCostVO = result.paramObjectsMap.urCostInvoiceGnaVO[0];
         setListViewData(urCostVO);
         setEditId(row.original.id);
-        getCityName(urCostVO.supplierCode, urCostVO.state);
-        getAddressType(urCostVO.partyCode, urCostVO.state);
+        getCityName(urCostVO.supplierCode, urCostVO.state, urCostVO.addressType);
+        getAddressType(urCostVO.supplierCode, urCostVO.state);
         getSection(urCostVO.tdsUrCostInvoiceGnaVO[0].tdsWithHolding);
         getCurrencyAndExratesForMatchingParties(urCostVO.supplierCode);
         // getTdsDetailsFromPartyMasterSpecialTDS(urCostVO.supplierCode);
@@ -1001,12 +1001,12 @@ const UrCostInvoicegna = () => {
     // console.log('save clicked');
 
     const errors = {};
-    if (!formData.gstType) {
-      errors.gstType = 'Tax Type is required';
-    }
-    if (!formData.supplierBillNo) {
-      errors.supplierBillNo = 'Supplier Bill No is required';
-    }
+    // if (!formData.gstType) {
+    //   errors.gstType = 'Tax Type is required';
+    // }
+    // if (!formData.supplierBillNo) {
+    //   errors.supplierBillNo = 'Supplier Bill No is required';
+    // }
     if (!formData.supplierPlace) {
       errors.supplierPlace = 'Supplier Place is required';
     }
@@ -1043,10 +1043,6 @@ const UrCostInvoicegna = () => {
       const rowErrors = {};
       if (!row.section) {
         rowErrors.section = 'Section is required';
-        tdsValid = false;
-      }
-      if (!row.tdsPer) {
-        rowErrors.tdsPer = 'Tds Percentage is required';
         tdsValid = false;
       }
 
@@ -1738,36 +1734,11 @@ const UrCostInvoicegna = () => {
                                         <tr key={row.id}>
                                           <td className="text-center">{index + 1}</td>
                                           <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                            {row.chargeAC}
+                                            {row.chargeLedger}
                                           </td>
-                                          <td className="border px-2 py-2 text-center">
-                                            <FormControlLabel
-                                              control={
-                                                <Checkbox
-                                                  className="ms-2 pb-0 pt-1"
-                                                  checked={row.tdsApplicable}
-                                                  disabled
-                                                  onChange={(e) => {
-                                                    const isChecked = e.target.checked;
-
-                                                    setChargerCostInvoice((prev) =>
-                                                      prev.map((r) => (r.id === row.id ? { ...r, tdsApplicable: isChecked } : r))
-                                                    );
-                                                  }}
-                                                  name="tdsApplicable"
-                                                  color="primary"
-                                                />
-                                              }
-                                              sx={{
-                                                '& .MuiSvgIcon-root': { color: '#5e35b1' }
-                                              }}
-                                            />
-                                            {costInvoiceErrors[index]?.tdsApplicable && (
-                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                {costInvoiceErrors[index].tdsApplicable}
-                                              </div>
-                                            )}
-                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                            {row.chargeAccount}
+                                          </td> 
                                           <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                             {row.currency}
                                           </td>
@@ -1778,7 +1749,7 @@ const UrCostInvoicegna = () => {
                                             {row.rate}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                            {row.gstPer}
+                                            {row.gstPer || 0}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                             {row.fcAmount}
@@ -1787,11 +1758,8 @@ const UrCostInvoicegna = () => {
                                             {row.lcAmount}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                            {row.billAmount}
-                                          </td>
-                                          <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                            {row.gtaAmount}
-                                          </td>
+                                            {row.billAmt}
+                                          </td> 
                                         </tr>
                                       ))}
                                     </>
@@ -2205,7 +2173,7 @@ const UrCostInvoicegna = () => {
                                 type="number"
                                 disabled={formData.mode === 'SUBMIT'}
                                 inputProps={{ maxLength: 30 }}
-                                value={tdsCostInvoiceDTO[index]?.tdsPer || ''}
+                                value={tdsCostInvoiceDTO[index]?.tdsPer || 0}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
                                 error={!!tdsCostErrors[index]?.tdsPer}
                                 helperText={tdsCostErrors[index]?.tdsPer || ''}
@@ -2274,7 +2242,7 @@ const UrCostInvoicegna = () => {
                               name="totChargesLcAmt"
                               value={formData.totalChargeAmtlc}
                               size="small"
-                              placeholder="0.00"
+                              
                               disabled
                               inputProps={{ maxLength: 30 }}
                             />
@@ -2287,7 +2255,7 @@ const UrCostInvoicegna = () => {
                               name="netAmtBillCurr"
                               value={formData.netAmtBillCurr}
                               size="small"
-                              placeholder="0.00"
+                              
                               disabled
                               inputProps={{ maxLength: 30 }}
                             />
@@ -2300,7 +2268,7 @@ const UrCostInvoicegna = () => {
                               name="actBillLcAmt"
                               value={formData.actBillAmtLc}
                               size="small"
-                              placeholder="0.00"
+                              
                               disabled
                               inputProps={{ maxLength: 30 }}
                             />
@@ -2313,7 +2281,7 @@ const UrCostInvoicegna = () => {
                               name="roundOff"
                               value={formData.roundOff}
                               size="small"
-                              placeholder="0.00"
+                              
                               disabled
                               inputProps={{ maxLength: 30 }}
                             />
@@ -2326,7 +2294,7 @@ const UrCostInvoicegna = () => {
                               name="gstAmt"
                               value={formData.gstAmt}
                               size="small"
-                              placeholder="0.00"
+                              
                               disabled
                               inputProps={{ maxLength: 30 }}
                             />
@@ -2339,7 +2307,7 @@ const UrCostInvoicegna = () => {
                               name="input"
                               value={formData.input}
                               size="small"
-                              placeholder="0.00"
+                              
                               disabled
                               inputProps={{ maxLength: 30 }}
                             />
@@ -2352,7 +2320,7 @@ const UrCostInvoicegna = () => {
                               name="output"
                               value={formData.output}
                               size="small"
-                              placeholder="0.00"
+                              
                               disabled
                               inputProps={{ maxLength: 30 }}
                             />

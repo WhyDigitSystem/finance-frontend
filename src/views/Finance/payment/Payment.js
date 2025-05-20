@@ -893,7 +893,7 @@ const Payment = () => {
                       id="demo-simple-select-party"
                       label="Party Name"
                       name="partyName"
-                      disabled={editId}
+                      disabled={editId && formData.status === 'SUBMIT'}
                       required
                       value={formData.partyName || (partyName.length === 1 ? partyName[0].partyName : '')}
                       onChange={handleSelectChange}
