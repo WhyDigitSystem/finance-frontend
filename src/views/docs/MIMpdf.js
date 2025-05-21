@@ -1,12 +1,26 @@
 import DownloadIcon from '@mui/icons-material/Download';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import dayjs from 'dayjs';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { useEffect, useState } from 'react';
+import { useReactToPrint } from "react-to-print";
 import apiCalls from 'apicall';
-import React from 'react';
-
+import React, { useRef, useEffect, useState } from "react";
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Autocomplete,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  TableHead,
+  Paper,
+} from '@mui/material';
 const dummyImageURL = 'https://t3.ftcdn.net/jpg/04/62/93/66/240_F_462936689_BpEEcxfgMuYPfTaIAOC1tCDurmsno7Sp.jpg';
 
 const MIMpdf = ({ row, callBackFunction, modalClose }) => {
@@ -15,11 +29,11 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
   const [bankDetails, setBankDetails] = useState([]);
   const [companyDetails, setCompanyDetails] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
-
+const componentRef = useRef();
   const styles = {
     container: {
       textAlign: 'center',
-      margin: '20px 0',
+      margin: '10px 0',
       position: 'relative',
       fontFamily: 'Arial, sans-serif'
     },
@@ -39,11 +53,11 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
     },
     text: {
       display: 'inline-block',
-      padding: '0 15px',
-      fontSize: '14px',
+      padding: '0 10px',
+      fontSize: '10px',
       fontWeight: 'bold',
       color: '#000000',
-      borderRadius: '5px'
+      borderRadius: '2px'
     }
   };
 
@@ -52,33 +66,33 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
       display: 'grid',
       gridTemplateColumns: '1fr 1fr',
       columnGap: '20px',
-      fontSize: '12px'
+      fontSize: '10px'
     },
     row: {
       display: 'flex',
       justifyContent: 'space-between',
-      marginBottom: '5px'
+      marginBottom: '3px'
     },
     label: {
       fontWeight: 'bold'
     },
     value: {
-      marginLeft: '10px'
+      marginLeft: '5px'
     }
   };
 
   const styles2 = {
     container: {
       fontSize: '12px',
-      margin: '20px 0'
+      margin: '10px 0'
     },
     heading: {
-      marginBottom: '10px',
+      marginBottom: '5px',
       textDecoration: 'underline',
       fontSize: '14px'
     },
     item: {
-      margin: '5px 0'
+      margin: '3px 0'
     },
     label: {
       fontWeight: 'bold'
@@ -94,61 +108,72 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
   const handleClose = () => {
     setOpen(false);
   };
-  const handleDownloadPdf = async () => {
-    const doc = new jsPDF('p', 'mm', 'a4');
+const handleDownloadPdf = async () => {
+  const input = document.getElementById('main-content');
+  if (!input) {
+    console.error('Main content element not found!');
+    return;
+  }
 
-    const contentDiv = document.getElementById('main-content');
-    const annexureDiv = document.getElementById('annexure-content');
+  const canvas = await html2canvas(input, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: '#fff'
+  });
 
-    if (!contentDiv) {
-      console.error('Main content element not found!');
-      return;
-    }
+  const imgData = canvas.toDataURL('image/png');
+  const pdf = new jsPDF('p', 'mm', 'a4');
 
-    // Convert main content to an image
-    const contentCanvas = await html2canvas(contentDiv);
-    const contentImgData = contentCanvas.toDataURL('image/png');
+  const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
+  const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
 
-    // Add main content to PDF
-    doc.addImage(contentImgData, 'PNG', 10, 10, 190, 0);
+  const padding = 5; // mm margin
+  const contentWidth = pdfWidth - 2 * padding;
 
-    // Only add ANNEXURE - A if taxInvoiceAnnexureVO has values
-    if (row.taxInvoiceAnnexureVO?.length > 0 && annexureDiv) {
-      doc.addPage();
+  const imgProps = pdf.getImageProperties(imgData);
+  const imgHeight = (imgProps.height * contentWidth) / imgProps.width;
 
-      // Convert ANNEXURE - A to an image
-      const annexureCanvas = await html2canvas(annexureDiv);
-      const annexureImgData = annexureCanvas.toDataURL('image/png');
+  let heightLeft = imgHeight;
+  let position = 0;
 
-      // Add ANNEXURE - A to the last page
-      doc.addImage(annexureImgData, 'PNG', 10, 10, 190, 0);
-    }
+  // First page
+  pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
+  heightLeft -= (pdfHeight - 2 * padding);
+  position = -pdfHeight;
 
-    // Save the PDF
-    doc.save(`${row.transactionNo}.pdf`);
-  };
+  // Additional pages
+  while (heightLeft > 0) {
+    pdf.addPage();
+    pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
+    heightLeft -= (pdfHeight - 2 * padding);
+    position -= pdfHeight;
+  }
 
-  // Automatically open the dialog when the component is rendered
-  useEffect(() => {
-    // if ((row && row.approveStatus === 'Approved') || (row && row.approveStatus === 'Rejected')) {
-      handleOpen();
-      getBankDetailsByOrgId();
-      getCompanyDetails();
-    // } else {
-    //   setOpen(false);
-    // }
-    console.log('RowData =>', row);
+  pdf.save(`${row.transactionNo || 'MIM'}.pdf`);
+};
 
-    // Call the callback function to pass handleDownloadPdf if needed
-    if (callBackFunction) {
-      callBackFunction(handleDownloadPdf);
-    }
+useEffect(() => {
+  setOpen(true);
+  getBankDetailsByOrgId();
+  getCompanyDetails();
 
-    const now = new Date();
-    const formattedDate = now.toLocaleDateString('en-GB'); // Format date as DD/MM/YYYY
-    const formattedTime = now.toLocaleTimeString('en-GB'); // Format time as HH:MM:SS
-    setCurrentDateTime(`${formattedDate} ${formattedTime}`);
-  }, [row, callBackFunction]);
+  console.log("RowData =>", row);
+  console.log("callback =>", callBackFunction);
+
+  const now = new Date();
+  const formattedDate = now.toLocaleDateString('en-GB');
+  const formattedTime = now.toLocaleTimeString('en-GB');
+  setCurrentDateTime(`${formattedDate} ${formattedTime}`);
+
+  // ✅ Ensure the content is mounted before passing handleDownloadPdf
+  if (callBackFunction) {
+    setTimeout(() => {
+      if (componentRef.current) {
+        callBackFunction(handleDownloadPdf);
+      }
+    }, 500);
+  }
+}, [row, callBackFunction]);
 
   const getBankDetailsByOrgId = async () => {
     try {
@@ -174,25 +199,31 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
       console.error('Error fetching data:', error);
     }
   };
-
+const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row) => {
+  const kitKey = row.kitId;
+  if (!acc[kitKey]) acc[kitKey] = [];
+  acc[kitKey].push(row);
+  return acc;
+}, {});
   return (
     <Dialog
       open={open}
       onClose={handleClose}
       maxWidth="md"
       fullWidth
-      onEntered={handleDownloadPdf} // Ensure content is fully rendered before generating PDF
+      keepMounted 
+      // onClick={handleDownloadPdf}
+      onEntered={() => setTimeout(handleDownloadPdf, 500)}
     >
       <DialogTitle>PDF Preview</DialogTitle>
       <DialogContent>
         <div
           id="main-content"
           style={{
-            padding: '20px',
-            // backgroundColor: '#f9f9f9',
+            padding: '10px',
             width: '210mm',
             height: 'auto',
-            margin: 'auto',
+            margin: '0 auto',
             fontFamily: 'Roboto, Arial, sans-serif',
             position: 'relative'
           }}
@@ -202,10 +233,10 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
             style={{
               display: 'flex',
               justifyContent: 'space-between',
-              fontSize: '16px',
-              marginBottom: '20px',
+              fontSize: '12px',
+              marginBottom: '10px',
               borderBottom: '2px solid #000000',
-              paddingBottom: '10px',
+              paddingBottom: '5px',
               color: '#333'
             }}
           >
@@ -220,15 +251,10 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
                   }}
                 />
                 <div className="ms-2">
-                  <strong>{localStorage.getItem('companyName')}</strong>
+                  <strong style={{fontSize: '13px'}}>{localStorage.getItem('companyName')}</strong>
                   {companyDetails.cin && (
-                    <div className="d-flex flex-row" style={{ fontSize: '13px' }}>
+                    <div className="d-flex flex-row" style={{ fontSize: '10px' }}>
                       CIN: {companyDetails.cin}
-                    </div>
-                  )}
-                  {companyDetails.gst && (
-                    <div className="d-flex flex-row" style={{ fontSize: '13px' }}>
-                      REG IN: {companyDetails.gst}
                     </div>
                   )}
                   <div style={{ width: 198 }}>
@@ -237,7 +263,7 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
                     </p>
                   </div>
                   {companyDetails.city && (
-                    <div className="d-flex flex-row" style={{ fontSize: '13px' }}>
+                    <div className="d-flex flex-row" style={{ fontSize: '10px' }}>
                       {companyDetails.city} - {companyDetails.zip}
                     </div>
                   )}
@@ -245,21 +271,21 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
               </div>
             )}
             <div style={{ marginRight: '100px' }}>
-              <strong style={{ fontSize: '20px' }}>MIM</strong>
+              <strong style={{ fontSize: '13px' }}>MIM</strong>
             </div>
             <div>
-              <div className="mb-2">
+              <div className="mb-1" style={{fontSize: '11px'}}>
                 Transaction No <strong className="">: {row.transactionNo}</strong>
               </div>
-              <div className="mb-2">
+              <div className="mb-1" style={{fontSize: '11px'}}>
                 Transaction Date
                 <strong> : {row.transactionDate ? dayjs(row.transactionDate).format('DD-MM-YYYY') : 'N/A'}</strong>
               </div>
-              <div className="mb-2">
+              <div className="mb-1" style={{fontSize: '11px'}}>
                 Dispatch Date
                 <strong> : {row.dispatchDate ? dayjs(row.dispatchDate).format('DD-MM-YYYY') : 'N/A'}</strong>
               </div>
-              <div className="mb-2">
+              <div className="mb-1" style={{fontSize: '11px'}}>
                 Transaction Type <strong className="">: {row.transactionType}</strong>
               </div>
             </div>
@@ -268,33 +294,27 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
           {/* <!-- Details Section --> */}
           <div
             style={{
-              marginBottom: '20px',
+              marginBottom: '0px',
               display: 'flex',
               justifyContent: 'space-between',
-              fontSize: '14px',
+              fontSize: '11px',
               color: '#555'
             }}
           >
             <div>
-              <strong className="">Sender : {row.sender}</strong>
-              {/* <div style={{ width: 250, marginBottom: 4, display: 'flex', alignItems: 'flex-start' }}>
-                <strong style={{ marginRight: 4, whiteSpace: 'nowrap' }}>Warehouse:</strong>
-                <p style={{ margin: 0, fontSize: '12px', lineHeight: '1.6', wordBreak: 'break-word', flex: 1 }}>
-                    {row.fromWarehouse}
-                </p>
-              </div> */}
+              <strong style={{fontSize: '12px'}} className="">Sender : {row.sender}</strong>
               <div style={{ width: 250, marginBottom: 4, display: 'flex', alignItems: 'flex-start' }}>
-                <strong style={{ marginRight: 4, whiteSpace: 'nowrap' }}>WHS Address:</strong>
-                <p style={{ margin: 0, fontSize: '12px', lineHeight: '1.6', wordBreak: 'break-word', flex: 1 }}>
+                <strong style={{ marginRight: 4, whiteSpace: 'nowrap',fontSize: '12px' }}>WHS Address:</strong>
+                <p style={{ margin: 0, fontSize: '10px', lineHeight: '1.6', wordBreak: 'break-word', flex: 1 }}>
                     {row.warehouseAddress}
                 </p>
               </div>
             </div>
             <div>
-                <strong className="">Receiver: {row.receiver}</strong>
+                <strong style={{fontSize: '12px'}} className="">Receiver: {row.receiver}</strong>
                 {row.receiverAddress && <div style={{ width: 250, marginBottom: 4, display: 'flex', alignItems: 'flex-start' }}>
-                <strong style={{ marginRight: 4, whiteSpace: 'nowrap' }}>Address:</strong>
-                <p style={{ margin: 0, fontSize: '12px', lineHeight: '1.6', wordBreak: 'break-word', flex: 1 }}>
+                <strong style={{ marginRight: 4, whiteSpace: 'nowrap',fontSize: '12px' }}>Address:</strong>
+                <p style={{ margin: 0, fontSize: '10px', lineHeight: '1.6', wordBreak: 'break-word', flex: 1 }}>
                     {row.receiverAddress}
                 </p>
                 </div>}
@@ -309,61 +329,71 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
             <span style={styles.text}>MIM Details</span>
             <div style={{ ...styles.beforeAfter, ...styles.after }} />
           </div>
+                          <TableContainer component={Paper} sx={{ mt: 2, borderRadius: 0}}>
+                              <Table size="small" sx={{ '& td, & th': { padding: '1px', fontSize: '10px' } }}>
+                              <TableHead>
+                                    <TableRow sx={{ 
+                                      backgroundColor: '#1976d2', 
+                                      borderBottom: '2px solidrgb(0, 0, 0)',
+                                      '& th': { 
+                                        color: 'white', 
+                                        fontWeight: '600',
+                                        borderRight: '1px solid rgba(0, 0, 0, 0.5)',
+                                        '&:last-child': {
+                                          borderRight: 'none'
+                                        }
+                                      }
+                                    }}>
+                                  <TableCell style={{textAlign: 'center'}}>S.No</TableCell>
+                                  <TableCell style={{textAlign: 'center'}}>Kit No</TableCell>
+                                  <TableCell style={{textAlign: 'center'}}>Kit Name</TableCell>
+                                  <TableCell style={{textAlign: 'center'}}>Kit Qty</TableCell>
+                                  <TableCell style={{textAlign: 'center'}}>HSN/SAC</TableCell>
+                                  <TableCell style={{textAlign: 'center'}}>Product Code</TableCell>
+                                  <TableCell style={{textAlign: 'center'}}>Product Name</TableCell>
+                                  <TableCell style={{textAlign: 'center'}}>Product Qty</TableCell>
+                                </TableRow>
+                              </TableHead>
+                                <TableBody>
+                                  {Object.entries(groupedData).map(([kitId, kitRows], kitIndex, kitArray) => (
+                                    <React.Fragment key={kitId}>
+                                      {kitRows.map((row, rowIndex) => (
+                                        <TableRow key={row.id}>
+                                          {rowIndex === 0 && (
+                                            <>
+                                              <TableCell rowSpan={kitRows.length}>{kitIndex + 1}</TableCell>
+                                              <TableCell rowSpan={kitRows.length}>{row.kitId}</TableCell>
+                                              <TableCell rowSpan={kitRows.length}>{row.kitName}</TableCell>
+                                              <TableCell rowSpan={kitRows.length}>{row.kitQty}</TableCell>
+                                              <TableCell rowSpan={kitRows.length}>{row.hsnCode}</TableCell>
+                                            </>
+                                          )}
 
-          <table
-            style={{
-              width: '100%',
-              borderCollapse: 'collapse',
-              marginBottom: '20px',
-              fontSize: '12px',
-              border: '1px solid #000000'
-            }}
-          >
-            <thead>
-              <tr style={{ backgroundColor: '#673ab7', color: '#fff' }}>
-                <th style={{ border: '1px solid #000000', padding: '10px', textAlign: 'center' }}>Kit Id</th>
-                <th style={{ border: '1px solid #000000', padding: '10px', textAlign: 'center' }}>Kit Name</th>
-                <th style={{ border: '1px solid #000000', padding: '10px', textAlign: 'center' }}>Kit Qty</th>
-                <th style={{ border: '1px solid #000000', padding: '10px', textAlign: 'center' }}>HSN/SAC</th>
-                <th style={{ border: '1px solid #000000', padding: '10px', textAlign: 'center' }}>Product</th>
-                <th style={{ border: '1px solid #000000', padding: '10px', textAlign: 'center' }}>Product Code</th>
-                <th style={{ border: '1px solid #000000', padding: '10px', textAlign: 'center' }}>Product Qty</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(
-                (row.issueManifestProviderDetailsVOs || []).reduce((acc, item) => {
-                  if (!acc[item.kitId]) acc[item.kitId] = [];
-                  acc[item.kitId].push(item);
-                  return acc;
-                }, {})
-              ).map(([kitId, kitRows], index) => (
-                <React.Fragment key={kitId}>
-                  {kitRows.map((item, i) => (
-                    <tr key={`${kitId}-${i}`} style={{ borderBottom: '1px solid #000000' }}>
-                      {i === 0 && (
-                        <>
-                          <td rowSpan={kitRows.length} style={{ border: '1px solid #000000', padding: '10px' }}>{item.kitId}</td>
-                          <td rowSpan={kitRows.length} style={{ border: '1px solid #000000', padding: '10px' }}>{item.kitName}</td>
-                          <td rowSpan={kitRows.length} style={{ border: '1px solid #000000', padding: '10px' }}>{item.kitQty}</td>
-                          <td rowSpan={kitRows.length} style={{ border: '1px solid #000000', padding: '10px' }}>{item.hsnCode}</td>
-                        </>
-                      )}
-                      <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.asset}</td>
-                      <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.assetCode}</td>
-                      <td style={{ border: '1px solid #000000', padding: '10px' }}>{item.assetQty}</td>
-                    </tr>
-                  ))}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+                                          {rowIndex !== 0 && null}
+
+                                          <TableCell>{row.assetCode}</TableCell>
+                                          <TableCell>{row.asset}</TableCell>
+                                          <TableCell>{row.assetQty}</TableCell>
+                                        </TableRow>
+                                      ))}
+
+                                      {/* horizontal line */}
+                                      {kitIndex !== kitArray.length - 1 && (
+                                        <TableRow>
+                                          <TableCell colSpan={8} sx={{ borderBottom: '1px solid #ddd', padding: 0 }} />
+                                        </TableRow>
+                                      )}
+                                    </React.Fragment>
+                                  ))}
+                                </TableBody>
+                            </Table>
+                          </TableContainer>
           {/* <!-- Total Section --> */}
           <div
             style={{
               textAlign: 'right',
               // fontWeight: 'bold',
-              fontSize: '14px',
+              fontSize: '12px',
               color: '#333'
             }}
             className="d-flex justify-content-between mb-2"
@@ -372,7 +402,7 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
               style={{
                 textAlign: 'left',
                 fontWeight: 'bold',
-                fontSize: '14px',
+                fontSize: '12px',
                 color: '#333'
               }}
             >
@@ -381,9 +411,9 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
                 <span
                   style={{
                     fontWeight: 'normal',
-                    fontSize: '14px',
                     fontStyle: 'italic',
-                    color: '#333'
+                    color: '#333',
+                    fontSize: '11px'
                   }}
                 >
                   {row.amountInWords}
@@ -394,37 +424,37 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
                 <span
                   style={{
                     fontWeight: 'normal',
-                    fontSize: '14px',
-                    color: '#333'
+                    color: '#333',
+                    fontSize: '11px'
                   }}
                 >
                   {row.transporterName}
                 </span>
               </div>
-              <div style={{ width: '500px', marginBottom: '3px' }}>
+              {row.vehicleNo &&<div style={{ width: '500px', marginBottom: '3px' }}>
                 Vehicle No:{' '}
                 <span
                   style={{
                     fontWeight: 'normal',
-                    fontSize: '14px',
-                    color: '#333'
+                    color: '#333',
+                    fontSize: '11px'
                   }}
                 >
                   {row.vehicleNo}
                 </span>
-              </div>
-              <div style={{ width: '500px', marginBottom: '3px' }}>
+              </div>}
+              {row.driverPhoneNo &&<div style={{ width: '500px', marginBottom: '3px' }}>
                 Driver No:{' '}
                 <span
                   style={{
                     fontWeight: 'normal',
-                    fontSize: '14px',
-                    color: '#333'
+                    color: '#333',
+                    fontSize: '11px'
                   }}
                 >
                   {row.driverPhoneNo}
                 </span>
-              </div>
+              </div>}
             </div>
             <div className="d-flex justify-content-between">
               <div className="d-flex flex-column me-2">
@@ -432,7 +462,7 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
                   className="mb-1"
                   style={{
                     fontWeight: 'bold',
-                    fontSize: '14px',
+                    fontSize: '11px',
                     color: '#333',
                     marginBottom: 0
                   }}
@@ -446,7 +476,7 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
                     style={{
                       fontStyle: 'normal',
                       fontWeight: 'normal',
-                      fontSize: '14px',
+                      fontSize: '10px',
                       color: '#333',
                       marginLeft: 3
                     }}
@@ -461,10 +491,10 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
                     {/* Declaration */}
                     <div className="row mt-3 mb-2">
                       <div className="col-lg-2">
-                        <strong style={{ width: 225 }}>Declaration:</strong>
+                        <strong style={{ width: 225, fontSize: '12px' }}>Declaration:</strong>
                       </div>
                       <div className="col-lg-10">
-                        <p>
+                        <p style={{fontSize: '11px'}}>
                           The packaging products given on hire shall always remain
                       the property of SCM AI-PACKS Private Limited and shall not
                       be used for the purpose otherwise agreed upon. The same
@@ -475,10 +505,10 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
                     </div>
                     <div className="row mb-3">
                       <div className="col-lg-2">
-                        <strong style={{ width: 225 }}>Note:</strong>
+                        <strong style={{ width: 225, fontSize: '12px' }}>Note:</strong>
                       </div>
                       <div className="col-lg-10">
-                        <p>
+                        <p style={{fontSize: '11px'}}>
                           1.The goods listed in the above manifest are used empty
                       packaging issued to customer on a daily hire basis. The
                       service is packaging on{" "}
@@ -494,10 +524,10 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
                     {/* Signatures */}
                     <div className="d-flex justify-content-between mt-4 mb-5">
                       <div className="ms-5">
-                        <strong className="size">For Sending Location:</strong>
+                        <strong style={{fontSize: '12px'}} className="size">For Sending Location:</strong>
                       </div>
                       <div className="me-5">
-                        <strong className="size">
+                        <strong style={{fontSize: '12px'}} className="size">
                           For Receiving Location :
                         </strong>
                       </div>
@@ -505,19 +535,19 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
                     <div className="d-flex justify-content-between mt-5 mb-5">
                       <div className="d-flex flex-column">
                         <div className="ms-5">
-                          <strong className="size">
+                          <strong style={{fontSize: '12px'}} className="size">
                             Authorized Signature:
                           </strong>
                         </div>
-                        <div className="ms-4">(Company Seal & Signature)</div>
+                        <div style={{fontSize: '12px'}} className="ms-4">(Company Seal & Signature)</div>
                       </div>
                       <div className="d-flex flex-column">
                         <div className="ms-4">
-                          <strong className="size">
+                          <strong style={{fontSize: '12px'}} className="size">
                             Authorized Signature:
                           </strong>
                         </div>
-                        <div className="me-5">(Company Seal & Signature)</div>
+                        <div style={{fontSize: '12px'}} className="me-5">(Company Seal & Signature)</div>
                       </div>
                     </div>
 
@@ -525,8 +555,8 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
           <div
             style={{
               borderTop: '2px solid #000000',
-              paddingTop: '10px',
-              fontSize: '12px',
+              paddingTop: '1px',
+              fontSize: '10px',
               color: '#777',
               textAlign: 'center',
               // position: 'absolute',
@@ -538,9 +568,9 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
             {/* <!-- Footer Section --> */}
             <div
               style={{
-                marginBottom: '20px',
+                marginBottom: '10px',
                 textAlign: 'left',
-                fontSize: '12px',
+                fontSize: '10px',
                 color: '#777'
               }}
             >
@@ -561,5 +591,4 @@ const MIMpdf = ({ row, callBackFunction, modalClose }) => {
     </Dialog>
   );
 };
-
 export default MIMpdf;

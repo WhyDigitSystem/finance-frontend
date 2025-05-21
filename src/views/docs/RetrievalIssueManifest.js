@@ -1,17 +1,29 @@
 import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
-import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import SearchIcon from '@mui/icons-material/Search';
-import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Autocomplete, Box, FormHelperText, Grid, Tab, TextField } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
 import Tabs from '@mui/material/Tabs';
 import 'react-tabs/style/react-tabs.css';
-import Select from '@mui/material/Select';
+import React from 'react';
+import {
+  Button,
+  Tab,
+  Box,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Autocomplete,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableRow,
+  TableHead,
+  Paper,
+} from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -23,6 +35,8 @@ import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
+import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import RIMpdf from './RIMpdf';
 
 const RetrievalIssueManifest = () => {
   const [tabIndex, setTabIndex] = useState(0);
@@ -41,10 +55,15 @@ const RetrievalIssueManifest = () => {
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [bankName, setBankName] = useState([]);
   const [customerDetails, setCustomerDetails] = useState([]);
-  const [allAccountName, setAllAccountName] = useState([]);
+  const [selectedKit, setSelectedKit] = useState(null);
+  const [selectedhsn, setSelectedhsn] = useState(null);
+  const [kitQty, setKitQty] = useState('');
+  const [open, setOpen] = useState(false);
+  const [allKitId, setAllKitId] = useState([]);
+  const [downloadPdf, setDownloadPdf] = useState(false);
+  const [pdfData, setPdfData] = useState([]);
   const [allHsnSacCode, setAllHsnSacCode] = useState([]);
-  const [kitDetails, setKitDetails] = useState([]);
-  const [receiverDetails, setReceiverDetails] = useState([]);
+  const [receiverDetails, setReceiverDetails]  = useState([]);
   const [allTransporters, setAllTransporters] = useState([]);
 
   const [formData, setFormData] = useState({
@@ -75,25 +94,14 @@ const RetrievalIssueManifest = () => {
     vehicleNo: '',
   });
 
-  const [detailsKitData, setDetailsKitData] = useState([
-    {
-      id: '',
-      kitName: '',
-      kitNo: '',
-      kitQty: '',
-      hsnCode: '',
-      asset: '',
-      assetCode: '',
-      assetQty: ''
-    }
-  ]);
+  const [detailsKitData, setDetailsKitData] = useState([]);
 
   const [detailsKitErrors, setDetailsKitErrors] = useState([
     {
       id: '',
       kitName: '',
       kitQty: '',
-      hsnCode: '',
+      hsnsacCode: '',
       asset: '',
       assetCode: '',
       assetQty: ''
@@ -142,7 +150,7 @@ const RetrievalIssueManifest = () => {
   const getAllKitDetails = async () => {
     try {
       const result = await apiCalls('get', `/kitController/getKitByOrgId?orgid=${orgId}`);
-      setKitDetails(result.paramObjectsMap.kitVO || []);
+      setAllKitId(result.paramObjectsMap.kitVO || []);
       console.log('Test sac', result);
     } catch (err) {
       console.log('error', err);
@@ -167,70 +175,6 @@ const RetrievalIssueManifest = () => {
       console.error('Error fetching gate passes:', error);
     }
   };
-
-  const handleAddRow = () => {
-    if (isLastRowEmpty(detailsKitData)) {
-      displayRowError(detailsKitData);
-      return;
-    }
-    const newRow = {
-      id: Date.now(),
-      kitName: '',
-      kitQty: '',
-      hsnCode: '',
-      asset: '',
-      assetCode: '',
-      assetQty: ''
-    };
-    setDetailsKitData([...detailsKitData, newRow]);
-    setDetailsKitErrors([
-      ...detailsKitErrors,
-      {
-        kitName: '',
-        kitQty: '',
-        hsnCode: '',
-        asset: '',
-        assetCode: '',
-        assetQty: ''
-      }
-    ]);
-  };
-
-  const isLastRowEmpty = (table) => {
-    const lastRow = table[table.length - 1];
-    if (!lastRow) return false;
-
-    if (table === detailsKitData) {
-      return (
-        !lastRow.kitName ||
-        !lastRow.kitQty ||
-        !lastRow.hsnCode ||
-        !lastRow.asset ||
-        !lastRow.assetCode ||
-        !lastRow.assetQty
-      );
-    }
-    return false;
-  };
-
-  const displayRowError = (table) => {
-    if (table === detailsKitErrors) {
-      setDetailsKitErrors((prevErrors) => {
-        const newErrors = [...prevErrors];
-        newErrors[table.length - 1] = {
-          ...newErrors[table.length - 1],
-          kitName: !table[table.length - 1].kitName ? 'Kit is required' : '',
-          kitQty: !table[table.length - 1].kitQty ? 'Kit QTY is required' : '',
-          hsnCode: !table[table.length - 1].hsnCode ? 'HSN Code is required' : '',
-          asset: !table[table.length - 1].asset ? 'Product is required' : '',
-          assetCode: !table[table.length - 1].assetCode ? 'Product Code is required' : '',
-          assetQty: !table[table.length - 1].assetQty ? 'Product QTY is required' : ''
-        };
-        return newErrors;
-      });
-    }
-  };
-
   const handleClear = () => {
     setFormData({
       docId: '',
@@ -248,25 +192,12 @@ const RetrievalIssueManifest = () => {
 
     setFormDataErrors([]);
 
-    // Set the table to only have one empty row
-    setDetailsKitData([
-      {
-        id: 1,
-        kitName: '',
-        kitQty: '',
-        hsnCode: '',
-        asset: '',
-        assetCode: '',
-        assetQty: ''
-      }
-    ]);
-
-    // Reset table errors for just one row
+    setDetailsKitData([]);
     setDetailsKitErrors([
       {
         kitName: '',
         kitQty: '',
-        hsnCode: '',
+        hsnsacCode: '',
         asset: '',
         assetCode: '',
         assetQty: ''
@@ -291,11 +222,6 @@ const RetrievalIssueManifest = () => {
       [name]: newValue
     }));
   };
-
-  const handleDeleteRow = (rowId) => {
-    setDetailsKitData((prev) => prev.filter((row) => row.id !== rowId));
-  };
-
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
@@ -315,9 +241,7 @@ const RetrievalIssueManifest = () => {
 
     const errors = {};
     let detailsTableDataValid = true;
-
-    // === FORM DATA VALIDATION ===
-    if (!formData.docId) errors.docId = 'Transaction ID is required';
+    if (!formData.docId) errors.docId = 'Transaction No is required';
     if (!formData.docDate) errors.docDate = 'Transaction Date is required';
     if (!formData.dispatchType) errors.dispatchType = 'Dispatch Date is required';
     if (!formData.sender) errors.sender = 'Sender is required';
@@ -326,8 +250,6 @@ const RetrievalIssueManifest = () => {
     if (!formData.receiverWarehouse) errors.receiverWarehouse = 'Receiver Warehouse is required';
     if (!formData.receiverAddress) errors.receiverAddress = 'Receiver Address is required';
     if (!formData.transporterName) errors.transporterName = 'Transporter Name is required';
-    if (!formData.vehicleNo) errors.vehicleNo = 'Vehicle No is required';
-    if (!formData.driverNo) errors.driverNo = 'Driver No is required';
 
     // === DETAILS TABLE VALIDATION ===
     if (!detailsKitData || detailsKitData.length === 0) {
@@ -344,44 +266,27 @@ const RetrievalIssueManifest = () => {
           rowErrors.kitQty = 'Kit Qty is required';
           detailsTableDataValid = false;
         }
-        if (!row.hsnCode) {
-          rowErrors.hsnCode = 'HSN Code is required';
-          detailsTableDataValid = false;
-        }
-        if (!row.asset) {
-          rowErrors.asset = 'Asset is required';
-          detailsTableDataValid = false;
-        }
-        if (!row.assetCode) {
-          rowErrors.assetCode = 'Asset Code is required';
-          detailsTableDataValid = false;
-        }
-        if (!row.assetQty) {
-          rowErrors.assetQty = 'Asset Qty is required';
+        if (!row.hsnsacCode) {
+          rowErrors.hsnsacCode = 'HSN Code is required';
           detailsTableDataValid = false;
         }
         return rowErrors;
       });
-
       setDetailsKitErrors(newTableErrors);
     }
-
-    setFormDataErrors(errors); // set error state (use this in your form fields)
-
-    // === ONLY SUBMIT IF VALID ===
+    setFormDataErrors(errors);
+console.log("errors",detailsKitErrors,errors);
     if (Object.keys(errors).length === 0 && detailsTableDataValid) {
       setIsLoading(true);
-
       const retrievalManifestProviderDetailsVo = detailsKitData.map((row) => ({
         ...(editId && { id: row.id }),
-        asset: row.asset,
-        assetCode: row.assetCode,
-        assetQty: parseInt(row.assetQty),
-        hsnCode: parseInt(row.hsnCode),
+        asset: row.productName,
+        assetCode: row.productCode,
+        assetQty: parseInt(row.productQty),
+        hsnCode: parseInt(row.hsnsacCode),
         kitId: row.kitNo,
         kitName: row.kitName,
         kitQty: parseInt(row.kitQty),
-        bankRef: row.bankRef
       }));
 
       const saveFormData = {
@@ -447,26 +352,19 @@ const RetrievalIssueManifest = () => {
           driverNo: listValueVO.driverPhoneNo || '',
           retrievalManifestProviderDetailsVOs: listValueVO.retrievalManifestProviderDetailsVOs
         });
-
         setDetailsKitData(
-          (listValueVO.retrievalManifestProviderDetailsVOs || []).map((cl, index) => {
-            const selectedKit = kitDetails.find((k) => k.kitNo === cl.kitId) || null;
-            return {
-              id: cl.id || `${Date.now()}-${index}`,
-              kitId: cl.kitId || '', // Add this for saving later
-              kitNo: selectedKit?.kitNo || cl.kitId || '', // fallback to cl.kitId
-              kitName: cl.kitName || selectedKit?.kitDesc || '',
-              kitQty: cl.kitQty || selectedKit?.partQty || '',
-              hsnCode: cl.hsnCode || '',
-              asset: cl.asset || selectedKit?.kitAssetVO?.[0]?.assetName || '',
-              assetCode: cl.assetCode || selectedKit?.kitAssetVO?.[0]?.assetCodeId || '',
-              assetQty: cl.assetQty || selectedKit?.kitAssetVO?.[0]?.quantity || '',
-              selectedKit // Ensures Autocomplete shows the value
-            };
-          })
+          listValueVO.retrievalManifestProviderDetailsVOs.map((row) => ({
+            id: row.id,
+            kitNo: row.kitId,
+            kitName: row.kitName,
+            kitQty: row.kitQty,
+            hsnsacCode: row.hsnCode,
+            productCode: row.assetCode,
+            productName: row.asset,
+            productQty: row.assetQty
+          }))
         );
-
-        console.log('DataToEdit', listValueVO);
+        console.log('Edited', detailsKitData);
       } else {
         console.error('No result returned from API');
       }
@@ -485,7 +383,54 @@ const RetrievalIssueManifest = () => {
       totalWithdrawal: totalWithdrawalAmt
     }));
   }, [detailsKitData]);
+const handleProceed = () => {
+  if (!selectedKit || !selectedhsn || !kitQty) return;
 
+  const kitAssets = selectedKit.kitAssetVO || [];
+  const timestamp = Date.now();
+
+  const newKitRows = kitAssets.map((asset, idx) => ({
+    id: timestamp + idx,
+    kitNo: selectedKit.kitNo,
+    kitName: selectedKit.kitDesc, 
+    kitQty: parseFloat(kitQty),  
+    hsnsacCode: selectedhsn.code || '',
+    productCode: asset.assetCodeId || '',
+    productName: asset.assetName || '',
+    productQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
+  }));
+  setDetailsKitData((prev) => [...prev, ...newKitRows]);
+  setOpen(false);
+  setSelectedKit(null);
+  setSelectedhsn(null);
+  setKitQty('');
+};
+const groupedData = detailsKitData.reduce((acc, row) => {
+  const kitKey = row.kitNo;
+  if (!acc[kitKey]) acc[kitKey] = [];
+  acc[kitKey].push(row);
+  return acc;
+}, {});
+const GeneratePdf = async (row) => {
+  try {
+    const result = await apiCalls('get', `/reportController/getRetrievalManifestProviderById?id=${row.original.id}`);
+    const RIMVO = result.paramObjectsMap.retrievalManifestProviderVO;
+    if (RIMVO) {
+      setPdfData(RIMVO);
+      setDownloadPdf(true);
+    } else {
+      showToast('error', 'Record is Incomplete Please fill needed Data');
+    }
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    showToast('error', 'Failed to fetch data for PDF');
+  }
+};
+  const handleAddRow = () => {
+    setSelectedKit(null);
+    setKitQty('');
+    setOpen(true);
+  };
   return (
     <>
       <div>
@@ -563,9 +508,10 @@ const RetrievalIssueManifest = () => {
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
-                  options={customerDetails.map((option, index) => ({ ...option, key: index }))}
+                  options={customerDetails}
                   getOptionLabel={(option) => option.partyShortName || ''}
                   sx={{ width: '100%' }}
+                  isOptionEqualToValue={(option, value) => option.partyShortName === value.partyShortName}
                   size="small"
                   value={formData.sender ? customerDetails.find((c) => c.partyShortName === formData.sender) : null}
                   onChange={(event, newValue) => {
@@ -574,7 +520,6 @@ const RetrievalIssueManifest = () => {
                         name: 'sender', value: newValue ? newValue.partyShortName : ''
                       }
                     });
-
                     const address = newValue?.partyAddressVO?.[0];
                     const fullAddress = address
                       ? [address.addressLine1, address.addressLine2, address.addressLine3]
@@ -635,24 +580,29 @@ const RetrievalIssueManifest = () => {
                   onChange={(e) => setFormData({ ...formData, senderGst: e.target.value })}
                 />
               </div>
-
-              {/* <div className="col-md-3 mb-3">
+                <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
-                  options={receiverDetails.map((option, index) => ({ ...option, key: index }))}
-                  getOptionLabel={(option) => option.locationName || ''}
+                  options={receiverDetails}
+                  getOptionLabel={(option) => option.name || ''}
+                  isOptionEqualToValue={(option, value) => option.id === value.id} // ✅ Add this line
                   sx={{ width: '100%' }}
                   size="small"
-                  value={formData.receiverWarehouse ? receiverDetails.find((c) => c.locationName === formData.receiverWarehouse) : null}
+                  value={
+                    formData.receiverWarehouse
+                      ? receiverDetails.find((c) => c.name === formData.receiverWarehouse)
+                      : null
+                  }
                   onChange={(event, newValue) => {
                     handleInputChange({
                       target: {
-                        name: 'receiverWarehouse', value: newValue ? newValue.locationName : ''
+                        name: 'receiverWarehouse',
+                        value: newValue ? newValue.name : ''
                       }
                     });
                     handleInputChange({
                       target: {
-                        name: 'warehouseAddress',
+                        name: 'receiverAddress',
                         value: newValue ? newValue.address : ''
                       }
                     });
@@ -665,47 +615,6 @@ const RetrievalIssueManifest = () => {
                       InputProps={{
                         ...params.InputProps,
                         style: { height: 40 }
-                      }}
-                      error={!!formDataErrors.receiverWarehouse}
-                      helperText={formDataErrors.receiverWarehouse}
-                    />
-                  )}
-                />
-              </div> */}
-              <div className="col-md-3 mb-3">
-                <Autocomplete
-                  disablePortal
-                  options={receiverDetails.map((option, index) => ({ ...option, key: index }))}
-                  getOptionLabel={(option) => option.locationName || ''}
-                  sx={{ width: '100%' }}
-                  size="small"
-                  value={
-                    formData.receiverWarehouse
-                      ? receiverDetails.find((c) => c.locationName === formData.receiverWarehouse)
-                      : null
-                  }
-                  onChange={(event, newValue) => {
-                    handleInputChange({
-                      target: {
-                        name: 'receiverWarehouse',
-                        value: newValue ? newValue.locationName : '',
-                      },
-                    });
-                    handleInputChange({
-                      target: {
-                        name: 'receiverAddress',
-                        value: newValue?.address || '',
-                      },
-                    });
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Receiver Warehouse"
-                      name="receiverWarehouse"
-                      InputProps={{
-                        ...params.InputProps,
-                        style: { height: 40 },
                       }}
                       error={!!formDataErrors.receiverWarehouse}
                       helperText={formDataErrors.receiverWarehouse}
@@ -736,33 +645,35 @@ const RetrievalIssueManifest = () => {
                   }
                 />
               </div>
-
-              <div className="col-md-3 mb-3">
+                <div className="col-md-3 mb-3">
                 <Autocomplete
-                  disablePortal
-                  options={allTransporters.map((option, index) => ({ ...option, key: index }))}
-                  getOptionLabel={(option) => option.partyShortName || ''}
-                  sx={{ width: '100%' }}
-                  size="small"
-                  value={formData.transporterName ? allTransporters.find((c) => c.partyShortName === formData.transporterName) : null}
+                  options={allTransporters}
+                  getOptionLabel={(option) => option.partyName || ''}
+                  isOptionEqualToValue={(option, value) => option?.transporterName === value?.transporterName}
+                  value={
+                    formData.transporterName
+                      ? allTransporters.find((c) => c.partyName === formData.transporterName)
+                      : null
+                  }
                   onChange={(event, newValue) => {
                     handleInputChange({
                       target: {
-                        name: 'transporterName', value: newValue ? newValue.partyShortName : ''
+                        name: 'transporterName',
+                        value: newValue ? newValue.partyName : ''
                       }
                     });
                   }}
+                  sx={{ width: '100%' }}
+                  size="small"
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      name="transporterName"
-                      label="Transporter Name"
+                      name= "transporterName"
+                      label= "Transporter Name"
                       InputProps={{
                         ...params.InputProps,
                         style: { height: 40 }
                       }}
-                      error={!!formDataErrors.vehicleNo}
-                      helperText={formDataErrors.vehicleNo}
                     />
                   )}
                 />
@@ -774,8 +685,6 @@ const RetrievalIssueManifest = () => {
                   size="small"
                   fullWidth
                   onChange={(e) => setFormData({ ...formData, vehicleNo: e.target.value.toUpperCase() })}
-                  error={!!formDataErrors.vehicleNo}
-                  helperText={formDataErrors.vehicleNo}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -799,8 +708,6 @@ const RetrievalIssueManifest = () => {
                       setFormDataErrors({ ...formDataErrors, driverNo: 'Enter up to 10 digits only' });
                     }
                   }}
-                  error={!!formDataErrors.driverNo}
-                  helperText={formDataErrors.driverNo}
                 />
               </div>
 
@@ -815,229 +722,112 @@ const RetrievalIssueManifest = () => {
                     indicatorColor="secondary"
                     aria-label="secondary tabs example"
                   >
-                    <Tab value={0} label="KIT" />
+                    <Tab value={0} label="Kit Details" />
                   </Tabs>
                 </Box>
                 <Box sx={{ padding: 2 }}>
-                  {value === 0 && (
-                    <>
-                      <div className="row d-flex ml">
-                        <div className="mb-1">
-                          <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                        </div>
-                        <div className="row mt-2">
-                          <div className="col-lg-12">
-                            <div className="table-responsive">
-                              <table className="table table-bordered">
-                                <thead>
-                                  <tr style={{ backgroundColor: '#673AB7' }}>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                      Action
-                                    </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                      S.No
-                                    </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                      Kit
-                                    </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '240px' }}>
-                                      Kit Qty
-                                    </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                      HSN Code
-                                    </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                      Product Code
-                                    </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                      Product Name
-                                    </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
-                                      Product QTY
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {Array.isArray(detailsKitData) &&
-                                    detailsKitData.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="border px-2 py-2 text-center">
-                                          <ActionButton
-                                            title="Delete"
-                                            icon={DeleteIcon}
-                                            onClick={() =>
-                                              handleDeleteRow(
-                                                row.id,
-                                                detailsKitData,
-                                                setDetailsKitData,
-                                                detailsKitErrors,
-                                                setDetailsKitErrors
-                                              )
-                                            }
-                                          />
-                                        </td>
-                                        <td className="text-center">
-                                          <div className="pt-2">{index + 1}</div>
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <Autocomplete
-                                            options={kitDetails}
-                                            getOptionLabel={(option) =>
-                                              typeof option === 'string'
-                                                ? option
-                                                : option?.kitNo || ''
-                                            }
-                                            value={row.selectedKit || null} // ✅ Correct: use selectedKit for value binding
-                                            onChange={(event, newValue) => {
-                                              setDetailsKitData((prev) =>
-                                                prev.map((r) =>
-                                                  r.id === row.id
-                                                    ? {
-                                                      ...r,
-                                                      kitId: newValue?.id || '',
-                                                      kitNo: newValue?.kitNo || '',
-                                                      kitName: newValue?.kitDesc || '',
-                                                      kitQty: newValue?.partQty || '',
-                                                      assetCode: newValue?.kitAssetVO?.[0]?.assetCodeId || '',
-                                                      asset: newValue?.kitAssetVO?.[0]?.assetName || '',
-                                                      assetQty: newValue?.kitAssetVO?.[0]?.quantity || '',
-                                                      selectedKit: newValue || null
-                                                    }
-                                                    : r
-                                                )
-                                              );
-                                            }}
-                                            size="small"
-                                            renderInput={(params) => (
-                                              <TextField
-                                                {...params}
-                                                variant="outlined"
-                                                error={!!detailsKitErrors[index]?.kitNo}
-                                                helperText={detailsKitErrors[index]?.kitNo}
-                                              />
-                                            )}
-                                            sx={{ width: 250 }}
-                                          />
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <input
-                                            type="text"
-                                            value={row.kitQty}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              const numericRegex = /^[0-9]*$/;
-                                              if (numericRegex.test(value)) {
-                                                setDetailsKitData((prev) =>
-                                                  prev.map((r) => (r.id === row.id ? { ...r, kitQty: value } : r))
-                                                );
-                                                setDetailsKitErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    kitQty: !value ? 'Kik Qty is required' : ''
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              } else {
-                                                setDetailsKitErrors((prev) => {
-                                                  const newErrors = [...prev];
-                                                  newErrors[index] = {
-                                                    ...newErrors[index],
-                                                    kitQty: 'Only numeric characters are allowed'
-                                                  };
-                                                  return newErrors;
-                                                });
-                                              }
-                                            }}
-                                            className={detailsKitErrors[index]?.kitQty ? 'error form-control' : 'form-control'}
-                                          />
-                                        </td>
-                                        <td>
-                                          <Autocomplete
-                                            options={allHsnSacCode}
-                                            getOptionLabel={(option) => option.code || ''}
-                                            value={allHsnSacCode.find((a) => String(a.code) === String(row.hsnCode)) || null}
-                                            onChange={(event, newValue) => {
-                                              const value = newValue ? newValue.code : '';
-                                              setDetailsKitData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, hsnCode: value } : r))
-                                              );
-                                              setDetailsKitErrors((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  hsnCode: !value ? 'HSN Code is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            }}
-                                            size="small"
-                                            renderInput={(params) => (
-                                              <TextField
-                                                {...params}
-                                                variant="outlined"
-                                                error={!!detailsKitErrors[index]?.hsnCode}
-                                                helperText={detailsKitErrors[index]?.hsnCode}
-                                              />
-                                            )}
-                                            sx={{ width: 150 }}
-                                          />
-                                        </td>
-                                        {/* <table className="table-auto w-full border">
-                                          <tbody>
-                                            {Array.from({ length: Math.ceil(data.length / 3) }, (_, rowIndex) => {
-                                              const start = rowIndex * 3;
-                                              const rowItems = data.slice(start, start + 3);
-                                              return (
-                                                <tr key={rowIndex}>
-                                                  {rowItems.map((item, i) => {
-                                                    // If it's the last row and not full (less than 3 items)
-                                                    if (rowItems.length < 3 && i === rowItems.length - 1) {
-                                                      return (
-                                                        <td key={i} className="border px-2 py-2" colSpan={3 - i}>
-                                                          {item}
-                                                        </td>
-                                                      );
-                                                    }
-                                                    return (
-                                                      <td key={i} className="border px-2 py-2">
-                                                        {item}
-                                                      </td>
-                                                    );
-                                                  })}
-                                                </tr>
-                                              );
-                                            })}
-                                          </tbody>
-                                        </table> */}
+                    {value === 0 && (
+                      <>
+                          <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddRow}>
+                            Add Kit
+                          </Button>
+                          <Dialog open={open} onClose={() => setOpen(false)}>
+                            <DialogTitle>Select Kit</DialogTitle>
+                            <DialogContent sx={{ minWidth: 400 }}>
+                              <Autocomplete
+                                options={allKitId}
+                                getOptionLabel={(option) => option.kitNo || ''}
+                                value={selectedKit}
+                                onChange={(e, newValue) => setSelectedKit(newValue)}
+                                renderInput={(params) => <TextField {...params} label="Kit No" margin="dense" fullWidth />}
+                              />
+                              <TextField
+                                label="Kit Name"
+                                margin="dense"
+                                fullWidth
+                                value={selectedKit?.kitDesc || ''}
+                                disabled
+                              />
+                              <TextField
+                                label="Kit Quantity"
+                                margin="dense"
+                                fullWidth
+                                type="number"
+                                value={kitQty}
+                                onChange={(e) => setKitQty(e.target.value)}
+                              />
+                              <Autocomplete
+                                options={allHsnSacCode}
+                                getOptionLabel={(option) => option.code || ''}
+                                value={selectedhsn}
+                                onChange={(e, newValue) => setSelectedhsn(newValue)}
+                                renderInput={(params) => <TextField {...params} label="HSN/SAC" margin="dense" fullWidth />}
+                              />
+                            </DialogContent>
+                            <DialogActions>
+                              <Button onClick={() => setOpen(false)} color="secondary">Cancel</Button>
+                              <Button onClick={handleProceed} color="primary" variant="contained">Proceed</Button>
+                            </DialogActions>
+                          </Dialog>
+                          <TableContainer component={Paper} sx={{ mt: 2 }}>
+                            <Table>
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell>S.No</TableCell>
+                                  <TableCell>Kit No</TableCell>
+                                  <TableCell>Kit Name</TableCell>
+                                  <TableCell>Kit Qty</TableCell>
+                                  <TableCell>HSN/SAC</TableCell>
+                                  <TableCell>Product Code</TableCell>
+                                  <TableCell>Product Name</TableCell>
+                                  <TableCell>Product Qty</TableCell>
+                                </TableRow>
+                              </TableHead>
+                                <TableBody>
+                                  {Object.entries(groupedData).map(([kitNo, kitRows], kitIndex, kitArray) => (
+                                    <React.Fragment key={kitNo}>
+                                      {kitRows.map((row, rowIndex) => (
+                                        <TableRow key={row.id}>
+                                          {rowIndex === 0 && (
+                                            <>
+                                              <TableCell rowSpan={kitRows.length}>{kitIndex + 1}</TableCell>
+                                              <TableCell rowSpan={kitRows.length}>{row.kitNo}</TableCell>
+                                              <TableCell rowSpan={kitRows.length}>{row.kitName}</TableCell>
+                                              <TableCell rowSpan={kitRows.length}>{row.kitQty}</TableCell>
+                                              <TableCell rowSpan={kitRows.length}>{row.hsnsacCode}</TableCell>
+                                            </>
+                                          )}
 
-                                        <td className="border px-2 py-2" style={{ alignContent: 'center', textAlign: 'center' }}>
-                                          {row.assetCode}
-                                        </td>
-                                        <td className="border px-2 py-2" style={{ alignContent: 'center', textAlign: 'center' }}>
-                                          {row.asset}
-                                        </td>
-                                        <td className="border px-2 py-2" style={{ alignContent: 'center', textAlign: 'center' }}>
-                                          {row.assetQty}
-                                        </td>
+                                          {rowIndex !== 0 && null}
 
-                                      </tr>
-                                    ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </>
-                  )}
+                                          <TableCell>{row.productCode}</TableCell>
+                                          <TableCell>{row.productName}</TableCell>
+                                          <TableCell>{row.productQty}</TableCell>
+                                        </TableRow>
+                                      ))}
+
+                                      {/* horizontal line */}
+                                      {kitIndex !== kitArray.length - 1 && (
+                                        <TableRow>
+                                          <TableCell colSpan={8} sx={{ borderBottom: '2px solid #ccc' }} />
+                                        </TableRow>
+                                      )}
+                                    </React.Fragment>
+                                  ))}
+                                </TableBody>
+                            </Table>
+
+                          </TableContainer>
+                      </>
+                    )}
                 </Box>
               </div>
             </>
           </>
         ) : (
-          <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getReconcileById} />
+          <CommonListViewTable data={data && data} columns={columns} blockEdit={true} toEdit={getReconcileById} isPdf={true} GeneratePdf={GeneratePdf} />
         )}
+        {downloadPdf && <RIMpdf row={pdfData} modalClose={() => setDownloadPdf(false)} />}
       </div>
       {/* <ToastContainer /> */}
     </>

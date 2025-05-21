@@ -624,8 +624,8 @@ const Warehouse = () => {
                 onChange={handleChange}
               >
                 {allBranchName.map((branch) => (
-                  <MenuItem key={branch.branch} value={branch.branch}>
-                    {branch.branch}
+                  <MenuItem key={branch.branchCode} value={branch.branchCode}>
+                    {branch.branchCode}
                   </MenuItem>
                 ))}
               </Select>

@@ -32,7 +32,6 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
 import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
 import apiCalls from 'apicall';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import MIMpdf from './MIMpdf';
@@ -570,20 +569,20 @@ const groupedData = detailsTableData.reduce((acc, row) => {
                 <Autocomplete
                   disablePortal
                   options={allWarehouse}
-                  getOptionLabel={(option) => option.locationName || ''}
+                  getOptionLabel={(option) => option.name || ''}
                   isOptionEqualToValue={(option, value) => option.id === value.id} // ✅ Add this line
                   sx={{ width: '100%' }}
                   size="small"
                   value={
                     formData.fromWarehouse
-                      ? allWarehouse.find((c) => c.locationName === formData.fromWarehouse)
+                      ? allWarehouse.find((c) => c.name === formData.fromWarehouse)
                       : null
                   }
                   onChange={(event, newValue) => {
                     handleInputChange({
                       target: {
                         name: 'fromWarehouse',
-                        value: newValue ? newValue.locationName : ''
+                        value: newValue ? newValue.name : ''
                       }
                     });
                     handleInputChange({
@@ -837,7 +836,7 @@ const groupedData = detailsTableData.reduce((acc, row) => {
                       indicatorColor="secondary"
                       aria-label="secondary tabs example"
                     >
-                      <Tab value={0} label="Account Particulars" />
+                      <Tab value={0} label="Kit Details" />
                     </Tabs>
                   </Box>
                   <Box sx={{ padding: 2 }}>
