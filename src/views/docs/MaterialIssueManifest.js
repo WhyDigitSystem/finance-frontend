@@ -10,6 +10,7 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'react-tabs/style/react-tabs.css';
 import 'react-toastify/dist/ReactToastify.css';
+import { FaTrash } from "react-icons/fa";
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import {
@@ -308,6 +309,10 @@ const getAllReceiverDetails = async () => {
       console.log('error', err);
     }
   };
+const handleDeleteKit = (kitNoToDelete) => {
+  const updatedKits = detailsTableData.filter((row) => row.kitNo !== kitNoToDelete);
+  setDetailsTableData(updatedKits);
+};
   const getAllMIMById = async (row) => {
     console.log('first', row);
     setShowForm(true);
@@ -388,12 +393,9 @@ const GeneratePdf = async (row) => {
     if (!formData.amount) {
       errors.amount = 'Amount is required';
     }
-    if (!formData.amountInWords) {
-      errors.amountInWords = 'Amount In Words is required';
-    }
-    if (!formData.transporterName) {
-      errors.transporterName = 'Transporter Name is required';
-    }
+    // if (!formData.transporterName) {
+    //   errors.transporterName = 'Transporter Name is required';
+    // }
     let detailTableDataValid = true;
     const newTableErrors = detailsTableData.map((row) => {
       const rowErrors = {};
@@ -525,7 +527,7 @@ const groupedData = detailsTableData.reduce((acc, row) => {
                         label="Transaction Date"
                         value={formData.transactionDate}
                         onChange={(date) => handleDateChange('transactionDate', date)}
-                        disabled
+                        // disabled
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
@@ -888,6 +890,7 @@ const groupedData = detailsTableData.reduce((acc, row) => {
                               <TableHead>
                                 <TableRow>
                                   <TableCell>S.No</TableCell>
+                                  <TableCell>Action</TableCell>
                                   <TableCell>Kit No</TableCell>
                                   <TableCell>Kit Name</TableCell>
                                   <TableCell>Kit Qty</TableCell>
@@ -905,6 +908,13 @@ const groupedData = detailsTableData.reduce((acc, row) => {
                                           {rowIndex === 0 && (
                                             <>
                                               <TableCell rowSpan={kitRows.length}>{kitIndex + 1}</TableCell>
+                                              <TableCell rowSpan={kitRows.length}>
+                                              <FaTrash
+                                                onClick={() => handleDeleteKit(kitNo)}
+                                                style={{ cursor: "pointer", color: "red" }}
+                                                className="ms-4"
+                                              />
+                                              </TableCell>
                                               <TableCell rowSpan={kitRows.length}>{row.kitNo}</TableCell>
                                               <TableCell rowSpan={kitRows.length}>{row.kitName}</TableCell>
                                               <TableCell rowSpan={kitRows.length}>{row.kitQty}</TableCell>

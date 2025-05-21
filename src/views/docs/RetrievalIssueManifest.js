@@ -501,7 +501,7 @@ const GeneratePdf = async (row) => {
                   size="small"
                   value={formData.transactionType}
                   fullWidth
-                  disabled
+                  // disabled
                   onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                 />
               </div>

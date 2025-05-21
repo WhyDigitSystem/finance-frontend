@@ -2,7 +2,6 @@ import DownloadIcon from '@mui/icons-material/Download';
 import dayjs from 'dayjs';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { useReactToPrint } from "react-to-print";
 import apiCalls from 'apicall';
 import React, { useRef, useEffect, useState } from "react";
 import {
@@ -23,7 +22,7 @@ import {
 } from '@mui/material';
 const dummyImageURL = 'https://t3.ftcdn.net/jpg/04/62/93/66/240_F_462936689_BpEEcxfgMuYPfTaIAOC1tCDurmsno7Sp.jpg';
 
-const MIMpdf = ({ row, callBackFunction, modalClose }) => {
+const RIMpdf = ({ row, callBackFunction, modalClose }) => {
   const [open, setOpen] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState('');
   const [bankDetails, setBankDetails] = useState([]);
@@ -165,7 +164,6 @@ useEffect(() => {
   const formattedTime = now.toLocaleTimeString('en-GB');
   setCurrentDateTime(`${formattedDate} ${formattedTime}`);
 
-  // ✅ Ensure the content is mounted before passing handleDownloadPdf
   if (callBackFunction) {
     setTimeout(() => {
       if (componentRef.current) {
@@ -593,4 +591,4 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
     </Dialog>
   );
 };
-export default MIMpdf;
+export default RIMpdf;
