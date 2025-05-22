@@ -12,6 +12,12 @@ import { Autocomplete } from '@mui/material';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import apiCalls from 'apicall';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import { Button } from '@mui/material';
+import CommonBulkUpload from 'utils/CommonBulkUpload';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import SampleFile from '../../assets/sample-files/AssetCategory.xlsx';
+import AddIcon from '@mui/icons-material/Add';
+
 const AssetCategory = () => {
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
@@ -23,31 +29,32 @@ const AssetCategory = () => {
   const [allTypes, setAllTypes] = useState([]);
   const [editId, setEditId] = useState('');
   const [data, setData] = useState(true);
+  const [uploadOpen, setUploadOpen] = useState(false);
   const [formData, setFormData] = useState({
-    category:'',
-    categoryCode:'',
-    type:'',
-    active: true,
+    category: '',
+    categoryCode: '',
+    type: '',
+    active: true
   });
   const [fieldErrors, setFieldErrors] = useState({
-    category:'',
-    categoryCode:'',
-    type:''
+    category: '',
+    categoryCode: '',
+    type: ''
   });
   const handleView = () => {
     setShowForm(!showForm);
   };
   const handleClear = () => {
     setFormData({
-      category:'',
-      categoryCode:'',
-      type:'',
-      active: true,
+      category: '',
+      categoryCode: '',
+      type: '',
+      active: true
     });
     setFieldErrors({
-      category:'',
-      categoryCode:'',
-      type:''
+      category: '',
+      categoryCode: '',
+      type: ''
     });
     setEditId('');
   };
@@ -59,7 +66,7 @@ const AssetCategory = () => {
     { accessorKey: 'assetType', header: 'Type', size: 140 },
     { accessorKey: 'category', header: 'Category', size: 140 },
     { accessorKey: 'categoryCode', header: 'Category Code', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140 },
+    { accessorKey: 'active', header: 'Active', size: 140 }
   ];
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd, type } = e.target;
@@ -94,7 +101,7 @@ const AssetCategory = () => {
     try {
       const result = await apiCalls('get', `/kitController/getAssetTypeByOrgId?orgid=${orgId}`);
       const allTypes = result.paramObjectsMap.assetTypeVO || [];
-      const activeTypes = allTypes.filter(type => type.active === 'Active');
+      const activeTypes = allTypes.filter((type) => type.active === 'Active');
       setAllTypes(activeTypes);
     } catch (err) {
       console.log('error', err);
@@ -160,7 +167,7 @@ const AssetCategory = () => {
         assetType: formData.type,
         category: formData.category,
         categoryCode: formData.categoryCode,
-        active: formData.active,
+        active: formData.active
       };
       console.log('DATA TO SAVE IS:', saveFormData);
       try {
@@ -187,6 +194,25 @@ const AssetCategory = () => {
       active: event.target.checked
     }));
   };
+  //
+  const handleBulkUploadClose = () => {
+    setUploadOpen(false);
+  };
+  const handleBulkUploadOpen = () => {
+    setUploadOpen(true);
+  };
+  const handleFileUpload = (event) => {
+    console.log(event.target.files[0]);
+  };
+  const handleSubmit = () => {
+    console.log('Submit clicked');
+    handleBulkUploadClose();
+  };
+  const handleNew = () => {
+    handleClear();
+    setShowForm(!showForm);
+  };
+
   return (
     <>
       <div>
@@ -196,45 +222,94 @@ const AssetCategory = () => {
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+            {showForm ? <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} /> : ''}
+            {showForm ? <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} /> : ''}
+            {showForm ? <ActionButton title="Upload" icon={CloudUploadIcon} onClick={handleBulkUploadOpen} /> : ''}
+            {uploadOpen && (
+              <CommonBulkUpload
+                open={uploadOpen}
+                handleClose={handleBulkUploadClose}
+                title="Upload Files"
+                uploadText="Upload file"
+                downloadText="Sample File"
+                onSubmit={handleSubmit}
+                sampleFileDownload={SampleFile}
+                handleFileUpload={handleFileUpload}
+                apiUrl={`/kitController/ExcelUploadForAssetCategory?createdBy=${loginUserName}&orgId=${orgId}`}
+                screen="As"
+                loginUser={loginUserName}
+                orgId={orgId}
+              ></CommonBulkUpload>
+            )}
+            {!showForm ? (
+              <Button
+                variant="outlined"
+                startIcon={<AddIcon />}
+                size="small"
+                sx={{
+                  borderColor: '#1e88e5',
+                  backgroundColor: '#e3f2fd',
+                  color: '#5e35b1',
+                  fontWeight: 'bold',
+                  textTransform: 'none',
+                  px: 2,
+                  py: 0.5,
+                  fontSize: '0.8rem',
+                  borderRadius: '8px',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                  mr: 1.25,
+                  transition: 'all 0.2s ease-in-out',
+                  '&:hover': {
+                    borderColor: '#1565c0',
+                    backgroundColor: '#bbdefb',
+                    color: '#1565c0'
+                  }
+                }}
+                onClick={handleNew}
+              >
+                New
+              </Button>
+            ) : (
+              ''
+            )}
           </div>
 
           {showForm ? (
             <>
               <div className="row d-flex ml">
                 <div className="col-md-3 mb-3">
-                <Autocomplete
-                  options={allTypes}
-                  value={formData.type ? allTypes.find((c) => c.assetType === formData.type) : null}
-                  getOptionLabel={(option) => option.assetType || ""}
-                  isOptionEqualToValue={(option, value) => option.id === value.id}
-                  sx={{ width: '100%' }}
-                  size="small"
-                  onChange={(event, newValue) => {
-                    handleInputChange({
-                      target: {
-                        name: 'type', value: newValue ? newValue.assetType : ''
-                      }
-                    });
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      name="type"
-                      label= "Type"
-                      InputProps={{
-                        ...params.InputProps,
-                        style: { height: 40 }
-                      }}
-                    />
-                  )}
-                />
-              </div>
+                  <Autocomplete
+                    options={allTypes}
+                    value={formData.type ? allTypes.find((c) => c.assetType === formData.type) : null}
+                    getOptionLabel={(option) => option.assetType || ''}
+                    isOptionEqualToValue={(option, value) => option.id === value.id}
+                    sx={{ width: '100%' }}
+                    size="small"
+                    onChange={(event, newValue) => {
+                      handleInputChange({
+                        target: {
+                          name: 'type',
+                          value: newValue ? newValue.assetType : ''
+                        }
+                      });
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        name="type"
+                        label="Type"
+                        InputProps={{
+                          ...params.InputProps,
+                          style: { height: 40 }
+                        }}
+                      />
+                    )}
+                  />
+                </div>
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="category"
-                    label= "Category"
+                    label="Category"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -249,7 +324,7 @@ const AssetCategory = () => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="categoryCode"
-                    label= "Category Code"
+                    label="Category Code"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -276,7 +351,7 @@ const AssetCategory = () => {
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default AssetCategory
+export default AssetCategory;
