@@ -4,6 +4,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PrintIcon from '@mui/icons-material/Print';
 import SaveIcon from '@mui/icons-material/Save';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import { forwardRef } from 'react';
 
 import {
   Box,
@@ -98,6 +99,7 @@ const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
   }
 }));
 
+// const PurchaseOrderComponent = React.forwardRef((props, ref) => {
 const PurchaseOrderComponent = React.forwardRef((props, ref) => {
   const {
     poNumber,
@@ -170,13 +172,22 @@ const PurchaseOrderComponent = React.forwardRef((props, ref) => {
   // Example usage:
   const totalInWordsIndianCurrency = formatIndianCurrency(total);
 
+  const handleDateChange = (date) => {
+    if (date) {
+      const formattedDate = dayjs(date).format('YYYY-MM-DD');
+      setPoDate(formattedDate);
+    } else {
+      setPoDate(null);
+    }
+  };
+
   return (
-    <div>
+    <div ref={ref}>
       <div>
         <ToastContainer />
       </div>
 
-      <Paper ref={ref} elevation={3} sx={{ padding: 4, fontFamily: 'Roboto, sans-serif' }}>
+      <Paper elevation={3} sx={{ padding: 4, fontFamily: 'Roboto, sans-serif' }}>
         <Container>
           <Box sx={{ mb: 3 }}>
             <Grid container spacing={2} alignItems="flex-start">
@@ -211,7 +222,7 @@ const PurchaseOrderComponent = React.forwardRef((props, ref) => {
                 <StyledTextField
                   size="small"
                   variant="outlined"
-                  // value={props.poNumber}
+                  value={poNumber}
                   placeholder="PO Number"
                   onChange={(e) => props.setPoNumber(e.target.value)}
                   sx={{ width: '100%', maxWidth: 180, fontWeight: 'bold', mb: 1 }}
@@ -221,21 +232,22 @@ const PurchaseOrderComponent = React.forwardRef((props, ref) => {
                   <DatePicker
                     label="PO Date"
                     format="DD-MM-YYYY"
+                    value={poDate ? dayjs(poDate, 'YYYY-MM-DD') : null}
+                    onChange={(date) => handleDateChange(date)}
                     slotProps={{
                       textField: {
                         size: 'small',
                         fullWidth: true,
+                        // clearable: true,
                         sx: { maxWidth: 180 }
                       }
                     }}
                     // value={poDate}
-                    onChange={(newValue) => setPoDate(newValue)}
                   />
                 </LocalizationProvider>
               </Grid>
             </Grid>
           </Box>
-
 
           <Grid container spacing={2} sx={{ mb: 1 }}>
             <Grid item xs={6}>
@@ -495,7 +507,7 @@ const PurchaseOrder = () => {
   );
   const [poNumber, setPoNumber] = useState('');
   const [poVo, setPoVo] = useState([]);
-  const [poDate, setPoDate] = useState('');
+  const [poDate, setPoDate] = useState(null);
   const [items, setItems] = useState([
     {
       description: '',
@@ -566,8 +578,13 @@ const PurchaseOrder = () => {
     documentTitle: `Purchase_Order-${poNumber}`
   });
 
+  useEffect(() => {
+    console.log('componentRef:', componentRef.current);
+  }, []);
+
   const handleSave = () => {
     postInvoice();
+    handleNew();
   };
 
   const handleAddRow = () => {
@@ -694,7 +711,6 @@ const PurchaseOrder = () => {
 
   const handleListView = () => {
     setListView(!listView);
-
     handleNew();
   };
   useEffect(() => {
@@ -703,6 +719,7 @@ const PurchaseOrder = () => {
       setDeliveryAddress(poVo.deliveryAddress || '');
       setCompanyAddress(poVo.companyAddress || '');
       setPoNumber(poVo.poNumber || '');
+      // setPoDate(poVo.poDate || '');
       setPoDate(poVo.poDate || '');
       setItems(poVo.productLines || []);
       setTermsAndConditions(poVo.termsAndConditions || '');
@@ -756,7 +773,7 @@ const PurchaseOrder = () => {
             sx={{ ml: 1 }}
             variant="contained"
             color="primary"
-            onClick={postInvoice}
+            onClick={handleSave}
             startIcon={<SaveIcon />} // Add icon here
           >
             Save
