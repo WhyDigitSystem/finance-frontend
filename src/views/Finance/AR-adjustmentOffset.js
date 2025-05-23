@@ -1,6 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { FormHelperText } from '@mui/material';
+import { Chip, FormHelperText, Stack } from '@mui/material';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -30,7 +30,10 @@ import SaveIcon from '@mui/icons-material/Save';
 import { useTheme } from '@mui/material/styles';
 import { Box } from '@mui/system';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import ConfirmationModal from 'utils/confirmationPopup';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -57,32 +60,40 @@ const ARadjustmentOffset = () => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [selectedDocId, setSelectedDocId] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [modalPopupOpen, setModalPopupOpen] = useState(false);
   const [selectAll, setSelectAll] = useState(false);
+  const [listViewDataApprove, setListViewDataApprove] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
   const [fillGridData, setFillGridData] = useState([]);
+  const [approveStatus, setApproveStatus] = useState('');
   const [formData, setFormData] = useState({
     active: true,
     docNo: '',
     docDate: dayjs(),
-    customerName:'',
-    customerCode:'',
+    customerName: '',
+    customerCode: '',
     receiptDocId: '',
     receiptDocDate: null,
     amount: '',
     totalSettled: '',
     onAccount: '',
-    narration: ''
+    narration: '',
+    approveStatus: '',
+    approveBy: '',
+    approveOn: '',
+    status: 'EDIT',
   });
 
   const [fieldErrors, setFieldErrors] = useState({
     active: true,
     receiptDocId: '',
     receiptDocDate: null,
-    customerName:'',
+    customerName: '',
     customerCode: '',
     amount: '',
     totalSettled: '',
     onAccount: '',
+    status: '',
     narration: ''
   });
 
@@ -109,7 +120,7 @@ const ARadjustmentOffset = () => {
     if (name === 'customerName') {
       const selectedCustomer = allCustomerName.find((customer) => customer.customerName === value);
       if (selectedCustomer) {
-        if(name === 'customerName'){
+        if (name === 'customerName') {
           getAllReceiptId(value);
         }
         setFormData({
@@ -131,15 +142,14 @@ const ARadjustmentOffset = () => {
       ...prev,
       [name]: false,
     }));
-  };  
+  };
   useEffect(() => {
-    if(!editId){
     calculateTotals();
-  }}, [inVoiceDetailsData, formData.amount]);
+  }, [inVoiceDetailsData, formData.amount]);
   const calculateTotals = () => {
     let totalChargeAmt = 0;
     let totalSettledAmt = 0;
-  
+
     const updatedInvoiceDetails = inVoiceDetailsData.map((row, index) => {
       const billAmount = parseFloat(row.amount || 0);
       const gstAmt = parseFloat(row.gstAmt || 0);
@@ -152,7 +162,7 @@ const ARadjustmentOffset = () => {
       if (tdsPercent) {
         tdsAmt = (gross * tdsPercent) / 100;
       }
-      const netReceivable = chargeAmount - tdsAmt; 
+      const netReceivable = chargeAmount - tdsAmt;
       const outstandingAmt = netReceivable - settledAmt;
       totalChargeAmt += netReceivable;
       return {
@@ -161,7 +171,7 @@ const ARadjustmentOffset = () => {
         outStanding: outstandingAmt.toFixed(2)
       };
     });
-  
+
     const amount = parseFloat(formData.amount || 0);
     const onAccount = amount >= totalSettledAmt ? amount - totalSettledAmt : 0;
     setInVoiceDetailsData(updatedInvoiceDetails);
@@ -171,7 +181,7 @@ const ARadjustmentOffset = () => {
       netAmount: totalChargeAmt.toFixed(2),
       onAccount: onAccount.toFixed(2),
     }));
-  }; 
+  };
 
   const handleDateChange = (name, date) => {
     setFormData({ ...formData, [name]: date });
@@ -188,6 +198,7 @@ const ARadjustmentOffset = () => {
       amount: '',
       totalSettled: '',
       onAccount: '',
+      status: '',
       narration: ''
     });
     setFieldErrors({
@@ -197,6 +208,7 @@ const ARadjustmentOffset = () => {
       amount: '',
       totalSettled: '',
       onAccount: '',
+      status: '',
       narration: ''
     });
     setInVoiceDetailsData([]);
@@ -289,7 +301,7 @@ const ARadjustmentOffset = () => {
         ...prev,
         receiptDocId: selectedId,
         receiptDocDate: selectedReceipt.docDate,
-        amount: selectedReceipt.onAccount
+        amount: selectedReceipt.netAmount
       }));
     }
   };
@@ -308,36 +320,49 @@ const ARadjustmentOffset = () => {
   };
 
   const getARAdjustmentOffsetById = async (row) => {
-    console.log('first', row);
+    console.log('Editing Row:', row);
     setEditId(row.original.id);
+
     try {
       const response = await apiCalls('get', `/aradjustmentoffset/getArAdjustmentOffSetById?id=${row.original.id}`);
       if (response.status === true) {
         setListView(false);
         const receiptVO = response.paramObjectsMap.arAdjustmentOffSetVO[0];
+        setListViewDataApprove(receiptVO);
+        await getAllReceiptId(receiptVO.subLedgerName);
+        // await getAllReceiptId(receiptVO.subLedgerCode);
+
 
         setFormData({
           docNo: receiptVO.docId,
-          // docDate: dayjs(receiptVO.docDate, 'DD-MM-YYYY').format('YYYY-MM-DD'),
           docDate: dayjs(receiptVO.docDate),
           receiptDocId: receiptVO.receiptDocId,
-          // receiptDocDate: dayjs(receiptVO.receiptDocDate, 'DD-MM-YYYY').format('YYYY-MM-DD'),
           receiptDocDate: dayjs(receiptVO.receiptDocDate),
           amount: receiptVO.amount,
           supplierRefNo: receiptVO.supplierRefNo,
-          subledgerCode: receiptVO.subLedgerCode,
+          customerCode: receiptVO.subLedgerCode, // ✅ Ensure this exists
+          customerName: receiptVO.subLedgerName, // ✅ Ensure this exists
+          customerCode: receiptVO.subLedgerCode,  // ✅ Optional alias for backward compatibility
+          customerName: receiptVO.subLedgerName,  // ✅ Optional alias for backward compatibility
           gainorLoss: receiptVO.forexGainOrLoss,
           totalSettled: receiptVO.totalSettled,
           onAccount: receiptVO.onAccount,
+          status: receiptVO.status,
+          id: receiptVO.id,
           narration: receiptVO.narration,
+          approveBy: receiptVO.approveBy,
+          approveOn: receiptVO.approveOn,
+          approveStatus: receiptVO.approveStatus,
+          active: receiptVO.active ?? true,
         });
+
         setInVoiceDetailsData(
           receiptVO.arOffSetInvoiceDetailsVO.map((invoiceData) => ({
             id: invoiceData.id,
             invNo: invoiceData.invoiceNo,
-            invDate: dayjs(invoiceData.invoiceDate, 'YYYY-MM-DD').format('YYYY-MM-DD'), // Convert to correct format
+            invDate: dayjs(invoiceData.invoiceDate, 'YYYY-MM-DD').format('YYYY-MM-DD'),
             refNo: invoiceData.refNo,
-            refDate: dayjs(invoiceData.refDate, 'YYYY-MM-DD').format('YYYY-MM-DD'), // Convert to correct format
+            refDate: dayjs(invoiceData.refDate, 'YYYY-MM-DD').format('YYYY-MM-DD'),
             currency: invoiceData.curr,
             exRate: invoiceData.exRate,
             amount: invoiceData.invAmount,
@@ -345,12 +370,60 @@ const ARadjustmentOffset = () => {
             settled: invoiceData.settled,
             setExRate: invoiceData.setExRate,
             tnxSettled: invoiceData.tnxSettled,
-            gainAmt: invoiceData.gainOrLoss
+            chargeAmt: invoiceData.chargeAmt,
+            gstAmt: invoiceData.gstAmt,
+            gainAmt: invoiceData.gainOrLoss,
           }))
         );
       } else {
-        // Handle error
+        console.error('API returned false status');
       }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const handleConfirmAction = async () => {
+    try {
+      const result = await apiCalls(
+        'put',
+        `/aradjustmentoffset/approveArAdjustmentOffSet?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docNo}&id=${formData.id}`
+      );
+      if (result.status === true) {
+        setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
+        showToast(
+          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
+          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved'
+            ? 'TaxInvoice Approved successfully'
+            : 'TaxInvoice Rejected successfully'
+        );
+        const listValueVO = result.paramObjectsMap.taxInvoiceVO;
+        // setConfirmData(result.paramObjectsMap.taxInvoiceVO);
+        // getAddessType(listValueVO.placeOfSupply, listValueVO.stateCode, listValueVO.partyId);
+        setFormData({
+          active: true,
+          docNo: listValueVO.docNo,
+          docDate: listValueVO.docDate,
+          customerName: listValueVO.subLedgerName,
+          customerCode: listValueVO.customerCode,
+          receiptDocId: listValueVO.receiptDocId,
+          receiptDocDate: listValueVO.receiptDocDate,
+          amount: listValueVO.amount,
+          totalSettled: listValueVO.totalSettled,
+          approveBy: listValueVO.approveBy,
+          approveOn: listValueVO.approveOn,
+          onAccount: listValueVO.onAccount,
+          narration: listValueVO.narration,
+          approveStatus: listValueVO.approveStatus,
+        });
+        handleCloseModal();
+        getAllARAdjustmentOffset();
+        // getAllTaxInvoice();
+        // setlistView(!listView);
+      } else {
+        console.error('API Error:', result.data);
+      }
+
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -369,57 +442,66 @@ const ARadjustmentOffset = () => {
     }
 
     setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
-    if (Object.keys(errors).length === 0) {
-      setIsLoading(true);
+    setIsLoading(true);
 
-      const receiptInvDetailVo = inVoiceDetailsData.map((row) => ({
+    const receiptInvDetailVo = inVoiceDetailsData.map((row) => ({
+      ...(editId && { id: row.id }),
+      chargeAmt: row.chargeAmt,
+      curr: row.currency,
+      gstAmt: row.gstAmt,
+      invoiceNo: row.invNo,
+      invoiceDate: formatDate(new Date(row.invDate)),
+      refNo: row.refNo,
+      refDate: formatDate(new Date(row.refDate)),
+      exRate: parseFloat(row.exRate),
+      invAmount: parseFloat(row.amount),
+      outStanding: parseFloat(row.outStanding),
+      settled: parseFloat(row.settled),
+    }));
 
-        ...(editId && { id: row.id }),
-        invoiceNo: row.invNo,
-        invoiceDate: formatDate(new Date(row.invDate)),
-        refNo: row.refNo,
-        refDate: formatDate(new Date(row.refDate)),
-        curr: row.currency,
-        exRate: parseInt(row.exRate),
-        invAmount: parseInt(row.amount),
-        outStanding: parseInt(row.outStanding),
-        settled: parseInt(row.settled),
-      }));
+    const saveFormData = {
+      ...(editId && { id: editId }),
+      arOffSetInvoiceDetailsDTO: receiptInvDetailVo,
+      branch,
+      branchCode,
+      createdBy: loginUserName,
+      finYear,
+      active: formData.active,
+      amount: formData.amount,
+      status: formData.status,
+      narration: formData.narration,
+      orgId: parseInt(orgId),
+      receiptDocDate: formatDate(new Date(formData.receiptDocDate)),
+      receiptDocId: formData.receiptDocId,
+      subLedgerCode: formData.subLedgerCode || formData.customerCode, // ✅ Safe fallback
+      subLedgerName: formData.subLedgerName || formData.customerName, // ✅ Safe fallback
+    };
+    console.log('COde', formData.subLedgerName)
+    try {
+      const response = await apiCalls(
+        'put',
+        `/aradjustmentoffset/updateCreateArAdjustmentOffSet`,
+        saveFormData
+      );
 
-      const saveFormData = {
-        ...(editId && { id: editId }),
-        arOffSetInvoiceDetailsDTO: receiptInvDetailVo,
-        branch: branch,
-        branchCode: branchCode,
-        createdBy: loginUserName,
-        finYear: finYear,
-        active: formData.active,
-        amount: formData.amount,
-        narration: formData.narration,
-        orgId: parseInt(orgId),
-        receiptDocDate: formData.receiptDocDate,
-        receiptDocId: formData.receiptDocId,
-      };
-
-      try {
-        const response = await apiCalls('put', `/aradjustmentoffset/updateCreateArAdjustmentOffSet`, saveFormData);
-        if (response.status === true) {
-          showToast('success', editId ? 'AR-Adjustment Offset Updated Successfully' : 'AR-Adjustment Offset created successfully');
-          handleClear();
-          getAllARAdjustmentOffset();
-          getArOffsetDocId();
-        } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'AR-Adjustment Offset creation failed');
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        showToast('error', 'AR-Adjustment Offset creation failed');
-      } finally {
-        setIsLoading(false);
+      if (response.status === true) {
+        showToast('success', editId ? 'AR-Adjustment Offset Updated Successfully' : 'AR-Adjustment Offset created successfully');
+        handleClear();
+        getAllARAdjustmentOffset();
+        getArOffsetDocId();
+      } else {
+        showToast('error', response.paramObjectsMap?.errorMessage || 'Save failed');
       }
+    } catch (error) {
+      console.error('Error:', error);
+      showToast('error', 'Save failed');
+    } finally {
+      setIsLoading(false);
     }
   };
+
   const getAllCustomerName = async () => {
     try {
       const response = await apiCalls(
@@ -442,70 +524,72 @@ const ARadjustmentOffset = () => {
     { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
     { accessorKey: 'receiptDocId', header: 'Receipt Doc Id', size: 140 },
     { accessorKey: 'receiptDocDate', header: 'Receipt Doc Date', size: 140 },
-    { accessorKey: 'totalSettled', header: 'Total Settled', size: 140 },
     { accessorKey: 'onAccount', header: 'On Account', size: 140 },
+    { accessorKey: 'status', header: 'Status', size: 140 },
+    { accessorKey: 'approveStatus', header: 'Approved Status', size: 140 },
   ];
 
-    const handleFullGrid = () => {
-      if (formData.customerName) {
-        setModalOpen(true);
-        getAllFillGrid();
-      }else{
-        setModalOpen(false);
-        showToast('warning', formData.customerName ? `${formData.customerName} has No Data` : 'Please Select Customer Name');
-      }
-    };
-    const handleCloseModal = () => {
+  const handleFullGrid = () => {
+    if (formData.customerName) {
+      setModalOpen(true);
+      getAllFillGrid();
+    } else {
       setModalOpen(false);
-    };
-    const handleSelectAll = () => {
-      if (selectAll) {
-        setSelectedRows([]);
-      } else {
-        setSelectedRows(fillGridData.map((_, index) => index));
-      }
-      setSelectAll(!selectAll);
-    };
-    const handleSubmitSelectedRows = async () => {
-      const selectedData = selectedRows.map((index) => fillGridData[index]);
-      console.log("charge amt", selectedData);
-      const newData = selectedData
-        .filter((data) => {
-          return !inVoiceDetailsData.some(
-            (item) => item.invNo === data.vid && item.invDate === data.vdate
-          );
-        })
-        .map((data) => ({
-          id: Date.now() + Math.random(), 
-          invNo: data.vid || '',
-          invDate: data.vdate ? dayjs(data.vdate).format('YYYY-MM-DD') : null,
-          refNo: data.refNo || '',
-          refDate: data.refate ? dayjs(data.refate).format('YYYY-MM-DD') : null,
-          amount: data.billamount || '',
-          gstAmt: data.gstamount || '',
-          chargeAmt: data.chargeAmt || '',
-          currency: data.acccurrency || '',
-          exRate: data.exrate || '',
-        }));
-    
-      if (newData.length < selectedData.length) {
-        showToast('warning', 'Some of the selected items are already added!');
-      }
-    
-      if (newData.length === 0) {
-        return;
-      }
-      setInVoiceDetailsData((prev) => [...prev, ...newData]);
+      showToast('warning', formData.customerName ? `${formData.customerName} has No Data` : 'Please Select Customer Name');
+    }
+  };
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setModalPopupOpen(false);
+  };
+  const handleSelectAll = () => {
+    if (selectAll) {
       setSelectedRows([]);
-      setSelectAll(false);
-      handleCloseModal();
-    };    
+    } else {
+      setSelectedRows(fillGridData.map((_, index) => index));
+    }
+    setSelectAll(!selectAll);
+  };
+  const handleSubmitSelectedRows = async () => {
+    const selectedData = selectedRows.map((index) => fillGridData[index]);
+    console.log("charge amt", selectedData);
+    const newData = selectedData
+      .filter((data) => {
+        return !inVoiceDetailsData.some(
+          (item) => item.invNo === data.vid && item.invDate === data.vdate
+        );
+      })
+      .map((data) => ({
+        id: Date.now() + Math.random(),
+        invNo: data.vid || '',
+        invDate: data.vdate ? dayjs(data.vdate).format('YYYY-MM-DD') : null,
+        refNo: data.refNo || '',
+        refDate: data.refate ? dayjs(data.refate).format('YYYY-MM-DD') : null,
+        amount: data.billamount || '',
+        gstAmt: data.gstamount || '',
+        chargeAmt: data.chargeAmt || '',
+        currency: data.acccurrency || '',
+        exRate: data.exrate || '',
+      }));
+
+    if (newData.length < selectedData.length) {
+      showToast('warning', 'Some of the selected items are already added!');
+    }
+
+    if (newData.length === 0) {
+      return;
+    }
+    setInVoiceDetailsData((prev) => [...prev, ...newData]);
+    setSelectedRows([]);
+    setSelectAll(false);
+    handleCloseModal();
+  };
   const getAllFillGrid = async () => {
     try {
       const response = await apiCalls(
         'get',
         `/arreceivable/getReciptFillGrid?orgId=${orgId}&branchCode=${branchCode}&partyCode=${formData.customerCode}`
-        );
+      );
       if (response.status === true) {
         setFillGridData(response.paramObjectsMap.reciptFillGrid);
       } else {
@@ -515,14 +599,83 @@ const ARadjustmentOffset = () => {
       console.error('Error fetching data:', error);
     }
   };
+
+  const handleOpenModalApprove = () => {
+    setModalPopupOpen(true);
+    setApproveStatus('Approved');
+  };
+
+  const handleOpenModalReject = () => {
+    setModalPopupOpen(true);
+    setApproveStatus('Rejected');
+  };
+
   return (
     <div>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
-        <div className="row d-flex ml" style={{ marginBottom: '20px' }}>
-          <div className="d-flex flex-wrap justify-content-end mb-4 " style={{ marginBottom: '20px' }}>
-            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />
+        <div className="row d-flex ml">
+          <div className="d-flex flex-wrap justify-content-between mb-2" >
+            <div className=" justify-content-start mb-0">
+              {editId && !listView && (formData.status === 'SUBMIT' || listViewDataApprove.status === 'SUBMIT') && (
+                <>
+                  {formData.approveStatus === 'Approved' && (
+                    <Stack direction="row" spacing={2}>
+                      <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
+                      <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
+                    </Stack>
+                  )}
+                  {formData.approveStatus === 'Rejected' && (
+                    <Stack direction="row" spacing={2}>
+                      <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
+                      <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
+                    </Stack>
+                  )}
+                  {/* {formData.status === 'SUBMIT' && formData.approveStatus === null && ( */}
+                  {listViewDataApprove.status === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                    <div className="d-flex" style={{ marginRight: '30px' }}>
+                      <Button
+                        variant="outlined"
+                        startIcon={<CheckCircleIcon />}
+                        size="small"
+                        style={{
+                          borderColor: '#4CAF50',
+                          color: '#4CAF50',
+                          fontWeight: 'bold',
+                          textTransform: 'none',
+                          padding: '2px 8px',
+                          fontSize: '0.8rem',
+                          marginRight: '10px'
+                        }}
+                        onClick={handleOpenModalApprove}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        startIcon={<CancelIcon />}
+                        size="small"
+                        style={{
+                          borderColor: '#F44336',
+                          color: '#F44336',
+                          fontWeight: 'bold',
+                          textTransform: 'none',
+                          padding: '2px 8px',
+                          fontSize: '0.8rem'
+                        }}
+                        onClick={handleOpenModalReject}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+            <div className="d-flex flex-wrap justify-content-end mb-4 " style={{ marginBottom: '20px' }}>
+              <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+              <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />
+            </div>
           </div>
         </div>
         {listView ? (
@@ -566,7 +719,7 @@ const ARadjustmentOffset = () => {
                     labelId="customerName"
                     id="customerName"
                     label="Customer Name"
-                    disabled = {editId}
+                    disabled={editId}
                     name="customerName"
                     onChange={handleInputChange}
                     value={formData.customerName}
@@ -589,7 +742,7 @@ const ARadjustmentOffset = () => {
                     label="Receipt Doc ID"
                     onChange={handleDocIdChange}
                     name="receiptDocId"
-                    disabled = {editId}
+                    disabled={editId}
                     value={formData.receiptDocId}
                   >
                     {allReceiptDocId.map((doc) => (
@@ -626,6 +779,7 @@ const ARadjustmentOffset = () => {
                     name="amount"
                     label="Amount"
                     size="small"
+                    disabled
                     value={formData.amount}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
@@ -634,6 +788,32 @@ const ARadjustmentOffset = () => {
                   />
                 </FormControl>
               </div>
+              <div className="col-md-3 mb-3">
+                <FormControl
+                  fullWidth
+                  size="small"
+                  variant="outlined"
+                  error={!!fieldErrors.status}
+                >
+                  <InputLabel id="status-label">Status</InputLabel>
+                  <Select
+                    label="Status"
+                    name="status"
+                    value={formData.status || ''}
+                    onChange={handleInputChange}
+                    disabled={formData.status === 'SUBMIT' || !editId}
+                  >
+                    {editId && <MenuItem value="SUBMIT">SUBMIT</MenuItem>}
+                    <MenuItem value="EDIT">EDIT</MenuItem>
+                  </Select>
+                  {fieldErrors.status && (
+                    <FormHelperText style={{ color: 'red' }}>
+                      {fieldErrors.status}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              </div>
+
             </div>
             <Tabs
               value={value}
@@ -651,7 +831,7 @@ const ARadjustmentOffset = () => {
                 <div className="row d-flex ml" style={{ marginTop: '5px' }}>
                   <div className="mb-1">
                     {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
-                    {!editId && <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />} 
+                    {!editId && <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />}
                   </div>
                   <div className="row mt-2">
                     <div className="col-lg-12">
@@ -668,7 +848,7 @@ const ARadjustmentOffset = () => {
                               <th className="px-2 py-2 text-white text-center"># Invoice</th>
                               <th className="px-2 py-2 text-white text-center" style={{ border: 'none' }}>Date</th>
                               <th className="px-2 py-2 text-white text-center">Ref No</th>
-                              <th className="px-2 py-2 text-white text-center">Ref Date</th> 
+                              <th className="px-2 py-2 text-white text-center">Ref Date</th>
                               <th className="px-2 py-2 text-white text-center">Currency</th>
                               <th className="px-2 py-2 text-white text-center">Ex. Rate</th>
                               <th className="px-2 py-2 text-white text-center">Bill Amount</th>
@@ -761,7 +941,7 @@ const ARadjustmentOffset = () => {
                                             padding: '8px',
                                           },
                                         },
-                                      }}                                     
+                                      }}
                                     />
                                     {invoiceDetailsError[index]?.invDate && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -833,76 +1013,76 @@ const ARadjustmentOffset = () => {
                                     </div>
                                   )}
                                 </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.currency}
-                                      disabled
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        const regex = /^[a-zA-Z0-9\s-]*$/;
-                                        if (regex.test(value)) {
-                                          setInVoiceDetailsData((prev) =>
-                                            prev.map((r) => (r.id === row.id ? { ...r, currency: value } : r))
-                                          );
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], currency: !value ? 'Currency is required' : '' };
-                                            return newErrors;
-                                          });
-                                        } else {
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = {
-                                              ...newErrors[index],
-                                              currency: 'Only alphabets and numbers are allowed'
-                                            };
-                                            return newErrors;
-                                          });
-                                        }
-                                      }}
-                                      className={invoiceDetailsError[index]?.currency ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
-                                    />
-                                    {invoiceDetailsError[index]?.currency && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {invoiceDetailsError[index].currency}
-                                      </div>
-                                    )}
-                                  </td>
-                                  <td className="border px-2 py-2">
-                                    <input
-                                      type="text"
-                                      value={row.exRate}
-                                      disabled
-                                      onChange={(e) => {
-                                        const value = e.target.value;
-                                        const isNumeric = /^[0-9]*$/;
+                                <td className="border px-2 py-2">
+                                  <input
+                                    type="text"
+                                    value={row.currency}
+                                    disabled
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      const regex = /^[a-zA-Z0-9\s-]*$/;
+                                      if (regex.test(value)) {
+                                        setInVoiceDetailsData((prev) =>
+                                          prev.map((r) => (r.id === row.id ? { ...r, currency: value } : r))
+                                        );
+                                        setInvoiceDetailsError((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = { ...newErrors[index], currency: !value ? 'Currency is required' : '' };
+                                          return newErrors;
+                                        });
+                                      } else {
+                                        setInvoiceDetailsError((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = {
+                                            ...newErrors[index],
+                                            currency: 'Only alphabets and numbers are allowed'
+                                          };
+                                          return newErrors;
+                                        });
+                                      }
+                                    }}
+                                    className={invoiceDetailsError[index]?.currency ? 'error form-control' : 'form-control'}
+                                    style={{ width: '150px' }}
+                                  />
+                                  {invoiceDetailsError[index]?.currency && (
+                                    <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                      {invoiceDetailsError[index].currency}
+                                    </div>
+                                  )}
+                                </td>
+                                <td className="border px-2 py-2">
+                                  <input
+                                    type="text"
+                                    value={row.exRate}
+                                    disabled
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      const isNumeric = /^[0-9]*$/;
 
-                                        if (isNumeric.test(value)) {
-                                          setInVoiceDetailsData((prev) => prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r)));
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], exRate: !value ? 'Ex Rate is required' : '' };
-                                            return newErrors;
-                                          });
-                                        } else {
-                                          setInvoiceDetailsError((prev) => {
-                                            const newErrors = [...prev];
-                                            newErrors[index] = { ...newErrors[index], exRate: 'Only numbers are allowed' };
-                                            return newErrors;
-                                          });
-                                        }
-                                      }}
-                                      className={invoiceDetailsError[index]?.exRate ? 'error form-control' : 'form-control'}
-                                      style={{ width: '150px' }}
-                                    />
-                                    {invoiceDetailsError[index]?.exRate && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {invoiceDetailsError[index].exRate}
-                                      </div>
-                                    )}
-                                  </td>
+                                      if (isNumeric.test(value)) {
+                                        setInVoiceDetailsData((prev) => prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r)));
+                                        setInvoiceDetailsError((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = { ...newErrors[index], exRate: !value ? 'Ex Rate is required' : '' };
+                                          return newErrors;
+                                        });
+                                      } else {
+                                        setInvoiceDetailsError((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = { ...newErrors[index], exRate: 'Only numbers are allowed' };
+                                          return newErrors;
+                                        });
+                                      }
+                                    }}
+                                    className={invoiceDetailsError[index]?.exRate ? 'error form-control' : 'form-control'}
+                                    style={{ width: '150px' }}
+                                  />
+                                  {invoiceDetailsError[index]?.exRate && (
+                                    <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                      {invoiceDetailsError[index].exRate}
+                                    </div>
+                                  )}
+                                </td>
                                 <td className="border px-2 py-2">
                                   <input
                                     type="text"
@@ -1050,59 +1230,60 @@ const ARadjustmentOffset = () => {
                                   )}
                                 </td>
                                 <td className="border px-2 py-2">
-                                <input
-                                  type="text"
-                                  value={row.settled}
-                                  disabled={editId}
-                                  onChange={(e) => {
-                                    const value = e.target.value;
-                                    const isNumeric = /^[0-9.]*$/;
+                                  <input
+                                    type="text"
+                                    value={row.settled}
+                                    // disabled={editId}
+                                    disabled={formData.status === 'SUBMIT'}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      const isNumeric = /^[0-9.]*$/;
 
-                                    if (!isNumeric.test(value)) {
+                                      if (!isNumeric.test(value)) {
+                                        setInvoiceDetailsError((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = { ...newErrors[index], settled: 'Only numbers are allowed' };
+                                          return newErrors;
+                                        });
+                                        return;
+                                      }
+
+                                      const newValue = parseFloat(value || 0);
+                                      const totalOtherSettled = inVoiceDetailsData.reduce((sum, r) =>
+                                        r.id !== row.id ? sum + parseFloat(r.settled || 0) : sum, 0
+                                      );
+
+                                      const totalSettledAfterChange = totalOtherSettled + newValue;
+                                      const maxReceiptAmt = parseFloat(formData.amount || 0);
+                                      const maxChargeAmt = parseFloat(row.chargeAmt || 0);
+
+                                      let errorMsg = '';
+                                      if (newValue > maxChargeAmt) {
+                                        errorMsg = `Settled cannot exceed Net Receivable (${maxChargeAmt})`;
+                                      } else if (totalSettledAfterChange > maxReceiptAmt) {
+                                        errorMsg = `Total settled exceeds Amount (${maxReceiptAmt})`;
+                                      }
+
+                                      if (errorMsg) {
+                                        setInvoiceDetailsError((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = { ...newErrors[index], settled: errorMsg };
+                                          return newErrors;
+                                        });
+                                        return;
+                                      }
+                                      setInVoiceDetailsData((prev) =>
+                                        prev.map((r) => (r.id === row.id ? { ...r, settled: value } : r))
+                                      );
                                       setInvoiceDetailsError((prev) => {
                                         const newErrors = [...prev];
-                                        newErrors[index] = { ...newErrors[index], settled: 'Only numbers are allowed' };
+                                        newErrors[index] = { ...newErrors[index], settled: '' };
                                         return newErrors;
                                       });
-                                      return;
-                                    }
-
-                                    const newValue = parseFloat(value || 0);
-                                    const totalOtherSettled = inVoiceDetailsData.reduce((sum, r) =>
-                                      r.id !== row.id ? sum + parseFloat(r.settled || 0) : sum, 0
-                                    );
-
-                                    const totalSettledAfterChange = totalOtherSettled + newValue;
-                                    const maxReceiptAmt = parseFloat(formData.amount || 0);
-                                    const maxChargeAmt = parseFloat(row.chargeAmt || 0);
-
-                                    let errorMsg = '';
-                                    if (newValue > maxChargeAmt) {
-                                      errorMsg = `Settled cannot exceed Net Receivable (${maxChargeAmt})`;
-                                    } else if (totalSettledAfterChange > maxReceiptAmt) {
-                                      errorMsg = `Total settled exceeds Amount (${maxReceiptAmt})`;
-                                    }
-
-                                    if (errorMsg) {
-                                      setInvoiceDetailsError((prev) => {
-                                        const newErrors = [...prev];
-                                        newErrors[index] = { ...newErrors[index], settled: errorMsg };
-                                        return newErrors;
-                                      });
-                                      return;
-                                    }
-                                    setInVoiceDetailsData((prev) =>
-                                      prev.map((r) => (r.id === row.id ? { ...r, settled: value } : r))
-                                    );
-                                    setInvoiceDetailsError((prev) => {
-                                      const newErrors = [...prev];
-                                      newErrors[index] = { ...newErrors[index], settled: '' };
-                                      return newErrors;
-                                    });
-                                  }}
-                                  className={invoiceDetailsError[index]?.settled ? 'error form-control' : 'form-control'}
-                                  style={{ width: '150px' }}
-                                />
+                                    }}
+                                    className={invoiceDetailsError[index]?.settled ? 'error form-control' : 'form-control'}
+                                    style={{ width: '150px' }}
+                                  />
                                   {invoiceDetailsError[index]?.settled && (
                                     <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                       {invoiceDetailsError[index].settled}
@@ -1498,7 +1679,7 @@ const ARadjustmentOffset = () => {
                           label="On Account"
                           size="small"
                           value={formData.onAccount}
-                          disabled 
+                          disabled
                         />
                       </FormControl>
                     </div>
@@ -1522,99 +1703,107 @@ const ARadjustmentOffset = () => {
                 </div>
               )}
             </Box>
-                    <Dialog
-                      open={modalOpen}
-                      maxWidth={'md'}
-                      fullWidth={true}
-                      onClose={handleCloseModal}
-                      PaperComponent={PaperComponent}
-                      aria-labelledby="draggable-dialog-title"
-                    >
-                      <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
-                        <h6>Grid Details</h6>
-                      </DialogTitle>
-                      <DialogContent className="pb-0">
-                        <div className="row">
-                          <div className="col-lg-12">
-                            <div className="table-responsive">
-                              <table className="table table-bordered">
-                                <thead>
-                                  <tr style={{ backgroundColor: '#673AB7' }}>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                      <Checkbox sx={{
-                                        color: 'white',
-                                        '&.Mui-checked': {
-                                          color: 'white', 
-                                        },
-                                      }}
-                                      checked={selectAll} onChange={handleSelectAll} />
-                                    </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                      S.No
-                                    </th>
-                                    <th className="table-header"># Invoice</th>
-                                    <th className="table-header">Date</th>
-                                    <th className="table-header">Bill Amount</th>
-                                    <th className="table-header">Tax</th>
-                                    <th className="table-header">Net Receivable</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {fillGridData?.map((row, index) => (
-                                    <tr key={row.id}>
-                                      <td className="border p-0 text-center">
-                                        <Checkbox
-                                        sx={{
-                                          backgroundColor: 'white'
-                                        }}
-                                          checked={selectedRows.includes(index)}
-                                          onChange={(e) => {
-                                            const isChecked = e.target.checked;
-                                            setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
-                                          }}
-                                        />
-                                      </td>
-                                      <td className="text-center">{index + 1}</td>
-                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.vid || ''}
-                                      </td>
-                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : ''}
-                                      </td>
-                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.billamount || ''}
-                                      </td> 
-                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstamount || ''}
-                                      </td>
-                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeAmt || 0}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                      </DialogContent>
-                      <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
-                        <Button onClick={handleCloseModal} sx={{ color: '#673AB7' }}>
-                          Cancel
-                        </Button>
-                        <Button
-                          color="secondary"
-                          onClick={handleSubmitSelectedRows}
-                          variant="contained"
-                          sx={{ backgroundColor: '#673AB7' }}
-                        >
-                          Proceed
-                        </Button>
-                      </DialogActions>
-                    </Dialog>
+            <Dialog
+              open={modalOpen}
+              maxWidth={'md'}
+              fullWidth={true}
+              onClose={handleCloseModal}
+              PaperComponent={PaperComponent}
+              aria-labelledby="draggable-dialog-title"
+            >
+              <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
+                <h6>Grid Details</h6>
+              </DialogTitle>
+              <DialogContent className="pb-0">
+                <div className="row">
+                  <div className="col-lg-12">
+                    <div className="table-responsive">
+                      <table className="table table-bordered">
+                        <thead>
+                          <tr style={{ backgroundColor: '#673AB7' }}>
+                            <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                              <Checkbox sx={{
+                                color: 'white',
+                                '&.Mui-checked': {
+                                  color: 'white',
+                                },
+                              }}
+                                checked={selectAll} onChange={handleSelectAll} />
+                            </th>
+                            <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                              S.No
+                            </th>
+                            <th className="table-header"># Invoice</th>
+                            <th className="table-header">Date</th>
+                            <th className="table-header">Bill Amount</th>
+                            <th className="table-header">Tax</th>
+                            <th className="table-header">Net Receivable</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {fillGridData?.map((row, index) => (
+                            <tr key={row.id}>
+                              <td className="border p-0 text-center">
+                                <Checkbox
+                                  sx={{
+                                    backgroundColor: 'white'
+                                  }}
+                                  checked={selectedRows.includes(index)}
+                                  onChange={(e) => {
+                                    const isChecked = e.target.checked;
+                                    setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
+                                  }}
+                                />
+                              </td>
+                              <td className="text-center">{index + 1}</td>
+                              <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                {row.vid || ''}
+                              </td>
+                              <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : ''}
+                              </td>
+                              <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                {row.billamount || ''}
+                              </td>
+                              <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                {row.gstamount || ''}
+                              </td>
+                              <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                {row.chargeAmt || 0}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </DialogContent>
+              <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
+                <Button onClick={handleCloseModal} sx={{ color: '#673AB7' }}>
+                  Cancel
+                </Button>
+                <Button
+                  color="secondary"
+                  onClick={handleSubmitSelectedRows}
+                  variant="contained"
+                  sx={{ backgroundColor: '#673AB7' }}
+                >
+                  Proceed
+                </Button>
+              </DialogActions>
+            </Dialog>
           </>
         )}
       </div>
+
+      <ConfirmationModal
+        open={modalPopupOpen}
+        title="AR Offset Approval"
+        message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
+        onConfirm={handleConfirmAction}
+        onCancel={handleCloseModal}
+      />
 
       <ToastContainer />
     </div>
