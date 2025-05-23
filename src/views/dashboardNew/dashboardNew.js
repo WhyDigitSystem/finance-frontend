@@ -1145,9 +1145,9 @@ const DashboardNew = () => {
     <Grid item xs={12} md={6}>
       <BarChart chartSalesData={chartSalesData} customerColorMap={customerColorMap} />
     </Grid>
-      <Grid item xs={12} md={6}>
+      {/* <Grid item xs={12} md={6}>
         <StackedBarChart />
-      </Grid>
+      </Grid> */}
     </Grid>
   );
 };

@@ -1,18 +1,14 @@
-import AddIcon from '@mui/icons-material/Add';
+import CancelIcon from '@mui/icons-material/Cancel';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { FormHelperText } from '@mui/material';
-import FormControl from '@mui/material/FormControl';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
+import { FormControl, FormHelperText, Box, Button, Chip, Stack, TextField, Grid, InputLabel, MenuItem, Select } from '@mui/material';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
-import { Button, Typography, TextField } from '@mui/material';
 import Paper from '@mui/material/Paper';
 import Draggable from 'react-draggable';
 import { useEffect, useRef, useState } from 'react';
@@ -26,10 +22,10 @@ import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
 import GridOnIcon from '@mui/icons-material/GridOn';
-import { useTheme } from '@mui/material/styles';
-import { Box, padding } from '@mui/system';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonListViewTable from '../../basicMaster/CommonListViewTable';
+import ConfirmationModal from 'utils/confirmationPopup';
+import GeneratePdfTemp from 'utils/PdfTempTaxInvoice';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -49,15 +45,23 @@ const Receipt = () => {
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
   const [currencies, setCurrencies] = useState([]);
+  const [listViewbyId, setListViewbyId] = useState([]);
   const [allCustomerName, setAllCustomerName] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   const [selectAll, setSelectAll] = useState(false);
   const [selectedRows, setSelectedRows] = useState([]);
   const [fillGridData, setFillGridData] = useState([]);
+  const [approveStatus, setApproveStatus] = useState('');
+  const [downloadPdf, setDownloadPdf] = useState(false);
+  const [pdfData, setPdfData] = useState([]);
+  const [bankName, setBankName] = useState([]);
+  const [confirmData, setConfirmData] = useState([]);
   const [formData, setFormData] = useState({
     paymentMode: 'Bank Receipt',
     transactionMethod: 'NEFT',
     docId: '',
+    id:'',
     docDate: dayjs(),
     type: 'CUSTOMER',
     customerName: '',
@@ -66,11 +70,16 @@ const Receipt = () => {
     active: true,
     chequeUtiNo: '',
     chequeUtiDate: null,
+    cashAccount:'',
     currency: 'INR',
     receiptAmt: '',
     netAmount: '',
     remarks: '',
     onAccount: '',
+    approveStatus: '',
+    approveBy: '',
+    approveOn: '',
+    status: 'EDIT',
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -85,11 +94,16 @@ const Receipt = () => {
     active: true,
     chequeUtiNo: '',
     chequeUtiDate: '',
+    cashAccount:'',
     currency: '',
     receiptAmt: '',
     netAmount: '',
     remarks: '',
     onAccount: '',
+    approveStatus: '',
+    approveBy: '',
+    approveOn: '',
+    status:''
   });
 
   const [inVoiceDetailsData, setInVoiceDetailsData] = useState([]);
@@ -165,7 +179,12 @@ const Receipt = () => {
       currency: '',
       receiptAmt: '',
       netAmount: '',
-      remarks: '',
+      remarks: '',    
+      approveStatus: '',
+      approveBy: '',
+      approveOn: '',
+      status:'EDIT',
+      cashAccount:'',
       onAccount: '',
     });
     setFieldErrors({
@@ -184,6 +203,8 @@ const Receipt = () => {
       grossAmount: '',
       remarks: '',
       onAccount: '',
+      status:'',
+      cashAccount:'',
     });
     setInVoiceDetailsData([]);
     setInvoiceDetailsError([{
@@ -271,6 +292,7 @@ const Receipt = () => {
   }, []);
 
   useEffect(() => {
+    getAllBankName();
     getAllCustomerName();
     getReceiptDocId();
     getAllReceipt();
@@ -304,7 +326,97 @@ const Receipt = () => {
       console.error('Error fetching data:', error);
     }
   };
+  const handleOpenModalApprove = () => {
+    setOpen(true);
+    setApproveStatus('Approved');
+  };
 
+  const handleOpenModalReject = () => {
+    setOpen(true);
+    setApproveStatus('Rejected');
+  };
+
+  const handleClose = () => setOpen(false);
+
+  const handleConfirmAction = async () => {
+    try {
+      const result = await apiCalls(
+        'put',
+        `/arreceivable/approveReceipt?action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}&orgId=${orgId}`
+        // `/arreceivable/approveReceipt?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}`
+      );
+      console.log('API Response:==>', result);
+
+      if (result.status === true) {
+        setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
+        showToast(
+          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
+          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved'
+            ? 'Receipt Approved successfully'
+            : 'Receipt Rejected successfully'
+        );
+        const listValueVO = result.paramObjectsMap.taxInvoiceVO;
+        setConfirmData(result.paramObjectsMap.taxInvoiceVO);
+        setFormData({
+          docId: listValueVO.docId,
+          partyId: listValueVO.partyId,
+          approveStatus: listValueVO.approveStatus,
+          approveBy: listValueVO.approveBy,
+          approveOn: listValueVO.approveOn,
+          docDate: listValueVO.docDate,
+          type: listValueVO.type,
+          partyCode: listValueVO.partyCode,
+          partyName: listValueVO.partyName,
+          partyType: listValueVO.partyType,
+          stateCode: listValueVO.stateCode,
+          address: listValueVO.address,
+          addressType: listValueVO.addressType,
+          gstType: listValueVO.gstType,
+          pinCode: listValueVO.pinCode,
+          placeOfSupply: listValueVO.placeOfSupply,
+          recipientGSTIN: listValueVO.recipientGSTIN,
+          remarks: listValueVO.remarks,
+          billCurr: listValueVO.billCurr,
+          status: listValueVO.status,
+          updatedBy: listValueVO.updatedBy,
+          supplierBillNo: listValueVO.supplierBillNo,
+          supplierBillDate: listValueVO.supplierBillDate,
+          vid: listValueVO.vid,
+          vdate: listValueVO.vdate,
+          billCurrRate: listValueVO.billCurrRate,
+          creditDays: listValueVO.creditDays,
+          shipperInvoiceNo: listValueVO.shipperInvoiceNo,
+          billOfEntry: listValueVO.billOfEntry,
+          invoiceNo: listValueVO.invoiceNo,
+          invoiceDate: listValueVO.invoiceDate,
+          id: listValueVO.id,
+          totalChargeAmountLc: listValueVO.totalChargeAmountLc,
+          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
+          totalTaxAmountLc: listValueVO.totalTaxAmountLc,
+          totalInvAmountLc: listValueVO.totalInvAmountLc,
+          roundOffAmountLc: listValueVO.roundOffAmountLc,
+          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
+          totalInvAmountLc: listValueVO.totalInvAmountLc,
+          totalInvAmountBc: listValueVO.totalInvAmountBc,
+          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
+          totalTaxAmountBc: listValueVO.totalTaxAmountBc,
+          totalInvAmountBc: listValueVO.totalInvAmountBc,
+          totalTaxableAmountLc: listValueVO.totalTaxableAmountLc,
+          amountInWords: listValueVO.amountInWords,
+          billingRemarks: listValueVO.billingRemarks
+          // amountInWords: listValueVO.amountInWords
+        });
+        handleModal();
+        getAllReceipt();
+        console.log('TAX INVOICE:==>', result);
+      } else {
+        console.error('API Error:', result.data);
+      }
+      
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
   const getReceiptById = async (row) => {
     setEditId(row.original.id);
     setInvoiceDetailsError({});
@@ -313,10 +425,12 @@ const Receipt = () => {
       if (response.status === true) {
         setListView(false);
         const receiptVO = response.paramObjectsMap.receiptReceivableVO[0];
+        setListViewbyId(response.paramObjectsMap.receiptReceivableVO[0]);
         setFormData({
           paymentMode: receiptVO.receiptType,
           bankChargeAcc: receiptVO.bankChargeAcc,
           docId: receiptVO.docId,
+          id: receiptVO.id,
           docDate: dayjs(receiptVO.docDate),
           bankCharges: receiptVO.bankCharges,
           inCurrencyBnkChargs: receiptVO.inCurrencyBnkChargs,
@@ -327,16 +441,19 @@ const Receipt = () => {
           customerName: receiptVO.customerName,
           customerCode: receiptVO.customerCode,
           transactionMethod: receiptVO.receiptType1,
-          bankCashAcc: receiptVO.bankCashAcc,
+          // bankCashAcc: receiptVO.bankCashAcc,
           chequeUtiNo: receiptVO.chequeUtiNo,
           chequeUtiDate: receiptVO.chequeUtiDate ? dayjs(receiptVO.chequeUtiDate) : null,
           receiptAmt: receiptVO.receiptAmt,
           currency: receiptVO.currency,
+          cashAccount: receiptVO.bankCashAcc,
+          status: receiptVO.status,
           currencyAmount: receiptVO.currencyAmount,
           receivedFrom: receiptVO.receivedFrom,
           onAccount: receiptVO.onAccount,
           netAmount: receiptVO.netAmount
         });
+        console.log("Approve", listView, formData.status, listViewbyId.status)
         setInVoiceDetailsData(
           receiptVO.receiptInvDetailsVO.map((invoiceData) => ({
             id: invoiceData.id,
@@ -404,10 +521,11 @@ const Receipt = () => {
         refDate: row.refDate ? formatDate(new Date(row.refDate)) : null,
         refNo: row.refNo,
       }));
-
+      
       const saveFormData = {
         ...(editId && { id: editId }),
-        active: formData.active,
+        // active: formData.active,
+        active: true,
         branch: branch,
         branchCode: branchCode,
         createdBy: loginUserName,
@@ -417,12 +535,13 @@ const Receipt = () => {
         receiptType1: formData.transactionMethod,
         docId: formData.docId,
         docDate: formatDate(new Date(formData.docDate)),
-        customerCode: formData.customerCode,
+        status: formData.status,
+        bankCashAcc: formData.cashAccount,
         customerName: formData.customerName,
+        customerCode: formData.customerCode,
         tdsAmt: parseInt(formData.tdsAmt),
         receiptAmt: parseInt(formData.receiptAmt),
-        currency: formData.currency,
-        cancel: false,
+        // currency: formData.currency,
         chequeUtiNo: formData.chequeUtiNo,
         chequeUtiDate: formData.chequeUtiDate ? dayjs(formData.chequeUtiDate).format('YYYY-MM-DD') : null,
         remarks: formData.remarks,
@@ -486,6 +605,14 @@ const Receipt = () => {
       console.error('Error fetching gate passes:', error);
     }
   };
+  const getAllBankName = async () => {
+    try {
+      const response = await apiCalls('get', `/transaction/getBankNameForGroupLedger?orgId=${orgId}`);
+      setBankName(response.paramObjectsMap.accountName);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
   useEffect(() => {
     if(!editId){
     calculateTotals();
@@ -536,6 +663,9 @@ const Receipt = () => {
     };
     const handleCloseModal = () => {
       setModalOpen(false);
+    };
+    const handleModal = () => {
+      setOpen(false);
     };
     const handleSelectAll = () => {
       if (selectAll) {
@@ -593,13 +723,71 @@ const Receipt = () => {
     }
   };
   return (
-    <div>
+    <>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
-        <div className="row d-flex ml" style={{ marginBottom: '20px' }}>
+        <div className="row">
+          <div className="d-flex flex-wrap justify-content-between mb-4" >
+          <div className="justify-content-start mb-0">
+              {editId && !listView && (formData.status === 'SUBMIT' || listViewbyId.status === 'SUBMIT') && (
+                <>
+                  {formData.approveStatus === 'Approved' && (
+                    <Stack direction="row" spacing={2}>
+                      <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
+                      <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
+                    </Stack>
+                  )}
+                  {formData.approveStatus === 'Rejected' && (
+                    <Stack direction="row" spacing={2}>
+                      <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
+                      <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
+                    </Stack>
+                  )}
+                  {/* {listViewData.status === 'SUBMIT' && (formData.approveStatus === 'Rejected' || formData.approveStatus === 'Approved') &&( */}
+                  {listViewbyId.status === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                    <div className="d-flex">
+                      <Button
+                        variant="outlined"
+                        startIcon={<CheckCircleIcon />}
+                        size="small"
+                        style={{
+                          borderColor: '#4CAF50',
+                          color: '#4CAF50',
+                          fontWeight: 'bold',
+                          textTransform: 'none',
+                          padding: '2px 8px',
+                          fontSize: '0.8rem',
+                          marginRight: '10px'
+                        }}
+                        onClick={handleOpenModalApprove}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        startIcon={<CancelIcon />}
+                        size="small"
+                        style={{
+                          borderColor: '#F44336',
+                          color: '#F44336',
+                          fontWeight: 'bold',
+                          textTransform: 'none',
+                          padding: '2px 8px',
+                          fontSize: '0.8rem'
+                        }}
+                        onClick={handleOpenModalReject}
+                      >
+                        Reject
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
+          </div>
           <div className="d-flex flex-wrap justify-content-end mb-4 " style={{ marginBottom: '20px' }}>
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />
+          </div>
           </div>
         </div>
         {listView ? (
@@ -687,6 +875,25 @@ const Receipt = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <InputLabel id="demo-simple-select-label" required>
+                    Status
+                  </InputLabel>
+                  <Select
+                    labelId="statusLabel"
+                    value={formData.status}
+                    onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                    label="Status"
+                    required
+                    error={!!fieldErrors.status}
+                    disabled={formData.status === 'SUBMIT' || !editId}
+                  >
+                    {editId && <MenuItem value="SUBMIT">SUBMIT</MenuItem>}
+                    <MenuItem value="EDIT">EDIT</MenuItem>
+                  </Select>
+                </FormControl>
+              </div>
               {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -746,7 +953,7 @@ const Receipt = () => {
                     name="receiptAmt"
                     label="Receipt Amount"
                     size="small"
-                    disabled = {editId}
+                    disabled = {formData.status === 'SUBMIT'}
                     value={formData.receiptAmt}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 30 }}
@@ -777,7 +984,7 @@ const Receipt = () => {
                     name="chequeUtiNo"
                     label="UTR No"
                     size="small"
-                    disabled = {editId}
+                    disabled = {formData.status === 'SUBMIT'}
                     value={formData.chequeUtiNo}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 100 }}
@@ -791,7 +998,7 @@ const Receipt = () => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label="UTR Date"
-                    disabled = {editId}
+                      disabled = {formData.status === 'SUBMIT'}
                       value={formData.chequeUtiDate ? dayjs(formData.chequeUtiDate, 'YYYY-MM-DD') : null}
                       onChange={(date) => handleDateChange('chequeUtiDate', date)}
                       slotProps={{
@@ -804,27 +1011,31 @@ const Receipt = () => {
                   </LocalizationProvider>
                 </FormControl>
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
-                  <InputLabel id="currency">Currency</InputLabel>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small" error={!!fieldErrors.cashAccount}>
+                  <InputLabel id="cashAccount-label">
+                    Cash Account
+                  </InputLabel>
                   <Select
-                    labelId="currency"
-                    id="currency"
-                    label="Currency"
-                    onChange={handleInputChange}
-                    name="currency"
-                    value={formData.currency}
+                    labelId="cashAccount-label"
+                    value={formData.cashAccount}
+                    disabled = {formData.status === 'SUBMIT'}
+                    onChange={(e) => {
+                      setFormData({ ...formData, cashAccount: e.target.value });
+                      setFieldErrors({ ...fieldErrors, cashAccount: '' });
+                    }}
+                    label="Cash Account"
                   >
-                    {currencies.map((currency) => (
-                      <MenuItem key={currency.id} value={currency.currency}>
-                        {currency.currency}
-                      </MenuItem>
-                    ))}
+                    {bankName &&
+                      bankName.map((bank, index) => (
+                        <MenuItem key={index} value={bank.accountgroupname}>
+                          {bank.accountgroupname}
+                        </MenuItem>
+                      ))}
                   </Select>
-                  {fieldErrors.currency && <FormHelperText>{fieldErrors.currency}</FormHelperText>}
+                  {fieldErrors.cashAccount && <FormHelperText>{fieldErrors.cashAccount}</FormHelperText>}
                 </FormControl>
-              </div> */}
-              
+              </div>
             </div>
 
             {/* <div className="card w-full p-6 bg-base-100 shadow-xl mt-2" style={{ padding: '20px' }}> */}
@@ -1297,7 +1508,8 @@ const Receipt = () => {
                                 <input
                                   type="text"
                                   value={row.settled}
-                                  disabled={(!formData.receiptAmt || parseFloat(formData.receiptAmt) === 0) || editId}
+                                  disabled = {formData.status === 'SUBMIT' || (!formData.receiptAmt || parseFloat(formData.receiptAmt) === 0)}
+                                  // disabled={(!formData.receiptAmt || parseFloat(formData.receiptAmt) === 0) || editId}
                                   onChange={(e) => {
                                     const value = e.target.value;
                                     const isNumeric = /^[0-9.]*$/;
@@ -1406,6 +1618,7 @@ const Receipt = () => {
                           name="remarks"
                           label="Remarks"
                           size="small"
+                          disabled = {formData.status === 'SUBMIT'}
                           value={formData.remarks}
                           onChange={handleInputChange}
                           inputProps={{ maxLength: 30 }}
@@ -1515,7 +1728,15 @@ const Receipt = () => {
       </div>
 
       <ToastContainer />
-    </div>
+      <ConfirmationModal
+              open={open}
+              title="Receipt Approval"
+              message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this Receipt?`}
+              onConfirm={handleConfirmAction}
+              onCancel={handleModal}
+            />
+            {downloadPdf && <GeneratePdfTemp row={pdfData} modalClose={() => setDownloadPdf(false)} />}
+    </>
   );
 };
 

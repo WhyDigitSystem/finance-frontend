@@ -104,7 +104,6 @@ const PaymentReport = Loadable(lazy(() => import('views/Finance/FinalReport/Paym
 const ReceiptReport = Loadable(lazy(() => import('views/Finance/FinalReport/ReceiptRegister')));
 const MaterialIssueManifest = Loadable(lazy(() => import('views/docs/MaterialIssueManifest')));
 const PurchaseOrder = Loadable(lazy(() => import('views/docs/PurchaseOrder')));
-const InvoiceManifest = Loadable(lazy(() => import('views/docs/InvoiceManifest')));
 const RetrievalIssueManifest = Loadable(lazy(() => import('views/docs/RetrievalIssueManifest')));
 const Quotation = Loadable(lazy(() => import('views/docs/Quotation')));
 const APaging = Loadable(lazy(() => import('views/Finance/paymentRegister/APaging')));
@@ -477,10 +476,10 @@ const FinanceRoute = {
       path: '/docs/PurchaseOrder',
       element: <PurchaseOrder />
     },
-    {
-      path: '/docs/Invoice',
-      element: <InvoiceManifest />
-    },
+    // {
+    //   path: '/docs/Invoice',
+    //   element: <InvoiceManifest />
+    // },
     {
       path: '/docs/RetrievalIssueManifest',
       element: <RetrievalIssueManifest />

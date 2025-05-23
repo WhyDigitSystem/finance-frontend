@@ -65,6 +65,7 @@ export const JobCard = () => {
   const [formData, setFormData] = useState({
     customer: '',
     customerCode: '',
+    shortName: '',
     operationClosed: '',
     service: '',
     financeClosed: '',
@@ -161,6 +162,7 @@ export const JobCard = () => {
         setFormData({
           customer: jnVo.customer || '',
           customerCode: jnVo.customerCode || '',
+          shortName: jnVo.partyShortName || '',
           salesPerson: jnVo.salesPerson || '',
           salesCategory: jnVo.salesCategory || '',
           date: jnVo.date ? dayjs(jnVo.date, 'YYYY-MM-DD') : dayjs(),
@@ -199,6 +201,7 @@ export const JobCard = () => {
       customer: '',
       service: '',
       customerCode: '',
+      shortName: '',
       operationClosed: '',
       financeClosed: '',
       salesCategory: 'MANAGEMENT',
@@ -298,6 +301,7 @@ export const JobCard = () => {
         active: formData.active || false,
         customer: formData.customer || '',
         customerCode: formData.customerCode || '',
+        partyShortName: formData.shortName || '',
         salesPerson: formData.salesPerson || '',
         salesCategory: formData.salesCategory || '',
         income: formData.income || 0,
@@ -565,11 +569,16 @@ export const JobCard = () => {
                         value: newValue ? newValue.partyname : ''
                       }
                     });
-
                     handleInputChange({
                       target: {
                         name: 'customerCode',
                         value: newValue ? newValue.partyCode : ''
+                      }
+                    });
+                    handleInputChange({
+                      target: {
+                        name: 'shortName',
+                        value: newValue ? newValue.shortName : ''
                       }
                     });
 

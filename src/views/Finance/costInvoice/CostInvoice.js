@@ -11,7 +11,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { FormControl, FormHelperText, Checkbox, FormControlLabel, FormLabel, InputLabel, MenuItem, Select } from '@mui/material';
+import { FormControl, FormHelperText, Checkbox, FormControlLabel, FormLabel, InputLabel, MenuItem, Select,Autocomplete } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import ActionButton from 'utils/ActionButton';
 import Button from '@mui/material/Button';
@@ -2440,7 +2440,7 @@ const CostInvoice = () => {
                                       S.No
                                     </th>
                                     <th className="table-header">Job No</th>
-                                    <th className="table-header">Customer Name</th>
+                                    {formData.mode === 'SUBMIT' && <th className="table-header">Customer Name</th>}
                                     <th className="table-header">Charge Code</th>
                                     <th className="table-header" style={{ width: '250px' }}>
                                       Description
@@ -2543,7 +2543,7 @@ const CostInvoice = () => {
                                             <div className="pt-2">{index + 1}</div>
                                           </td>
 
-                                          <td className="border px-2 py-2">
+                                          {/* <td className="border px-2 py-2">
                                             <select
                                               value={row.jobNo}
                                               style={{ width: '180px' }}
@@ -2575,9 +2575,37 @@ const CostInvoice = () => {
                                                 {costInvoiceErrors[index].jobNo}
                                               </div>
                                             )}
-                                          </td>
-
-                                          <td className="border px-2 py-2">
+                                          </td> */}
+<td className="border px-2 py-2">
+  <Autocomplete
+    options={jobNoList || []}
+    disableClearable
+    getOptionLabel={(option) => `${option.jobNo} - ${option.shortName}`}
+    value={jobNoList.find(job => job.jobNo === row.jobNo) || null}
+    onChange={(event, newValue) => {
+      const updatedJobNoData = [...chargerCostInvoice];
+      updatedJobNoData[index] = {
+        ...updatedJobNoData[index],
+        jobNo: newValue?.jobNo || '',
+        party: newValue?.customerName || ''
+      };
+      setChargerCostInvoice(updatedJobNoData);
+    }}
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        variant="outlined"
+        error={Boolean(costInvoiceErrors[index]?.jobNo)}
+        helperText={costInvoiceErrors[index]?.jobNo}
+        style={{ width: '250px' }}
+        size='small'
+      />
+    )}
+    isOptionEqualToValue={(option, value) => option.jobNo === value.jobNo}
+    className={costInvoiceErrors[index]?.jobNo ? 'error' : ''}
+  />
+</td>
+                                          {/* <td className="border px-2 py-2">
                                             <input
                                               type="text"
                                               value={row.party}
@@ -2585,7 +2613,7 @@ const CostInvoice = () => {
                                               style={{ width: '300px' }}
                                               className={costInvoiceErrors[index]?.party ? 'error form-control' : 'form-control'}
                                             />
-                                          </td>
+                                          </td> */}
 
                                           <td className="border px-2 py-2">
                                             <select

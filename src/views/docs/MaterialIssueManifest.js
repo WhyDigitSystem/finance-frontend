@@ -408,10 +408,7 @@ const GeneratePdf = async (row) => {
         detailTableDataValid = false;
       }
       return rowErrors;
-    });
-    console.log("HandleSave Errors",errors);
-    console.log("HandleSave SubTable Errors",newTableErrors);
-    
+    }); 
     setFieldErrors(errors);
     setDetailsTableErrors(newTableErrors);
     if (Object.keys(errors).length === 0 && detailTableDataValid) {
@@ -597,7 +594,7 @@ const groupedData = detailsTableData.reduce((acc, row) => {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="Receiver Warehouse"
+                      label="Warehouse"
                       name="fromWarehouse"
                       InputProps={{
                         ...params.InputProps,

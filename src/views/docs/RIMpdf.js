@@ -2,6 +2,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import dayjs from 'dayjs';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
+import { useReactToPrint } from "react-to-print";
 import apiCalls from 'apicall';
 import React, { useRef, useEffect, useState } from "react";
 import {
@@ -20,6 +21,7 @@ import {
   TableHead,
   Paper,
 } from '@mui/material';
+import { margin } from '@mui/system';
 const dummyImageURL = 'https://t3.ftcdn.net/jpg/04/62/93/66/240_F_462936689_BpEEcxfgMuYPfTaIAOC1tCDurmsno7Sp.jpg';
 
 const RIMpdf = ({ row, callBackFunction, modalClose }) => {
@@ -28,21 +30,23 @@ const RIMpdf = ({ row, callBackFunction, modalClose }) => {
   const [bankDetails, setBankDetails] = useState([]);
   const [companyDetails, setCompanyDetails] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [selectedCopy, setSelectedCopy] = useState('');
+  const [copyDialogOpen, setCopyDialogOpen] = useState(false);
 const componentRef = useRef();
   const styles = {
     container: {
       textAlign: 'center',
-      margin: '5px 0',
+      margin: '0px 0',
       position: 'relative',
       fontFamily: 'Arial, sans-serif'
     },
     beforeAfter: {
       content: '""',
       position: 'absolute',
-      top: '50%',
-      width: '40%',
-      height: '2px',
-      backgroundColor: '#333'
+      top: '40%',
+      width: '42%',
+      height: '1px',
+      backgroundColor: 'rgba',
     },
     before: {
       left: '0'
@@ -56,7 +60,7 @@ const componentRef = useRef();
       fontSize: '10px',
       fontWeight: 'bold',
       color: '#000000',
-      borderRadius: '2px'
+      borderRadius: '1px'
     }
   };
 
@@ -107,50 +111,100 @@ const componentRef = useRef();
   const handleClose = () => {
     setOpen(false);
   };
-const handleDownloadPdf = async () => {
-  const input = document.getElementById('main-content');
-  if (!input) {
-    console.error('Main content element not found!');
-    return;
-  }
+// const handleDownloadPdf = async () => {
+//   const input = document.getElementById('main-content');
+//   if (!input) {
+//     console.error('Main content element not found!');
+//     return;
+//   }
 
-  const canvas = await html2canvas(input, {
-    scale: 2,
-    useCORS: true,
-    backgroundColor: '#fff'
-  });
+//   const canvas = await html2canvas(input, {
+//     scale: 2,
+//     useCORS: true,
+//     backgroundColor: '#fff'
+//   });
 
-  const imgData = canvas.toDataURL('image/png');
-  const pdf = new jsPDF('p', 'mm', 'a4');
+//   const imgData = canvas.toDataURL('image/png');
+//   const pdf = new jsPDF('p', 'mm', 'a4');
 
-  const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
-  const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
+//   const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
+//   const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
 
-  const padding = 5; // mm margin
-  const contentWidth = pdfWidth - 2 * padding;
+//   const padding = 5; // mm margin
+//   const contentWidth = pdfWidth - 2 * padding;
 
-  const imgProps = pdf.getImageProperties(imgData);
-  const imgHeight = (imgProps.height * contentWidth) / imgProps.width;
+//   const imgProps = pdf.getImageProperties(imgData);
+//   const imgHeight = (imgProps.height * contentWidth) / imgProps.width;
 
-  let heightLeft = imgHeight;
-  let position = 0;
+//   let heightLeft = imgHeight;
+//   let position = 0;
 
-  // First page
-  pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
-  heightLeft -= (pdfHeight - 2 * padding);
-  position = -pdfHeight;
+//   // First page
+//   pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
+//   heightLeft -= (pdfHeight - 2 * padding);
+//   position = -pdfHeight;
 
-  // Additional pages
-  while (heightLeft > 0) {
-    pdf.addPage();
+//   // Additional pages
+//   while (heightLeft > 0) {
+//     pdf.addPage();
+//     pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
+//     heightLeft -= (pdfHeight - 2 * padding);
+//     position -= pdfHeight;
+//   }
+
+//   pdf.save(`${row.transactionNo || 'MIM'}.pdf`);
+// };
+  const handleDownloadPdf = async () => {
+    if (!selectedCopy) return; // Exit if no copy selected
+
+    const input = document.getElementById('main-content');
+    if (!input) {
+      console.error('Main content element not found!');
+      return;
+    }
+
+    const canvas = await html2canvas(input, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#fff'
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+
+    const padding = 5;
+    const contentWidth = pdfWidth - 2 * padding;
+    const imgProps = pdf.getImageProperties(imgData);
+    const imgHeight = (imgProps.height * contentWidth) / imgProps.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
     pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
     heightLeft -= (pdfHeight - 2 * padding);
-    position -= pdfHeight;
-  }
+    position = -pdfHeight;
 
-  pdf.save(`${row.transactionNo || 'MIM'}.pdf`);
-};
+    while (heightLeft > 0) {
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
+      heightLeft -= (pdfHeight - 2 * padding);
+      position -= pdfHeight;
+    }
 
+    // Save with selected copy type in filename
+    pdf.save(`${row.transactionNo || 'MIM'}_${selectedCopy}.pdf`);
+    setSelectedCopy(''); // Reset selection
+  };
+
+  // Trigger PDF download when selectedCopy changes
+  useEffect(() => {
+    if (selectedCopy) {
+      handleDownloadPdf();
+    }
+  }, [selectedCopy]);
 useEffect(() => {
   setOpen(true);
   getBankDetailsByOrgId();
@@ -164,6 +218,7 @@ useEffect(() => {
   const formattedTime = now.toLocaleTimeString('en-GB');
   setCurrentDateTime(`${formattedDate} ${formattedTime}`);
 
+  // ✅ Ensure the content is mounted before passing handleDownloadPdf
   if (callBackFunction) {
     setTimeout(() => {
       if (componentRef.current) {
@@ -197,7 +252,7 @@ useEffect(() => {
       console.error('Error fetching data:', error);
     }
   };
-const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row) => {
+const groupedData = (row.retrievalManifestProviderDetailsVOs || []).reduce((acc, row) => {
   const kitKey = row.kitId;
   if (!acc[kitKey]) acc[kitKey] = [];
   acc[kitKey].push(row);
@@ -226,6 +281,11 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
             position: 'relative'
           }}
         >
+          {selectedCopy && (
+            <div style={{ textAlign: 'center', fontSize: '14px', fontWeight: 'bold', marginBottom: '10px' }}>
+              {selectedCopy}
+            </div>
+          )}
           {/* <!-- Header Section --> */}
           <div
             style={{
@@ -250,11 +310,6 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
                 />
                 <div className="ms-2">
                   <strong style={{fontSize: '13px'}}>{localStorage.getItem('companyName')}</strong>
-                  {companyDetails.gst && (
-                    <div className="d-flex flex-row" style={{ fontSize: '8px' }}>
-                      <p style={{ margin: '0px' }}>REG IN: {companyDetails.gst}</p>
-                    </div>
-                  )}
                   <div style={{ width: 198 }}>
                     <p style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '8px', lineHeight: '1.6', marginBottom: 0 }}>
                       {companyDetails.address}
@@ -265,26 +320,29 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
                       {companyDetails.city} - {companyDetails.zip}
                     </div>
                   )}
+                  {companyDetails.cin && (
+                    <div className="d-flex flex-row" style={{ fontSize: '12px', margin: '0px' }}>
+                      CIN: {companyDetails.cin}
+                    </div>
+                  )}
                 </div>
               </div>
             )}
             <div style={{ marginRight: '100px' }}>
-              <strong style={{ fontSize: '13px' }}>MIM</strong>
+              <strong style={{ fontSize: '15px' }}>Retrieval Issue Manifest</strong>
             </div>
             <div>
               <div className="mb-0" style={{fontSize: '10px'}}>
-                Transaction No <strong className="">: {row.transactionNo}</strong>
+                RIM No<strong className="">: {row.transactionNo}</strong>
               </div>
               <div className="mb-0" style={{fontSize: '10px'}}>
-                Transaction Date
-                <strong> : {row.transactionDate ? dayjs(row.transactionDate).format('DD-MM-YYYY') : 'N/A'}</strong>
+                Date<strong> : {row.transactionDate ? dayjs(row.transactionDate).format('DD-MM-YYYY') : 'N/A'}</strong>
               </div>
               <div className="mb-0" style={{fontSize: '10px'}}>
-                Dispatch Date
-                <strong> : {row.dispatchDate ? dayjs(row.dispatchDate).format('DD-MM-YYYY') : 'N/A'}</strong>
+                Dispatch Date<strong> : {row.dispatchDate ? dayjs(row.dispatchDate).format('DD-MM-YYYY') : 'N/A'}</strong>
               </div>
               <div className="mb-0" style={{fontSize: '10px'}}>
-                Transaction Type <strong className="">: {row.transactionType}</strong>
+                Type<strong className="">: {row.transactionType}</strong>
               </div>
             </div>
           </div>
@@ -300,13 +358,14 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
             }}
           >
             <div>
-              <strong style={{fontSize: '10px'}} className="">Sender : {row.sender}</strong>
+              <strong style={{fontSize: '10px'}} className="">Sender: {row.sender}</strong>
               <div style={{ width: 250, marginBottom: 3, display: 'flex', alignItems: 'flex-start' }}>
-                <strong style={{ marginRight: 3, whiteSpace: 'nowrap',fontSize: '10px' }}>WHS Address:</strong>
+                <strong style={{ marginRight: 3, whiteSpace: 'nowrap',fontSize: '10px' }}>Address:</strong>
                 <p style={{ margin: 0, fontSize: '8px', lineHeight: '1.6', wordBreak: 'break-word', flex: 1 }}>
-                    {row.warehouseAddress}
+                    {row.senderAddress}
                 </p>
               </div>
+                <strong className="">GST In: </strong>{row.senderGst}
             </div>
             <div>
                 <strong style={{fontSize: '10px'}} className="">Receiver: {row.receiver}</strong>
@@ -316,19 +375,16 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
                     {row.receiverAddress}
                 </p>
                 </div>}
-              <div>
-                <strong className="">Reg In: </strong>{row.receiverGst}
-              </div>
             </div>
           </div>
 
           <div style={styles.container}>
             <div style={{ ...styles.beforeAfter, ...styles.before }} />
-            <span style={styles.text}>MIM Details</span>
+            <span style={styles.text}>KIT Details</span>
             <div style={{ ...styles.beforeAfter, ...styles.after }} />
           </div>
-                          <TableContainer component={Paper} sx={{ mt: 2, borderRadius: 0, border: '1px solid #000',}}>
-                              <Table size="small" sx={{ '& td, & th': { padding: '1px', fontSize: '10px',borderRight: '1px solid #000', borderBottom: '1px groove #000','&:last-child': {
+                          <TableContainer component={Paper} sx={{ mt: 1, borderRadius: 0, border: '1px groove #000',}}>
+                              <Table size="small" sx={{ '& td, & th': { padding: '0.5px', fontSize: '10px',borderRight: '1px groove #000', borderBottom: '1px groove #000','&:last-child': {
                                           borderRight: 'none'
                                         } } }}>
                               <TableHead>
@@ -338,7 +394,7 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
                                         background: ' rgba(189, 186, 186, 0.74)',
                                         color: 'black', 
                                         fontWeight: '600',
-                                        borderRight: '1px solid rgba(0, 0, 0, 0.5)',
+                                        borderRight: '1px groove rgba(0, 0, 0, 0.5)',
                                         '&:last-child': {
                                           borderRight: 'none'
                                         }
@@ -380,7 +436,7 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
                                       {/* horizontal line */}
                                       {kitIndex !== kitArray.length - 1 && (
                                         <TableRow>
-                                          <TableCell colSpan={8} sx={{ borderBottom: '1px solid #ddd', padding: 0 }} />
+                                          <TableCell colSpan={8} sx={{ borderBottom: '1px groove #ddd', padding: 0 }} />
                                         </TableRow>
                                       )}
                                     </React.Fragment>
@@ -406,20 +462,7 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
                 color: '#333'
               }}
             >
-              <div style={{ width: '500px', marginBottom: '3px' }}>
-                Amount in words:{' '}
-                <span
-                  style={{
-                    fontWeight: 'normal',
-                    fontStyle: 'italic',
-                    color: '#333',
-                    fontSize: '10px'
-                  }}
-                >
-                  {row.amountInWords}
-                </span>
-              </div>
-              <div style={{ width: '500px', marginBottom: '3px' }}>
+              <div style={{ width: '500px', marginBottom: '2px' }}>
                 Transporter:{' '}
                 <span
                   style={{
@@ -431,7 +474,7 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
                   {row.transporterName}
                 </span>
               </div>
-              {row.vehicleNo &&<div style={{ width: '500px', marginBottom: '3px' }}>
+              {row.vehicleNo &&<div style={{ width: '500px', marginBottom: '2px' }}>
                 Vehicle No:{' '}
                 <span
                   style={{
@@ -440,10 +483,10 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
                     fontSize: '10px'
                   }}
                 >
-                  {row.vehicleNo}
+                  {row.vehicleeNo}
                 </span>
               </div>}
-              {row.driverPhoneNo &&<div style={{ width: '500px', marginBottom: '3px' }}>
+              {row.driverPhoneNo &&<div style={{ width: '500px', marginBottom: '2px' }}>
                 Driver No:{' '}
                 <span
                   style={{
@@ -456,45 +499,15 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
                 </span>
               </div>}
             </div>
-            <div className="d-flex justify-content-between">
-              <div className="d-flex flex-column me-2">
-                <p
-                  className="mb-1"
-                  style={{
-                    fontWeight: 'bold',
-                    fontSize: '10px',
-                    color: '#333',
-                    marginBottom: 0
-                  }}
-                >
-                  Amount:
-                </p>
-              </div>
-              <div className="d-flex flex-column">
-                <div>
-                  <span
-                    style={{
-                      fontStyle: 'normal',
-                      fontWeight: 'normal',
-                      fontSize: '8px',
-                      color: '#333',
-                      marginLeft: 3
-                    }}
-                  >
-                    ₹{parseFloat(row.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
           <hr style={{ margin: 0 }} />
                     {/* Declaration */}
-                    <div className="row mt-3 mb-2">
-                      <div className="col-lg-2">
+                    <div className="row mt-0 mb-0">
+                      <div className="col-lg-1">
                         <strong style={{ width: 225, fontSize: '9px' }}>Declaration:</strong>
                       </div>
                       <div className="col-lg-10">
-                        <p style={{fontSize: '7px', margin:'1px'}}>
+                        <p style={{fontSize: '9px', margin:'0px'}}>
                           The packaging products given on hire shall always remain
                       the property of SCM AI-PACKS Private Limited and shall not
                       be used for the purpose otherwise agreed upon. The same
@@ -503,12 +516,12 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
                         </p>
                       </div>
                     </div>
-                    <div className="row mb-3">
-                      <div className="col-lg-2">
+                    <div className="row mb-1">
+                      <div className="col-lg-1">
                         <strong style={{ width: 225, fontSize: '9px' }}>Note:</strong>
                       </div>
                       <div className="col-lg-10">
-                        <p style={{fontSize: '7px', margin:'1px'}}>
+                        <p style={{fontSize: '9px'}}>
                           1.The goods listed in the above manifest are used empty
                       packaging issued to customer on a daily hire basis. The
                       service is packaging on{" "}
@@ -554,7 +567,7 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
           {/* <!-- Footer Section --> */}
           <div
             style={{
-              borderTop: '2px solid #000000',
+              borderTop: '1px outset',
               paddingTop: '1px',
               fontSize: '8px',
               color: '#777',
@@ -581,13 +594,47 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleDownloadPdf} color="primary" variant="contained" startIcon={<DownloadIcon />}>
+        <Button onClick={() => setCopyDialogOpen(true)} color="primary" variant="contained" startIcon={<DownloadIcon />}>
           PDF
         </Button>
         <Button onClick={modalClose} color="secondary">
           Close
         </Button>
       </DialogActions>
+      <Dialog open={copyDialogOpen} onClose={() => setCopyDialogOpen(false)}>
+        <DialogTitle>Select Copy Type</DialogTitle>
+        <DialogContent>
+          <Button 
+            fullWidth 
+            onClick={() => {
+              setSelectedCopy('Consignee Copy');
+              setCopyDialogOpen(false);
+            }}
+            sx={{ mb: 1 }}
+          >
+            Consignee Copy
+          </Button>
+          <Button 
+            fullWidth 
+            onClick={() => {
+              setSelectedCopy('Transporter Copy');
+              setCopyDialogOpen(false);
+            }}
+            sx={{ mb: 1 }}
+          >
+            Transporter Copy
+          </Button>
+          <Button 
+            fullWidth 
+            onClick={() => {
+              setSelectedCopy('Consigner Copy');
+              setCopyDialogOpen(false);
+            }}
+          >
+            Consigner Copy
+          </Button>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 };
