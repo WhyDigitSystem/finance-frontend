@@ -345,7 +345,7 @@ const Payment = () => {
         exRate: row.exRate,
         amount: parseInt(row.amount),
         gstAmount: parseInt(row.gstAmount),
-        // chargeAmt: row.chargeAmt,
+        chargeAmt: row.chargeAmt,
         outStanding: parseInt(row.outstanding),
         settled: parseInt(row.settled)
       }));
