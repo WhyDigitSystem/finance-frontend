@@ -231,43 +231,6 @@ const Receipt = () => {
   const handleView = () => {
     setListView(!listView);
   };
-
-  // const handleAddRow = () => {
-  //   const newRow = {
-  //     id: Date.now(),
-  //     invNo: '',
-  //     invDate: null,
-  //     // refNo: '',
-  //     // refDate: null,
-  //     currency: 'INR',
-  //     exRate: 1,
-  //     amount: '',
-  //     gstAmt: '',
-  //     chargeAmt: '',
-  //     tds: 0,
-  //     outstanding: '',
-  //     settled: '',
-  //   };
-  //   setInVoiceDetailsData([...inVoiceDetailsData, newRow]);
-  //   setInvoiceDetailsError([
-  //     ...invoiceDetailsError,
-  //     {
-  //       invNo: '',
-  //       invDate: '',
-  //       // refNo: '',
-  //       // refDate: null,
-  //       currency: '',
-  //       exRate: '',
-  //       amount: '',
-  //       gstAmt: '',
-  //       chargeAmt: '',
-  //       tds: '',
-  //       outstanding: '',
-  //       settled: '',
-  //     }
-  //   ]);
-  // };
-
   const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
     const rowIndex = table.findIndex((row) => row.id === id);
     if (rowIndex !== -1) {
@@ -365,6 +328,7 @@ const Receipt = () => {
           approveOn: listValueVO.approveOn,
           docDate: listValueVO.docDate,
           type: listValueVO.type,
+          // active: ,
           partyCode: listValueVO.partyCode,
           partyName: listValueVO.partyName,
           partyType: listValueVO.partyType,
@@ -571,13 +535,13 @@ const Receipt = () => {
     // { accessorKey: 'paymentMode', header: 'Receipt Type', size: 140 },
     // { accessorKey: 'bankChargeAcc', header: 'Bank Charges Account', size: 140 },
     { accessorKey: 'docId', header: 'Doc Id', size: 140 },
-    // { accessorKey: 'type', header: 'Type', size: 140 },
-    // { accessorKey: 'tdsAmt', header: 'TDS Amount', size: 140 },
     { accessorKey: 'customerName', header: 'Customer Name', size: 140 },
     { accessorKey: 'chequeUtiNo', header: 'Chq/ UTI No', size: 140 },
     { accessorKey: 'chequeUtiDate', header: 'Chq/ UTI Dt', size: 140 },
     { accessorKey: 'receiptAmt', header: 'Receipt Amount', size: 140 },
-    { accessorKey: 'onAccount', header: 'On Account', size: 140 }
+    { accessorKey: 'onAccount', header: 'On Account', size: 140 },
+    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
+    { accessorKey: 'status', header: 'Status', size: 140 },
   ];
 
   useEffect(() => {
