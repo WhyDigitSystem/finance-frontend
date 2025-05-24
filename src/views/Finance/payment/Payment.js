@@ -345,7 +345,7 @@ const Payment = () => {
         exRate: row.exRate,
         amount: parseInt(row.amount),
         gstAmount: parseInt(row.gstAmount),
-        chargeAmt: row.chargeAmt,
+        chargeAmt: parseInt(row.chargeAmt),
         outStanding: parseInt(row.outstanding),
         settled: parseInt(row.settled)
       }));
@@ -372,7 +372,10 @@ const Payment = () => {
         branch: branch,
         branchCode: branchCode,
         status: formData.status,
-        bankCashAcc: formData.bankCashAcc
+        bankCashAcc: formData.bankCashAcc,
+        approveStatus: formData.approveStatus,
+        approveBy: formData.approveBy,
+        approveOn: formData.approveOn
       };
 
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -651,7 +654,7 @@ const Payment = () => {
       );
       console.log('API Response:==>', result);
       if (result.status === true) {
-        // setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
+        setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
         showToast(
           result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
           result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved'
