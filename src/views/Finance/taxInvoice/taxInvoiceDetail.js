@@ -356,10 +356,6 @@ const TaxInvoiceDetails = () => {
   };
 
   const handleAddRow = () => {
-    if (isLastRowEmpty(withdrawalsTableData)) {
-      displayRowError(withdrawalsTableData);
-      return;
-    }
     const newRow = {
       id: Date.now(),
       sno: '',
@@ -561,7 +557,7 @@ const TaxInvoiceDetails = () => {
     setChargeCodeCache(new Map());
     setPartyCurrencyList([]);
     setListViewData('');
-    setWithdrawalsTableErrors({
+    setWithdrawalsTableErrors([{
       sno: '',
       chargeCode: '',
       chargeName: '',
@@ -577,7 +573,7 @@ const TaxInvoiceDetails = () => {
       rate: '',
       sac: '',
       taxable: ''
-    });
+    }]);
 
     setWithdrawalsTableData([
       {
@@ -1312,14 +1308,46 @@ const handleSelectPartyChange = (e) => {
     if (!formData.placeOfSupply) {
       errors.placeOfSupply = 'Place of Supply is required';
     }
+    if (!formData.jobNo) {
+      errors.jobNo = 'Job No is required';
+    }
     if (!formData.vid) {
       errors.vid = 'V Id is required';
     }
     if (!formData.vdate) {
       errors.vdate = 'V Date is required';
     }
-
-    if (Object.keys(errors).length > 0) {
+    let detailTableDataValid = true;
+    const newTableErrors = withdrawalsTableData.map((row) => {
+      const rowErrors = {};
+      if (!row.chargeType) {
+        rowErrors.chargeType = 'Type is required';
+        detailTableDataValid = false;
+      }
+      if (!row.chargeCode) {
+        rowErrors.chargeCode = 'Charge Code is required';
+        detailTableDataValid = false;
+      }
+      if (!row.qty) {
+        rowErrors.qty = 'Qty is required';
+        detailTableDataValid = false;
+      }
+      if (!row.rate) {
+        rowErrors.rate = 'Rate is required';
+        detailTableDataValid = false;
+      }
+      if (!row.currency) {
+        rowErrors.currency = 'Currency is required';
+        detailTableDataValid = false;
+      }
+      if (!row.chargeCode) {
+        rowErrors.chargeCode = 'Charge Code is required';
+        detailTableDataValid = false;
+      }
+      return rowErrors;
+    }); 
+    setWithdrawalsTableErrors(newTableErrors);
+    if (Object.keys(errors).length > 0 && withdrawalsTableErrors) {
       setErrors(errors);
       return;
     }
@@ -1515,10 +1543,11 @@ const handleSelectPartyChange = (e) => {
   const handleTypeChange = (e, index) => {
     const { value } = e.target;
     const updatedData = [...withdrawalsTableData];
+    const updatedError = [...withdrawalsTableErrors];
     updatedData[index] = {
       ...updatedData[index],
       chargeType: value,
-      chargeCode: '', // Clear chargeCode when chargeType changes
+      chargeCode: '',
       GSTPercent: '',
       ccFeeApplicable: '',
       chargeName: '',
@@ -1533,7 +1562,12 @@ const handleSelectPartyChange = (e) => {
       lcAmount: ''
     };
     setWithdrawalsTableData(updatedData);
-    getChargeCodeDetail(value, index); // Pass row index
+    updatedError[index] = {
+      ...updatedError[index],
+      chargeType: ''
+    };
+    setWithdrawalsTableErrors(updatedError);
+    getChargeCodeDetail(value, index);
   };
   const getAllTransactionNo = async (shortName) => {
     try {
@@ -1709,8 +1743,6 @@ const handleMultiSelect = async (event) => {
                 columns={columns}
                 blockEdit={true}
                 toEdit={getTaxInvoiceById}
-              // isPdf={true}
-              // GeneratePdf={GeneratePdf}
               />
 
             </div>
@@ -1753,7 +1785,6 @@ const handleMultiSelect = async (event) => {
                     disabled
                     value={formData.docId}
                     onChange={(e) => setFormData({ ...formData, docId: e.target.value })}
-                    error={!!errors.docId}
                   />
                 </FormControl>
               </div>
@@ -1775,15 +1806,14 @@ const handleMultiSelect = async (event) => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Status
+                  <InputLabel id="demo-simple-select-label">
+                    Status <span style={{color: 'red', fontSize: '20px'}}>*</span>
                   </InputLabel>
                   <Select
                     labelId="statusLabel"
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    label="Status"
-                    required
+                    label="Status *" 
                     error={!!errors.status}
                     disabled={formData.status === 'TAX' || !editId}
                   >
@@ -1792,39 +1822,13 @@ const handleMultiSelect = async (event) => {
                   </Select>
                 </FormControl>
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Party Type
-                  </InputLabel>
-                  <Select
-                    labelId="partyTypeLabel"
-                    value={formData.partyType}
-                    onChange={handleSelectChange}
-                    label="Party Type"
-                    required
-                    error={!!errors.partyType}
-                    helperText={errors.partyType}
-                    // disabled={formData.status === 'TAX'}
-                    disabled
-                  >
-                    <MenuItem value="CUSTOMER">CUSTOMER</MenuItem>
-                    <MenuItem value="VENDOR">VENDOR</MenuItem>
-                  </Select>
-                  // {errors.partyType && <FormHelperText style={{ color: 'red' }}>{errors.partyType}</FormHelperText>}
-                </FormControl>
-              </div> */}
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
-                    label="Party Type"
+                    label={<span>Party Type <span style={{color: 'red', fontSize: '20px'}}>*</span></span>}
                     size="small"
-                    required
                     disabled
-                    inputProps={{ maxLength: 30 }}
                     value={formData.partyType}
-                    // onChange={(e) => setFormData({ ...formData, partyType: e.target.value })}
                     error={!!errors.partyType}
                     helperText={errors.partyType}
                   />
@@ -1833,12 +1837,11 @@ const handleMultiSelect = async (event) => {
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label-party" error={!!errors.partyName}>Party Name</InputLabel>
+                  <InputLabel id="demo-simple-select-label-party" error={!!errors.partyName}>Party Name<span style={{color: 'red', fontSize: '20px'}}>*</span></InputLabel>
                   <Select
                     labelId="demo-simple-select-label-party"
                     id="demo-simple-select-party"
-                    label="Party Name"
-                    required
+                    label="Party Name *"
                     value={formData.partyName || (partyNameList.length === 1 ? partyNameList[0].partyName : '')}
                     onChange={handleSelectPartyChange}
                     error={!!errors.partyName}
@@ -1859,23 +1862,18 @@ const handleMultiSelect = async (event) => {
                   <TextField
                     label="Party Code"
                     size="small"
-                    required
                     disabled
-                    inputProps={{ maxLength: 30 }}
                     value={formData.partyCode}
                     onChange={(e) => setFormData({ ...formData, partyCode: e.target.value })}
-                    error={!!errors.partyCode}
-                    helperText={errors.partyCode}
                   />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
-                    label="V Id"
+                    label={<span>V Id <span style={{color: 'red', fontSize: '20px'}}>*</span></span>}
                     disabled={editId}
                     size="small"
-                    required
                     inputProps={{ maxLength: 30 }}
                     value={formData.vid}
                     onChange={(e) => {
@@ -1893,7 +1891,7 @@ const handleMultiSelect = async (event) => {
                 <FormControl fullWidth>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="V Date"
+                      label={<span>V Date <span style={{color: 'red', fontSize: '20px'}}>*</span></span>}
                       disabled={editId}
                       format="DD-MM-YYYY"
                       slotProps={{
@@ -1912,15 +1910,14 @@ const handleMultiSelect = async (event) => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" error={!!errors.stateCode} required>
-                    State Code
+                  <InputLabel id="demo-simple-select-label" error={!!errors.stateCode}>
+                    State Code <span style={{color: 'red', fontSize: '20px'}}>*</span>
                   </InputLabel>
                   <Select
                     labelId="addressTypeLabel"
                     value={formData.stateCode || (stateName.length === 1 ? stateName[0].stateCode : '')}
                     onChange={handleSelectStateChange}
-                    label="State Code"
-                    required
+                    label="State Code *"
                     error={!!errors.stateCode}
                     disabled={formData.status === 'TAX'}
                   >
@@ -1949,7 +1946,6 @@ const handleMultiSelect = async (event) => {
                   />
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
@@ -1962,11 +1958,10 @@ const handleMultiSelect = async (event) => {
                   />
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" error={!!errors.placeOfSupply} required>
-                    Place Of Supply
+                  <InputLabel id="demo-simple-select-label" error={!!errors.placeOfSupply}>
+                    Place Of Supply <span style={{color: 'red', fontSize: '20px'}}>*</span>
                   </InputLabel>
                   <Select
                     labelId="addressTypeLabel"
@@ -1974,7 +1969,6 @@ const handleMultiSelect = async (event) => {
                     value={formData.placeOfSupply || (placeOfSupply.length === 1 ? placeOfSupply[0].placeOfSupply : '')}
                     onChange={handleSelectPlaceChange}
                     label="Place Of Supply"
-                    required
                     error={!!errors.placeOfSupply}
                   >
                     {placeOfSupply &&
@@ -1990,8 +1984,8 @@ const handleMultiSelect = async (event) => {
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" error={!!errors.addressType} required>
-                    Address Type
+                  <InputLabel id="demo-simple-select-label" error={!!errors.addressType}>
+                    Address Type <span style={{color: 'red', fontSize: '20px'}}>*</span>
                   </InputLabel>
                   <Select
                     labelId="addressTypeLabel"
@@ -1999,7 +1993,6 @@ const handleMultiSelect = async (event) => {
                     value={formData.addressType || (addressType.length === 1 ? addressType[0].addressType : '')}
                     onChange={handleSelectAddressTypeChange}
                     label="Address Type"
-                    required
                     error={!!errors.addressType}
                   >
                     {addressType &&
@@ -2012,54 +2005,39 @@ const handleMultiSelect = async (event) => {
                   {errors.addressType && <FormHelperText style={{ color: 'red' }}>{errors.addressType}</FormHelperText>}
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
                     label="Address"
                     size="small"
-                    required
                     multiline
                     disabled
                     inputProps={{ maxLength: 100 }}
                     value={formData.address}
                     onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    error={!!errors.address}
-                  // helperText={errors.address || `${formData.address.length}/50`}
                   />
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
                     label="Pin Code"
                     size="small"
-                    required
                     disabled
                     name="pinCode"
-                    inputProps={{ maxLength: 30 }}
                     value={formData.pinCode}
                     onChange={(e) => setFormData({ ...formData, pinCode: e.target.value })}
-                    error={!!errors.pinCode}
-                  // helperText={errors.pincode}
                   />
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
                     label="TAX Type"
                     size="small"
-                    required
                     disabled
                     name="gstType"
-                    inputProps={{ maxLength: 30 }}
                     value={formData.gstType}
-                    // onChange={(e) => setFormData({ ...formData, gstType: e.target.value })}
-                    error={!!errors.gstType}
-                  // helperText={errors.pincode}
                   />
                 </FormControl>
               </div>
@@ -2068,28 +2046,23 @@ const handleMultiSelect = async (event) => {
                   <TextField
                     label="Credit Days"
                     size="small"
-                    required
                     inputProps={{ maxLength: 30 }}
                     value={formData.creditDays}
                     onChange={(e) => setFormData({ ...formData, creditDays: e.target.value })}
-                    error={!!errors.creditDays}
                     disabled
-                  // helperText={errors.pincode}
                   />
                 </FormControl>
               </div>
-
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
-                    Job Card No
+                  <InputLabel id="demo-simple-select-label">
+                    Job Card No <span style={{color: 'red', fontSize: '20px'}}>*</span>
                   </InputLabel>
                   <Select
                     labelId="jobCardNo"
                     value={formData.jobNo || (jobCardNo.length === 1 ? jobCardNo[0].jobCard : '')}
                     onChange={handleJobOrderNo}
                     label="Job Card No"
-                    required
                     error={!!errors.jobNo}
                     helperText={errors.jobNo}
                     disabled={formData.status === 'TAX'}
@@ -2113,12 +2086,10 @@ const handleMultiSelect = async (event) => {
                     label="Invoice No"
                     size="small"
                     required
-                    inputProps={{ maxLength: 30 }}
                     value={formData.invoiceNo}
                     onChange={(e) => setFormData({ ...formData, invoiceNo: e.target.value })}
                     error={!!errors.invoiceNo}
                     disabled
-                  // helperText={errors.pincode}
                   />
                 </FormControl>
               </div>
@@ -2149,39 +2120,10 @@ const handleMultiSelect = async (event) => {
                     inputProps={{ maxLength: 250 }}
                     value={formData.remarks}
                     onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
-                    error={!!errors.remarks}
-                  // helperText={errors.remarks || `${formData.remarks.length}/50`}
                   />
                 </FormControl>
               </div>
                 <div className="col-md-3 mb-3">
-                  {/* <FormControl fullWidth size='small'>
-                    <InputLabel id="demo-multiple-chip-label">Transaction No</InputLabel>
-                    <Select
-                      labelId="demo-multiple-chip-label"
-                      id="demo-multiple-chip"
-                      multiple
-                      disabled={formData.status === 'TAX'}
-                      value={selectedTransactionNo}
-                      onChange={handleMultiSelect}
-                      input={<OutlinedInput id="select-multiple-chip" label="Transaction No" />}
-                      renderValue={(selected) => (
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                          {selected.map((value) => (
-                            <Chip key={value} label={value} />
-                          ))}
-                        </Box>
-                      )}
-                      MenuProps={MenuProps}
-                    >
-                      {transactionNoList.map((name, index) => (
-                        <MenuItem key={index} value={name.transactionno} style={getStyles(name, selectedTransactionNo, theme)}>
-                          {name.transactionno}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {fieldErrors.selectedTransactionNo && <FormHelperText>{fieldErrors.selectedTransactionNo}</FormHelperText>}
-                  </FormControl> */}
                   <FormControl fullWidth size="small">
                     <InputLabel id="demo-multiple-checkbox-label">Transaction No</InputLabel>
                     <Select
@@ -2247,8 +2189,8 @@ const handleMultiSelect = async (event) => {
                                 <th className="table-header" style={{ width: '50px' }}>
                                   S.No
                                 </th>
-                                <th className="table-header">Type</th>
-                                <th className="table-header">Charge Code</th>
+                                <th className="table-header">Type <span style={{color: 'white', fontSize: '20px'}}>*</span></th>
+                                <th className="table-header">Charge Code <span style={{color: 'white', fontSize: '20px'}}>*</span></th>
                                 {/* <th className="table-header">GCharge Code</th>
                                 <th className="table-header">Charge Name</th>
                                 <th className="table-header">Taxable</th> */}
@@ -2256,13 +2198,13 @@ const handleMultiSelect = async (event) => {
                                   Description
                                 </th>
                                 <th className="table-header" style={{ width: '100px' }}>
-                                  Qty
+                                  Qty <span style={{color: 'white', fontSize: '20px'}}>*</span>
                                 </th>
                                 <th className="table-header" style={{ width: '100px' }}>
-                                  Rate
+                                  Rate <span style={{color: 'white', fontSize: '20px'}}>*</span>
                                 </th>
-                                <th className="table-header">Currency</th>
-                                <th className="table-header">Ex Rate</th>
+                                <th className="table-header">Currency <span style={{color: 'white', fontSize: '20px'}}>*</span></th>
+                                <th className="table-header">Ex Rate <span style={{color: 'white', fontSize: '20px'}}>*</span></th>
                                 <th className="table-header">FC Amount</th>
                                 <th className="table-header">LC Amount</th>
                                 <th className="table-header">Bill Amount</th>
@@ -2272,7 +2214,6 @@ const handleMultiSelect = async (event) => {
                               </tr>
                             </thead>
                             <tbody>
-                              {/* {Array.isArray(withdrawalsTableData) && */}
                               {withdrawalsTableData.map((row, index) => (
                                 <tr key={row.id}>
                                   {formData.status !== 'TAX' && (
@@ -2295,7 +2236,6 @@ const handleMultiSelect = async (event) => {
                                   <td className="text-center">
                                     <div className="pt-2">{index + 1}</div>
                                   </td>
-
                                   <td className="border px-2 py-2">
                                     <select
                                       value={row.chargeType}
@@ -2319,7 +2259,6 @@ const handleMultiSelect = async (event) => {
                                       </div>
                                     )}
                                   </td>
-
                                   <td className="border px-2 py-2">
                                     <select
                                       value={row.chargeCode}
@@ -2331,6 +2270,7 @@ const handleMultiSelect = async (event) => {
                                           (currency) => currency.chargeCode === selectedCurrency
                                         );
                                         const updatedCurrencyData = [...withdrawalsTableData];
+                                        const updatedChargeCodeError = [...withdrawalsTableErrors];
                                         updatedCurrencyData[index] = {
                                           ...updatedCurrencyData[index],
                                           chargeCode: selectedCurrency,
@@ -2348,6 +2288,11 @@ const handleMultiSelect = async (event) => {
                                           lcAmount: ''
                                         };
                                         setWithdrawalsTableData(updatedCurrencyData);
+                                        updatedChargeCodeError[index] = {
+                                          ...updatedChargeCodeError[index],
+                                          chargeCode:''
+                                        }
+                                        setWithdrawalsTableErrors(updatedChargeCodeError);
                                       }}
                                       className={withdrawalsTableErrors[index]?.chargeCode ? 'error form-control' : 'form-control'}
                                     >
@@ -2364,7 +2309,6 @@ const handleMultiSelect = async (event) => {
                                       </div>
                                     )}  
                                   </td>
-
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
