@@ -583,16 +583,10 @@ const Quotation = () => {
     setTotal(subtotal + calculatedIgst + calculatedCgst + calculatedSgst);
   };
 
-  // const handlePrint = useReactToPrint({
-  //   content: () => componentRef.current,
-  //   documentTitle: `Quotation`
-  // });
-
   // const handlePrint = async () => {
-  //   const element = componentRef.current;
-  //   if (!element) return;
+  //   if (!componentRef.current) return;
 
-  //   const canvas = await html2canvas(element, {
+  //   const canvas = await html2canvas(componentRef.current, {
   //     scale: 2,
   //     useCORS: true
   //   });
@@ -603,12 +597,28 @@ const Quotation = () => {
   //     unit: 'px',
   //     format: 'a4'
   //   });
-
   //   const pageWidth = pdf.internal.pageSize.getWidth();
-  //   const imgProps = pdf.getImageProperties(imgData);
-  //   const imgHeight = (imgProps.height * pageWidth) / imgProps.width;
+  //   const pageHeight = pdf.internal.pageSize.getHeight();
 
-  //   pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, imgHeight);
+  //   const imgProps = pdf.getImageProperties(imgData);
+  //   const imgWidth = pageWidth;
+  //   const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+  //   let heightLeft = imgHeight;
+  //   let position = 0;
+
+  //   // First page
+  //   pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  //   heightLeft -= pageHeight;
+
+  //   // More pages if needed
+  //   while (heightLeft > 0) {
+  //     position -= pageHeight;
+  //     pdf.addPage();
+  //     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  //     heightLeft -= pageHeight;
+  //   }
+
   //   pdf.save('output.pdf');
   // };
 
@@ -620,7 +630,9 @@ const Quotation = () => {
       useCORS: true
     });
 
-    const imgData = canvas.toDataURL('image/png');
+    const imgHeight = canvas.height;
+    const imgWidth = canvas.width;
+
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'px',
@@ -629,24 +641,30 @@ const Quotation = () => {
 
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
+    const topMargin = 30; // gap at top of second+ pages
 
-    const imgProps = pdf.getImageProperties(imgData);
-    const imgWidth = pageWidth;
-    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+    const ratio = pageWidth / imgWidth;
+    const scaledHeight = imgHeight * ratio;
+    const pageImgHeight = pageHeight / ratio;
 
-    let heightLeft = imgHeight;
     let position = 0;
 
-    // First page
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
+    while (position < imgHeight) {
+      const canvasPage = document.createElement('canvas');
+      canvasPage.width = imgWidth;
+      canvasPage.height = Math.min(pageImgHeight, imgHeight - position);
 
-    // More pages if needed
-    while (heightLeft > 0) {
-      position -= pageHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
+      const ctx = canvasPage.getContext('2d');
+
+      ctx.drawImage(canvas, 0, position, imgWidth, canvasPage.height, 0, 0, imgWidth, canvasPage.height);
+
+      const imgData = canvasPage.toDataURL('image/png');
+
+      if (position !== 0) pdf.addPage();
+
+      pdf.addImage(imgData, 'PNG', 0, position === 0 ? 0 : topMargin, pageWidth, canvasPage.height * ratio);
+
+      position += pageImgHeight;
     }
 
     pdf.save('output.pdf');
