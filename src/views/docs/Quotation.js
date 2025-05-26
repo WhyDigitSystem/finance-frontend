@@ -4,6 +4,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import PrintIcon from '@mui/icons-material/Print';
 import SaveIcon from '@mui/icons-material/Save';
 import VisibilityIcon from '@mui/icons-material/Visibility';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import {
   Box,
   Button,
@@ -167,17 +169,17 @@ const PurchaseOrder = React.forwardRef((props, ref) => {
             >
               {/* Left Box */}
               <Grid item xs={2}>
-                <img src="/wds_logo.png" style={{ width: '100px' }}></img>
+                {/* <img src="/wds_logo.png" style={{ width: '100px' }}></img> */}
+                <img src="/AI_Packs.png" style={{ width: '100%', maxWidth: '100px' }} alt="Company Logo" />
               </Grid>
               <Grid item xs={5}>
                 <Box sx={{ textAlign: 'left' }}>
-                  <StyledTextField
-                    fullWidth
-                    sx={{ fontWeight: 'bold', color: 'black' }}
-                    variant="outlined"
-                    multiline
-                    value="Why Digit System Private Limited, 29/1, T.C Palya Main Road, Hoysala Nagar, Bangalore – 560016. &#10;GST- 29AADCW3710D1ZK"
-                  />
+                  <Typography
+                    variant="h5"
+                    sx={{ mt: 1, width: '100%', backgroundColor: '#fff', padding: 2, borderRadius: 3, boxShadow: 2 }}
+                  >
+                    Why Digit System Private Limited, 29/1, T.C Palya Main Road, Hoysala Nagar, Bangalore – 560016. &#10;GST-29AADCW3710D1ZK
+                  </Typography>
                 </Box>
               </Grid>
             </Grid>
@@ -227,7 +229,7 @@ const PurchaseOrder = React.forwardRef((props, ref) => {
 
           {/* WHY DIGIT SYSTEM SOLUTION AND KEY BENEFIT */}
           <Box sx={{ mb: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
               WHY DIGIT SYSTEM SOLUTION AND KEY BENEFIT
             </Typography>
 
@@ -246,10 +248,10 @@ const PurchaseOrder = React.forwardRef((props, ref) => {
 
           {/* CONTROL MANAGEMENT */}
           <Box sx={{ mb: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
               CONTROL MANAGEMENT
             </Typography>
-            <Typography sx={{ mb: 2 }}>
+            <Typography>
               It’s a very useful module for the top management to monitor and control men and machine behaviors effectively.
             </Typography>
             <Box sx={{ pl: 2 }}>
@@ -260,93 +262,35 @@ const PurchaseOrder = React.forwardRef((props, ref) => {
           </Box>
           {/* Commercial */}
           <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-            Commercial
+            COMMERCIAL
           </Typography>
 
-          <TableContainer component={Paper} sx={{ mb: 0 }}>
-            <Table sx={{ border: '1px solid black', borderCollapse: 'collapse' }}>
+          <TableContainer sx={{ backgroundColor: '#fff', padding: 1, borderRadius: 3, boxShadow: 2 }}>
+            <Table size="small" sx={{ minWidth: 650 }}>
               <TableHead>
-                <TableRow>
-                  <TableCell
-                    sx={{
-                      border: '1px solid black',
-                      fontWeight: 'bold',
-                      color: 'white',
-                      backgroundColor: '#2596be' // Set your desired background color here
-                    }}
-                  >
-                    S.No
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      border: '1px solid black',
-                      fontWeight: 'bold',
-                      color: 'white',
-                      backgroundColor: '#2596be' // Set your desired background color here
-                    }}
-                  >
-                    Item & Description
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      border: '1px solid black',
-                      fontWeight: 'bold',
-                      color: 'white',
-                      backgroundColor: '#2596be' // Set your desired background color here
-                    }}
-                  >
-                    Qty
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      border: '1px solid black',
-                      fontWeight: 'bold',
-                      color: 'white',
-                      backgroundColor: '#2596be' // Set your desired background color here
-                    }}
-                  >
-                    Rate
-                  </TableCell>
-                  <TableCell
-                    sx={{
-                      border: '1px solid black',
-                      fontWeight: 'bold',
-                      color: 'white',
-                      backgroundColor: '#2596be' // Set your desired background color here
-                    }}
-                  >
-                    Total
-                  </TableCell>
-                  <StyledTableCellActions
-                    sx={{
-                      border: '1px solid black',
-                      fontWeight: 'bold',
-                      color: 'white',
-                      backgroundColor: '#2596be' // Set your desired background color here
-                    }}
-                  >
-                    Actions
-                  </StyledTableCellActions>
+                <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                  <TableCell sx={{ fontWeight: 'bold', width: '60px' }}>S.No</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', width: '200px' }}>Item & Description</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', width: '100px' }}>Qty</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', width: '100px' }}>Rate</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', width: '100px' }}>Amount</TableCell>
+                  <TableCell sx={{ fontWeight: 'bold', width: '80px' }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
 
               <TableBody>
                 {props.items.map((item, index) => (
-                  <TableRow key={index}>
-                    <TableCell sx={{ border: '1px solid black' }}>{index + 1}</TableCell>
-                    <TableCell sx={{ border: '1px solid black' }}>
-                      <StyledTextField
+                  <TableRow key={index} hover>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>
+                      <TextField
                         fullWidth
                         size="small"
                         variant="outlined"
-                        multiline
                         sx={{
-                          width: 200, // Set width
-                          '& .MuiInputBase-root': {
-                            padding: '4px' // Reduce padding inside the input
-                          },
-                          '& .MuiOutlinedInput-notchedOutline': {
-                            borderWidth: 1 // Optional: Adjust border width if needed
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '4px',
+                            backgroundColor: '#fff'
                           }
                         }}
                         value={item.description}
@@ -354,34 +298,42 @@ const PurchaseOrder = React.forwardRef((props, ref) => {
                       />
                     </TableCell>
 
-                    <TableCell sx={{ border: '1px solid black' }}>
-                      <StyledTextField
-                        fullWidth
-                        sx={{ width: 70 }}
+                    <TableCell>
+                      <TextField
                         size="small"
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '4px',
+                            backgroundColor: '#fff'
+                          }
+                        }}
                         variant="outlined"
                         type="number"
                         value={item.unit}
                         onChange={(e) => props.handleItemChange(index, 'unit', e.target.value)}
                       />
                     </TableCell>
-                    <TableCell sx={{ border: '1px solid black' }}>
-                      <StyledTextField
-                        fullWidth
+                    <TableCell>
+                      <TextField
                         variant="outlined"
                         type="number"
-                        sx={{ width: 100 }}
+                        sx={{
+                          '& .MuiOutlinedInput-root': {
+                            borderRadius: '4px',
+                            backgroundColor: '#fff'
+                          }
+                        }}
                         size="small"
                         value={item.pricre}
                         onChange={(e) => props.handleItemChange(index, 'pricre', e.target.value)}
                       />
                     </TableCell>
-                    <TableCell sx={{ border: '1px solid black' }}>{item.total.toFixed(2)}</TableCell>
-                    <StyledTableCellActions sx={{ border: '1px solid black' }}>
-                      <StyledIconButton onClick={() => props.handleDeleteRow(index)} color="error">
-                        <DeleteIcon />
-                      </StyledIconButton>
-                    </StyledTableCellActions>
+                    <TableCell>{item.total.toFixed(2)}</TableCell>
+                    <TableCell>
+                      <IconButton size="small" onClick={() => props.handleDeleteRow(index)} sx={{ color: '#f44336' }}>
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -393,7 +345,7 @@ const PurchaseOrder = React.forwardRef((props, ref) => {
             color="primary"
             startIcon={<AddCircleOutlineIcon />}
             onClick={props.handleAddRow}
-            sx={{ mb: 0, mt: 2 }}
+            sx={{ mb: 0, mt: 1 }}
           >
             Add Row
           </StyledButton>
@@ -420,15 +372,15 @@ const PurchaseOrder = React.forwardRef((props, ref) => {
               </Grid>
               <Grid item xs={4}>
                 <Box sx={{ textAlign: 'right', mb: 0 }}>
-                  <Typography sx={{ fontWeight: 'bold', mb: 1 }}>Subtotal: ₹ {subtotal.toFixed(2)}</Typography>
+                  <Typography sx={{ fontWeight: 'bold' }}>Subtotal: ₹ {subtotal.toFixed(2)}</Typography>
                   {gstType === 'intra' && (
                     <>
-                      <Typography sx={{ fontWeight: 'bold', mb: 1 }}>SGST (9%): ₹ {sgst.toFixed(2)}</Typography>
-                      <Typography sx={{ fontWeight: 'bold', mb: 1 }}>CGST (9%): ₹ {cgst.toFixed(2)}</Typography>
+                      <Typography sx={{ fontWeight: 'bold' }}>SGST (9%): ₹ {sgst.toFixed(2)}</Typography>
+                      <Typography sx={{ fontWeight: 'bold' }}>CGST (9%): ₹ {cgst.toFixed(2)}</Typography>
                     </>
                   )}
-                  {gstType === 'inter' && <Typography sx={{ fontWeight: 'bold', mb: 1 }}>IGST (18%): ₹ {igst.toFixed(2)}</Typography>}
-                  <Typography sx={{ fontWeight: 'bold', mt: 2 }}>Total: ₹ {total.toFixed(2)}</Typography>
+                  {gstType === 'inter' && <Typography sx={{ fontWeight: 'bold' }}>IGST (18%): ₹ {igst.toFixed(2)}</Typography>}
+                  <Typography sx={{ fontWeight: 'bold' }}>Total: ₹ {total.toFixed(2)}</Typography>
                 </Box>
               </Grid>
             </Grid>
@@ -439,7 +391,7 @@ const PurchaseOrder = React.forwardRef((props, ref) => {
           {/* TERMS OF CONTRACT */}
           <Box sx={{ mb: 1 }}>
             <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-              Terms of Contract
+              TERMS & CONDITIONS
             </Typography>
 
             <Box sx={{ pl: 2 }}>
@@ -469,7 +421,7 @@ const PurchaseOrder = React.forwardRef((props, ref) => {
           {/* TERMS OF CONTRACT */}
           <Box sx={{ mb: 1 }}>
             <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-              Timeline:
+              TIMELINE
             </Typography>
 
             <Box sx={{ pl: 2 }}>
@@ -478,68 +430,41 @@ const PurchaseOrder = React.forwardRef((props, ref) => {
           </Box>
           <Box sx={{ mb: 1 }}>
             <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-              Payments
+              PAYMENTS
             </Typography>
-            <TableContainer component={Paper} sx={{ mb: 2 }}>
-              <Table sx={{ border: '1px solid black', borderCollapse: 'collapse' }}>
+            <TableContainer sx={{ backgroundColor: '#fff', padding: 1, borderRadius: 3, boxShadow: 2 }}>
+              <Table size="small" sx={{ minWidth: 650 }}>
                 <TableHead>
-                  <TableRow>
-                    <TableCell
-                      sx={{
-                        border: '1px solid black',
-                        fontWeight: 'bold',
-                        color: 'white',
-                        backgroundColor: '#2596be'
-                      }}
-                    >
-                      Payment Terms
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        border: '1px solid black',
-                        fontWeight: 'bold',
-                        color: 'white',
-                        backgroundColor: '#2596be'
-                      }}
-                    >
-                      Percentage
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        border: '1px solid black',
-                        fontWeight: 'bold',
-                        color: 'white',
-                        backgroundColor: '#2596be'
-                      }}
-                    >
-                      Remarks
-                    </TableCell>
+                  <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                    <TableCell sx={{ fontWeight: 'bold', width: '60px' }}>Payment Terms</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', width: '60px' }}>Percentage</TableCell>
+                    <TableCell sx={{ fontWeight: 'bold', width: '60px' }}>Remarks</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableRow>
-                  <TableCell sx={{ border: '1px solid black' }}>Advance Payment against PO /WO </TableCell>
-                  <TableCell sx={{ border: '1px solid black' }}>50%</TableCell>
-                  <TableCell sx={{ border: '1px solid black' }}>Of Total cost</TableCell>
+                  <TableCell>Advance Payment against PO /WO </TableCell>
+                  <TableCell>50%</TableCell>
+                  <TableCell>Of Total cost</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell sx={{ border: '1px solid black' }}>On Completion of 1nd month</TableCell>
-                  <TableCell sx={{ border: '1px solid black' }}>15%</TableCell>
-                  <TableCell sx={{ border: '1px solid black' }}>Of Total cost</TableCell>
+                  <TableCell>On Completion of 1nd month</TableCell>
+                  <TableCell>15%</TableCell>
+                  <TableCell>Of Total cost</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell sx={{ border: '1px solid black' }}>On Completion of 2nd month</TableCell>
-                  <TableCell sx={{ border: '1px solid black' }}>15%</TableCell>
-                  <TableCell sx={{ border: '1px solid black' }}>Of Total cost</TableCell>
+                  <TableCell>On Completion of 2nd month</TableCell>
+                  <TableCell>15%</TableCell>
+                  <TableCell>Of Total cost</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell sx={{ border: '1px solid black' }}>On Completion of ERP Hosting</TableCell>
-                  <TableCell sx={{ border: '1px solid black' }}>20%</TableCell>
-                  <TableCell sx={{ border: '1px solid black' }}>Of Total cost</TableCell>
+                  <TableCell>On Completion of ERP Hosting</TableCell>
+                  <TableCell>20%</TableCell>
+                  <TableCell>Of Total cost</TableCell>
                 </TableRow>
                 <TableRow>
-                  <TableCell sx={{ border: '1px solid black' }}></TableCell>
-                  <TableCell sx={{ border: '1px solid black' }}>100%</TableCell>
-                  <TableCell sx={{ border: '1px solid black' }}>Of Total cost</TableCell>
+                  <TableCell></TableCell>
+                  <TableCell>100%</TableCell>
+                  <TableCell>Of Total cost</TableCell>
                 </TableRow>
               </Table>
             </TableContainer>
@@ -549,60 +474,38 @@ const PurchaseOrder = React.forwardRef((props, ref) => {
               Thanks Note
             </Typography>
             <p>Thanks for the opportunities to work with VAP. Please let’s know if any query or clarification.</p>
-            <TableContainer component={Paper} sx={{ mb: 2, mt: 4 }}>
-              <Table sx={{ border: '1px solid black', borderCollapse: 'collapse' }}>
+            <TableContainer sx={{ backgroundColor: '#fff', padding: 1, borderRadius: 3, boxShadow: 2 }}>
+              <Table size="small" sx={{ minWidth: 650 }}>
                 <TableHead>
-                  <StyledTextField
-                    fullWidth
-                    variant="outlined"
-                    multiline
-                    value={quotationTo}
-                    onChange={(e) => setQuotationTo(e.target.value)}
-                    sx={{
-                      mb: 1,
-                      mt: 0,
-                      height: '100%',
-                      '& .MuiOutlinedInput-root': {
-                        '& fieldset': {
-                          borderBottom: 'none'
-                        },
-                        '&:hover fieldset': {
-                          borderColor: 'transparent'
-                        },
-                        '&.Mui-focused fieldset': {
-                          borderColor: 'transparent'
-                        }
-                      }
-                    }}
-                  />
-
-                  <TableCell
-                    sx={{
-                      border: '1px solid black',
-                      fontWeight: 'bold',
-                      borderBottom: 'none'
-                    }}
-                  >
-                    {/* Company Name Editable Field */}
-                    <StyledTextField
+                  <TableCell>
+                    <TextField
                       fullWidth
+                      size="small"
+                      variant="outlined"
+                      multiline
+                      value={quotationTo}
+                      onChange={(e) => setQuotationTo(e.target.value)}
+                      sx={{
+                        '& .MuiOutlinedInput-root': {
+                          borderRadius: '4px',
+                          backgroundColor: '#fff'
+                        }
+                      }}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {/* Company Name Editable Field */}
+                    <TextField
+                      fullWidth
+                      size="small"
                       variant="outlined"
                       multiline
                       value={shippingAddress}
                       onChange={(e) => setShippingAddress(e.target.value)}
                       sx={{
-                        height: '100%',
-                        p: 0,
                         '& .MuiOutlinedInput-root': {
-                          '& fieldset': {
-                            border: 'none'
-                          },
-                          '&:hover fieldset': {
-                            borderColor: 'transparent'
-                          },
-                          '&.Mui-focused fieldset': {
-                            borderColor: 'transparent'
-                          }
+                          borderRadius: '4px',
+                          backgroundColor: '#fff'
                         }
                       }}
                     />
@@ -610,26 +513,8 @@ const PurchaseOrder = React.forwardRef((props, ref) => {
                 </TableHead>
                 <TableBody>
                   <TableRow>
-                    <TableCell
-                      sx={{
-                        pb: 5,
-                        border: '1px solid black',
-                        borderBottom: 'none',
-                        height: '100px'
-                      }}
-                    >
-                      Sign & Seal
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        pb: 5,
-                        border: '1px solid black',
-                        borderBottom: 'none',
-                        height: '100px'
-                      }}
-                    >
-                      Sign & Seal
-                    </TableCell>
+                    <TableCell>Sign & Seal</TableCell>
+                    <TableCell>Sign & Seal</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
@@ -647,8 +532,8 @@ const Quotation = () => {
   const [companyAddress, setCompanyAddress] = useState(
     'Why Digit System Private Limited,29/1, T.C Palya Main Road,Hoysala Nagar Bangalore – 560016.'
   );
-
-  const [quotationAdviceData, setQuotationAdviceData] = useState([]);
+  const [quotationList, setQuotationList] = useState([]);
+  const [quotationAdviceData, setQuotationAdviceData] = useState(null);
   const [items, setItems] = useState([
     {
       description: '',
@@ -698,10 +583,74 @@ const Quotation = () => {
     setTotal(subtotal + calculatedIgst + calculatedCgst + calculatedSgst);
   };
 
-  const handlePrint = useReactToPrint({
-    content: () => componentRef.current,
-    documentTitle: `Quotation`
-  });
+  // const handlePrint = useReactToPrint({
+  //   content: () => componentRef.current,
+  //   documentTitle: `Quotation`
+  // });
+
+  // const handlePrint = async () => {
+  //   const element = componentRef.current;
+  //   if (!element) return;
+
+  //   const canvas = await html2canvas(element, {
+  //     scale: 2,
+  //     useCORS: true
+  //   });
+
+  //   const imgData = canvas.toDataURL('image/png');
+  //   const pdf = new jsPDF({
+  //     orientation: 'portrait',
+  //     unit: 'px',
+  //     format: 'a4'
+  //   });
+
+  //   const pageWidth = pdf.internal.pageSize.getWidth();
+  //   const imgProps = pdf.getImageProperties(imgData);
+  //   const imgHeight = (imgProps.height * pageWidth) / imgProps.width;
+
+  //   pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, imgHeight);
+  //   pdf.save('output.pdf');
+  // };
+
+  const handlePrint = async () => {
+    if (!componentRef.current) return;
+
+    const canvas = await html2canvas(componentRef.current, {
+      scale: 2,
+      useCORS: true
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'px',
+      format: 'a4'
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    const imgProps = pdf.getImageProperties(imgData);
+    const imgWidth = pageWidth;
+    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    // First page
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    // More pages if needed
+    while (heightLeft > 0) {
+      position -= pageHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    pdf.save('output.pdf');
+  };
 
   const handleSave = () => {
     postInvoice();
@@ -817,7 +766,7 @@ const Quotation = () => {
     try {
       const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getQuotationByorgId?orgId=${orgId}`);
       if (response.status === 200) {
-        setQuotationAdviceData(response.data.paramObjectsMap.quotationVO.reverse());
+        setQuotationList(response.data.paramObjectsMap.quotationVO.reverse());
       } else {
         console.error('API Error:', response.data);
       }
@@ -828,7 +777,6 @@ const Quotation = () => {
 
   const handleListView = () => {
     setListView(!listView);
-
     handleNew();
   };
   useEffect(() => {
@@ -920,7 +868,7 @@ const Quotation = () => {
       </Box>
       {listView ? (
         <QuotationList
-          quotationAdviceData={quotationAdviceData}
+          quotationAdviceData={quotationList}
           onListView={setListView}
           setQuotationAdviceData={setQuotationAdviceData}
           setEditMode={setEditMode}
@@ -962,5 +910,4 @@ const Quotation = () => {
     </Container>
   );
 };
-
 export default Quotation;
