@@ -5,6 +5,7 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import ArAging from 'views/Finance/taxInvoice/ArAging';
 import ArOutstanding from 'views/Finance/taxInvoice/ArOutstanding';
+const MimRimRegister = Loadable(lazy(() => import('views/docs/MimRimRegister')));
 const StockBranch = Loadable(lazy(() => import('views/docs/StockBranch')));
 const Warehouse = Loadable(lazy(() => import('views/docs/Warehouse')));
 const AssetType = Loadable(lazy(() => import('views/docs/AssetType')));
@@ -487,6 +488,10 @@ const FinanceRoute = {
     {
       path: '/docs/Quotation',
       element: <Quotation />
+    },
+    {
+      path: '/docs/MimRimRegister',
+      element: <MimRimRegister />
     },
     {
       path: '/finance/ItemMaster',

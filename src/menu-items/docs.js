@@ -90,6 +90,12 @@ const docs = {
           title: 'Quotation',
           type: 'item',
           url: '/docs/Quotation'
+        },
+        {
+          id: 'mimrimRegister',
+          title: 'MIM Register',
+          type: 'item',
+          url: '/docs/MimRimRegister'
         }
       ]
     }

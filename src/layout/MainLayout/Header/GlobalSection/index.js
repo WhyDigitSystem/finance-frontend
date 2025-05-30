@@ -106,15 +106,26 @@ const GlobalSection = () => {
     }
   };
 
-  const getFinYear = async () => {
-    try {
-      const result = await apiCalls('get', `/commonmaster/getAllAciveFInYear?orgId=${orgId}`);
-      setFinVO(result.paramObjectsMap.financialYearVOs || []);
-      console.log('Test', result);
-    } catch (err) {
-      console.log('error', err);
-    }
-  };
+  // const getFinYear = async () => {
+  //   try {
+  //     const result = await apiCalls('get', `/commonmaster/getAllAciveFInYear?orgId=${orgId}`);
+  //     setFinVO(result.paramObjectsMap.financialYearVOs || []);
+  //     console.log('Test', result);
+  //   } catch (err) {
+  //     console.log('error', err);
+  //   }
+  // };
+const getFinYear = async () => {
+  try {
+    const result = await apiCalls('get', `/commonmaster/getAllAciveFInYear?orgId=${orgId}`);
+    let finYears = result.paramObjectsMap.financialYearVOs || [];
+    finYears.sort((a, b) => parseInt(b.finYear, 10) - parseInt(a.finYear, 10));
+    setFinVO(finYears);
+    console.log('Sorted Fin Years:', finYears);
+  } catch (err) {
+    console.log('error', err);
+  }
+};
 
   // const getCustomer = async (branchcode) => {
   //   const formData = {

@@ -565,6 +565,7 @@ const BarChart = ({ chartSalesData, customerColorMap }) => {
             Monthly Sales by Customer
           </Typography>
           <Box sx={{ flexGrow: 1 }}>
+          <NoDataAvailable />
             <Typography sx={{ textAlign: 'center' }}>No Data Available</Typography>
           </Box>
         </CardContent>

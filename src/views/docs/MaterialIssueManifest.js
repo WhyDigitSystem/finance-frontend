@@ -70,6 +70,8 @@ export const MaterialIssueManifest = () => {
     fromWarehouse: '',
     warehouseAddress: '',
     customer: '',
+    customerName: '',
+    locationUnit:'',
     customerAddress: '',
     receiverRegIn: '',
     // sender: sender,
@@ -87,6 +89,8 @@ export const MaterialIssueManifest = () => {
     fromWarehouse: '',
     warehouseAddress: '',
     customer: '',
+    customerName: '',
+    locationUnit:'',
     customerAddress: '',
     receiverRegIn: '',
     // sender: sender,
@@ -107,6 +111,7 @@ export const MaterialIssueManifest = () => {
       productCode: '',
       productName: '',
       productQty: '',
+      actualQty: ''
     }
   ]);
 
@@ -135,6 +140,8 @@ export const MaterialIssueManifest = () => {
     fromWarehouse: '',
     warehouseAddress: '',
     customer: '',
+    locationUnit:'',
+    customerName: '',
     customerAddress: '',
     receiverRegIn: '',
     // sender: sender,
@@ -153,6 +160,8 @@ export const MaterialIssueManifest = () => {
     fromWarehouse: '',
     warehouseAddress: '',
     customer: '',
+    locationUnit:'',
+    customerName: '',
     customerAddress: '',
     receiverRegIn: '',
     // sender: sender,
@@ -171,6 +180,7 @@ export const MaterialIssueManifest = () => {
       productCode: '',
       productName: '',
       productQty: '',
+      actualQty: ''
     }]);
     setEditId('');
 
@@ -187,41 +197,6 @@ export const MaterialIssueManifest = () => {
     setSelectedKit(null);
     setKitQty('');
     setOpen(true);
-  };
-  // const handleAddRow = () => {
-  //   // if (isLastRowEmpty(detailsTableData)) {
-  //   //   displayRowError(detailsTableData);
-  //   //   return;
-  //   // }
-  //   const newRow = {
-  //     id: Date.now(),
-  //     kitNo: '',
-  //     kitName: '',
-  //     kitQty: '',
-  //     hsnsacCode: '',
-  //     productCode: '',
-  //     productName: '',
-  //     productQty: '',
-  //   };
-  //   setDetailsTableData([...detailsTableData, newRow]);
-  //   setDetailsTableErrors([...detailsTableErrors, {       
-  //     kitNo: '',
-  //     kitName: '',
-  //     kitQty: '',
-  //     hsnsacCode: '',
-  //     productCode: '',
-  //     productName: '',
-  //     productQty: ''
-  //   }]);
-  // };
-  const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
-    const rowIndex = table.findIndex((row) => row.id === id);
-    if (rowIndex !== -1) {
-      const updatedData = table.filter((row) => row.id !== id);
-      const updatedErrors = errorTable.filter((_, index) => index !== rowIndex);
-      setTable(updatedData);
-      setErrorTable(updatedErrors);
-    }
   };
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date);
@@ -302,7 +277,7 @@ const getAllReceiverDetails = async () => {
   };
   const getAllManifestByOrgId = async () => {
     try {
-      const result = await apiCalls('get', `/reportController/getAllIssueManifestProviderForPendingIR?orgId=${orgId}`);
+      const result = await apiCalls('get', `/reportController/getAllIssueManifestProvider?orgId=${orgId}&finYear=${finYear}`);
       setData(result.paramObjectsMap.IssueManifestProviderVO.reverse() || []);
       console.log('bankingDepositVO', result);
     } catch (err) {
@@ -331,7 +306,9 @@ const handleDeleteKit = (kitNoToDelete) => {
           transactionType: MIMVO.transactionType,
           fromWarehouse: MIMVO.fromWarehouse,
           warehouseAddress: MIMVO.warehouseAddress,
+          locationUnit: MIMVO.locationUnit,
           customer: MIMVO.receiver,
+          customerName: MIMVO.receiverName,
           customerAddress: MIMVO.receiverAddress,
           receiverRegIn: MIMVO.receiverGst,
           amountInWords: MIMVO.amountInWords,
@@ -351,7 +328,8 @@ const handleDeleteKit = (kitNoToDelete) => {
             hsnsacCode: row.hsnCode,
             productCode: row.assetCode,
             productName: row.asset,
-            productQty: row.assetQty
+            productQty: row.assetQty,
+            actualQty: row.actualQty,
           }))
         );
       } else {
@@ -420,7 +398,8 @@ const GeneratePdf = async (row) => {
         hsnCode: row.hsnsacCode,
         assetCode: row.productCode,
         asset: row.productName,
-        assetQty: row.productQty
+        assetQty: row.productQty,
+        actualQty: row.actualQty,
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
@@ -438,7 +417,9 @@ const GeneratePdf = async (row) => {
         transactionType: formData.transactionType,
         fromWarehouse: formData.fromWarehouse,
         warehouseAddress: formData.warehouseAddress,
+        locationUnit: formData.locationUnit,
         receiver: formData.customer,
+        receiverName: formData.customerName,
         receiverAddress: formData.customerAddress,
         receiverGst: formData.receiverRegIn,
         sender: companyName,
@@ -482,8 +463,8 @@ const handleProceed = () => {
     productCode: asset.assetCodeId || '',
     productName: asset.assetName || '',
     productQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
+    actualQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
   }));
-
   setDetailsTableData((prev) => [...prev, ...newKitRows]);
   setOpen(false);
   setSelectedKit(null);
@@ -496,7 +477,17 @@ const groupedData = detailsTableData.reduce((acc, row) => {
   acc[kitKey].push(row);
   return acc;
 }, {});
-
+const handleProductQtyChange = (value, kitIndex, rowIndex) => {
+  const groupedEntries = Object.entries(groupedData);
+  const currentKitRows = groupedEntries[kitIndex]?.[1];
+  if (currentKitRows && currentKitRows[rowIndex]) {
+    const rowId = currentKitRows[rowIndex].id;
+    const updatedData = detailsTableData.map((item) =>
+      item.id === rowId ? { ...item, actualQty: Number(value) } : item
+    );
+    setDetailsTableData(updatedData);
+  }
+};
   return (
     <>
       <div>
@@ -586,6 +577,12 @@ const groupedData = detailsTableData.reduce((acc, row) => {
                     });
                     handleInputChange({
                       target: {
+                        name: 'locationUnit',
+                        value: newValue ? newValue.locationUnit : ''
+                      }
+                    });
+                    handleInputChange({
+                      target: {
                         name: 'warehouseAddress',
                         value: newValue ? newValue.address : ''
                       }
@@ -631,7 +628,7 @@ const groupedData = detailsTableData.reduce((acc, row) => {
                     disablePortal
                     options={allReceiver}
                     getOptionLabel={(option) => option.partyShortName || ''}
-                    isOptionEqualToValue={(option, value) => option.partyShortName === value.customer}
+                    isOptionEqualToValue={(option, value) => option?.partyShortName === value?.customer}
                     value={
                       formData.customer
                         ? allReceiver.find((c) => c.partyShortName === formData.customer)
@@ -642,6 +639,12 @@ const groupedData = detailsTableData.reduce((acc, row) => {
                         target: {
                           name: 'customer',
                           value: newValue ? newValue.partyShortName : ''
+                        }
+                      });
+                      handleInputChange({
+                        target: {
+                          name: 'customerName',
+                          value: newValue ? newValue.partyName : ''
                         }
                       });
                       const address = newValue?.partyAddressVO?.[0];
@@ -895,6 +898,7 @@ const groupedData = detailsTableData.reduce((acc, row) => {
                                   <TableCell>Product Code</TableCell>
                                   <TableCell>Product Name</TableCell>
                                   <TableCell>Product Qty</TableCell>
+                                  <TableCell>Actual Qty</TableCell>
                                 </TableRow>
                               </TableHead>
                                 <TableBody>
@@ -924,6 +928,15 @@ const groupedData = detailsTableData.reduce((acc, row) => {
                                           <TableCell>{row.productCode}</TableCell>
                                           <TableCell>{row.productName}</TableCell>
                                           <TableCell>{row.productQty}</TableCell>
+                                          <TableCell>
+                                          <input
+                                            type="number"
+                                            value={row.actualQty}
+                                            onChange={(e) => handleProductQtyChange(e.target.value, kitIndex, rowIndex)}
+                                            style={{ width: "80px" }}
+                                            min={0}
+                                          />
+                                        </TableCell>
                                         </TableRow>
                                       ))}
 

@@ -434,7 +434,15 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             <div className="d-flex justify-content-between">
               <div className="d-flex flex-column me-2">
                 <p className="mb-0">Sub Total:</p>
-                <p className="mb-0">{row.gstType === 'INTER' ? 'Total  IGST:' : 'Total CGST:'}</p>
+                {row.gstType === 'INTER' ? (
+                  <p className="mb-0">Total IGST:</p>
+                ) : (
+                  <>
+                    <p className="mb-0">Total CGST:</p>
+                    <p className="mb-0">Total SGST:</p>
+                  </>
+                )}
+                {/* <p className="mb-0">{row.gstType === 'INTER' ? 'Total  IGST:' : 'Total CGST: Total SGST:'}</p> */}
                 <p
                   className="mb-1"
                   style={{
@@ -466,11 +474,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                     ₹{parseFloat(row.totalChargeAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div
-                // style={{
-                //   fontStyle: 'italic'
-                // }}
-                >
+                <div>
                   <span
                     style={{
                       fontStyle: 'normal',
@@ -480,7 +484,20 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                       marginLeft: 10
                     }}
                   >
-                    ₹{parseFloat(row.totalTaxAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    ₹{parseFloat(row.totalTaxAmountLc/2).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <div>
+                  <span
+                    style={{
+                      fontStyle: 'normal',
+                      fontWeight: 'normal',
+                      fontSize: '14px',
+                      color: '#333',
+                      marginLeft: 10
+                    }}
+                  >
+                    ₹{parseFloat(row.totalTaxAmountLc/2).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
                 <div

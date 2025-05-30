@@ -225,7 +225,7 @@ const handleDownloadPdf = async () => {
     position -= pdfHeight;
   }
 
-  pdf.save(`${row.transactionNo || 'MIM'}_${selectedCopy}.pdf`);
+  pdf.save(`${row.transactionNo || 'MIM'}_${row.receiver}_${row.locationUnit}_${selectedCopy}.pdf`);
   setSelectedCopy('');
 };
   useEffect(() => {
@@ -391,7 +391,7 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
                 <strong className="">GST In: </strong>{companyDetails.gst}
             </div>
             <div>
-                <strong style={{fontSize: '10px'}} className="">Receiver: {row.receiver}</strong>
+                <strong style={{fontSize: '10px'}} className="">Receiver: {row.receiverName}</strong>
                 {row.receiverAddress && <div style={{ width: 250, marginBottom: 3, display: 'flex', alignItems: 'flex-start' }}>
                 <strong style={{ marginRight: 3, whiteSpace: 'nowrap',fontSize: '10px' }}>Address:</strong>
                 <p style={{ margin: 0, fontSize: '8px', lineHeight: '1.6', wordBreak: 'break-word', flex: 1 }}>
@@ -455,7 +455,7 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
 
                                           <TableCell style={{textAlign: 'center'}}>{row.assetCode}</TableCell>
                                           <TableCell>{row.asset}</TableCell>
-                                          <TableCell style={{textAlign: 'center'}}>{row.assetQty}</TableCell>
+                                          <TableCell style={{textAlign: 'center'}}>{row.actualQty}</TableCell>
                                         </TableRow>
                                       ))}
 

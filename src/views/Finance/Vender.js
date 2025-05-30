@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
+import { Autocomplete } from '@mui/material';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -17,7 +18,7 @@ import { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import CommonBulkUpload from 'utils/CommonBulkUpload';
 import UploadIcon from '@mui/icons-material/Upload';
-import { getAllActiveCitiesByState, getAllActiveStatesByCountry } from 'utils/CommonFunctions';
+import { getAllActiveCitiesByState, getAllActiveStatesByCountry,getAllActiveCountries } from 'utils/CommonFunctions';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -34,6 +35,7 @@ const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export const Vender = () => {
   const [stateList, setStateList] = useState([]);
+  const [countryList, setCountryList] = useState([]);
   const [editId, setEditId] = useState('');
   const [sectionOptions, setSectionOptions] = useState({});
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -102,8 +104,9 @@ export const Vender = () => {
 
   useEffect(() => {
     getAllVendorByOrgId();
-    getAllStates();
-    getAllCities();
+    // getAllStates();
+    getAvailableCountry();
+    // getAllCities();
     getAllSectionName();
     getAllCurrencyForExRate();
   }, []);
@@ -215,26 +218,6 @@ export const Vender = () => {
       setLoading(false);
     }
   };
-
-  const getAllStates = async () => {
-    try {
-      const stateData = await getAllActiveStatesByCountry('INDIA', orgId);
-      setStateList(stateData || []);
-    } catch (error) {
-      console.error('Error fetching states:', error);
-      setStateList([]);
-    }
-  };
-
-  const getAllCities = async (selectedState, rowId) => {
-    try {
-      const cityData = await getAllActiveCitiesByState(selectedState, orgId);
-      setPartyAddressData((prevData) => prevData.map((row) => (row.id === rowId ? { ...row, cityOptions: cityData } : row)));
-    } catch (error) {
-      console.error('Error fetching cities:', error);
-    }
-  };
-
   const getAllSectionName = async (section, rowId) => {
     try {
       const response = await apiCalls('get', `master/getSectionNameFromTds?orgId=${orgId}&section=${section}`);
@@ -311,6 +294,7 @@ export const Vender = () => {
         setPartyStateData(
           vendorData.partyStateVO.map((vendorState) => ({
             id: vendorState.id,
+            country: vendorState.country || '',
             state: vendorState.state || '',
             gstIn: vendorState.gstIn || '',
             stateNo: vendorState.stateNo || '',
@@ -332,6 +316,7 @@ export const Vender = () => {
           contact: vendorAddress.contact || '',
           pincode: vendorAddress.pincode || '',
           state: vendorAddress.state || '',
+          country: vendorAddress.country || '',
           stateGstIn: vendorAddress.stateGstIn || '',
           cityOptions: []
         }));
@@ -498,12 +483,13 @@ export const Vender = () => {
     setPartyStateData([
       {
         state: '',
+        country: '',
         gstIn: '',
+        stateCode: '',
         stateNo: '',
         contactPerson: '',
         contactPhoneNo: '',
         email: '',
-        stateCode: ''
       }
     ]);
     setPartyStateDataErrors([]);
@@ -518,6 +504,7 @@ export const Vender = () => {
         contact: '',
         pincode: '',
         state: '',
+        country: '',
         stateGstIn: ''
       }
     ]);
@@ -599,63 +586,118 @@ export const Vender = () => {
       setErrorTable(updatedErrors);
     }
   };
-
-  const handleStateChange = (row, index, event) => {
-    const value = event.target.value;
-    const selectedState = stateList.find((state) => state.stateName === value);
-
-    setPartyStateData((prev) =>
-      prev.map((r) =>
-        r.id === row.id
-          ? {
-              ...r,
-              state: value,
-              stateCode: selectedState ? selectedState.stateCode : '',
-              stateNo: selectedState ? selectedState.stateNumber : ''
-            }
-          : r
-      )
-    );
-
-    setPartyStateDataErrors((prev) => {
-      const newErrors = [...prev];
-      newErrors[index] = {
-        ...newErrors[index],
-        state: !value ? 'State is required' : ''
-      };
-      return newErrors;
-    });
-  };
-  const getAvailableStates = (currentRowId) => {
-    if (!Array.isArray(stateList)) {
-      console.error('stateList is not an array:', stateList);
-      return [];
+// const getAllActiveCitiesByState = async (state, orgId) => {
+//   try {
+//     const response = await apiCalls('get', `/commonmaster/city?state=${state}&orgId=${orgId}`);
+//     return response.paramObjectsMap.cityVO || [];
+//   } catch (error) {
+//     console.error('Error fetching cities:', error);
+//     return [];
+//   }
+// };
+const handleCountryChange = (row, rowIndex, e) => {
+  const selectedCountry = e.target.value;
+  const updatedData = [...partyStateData];
+  updatedData[rowIndex].country = selectedCountry;
+  updatedData[rowIndex].state = '';
+  updatedData[rowIndex].stateCode = '';
+  updatedData[rowIndex].stateNo = '';
+  updatedData[rowIndex].stateOptions = [];
+  setPartyStateData(updatedData);
+  getAvailableStates(selectedCountry, rowIndex, false); // false for Party State
+};const handleStateChange = (selectedOption, rowIndex) => {
+    const updatedData = [...partyStateData];
+  
+    if (selectedOption) {
+      updatedData[rowIndex].state = selectedOption.stateName;
+      updatedData[rowIndex].stateCode = selectedOption.stateCode;
+      updatedData[rowIndex].stateNo = selectedOption.stateNumber;
+    } else {
+      updatedData[rowIndex].state = '';
+      updatedData[rowIndex].stateCode = '';
+      updatedData[rowIndex].stateNo = '';
     }
-    const selectedStates = new Set(partyStateData.filter((row) => row.id !== currentRowId).map((row) => row.state));
-
-    return stateList
-      .filter((state) => !selectedStates.has(state.stateName))
-      .map((state) => ({
-        id: state.id,
-        stateName: state.stateName
-      }));
+    setPartyStateData(updatedData);
   };
-  const [partyStateData, setPartyStateData] = useState([
+const handleCountryPartyAddress = (row, rowIndex, e) => {
+  const selectedCountry = e.target.value;
+  const updatedData = [...partyAddressData];
+  updatedData[rowIndex].country = selectedCountry;
+  updatedData[rowIndex].state = '';
+  updatedData[rowIndex].stateOptions = [];
+  setPartyAddressData(updatedData);
+  getAvailableStates(selectedCountry, rowIndex, true); 
+};const handleStatePartyAddress = async (selectedOption, rowIndex) => {
+  const updatedData = [...partyAddressData];
+  if (selectedOption) {
+    updatedData[rowIndex].state = selectedOption.stateName;
+    try {
+      const cityData = await getAllActiveCitiesByState(selectedOption.stateName, orgId);
+      updatedData[rowIndex].cityOptions = cityData || [];
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+    }
+  } else {
+    updatedData[rowIndex].state = '';
+    updatedData[rowIndex].cityOptions = [];
+  }
+  setPartyAddressData(updatedData);
+};const getAvailableCountry = async () => {
+    try {
+      const response = await apiCalls('get', `/commonmaster/country?orgid=${orgId}`);
+      setCountryList(response.paramObjectsMap.countryVO);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const handleCityPartyAddress = (selectedOption, rowIndex) => {
+    const updatedData = [...partyAddressData];
+  
+    if (selectedOption) {
+      updatedData[rowIndex].city = selectedOption.cityName;
+    } else {
+      updatedData[rowIndex].state = '';
+    }
+    setPartyAddressData(updatedData);
+  };
+const getAvailableStates = async (country, rowIndex, isAddressTab = false) => {
+  try {
+    const response = await apiCalls('get', `/warehouser/getAllStatesByCountry?country=${country}&orgId=${orgId}`);
+    if (response.status === true) {
+      if (isAddressTab) {
+        const updatedData = [...partyAddressData];
+        updatedData[rowIndex].stateOptions = response.paramObjectsMap.stateVO || [];
+        setPartyAddressData(updatedData);
+      } else {
+        const updatedData = [...partyStateData];
+        updatedData[rowIndex].stateOptions = response.paramObjectsMap.stateVO || [];
+        setPartyStateData(updatedData);
+      }
+    } else {
+      console.error('API Error:', response);
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+};const [partyStateData, setPartyStateData] = useState([
     {
       id: 1,
       state: '',
+      country: '',
       gstIn: '',
       stateNo: '',
       contactPerson: '',
       contactPhoneNo: '',
       email: '',
-      stateCode: ''
+      stateCode: '',
+      stateOptions: [],
     }
   ]);
 
   const [partyStateDataErrors, setPartyStateDataErrors] = useState([
     {
       state: '',
+      country: '',
       gstIn: '',
       stateNo: '',
       contactPerson: '',
@@ -673,18 +715,21 @@ export const Vender = () => {
     const newRow = {
       id: Date.now(),
       state: '',
+      country: '',
       gstIn: '',
       stateNo: '',
       contactPerson: '',
       contactPhoneNo: '',
       email: '',
-      stateCode: ''
+      stateCode: '',
+      stateOptions: [],
     };
     setPartyStateData([...partyStateData, newRow]);
     setPartyStateDataErrors([
       ...partyStateDataErrors,
       {
         state: '',
+        country: '',
         gstIn: '',
         stateNo: '',
         contactPerson: '',
@@ -707,8 +752,10 @@ export const Vender = () => {
       contact: '',
       pincode: '',
       state: '',
+      country: '',
       stateGstIn: '',
-      cityOptions: []
+      stateOptions: [],
+      cityOptions: [],
     }
   ]);
 
@@ -723,6 +770,7 @@ export const Vender = () => {
       contact: '',
       pincode: '',
       state: '',
+      country: '',
       stateGstIn: ''
     }
   ]);
@@ -743,8 +791,10 @@ export const Vender = () => {
       contact: '',
       pincode: '',
       state: '',
+      country: '',
       stateGstIn: '',
-      cityOptions: [] // Initialize city options as empty
+      stateOptions: [],
+      cityOptions: []
     };
     setPartyAddressData([...partyAddressData, newRow]);
     setPartyAddressDataErrors([
@@ -759,6 +809,7 @@ export const Vender = () => {
         contact: '',
         pincode: '',
         state: '',
+        country: '',
         stateGstIn: ''
       }
     ]);
@@ -888,6 +939,7 @@ export const Vender = () => {
         addressLane3: row.addressLine3,
         bussinesPlace: row.businessPlace,
         city: row.city,
+        country: row.country,
         contact: row.contact,
         pinCode: parseInt(row.pincode),
         state: row.state,
@@ -899,6 +951,7 @@ export const Vender = () => {
         contactPerson: row.contactPerson,
         phoneNo: row.contactPhoneNo,
         gstIn: row.gstIn,
+        country: row.country,
         state: row.state,
         stateCode: row.stateCode,
         stateNo: parseInt(row.stateNo)
@@ -1171,6 +1224,7 @@ export const Vender = () => {
                               <tr style={{ backgroundColor: '#673AB7' }}>
                                 <th className="table-header">Action</th>
                                 <th className="table-header">SNo</th>
+                                <th className="table-header">Country</th>
                                 <th className="table-header">State</th>
                                 <th className="table-header">State Code</th>
                                 <th className="table-header">State No</th>
@@ -1201,28 +1255,51 @@ export const Vender = () => {
                                   <td className="text-center">
                                     <div className="pt-2">{index + 1}</div>
                                   </td>
-
                                   <td className="border px-2 py-2">
                                     <select
-                                      value={row.state}
+                                      value={row.country}
                                       style={{ width: '150px' }}
-                                      onChange={(e) => handleStateChange(row, index, e)}
-                                      className={partyStateDataErrors[index]?.state ? 'error form-control' : 'form-control'}
+                                      onChange={(e) => handleCountryChange(row, index, e)}
+                                      className={partyStateDataErrors[index]?.country ? 'error form-control' : 'form-control'}
                                     >
-                                      <option value="">Select State</option>
-                                      {getAvailableStates(row.id).map((state) => (
-                                        <option key={state.id} value={state.stateName}>
-                                          {state.stateName}
+                                      <option value="">Select Country</option>
+                                      {countryList?.map((state) => (
+                                        <option key={state.id} value={state.countryName}>
+                                          {state.countryName}
                                         </option>
                                       ))}
                                     </select>
-                                    {partyStateDataErrors[index]?.state && (
+                                    {partyStateDataErrors[index]?.country && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {partyStateDataErrors[index].state}
+                                        {partyStateDataErrors[index].country}
                                       </div>
                                     )}
                                   </td>
-
+                                     <td className="border px-2 py-2">
+                                      <Autocomplete
+                                        options={row.stateOptions || []}
+                                        getOptionLabel={(option) => option.stateName || ''}
+                                        disableClearable
+                                        sx={{ width: '200px' }}
+                                        value={
+                                          row.stateOptions?.find(
+                                            (option) => option.stateName === row.state
+                                          ) || null
+                                        }
+                                        onChange={(event, newValue) => {
+                                          handleStateChange(newValue, index);
+                                        }}
+                                        renderInput={(params) => (
+                                          <TextField
+                                            {...params}
+                                            placeholder="Select State"
+                                            size="small"
+                                            error={!!partyAddressDataErrors[index]?.state}
+                                            helperText={partyAddressDataErrors[index]?.state}
+                                          />
+                                        )}
+                                      />
+                                    </td>
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
@@ -1402,6 +1479,7 @@ export const Vender = () => {
                               <tr style={{ backgroundColor: '#673AB7' }}>
                                 <th className="table-header">Action</th>
                                 <th className="table-header">SNo</th>
+                                <th className="table-header">Country</th>
                                 <th className="table-header">State</th>
                                 <th className="table-header">City</th>
                                 <th className="table-header">Business Place</th>
@@ -1435,59 +1513,76 @@ export const Vender = () => {
                                   <td className="text-center">
                                     <div className="pt-2">{index + 1}</div>
                                   </td>
-
                                   <td className="border px-2 py-2">
                                     <select
-                                      value={row.state}
+                                      value={row.country}
                                       style={{ width: '150px' }}
-                                      onChange={(e) => {
-                                        const updatedPartyAddressData = [...partyAddressData];
-                                        updatedPartyAddressData[index].state = e.target.value;
-                                        updatedPartyAddressData[index].city = '';
-                                        setPartyAddressData(updatedPartyAddressData);
-                                        getAllCities(e.target.value, row.id);
-                                      }}
-                                      className={partyAddressDataErrors[index]?.state ? 'error form-control' : 'form-control'}
+                                      onChange={(e) => handleCountryPartyAddress(row, index, e)}
+                                      className={partyAddressData[index]?.country ? 'error form-control' : 'form-control'}
                                     >
-                                      <option value="">--Select--</option>
-                                      {stateList?.map((state) => (
-                                        <option key={state.id} value={state.stateName}>
-                                          {state.stateName}
+                                      <option value="">Select Country</option>
+                                      {countryList?.map((state) => (
+                                        <option key={state.id} value={state.countryName}>
+                                          {state.countryName}
                                         </option>
                                       ))}
                                     </select>
-
-                                    {partyAddressDataErrors[index]?.state && (
+                                    {partyAddressDataErrors[index]?.country && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {partyAddressDataErrors[index].state}
+                                        {partyAddressDataErrors[index].country}
                                       </div>
                                     )}
                                   </td>
-
-                                  <td className="border px-2 py-2">
-                                    <select
-                                      value={row.city}
-                                      style={{ width: '150px' }}
-                                      onChange={(e) => {
-                                        const updatedPartyAddressData = [...partyAddressData];
-                                        updatedPartyAddressData[index].city = e.target.value;
-                                        setPartyAddressData(updatedPartyAddressData);
-                                      }}
-                                      className={partyAddressDataErrors[index]?.city ? 'error form-control' : 'form-control'}
-                                    >
-                                      <option value="">--Select--</option>
-                                      {row.cityOptions?.map((city) => (
-                                        <option key={city.id} value={city.cityName}>
-                                          {city.cityName}
-                                        </option>
-                                      ))}
-                                    </select>
-
-                                    {partyAddressDataErrors[index]?.city && (
-                                      <div style={{ color: 'red', fontSize: '12px' }}>{partyAddressDataErrors[index].city}</div>
-                                    )}
-                                  </td>
-
+                                     <td className="border px-2 py-2">
+                                      <Autocomplete
+                                        options={row.stateOptions || []}
+                                        getOptionLabel={(option) => option.stateName || ''}
+                                        disableClearable
+                                        sx={{ width: '200px' }}
+                                        value={
+                                          row.stateOptions?.find(
+                                            (option) => option.stateName === row.state
+                                          ) || null
+                                        }
+                                        onChange={(event, newValue) => {
+                                          handleStatePartyAddress(newValue, index);
+                                        }}
+                                        renderInput={(params) => (
+                                          <TextField
+                                            {...params}
+                                            placeholder="Select State"
+                                            size="small"
+                                            error={!!partyAddressDataErrors[index]?.state}
+                                            helperText={partyAddressDataErrors[index]?.state}
+                                          />
+                                        )}
+                                      />
+                                    </td>
+                                     <td className="border px-2 py-2">
+                                      <Autocomplete
+                                        options={row.cityOptions || []}
+                                        sx={{ width: '150px' }}
+                                        getOptionLabel={(option) => option.cityName || ''}
+                                        disableClearable
+                                        value={
+                                          row.cityOptions?.find(
+                                            (option) => option.cityName === row.city
+                                          ) || null
+                                        }
+                                        onChange={(event, newValue) => {
+                                          handleCityPartyAddress(newValue, index);
+                                        }}
+                                        renderInput={(params) => (
+                                          <TextField
+                                            {...params}
+                                            placeholder="Select City"
+                                            size="small"
+                                            error={!!partyAddressDataErrors[index]?.city}
+                                            helperText={partyAddressDataErrors[index]?.city}
+                                          />
+                                        )}
+                                      />
+                                    </td>
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"

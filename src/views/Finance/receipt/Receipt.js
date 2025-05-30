@@ -592,10 +592,11 @@ const Receipt = () => {
       const tdsPercent = parseFloat(row.tds || 0);
       const settledAmt = parseFloat(row.settled || 0);
       totalSettledAmt += settledAmt;
-      const gross = billAmount + gstAmt;
+      // const gross = billAmount + gstAmt;
       let tdsAmt = 0;
       if (tdsPercent) {
-        tdsAmt = (gross * tdsPercent) / 100;
+        tdsAmt = (billAmount * tdsPercent) / 100;
+        // tdsAmt = (gross * tdsPercent) / 100;
       }
       const netReceivable = chargeAmount - tdsAmt; 
       const outstandingAmt = netReceivable - settledAmt;
@@ -763,8 +764,8 @@ const Receipt = () => {
             <div className="row d-flex ml" style={{ marginBottom: '20px' }}>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.paymentMode}>
-                  <InputLabel id="paymentMode" required>
-                    Payment Mode
+                  <InputLabel id="paymentMode">
+                    Payment Mode <span style={{color: 'red', fontSize: '20px'}}>*</span>
                   </InputLabel>
                   <Select
                     labelId="paymentMode"
@@ -784,14 +785,13 @@ const Receipt = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.transactionMethod}>
-                  <InputLabel id="transactionMethod" required>
-                    Transaction Method
+                  <InputLabel id="transactionMethod">
+                    Transaction Method <span style={{color: 'red', fontSize: '20px'}}>*</span>
                   </InputLabel>
                   <Select
                     labelId="transactionMethod"
                     id="transactionMethod"
                     name="transactionMethod"
-                    required
                     value={formData.transactionMethod}
                     label="Transaction Method"
                     disabled = {editId}
@@ -841,7 +841,7 @@ const Receipt = () => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label" required>
+                  <InputLabel id="demo-simple-select-label">
                     Status
                   </InputLabel>
                   <Select
@@ -849,7 +849,6 @@ const Receipt = () => {
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
                     label="Status"
-                    required
                     error={!!fieldErrors.status}
                     disabled={formData.status === 'SUBMIT' || !editId}
                   >
@@ -858,24 +857,9 @@ const Receipt = () => {
                   </Select>
                 </FormControl>
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="bankCharges"
-                    name="bankCharges"
-                    label="Bank Charges"
-                    size="small"
-                    value={formData.bankCharges}
-                    onChange={handleInputChange}
-                    inputProps={{ maxLength: 30 }}
-                    error={!!fieldErrors.bankCharges}
-                    helperText={fieldErrors.bankCharges}
-                  />
-                </FormControl>
-              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customerName}>
-                  <InputLabel id="demo-simple-select-label">Customer Name</InputLabel>
+                  <InputLabel id="demo-simple-select-label">Customer Name<span style={{color: 'red', fontSize: '20px'}}>*</span></InputLabel>
                   <Select
                     labelId="customerName"
                     id="customerName"
@@ -913,9 +897,10 @@ const Receipt = () => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
+                  label={<span>Receipt Amount <span style={{color: 'red', fontSize: '20px'}}>*</span></span>}
                     id="receiptAmt"
                     name="receiptAmt"
-                    label="Receipt Amount"
+                    // label="Receipt Amount"
                     size="small"
                     disabled = {formData.status === 'SUBMIT'}
                     value={formData.receiptAmt}

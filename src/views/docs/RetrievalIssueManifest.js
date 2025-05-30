@@ -5,6 +5,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import FormControl from '@mui/material/FormControl';
 import Tabs from '@mui/material/Tabs';
 import 'react-tabs/style/react-tabs.css';
+import { FaTrash } from "react-icons/fa";
 import React from 'react';
 import {
   Button,
@@ -129,9 +130,8 @@ const RetrievalIssueManifest = () => {
 
   const getAllCustomerDetails = async () => {
     try {
-      const response = await apiCalls('get', `/master/getAllCustomers?orgId=${orgId}`);
-      setCustomerDetails(response.paramObjectsMap.masterVOs);
-
+      const response = await apiCalls('get', `/warehouser/getAllWarehouseByOrgId?orgId=${orgId}`);
+      setCustomerDetails(response.paramObjectsMap.warehouseVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -431,6 +431,10 @@ const GeneratePdf = async (row) => {
     setKitQty('');
     setOpen(true);
   };
+const handleDeleteKit = (kitNoToDelete) => {
+  const updatedKits = detailsKitData.filter((row) => row.kitNo !== kitNoToDelete);
+  setDetailsKitData(updatedKits);
+};
   return (
     <>
       <div>
@@ -509,33 +513,33 @@ const GeneratePdf = async (row) => {
                 <Autocomplete
                   disablePortal
                   options={customerDetails}
-                  getOptionLabel={(option) => option.partyShortName || ''}
+                  getOptionLabel={(option) => option.name || ''}
                   sx={{ width: '100%' }}
-                  isOptionEqualToValue={(option, value) => option.partyShortName === value.partyShortName}
+                  isOptionEqualToValue={(option, value) => option.name === value.name}
                   size="small"
-                  value={formData.sender ? customerDetails.find((c) => c.partyShortName === formData.sender) : null}
+                  value={formData.sender ? customerDetails.find((c) => c.name === formData.sender) : null}
                   onChange={(event, newValue) => {
                     handleInputChange({
                       target: {
-                        name: 'sender', value: newValue ? newValue.partyShortName : ''
+                        name: 'sender', value: newValue ? newValue.name : ''
                       }
                     });
-                    const address = newValue?.partyAddressVO?.[0];
-                    const fullAddress = address
-                      ? [address.addressLine1, address.addressLine2, address.addressLine3]
-                        .filter(Boolean)
-                        .join(', ')
-                      : '';
+                    // const address = newValue?.partyAddressVO?.[0];
+                    // const fullAddress = address
+                    //   ? [address.addressLine1, address.addressLine2, address.addressLine3]
+                    //     .filter(Boolean)
+                    //     .join(', ')
+                    //   : '';
                     handleInputChange({
                       target: {
                         name: 'senderAddress',
-                        value: fullAddress
+                        value: newValue ? newValue.address : ''
                       }
                     });
                     handleInputChange({
                       target: {
                         name: 'senderGst',
-                        value: newValue ? newValue.gstIn : ''
+                        value: newValue ? newValue.gst : ''
                       }
                     });
                   }}
@@ -774,6 +778,7 @@ const GeneratePdf = async (row) => {
                               <TableHead>
                                 <TableRow>
                                   <TableCell>S.No</TableCell>
+                                  <TableCell>Action</TableCell>
                                   <TableCell>Kit No</TableCell>
                                   <TableCell>Kit Name</TableCell>
                                   <TableCell>Kit Qty</TableCell>
@@ -791,6 +796,13 @@ const GeneratePdf = async (row) => {
                                           {rowIndex === 0 && (
                                             <>
                                               <TableCell rowSpan={kitRows.length}>{kitIndex + 1}</TableCell>
+                                              <TableCell rowSpan={kitRows.length}>
+                                              <FaTrash
+                                                onClick={() => handleDeleteKit(kitNo)}
+                                                style={{ cursor: "pointer", color: "red" }}
+                                                className="ms-4"
+                                              />
+                                              </TableCell>
                                               <TableCell rowSpan={kitRows.length}>{row.kitNo}</TableCell>
                                               <TableCell rowSpan={kitRows.length}>{row.kitName}</TableCell>
                                               <TableCell rowSpan={kitRows.length}>{row.kitQty}</TableCell>

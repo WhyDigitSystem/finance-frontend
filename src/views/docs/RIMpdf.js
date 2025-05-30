@@ -2,7 +2,8 @@ import DownloadIcon from '@mui/icons-material/Download';
 import dayjs from 'dayjs';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { useReactToPrint } from "react-to-print";
+import companySeal from '../../assets/images/icons/CompanySign.png'
+import accountantSign from '../../assets/images/icons/Sign.png'
 import apiCalls from 'apicall';
 import React, { useRef, useEffect, useState } from "react";
 import {
@@ -111,94 +112,76 @@ const componentRef = useRef();
   const handleClose = () => {
     setOpen(false);
   };
-// const handleDownloadPdf = async () => {
-//   const input = document.getElementById('main-content');
-//   if (!input) {
-//     console.error('Main content element not found!');
-//     return;
-//   }
+const handleDownloadPdf = async () => {
+  if (!selectedCopy) return;
 
-//   const canvas = await html2canvas(input, {
-//     scale: 2,
-//     useCORS: true,
-//     backgroundColor: '#fff'
-//   });
+  const input = document.getElementById('main-content');
+  if (!input) {
+    console.error('Main content element not found!');
+    return;
+  }
 
-//   const imgData = canvas.toDataURL('image/png');
-//   const pdf = new jsPDF('p', 'mm', 'a4');
+  const canvas = await html2canvas(input, {
+    scale: 2,
+    useCORS: true,
+    backgroundColor: '#fff'
+  });
 
-//   const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
-//   const pdfHeight = pdf.internal.pageSize.getHeight(); // 297mm
+  const imgData = canvas.toDataURL('image/png');
+  const pdf = new jsPDF('p', 'mm', 'a4');
 
-//   const padding = 5; // mm margin
-//   const contentWidth = pdfWidth - 2 * padding;
+  const pdfWidth = pdf.internal.pageSize.getWidth();
+  const pdfHeight = pdf.internal.pageSize.getHeight();
+  const padding = 5;
+  const contentWidth = pdfWidth - 2 * padding;
+  const footerHeight = 10; // Space reserved for footer
 
-//   const imgProps = pdf.getImageProperties(imgData);
-//   const imgHeight = (imgProps.height * contentWidth) / imgProps.width;
+  const imgProps = pdf.getImageProperties(imgData);
+  const imgHeight = (imgProps.height * contentWidth) / imgProps.width;
 
-//   let heightLeft = imgHeight;
-//   let position = 0;
+  let heightLeft = imgHeight;
+  let position = 0;
 
-//   // First page
-//   pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
-//   heightLeft -= (pdfHeight - 2 * padding);
-//   position = -pdfHeight;
-
-//   // Additional pages
-//   while (heightLeft > 0) {
-//     pdf.addPage();
-//     pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
-//     heightLeft -= (pdfHeight - 2 * padding);
-//     position -= pdfHeight;
-//   }
-
-//   pdf.save(`${row.transactionNo || 'MIM'}.pdf`);
-// };
-  const handleDownloadPdf = async () => {
-    if (!selectedCopy) return; // Exit if no copy selected
-
-    const input = document.getElementById('main-content');
-    if (!input) {
-      console.error('Main content element not found!');
-      return;
+  // Function to add footer to each page
+  const addFooter = () => {
+    const footerY = pdfHeight - 8; // Position 8mm from bottom
+    pdf.setFontSize(8);
+    // Left-aligned footer: Date and Printed By
+    pdf.text(
+      `${currentDateTime} | Printed By: ${localStorage.getItem('userName')}`,
+      padding,
+      footerY
+    );
+    // Right-aligned footer: Selected Copy
+    if (selectedCopy) {
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'bold');
+      const text = selectedCopy;
+      const textWidth = pdf.getStringUnitWidth(text) * pdf.getFontSize() / pdf.internal.scaleFactor;
+      pdf.text(text, pdfWidth - padding - textWidth, footerY);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setFontSize(8);
     }
-
-    const canvas = await html2canvas(input, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#fff'
-    });
-
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF('p', 'mm', 'a4');
-
-    const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = pdf.internal.pageSize.getHeight();
-
-    const padding = 5;
-    const contentWidth = pdfWidth - 2 * padding;
-    const imgProps = pdf.getImageProperties(imgData);
-    const imgHeight = (imgProps.height * contentWidth) / imgProps.width;
-
-    let heightLeft = imgHeight;
-    let position = 0;
-
-    pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
-    heightLeft -= (pdfHeight - 2 * padding);
-    position = -pdfHeight;
-
-    while (heightLeft > 0) {
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
-      heightLeft -= (pdfHeight - 2 * padding);
-      position -= pdfHeight;
-    }
-
-    // Save with selected copy type in filename
-    pdf.save(`${row.transactionNo || 'MIM'}_${selectedCopy}.pdf`);
-    setSelectedCopy(''); // Reset selection
   };
 
+  // First page
+  pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
+  addFooter();
+  heightLeft -= (pdfHeight - 2 * padding);
+  position = -pdfHeight;
+
+  // Additional pages
+  while (heightLeft > 0) {
+    pdf.addPage();
+    pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
+    addFooter();
+    heightLeft -= (pdfHeight - 2 * padding);
+    position -= pdfHeight;
+  }
+
+  pdf.save(`${row.transactionNo || 'RIM'}_${selectedCopy}.pdf`);
+  setSelectedCopy('');
+};
   // Trigger PDF download when selectedCopy changes
   useEffect(() => {
     if (selectedCopy) {
@@ -281,11 +264,6 @@ const groupedData = (row.retrievalManifestProviderDetailsVOs || []).reduce((acc,
             position: 'relative'
           }}
         >
-          {selectedCopy && (
-            <div style={{ textAlign: 'center', fontSize: '14px', fontWeight: 'bold', marginBottom: '10px' }}>
-              {selectedCopy}
-            </div>
-          )}
           {/* <!-- Header Section --> */}
           <div
             style={{
@@ -329,7 +307,7 @@ const groupedData = (row.retrievalManifestProviderDetailsVOs || []).reduce((acc,
               </div>
             )}
             <div style={{ marginRight: '100px' }}>
-              <strong style={{ fontSize: '15px' }}>Retrieval Issue Manifest</strong>
+              <strong style={{ fontSize: '15px' }}>Retrieval Manifest</strong>
             </div>
             <div>
               <div className="mb-0" style={{fontSize: '10px'}}>
@@ -358,7 +336,7 @@ const groupedData = (row.retrievalManifestProviderDetailsVOs || []).reduce((acc,
             }}
           >
             <div>
-              <strong style={{fontSize: '10px'}} className="">Sender: {row.sender}</strong>
+              <strong style={{fontSize: '10px'}} className="">Sender: {localStorage.getItem('companyName')}</strong>
               <div style={{ width: 250, marginBottom: 3, display: 'flex', alignItems: 'flex-start' }}>
                 <strong style={{ marginRight: 3, whiteSpace: 'nowrap',fontSize: '10px' }}>Address:</strong>
                 <p style={{ margin: 0, fontSize: '8px', lineHeight: '1.6', wordBreak: 'break-word', flex: 1 }}>
@@ -535,7 +513,7 @@ const groupedData = (row.retrievalManifestProviderDetailsVOs || []).reduce((acc,
                     </div>
                     <hr style={{ margin: 0 }} />
                     {/* Signatures */}
-                    <div className="d-flex justify-content-between mt-4 mb-5">
+                    <div className="d-flex justify-content-between mt-1 mb-1">
                       <div className="ms-5">
                         <strong style={{fontSize: '10px'}} className="size">For Sending Location:</strong>
                       </div>
@@ -545,7 +523,26 @@ const groupedData = (row.retrievalManifestProviderDetailsVOs || []).reduce((acc,
                         </strong>
                       </div>
                     </div>
-                    <div className="d-flex justify-content-between mt-5 mb-5">
+                    <div className="d-flex justify-content-between mt-0 mb-0">
+                      {/* Wrap the two images in a flex row */}
+                      <div className="d-flex">
+                        <div className="me-3 ms-5">
+                          <img
+                            src={companySeal}
+                            alt="Company Seal"
+                            style={{ height: '85px', objectFit: 'contain' }}
+                          />
+                        </div>
+                        <div className="ms-3">
+                          <img
+                            src={accountantSign}
+                            alt="Accountant Sign"
+                            style={{ height: '85px', objectFit: 'contain' }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="d-flex justify-content-between mt-1 mb-1">
                       <div className="d-flex flex-column">
                         <div className="ms-5">
                           <strong style={{fontSize: '10px'}} className="size">
@@ -579,7 +576,7 @@ const groupedData = (row.retrievalManifestProviderDetailsVOs || []).reduce((acc,
             }}
           >
             {/* <!-- Footer Section --> */}
-            <div
+            {/* <div
               style={{
                 marginBottom: '10px',
                 textAlign: 'left',
@@ -589,7 +586,7 @@ const groupedData = (row.retrievalManifestProviderDetailsVOs || []).reduce((acc,
             >
               <div>{currentDateTime}</div>
               <div>Printed By: {localStorage.getItem('userName')}</div>
-            </div>
+            </div> */}
           </div>
         </div>
       </DialogContent>
