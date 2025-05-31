@@ -1,931 +1,617 @@
-import AddIcon from '@mui/icons-material/Add';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
-import DeleteIcon from '@mui/icons-material/Delete';
-import PrintIcon from '@mui/icons-material/Print';
+import React from 'react';
+import ActionButton from 'utils/ActionButton';
+import ClearIcon from '@mui/icons-material/Clear';
+import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import {
-  Box,
-  Button,
-  Checkbox,
-  Container,
-  FormControlLabel,
-  Grid,
-  IconButton,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography
-} from '@mui/material';
-import { styled } from '@mui/system';
-import axios from 'axios';
-import numberToWords from 'number-to-words';
-import React, { useEffect, useRef, useState } from 'react';
-import { useReactToPrint } from 'react-to-print';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { showErrorToast, showSuccessToast } from '../../utils/toastUtils';
-import QuotationList from './QuotationList';
-
-const StyledTableCell = styled(TableCell)(({ theme }) => ({
-  backgroundColor: 'white',
-  color: 'black',
-  fontWeight: 'bold',
-  border: '1px solid black', // Ensure borders are applied to all sides
-  '@media print': {
-    border: '1px solid black' // Ensure borders are visible when printing
-  }
-}));
-
-const StyledTableCellActions = styled(StyledTableCell)(({ theme }) => ({
-  '@media print': {
-    display: 'none' // hide Actions cell when printing
-  }
-}));
-
-const StyledTextField = styled(TextField)(({ theme }) => ({
-  [`@media print`]: {
-    border: 'none',
-    '& .MuiOutlinedInput-notchedOutline': {
-      border: 'none'
-    },
-    '& .MuiInputBase-input': {
-      padding: 0
-    }
-  }
-}));
-
-const StyledIconButton = styled(IconButton)(({ theme }) => ({
-  '@media print': {
-    display: 'none' // Hide the delete button when printing
-  }
-}));
-
-const StyledButton = styled(Button)(({ theme }) => ({
-  '@media print': {
-    display: 'none' // Hide the add row button when printing
-  }
-}));
-
-const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
-  '@media print': {
-    border: '1px solid black', // Border around the entire table container when printing
-    boxShadow: 'none' // Remove shadow when printing
-  }
-}));
-
-const PurchaseOrder = React.forwardRef((props, ref) => {
-  const {
-    customerAddress,
-    setCustomerAddress,
-    subtotal,
-    gstType,
-    handleGstCalculation,
-    sgst,
-    cgst,
-    igst,
-    total,
-    companyAddress,
-    setCompanyAddress,
-    quotationTo,
-    setQuotationTo,
-    shippingAddress,
-    setShippingAddress,
-    code,
-    setCode
-  } = props;
-
-  const formatIndianCurrency = (number) => {
-    if (number === 0) return 'Zero';
-
-    const crore = Math.floor(number / 10000000);
-    const lakh = Math.floor((number % 10000000) / 100000);
-    const thousand = Math.floor((number % 100000) / 1000);
-    const remainder = number % 1000;
-
-    let formatted = '';
-
-    if (crore > 0) {
-      formatted += `${numberToWords.toWords(crore)} crore`;
-    }
-
-    if (lakh > 0) {
-      if (formatted) formatted += ' ';
-      formatted += `${numberToWords.toWords(lakh)} lakh`;
-    }
-
-    if (thousand > 0) {
-      if (formatted) formatted += ' ';
-      formatted += `${numberToWords.toWords(thousand)} thousand`;
-    }
-
-    if (remainder > 0) {
-      if (formatted) formatted += ' ';
-      formatted += `${numberToWords.toWords(remainder)}`;
-    }
-
-    // Convert to title case
-    const toTitleCase = (str) => {
-      return str.replace(/\w\S*/g, (txt) => {
-        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
-      });
-    };
-
-    return toTitleCase(formatted.trim());
-  };
-
-  // Example usage:
-  const totalInWordsIndianCurrency = formatIndianCurrency(total);
-
-  return (
-    <div>
-      <div>
-        <ToastContainer />
-      </div>
-      <Paper ref={ref} elevation={3} sx={{ padding: 4, fontFamily: 'Roboto, sans-serif' }}>
-        <Container>
-          <Box sx={{ mb: 1 }}>
-            <Box sx={{ fontWeight: 'bold', textAlign: 'center', mb: 1 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                IT Services| Axpert | Software & Solutions |ERP | BI | Staffing | DB
-              </Typography>
-            </Box>
-            <Grid
-              container
-              spacing={2}
-              sx={{
-                mt: 1,
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}
-            >
-              {/* Left Box */}
-              <Grid item xs={2}>
-                {/* <img src="/wds_logo.png" style={{ width: '100px' }}></img> */}
-                <img src="/AI_Packs.png" style={{ width: '100%', maxWidth: '100px' }} alt="Company Logo" />
-              </Grid>
-              <Grid item xs={5}>
-                <Box sx={{ textAlign: 'left' }}>
-                  <Typography
-                    variant="h5"
-                    sx={{ mt: 1, width: '100%', backgroundColor: '#fff', padding: 2, borderRadius: 3, boxShadow: 2 }}
-                  >
-                    Why Digit System Private Limited, 29/1, T.C Palya Main Road, Hoysala Nagar, Bangalore – 560016. &#10;GST-29AADCW3710D1ZK
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
-          </Box>
-
-          <Grid
-            container
-            spacing={3}
-            sx={{
-              mb: 1,
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'end'
-            }}
-          >
-            <Grid item xs={6}>
-              <Typography sx={{ fontWeight: 'bold', mb: 1 }}>TO:</Typography>
-              <StyledTextField
-                fullWidth
-                variant="outlined"
-                multiline
-                value={customerAddress}
-                onChange={(e) => setCustomerAddress(e.target.value)}
-                sx={{ mb: 0, mt: 0 }}
-              />
-            </Grid>
-
-            <Grid item xs={4}>
-              <StyledTextField
-                fullWidth
-                variant="outlined"
-                multiline
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                sx={{
-                  mb: 0,
-                  mt: 0,
-                  backgroundColor: '#2596be',
-                  color: '#ffffff',
-                  '& .MuiInputBase-input': {
-                    color: '#ffffff'
-                  }
-                }}
-              />
-            </Grid>
-          </Grid>
-
-          {/* WHY DIGIT SYSTEM SOLUTION AND KEY BENEFIT */}
-          <Box sx={{ mb: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              WHY DIGIT SYSTEM SOLUTION AND KEY BENEFIT
-            </Typography>
-
-            <Box sx={{ pl: 2 }}>
-              <Typography>• Control Your Business from anywhere.</Typography>
-              <Typography>• Manage Multiple Locations from a single Platform.</Typography>
-              <Typography>• Integrate seamlessly with your vendor and customer.</Typography>
-              <Typography>• Move from reactive to Pro-active management.</Typography>
-              <Typography>• Customize to suit needs.</Typography>
-              <Typography>
-                • Efit ERP - Key Modules: Purchase, Sales, Inventory, Planning & Production, QC, and fully VAP-based customization in the
-                selected modules.
-              </Typography>
-            </Box>
-          </Box>
-
-          {/* CONTROL MANAGEMENT */}
-          <Box sx={{ mb: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-              CONTROL MANAGEMENT
-            </Typography>
-            <Typography>
-              It’s a very useful module for the top management to monitor and control men and machine behaviors effectively.
-            </Typography>
-            <Box sx={{ pl: 2 }}>
-              <Typography>• Schedule Tasks</Typography>
-              <Typography>• Notification</Typography>
-              <Typography>• Escalation</Typography>
-            </Box>
-          </Box>
-          {/* Commercial */}
-          <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-            COMMERCIAL
-          </Typography>
-
-          <TableContainer sx={{ backgroundColor: '#fff', padding: 1, borderRadius: 3, boxShadow: 2 }}>
-            <Table size="small" sx={{ minWidth: 650 }}>
-              <TableHead>
-                <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                  <TableCell sx={{ fontWeight: 'bold', width: '60px' }}>S.No</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', width: '200px' }}>Item & Description</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', width: '100px' }}>Qty</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', width: '100px' }}>Rate</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', width: '100px' }}>Amount</TableCell>
-                  <TableCell sx={{ fontWeight: 'bold', width: '80px' }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-
-              <TableBody>
-                {props.items.map((item, index) => (
-                  <TableRow key={index} hover>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        variant="outlined"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: '4px',
-                            backgroundColor: '#fff'
-                          }
-                        }}
-                        value={item.description}
-                        onChange={(e) => props.handleItemChange(index, 'description', e.target.value)}
-                      />
-                    </TableCell>
-
-                    <TableCell>
-                      <TextField
-                        size="small"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: '4px',
-                            backgroundColor: '#fff'
-                          }
-                        }}
-                        variant="outlined"
-                        type="number"
-                        value={item.unit}
-                        onChange={(e) => props.handleItemChange(index, 'unit', e.target.value)}
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <TextField
-                        variant="outlined"
-                        type="number"
-                        sx={{
-                          '& .MuiOutlinedInput-root': {
-                            borderRadius: '4px',
-                            backgroundColor: '#fff'
-                          }
-                        }}
-                        size="small"
-                        value={item.pricre}
-                        onChange={(e) => props.handleItemChange(index, 'pricre', e.target.value)}
-                      />
-                    </TableCell>
-                    <TableCell>{item.total.toFixed(2)}</TableCell>
-                    <TableCell>
-                      <IconButton size="small" onClick={() => props.handleDeleteRow(index)} sx={{ color: '#f44336' }}>
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-
-          <StyledButton
-            variant="contained"
-            color="primary"
-            startIcon={<AddCircleOutlineIcon />}
-            onClick={props.handleAddRow}
-            sx={{ mb: 0, mt: 1 }}
-          >
-            Add Row
-          </StyledButton>
-
-          {/* Calculation Section */}
-          <Box sx={{ textAlign: 'right', mb: 0 }}>
-            {/* GST Type Selection */}
-            <Box sx={{ mb: 0 }}>
-              <FormControlLabel
-                control={<Checkbox checked={gstType === 'inter'} onChange={() => handleGstCalculation('inter')} />}
-                label="Inter GST"
-              />
-              <FormControlLabel
-                control={<Checkbox checked={gstType === 'intra'} onChange={() => handleGstCalculation('intra')} />}
-                label="Intra GST"
-              />
-            </Box>
-
-            <Grid container spacing={2}>
-              <Grid item xs={8}>
-                <Box sx={{ textAlign: 'left', maxWidth: 500 }}>
-                  <Typography sx={{ fontWeight: 'bold', mt: 1 }}>Total in Words: ₹ {totalInWordsIndianCurrency} Only</Typography>
-                </Box>
-              </Grid>
-              <Grid item xs={4}>
-                <Box sx={{ textAlign: 'right', mb: 0 }}>
-                  <Typography sx={{ fontWeight: 'bold' }}>Subtotal: ₹ {subtotal.toFixed(2)}</Typography>
-                  {gstType === 'intra' && (
-                    <>
-                      <Typography sx={{ fontWeight: 'bold' }}>SGST (9%): ₹ {sgst.toFixed(2)}</Typography>
-                      <Typography sx={{ fontWeight: 'bold' }}>CGST (9%): ₹ {cgst.toFixed(2)}</Typography>
-                    </>
-                  )}
-                  {gstType === 'inter' && <Typography sx={{ fontWeight: 'bold' }}>IGST (18%): ₹ {igst.toFixed(2)}</Typography>}
-                  <Typography sx={{ fontWeight: 'bold' }}>Total: ₹ {total.toFixed(2)}</Typography>
-                </Box>
-              </Grid>
-            </Grid>
-
-            {/* GST Calculation Result */}
-          </Box>
-
-          {/* TERMS OF CONTRACT */}
-          <Box sx={{ mb: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-              TERMS & CONDITIONS
-            </Typography>
-
-            <Box sx={{ pl: 2 }}>
-              <Typography>• Post sign-off, any unique customization on request will be charged extra as per MM effort.</Typography>
-              <Typography>• 3 Months free support from post-implementation.</Typography>
-              <Typography>
-                • One-time setup cost includes setting up the application on the server and providing full training sessions for each module
-                to end users.
-              </Typography>
-              <Typography>
-                • Onsite support will be provided on a need basis. Travel, conveyance, boarding & lodging will be charged extra as per
-                actuals.
-              </Typography>
-              <Typography>
-                • A support login ID is required for customers to log tickets with Why Digit System. A customer can log 2 tickets per day
-                through one login ID.
-              </Typography>
-              <Typography>
-                • Support includes resolving any problems related to software availability and providing knowledge on how to use the system.
-                It does not include creating new forms or reports.
-              </Typography>
-              <Typography>• All the above-mentioned costs are exclusive of all regulatory taxes.</Typography>
-              <Typography>• Taxes are extra and will be charged as applicable.</Typography>
-              <Typography>• Payment Terms: As per the payment policy mentioned below.</Typography>
-            </Box>
-          </Box>
-          {/* TERMS OF CONTRACT */}
-          <Box sx={{ mb: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-              TIMELINE
-            </Typography>
-
-            <Box sx={{ pl: 2 }}>
-              <Typography>• 3 months after readiness of Customer specifications and prototype confirmation.</Typography>
-            </Box>
-          </Box>
-          <Box sx={{ mb: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-              PAYMENTS
-            </Typography>
-            <TableContainer sx={{ backgroundColor: '#fff', padding: 1, borderRadius: 3, boxShadow: 2 }}>
-              <Table size="small" sx={{ minWidth: 650 }}>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                    <TableCell sx={{ fontWeight: 'bold', width: '60px' }}>Payment Terms</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', width: '60px' }}>Percentage</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', width: '60px' }}>Remarks</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableRow>
-                  <TableCell>Advance Payment against PO /WO </TableCell>
-                  <TableCell>50%</TableCell>
-                  <TableCell>Of Total cost</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>On Completion of 1nd month</TableCell>
-                  <TableCell>15%</TableCell>
-                  <TableCell>Of Total cost</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>On Completion of 2nd month</TableCell>
-                  <TableCell>15%</TableCell>
-                  <TableCell>Of Total cost</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell>On Completion of ERP Hosting</TableCell>
-                  <TableCell>20%</TableCell>
-                  <TableCell>Of Total cost</TableCell>
-                </TableRow>
-                <TableRow>
-                  <TableCell></TableCell>
-                  <TableCell>100%</TableCell>
-                  <TableCell>Of Total cost</TableCell>
-                </TableRow>
-              </Table>
-            </TableContainer>
-          </Box>
-          <Box sx={{ mb: 1 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-              Thanks Note
-            </Typography>
-            <p>Thanks for the opportunities to work with VAP. Please let’s know if any query or clarification.</p>
-            <TableContainer sx={{ backgroundColor: '#fff', padding: 1, borderRadius: 3, boxShadow: 2 }}>
-              <Table size="small" sx={{ minWidth: 650 }}>
-                <TableHead>
-                  <TableCell>
-                    <TextField
-                      fullWidth
-                      size="small"
-                      variant="outlined"
-                      multiline
-                      value={quotationTo}
-                      onChange={(e) => setQuotationTo(e.target.value)}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '4px',
-                          backgroundColor: '#fff'
-                        }
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    {/* Company Name Editable Field */}
-                    <TextField
-                      fullWidth
-                      size="small"
-                      variant="outlined"
-                      multiline
-                      value={shippingAddress}
-                      onChange={(e) => setShippingAddress(e.target.value)}
-                      sx={{
-                        '& .MuiOutlinedInput-root': {
-                          borderRadius: '4px',
-                          backgroundColor: '#fff'
-                        }
-                      }}
-                    />
-                  </TableCell>
-                </TableHead>
-                <TableBody>
-                  <TableRow>
-                    <TableCell>Sign & Seal</TableCell>
-                    <TableCell>Sign & Seal</TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-        </Container>
-      </Paper>
-    </div>
-  );
-});
+import { useEffect, useState } from 'react';
+import { FormControl, TextField, InputLabel, Select } from '@mui/material';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import AddIcon from '@mui/icons-material/Add';
+import Box from '@mui/material/Box';
+import dayjs from 'dayjs';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { FormHelperText } from '@mui/material';
+import apiCalls from 'apicall';
+import MenuItem from '@mui/material/MenuItem';
+import { showToast } from 'utils/toast-component';
+import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import Quotationpdf from './Quotationpdf';
 
 const Quotation = () => {
-  const componentRef = useRef();
-
-  const [companyAddress, setCompanyAddress] = useState(
-    'Why Digit System Private Limited,29/1, T.C Palya Main Road,Hoysala Nagar Bangalore – 560016.'
-  );
-  const [quotationList, setQuotationList] = useState([]);
-  const [quotationAdviceData, setQuotationAdviceData] = useState(null);
-  const [items, setItems] = useState([
+  const orgId = localStorage.getItem('orgId');
+  const createdBy = localStorage.getItem('userName');
+  const modifiedBy = createdBy;
+  const [pdfData, setPdfData] = useState([]);
+  const [downloadPdf, setDownloadPdf] = useState(false);
+  const [listViewData, setListViewData] = useState([]);
+  const [editId, setEditId] = useState(null);
+  // const [customerList, setCustomerList] = useState([]);
+  const [listView, setListView] = useState(true);
+  const [value, setValue] = useState(0);
+  const [formData, setFormData] = useState({
+    quotationNo: '',
+    quotationDate: dayjs(),
+    customerName: '',
+    billAddress: '',
+    deliveryAddress: '',
+    totalAmount: 0
+  });
+  const [formDataErrors, setFormDataErrors] = useState({});
+  const [tableData, setTableData] = useState([
     {
-      description: '',
-      unit: 0,
-      pricre: 0,
-      total: 0
+      id: Date.now(),
+      item: '',
+      quantity: 0,
+      tax: 0,
+      taxAmount: 0,
+      rate: 0,
+      amount: 0,
+      baseAmount: 0
     }
   ]);
+  const [tableDataErrors, setTableDataErrors] = useState([{}]);
 
-  const [editMode, setEditMode] = useState(false);
-  const [customerAddress, setCustomerAddress] = useState('');
-  const [quotationTo, setQuotationTo] = useState('');
-  const [shippingAddress, setShippingAddress] = useState('');
-  const [code, setCode] = useState('');
-  const [subtotal, setSubtotal] = useState(0);
-  const [sgst, setSgst] = useState(0);
-  const [cgst, setCgst] = useState(0);
-  const [total, setTotal] = useState(0);
-  const [orgId, setOrgId] = useState(parseInt(window.localStorage.getItem('orgId')));
-  const [gstType, setGstType] = useState(''); // "inter" or "intra"
-  const [igst, setIgst] = useState(0);
-  const [listView, setListView] = useState(false);
-
-  // Function to handle GST calculation
-  const handleGstCalculation = (type) => {
-    setGstType(type);
-    const gstRate = 0.18;
-    const halfGstRate = gstRate / 2;
-
-    let calculatedIgst = 0;
-    let calculatedCgst = 0;
-    let calculatedSgst = 0;
-
-    if (type === 'inter') {
-      calculatedIgst = subtotal * gstRate;
-      calculatedCgst = 0;
-      calculatedSgst = 0;
-    } else if (type === 'intra') {
-      calculatedIgst = 0;
-      calculatedCgst = subtotal * halfGstRate;
-      calculatedSgst = subtotal * halfGstRate;
-    }
-
-    setIgst(calculatedIgst);
-    setCgst(calculatedCgst);
-    setSgst(calculatedSgst);
-    setTotal(subtotal + calculatedIgst + calculatedCgst + calculatedSgst);
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+  const handleDate = (name, newValue) => {
+    setFormData((prev) => ({
+      ...prev,
+      [name]: newValue
+    }));
   };
 
-  // const handlePrint = async () => {
-  //   if (!componentRef.current) return;
-
-  //   const canvas = await html2canvas(componentRef.current, {
-  //     scale: 2,
-  //     useCORS: true
-  //   });
-
-  //   const imgData = canvas.toDataURL('image/png');
-  //   const pdf = new jsPDF({
-  //     orientation: 'portrait',
-  //     unit: 'px',
-  //     format: 'a4'
-  //   });
-  //   const pageWidth = pdf.internal.pageSize.getWidth();
-  //   const pageHeight = pdf.internal.pageSize.getHeight();
-
-  //   const imgProps = pdf.getImageProperties(imgData);
-  //   const imgWidth = pageWidth;
-  //   const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-
-  //   let heightLeft = imgHeight;
-  //   let position = 0;
-
-  //   // First page
-  //   pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-  //   heightLeft -= pageHeight;
-
-  //   // More pages if needed
-  //   while (heightLeft > 0) {
-  //     position -= pageHeight;
-  //     pdf.addPage();
-  //     pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-  //     heightLeft -= pageHeight;
-  //   }
-
-  //   pdf.save('output.pdf');
-  // };
-
-  const handlePrint = async () => {
-    if (!componentRef.current) return;
-
-    const canvas = await html2canvas(componentRef.current, {
-      scale: 2,
-      useCORS: true
-    });
-
-    const imgHeight = canvas.height;
-    const imgWidth = canvas.width;
-
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'px',
-      format: 'a4'
-    });
-
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-    const topMargin = 30; // gap at top of second+ pages
-
-    const ratio = pageWidth / imgWidth;
-    const scaledHeight = imgHeight * ratio;
-    const pageImgHeight = pageHeight / ratio;
-
-    let position = 0;
-
-    while (position < imgHeight) {
-      const canvasPage = document.createElement('canvas');
-      canvasPage.width = imgWidth;
-      canvasPage.height = Math.min(pageImgHeight, imgHeight - position);
-
-      const ctx = canvasPage.getContext('2d');
-
-      ctx.drawImage(canvas, 0, position, imgWidth, canvasPage.height, 0, 0, imgWidth, canvasPage.height);
-
-      const imgData = canvasPage.toDataURL('image/png');
-
-      if (position !== 0) pdf.addPage();
-
-      pdf.addImage(imgData, 'PNG', 0, position === 0 ? 0 : topMargin, pageWidth, canvasPage.height * ratio);
-
-      position += pageImgHeight;
-    }
-
-    pdf.save('output.pdf');
+  const handleListView = () => {
+    setListView(!listView);
   };
 
-  const handleSave = () => {
-    postInvoice();
+  const handleDeleteRow = (id) => {
+    setTableData((prev) => prev.filter((row) => row.id !== id));
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    const inputValue = value.toUpperCase();
+    setFormData((prev) => ({
+      ...prev,
+      [name]: inputValue
+    }));
+
+    setFormDataErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: ''
+    }));
   };
 
   const handleAddRow = () => {
-    setItems([
-      ...items,
-      {
-        description: '',
-        unit: 0,
-        pricre: 0,
-        total: 0
-      }
-    ]);
-  };
-
-  const handleDeleteRow = (index) => {
-    const newItems = items.filter((item, i) => i !== index);
-    setItems(newItems);
-  };
-
-  const handleItemChange = (index, field, value) => {
-    const newItems = [...items];
-    newItems[index][field] = value;
-    if (field === 'unit' || field === 'pricre') {
-      newItems[index].total = newItems[index].unit * newItems[index].pricre;
-    }
-    setItems(newItems);
-  };
-  const [isPrintMode, setIsPrintMode] = useState(false);
-
-  useEffect(() => {
-    const subtotal = items.reduce((acc, item) => acc + item.total, 0);
-    setSubtotal(subtotal);
-
-    if (gstType === 'inter') {
-      const igst = subtotal * 0.18;
-      setIgst(igst);
-      setTotal(subtotal + igst);
-    } else if (gstType === 'intra') {
-      const cgst = subtotal * 0.09;
-      const sgst = subtotal * 0.09;
-      setCgst(cgst);
-      setSgst(sgst);
-      setTotal(subtotal + cgst + sgst);
-    } else {
-      setIgst(0);
-      setCgst(0);
-      setSgst(0);
-      setTotal(subtotal);
-    }
-  }, [items, gstType]);
-
-  useEffect(() => {
-    getAllQutationById();
-  }, []);
-
-  const createFormData = () => {
-    const currentYear = new Date().getFullYear();
-    const data = {
-      customerAddress,
-      companyAddress,
-      quotationTo,
-      shippingAddress,
-      code,
-      quotationDetailsDTO: items?.length ? items : [],
-      subtotal,
-      sgst,
-      cgst,
-      total,
-      gstType,
-      finYear: currentYear,
-      igst,
-      ...(editMode && { id: quotationAdviceData?.id })
+    const newRow = {
+      id: Date.now(),
+      item: '',
+      quantity: 0,
+      tax: 0,
+      taxAmount: 0,
+      rate: 0,
+      amount: 0
     };
-    return data;
+    setTableData((prev) => [...prev, newRow]);
   };
 
-  // Example usage:
+  const handleClear = () => {
+    setFormData({
+      quotationNo: '',
+      quotationDate: dayjs(),
+      customerName: '',
+      billAddress: '',
+      deliveryAddress: '',
+      totalAmount: 0
+    });
+    setFormDataErrors({});
+    setTableData([{ id: Date.now(), item: '', quantity: 0, tax: 0, taxAmount: 0, rate: 0, amount: 0, baseAmount: 0, totalAmount: 0 }]);
+    setTableDataErrors([{}]);
+  };
 
-  // You can now use `formData` to make an API request
+  const validForm = () => {
+    let error = {};
+    const tableErrors = [];
+    if (!formData.quotationNo) {
+      error.quotationNo = 'Quotation No is required';
+    }
+    if (!formData.customerName) {
+      error.customerName = 'Customer Name is required';
+    }
+    if (!formData.billAddress) {
+      error.billAddress = 'Bill Address is required';
+    }
+    if (!formData.deliveryAddress) {
+      error.deliveryAddress = 'Delivery Address is required';
+    }
 
-  const postInvoice = () => {
-    const formData = createFormData();
+    tableData.forEach((row, index) => {
+      const rowErrors = {};
+      if (!row.item) {
+        rowErrors.item = 'Item is required';
+      }
+      tableErrors[index] = rowErrors;
+    });
+    const hasTableErrors = tableErrors.some((row) => Object.keys(row).length > 0);
+    setFormDataErrors(error);
+    setTableDataErrors(tableErrors);
+    return Object.keys(error).length === 0 && !hasTableErrors;
+  };
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!validForm()) {
+      showToast('error', 'Please fill in all required fields');
+      return;
+    }
+    const detailVO = tableData.map((row) => ({
+      ...(editId && { id: row.id }),
+      description: row.item,
+      quantity: parseInt(row.quantity),
+      rate: parseInt(row.rate),
+      tax: parseInt(row.tax),
+      taxAmount: parseInt(row.taxAmount),
+      amount: parseInt(row.amount),
+      baseAmount: parseInt(row.baseAmount)
+    }));
+    const sendData = {
+      ...(editId && { id: editId }),
+      createdBy: createdBy,
+      modifiedBy: createdBy,
+      orgId: orgId,
+      quotationNo: formData.quotationNo,
+      quotationDate: formData.quotationDate,
+      customerName: formData.customerName,
+      customerAddress: formData.billAddress,
+      deliveryAddress: formData.deliveryAddress,
+      subTotal: parseInt(formData.totalAmount),
+      quotationDetailsDTO: detailVO
+    };
 
-    if (formData) {
-      const formDataWithOrgId = { ...formData, orgId };
-
-      axios
-        .put(`${process.env.REACT_APP_API_URL}/api/reportController/createUpdateQuotatio`, formDataWithOrgId)
-        .then((response) => {
-          console.log('Response:', response.data);
-          console.log('Form Data:', formDataWithOrgId);
-
-          if (response.data.statusFlag === 'Error') {
-            // showErrorToast(response.data.paramObjectsMap.errorMessage);
-          } else {
-            showSuccessToast(editMode ? 'Quotation Updated Successfully' : response.data.paramObjectsMap.message);
-            getAllQutationById();
-          }
-        })
-        .catch((error) => {
-          console.error('Error:', error);
-          showErrorToast('An error occurred while posting the invoice.');
-        });
-    } else {
-      showErrorToast('No invoice data to post.');
+    try {
+      const result = await apiCalls('put', '/reportController/createUpdateQuotatio', sendData);
+      if (result.status) {
+        showToast('success', editId ? 'Updated Successfully' : 'Created Successfully');
+        handleClear();
+        getAllData();
+      } else {
+        showToast('error', result.paramObjectsMap?.errorMessage || 'Creation failed');
+      }
+    } catch (error) {
+      showToast('error', 'API call failed');
     }
   };
 
-  const getAllQutationById = async () => {
+  const getAllData = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getQuotationByorgId?orgId=${orgId}`);
-      if (response.status === 200) {
-        setQuotationList(response.data.paramObjectsMap.quotationVO.reverse());
-      } else {
-        console.error('API Error:', response.data);
-      }
+      const res = await apiCalls('get', `/reportController/getQuotationByorgId?orgId=${orgId}`);
+      setListViewData(res.paramObjectsMap.quotationVO);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const handleListView = () => {
-    setListView(!listView);
-    handleNew();
-  };
-  useEffect(() => {
-    if (quotationAdviceData && editMode) {
-      setCustomerAddress(quotationAdviceData.customerAddress || '');
-      setQuotationTo(quotationAdviceData.quotationTo || '');
-      setShippingAddress(quotationAdviceData.shippingAddress || '');
-      setCode(quotationAdviceData.code || '');
-      setCompanyAddress(quotationAdviceData.companyAddress || '');
-      setCompanyAddress(quotationAdviceData.quotationTo || '');
-      setItems(quotationAdviceData.productLines || []);
-      setSubtotal(quotationAdviceData.subtotal || 0);
-      setSgst(quotationAdviceData.sgst || 0);
-      setCgst(quotationAdviceData.cgst || 0);
-      setTotal(quotationAdviceData.total || 0);
-      setGstType(quotationAdviceData.gstType || '');
-      setItems(quotationAdviceData.quotationDetailsVO || []);
-      setIgst(quotationAdviceData.igst || 0);
-    }
-  }, [quotationAdviceData, editMode]);
-
-  const handleNew = () => {
-    setCustomerAddress('');
-    setCode('');
-    setQuotationTo('');
-    setShippingAddress('');
-    setItems([
-      {
-        description: '',
-        unit: 0,
-        pricre: 0,
-        total: 0
+  const rowEditgetbyid = async (row) => {
+    setEditId(row.original.id);
+    setFormDataErrors({});
+    setTableDataErrors([{}]);
+    setListView(true);
+    try {
+      const results = await apiCalls('get', `/reportController/getQutationById?id=${row.original.id}`);
+      console.log('Edit API Response:', results);
+      if (results.status === true) {
+        const item = results.paramObjectsMap.quotationVO;
+        setFormData({
+          createdBy: createdBy,
+          modifiedBy: createdBy,
+          orgId: orgId,
+          quotationNo: item.quotationNo,
+          quotationDate: dayjs(item.quotationDate),
+          customerName: item.customerName,
+          billAddress: item.customerAddress,
+          deliveryAddress: item.deliveryAddress,
+          totalAmount: item.subTotal
+        });
+        setTableData(
+          item.quotationDetailsVO.map((data) => ({
+            id: data.id,
+            item: data.description,
+            quantity: data.quantity,
+            rate: data.rate,
+            tax: data.tax,
+            taxAmount: data.taxAmount,
+            amount: data.amount,
+            baseAmount: data.baseAmount
+          }))
+        );
+      } else {
+        console.warn('Error fetching product details:', results.paramObjectsMap?.errorMessage);
       }
-    ]);
-    // setTermsAndConditions("");
-    setSubtotal(0);
-    setSgst(0);
-    setCgst(0);
-    setTotal(0);
-    setGstType('');
-    setIgst(0);
-    setEditMode(false);
+    } catch (error) {
+      console.error('Error fetching product details:', error);
+    }
+  };
+
+  // const CNA = async () => {
+  //   try {
+  //     const res = await apiCalls('get', `/master/getCustomersAddressDetails?orgId=${orgId}`);
+  //     console.log('Fetching data for orgId:', orgId);
+  //     setCustomerList(res.paramObjectsMap.partyMasterVO.reverse());
+  //   } catch (error) {
+  //     console.error('Error fetching data:', error);
+  //   }
+  // };
+  useEffect(() => {
+    // CNA();
+    getAllData();
+  }, []);
+  // useEffect(() => {
+  //   const selectedVendor = customerList.find((vendor) => vendor.partyName === formData.customerName);
+
+  //   const address = selectedVendor?.FullAddress || '';
+
+  //   setFormData((prev) => ({
+  //     ...prev,
+  //     billAddress: address
+  //   }));
+  // }, [formData.customerName, customerList]);
+
+  const calculateTotals = () => {
+    const updatedTableData = tableData.map((row) => {
+      const qty = parseInt(row.quantity) || 0;
+      const rate = parseInt(row.rate) || 0;
+      const tax = parseFloat(row.tax) || 0;
+
+      const baseAmount = qty * rate;
+      const taxAmount = (baseAmount * tax) / 100;
+      const amount = baseAmount + taxAmount;
+
+      return {
+        ...row,
+        baseAmount,
+        taxAmount,
+        amount
+      };
+    });
+    setTableData(updatedTableData);
+
+    const totalAmount = updatedTableData.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
+    setFormData((prev) => ({
+      ...prev,
+      totalAmount: totalAmount
+    }));
+  };
+
+  useEffect(() => {
+    calculateTotals();
+  }, [tableData]);
+
+  const listViewColumns = [
+    { accessorKey: 'quotationNo', header: 'Quotation No', size: 140 },
+    { accessorKey: 'quotationDate', header: 'Quotation Date', size: 140 },
+    { accessorKey: 'customerName', header: 'Customer Name', size: 140 }
+  ];
+
+  // useEffect(() => {
+  //   const totalAmount = updatedTableData.reduce((sum, row) => {
+  //     return sum + (parseFloat(row.amount) || 0);
+  //   }, 0);
+
+  //   console.log('Total Amount:', totalAmount);
+  // }, []);
+
+  //
+  const generatePdf = async (row) => {
+    try {
+      const results = await apiCalls('get', `/reportController/getQutationById?id=${row.original.id}`);
+      console.log('Edit API Response:', results);
+      if (results.status === true) {
+        const Quotationpdf = results.paramObjectsMap.quotationVO;
+        setPdfData(Quotationpdf);
+        setDownloadPdf(true);
+      } else {
+        console.warn('Error fetching product details:', results.paramObjectsMap?.errorMessage);
+      }
+    } catch (error) {
+      console.error('Error fetching product details:', error);
+    }
   };
 
   return (
-    <Container style={{ maxWidth: 1060 }}>
-      <Box sx={{ textAlign: 'right', mb: 3, gap: 2 }}>
-        {!listView && (
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handlePrint}
-            startIcon={<PrintIcon />} // Add icon here
-          >
-            Print
-          </Button>
-        )}
-        {!listView && (
-          <Button
-            sx={{ ml: 1 }}
-            variant="contained"
-            color="primary"
-            onClick={handleSave}
-            startIcon={<SaveIcon />} // Add icon here
-          >
-            Save
-          </Button>
-        )}
-        <Button
-          sx={{ ml: 1 }}
-          variant="contained"
-          color="primary"
-          onClick={handleListView}
-          startIcon={listView ? <AddIcon /> : <VisibilityIcon />} // Add icon here
-        >
-          {listView ? 'New' : ' View'}
-        </Button>
-        {!listView && (
-          <Button
-            sx={{ ml: 1 }}
-            variant="contained"
-            color="primary"
-            onClick={handleNew}
-            startIcon={<AddIcon />} // Add icon here
-          >
-            New
-          </Button>
-        )}
-      </Box>
-      {listView ? (
-        <QuotationList
-          quotationAdviceData={quotationList}
-          onListView={setListView}
-          setQuotationAdviceData={setQuotationAdviceData}
-          setEditMode={setEditMode}
-        />
-      ) : (
-        <div>
-          <PurchaseOrder
-            ref={componentRef}
-            customerAddress={customerAddress}
-            setCustomerAddress={setCustomerAddress}
-            quotationTo={quotationTo}
-            setQuotationTo={setQuotationTo}
-            shippingAddress={shippingAddress}
-            code={code}
-            setCode={setCode}
-            setShippingAddress={setShippingAddress}
-            items={items}
-            handleItemChange={handleItemChange}
-            handleAddRow={handleAddRow}
-            handleDeleteRow={handleDeleteRow}
-            subtotal={subtotal}
-            sgst={sgst}
-            cgst={cgst}
-            handleGstCalculation={handleGstCalculation}
-            igst={igst}
-            setSgst={setSgst}
-            setCgst={setCgst}
-            setIgst={setIgst}
-            gstType={gstType}
-            total={total}
-            subTotal={subtotal}
-            isPrintMode={isPrintMode}
-            companyAddress={companyAddress}
-            setCompanyAddress={setCompanyAddress}
-            editMode={editMode}
-          />
+    <>
+      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
+        <div className="row d-flex ml" style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-end mb-2 " style={{ marginBottom: '20px' }}>
+            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleListView} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+          </div>
         </div>
-      )}
-    </Container>
+
+        {listView && (
+          <>
+            <div className="row d-flex">
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="quotationNo"
+                    label="Quotation No"
+                    size="small"
+                    name="quotationNo"
+                    value={formData.quotationNo}
+                    onChange={handleInputChange}
+                    error={!!formDataErrors.quotationNo}
+                    helperText={formDataErrors.quotationNo}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth>
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <DatePicker
+                      label="Quotation Date"
+                      format="DD-MM-YYYY"
+                      value={formData.quotationDate}
+                      onChange={(newValue) => handleDate('quotationDate', newValue)}
+                      disabled
+                      slotProps={{
+                        textField: { size: 'small', clearable: true }
+                      }}
+                    />
+                  </LocalizationProvider>
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="customerName"
+                    label="Customer Name"
+                    size="small"
+                    name="customerName"
+                    value={formData.customerName}
+                    onChange={handleInputChange}
+                    error={!!formDataErrors.customerName}
+                    helperText={formDataErrors.customerName}
+                    multiline
+                    rows={2}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="billAddress"
+                    label="Bill Address"
+                    size="small"
+                    name="billAddress"
+                    value={formData.billAddress}
+                    onChange={handleInputChange}
+                    error={!!formDataErrors.billAddress}
+                    helperText={formDataErrors.billAddress}
+                    multiline
+                    rows={2}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="deliveryAddress"
+                    label="Delivery Address"
+                    size="small"
+                    name="deliveryAddress"
+                    onChange={handleInputChange}
+                    value={formData.deliveryAddress}
+                    error={!!formDataErrors.deliveryAddress}
+                    helperText={formDataErrors.deliveryAddress}
+                    multiline
+                    rows={2}
+                  />
+                </FormControl>
+              </div>
+              {/*  */}
+            </div>
+            {/*  */}
+            <div className="row mt-2">
+              <Box sx={{ width: '100%' }}>
+                <Tabs
+                  value={value}
+                  onChange={handleChange}
+                  textColor="secondary"
+                  indicatorColor="secondary"
+                  aria-label="secondary tabs example"
+                >
+                  <Tab value={0} label="Details" />
+                </Tabs>
+              </Box>
+              <Box sx={{ padding: 2 }}>
+                {value === 0 && (
+                  <>
+                    <div className="row d-flex ml">
+                      <div className="mb-1">
+                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                      </div>
+                      <div className="row mt-2">
+                        <div className="col-lg-12">
+                          <div className="table-responsive">
+                            <table className="table table-bordered ">
+                              <thead>
+                                <tr style={{ backgroundColor: '#673AB7' }}>
+                                  <th className="table-header" style={{ width: '5%' }}>
+                                    Action
+                                  </th>
+                                  <th className="table-header" style={{ width: '5%' }}>
+                                    S.No
+                                  </th>
+                                  <th className="table-header" style={{ width: '40%' }}>
+                                    Item
+                                  </th>
+                                  <th className="table-header" style={{ width: '10%' }}>
+                                    Qty
+                                  </th>
+                                  <th className="table-header" style={{ width: '10%' }}>
+                                    Rate
+                                  </th>
+                                  <th className="table-header" style={{ width: '10%' }}>
+                                    Tax %
+                                  </th>
+                                  <th className="table-header" style={{ width: '10%' }}>
+                                    Tax Amount
+                                  </th>
+
+                                  <th className="table-header" style={{ width: '10%' }}>
+                                    Amount
+                                  </th>
+                                </tr>
+                              </thead>
+                              {/*  */}
+                              <tbody>
+                                {tableData &&
+                                  tableData.map((row, index) => (
+                                    <tr key={row.id}>
+                                      <td className="border px-2 py-2 text-center">
+                                        <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                      </td>
+                                      <td className="text-center">
+                                        <div className="pt-2">{index + 1}</div>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <FormControl fullWidth variant="filled">
+                                          <TextField
+                                            size="small"
+                                            type="text"
+                                            value={row.item}
+                                            name="item"
+                                            error={!!tableDataErrors[index]?.item}
+                                            helperText={tableDataErrors[index]?.item}
+                                            onChange={(e) => {
+                                              const value = e.target.value.toUpperCase();
+                                              setTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, item: value } : r)));
+                                              setTableDataErrors((prev) => {
+                                                const newErrors = Array.isArray(prev) ? [...prev] : [];
+                                                newErrors[index] = { ...newErrors[index], item: '' };
+                                                return newErrors;
+                                              });
+                                            }}
+                                          />
+                                        </FormControl>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <FormControl fullWidth variant="filled">
+                                          <TextField
+                                            size="small"
+                                            type="text"
+                                            value={row.quantity ? `${parseInt(row.quantity)}` : 0}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setTableData((prev) =>
+                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, quantity: value } : rowData))
+                                              );
+                                            }}
+                                            name="quantity"
+                                          />
+                                        </FormControl>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <FormControl fullWidth variant="filled">
+                                          <TextField
+                                            size="small"
+                                            type="text"
+                                            value={row.rate ? `${parseInt(row.rate)}` : 0}
+                                            name="rate"
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setTableData((prev) =>
+                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, rate: value } : rowData))
+                                              );
+                                            }}
+                                          />
+                                        </FormControl>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <FormControl fullWidth variant="filled">
+                                          <TextField
+                                            size="small"
+                                            type="text"
+                                            value={row.tax ? `${parseInt(row.tax)}` : 0}
+                                            name="tax"
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setTableData((prev) =>
+                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, tax: value } : rowData))
+                                              );
+                                            }}
+                                          />
+                                        </FormControl>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <FormControl fullWidth variant="filled">
+                                          <TextField
+                                            size="small"
+                                            type="text"
+                                            value={row.taxAmount ? `${parseInt(row.taxAmount)}` : 0}
+                                            name="taxAmount"
+                                            disabled
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setTableData((prev) =>
+                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, taxAmount: value } : rowData))
+                                              );
+                                            }}
+                                          />
+                                        </FormControl>
+                                      </td>
+
+                                      <td className="border px-2 py-2">
+                                        <FormControl fullWidth variant="filled">
+                                          <TextField
+                                            size="small"
+                                            type="text"
+                                            value={row.amount ? `${parseInt(row.amount)}` : 0}
+                                            name="amount"
+                                            disabled
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setTableData((prev) =>
+                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, amount: value } : rowData))
+                                              );
+                                            }}
+                                          />
+                                        </FormControl>
+                                      </td>
+                                    </tr>
+                                  ))}
+                              </tbody>
+                              {/*  */}
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </Box>
+            </div>
+          </>
+        )}
+        {!listView && (
+          <CommonListViewTable
+            data={listViewData}
+            columns={listViewColumns}
+            blockEdit={true}
+            toEdit={rowEditgetbyid}
+            isPdf={true}
+            GeneratePdf={generatePdf}
+          />
+        )}
+        {downloadPdf && <Quotationpdf row={pdfData} modalClose={() => setDownloadPdf(false)} />}
+      </div>
+    </>
   );
 };
+
 export default Quotation;
