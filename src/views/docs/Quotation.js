@@ -38,6 +38,10 @@ const Quotation = () => {
     customerName: '',
     billAddress: '',
     deliveryAddress: '',
+    companyAddress: `SCM AI PACKS PVT LTD
+    8 B KHATHA NO. 175/3, FIRST FLOOR, 3RD MAIN ROAD, 3RD CROSS, HOYSALA NAGAR, RAMAMURTHI NAGAR
+    BANGALORE - 560016
+    CIN: U82920KA2023PTC181536`,
     totalAmount: 0
   });
   const [formDataErrors, setFormDataErrors] = useState({});
@@ -107,7 +111,8 @@ const Quotation = () => {
       customerName: '',
       billAddress: '',
       deliveryAddress: '',
-      totalAmount: 0
+      totalAmount: 0,
+      comapnayAddress: ''
     });
     setFormDataErrors({});
     setTableData([{ id: Date.now(), item: '', quantity: 0, tax: 0, taxAmount: 0, rate: 0, amount: 0, baseAmount: 0, totalAmount: 0 }]);
@@ -154,7 +159,7 @@ const Quotation = () => {
       quantity: parseInt(row.quantity),
       rate: parseInt(row.rate),
       tax: parseInt(row.tax),
-      taxAmount: parseInt(row.taxAmount),
+      // taxAmount: parseInt(row.taxAmount),
       amount: parseInt(row.amount),
       baseAmount: parseInt(row.baseAmount)
     }));
@@ -168,6 +173,7 @@ const Quotation = () => {
       customerName: formData.customerName,
       customerAddress: formData.billAddress,
       deliveryAddress: formData.deliveryAddress,
+      comapnayAddress: formData.companyAddress,
       subTotal: parseInt(formData.totalAmount),
       quotationDetailsDTO: detailVO
     };
@@ -214,6 +220,7 @@ const Quotation = () => {
           customerName: item.customerName,
           billAddress: item.customerAddress,
           deliveryAddress: item.deliveryAddress,
+          comapnayAddress: item.companyAddress,
           totalAmount: item.subTotal
         });
         setTableData(
@@ -223,7 +230,7 @@ const Quotation = () => {
             quantity: data.quantity,
             rate: data.rate,
             tax: data.tax,
-            taxAmount: data.taxAmount,
+            taxAmount: data.taxValue,
             amount: data.amount,
             baseAmount: data.baseAmount
           }))

@@ -1,675 +1,667 @@
-import React, { forwardRef, useEffect, useRef, useState } from 'react';
-// import { useReactToPrint } from 'react-to-print';
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-import {
-  Box,
-  Button,
-  Checkbox,
-  Container,
-  FormControlLabel,
-  Grid,
-  IconButton,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography,
-  styled
-} from '@mui/material';
-import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import ActionButton from 'utils/ActionButton';
+import ClearIcon from '@mui/icons-material/Clear';
+import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import SaveIcon from '@mui/icons-material/Save';
+import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField, InputLabel } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import {
-  Add as AddIcon,
-  AddCircleOutline as AddCircleOutlineIcon,
-  Delete as DeleteIcon,
-  Print as PrintIcon,
-  Save as SaveIcon,
-  Visibility as VisibilityIcon
-} from '@mui/icons-material';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import axios from 'axios';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { useEffect, useState } from 'react';
+import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
+import Tab from '@mui/material/Tab';
+import Tabs from '@mui/material/Tabs';
+import AddIcon from '@mui/icons-material/Add';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 import dayjs from 'dayjs';
-import numberToWords from 'number-to-words';
-import { showErrorToast, showSuccessToast } from '../../utils/toastUtils';
-import PoList from './PoList';
-
-// Constants
-const COMPANY_ADDRESS = [
-  'SCM AI-PACKS Private Limited',
-  '#23/1,TC Palyam Main road, Hoysala Nagar, Bangalore',
-  'GSTIN: 29ABMCS1982P1ZA'
-].join('\n');
-const DEFAULT_TERMS = `1. Delivery Period: All the material must be delivered from your works within 1 week from the date of the purchase order.
-2. Payment Terms: 30 days from invoice submission through NEFT or check.
-3. Inspection & Testing: Inspection and quality check to be carried out by AI-PACKS designated executives during material dispatch.
-4. Statutory Requirements: NA`;
-
-// Styled Components
-const StyledTableCell = styled(TableCell)({
-  backgroundColor: 'white',
-  color: 'black',
-  fontWeight: 'bold',
-  border: '1px solid black',
-  '@media print': { border: '1px solid black' }
-});
-
-const StyledTableCellActions = styled(StyledTableCell)({
-  '@media print': { display: 'none' }
-});
-
-const StyledTableRow = styled(TableRow)({
-  '@media print': { border: '1px solid black' }
-});
-
-const StyledTable = styled(Table)({
-  '@media print': { borderCollapse: 'collapse' }
-});
-
-const StyledTextField = styled(TextField)({
-  [`@media print`]: {
-    border: 'none',
-    '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-    '& .MuiInputBase-input': { padding: 0 }
-  }
-});
-
-const StyledIconButton = styled(IconButton)({
-  '@media print': { display: 'none' }
-});
-
-const StyledButton = styled(Button)({
-  '@media print': { display: 'none' }
-});
-
-const StyledTableContainer = styled(TableContainer)({
-  '@media print': {
-    border: '1px solid black',
-    boxShadow: 'none'
-  }
-});
-
-// Main Components
-const PurchaseOrderForm = forwardRef(
-  (
-    {
-      poNumber,
-      setPoNumber,
-      vendorAddress,
-      setVendorAddress,
-      deliveryAddress,
-      setDeliveryAddress,
-      items,
-      handleItemChange,
-      handleAddRow,
-      handleDeleteRow,
-      subtotal,
-      sgst,
-      cgst,
-      igst,
-      total,
-      gstType,
-      handleGstCalculation,
-      termsAndConditions,
-      setTermsAndConditions,
-      companyAddress,
-      setCompanyAddress,
-      poDate,
-      setPoDate
-    },
-    ref
-  ) => {
-    const formatIndianCurrency = (number) => {
-      if (number === 0) return 'Zero';
-
-      const crore = Math.floor(number / 10000000);
-      const lakh = Math.floor((number % 10000000) / 100000);
-      const thousand = Math.floor((number % 100000) / 1000);
-      const remainder = number % 1000;
-
-      let formatted = '';
-
-      if (crore > 0) formatted += `${numberToWords.toWords(crore)} crore`;
-      if (lakh > 0) formatted += ` ${numberToWords.toWords(lakh)} lakh`;
-      if (thousand > 0) formatted += ` ${numberToWords.toWords(thousand)} thousand`;
-      if (remainder > 0) formatted += ` ${numberToWords.toWords(remainder)}`;
-
-      return formatted.replace(/\w\S*/g, (txt) => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()).trim();
-    };
-
-    const handleDateChange = (date) => {
-      setPoDate(date ? dayjs(date).format('YYYY-MM-DD') : null);
-    };
-
-    return (
-      <div ref={ref}>
-        <ToastContainer />
-        <Paper elevation={3} sx={{ padding: 5, fontFamily: 'Segoe UI, sans-serif', borderRadius: 4, backgroundColor: '#fcfcfc' }}>
-          <Container>
-            {/* Header Section */}
-            <Box sx={{ backgroundColor: '#fff', padding: 3, borderRadius: 3, boxShadow: 2, mb: 3 }}>
-              <Grid container spacing={2} alignItems="flex-start">
-                <Grid item xs={2}>
-                  <img src="/AI_Packs.png" style={{ width: '100%', maxWidth: '100px' }} alt="Company Logo" />
-                </Grid>
-
-                {/* <Grid item xs={6}>
-                  <StyledTextField
-                    sx={{
-                      whiteSpace: 'pre-line',
-                      '@media print': {
-                        whiteSpace: 'pre-line',
-                        lineHeight: '1.5'
-                      }
-                    }}
-                    fullWidth
-                    multiline
-                    minRows={3}
-                    variant="outlined"
-                    value={companyAddress}
-                    onChange={(e) => setCompanyAddress(e.target.value)}
-                    placeholder="Company Address"
-                  />
-                </Grid> */}
-                <Grid item xs={6}>
-                  <Typography variant="h5" sx={{ mt: 1, width: '80%', backgroundColor: '#fff', padding: 2, borderRadius: 3, boxShadow: 2 }}>
-                    SCM AI-PACKS Private Limited, #23/1,TC Palyam Main road, Hoysala Nagar, Bangalore, GSTIN: 29ABMCS1982P1ZA
-                  </Typography>
-                </Grid>
-                <Grid item xs={4} sx={{ textAlign: 'right' }}>
-                  {/* <Typography variant="h5" sx={{ fontWeight: 'bold', pb: 1 }}>
-                    PURCHASE ORDER
-                  </Typography> */}
-                  <StyledTextField
-                    size="small"
-                    variant="outlined"
-                    value={poNumber}
-                    onChange={(e) => setPoNumber(e.target.value)}
-                    placeholder="PO Number"
-                    sx={{ width: '100%', maxWidth: 180, mb: 1, mt: 1 }}
-                  />
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="PO Date"
-                      format="DD-MM-YYYY"
-                      value={poDate ? dayjs(poDate, 'YYYY-MM-DD') : null}
-                      onChange={handleDateChange}
-                      slotProps={{ textField: { size: 'small', fullWidth: true, sx: { maxWidth: 180 } } }}
-                    />
-                  </LocalizationProvider>
-                </Grid>
-              </Grid>
-            </Box>
-
-            {/* Address Section */}
-            <Grid container spacing={2} sx={{ mb: 3 }}>
-              <Grid item xs={6}>
-                <Typography sx={{ fontWeight: 'bold', mb: 1 }}>Vendor Address:</Typography>
-                <StyledTextField
-                  fullWidth
-                  variant="outlined"
-                  multiline
-                  value={vendorAddress}
-                  onChange={(e) => setVendorAddress(e.target.value)}
-                />
-              </Grid>
-              <Grid item xs={6}>
-                <Typography sx={{ fontWeight: 'bold', mb: 1 }}>Deliver To:</Typography>
-                <StyledTextField
-                  fullWidth
-                  variant="outlined"
-                  multiline
-                  value={deliveryAddress}
-                  onChange={(e) => setDeliveryAddress(e.target.value)}
-                />
-              </Grid>
-            </Grid>
-
-            {/* Items Table */}
-            <TableContainer sx={{ backgroundColor: '#fff', padding: 1, borderRadius: 3, boxShadow: 2 }}>
-              <Table size="small" sx={{ minWidth: 650 }}>
-                <TableHead>
-                  <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                    <TableCell sx={{ fontWeight: 'bold', width: '60px' }}>S.No</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', width: '200px' }}>Item & Description</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', width: '100px' }}>Qty</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', width: '100px' }}>Rate</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', width: '100px' }}>Amount</TableCell>
-                    <TableCell sx={{ fontWeight: 'bold', width: '80px' }}>Actions</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {items.map((item, index) => (
-                    <TableRow key={index} hover>
-                      <TableCell>{index + 1}</TableCell>
-                      <TableCell>
-                        <TextField
-                          fullWidth
-                          size="small"
-                          variant="outlined"
-                          value={item.description}
-                          onChange={(e) => handleItemChange(index, 'description', e.target.value)}
-                          sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: '4px',
-                              backgroundColor: '#fff'
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <TextField
-                          size="small"
-                          type="number"
-                          value={item.quantity}
-                          onChange={(e) => handleItemChange(index, 'quantity', e.target.value)}
-                          sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: '4px',
-                              backgroundColor: '#fff'
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <TextField
-                          size="small"
-                          type="number"
-                          value={item.rate}
-                          onChange={(e) => handleItemChange(index, 'rate', e.target.value)}
-                          sx={{
-                            '& .MuiOutlinedInput-root': {
-                              borderRadius: '4px',
-                              backgroundColor: '#fff'
-                            }
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell>₹{item.amount.toFixed(2)}</TableCell>
-                      <TableCell>
-                        <IconButton size="small" onClick={() => handleDeleteRow(index)} sx={{ color: '#f44336' }}>
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-
-            <StyledButton variant="contained" color="primary" startIcon={<AddCircleOutlineIcon />} onClick={handleAddRow} sx={{ mt: 1 }}>
-              Add Row
-            </StyledButton>
-
-            {/* Calculation Section */}
-            <Box sx={{ textAlign: 'right' }}>
-              <Box sx={{ mb: 0 }}>
-                <FormControlLabel
-                  control={<Checkbox checked={gstType === 'inter'} onChange={() => handleGstCalculation('inter')} />}
-                  label="Inter GST"
-                />
-                <FormControlLabel
-                  control={<Checkbox checked={gstType === 'intra'} onChange={() => handleGstCalculation('intra')} />}
-                  label="Intra GST"
-                />
-              </Box>
-
-              <Grid container spacing={2}>
-                <Grid item xs={8}>
-                  <Typography sx={{ fontWeight: 'bold', mt: 10 }}>Total in Words: ₹ {formatIndianCurrency(total)} Only</Typography>
-                </Grid>
-                <Grid item xs={4}>
-                  <Typography sx={{ fontWeight: 'bold' }}>Subtotal: ₹ {subtotal.toFixed(2)}</Typography>
-                  {gstType === 'intra' && (
-                    <>
-                      <Typography sx={{ fontWeight: 'bold' }}>SGST (9%): ₹ {sgst.toFixed(2)}</Typography>
-                      <Typography sx={{ fontWeight: 'bold' }}>CGST (9%): ₹ {cgst.toFixed(2)}</Typography>
-                    </>
-                  )}
-                  {gstType === 'inter' && <Typography sx={{ fontWeight: 'bold' }}>IGST (18%): ₹ {igst.toFixed(2)}</Typography>}
-                  <Typography sx={{ fontWeight: 'bold' }}>Total: ₹ {total.toFixed(2)}</Typography>
-                </Grid>
-              </Grid>
-            </Box>
-
-            {/* Terms & Conditions */}
-            <Box sx={{ mb: 3 }}>
-              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                TERMS & CONDITIONS:
-              </Typography>
-
-              <Typography
-                variant="h5"
-                sx={{ mt: 1, width: '100%', border: '1px solid', borderColor: 'grey.400', padding: 2, borderRadius: 1 }}
-              >
-                1. Delivery Period: All the material must be delivered from your works within 1 week from the date of the purchase order.{' '}
-                <br /> 2. Payment Terms: 30 days from invoice submission through NEFT or check. <br /> 3. Inspection & Testing: Inspection
-                and quality check to be carried out by AI-PACKS designated executives during material dispatch. <br /> 4. Statutory
-                Requirements: NA
-              </Typography>
-              {/* <StyledTextField
-                fullWidth
-                multiline
-                minRows={4}
-                variant="outlined"
-                value={termsAndConditions}
-                onChange={(e) => setTermsAndConditions(e.target.value)}
-                placeholder="Enter terms and conditions"
-              /> */}
-            </Box>
-
-            <Box sx={{ textAlign: 'left', mt: 10 }}>
-              <Typography variant="body1">Authorized Signature: ________________________________</Typography>
-            </Box>
-          </Container>
-        </Paper>
-      </div>
-    );
-  }
-);
-
+import DeleteIcon from '@mui/icons-material/Delete';
+import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import apiCalls from 'apicall';
+import { showToast } from 'utils/toast-component';
+import { FormHelperText } from '@mui/material';
+import POpdf from './POpdf';
 const PurchaseOrder = () => {
-  const componentRef = useRef();
-  const [state, setState] = useState({
-    vendorAddress: '',
+  const [pdfData, setPdfData] = useState([]);
+  const [downloadPdf, setDownloadPdf] = useState(false);
+  const orgId = localStorage.getItem('orgId');
+  const createdBy = localStorage.getItem('userName');
+  const modifiedBy = createdBy;
+  const [value, setValue] = useState(0);
+  const [listViewData, setListViewData] = useState([]);
+  const [vendorList, setVendorlist] = useState([]);
+  const [listView, setListView] = useState(true);
+  const [formData, setFormData] = useState({
+    poNo: '',
+    poDate: dayjs(),
+    vendorName: '',
+    billAddress: '',
     deliveryAddress: '',
-    companyAddress: COMPANY_ADDRESS,
-    poNumber: '',
-    poVo: [],
-    poDate: null,
-    items: [{ description: '', quantity: 0, rate: 0, amount: 0 }],
-    editMode: false,
-    termsAndConditions: DEFAULT_TERMS,
-    subtotal: 0,
-    sgst: 0,
-    cgst: 0,
-    total: 0,
-    orgId: parseInt(window.localStorage.getItem('orgId')),
-    gstType: '',
-    igst: 0,
-    poData: [],
-    listView: false
+    companyAddress: `SCM AI PACKS PVT LTD
+8 B KHATHA NO. 175/3, FIRST FLOOR, 3RD MAIN ROAD, 3RD CROSS, HOYSALA NAGAR, RAMAMURTHI NAGAR
+BANGALORE - 560016
+CIN: U82920KA2023PTC181536`,
+    totalAmount: 0
   });
+  const [formDataErrors, setFormDataErrors] = useState({});
+  const [editId, setEditId] = useState(null);
 
-  const handleGstCalculation = (type) => {
-    const gstRate = 0.18;
-    const halfGstRate = gstRate / 2;
-    let calculatedIgst = 0,
-      calculatedCgst = 0,
-      calculatedSgst = 0;
-
-    if (type === 'inter') {
-      calculatedIgst = state.subtotal * gstRate;
-    } else if (type === 'intra') {
-      calculatedCgst = state.subtotal * halfGstRate;
-      calculatedSgst = state.subtotal * halfGstRate;
+  const [tableData, setTableData] = useState([
+    {
+      id: Date.now(),
+      item: '',
+      quantity: 0,
+      rate: 0,
+      tax: 0,
+      taxAmount: 0,
+      amount: 0,
+      baseAmount: 0
     }
+  ]);
+  const [tableDataErrors, setTableDataErrors] = useState([{}]);
 
-    setState((prev) => ({
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+  const handleDate = (name, newValue) => {
+    setFormData((prev) => ({
       ...prev,
-      gstType: type,
-      igst: calculatedIgst,
-      cgst: calculatedCgst,
-      sgst: calculatedSgst,
-      total: prev.subtotal + calculatedIgst + calculatedCgst + calculatedSgst
+      [name]: newValue
     }));
   };
 
-  // const handlePrint = async () => {
-  //   if (!componentRef.current) return;
-  //   const canvas = await html2canvas(componentRef.current, {
-  //     scale: 2,
-  //     useCORS: true
-  //   });
-  //   const imgData = canvas.toDataURL('image/png');
-  //   const pdf = new jsPDF({
-  //     orientation: 'portrait',
-  //     unit: 'px',
-  //     format: 'a4'
-  //   });
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    const inputValue = value.toUpperCase();
 
-  //   const pageWidth = pdf.internal.pageSize.getWidth();
-  //   const imgProps = pdf.getImageProperties(imgData);
-  //   const imgHeight = (imgProps.height * pageWidth) / imgProps.width;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: inputValue
+    }));
 
-  //   pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, imgHeight);
-  //   pdf.save(`Purchase_Order_${state.poNumber || 'New'}.pdf`);
+    setFormDataErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: ''
+    }));
+  };
+
+  // const handleDeleteRow = (id) => {
+  //   const updatedData = tableData.filter((row) => row.id !== id);
+  //   setTableData(updatedData);
   // };
-
-  const handlePrint = async () => {
-    if (!componentRef.current) return;
-
-    const canvas = await html2canvas(componentRef.current, {
-      scale: 2,
-      useCORS: true
-    });
-
-    const imgData = canvas.toDataURL('image/png');
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'px',
-      format: 'a4'
-    });
-
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
-
-    const imgProps = pdf.getImageProperties(imgData);
-    const imgWidth = pageWidth;
-    const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-
-    let heightLeft = imgHeight;
-    let position = 0;
-
-    // First page
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-    heightLeft -= pageHeight;
-
-    // More pages if needed
-    while (heightLeft > 0) {
-      position -= pageHeight;
-      pdf.addPage();
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-    }
-
-    pdf.save(`Purchase_Order_${state.poNumber || 'New'}.pdf`);
+  const handleDeleteRow = (id) => {
+    setTableData((prev) => prev.filter((row) => row.id !== id));
   };
 
-  const handleSave = async () => {
-    try {
-      const formData = {
-        vendorAddress: state.vendorAddress,
-        deliveryAddress: state.deliveryAddress,
-        companyAddress: state.companyAddress,
-        poNumber: state.poNumber,
-        poDate: state.poDate,
-        items: state.items,
-        termsAndConditions: state.termsAndConditions,
-        subtotal: state.subtotal,
-        sgst: state.sgst,
-        cgst: state.cgst,
-        total: state.total,
-        gstType: state.gstType,
-        igst: state.igst,
-        orgId: state.orgId,
-        ...(state.editMode && { id: state.poVo?.id })
-      };
+  const handleAddRow = () => {
+    const newRow = {
+      id: Date.now(),
+      item: '',
+      quantity: 0,
+      rate: 0,
+      tax: 0,
+      taxAmount: 0,
+      amount: 0
+    };
+    setTableData((prev) => [...prev, newRow]);
+  };
+  const handleClear = () => {
+    setFormData({
+      poNo: '',
+      poDate: dayjs(),
+      vendorName: '',
+      billAddress: '',
+      deliveryAddress: '',
+      totalAmount: 0,
+      comapnayAddress: ''
+    });
 
-      if (!formData.poNumber?.trim()) {
-        showErrorToast('PO Number is a mandatory field.');
-        return;
+    setFormDataErrors({});
+    setTableData([
+      {
+        id: Date.now(),
+        item: '',
+        quantity: 0,
+        rate: 0,
+        tax: 0,
+        taxAmount: 0,
+        amount: 0,
+        baseAmount: 0
       }
-
-      const response = await axios.put(`${process.env.REACT_APP_API_URL}/api/reportController/createUpdateInvoice`, formData, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.data.statusFlag === 'Error') {
-        showErrorToast(response.data.paramObjectsMap?.errorMessage || 'Unknown error occurred.');
-      } else {
-        showSuccessToast(state.editMode ? 'PO Updated Successfully' : response.data.paramObjectsMap?.message);
-        getInvoiceData();
-        handleNew();
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      showErrorToast(error.message || 'An error occurred while posting the invoice.');
-    }
+    ]);
+    setTableDataErrors([{}]);
   };
 
-  const getInvoiceData = async () => {
+  const vendorName = async () => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/api/reportController/getAllInvoiceByOrgId?orgId=${state.orgId}`);
-      if (response.status === 200) {
-        setState((prev) => ({ ...prev, poData: response.data.paramObjectsMap.invoiceVO.reverse() }));
-      }
+      const res = await apiCalls('get', `/master/getVedorsAddressDetails?orgId=${orgId}`);
+      console.log('Fetching data for orgId:', orgId);
+      setVendorlist(res.paramObjectsMap.partyMasterVO.reverse());
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const handleAddRow = () => {
-    setState((prev) => ({
-      ...prev,
-      items: [...prev.items, { description: '', quantity: 0, rate: 0, amount: 0 }]
-    }));
-  };
-
-  const handleDeleteRow = (index) => {
-    setState((prev) => ({
-      ...prev,
-      items: prev.items.filter((_, i) => i !== index)
-    }));
-  };
-
-  const handleItemChange = (index, field, value) => {
-    setState((prev) => {
-      const newItems = [...prev.items];
-      newItems[index] = { ...newItems[index], [field]: value };
-      if (field === 'quantity' || field === 'rate') {
-        newItems[index].amount = newItems[index].quantity * newItems[index].rate;
-      }
-      return { ...prev, items: newItems };
-    });
-  };
-
-  const handleNew = () => {
-    setState((prev) => ({
-      ...prev,
-      vendorAddress: '',
-      deliveryAddress: '',
-      poNumber: '',
-      poDate: null,
-      items: [{ description: '', quantity: 0, rate: 0, amount: 0 }],
-      subtotal: 0,
-      sgst: 0,
-      cgst: 0,
-      total: 0,
-      gstType: '',
-      igst: 0,
-      editMode: false
-    }));
-  };
-
-  const handleListView = () => {
-    setState((prev) => ({
-      ...prev,
-      listView: !prev.listView
-    }));
-    handleNew();
-  };
-
   useEffect(() => {
-    const subtotal = state.items.reduce((acc, item) => acc + item.amount, 0);
-    setState((prev) => ({ ...prev, subtotal }));
-  }, [state.items]);
-
-  useEffect(() => {
-    getInvoiceData();
+    vendorName();
+    getAllData();
   }, []);
 
   useEffect(() => {
-    if (state.poVo && state.editMode) {
-      setState((prev) => ({
-        ...prev,
-        vendorAddress: state.poVo.vendorAddress || '',
-        deliveryAddress: state.poVo.deliveryAddress || '',
-        companyAddress: state.poVo.companyAddress || COMPANY_ADDRESS,
-        poNumber: state.poVo.poNumber || '',
-        poDate: state.poVo.poDate || null,
-        items: state.poVo.productLines || [{ description: '', quantity: 0, rate: 0, amount: 0 }],
-        termsAndConditions: state.poVo.termsAndConditions || DEFAULT_TERMS,
-        subtotal: state.poVo.subtotal || 0,
-        sgst: state.poVo.sgst || 0,
-        cgst: state.poVo.cgst || 0,
-        total: state.poVo.total || 0,
-        gstType: state.poVo.gstType || '',
-        igst: state.poVo.igst || 0
-      }));
+    const selectedVendor = vendorList.find((vendor) => vendor.partyName === formData.vendorName);
+
+    const address = selectedVendor?.FullAddress || '';
+
+    setFormData((prev) => ({
+      ...prev,
+      billAddress: address
+    }));
+  }, [formData.vendorName, vendorList]);
+
+  // useEffect(
+  //   (qty, rate, igst) => {
+  //     const qty = parseFloat(qty);
+  //     const rate = parseFloat(rate);
+  //     const igst = parseFloat(igst);
+  //     const amount = qty * rate;
+  //     const gstamount = (amount*igst/100)
+  //     const totalamount = gstamount+amount
+  //     setTableData((prev)=>{(
+  //       ...prev,
+  //       amount: totalamount
+  //     )})
+  //   },
+  //   [qty, rate, igst]
+  // );
+
+  const calculateTotals = () => {
+    const updatedTableData = tableData.map((row) => {
+      const qty = parseInt(row.quantity) || 0;
+      const rate = parseInt(row.rate) || 0;
+      const tax = parseFloat(row.tax) || 0;
+
+      const baseAmount = qty * rate;
+      const taxAmount = (baseAmount * tax) / 100;
+      const amount = baseAmount + taxAmount;
+
+      return {
+        ...row,
+        baseAmount,
+        taxAmount,
+        amount
+      };
+    });
+    setTableData(updatedTableData);
+
+    const totalAmount = updatedTableData.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
+    setFormData((prev) => ({
+      ...prev,
+      totalAmount: totalAmount
+    }));
+  };
+  useEffect(() => {
+    calculateTotals();
+  }, [tableData]);
+
+  const handleListView = () => {
+    setListView(!listView);
+  };
+
+  const listViewColumns = [
+    { accessorKey: 'poNumber', header: 'Po No', size: 140 },
+    { accessorKey: 'poDate', header: 'Po Date', size: 140 },
+    { accessorKey: 'vendorName', header: 'Vendor Name', size: 140 }
+  ];
+
+  const validForm = () => {
+    let error = {};
+    const tableErrors = [];
+    if (!formData.poNo) {
+      error.poNo = 'Po No is required';
     }
-  }, [state.poVo, state.editMode]);
+    if (!formData.vendorName) {
+      error.vendorName = 'Vendor Name is required';
+    }
+    if (!formData.deliveryAddress) {
+      error.deliveryAddress = 'Delivery Address is required';
+    }
+
+    tableData.forEach((row, index) => {
+      const rowErrors = {};
+      if (!row.item) {
+        rowErrors.item = 'Item is required';
+      }
+
+      tableErrors[index] = rowErrors;
+    });
+    const hasTableErrors = tableErrors.some((row) => Object.keys(row).length > 0);
+
+    setFormDataErrors(error);
+    setTableDataErrors(tableErrors);
+
+    return Object.keys(error).length === 0 && !hasTableErrors;
+  };
+
+  const handleSave = async (e) => {
+    e.preventDefault();
+    if (!validForm()) {
+      showToast('error', 'Please fill in all required fields');
+      return;
+    }
+    const detailsVo = tableData.map((row) => ({
+      ...(editId && { id: row.id }),
+      description: row.item,
+      quantity: parseInt(row.quantity),
+      rate: parseInt(row.rate),
+      tax: parseInt(row.tax),
+      // taxAmount: parseInt(row.taxAmount),
+      amount: parseInt(row.amount),
+      baseAmount: parseInt(row.baseAmount)
+    }));
+    const sendData = {
+      ...(editId && { id: editId }),
+      createdBy: createdBy,
+      modifiedBy: modifiedBy,
+      orgId: orgId,
+      poNumber: formData.poNo,
+      poDate: formData.poDate,
+      vendorName: formData.vendorName,
+      vendorAddress: formData.billAddress,
+      deliveryAddress: formData.deliveryAddress,
+      comapnayAddress: formData.companyAddress,
+      subTotal: parseInt(formData.totalAmount),
+      items: detailsVo
+    };
+    try {
+      const result = await apiCalls('put', '/reportController/createUpdateInvoice', sendData);
+      if (result.status) {
+        showToast('success', editId ? 'Updated Successfully' : 'Created Successfully');
+        handleClear();
+        getAllData();
+      } else {
+        showToast('error', result.paramObjectsMap?.errorMessage || 'Creation failed');
+      }
+    } catch (error) {
+      showToast('error', 'API call failed');
+    }
+  };
+
+  const getAllData = async () => {
+    try {
+      const res = await apiCalls('get', `/reportController/getAllInvoiceByOrgId?orgId=${orgId}`);
+      setListViewData(res.paramObjectsMap.invoiceVO);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const rowEditgetbyid = async (row) => {
+    setEditId(row.original.id);
+    setFormDataErrors({});
+    setTableDataErrors([]);
+    setListView(true);
+    try {
+      const results = await apiCalls('get', `/reportController/getInvoiceById?id=${row.original.id}`);
+      console.log('Edit API Response:', results);
+      if (results.status === true) {
+        const item = results.paramObjectsMap.invoiceVO;
+        setFormData({
+          createdBy: createdBy,
+          modifiedBy: createdBy,
+          orgId: orgId,
+          poNo: item.poNumber,
+          poDate: dayjs(item.poDate),
+          vendorName: item.vendorName,
+          billAddress: item.vendorAddress,
+          deliveryAddress: item.deliveryAddress,
+          comapnayAddress: item.companyAddress,
+          totalAmount: item.subTotal
+        });
+        setTableData(
+          item.productLines.map((data) => ({
+            id: data.id,
+            item: data.description,
+            quantity: data.quantity,
+            rate: data.rate,
+            tax: data.tax,
+            taxAmount: data.taxValue,
+            amount: data.amount,
+            baseAmount: data.baseAmount
+          }))
+        );
+      } else {
+        console.warn('Error fetching product details:', results.paramObjectsMap?.errorMessage);
+      }
+    } catch (error) {
+      console.error('Error fetching product details:', error);
+    }
+  };
+  const generatePdf = async (row) => {
+    try {
+      const results = await apiCalls('get', `/reportController/getInvoiceById?id=${row.original.id}`);
+      console.log('Edit API Response:', results);
+      if (results.status === true) {
+        const POData = results.paramObjectsMap.invoiceVO;
+        setPdfData(POData);
+        setDownloadPdf(true);
+      } else {
+        console.warn('Error fetching product details:', results.paramObjectsMap?.errorMessage);
+      }
+    } catch (error) {
+      console.error('Error fetching product details:', error);
+    }
+  };
 
   return (
-    <Container style={{ maxWidth: 1060 }}>
-      <Box sx={{ textAlign: 'right', mb: 3, gap: 2 }}>
-        {!state.listView && (
-          <>
-            <Button variant="contained" color="primary" onClick={handlePrint} startIcon={<PrintIcon />}>
-              Print
-            </Button>
-            <Button sx={{ ml: 1 }} variant="contained" color="primary" onClick={handleSave} startIcon={<SaveIcon />}>
-              Save
-            </Button>
-          </>
-        )}
-        <Button
-          sx={{ ml: 1 }}
-          variant="contained"
-          color="primary"
-          onClick={handleListView}
-          startIcon={state.listView ? <AddIcon /> : <VisibilityIcon />}
-        >
-          {state.listView ? 'New' : 'View'}
-        </Button>
-        {!state.listView && (
-          <Button sx={{ ml: 1 }} variant="contained" color="primary" onClick={handleNew} startIcon={<AddIcon />}>
-            New
-          </Button>
-        )}
-      </Box>
+    <>
+      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
+        <div className="row d-flex ml" style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-end mb-2 " style={{ marginBottom: '20px' }}>
+            <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleListView} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+            <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+          </div>
+        </div>
 
-      {state.listView ? (
-        <PoList
-          poData={state.poData}
-          onListView={() => setState((prev) => ({ ...prev, listView: !prev.listView }))}
-          setPoVo={(poVo) => setState((prev) => ({ ...prev, poVo, editMode: true, listView: false }))}
-        />
-      ) : (
-        <PurchaseOrderForm
-          ref={componentRef}
-          {...state}
-          setPoNumber={(poNumber) => setState((prev) => ({ ...prev, poNumber }))}
-          setVendorAddress={(vendorAddress) => setState((prev) => ({ ...prev, vendorAddress }))}
-          setDeliveryAddress={(deliveryAddress) => setState((prev) => ({ ...prev, deliveryAddress }))}
-          setCompanyAddress={(companyAddress) => setState((prev) => ({ ...prev, companyAddress }))}
-          setPoDate={(poDate) => setState((prev) => ({ ...prev, poDate }))}
-          setTermsAndConditions={(termsAndConditions) => setState((prev) => ({ ...prev, termsAndConditions }))}
-          handleItemChange={handleItemChange}
-          handleAddRow={handleAddRow}
-          handleDeleteRow={handleDeleteRow}
-          handleGstCalculation={handleGstCalculation}
-        />
-      )}
-    </Container>
+        <>
+          {listView && (
+            <>
+              <div className="row d-flex">
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled">
+                    <TextField
+                      id="poNo"
+                      label="Po No"
+                      size="small"
+                      name="poNo"
+                      value={formData.poNo}
+                      onChange={handleInputChange}
+                      error={!!formDataErrors.poNo}
+                      helperText={formDataErrors.poNo}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="Po Date"
+                        format="DD-MM-YYYY"
+                        value={formData.poDate}
+                        onChange={(newValue) => handleDate('poDate', newValue)}
+                        disabled
+                        slotProps={{
+                          textField: { size: 'small', clearable: true }
+                        }}
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="outlined" size="small" error={!!formDataErrors.vendorName}>
+                    <InputLabel htmlFor="type">Vendor Name</InputLabel>
+                    <Select
+                      labelId="name-label"
+                      id="name"
+                      label="Vendor Name"
+                      name="vendorName"
+                      value={formData.vendorName}
+                      onChange={handleInputChange}
+                    >
+                      {vendorList.map((name) => (
+                        <MenuItem key={name.partyName} value={name.partyName}>
+                          {name.partyName}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                    {formDataErrors.vendorName && <FormHelperText>{formDataErrors.vendorName}</FormHelperText>}
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled">
+                    <TextField
+                      id="billAddress"
+                      label="Bill Address"
+                      size="small"
+                      name="billAddress"
+                      value={formData.billAddress.toLocaleUpperCase()}
+                      onChange={handleInputChange}
+                      error={!!formDataErrors.billAddress}
+                      helperText={formDataErrors.billAddress}
+                      multiline
+                      rows={2}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled">
+                    <TextField
+                      id="deliveryAddress"
+                      label="Delivery Address"
+                      size="small"
+                      name="deliveryAddress"
+                      onChange={handleInputChange}
+                      value={formData.deliveryAddress}
+                      error={!!formDataErrors.deliveryAddress}
+                      helperText={formDataErrors.deliveryAddress}
+                      multiline
+                      rows={2}
+                    />
+                  </FormControl>
+                </div>
+              </div>
+
+              <div className="row mt-2">
+                <Box sx={{ width: '100%' }}>
+                  <Tabs
+                    value={value}
+                    onChange={handleChange}
+                    textColor="secondary"
+                    indicatorColor="secondary"
+                    aria-label="secondary tabs example"
+                  >
+                    <Tab value={0} label="Details" />
+                  </Tabs>
+                </Box>
+                <Box sx={{ padding: 2 }}>
+                  {value === 0 && (
+                    <>
+                      <div className="row d-flex ml">
+                        <div className="mb-1">
+                          <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                        </div>
+                        <div className="row mt-2">
+                          <div className="col-lg-12">
+                            <div className="table-responsive">
+                              <table className="table table-bordered ">
+                                <thead>
+                                  <tr style={{ backgroundColor: '#673AB7' }}>
+                                    <th className="table-header" style={{ width: '5%' }}>
+                                      Action
+                                    </th>
+                                    <th className="table-header" style={{ width: '5%' }}>
+                                      S.No
+                                    </th>
+                                    <th className="table-header" style={{ width: '40%' }}>
+                                      Item
+                                    </th>
+                                    <th className="table-header" style={{ width: '10%' }}>
+                                      Qty
+                                    </th>
+                                    <th className="table-header" style={{ width: '75px' }}>
+                                      Rate
+                                    </th>
+                                    <th className="table-header" style={{ width: '10%' }}>
+                                      Tax %
+                                    </th>
+                                    <th className="table-header" style={{ width: '10%' }}>
+                                      Tax Amount
+                                    </th>
+                                    <th className="table-header" style={{ width: '75px' }}>
+                                      Amount
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {tableData &&
+                                    tableData.map((row, index) => (
+                                      <tr key={row.id}>
+                                        <td className="border px-2 py-2 text-center">
+                                          <ActionButton
+                                            title="Delete"
+                                            icon={DeleteIcon}
+                                            onClick={
+                                              () => handleDeleteRow(row.id)
+                                              // handleDeleteRow(row.id, tableData, setTableData, tableDataErrors, setTableDataErrors)
+                                            }
+                                          />
+                                        </td>
+                                        <td className="text-center">
+                                          <div className="pt-2">{index + 1}</div>
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <FormControl fullWidth variant="filled">
+                                            <TextField
+                                              size="small"
+                                              type="text"
+                                              value={row.item}
+                                              name="item"
+                                              error={!!tableDataErrors[index]?.item}
+                                              helperText={tableDataErrors[index]?.item}
+                                              onChange={(e) => {
+                                                const value = e.target.value.toUpperCase();
+                                                setTableData((prev) =>
+                                                  prev.map((rowData) => (rowData.id === row.id ? { ...rowData, item: value } : rowData))
+                                                );
+
+                                                setTableDataErrors((prev) => {
+                                                  const newErrors = Array.isArray(prev) ? [...prev] : [];
+                                                  if (newErrors[index]) {
+                                                    newErrors[index] = { ...newErrors[index], item: '' };
+                                                  } else {
+                                                    newErrors[index] = { item: '' };
+                                                  }
+                                                  return newErrors;
+                                                });
+                                                //
+                                              }}
+                                            />
+                                          </FormControl>
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <FormControl fullWidth variant="filled">
+                                            <TextField
+                                              size="small"
+                                              type="text"
+                                              value={row.quantity ? `${parseInt(row.quantity)}` : 0}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                setTableData((prev) =>
+                                                  prev.map((rowData) => (rowData.id === row.id ? { ...rowData, quantity: value } : rowData))
+                                                );
+                                              }}
+                                              name="quantity"
+                                            />
+                                          </FormControl>
+                                        </td>
+
+                                        <td className="border px-2 py-2">
+                                          <FormControl fullWidth variant="filled">
+                                            <TextField
+                                              size="small"
+                                              type="text"
+                                              value={row.rate ? `${parseInt(row.rate)}` : 0}
+                                              name="rate"
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                setTableData((prev) =>
+                                                  prev.map((rowData) => (rowData.id === row.id ? { ...rowData, rate: value } : rowData))
+                                                );
+                                              }}
+                                            />
+                                          </FormControl>
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <FormControl fullWidth variant="filled">
+                                            <TextField
+                                              size="small"
+                                              type="text"
+                                              value={row.tax ? `${parseInt(row.tax)}` : 0}
+                                              name="tax"
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                setTableData((prev) =>
+                                                  prev.map((rowData) => (rowData.id === row.id ? { ...rowData, tax: value } : rowData))
+                                                );
+                                              }}
+                                            />
+                                          </FormControl>
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <FormControl fullWidth variant="filled">
+                                            <TextField
+                                              size="small"
+                                              type="text"
+                                              value={row.taxAmount ? `${parseInt(row.taxAmount)}` : 0}
+                                              name="taxAmount"
+                                              disabled
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                setTableData((prev) =>
+                                                  prev.map((rowData) =>
+                                                    rowData.id === row.id ? { ...rowData, taxAmount: value } : rowData
+                                                  )
+                                                );
+                                              }}
+                                            />
+                                          </FormControl>
+                                        </td>
+
+                                        <td className="border px-2 py-2">
+                                          <FormControl fullWidth variant="filled">
+                                            <TextField
+                                              type="text"
+                                              size="small"
+                                              value={row.amount ? `${parseInt(row.amount)}` : 0}
+                                              name="amount"
+                                              disabled
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                setTableData((prev) =>
+                                                  prev.map((rowData) => (rowData.id === row.id ? { ...rowData, amount: value } : rowData))
+                                                );
+                                              }}
+                                            />
+                                          </FormControl>
+                                        </td>
+                                      </tr>
+                                    ))}
+                                </tbody>
+                              </table>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </Box>
+              </div>
+            </>
+          )}
+        </>
+        {!listView && (
+          <CommonListViewTable
+            data={listViewData}
+            columns={listViewColumns}
+            blockEdit={true}
+            toEdit={rowEditgetbyid}
+            isPdf={true}
+            GeneratePdf={generatePdf}
+          />
+        )}
+        {downloadPdf && <POpdf row={pdfData} modalClose={() => setDownloadPdf(false)} />}
+      </div>
+    </>
   );
 };
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import DownloadIcon from '@mui/icons-material/Download';
 import dayjs from 'dayjs';
 import html2canvas from 'html2canvas';
@@ -22,13 +22,13 @@ import apiCalls from 'apicall';
 
 const dummyImageURL = 'https://t3.ftcdn.net/jpg/04/62/93/66/240_F_462936689_BpEEcxfgMuYPfTaIAOC1tCDurmsno7Sp.jpg';
 
-const Quotationpdf = ({ row, callBackFunction, modalClose }) => {
+const POpdf = ({ row, callBackFunction, modalClose }) => {
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [currentDateTime, setCurrentDateTime] = useState('');
   const [companyDetails, setCompanyDetails] = useState({});
   const orgId = localStorage.getItem('orgId');
-  // const componentRef = useRef();
+  const componentRef = useRef();
 
   const styles = {
     container: {
@@ -62,7 +62,7 @@ const Quotationpdf = ({ row, callBackFunction, modalClose }) => {
   };
 
   // Group product lines by kitId
-  const groupedData = (row.quotationDetailsVO || []).reduce((acc, item) => {
+  const groupedData = (row.productLines || []).reduce((acc, item) => {
     const key = item.kitId || 'default';
     if (!acc[key]) acc[key] = [];
     acc[key].push(item);
@@ -146,7 +146,7 @@ const Quotationpdf = ({ row, callBackFunction, modalClose }) => {
       position -= pdfHeight;
     }
 
-    pdf.save(`${row.quotationNo || 'Quotation_No'}.pdf`);
+    pdf.save(`${row.poNumber || 'purchase_order'}.pdf`);
     handleClose();
     setLoading(false);
   };
@@ -164,7 +164,7 @@ const Quotationpdf = ({ row, callBackFunction, modalClose }) => {
     return acc + amount;
   }, 0);
 
-  const igstRate = Number(allItems[0]?.tax) || 0;
+  const igstRate = Number(allItems[0]?.igst) || 0;
   const totalIGST = (grandTotal * igstRate) / 100;
   const total = (grandTotal + totalIGST).toFixed(2);
 
@@ -239,14 +239,14 @@ const Quotationpdf = ({ row, callBackFunction, modalClose }) => {
             )}
             {/*  */}
             <div style={{ marginRight: '100px' }}>
-              <strong style={{ fontSize: '15px' }}>Quotation</strong>
+              <strong style={{ fontSize: '15px' }}>Purchase Order</strong>
             </div>
             <div>
               <div className="mb-0" style={{ fontSize: '10px' }}>
-                Quotation No<strong className="">: {row.quotationNo}</strong>
+                Po No<strong className="">: {row.poNumber}</strong>
               </div>
               <div className="mb-0" style={{ fontSize: '10px' }}>
-                Quotation Date<strong> : {row.quotationDate ? dayjs(row.quotationDate).format('DD-MM-YYYY') : 'N/A'}</strong>
+                Date<strong> : {row.poDate ? dayjs(row.poDate).format('DD-MM-YYYY') : 'N/A'}</strong>
               </div>
             </div>
           </div>
@@ -292,7 +292,7 @@ const Quotationpdf = ({ row, callBackFunction, modalClose }) => {
             {/* Left Side - Vendor Name & Bill Address */}
             <div style={{ width: '50%' }}>
               <div>
-                <strong style={{ fontSize: '10px' }}>Customer Name: {row.customerName}</strong>
+                <strong style={{ fontSize: '10px' }}>Vendor Name: {row.vendorName}</strong>
               </div>
               <div
                 style={{
@@ -311,7 +311,7 @@ const Quotationpdf = ({ row, callBackFunction, modalClose }) => {
                     flex: 1
                   }}
                 >
-                  {row.customerAddress}
+                  {row.vendorAddress}
                 </p>
               </div>
             </div>
@@ -417,7 +417,7 @@ const Quotationpdf = ({ row, callBackFunction, modalClose }) => {
                             '& td': {
                               paddingLeft: '2px',
                               paddingRight: '2px',
-                              borderBottom: '1px solid rgba(224, 224, 224, 0.5)'
+                              borderBottom: '1px solid rgba(224, 224, 224, 0.5)' // Lighter border
                             }
                           }}
                         >
@@ -429,6 +429,9 @@ const Quotationpdf = ({ row, callBackFunction, modalClose }) => {
                           </TableCell>
 
                           <TableCell align="right">{item.quantity}</TableCell>
+                          {/* <TableCell align="center">{item.igst}</TableCell>
+                          <TableCell align="center">{item.cgst}</TableCell>
+                          <TableCell align="center">{item.sgst}</TableCell> */}
                           <TableCell align="right">{item.rate}</TableCell>
                           <TableCell align="right">{item.baseAmount}</TableCell>
                         </TableRow>
@@ -457,7 +460,7 @@ const Quotationpdf = ({ row, callBackFunction, modalClose }) => {
             <div>Total: {grandTotal}</div>
             {/* {allItems.length > 0 && (
               <div>
-                Tax {allItems[0].tax}%: ₹{totalIGST}
+                IGST {allItems[0].igst}%: ₹{totalIGST}
               </div>
             )} */}
             {/* <div>Total: {total}</div> */}
@@ -513,4 +516,4 @@ const Quotationpdf = ({ row, callBackFunction, modalClose }) => {
   );
 };
 
-export default Quotationpdf;
+export default POpdf;
