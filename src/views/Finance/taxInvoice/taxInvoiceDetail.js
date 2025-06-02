@@ -959,14 +959,20 @@ const TaxInvoiceDetails = () => {
 
   const calculateTotals = (rows, setFormData) => {
     const totalChargeAmountLc = rows.reduce((sum, row) => sum + parseFloat(row.lcAmount || 0), 0);
-    const totalTaxAmountLc = rows.reduce((sum, row) => sum + parseFloat(row.gst || 0), 0);
-    const totalInvAmountLc = parseInt(totalChargeAmountLc) + parseInt(totalTaxAmountLc);
-    const roundOffAmountLc = totalInvAmountLc;
+    const totalTaxAmountLc = rows.reduce((sum, row) => sum + parseFloat(row.gst || 0), 0).toFixed(2)
+    const totalInvAmountLc = Math.round(parseFloat(totalChargeAmountLc) + parseFloat(totalTaxAmountLc));
+    const roundOffAmountLc = (Math.round(totalInvAmountLc) - parseFloat(parseFloat(totalChargeAmountLc) + parseFloat(totalTaxAmountLc))).toFixed(2);
     const totalChargeAmountBc = rows.reduce((sum, row) => sum + parseFloat(row.billAmount || 0), 0);
-    const totalTaxAmountBc = rows.reduce((sum, row) => sum + parseFloat(row.gst || 0), 0);
-    const totalInvAmountBc = parseInt(totalChargeAmountBc) + parseInt(totalTaxAmountBc);
-    const totalTaxableAmountLc = 0;
-
+    // const totalTaxAmountBc = rows.reduce((row) => parseFloat(totalTaxAmountLc) / parseFloat(row.exRate || 0), 0);
+const totalTaxAmountBc = parseFloat(
+  rows.reduce((sum, row) => {
+    const exRate = parseFloat(row.exRate || 0);
+    const gst = parseFloat(row.gst || 0);
+    return sum + (exRate !== 0 ? gst / exRate : 0);
+  }, 0).toFixed(2)
+);
+    const totalInvAmountBc = totalChargeAmountBc + totalTaxAmountBc;
+    const totalTaxableAmountLc = totalChargeAmountLc;
     setFormData((prev) => ({
       ...prev,
       totalChargeAmountLc,
@@ -977,7 +983,7 @@ const TaxInvoiceDetails = () => {
       totalTaxAmountBc,
       totalInvAmountBc,
       totalTaxableAmountLc,
-      amountInWords: toWords(parseFloat(totalInvAmountLc)).toUpperCase()
+      // amountInWords: toWords(totalInvAmountLc).toUpperCase()
     }));
   };
 const handleSelectPartyChange = (e) => {
@@ -1071,16 +1077,18 @@ const handleSelectPartyChange = (e) => {
     }
   };
   const handleJobOrderNo = (e) => {
-    const value = e.target.value; // Get the selected value (employeeCode)
+    const value = e.target.value;
     console.log('Selected JobOrderNo value:', value);
-    const selectedJobOrder = jobCardNo.find((job) => job.jobCard === value); // Check if 'empCode' is correct
+    const selectedJobOrder = jobCardNo.find((job) => job.jobCard === value);
     if (selectedJobOrder) {
-      console.log('Selected JobOrderNo onchange:', selectedJobOrder);
       setFormData((prevData) => ({
         ...prevData,
         jobNo: selectedJobOrder.jobCard
       }));
-      console.log('Onchange joborderno', formData.jobNo);
+      setErrors((prevData) => ({
+        ...prevData,
+        jobNo: ''
+      }))
     } else {
       console.log('No JobOrderNo found with the given code:', value);
     }
@@ -1290,155 +1298,332 @@ const handleSelectPartyChange = (e) => {
     handleClear();
     // getAllTaxInvoice();
   };
-  const handleSave = async () => {
-    const errors = {};
+  // const handleSave = async () => {
+  //   const errors = {};
 
-    if (!formData.partyName) {
-      errors.partyName = 'Party Name is required';
-    }
-    if (!formData.partyType) {
-      errors.partyType = 'Party Type is required';
-    }
-    if (!formData.stateCode) {
-      errors.stateCode = 'State Code is required';
-    }
-    if (!formData.addressType) {
-      errors.addressType = 'Address Type is required';
-    }
-    if (!formData.placeOfSupply) {
-      errors.placeOfSupply = 'Place of Supply is required';
-    }
-    if (!formData.jobNo) {
-      errors.jobNo = 'Job No is required';
-    }
-    if (!formData.vid) {
-      errors.vid = 'V Id is required';
-    }
-    if (!formData.vdate) {
-      errors.vdate = 'V Date is required';
-    }
-    let detailTableDataValid = true;
-    const newTableErrors = withdrawalsTableData.map((row) => {
-      const rowErrors = {};
-      if (!row.chargeType) {
-        rowErrors.chargeType = 'Type is required';
-        detailTableDataValid = false;
-      }
-      if (!row.chargeCode) {
-        rowErrors.chargeCode = 'Charge Code is required';
-        detailTableDataValid = false;
-      }
-      if (!row.qty) {
-        rowErrors.qty = 'Qty is required';
-        detailTableDataValid = false;
-      }
-      if (!row.rate) {
-        rowErrors.rate = 'Rate is required';
-        detailTableDataValid = false;
-      }
-      if (!row.currency) {
-        rowErrors.currency = 'Currency is required';
-        detailTableDataValid = false;
-      }
-      if (!row.chargeCode) {
-        rowErrors.chargeCode = 'Charge Code is required';
-        detailTableDataValid = false;
-      }
-      return rowErrors;
-    }); 
-    setWithdrawalsTableErrors(newTableErrors);
-    if (Object.keys(errors).length > 0 && withdrawalsTableErrors) {
-      setErrors(errors);
-      return;
-    }
-    const detailsVo = withdrawalsTableData.map((row) => ({
-      ...(editId && { id: row.id }),
-      chargeCode: row.chargeCode,
-      chargeName: row.chargeName,
-      chargeType: row.chargeType,
-      currency: row.currency,
-      exRate: parseFloat(row.exRate),
-      exempted: row.exempted,
-      govChargeCode: row.govChargeCode,
-      gstpercent: parseFloat(row.GSTPercent),
-      ledger: row.ledger,
-      description: row.description,
-      qty: parseInt(row.qty),
-      rate: parseInt(row.rate),
-      sac: row.sac,
-      taxable: row.taxable
-    }));
+  //   if (!formData.partyName) {
+  //     errors.partyName = 'Party Name is required';
+  //   }
+  //   if (!formData.partyType) {
+  //     errors.partyType = 'Party Type is required';
+  //   }
+  //   if (!formData.stateCode) {
+  //     errors.stateCode = 'State Code is required';
+  //   }
+  //   if (!formData.addressType) {
+  //     errors.addressType = 'Address Type is required';
+  //   }
+  //   if (!formData.placeOfSupply) {
+  //     errors.placeOfSupply = 'Place of Supply is required';
+  //   }
+  //   if (!formData.jobNo) {
+  //     errors.jobNo = 'Job No is required';
+  //   }
+  //   if (!formData.vid) {
+  //     errors.vid = 'V Id is required';
+  //   }
+  //   if (!formData.vdate) {
+  //     errors.vdate = 'V Date is required';
+  //   }
+  //   let detailTableDataValid = true;
+  //   const newTableErrors = withdrawalsTableData.map((row) => {
+  //     const rowErrors = {};
+  //     if (!row.chargeType) {
+  //       rowErrors.chargeType = 'Type is required';
+  //       detailTableDataValid = false;
+  //     }
+  //     if (!row.chargeCode) {
+  //       rowErrors.chargeCode = 'Charge Code is required';
+  //       detailTableDataValid = false;
+  //     }
+  //     if (!row.qty) {
+  //       rowErrors.qty = 'Qty is required';
+  //       detailTableDataValid = false;
+  //     }
+  //     if (!row.rate) {
+  //       rowErrors.rate = 'Rate is required';
+  //       detailTableDataValid = false;
+  //     }
+  //     if (!row.currency) {
+  //       rowErrors.currency = 'Currency is required';
+  //       detailTableDataValid = false;
+  //     }
+  //     if (!row.chargeCode) {
+  //       rowErrors.chargeCode = 'Charge Code is required';
+  //       detailTableDataValid = false;
+  //     }
+  //     return rowErrors;
+  //   }); 
+  //   setWithdrawalsTableErrors(newTableErrors);
+  //   if (Object.keys(errors).length > 0 && withdrawalsTableErrors) {
+  //     setErrors(errors);
+  //     return;
+  //   }
+  //   const detailsVo = withdrawalsTableData.map((row) => ({
+  //     ...(editId && { id: row.id }),
+  //     chargeCode: row.chargeCode,
+  //     chargeName: row.chargeName,
+  //     chargeType: row.chargeType,
+  //     currency: row.currency,
+  //     exRate: parseFloat(row.exRate),
+  //     exempted: row.exempted,
+  //     govChargeCode: row.govChargeCode,
+  //     gstpercent: parseFloat(row.GSTPercent),
+  //     ledger: row.ledger,
+  //     description: row.description,
+  //     qty: parseInt(row.qty),
+  //     rate: parseInt(row.rate),
+  //     sac: row.sac,
+  //     taxable: row.taxable
+  //   }));
 
-    const isAnnexureEmpty = taxInvoiceAnnexure.every(
-      (row) => !row.kitname && !row.kitid && !row.kitqty && !row.rate
-    );
-    const transactionParam = selectedTransactionNo.join(',')
-    const annexureVO = isAnnexureEmpty
-      ? null
-      : taxInvoiceAnnexure.map((row) => ({
+  //   const isAnnexureEmpty = taxInvoiceAnnexure.every(
+  //     (row) => !row.kitname && !row.kitid && !row.kitqty && !row.rate
+  //   );
+  //   const transactionParam = selectedTransactionNo.join(',')
+  //   const annexureVO = isAnnexureEmpty
+  //     ? null
+  //     : taxInvoiceAnnexure.map((row) => ({
+  //       ...(editId && { id: row.id }),
+  //       skuType: row.skuType ? row.skuType : '',
+  //       rate: parseInt(row.rate),
+  //       qty: parseInt(row.kitqty),
+  //       dsec: row.kitname,
+  //       kitId: row.kitid,
+  //       transDate: row.transactiondate ? dayjs(row.transactiondate).format('YYYY-MM-DD') : null,
+  //       transNo: row.transactionno
+  //     }));
+
+  //   const saveFormData = {
+  //     ...(editId && { id: editId }),
+  //     address: formData.address,
+  //     addressType: formData.addressType,
+  //     billCurr: formData.billCurr,
+  //     billCurrRate: parseFloat(formData.billCurrRate),
+  //     billOfEntry: formData.billOfEntry,
+  //     bizMode: formData.bizMode,
+  //     bizType: formData.bizType,
+  //     branch: branch,
+  //     branchCode: loginBranchCode,
+  //     createdBy: loginUserName,
+  //     creditDays: parseInt(formData.creditDays),
+  //     finYear: finYear,
+  //     gstType: formData.gstType,
+  //     invoiceNo: formData.invoiceNo,
+  //     jobOrderNo: formData.jobNo,
+  //     orgId: orgId,
+  //     partyCode: formData.partyCode,
+  //     partyId: parseInt(partyId),
+  //     partyName: formData.partyName,
+  //     partyType: formData.partyType,
+  //     pinCode: formData.pinCode,
+  //     placeOfSupply: formData.placeOfSupply,
+  //     recipientGSTIN: formData.recipientGSTIN,
+  //     remarks: formData.remarks,
+  //     shipperInvoiceNo: formData.shipperInvoiceNo,
+  //     stateCode: formData.stateCode,
+  //     stateNo: formData.stateNo,
+  //     status: formData.status,
+  //     supplierBillDate: formData.supplierBillDate ? dayjs(formData.supplierBillDate).format('YYYY-MM-DD') : null,
+  //     supplierBillNo: formData.supplierBillNo,
+  //     vid: formData.vid,
+  //     trasactionNo: transactionParam,
+  //     vdate: formData.vdate ? dayjs(formData.vdate).format('YYYY-MM-DD') : null,
+  //     taxInvoiceDetailsDTO: detailsVo,
+  //     taxInvoiceAnnexureDTO: annexureVO
+  //   };
+  //   try {
+  //     const response = await apiCalls('put', '/taxInvoice/updateCreateTaxInvoice', saveFormData);
+  //     if (response.status === true) {
+  //       showToast('success', editId ? 'Tax Invoice updated successfully' : 'Tax Invoice created successfully');
+  //       getAllTaxInvoice();
+  //       handleClear();
+  //     } else {
+  //       showToast('error', response.paramObjectsMap.errorMessage || 'Tax Invoice creation failed');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     showToast('error', 'Tax Invoice creation failed');
+  //   }
+  // };
+const handleSave = async () => {
+  const errors = {};
+
+  if (!formData.partyName) {
+    errors.partyName = 'Party Name is required';
+  }
+  if (!formData.partyType) {
+    errors.partyType = 'Party Type is required';
+  }
+  if (!formData.stateCode) {
+    errors.stateCode = 'State Code is required';
+  }
+  if (!formData.addressType) {
+    errors.addressType = 'Address Type is required';
+  }
+  if (!formData.placeOfSupply) {
+    errors.placeOfSupply = 'Place of Supply is required';
+  }
+  if (!formData.jobNo) {
+    errors.jobNo = 'Job No is required';
+  }
+  if (!formData.vid) {
+    errors.vid = 'V Id is required';
+  }
+  if (!formData.vdate) {
+    errors.vdate = 'V Date is required';
+  }
+
+  let detailTableDataValid = true;
+  const newTableErrors = withdrawalsTableData.map((row) => {
+    const rowErrors = {};
+    if (!row.chargeType) {
+      rowErrors.chargeType = 'Type is required';
+      detailTableDataValid = false;
+    }
+    if (!row.chargeCode) {
+      rowErrors.chargeCode = 'Charge Code is required';
+      detailTableDataValid = false;
+    }
+    if (!row.qty) {
+      rowErrors.qty = 'Qty is required';
+      detailTableDataValid = false;
+    }
+    if (!row.rate) {
+      rowErrors.rate = 'Rate is required';
+      detailTableDataValid = false;
+    }
+    if (!row.currency) {
+      rowErrors.currency = 'Currency is required';
+      detailTableDataValid = false;
+    }
+    return rowErrors;
+  });
+
+  setWithdrawalsTableErrors(newTableErrors);
+
+  if (Object.keys(errors).length > 0 || !detailTableDataValid) {
+    setErrors(errors);
+    return;
+  }
+  const entryDate = dayjs(formData.vdate);
+  if (entryDate.isValid()) {
+    const today = dayjs();
+    const currentYear = today.year();
+    const currentMonth = today.month();
+
+    const finYearStart = currentMonth >= 3
+      ? dayjs(`${finYear}-04-01`)
+      : dayjs(`${finYear - 1}-04-01`);
+
+    const finYearEnd = finYearStart.add(1, 'year').subtract(1, 'day');
+
+    if (entryDate.isBefore(finYearStart) || entryDate.isAfter(finYearEnd)) {
+      const confirmProceed = showToast('error',
+        `You are entering data for a different financial year (${entryDate.format('DD-MM-YYYY')}).Which is not Allowed!!`
+      );
+      if (!confirmProceed) {
+        return;
+      }
+    }
+  }
+
+  const detailsVo = withdrawalsTableData.map((row) => ({
+    ...(editId && { id: row.id }),
+    chargeCode: row.chargeCode,
+    chargeName: row.chargeName,
+    chargeType: row.chargeType,
+    currency: row.currency,
+    exRate: parseFloat(row.exRate),
+    exempted: row.exempted,
+    govChargeCode: row.govChargeCode,
+    gstpercent: parseFloat(row.GSTPercent),
+    ledger: row.ledger,
+    description: row.description,
+    qty: parseInt(row.qty),
+    rate: parseInt(row.rate),
+    sac: row.sac,
+    taxable: row.taxable
+  }));
+
+  const isAnnexureEmpty = taxInvoiceAnnexure.every(
+    (row) => !row.kitname && !row.kitid && !row.kitqty && !row.rate
+  );
+
+  const transactionParam = selectedTransactionNo.join(',');
+
+  const annexureVO = isAnnexureEmpty
+    ? null
+    : taxInvoiceAnnexure.map((row) => ({
         ...(editId && { id: row.id }),
-        skuType: row.skuType ? row.skuType : '',
+        skuType: row.skuType || '',
         rate: parseInt(row.rate),
         qty: parseInt(row.kitqty),
         dsec: row.kitname,
         kitId: row.kitid,
-        transDate: row.transactiondate ? dayjs(row.transactiondate).format('YYYY-MM-DD') : null,
+        transDate: row.transactiondate
+          ? dayjs(row.transactiondate).format('YYYY-MM-DD')
+          : null,
         transNo: row.transactionno
       }));
 
-    const saveFormData = {
-      ...(editId && { id: editId }),
-      address: formData.address,
-      addressType: formData.addressType,
-      billCurr: formData.billCurr,
-      billCurrRate: parseFloat(formData.billCurrRate),
-      billOfEntry: formData.billOfEntry,
-      bizMode: formData.bizMode,
-      bizType: formData.bizType,
-      branch: branch,
-      branchCode: loginBranchCode,
-      createdBy: loginUserName,
-      creditDays: parseInt(formData.creditDays),
-      finYear: finYear,
-      gstType: formData.gstType,
-      invoiceNo: formData.invoiceNo,
-      jobOrderNo: formData.jobNo,
-      orgId: orgId,
-      partyCode: formData.partyCode,
-      partyId: parseInt(partyId),
-      partyName: formData.partyName,
-      partyType: formData.partyType,
-      pinCode: formData.pinCode,
-      placeOfSupply: formData.placeOfSupply,
-      recipientGSTIN: formData.recipientGSTIN,
-      remarks: formData.remarks,
-      shipperInvoiceNo: formData.shipperInvoiceNo,
-      stateCode: formData.stateCode,
-      stateNo: formData.stateNo,
-      status: formData.status,
-      supplierBillDate: formData.supplierBillDate ? dayjs(formData.supplierBillDate).format('YYYY-MM-DD') : null,
-      supplierBillNo: formData.supplierBillNo,
-      vid: formData.vid,
-      trasactionNo: transactionParam,
-      vdate: formData.vdate ? dayjs(formData.vdate).format('YYYY-MM-DD') : null,
-      taxInvoiceDetailsDTO: detailsVo,
-      taxInvoiceAnnexureDTO: annexureVO
-    };
-    try {
-      const response = await apiCalls('put', '/taxInvoice/updateCreateTaxInvoice', saveFormData);
-      if (response.status === true) {
-        showToast('success', editId ? 'Tax Invoice updated successfully' : 'Tax Invoice created successfully');
-        getAllTaxInvoice();
-        handleClear();
-      } else {
-        showToast('error', response.paramObjectsMap.errorMessage || 'Tax Invoice creation failed');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      showToast('error', 'Tax Invoice creation failed');
-    }
+  const saveFormData = {
+    ...(editId && { id: editId }),
+    address: formData.address,
+    addressType: formData.addressType,
+    billCurr: formData.billCurr,
+    billCurrRate: parseFloat(formData.billCurrRate),
+    billOfEntry: formData.billOfEntry,
+    bizMode: formData.bizMode,
+    bizType: formData.bizType,
+    branch: branch,
+    branchCode: loginBranchCode,
+    createdBy: loginUserName,
+    creditDays: parseInt(formData.creditDays),
+    finYear: finYear,
+    gstType: formData.gstType,
+    invoiceNo: formData.invoiceNo,
+    jobOrderNo: formData.jobNo,
+    orgId: orgId,
+    partyCode: formData.partyCode,
+    partyId: parseInt(partyId),
+    partyName: formData.partyName,
+    partyType: formData.partyType,
+    pinCode: formData.pinCode,
+    placeOfSupply: formData.placeOfSupply,
+    recipientGSTIN: formData.recipientGSTIN,
+    remarks: formData.remarks,
+    shipperInvoiceNo: formData.shipperInvoiceNo,
+    stateCode: formData.stateCode,
+    stateNo: formData.stateNo,
+    status: formData.status,
+    supplierBillDate: formData.supplierBillDate
+      ? dayjs(formData.supplierBillDate).format('YYYY-MM-DD')
+      : null,
+    supplierBillNo: formData.supplierBillNo,
+    vid: formData.vid,
+    trasactionNo: transactionParam,
+    vdate: formData.vdate
+      ? dayjs(formData.vdate).format('YYYY-MM-DD')
+      : null,
+    taxInvoiceDetailsDTO: detailsVo,
+    taxInvoiceAnnexureDTO: annexureVO
   };
 
+  try {
+    const response = await apiCalls('put', '/taxInvoice/updateCreateTaxInvoice', saveFormData);
+    if (response.status === true) {
+      showToast('success', editId ? 'Tax Invoice updated successfully' : 'Tax Invoice created successfully');
+      getAllTaxInvoice();
+      handleClear();
+    } else {
+      showToast('error', response.paramObjectsMap.errorMessage || 'Tax Invoice creation failed');
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    showToast('error', 'Tax Invoice creation failed');
+  }
+};
   const handleDescriptionChange = (index, newDescription) => {
     const updatedRows = [...withdrawalsTableData];
     updatedRows[index].description = newDescription;
@@ -1508,16 +1693,13 @@ const handleSelectPartyChange = (e) => {
 
   const handleTableInputChange = (index, field, value) => {
     const updatedTableData = [...withdrawalsTableData];
-
-    // Ensure value is treated as a number
+    const updatedTableError = [...withdrawalsTableErrors];
     const numericValue = parseFloat(value) || 0;
 
     updatedTableData[index] = {
       ...updatedTableData[index],
-      [field]: numericValue // Update the changed field
+      [field]: numericValue
     };
-
-    // Extract required values for calculation
     const qty = parseFloat(updatedTableData[index].qty) || 0;
     const rate = parseFloat(updatedTableData[index].rate) || 0;
     const exRate = parseFloat(updatedTableData[index].exRate) || 1; // Avoid division by zero
@@ -1527,16 +1709,12 @@ const handleSelectPartyChange = (e) => {
     const billAmount = qty * rate;
     const lcAmount = billAmount * exRate;
     const gstAmount = (billAmount * gstPercent) / 100;
-
-    // Update dependent fields
     updatedTableData[index] = {
       ...updatedTableData[index],
       billAmount,
       lcAmount,
       gst: gstAmount
     };
-
-    // Update state
     setWithdrawalsTableData(updatedTableData);
   };
 
@@ -2339,14 +2517,14 @@ const handleMultiSelect = async (event) => {
 
                                   <td className="border px-2 py-2">
                                     <input
-                                      type="text"
+                                      type="number"
                                       value={row.qty}
                                       disabled={formData.status === 'TAX'}
                                       style={{ width: '100px' }}
                                       
                                       onChange={(e) => handleTableInputChange(index, 'qty', e.target.value)}
                                       className={withdrawalsTableErrors[index]?.qty ? 'error form-control' : 'form-control'}
-                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    
                                     />
                                     {withdrawalsTableErrors[index]?.qty && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2354,10 +2532,10 @@ const handleMultiSelect = async (event) => {
                                       </div>
                                     )}
                                   </td>
-
                                   <td className="border px-2 py-2">
                                     <input
-                                      type="text"
+                                      type="number"
+                                      inputProps={{ step: "any" }}
                                       value={row.rate}
                                       disabled={formData.status === 'TAX'}
                                       style={{ width: '100px' }}
@@ -2386,28 +2564,37 @@ const handleMultiSelect = async (event) => {
                                         updatedCurrencyData[index] = {
                                           ...updatedCurrencyData[index],
                                           currency: selectedCurrency,
-                                          exRate: selectedCurrencyData.sellingExRate,
-                                          fcAmount: selectedCurrency === 'INR' ? 0 : row.qty * row.rate,
-                                          lcAmount:
-                                            (Number(row.qty) || 0) *
-                                            (Number(row.rate) || 0) *
-                                            (Number(selectedCurrencyData.sellingExRate) || 0),
-                                          billAmount:
-                                            ((Number(row.qty) || 0) *
-                                              (Number(row.rate) || 0) *
-                                              (Number(selectedCurrencyData.sellingExRate) || 0)) /
-                                            selectedCurrencyData.sellingExRate,
-                                          gst:
-                                            ((Number(row.qty) || 0) *
-                                              (Number(row.rate) || 0) *
-                                              (Number(selectedCurrencyData.sellingExRate) || 0) *
-                                              row.GSTPercent) /
-                                            100
+                                          exRate: parseFloat(selectedCurrencyData.sellingExRate).toFixed(2),
+                                          fcAmount: selectedCurrency === 'INR'
+                                            ? '0.00'
+                                            : (row.qty * row.rate).toFixed(2),
+                                          lcAmount: (
+                                            (Number(row.qty) || 1) *
+                                            (parseFloat(row.rate) || 0) *
+                                            (parseFloat(selectedCurrencyData.sellingExRate) || 0)
+                                          ).toFixed(2),
+                                          billAmount: (
+                                            ((Number(row.qty) || 1) *
+                                              (parseFloat(row.rate) || 0) *
+                                              (parseFloat(selectedCurrencyData.sellingExRate) || 0)) /
+                                            (parseFloat(selectedCurrencyData.sellingExRate) || 1)
+                                          ).toFixed(2),
+                                          gst: (
+                                            ((Number(row.qty) || 1) *
+                                              (parseFloat(row.rate) || 0) *
+                                              (parseFloat(selectedCurrencyData.sellingExRate) || 0) *
+                                              (parseFloat(row.GSTPercent) || 0)) / 100
+                                          ).toFixed(2)
                                         };
+
                                         calculateTotals(updatedCurrencyData, setFormData);
                                         setWithdrawalsTableData(updatedCurrencyData);
                                       }}
-                                      className={withdrawalsTableErrors[index]?.currency ? 'error form-control' : 'form-control'}
+                                      className={
+                                        withdrawalsTableErrors[index]?.currency
+                                          ? 'error form-control'
+                                          : 'form-control'
+                                      }
                                     >
                                       <option value="">--Select--</option>
                                       {partyCurrencyList &&
@@ -2423,6 +2610,7 @@ const handleMultiSelect = async (event) => {
                                       </div>
                                     )}
                                   </td>
+
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"

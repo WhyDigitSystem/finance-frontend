@@ -107,27 +107,12 @@ const Receipt = () => {
   });
 
   const [inVoiceDetailsData, setInVoiceDetailsData] = useState([]);
-  const [invoiceDetailsError, setInvoiceDetailsError] = useState([
-    {
-      invNo: '',
-      invDate: '',
-      refNo: '',
-      refDate: null,
-      currency: '',
-      exRate: '',
-      amount: '',
-      gstAmt: '',
-      chargeAmt: '',
-      tds: '',
-      outstanding: '',
-      settled: '',
-    }
-  ]);
+  const [invoiceDetailsError, setInvoiceDetailsError] = useState([]);
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     const inputValue = type === 'checkbox' ? checked : value;
     const isNumeric = /^[0-9.]*$/;
-    const numericFields = ['bankCharges', 'receiptAmt', 'tdsAmt']; // Add other numeric fields if needed
+    const numericFields = ['bankCharges', 'receiptAmt', 'tdsAmt'];
     if (numericFields.includes(name)) {
       if (!isNumeric.test(value)) {
         setFieldErrors({
@@ -207,20 +192,7 @@ const Receipt = () => {
       cashAccount:'',
     });
     setInVoiceDetailsData([]);
-    setInvoiceDetailsError([{
-      invNo: '',
-      invDate: '',
-      // refNo: '',
-      // refDate: null,
-      currency: '',
-      exRate: '',
-      amount: '',
-      gstAmt: '',
-      chargeAmt: '',
-      tds: '',
-      outstanding: '',
-      settled: '',
-    }]);
+    setInvoiceDetailsError([]);
     getReceiptDocId();
   };
 
@@ -306,10 +278,8 @@ const Receipt = () => {
       const result = await apiCalls(
         'put',
         `/arreceivable/approveReceipt?action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}&orgId=${orgId}`
-        // `/arreceivable/approveReceipt?orgId=${orgId}&action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${formData.id}`
-      );
+        );
       console.log('API Response:==>', result);
-
       if (result.status === true) {
         setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
         showToast(
@@ -321,54 +291,21 @@ const Receipt = () => {
         const listValueVO = result.paramObjectsMap.taxInvoiceVO;
         setConfirmData(result.paramObjectsMap.taxInvoiceVO);
         setFormData({
+          id: listValueVO.id,
           docId: listValueVO.docId,
-          partyId: listValueVO.partyId,
+          docDate: listValueVO.docDate,
+          paymentMode: listValueVO.receiptType,
           approveStatus: listValueVO.approveStatus,
           approveBy: listValueVO.approveBy,
           approveOn: listValueVO.approveOn,
-          docDate: listValueVO.docDate,
-          type: listValueVO.type,
-          // active: ,
-          partyCode: listValueVO.partyCode,
-          partyName: listValueVO.partyName,
-          partyType: listValueVO.partyType,
-          stateCode: listValueVO.stateCode,
-          address: listValueVO.address,
-          addressType: listValueVO.addressType,
-          gstType: listValueVO.gstType,
-          pinCode: listValueVO.pinCode,
-          placeOfSupply: listValueVO.placeOfSupply,
-          recipientGSTIN: listValueVO.recipientGSTIN,
-          remarks: listValueVO.remarks,
-          billCurr: listValueVO.billCurr,
-          status: listValueVO.status,
-          updatedBy: listValueVO.updatedBy,
-          supplierBillNo: listValueVO.supplierBillNo,
-          supplierBillDate: listValueVO.supplierBillDate,
-          vid: listValueVO.vid,
-          vdate: listValueVO.vdate,
-          billCurrRate: listValueVO.billCurrRate,
-          creditDays: listValueVO.creditDays,
-          shipperInvoiceNo: listValueVO.shipperInvoiceNo,
-          billOfEntry: listValueVO.billOfEntry,
-          invoiceNo: listValueVO.invoiceNo,
-          invoiceDate: listValueVO.invoiceDate,
-          id: listValueVO.id,
-          totalChargeAmountLc: listValueVO.totalChargeAmountLc,
-          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
-          totalTaxAmountLc: listValueVO.totalTaxAmountLc,
-          totalInvAmountLc: listValueVO.totalInvAmountLc,
-          roundOffAmountLc: listValueVO.roundOffAmountLc,
-          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
-          totalInvAmountLc: listValueVO.totalInvAmountLc,
-          totalInvAmountBc: listValueVO.totalInvAmountBc,
-          totalChargeAmountBc: listValueVO.totalChargeAmountBc,
-          totalTaxAmountBc: listValueVO.totalTaxAmountBc,
-          totalInvAmountBc: listValueVO.totalInvAmountBc,
-          totalTaxableAmountLc: listValueVO.totalTaxableAmountLc,
-          amountInWords: listValueVO.amountInWords,
-          billingRemarks: listValueVO.billingRemarks
-          // amountInWords: listValueVO.amountInWords
+          customerName: listValueVO.customerName,
+          customerCode: listValueVO.customerCode,
+          receiptAmt: listValueVO.receiptAmt,
+          transactionMethod: listValueVO.receiptType1,
+          chequeUtiNo: listValueVO.chequeUtiNo,
+          chequeUtiDate: listValueVO.chequeUtiDate,
+          netAmount: listValueVO.netAmount,
+          onAccount: listValueVO.onAccount,
         });
         handleModal();
         getAllReceipt();
@@ -383,7 +320,7 @@ const Receipt = () => {
   };
   const getReceiptById = async (row) => {
     setEditId(row.original.id);
-    setInvoiceDetailsError({});
+    setInvoiceDetailsError([]);
     try {
       const response = await apiCalls('get', `/arreceivable/getAllReceiptById?id=${row.original.id}`);
       if (response.status === true) {
@@ -415,7 +352,10 @@ const Receipt = () => {
           currencyAmount: receiptVO.currencyAmount,
           receivedFrom: receiptVO.receivedFrom,
           onAccount: receiptVO.onAccount,
-          netAmount: receiptVO.netAmount
+          netAmount: receiptVO.netAmount,
+          approveStatus: receiptVO.approveStatus,
+          approveBy: receiptVO.approveBy,
+          approveOn: receiptVO.approveOn,
         });
         console.log("Approve", listView, formData.status, listViewbyId.status)
         setInVoiceDetailsData(
@@ -691,7 +631,7 @@ const Receipt = () => {
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <div className="row">
-          <div className="d-flex flex-wrap justify-content-between mb-4" >
+          <div className="d-flex flex-wrap justify-content-between mb-1" >
           <div className="justify-content-start mb-0">
               {editId && !listView && (formData.status === 'SUBMIT' || listViewbyId.status === 'SUBMIT') && (
                 <>
@@ -1004,7 +944,8 @@ const Receipt = () => {
                 <div className="row d-flex ml" style={{ marginTop: '5px' }}>
                   <div className="mb-1">
                     {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
-                    {!editId && <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />} 
+                    {/* <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} /> */}
+                    {!formData.status === 'SUBMIT' && <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />} 
                   </div>
                   <div className="row mt-2">
                     <div className="col-lg-12">
@@ -1458,7 +1399,7 @@ const Receipt = () => {
                                   type="text"
                                   value={row.settled}
                                   disabled = {formData.status === 'SUBMIT' || (!formData.receiptAmt || parseFloat(formData.receiptAmt) === 0)}
-                                  // disabled={(!formData.receiptAmt || parseFloat(formData.receiptAmt) === 0) || editId}
+                                  
                                   onChange={(e) => {
                                     const value = e.target.value;
                                     const isNumeric = /^[0-9.]*$/;
@@ -1476,7 +1417,6 @@ const Receipt = () => {
                                     const totalOtherSettled = inVoiceDetailsData.reduce((sum, r) =>
                                       r.id !== row.id ? sum + parseFloat(r.settled || 0) : sum, 0
                                     );
-
                                     const totalSettledAfterChange = totalOtherSettled + newValue;
                                     const maxReceiptAmt = parseFloat(formData.receiptAmt || 0);
                                     const maxChargeAmt = parseFloat(row.chargeAmt || 0);
@@ -1487,7 +1427,6 @@ const Receipt = () => {
                                     } else if (totalSettledAfterChange > maxReceiptAmt) {
                                       errorMsg = `Total settled exceeds Receipt Amount (${maxReceiptAmt})`;
                                     }
-
                                     if (errorMsg) {
                                       setInvoiceDetailsError((prev) => {
                                         const newErrors = [...prev];
