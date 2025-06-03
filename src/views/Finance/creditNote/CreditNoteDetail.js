@@ -1277,7 +1277,14 @@ const IrnCreditNote = () => {
     const roundOffDiff = (Math.round(totalChargeAmountLc) - totalChargeAmountLc).toFixed(2);
     const roundOffAmountLc = roundOffDiff;
     const totalChargeAmountBc = rows.reduce((sum, row) => sum + (parseFloat(row.billAmount) || 0), 0);
-    const totalTaxAmountBc = rows.reduce((sum, row) => sum + (parseFloat(row.gstAmount) || 0), 0);
+    // const totalTaxAmountBc = rows.reduce((sum, row) => sum + (parseFloat(row.gstAmount) || 0), 0);
+    const totalTaxAmountBc = parseFloat(
+  rows.reduce((sum, row) => {
+    const exRate = parseFloat(row.exRate || 0);
+    const gst = parseFloat(row.gstAmount || 0);
+    return sum + (exRate !== 0 ? gst / exRate : 0);
+  }, 0).toFixed(2)
+);
     const totalInvAmountBc = totalChargeAmountBc + totalTaxAmountBc;
     const totalTaxableAmountLc = 0;
 

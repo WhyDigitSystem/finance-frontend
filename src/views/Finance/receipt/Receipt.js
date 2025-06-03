@@ -945,7 +945,7 @@ const Receipt = () => {
                   <div className="mb-1">
                     {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
                     {/* <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} /> */}
-                    {!formData.status === 'SUBMIT' && <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />} 
+                    {formData.status !== 'SUBMIT' && <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />} 
                   </div>
                   <div className="row mt-2">
                     <div className="col-lg-12">

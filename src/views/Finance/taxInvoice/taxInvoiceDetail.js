@@ -983,7 +983,7 @@ const totalTaxAmountBc = parseFloat(
       totalTaxAmountBc,
       totalInvAmountBc,
       totalTaxableAmountLc,
-      // amountInWords: toWords(totalInvAmountLc).toUpperCase()
+      amountInWords: toWords(totalInvAmountLc).toUpperCase()
     }));
   };
 const handleSelectPartyChange = (e) => {
