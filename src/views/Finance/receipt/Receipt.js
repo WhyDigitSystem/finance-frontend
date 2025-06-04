@@ -130,6 +130,7 @@ const Receipt = () => {
           customerName: value,
           customerCode: selectedCustomer.customerCode
         });
+        setInVoiceDetailsData([]);
         setFieldErrors({
           ...fieldErrors,
           customerName: false,
@@ -518,9 +519,9 @@ const Receipt = () => {
     }
   };
   useEffect(() => {
-    if(!editId){
+    // if(!editId){
     calculateTotals();
-  }}, [inVoiceDetailsData, formData.receiptAmt]);
+  }, [inVoiceDetailsData, formData.receiptAmt]);
   const calculateTotals = () => {
     let totalChargeAmt = 0;
     let totalSettledAmt = 0;
@@ -823,7 +824,7 @@ const Receipt = () => {
                   <TextField
                     id="inVoiceDetailsDataAmt"
                     name="tdsAmt"
-                    disabled = {editId}
+                    disabled = {formData.status === 'SUBMIT' || !editId}
                     label="TDS Amount"
                     size="small"
                     value={formData.tdsAmt}
@@ -1281,7 +1282,7 @@ const Receipt = () => {
                                   <input
                                     type="text"
                                     value={row.tds}
-                                    disabled = {editId}
+                                    disabled = {formData.status === 'SUBMIT' || !editId}
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9]*$/;
@@ -1403,7 +1404,6 @@ const Receipt = () => {
                                   onChange={(e) => {
                                     const value = e.target.value;
                                     const isNumeric = /^[0-9.]*$/;
-
                                     if (!isNumeric.test(value)) {
                                       setInvoiceDetailsError((prev) => {
                                         const newErrors = [...prev];
