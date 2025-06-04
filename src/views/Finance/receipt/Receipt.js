@@ -1282,7 +1282,7 @@ const Receipt = () => {
                                   <input
                                     type="text"
                                     value={row.tds}
-                                    disabled = {formData.status === 'SUBMIT' || !editId}
+                                    disabled = {formData.status === 'SUBMIT'}
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9]*$/;
