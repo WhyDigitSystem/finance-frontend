@@ -9,10 +9,24 @@ import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
+import { TabContext } from '@mui/lab';
+import Tab from '@mui/material/Tab';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
+import { Box, Button, Chip, Stack } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import CommonReportTable from 'utils/CommonReportTable';
-import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
+import Draggable from 'react-draggable';
+function PaperComponent(props) {
+  return (
+    <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
+      <Paper {...props} />
+    </Draggable>
+  );
+}
 function TaxRegister() {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
@@ -20,8 +34,12 @@ function TaxRegister() {
   const [isLoading, setIsLoading] = useState(false);
   const [branchCodeList, setBranchCodeList] = useState([]);
   const [partyNameList, setPartyNameList] = useState([]);
+  const [fillGridData, setFillGridData] = useState([]);
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState('1');
   const [selectedSections, setSelectedSections] = useState({
     date: false,
     branchCode: false,
@@ -40,10 +58,12 @@ function TaxRegister() {
       [name]: checked
     }));
   };
-  const handleProceed = () => {
-    setVisibleSections({ ...selectedSections });
-  };
-  
+    const handleCloseModal = () => {
+      setModalOpen(false);
+    };
+    const handleModal = () => {
+      setOpen(false);
+    };
   const [formData, setFormData] = useState({
     fromDate: null,
     toDate: null,
@@ -182,7 +202,41 @@ function TaxRegister() {
   };
   const reportColumns = [
     { accessorKey: 'JobOrderNo', header: 'Job No', size: 100 },
-    { accessorKey: 'docId', header: 'Doc Id', size: 100 },
+{
+  accessorKey: 'docId',
+  header: 'Doc Id',
+  size: 100,
+  Cell: ({ row }) => {
+    const docId = row.original.docId;
+    const screenCode = row.original.screenCode;
+
+    return (
+      <a
+        href="#"
+        onClick={(e) => {
+          e.preventDefault();
+          handleDocClick(docId, screenCode);
+        }}
+        style={{
+          color: 'crimson',
+          textDecoration: 'none',
+          cursor: 'pointer',
+          transition: 'color 0.2s, text-shadow 0.2s',
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.color = 'red';
+          // e.target.style.textShadow = '0 0 2px rgba(255, 0, 0, 0.6)';
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.color = 'crimson';
+          e.target.style.textShadow = 'none';
+        }}
+      >
+        {docId}
+      </a>
+    );
+  }
+},
     { accessorKey: 'docDate', header: 'Date', size: 100 },
     { accessorKey: 'screenCode', header: 'Screen', size: 100 },
     { accessorKey: 'Vid', header: '# Invoice', size: 100 },
@@ -195,7 +249,7 @@ function TaxRegister() {
       </div>),
         muiTableHeadCellProps: {
           align: 'right'
-        }},
+    }},
     { accessorKey: 'TotalTaxAmountLC', header: 'TAX Amount', size: 80,
       Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
        {cell.getValue() !== undefined && cell.getValue() !== null 
@@ -229,12 +283,12 @@ function TaxRegister() {
         if(formData.fromDate && formData.toDate){
           response = await apiCalls(
             'get',
-            `/taxInvoice/getReportDetailsForSalesRegister?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyCode=${formData.customerCode}&toDate=${formData.toDate}`
+            `/taxInvoice/getReportDetailsForSalesRegister?finYear=${finYear}&branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyCode=${formData.customerCode}&toDate=${formData.toDate}`
           );
         }else {
           response = await apiCalls(
             'get',
-            `/taxInvoice/getReportDetailsForSalesRegister?branchCode=${formData.branchCode}&orgId=${orgId}&partyCode=${formData.customerCode}`
+            `/taxInvoice/getReportDetailsForSalesRegister?finYear=${finYear}&branchCode=${formData.branchCode}&orgId=${orgId}&partyCode=${formData.customerCode}`
           );
         }
         if (response.status === true) {
@@ -255,15 +309,37 @@ function TaxRegister() {
       setFieldErrors(errors);
     }
   };
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+const handleDocClick = async (docId, screenCode) => {
+  setModalOpen(true);
+  try {
+    let response;
+    if(screenCode === 'TI'){
+    response = await apiCalls(
+      'get',
+      `/taxInvoice/getTaxInvoiceByDocIdandScreenCode?docId=${docId}&ScreenCode=${screenCode}`
+    );}
+    else{
+    response = await apiCalls(
+      'get',
+      `/taxInvoice/getCreditNoteByDocIdandScreenCode?docId=${docId}&ScreenCode=${screenCode}`
+    );}
+
+    if (response.status === true) {
+    // const dataKey = screenCode === 'TI' ? 'taxIn
+      {screenCode === 'TI' ? setFillGridData(response.paramObjectsMap.taxInvoiceVO) : setFillGridData(response.paramObjectsMap.irnCreditNoteVO);}
+    } else {
+      console.error('API Error:', response);
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+};
   return(
     <>
       <div className="card w-full bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-        {/* <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Search" icon={SearchIcon} isLoading={isLoading} onClick={handleGo} margin="0 10px 0 10px" />
-          </div>
-        </div> */}
         <>
             <div className="row">
               <div className="row">
@@ -390,12 +466,258 @@ function TaxRegister() {
                 </div>
               )}
             </div>
-          </>
+        </>
         {listView && (
           <div>
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"Sales Register"} />
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"Sales Register"} sumFields={['TotalInvAmountLC', 'TotalTaxAmountLC', 'BillAmount']}/>
           </div>
         )}
+        <>
+                    <Dialog
+                      open={modalOpen}
+                      maxWidth={'xl'}
+                      fullWidth={true}
+                      onClose={handleCloseModal}
+                      PaperComponent={PaperComponent}
+                      aria-labelledby="draggable-dialog-title"
+                    >
+                      <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
+                        <h6>Report Details</h6>
+                      </DialogTitle>
+                      <DialogContent className="pb-0">
+                                        <div className="row mb-2 mb-1">
+                                        <div className="col-md-3 mb-1"><strong>Doc ID:</strong> {fillGridData.docId}</div>
+                                        <div className="col-md-3 mb-1"><strong>Doc Date:</strong> {fillGridData.docDate ? dayjs(fillGridData.docDate).format('DD-MM-YYYY') : ''}</div>
+                                        <div className="col-md-3 mb-1"><strong>Invoice No:</strong> {fillGridData.vid}</div>
+                                        <div className="col-md-3 mb-1"><strong>Invoice Date:</strong> {fillGridData.vdate ? dayjs(fillGridData.vdate).format('DD-MM-YYYY') : ''}</div>
+                                        <div className="col-md-3 mb-1"><strong>Customer:</strong> {fillGridData.partyName}</div>
+                                        <div className="col-md-3 mb-1"><strong>Job No:</strong> {fillGridData.jobOrderNo}</div>
+                                        <div className="col-md-3 mb-1"><strong>Gst In:</strong> {fillGridData.recipientGSTIN}</div>
+                                        <div className="col-md-3 mb-1"><strong>Tax Type:</strong> {fillGridData.gstType}</div>
+                                        <div className="col-md-3 mb-1"><strong>Charge Amount:</strong> ₹{Number(fillGridData.totalChargeAmountLc || 0).toLocaleString('en-IN')}</div>
+                                        <div className="col-md-3 mb-1"><strong>Tax Amount:</strong> ₹{Number(fillGridData.totalTaxAmountLc || 0).toLocaleString('en-IN')}</div>
+                                        <div className="col-md-3 mb-1"><strong>Amount:</strong> ₹{Number(fillGridData.totalInvAmountLc || 0).toLocaleString('en-IN')}</div>
+                                      </div>
+                      <div className="card w-full p-6 bg-base-100 shadow-xl mb-3">
+                      <Box sx={{ width: '100%', typography: 'body1' }}>
+                      <TabContext value={value}>
+                        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                          <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
+                            <Tab label="Charge Particulars" value="1" />
+                            {/* {fillGridData.taxInvoiceAnnexureVO.length > 0 && <Tab label="Annexure" value="2" />} */}
+                            <Tab label="Gst" value="2" />
+                          </TabList>
+                        </Box>
+                        <TabPanel value="1">
+                                <div className="row">
+                                  <div className="col-lg-12">
+                                    <div className="table-responsive">
+                                      <table className="table table-bordered">
+                                        <thead>
+                                          <tr style={{ backgroundColor: '#673AB7' }}>
+                                            <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                              S.No
+                                            </th>
+                                            <th className="table-header">Charge Type</th>
+                                            <th className="table-header">Charge Code</th>
+                                            <th className="table-header">SAC Code</th>
+                                            <th className="table-header">ledger</th>
+                                            <th className="table-header">Charge Name</th>
+                                            <th className="table-header">Qty</th>
+                                            <th className="table-header">Rate</th>
+                                            <th className="table-header">Currency</th>
+                                            <th className="table-header">Ex Rate</th>
+                                            <th className="table-header">GST Percent</th>
+                                            <th className="table-header">GST Amount</th>
+                                            <th className="table-header">FC Amount</th>
+                                            <th className="table-header">LC Amount</th>
+                                            <th className="table-header">Bill Amount</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                        {fillGridData.taxInvoiceDetailsVO && fillGridData.taxInvoiceDetailsVO.length > 0 ? (
+                                          fillGridData.taxInvoiceDetailsVO.map((row, index) => (
+                                            <tr key={row.id}>
+                                              <td className="text-center">{index + 1}</td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.chargeType || ''}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.chargeCode || ''}
+                                              </td> 
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.govChargeCode || ''}
+                                              </td> 
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.ledger || ''}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.chargeName || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.qty || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.rate || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.currency || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.exRate || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstpercent || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstAmount || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.fcAmount || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.lcAmount || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.billAmount || 0}
+                                              </td>
+                                            </tr>
+                                          ))
+                                          ) : (
+                                            fillGridData.irnCreditNoteDetailsVO?.map((row, index) => (
+                                            <tr key={row.id}>
+                                              <td className="text-center">{index + 1}</td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.chargeType || ''}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.chargeCode || ''}
+                                              </td> 
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.govChargeCode || ''}
+                                              </td> 
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.ledger || ''}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.chargeName || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.qty || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.rate || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.currency || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.exRate || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstpercent || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstAmount || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.fcAmount || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.lcAmount || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.billAmount || 0}
+                                              </td>
+                                            </tr>
+                                            ))
+                                          )}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                        </TabPanel>
+                        <TabPanel value="2">
+                                <div className="row">
+                                  <div className="col-lg-12">
+                                    <div className="table-responsive">
+                                      <table className="table table-bordered">
+                                        <thead>
+                                          <tr style={{ backgroundColor: '#673AB7' }}>
+                                            <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                              S.No
+                                            </th>
+                                            <th className="table-header">GST Charge Acc</th>
+                                            <th className="table-header">GST Subledger Code</th>
+                                            <th className="table-header">GST Db BillAmount</th>
+                                            <th className="table-header">GST Cr Bill Amount</th>
+                                            <th className="table-header">GST Db Lc Amount</th>
+                                            <th className="table-header">GST Cr Lc Amount</th>
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {fillGridData.irnCreditNoteGstVO && fillGridData.irnCreditNoteGstVO.length > 0 ? (
+                                          fillGridData.irnCreditNoteGstVO.map((row, index) => (                
+                                            <tr key={row.id}>
+                                              <td className="text-center">{index + 1}</td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstChargeAcc || ''}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstSubledgerCode || ''}
+                                              </td> 
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstDbBillAmount || ''}
+                                              </td> 
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstCrBillAmount || ''}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstDbLcAmount || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstCrLcAmount || 0}
+                                              </td>
+                                            </tr>
+                                              ))
+                                            ) : (
+                                              fillGridData.taxInvoiceGstVO?.map((row, index) => (
+                                            <tr key={row.id}>
+                                              <td className="text-center">{index + 1}</td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstChargeAcc || ''}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstSubledgerCode || ''}
+                                              </td> 
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstDbBillAmount || ''}
+                                              </td> 
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstCrBillAmount || ''}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstDbLcAmount || 0}
+                                              </td>
+                                              <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                                {row.gstCrLcAmount || 0}
+                                              </td>
+                                            </tr>
+                                            ))
+                                          )}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                  </div>
+                                </div>
+                        </TabPanel>
+                      </TabContext>
+                      </Box>
+                      </div>  
+                      </DialogContent>
+                    </Dialog>
+        </>
   </div>
     </>
   )

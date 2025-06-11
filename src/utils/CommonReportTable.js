@@ -29,13 +29,24 @@ const applyDateFormattingToColumns = (columns) => {
   });
 };
 
-const CommonReportTable = ({ columns, data, isListView, fileName}) => {
+const CommonReportTable = ({ columns, data, isListView, fileName, sumFields = []}) => {
   const handleExportRows = (rows) => {
     const rowData = rows.map((row) => row.original);
     const csv = generateCsv(csvConfig)(rowData);
     download(csvConfig)(csv);
   };
 
+const sums = sumFields.reduce((acc, field) => {
+  acc[field] = data.reduce((total, row) => total + parseFloat(row[field] || 0), 0);
+  return acc;
+}, {});
+const sumFieldLabels = {
+  TotalInvAmountLC: 'Total Amount',
+  TotalTaxAmountLC: 'Total Tax Amount',
+  BillAmount: 'Bill Amount',
+  outstanding: 'OutStanding',
+  // Add more mappings as needed
+};
   const csvConfig = mkConfig({
     fieldSeparator: ',',
     decimalSeparator: '.',
@@ -140,6 +151,26 @@ const CommonReportTable = ({ columns, data, isListView, fileName}) => {
   };
   return (
     <MaterialReactTable
+renderBottomToolbarCustomActions={() => (
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        padding: '8px 20px',
+        fontWeight: 'bold',
+        backgroundColor: '#F3F4F6',
+        borderTop: '1px solid #E5E7EB',
+      }}
+    >
+      {sumFields.map((field) => (
+        <Box key={field} sx={{ marginLeft: 3 }}>
+          {/* {field}: {sums[field].toFixed(2)} */}
+          {/* {field}: {sums[field].toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })} */}
+          {sumFieldLabels[field] || field}: {sums[field].toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+        </Box>
+      ))}
+    </Box>
+  )}
       displayColumnDefOptions={{
         "mrt-row-actions": {
           muiTableHeadCellProps: {

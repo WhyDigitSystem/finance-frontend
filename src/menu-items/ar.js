@@ -139,7 +139,7 @@ const ar = {
         },
         {
           id: 'aging',
-          title: 'AR Aging',
+          title: 'AR Ageing',
           type: 'item',
           url: '/finance/AR-aging',
           icon: icons7.TimelapseOutlined

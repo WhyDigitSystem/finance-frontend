@@ -513,7 +513,7 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
                   {row.transporterName}
                 </span>
               </div>
-              {row.vehicleNo &&<div style={{ width: '500px', marginBottom: '2px' }}>
+              <div style={{ width: '500px', marginBottom: '2px' }}>
                 Vehicle No:{' '}
                 <span
                   style={{
@@ -524,8 +524,8 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
                 >
                   {row.vehicleNo}
                 </span>
-              </div>}
-              {row.driverPhoneNo &&<div style={{ width: '500px', marginBottom: '2px' }}>
+              </div>
+              <div style={{ width: '500px', marginBottom: '2px' }}>
                 Driver No:{' '}
                 <span
                   style={{
@@ -536,7 +536,7 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
                 >
                   {row.driverPhoneNo}
                 </span>
-              </div>}
+              </div>
             </div>
             <div className="d-flex justify-content-between">
               <div className="d-flex flex-column me-2">
@@ -676,30 +676,6 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
               marginTop: '5%'
             }}
           >
-            {/* <!-- Footer Section --> */}
-            {/* <div
-              style={{
-                marginBottom: '10px',
-                textAlign: 'left',
-                fontSize: '8px',
-                color: '#777'
-              }}
-            >
-              <div>{currentDateTime}</div>
-              <div>Printed By: {localStorage.getItem('userName')}</div>
-            </div>
-            <div
-                style={{  
-                marginBottom: '10px',
-                textAlign: 'right',
-                color: 'black'
-              }}>
-              {selectedCopy && (
-                <div style={{ textAlign: 'right', fontSize: '20px', fontWeight: 'bold',marginTop:'0px', marginBottom: '10px' }}>
-                  {selectedCopy}
-                </div>
-              )}  
-            </div> */}
           </div>
         </div>
       </DialogContent>

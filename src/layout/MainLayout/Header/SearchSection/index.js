@@ -59,7 +59,7 @@ const screens = [
   { name: 'Receipt', path: '/finance/receipt/Receipt' },
   { name: 'AR Offset', path: '/finance/AR-adjustment' },
   { name: 'AR Outstanding', path: '/finance/AR-outstanding' },
-  { name: 'AR Aging', path: '/finance/AR-aging' },
+  { name: 'AR Ageing', path: '/finance/AR-aging' },
   { name: 'Payment', path: '/finance/payment/Payment' },
   { name: 'AP Offset', path: '/finance/AP-adjustment' },
   { name: 'AP Outstanding with aging Report', path: '/finance/paymentRegister/PaymentRegister' },

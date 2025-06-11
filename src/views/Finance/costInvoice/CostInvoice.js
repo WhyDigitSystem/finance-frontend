@@ -28,10 +28,14 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonTable from 'views/basicMaster/CommonTable';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import { useLocation } from 'react-router-dom';
 
 const CostInvoice = () => {
+  const location = useLocation();
+  const { docNo, screenCode } = location.state || {};
   const [showForm, setShowForm] = useState(false);
   const [data, setData] = useState(true);
+  const [invoiceData, setInvoiceData] = useState(null);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -57,6 +61,36 @@ const CostInvoice = () => {
   const [sectionOptions, setSectionOptions] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  useEffect(() => {
+    if (docId && screenCode) {
+      handleDocClick(docId, screenCode);
+    }
+  }, [docId, screenCode]);
+  const handleDocClick = async (docId, screenCode) => {
+    // handleView();
+    setShowForm(true);
+    try {
+      let response;
+      if(screenCode === 'CI'){
+      response = await apiCalls(
+        'get',
+        `/costInvoice/getCostByDocIdandScreenCode?docId=${docId}&ScreenCode=${screenCode}`
+      );}
+      else{
+      response = await apiCalls(
+        'get',
+        `/costInvoice/getDebitNoteByDocIdandScreenCode?docId=${docId}&ScreenCode=${screenCode}`
+      );}
+  
+      if (response.status === true) {
+        {screenCode === 'CI' ? setInvoiceData(response.paramObjectsMap.costInvoiceVO || {}) : setInvoiceData(response.paramObjectsMap.costDebitNoteVO || {});}
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
   const [chargeDetails, setChargeDetails] = useState([
     {
       id: 1,
