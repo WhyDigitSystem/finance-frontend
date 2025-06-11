@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextField, Checkbox, FormControlLabel, FormHelperText, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import ClearIcon from '@mui/icons-material/Clear';
 import ActionButton from 'utils/ActionButton';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -28,14 +28,14 @@ function ArOutstanding() {
     date: false,
     partyName: false,
     branch: false,
-    dueDate: false,
+    dueDate: false
   });
 
   const [visibleSections, setVisibleSections] = useState({
     date: false,
     partyName: false,
     branch: false,
-    dueDate: false,
+    dueDate: false
   });
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
@@ -47,18 +47,18 @@ function ArOutstanding() {
   const handleProceed = () => {
     setVisibleSections({ ...selectedSections });
   };
-  
+
   const [formData, setFormData] = useState({
     asOnDate: null,
     partyName: 'All',
     branch: 'All',
-    dueDate: null,
+    dueDate: null
   });
   const [fieldErrors, setFieldErrors] = useState({
     asOnDate: '',
     partyName: '',
     branch: '',
-    dueDate: '',
+    dueDate: ''
   });
   const handleClear = () => {
     setListView(false);
@@ -66,13 +66,13 @@ function ArOutstanding() {
       asOnDate: null,
       partyName: 'All',
       branch: 'All',
-      dueDate: null,
+      dueDate: null
     });
     setFieldErrors({
       asOnDate: '',
       partyName: '',
       branch: '',
-      dueDate: '',
+      dueDate: ''
     });
     setRowData([]);
   };
@@ -99,20 +99,20 @@ function ArOutstanding() {
   const handleSelectAccountChange = (e) => {
     const value = e.target.value;
     console.log('Selected Account value:', value);
-  
-    if (value === "All") {
+
+    if (value === 'All') {
       setFormData((prevData) => ({
         ...prevData,
-        partyName: "All",
+        partyName: 'All'
       }));
     } else {
       const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
-  
+
       if (selectedEmp) {
         console.log('Selected party:', selectedEmp);
         setFormData((prevData) => ({
           ...prevData,
-          partyName: selectedEmp.partyName,
+          partyName: selectedEmp.partyName
         }));
       } else {
         console.log('No Account found with the given code:', value);
@@ -121,23 +121,23 @@ function ArOutstanding() {
   };
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
-  
+
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: '',
+      [name]: ''
     }));
-  
+
     if (name === 'branch') {
-      if (value === "All") {
+      if (value === 'All') {
         setFormData((prevData) => ({
           ...prevData,
-          branch: "All",
+          branch: 'All'
         }));
       } else {
         const selectedBranch = branchList.find((br) => br.branch === value);
         setFormData((prevData) => ({
           ...prevData,
-          branch: selectedBranch ? selectedBranch.branch : '',
+          branch: selectedBranch ? selectedBranch.branch : ''
         }));
       }
     } else {
@@ -154,7 +154,7 @@ function ArOutstanding() {
   };
   const reportColumns = [
     { accessorKey: 'subledgercode', header: 'Customer Code', size: 140 },
-    { accessorKey: 'name', header: 'Customer', size: 140 },
+    { accessorKey: 'partyshortname', header: 'Customer', size: 140 },
     { accessorKey: 'outstanding', header: 'Outstanding', size: 140 },
     { accessorKey: 'unadjusted', header: 'Unadjusted', size: 140 },
     { accessorKey: 'amount', header: 'Total Due', size: 140 },
@@ -162,7 +162,7 @@ function ArOutstanding() {
     { accessorKey: 'mslab2', header: 'Days 30 - 60', size: 140 },
     { accessorKey: 'mslab3', header: 'Days 60 - 90', size: 140 },
     { accessorKey: 'mslab4', header: 'Days 90 - 120', size: 140 },
-    { accessorKey: 'mslab5', header: 'Days 120+', size: 140 },
+    { accessorKey: 'mslab5', header: 'Days 120+', size: 140 }
   ];
   const handleGo = async () => {
     const errors = {};
@@ -176,12 +176,12 @@ function ArOutstanding() {
       setIsLoading(true);
       try {
         let response;
-        if(formData.dueDate){
+        if (formData.dueDate) {
           response = await apiCalls(
             'get',
             `/arapAdjustments/GetArapAdjustments?asondt=${formData.asOnDate}&branch=${formData.branch}&orgId=${orgId}&partyName=${formData.partyName}&pdate=${formData.dueDate}`
           );
-        }else {
+        } else {
           response = await apiCalls(
             'get',
             `/arapAdjustments/GetArapAdjustments?asondt=${formData.asOnDate}&partyName=${formData.partyName}&orgId=${orgId}&branch=${formData.branch}`
@@ -205,7 +205,7 @@ function ArOutstanding() {
       setFieldErrors(errors);
     }
   };
-  return(
+  return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
         {/* <div className="row d-flex ml">
@@ -215,10 +215,12 @@ function ArOutstanding() {
           </div>
         </div> */}
         <>
+          <div className="row">
             <div className="row">
-              <div className="row">
-              <div className="col-md-2
-               mb-3">
+              <div
+                className="col-md-2
+               mb-3"
+              >
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                   label="Date"
@@ -226,19 +228,21 @@ function ArOutstanding() {
               </div>
               <div className="col-md-2 mb-3">
                 <FormControlLabel
-                  control={<Checkbox checked={selectedSections.partyName} onChange={handleCheckboxChange} name="partyName" color="secondary" />}
+                  control={
+                    <Checkbox checked={selectedSections.partyName} onChange={handleCheckboxChange} name="partyName" color="secondary" />
+                  }
                   label="Party Name"
                 />
               </div>
               <div className="col-md-2 mb-3">
                 <FormControlLabel
-                  control={<Checkbox checked={selectedSections.branch}  onChange={handleCheckboxChange} name="branch" color="secondary" />}
+                  control={<Checkbox checked={selectedSections.branch} onChange={handleCheckboxChange} name="branch" color="secondary" />}
                   label="Branch"
                 />
               </div>
               <div className="col-md-2 mb-3">
                 <FormControlLabel
-                  control={<Checkbox checked={selectedSections.dueDate}  onChange={handleCheckboxChange} name="dueDate" color="secondary" />}
+                  control={<Checkbox checked={selectedSections.dueDate} onChange={handleCheckboxChange} name="dueDate" color="secondary" />}
                   label="Due Date"
                 />
               </div>
@@ -253,51 +257,51 @@ function ArOutstanding() {
                   Proceed
                 </Button>
               </div> */}
-              </div>
-              {selectedSections.date && (
-                <>
-                  <div className="col-md-3 mb-3">
-                     <FormControl fullWidth variant="filled" size="small">
-                      <LocalizationProvider dateAdapter={AdapterDayjs}> 
-                         <DatePicker 
-                          label="As On Date"
-                          value={formData.asOnDate ? dayjs(formData.asOnDate, 'YYYY-MM-DD') : null}
-                          onChange={(date) => handleDateChange('asOnDate', date)}
-                          slotProps={{
-                            textField: { size: 'small', clearable: true, error: fieldErrors.asOnDate, helperText: fieldErrors.asOnDate }
-                          }}
-                          format="DD-MM-YYYY"
-                        />
-                       </LocalizationProvider>
-                    </FormControl> 
-                  </div>
-                </>
-              )}
-              {selectedSections.dueDate && (
-                <>
-                  <div className="col-md-3 mb-3">
-                     <FormControl fullWidth variant="filled" size="small">
-                      <LocalizationProvider dateAdapter={AdapterDayjs}> 
-                         <DatePicker 
-                          label="Due Date"
-                          value={formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : null}
-                          onChange={(date) => handleDateChange('dueDate', date)}
-                          slotProps={{
-                            textField: { size: 'small', clearable: true, error: fieldErrors.dueDate, helperText: fieldErrors.dueDate }
-                          }}
-                          format="DD-MM-YYYY"
-                        />
-                       </LocalizationProvider>
-                    </FormControl> 
-                  </div>
-                </>
-              )}
-              {selectedSections.partyName && ( 
+            </div>
+            {selectedSections.date && (
+              <>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled" size="small">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="As On Date"
+                        value={formData.asOnDate ? dayjs(formData.asOnDate, 'YYYY-MM-DD') : null}
+                        onChange={(date) => handleDateChange('asOnDate', date)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true, error: fieldErrors.asOnDate, helperText: fieldErrors.asOnDate }
+                        }}
+                        format="DD-MM-YYYY"
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
+              </>
+            )}
+            {selectedSections.dueDate && (
+              <>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth variant="filled" size="small">
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="Due Date"
+                        value={formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : null}
+                        onChange={(date) => handleDateChange('dueDate', date)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true, error: fieldErrors.dueDate, helperText: fieldErrors.dueDate }
+                        }}
+                        format="DD-MM-YYYY"
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
+              </>
+            )}
+            {selectedSections.partyName && (
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.partyName}>
                   <InputLabel id="partyName-label">Party Name</InputLabel>
                   <Select
-                  type='text'
+                    type="text"
                     labelId="partyName-label"
                     label="partyName"
                     value={formData.partyName}
@@ -315,18 +319,12 @@ function ArOutstanding() {
                   {fieldErrors.partyName && <FormHelperText>{fieldErrors.partyName}</FormHelperText>}
                 </FormControl>
               </div>
-              )}            
-              {selectedSections.branch && ( 
+            )}
+            {selectedSections.branch && (
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
                   <InputLabel id="branch-label">Branch</InputLabel>
-                  <Select
-                    labelId="branch-label"
-                    label="branch"
-                    value={formData.branch}
-                    onChange={handleInputChange}
-                    name="branch"
-                  >
+                  <Select labelId="branch-label" label="branch" value={formData.branch} onChange={handleInputChange} name="branch">
                     <MenuItem value="All">All</MenuItem>
                     {branchList?.map((row) => (
                       <MenuItem key={row.id} value={row.branch}>
@@ -337,27 +335,27 @@ function ArOutstanding() {
                   {fieldErrors.branch && <FormHelperText>{fieldErrors.branch}</FormHelperText>}
                 </FormControl>
               </div>
-              )}
-              {(selectedSections.date || selectedSections.partyName || selectedSections.branch || selectedSections.dueDate) && (
-                <div className="col-md-3 mb-3">
-                  <div className="row d-flex ml">
-                    <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
-                      <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
-                      <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                    </div>
+            )}
+            {(selectedSections.date || selectedSections.partyName || selectedSections.branch || selectedSections.dueDate) && (
+              <div className="col-md-3 mb-3">
+                <div className="row d-flex ml">
+                  <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
+                    <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
+                    <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
                   </div>
                 </div>
-              )}
-            </div>
-          </>
+              </div>
+            )}
+          </div>
+        </>
         {listView && (
           <div className="mt-4">
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"AR Outstanding"}/>
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={'AR Outstanding'} />
           </div>
         )}
-  </div>
+      </div>
     </>
-  )
+  );
 }
 
 export default ArOutstanding;
