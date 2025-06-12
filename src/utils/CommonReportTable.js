@@ -29,7 +29,7 @@ const applyDateFormattingToColumns = (columns) => {
   });
 };
 
-const CommonReportTable = ({ columns, data, isListView, fileName, sumFields = []}) => {
+const CommonReportTable = ({ columns, data, isListView, fileName, handleDownloadExcel, sumFields = []}) => {
   const handleExportRows = (rows) => {
     const rowData = rows.map((row) => row.original);
     const csv = generateCsv(csvConfig)(rowData);
@@ -58,6 +58,8 @@ const sumFieldLabels = {
     const csv = generateCsv(csvConfig)(data);
     download(csvConfig)(csv);
   };
+
+  
   const theme = useTheme();
 
   const chipSX = {
@@ -263,7 +265,8 @@ renderBottomToolbarCustomActions={() => (
         // </Stack>
           >
             <IconButton
-              onClick={handleExportData}
+              // onClick={handleExportData}
+              onClick={handleDownloadExcel}
               sx={{
                 width: '30px',
                 height: '30px',

@@ -58,7 +58,7 @@ const APaging = () => {
 
   const getPartyName = async () => {
     try {
-      const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=customer`);
+      const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=vendor`);
       setPartyNameList(response.paramObjectsMap.partyMasterVO || []);
     } catch (error) {
       console.error('Error fetching party names:', error);

@@ -30,6 +30,7 @@ import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { FaFilePdf } from 'react-icons/fa';
 import { FaFileExcel } from 'react-icons/fa';
+import CoaTreeView from 'utils/coaTreeView';
 
 const Group = () => {
   const theme = useTheme();
@@ -252,7 +253,7 @@ const Group = () => {
       coaList: '',
       accountGroupName: '',
       category: '',
-      currency: '',
+      currency: 'INR',
       pbflag: '',
       natureOfAccount: '',
       interBranchAc: false,
@@ -309,12 +310,31 @@ const Group = () => {
     { accessorKey: 'active', header: 'Active', size: 100 }
   ];
 
+  const getGroupName = (groupName) => {
+    setShowForm(true);
+    console.log('onAdd', groupName);
+
+    // Get the last child's ID
+    const lastChild = groupName.children?.length ? groupName.children[groupName.children.length - 1] : null;
+    const lastChildId = lastChild ? parseInt(lastChild.id, 10) : parseInt(groupName.id, 10); // Fallback to parent ID if no children
+    const nextAccountCode = lastChildId + 1; // Increment ID by 1
+
+    setFormData({
+      groupName: groupName.name,
+      type: 'ACCOUNT',
+      active: true,
+      accountCode: nextAccountCode.toString() // Convert back to string if needed
+    });
+
+    console.log('Next Account Code:', nextAccountCode);
+  };
+
   const getGruopById = async (row) => {
-    console.log('Editing Exchange Rate:', row.original.id);
-    setEditId(row.original.id);
+    // console.log('Editing Exchange Rate:', row.original.id);
+    setEditId(row);
     setShowForm(true);
     try {
-      const result = await apiCalls('get', `/master/getAllGroupLedgerById?id=${row.original.id}`);
+      const result = await apiCalls('get', `/master/getAllGroupLedgerByAccountCode?accountCode=${row}`);
 
       if (result) {
         const exRate = result.paramObjectsMap.groupLedgerVO[0];
@@ -530,7 +550,7 @@ const Group = () => {
             ></CommonBulkUpload>
           )}
           {!showForm ? <ActionButton icon={FaFileExcel} title="Excel Download" onClick={handleExcelFileDownload} /> : ''}
-          {!showForm ? <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} /> : ''}
+          {/* {!showForm ? <ActionButton icon={FaFilePdf} title="PDF Download" onClick={handlePDFDownload} /> : ''} */}
         </div>
         {showForm ? (
           <div className="row d-flex ">
@@ -801,7 +821,11 @@ const Group = () => {
             </div>
           </div>
         ) : (
-          <CommonTable columns={columns} data={data} blockEdit={true} toEdit={getGruopById} />
+          // <CommonTable columns={columns} data={data} blockEdit={true} toEdit={getGruopById} />
+          <CoaTreeView
+            toEdit={getGruopById}
+            onAddGroup={getGroupName}
+          />
         )}
       </div>
     </>

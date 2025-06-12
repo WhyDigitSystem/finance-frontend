@@ -10,6 +10,8 @@ import dayjs from 'dayjs';
 import apiCalls from 'apicall';
 import { showToast } from 'utils/toast-component';
 import CommonReportTable from 'utils/CommonReportTable';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 // check box
 const APaging = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -25,6 +27,8 @@ const APaging = () => {
     // option: false,
     // branchName: false
   });
+
+  const capitalizeHeader = (text) => text.replace(/\b\w/g, char => char.toUpperCase());
 
   const handleChange = (e) => {
     const { name, checked } = e.target;
@@ -63,6 +67,95 @@ const APaging = () => {
   //     [name]: value
   //   }));
   // };
+
+  const handleDownloadExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('AP Outstanding');
+
+    // Title Row
+    sheet.mergeCells('A1', 'K1'); // Adjust column span as per total columns
+    const titleCell = sheet.getCell('A1');
+    titleCell.value = 'AP Outstanding Report';
+    titleCell.font = { size: 16, bold: true, color: { argb: 'FF34449B' } };
+    titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    sheet.addRow([]);
+
+    // Headers from reportColumns
+    const headers = reportColumns.map(col => col.header);
+    const keys = reportColumns.map(col => col.accessorKey);
+    const headerRow = sheet.addRow(headers);
+
+    headerRow.eachCell(cell => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF34449B' },
+      };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+    });
+
+    // Add data rows
+    // Add data rows with formatting
+    rowData.forEach((item) => {
+      const row = keys.map((key) => {
+        const value = item[key];
+        if (
+          typeof value === 'string' &&
+          value !== '' &&
+          !isNaN(value) &&
+          value.trim() !== ''
+        ) {
+          return Number(value).toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+        }
+        return value ?? '';
+      });
+
+      const dataRow = sheet.addRow(row);
+
+      dataRow.eachCell((cell, colNumber) => {
+        const key = keys[colNumber - 1];
+        const isTextColumn = key === 'subledgerName';
+
+        cell.alignment = {
+          horizontal: isTextColumn ? 'left' : 'right',
+          vertical: 'middle',
+        };
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
+      });
+    });
+
+    // Auto-fit column widths
+    sheet.columns.forEach(col => {
+      let maxLength = 10;
+      col.eachCell({ includeEmpty: true }, cell => {
+        const cellValue = cell.value ? cell.value.toString() : '';
+        if (cellValue.length > maxLength) maxLength = cellValue.length;
+      });
+      col.width = maxLength + 5;
+    });
+
+    // Export
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    saveAs(blob, 'AP_Outstanding_Report.xlsx');
+  };
 
   const handleDateChange = (field, date) => {
     const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
@@ -111,17 +204,98 @@ const APaging = () => {
     }
   };
   const reportColumns = [
-    { accessorKey: 'subledgerCode', header: 'Vendor Code', size: 140 },
-    { accessorKey: 'name', header: 'Vendor', size: 140 },
-    { accessorKey: 'amount', header: 'Amount', size: 140 },
-    { accessorKey: 'outstanding', header: 'Outstanding', size: 140 },
-    { accessorKey: 'unadjusted', header: 'Unadjusted', size: 140 },
-    { accessorKey: 'totalDue', header: 'Total Due', size: 140 },
-    { accessorKey: 'mslab1', header: 'Below 30 Days', size: 140 },
-    { accessorKey: 'mslab2', header: 'Days 30 - 60', size: 140 },
-    { accessorKey: 'mslab3', header: 'Days 60 - 90', size: 140 },
-    { accessorKey: 'mslab4', header: 'Days 90 - 120', size: 140 },
-    { accessorKey: 'mslab5', header: 'Days 120+', size: 140 }
+    { accessorKey: 'subledgerName', header: 'Vendor', size: 140 },
+    // { accessorKey: 'name', header: 'Vendor', size: 140 },
+    {
+      accessorKey: 'amount', header: 'Amount', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() !== undefined && cell.getValue() !== null
+          ? Number(cell.getValue()).toLocaleString('en-IN')
+          : '-'}
+      </div>),
+      muiTableHeadCellProps: {
+        align: 'right'
+      }
+    },
+    {
+      accessorKey: 'outstanding', header: 'Outstanding', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() !== undefined && cell.getValue() !== null
+          ? Number(cell.getValue()).toLocaleString('en-IN')
+          : '-'}
+      </div>),
+      muiTableHeadCellProps: {
+        align: 'right'
+      }
+    },
+    {
+      accessorKey: 'unadjusted', header: 'Unadjusted', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() !== undefined && cell.getValue() !== null
+          ? Number(cell.getValue()).toLocaleString('en-IN')
+          : '-'}
+      </div>),
+      muiTableHeadCellProps: {
+        align: 'right'
+      }
+    },
+    {
+      accessorKey: 'totalDue', header: 'Total Due', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() !== undefined && cell.getValue() !== null
+          ? Number(cell.getValue()).toLocaleString('en-IN')
+          : '-'}
+      </div>),
+      muiTableHeadCellProps: {
+        align: 'right'
+      }
+    },
+    {
+      accessorKey: 'mslab1', header: 'Below 30 Days', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() !== undefined && cell.getValue() !== null
+          ? Number(cell.getValue()).toLocaleString('en-IN')
+          : '-'}
+      </div>),
+      muiTableHeadCellProps: {
+        align: 'right'
+      }
+    },
+    {
+      accessorKey: 'mslab2', header: 'Days 30 - 60', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() !== undefined && cell.getValue() !== null
+          ? Number(cell.getValue()).toLocaleString('en-IN')
+          : '-'}
+      </div>),
+      muiTableHeadCellProps: {
+        align: 'right'
+      }
+    },
+    {
+      accessorKey: 'mslab3', header: 'Days 60 - 90', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() !== undefined && cell.getValue() !== null
+          ? Number(cell.getValue()).toLocaleString('en-IN')
+          : '-'}
+      </div>),
+      muiTableHeadCellProps: {
+        align: 'right'
+      }
+    },
+    {
+      accessorKey: 'mslab4', header: 'Days 90 - 120', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() !== undefined && cell.getValue() !== null
+          ? Number(cell.getValue()).toLocaleString('en-IN')
+          : '-'}
+      </div>),
+      muiTableHeadCellProps: {
+        align: 'right'
+      }
+    },
+    {
+      accessorKey: 'mslab5', header: 'Days 120+', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() !== undefined && cell.getValue() !== null
+          ? Number(cell.getValue()).toLocaleString('en-IN')
+          : '-'}
+      </div>),
+      muiTableHeadCellProps: {
+        align: 'right'
+      }
+    }
   ];
 
   const handleSearch = async () => {
@@ -309,7 +483,7 @@ const APaging = () => {
         </div>
         {listView && (
           <div className="mt-4">
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={'AP Outstanding'} />
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={'AP Outstanding'} sumFields={['outstanding', 'amount', 'totalDue']} handleDownloadExcel={handleDownloadExcel} />
           </div>
         )}
       </div>
