@@ -34,7 +34,8 @@ const CostInvoice = () => {
   const location = useLocation();
   const { docNo, screenCode } = location.state || {};
   const [showForm, setShowForm] = useState(false);
-  const [data, setData] = useState(true);
+  const [routeForm, setRouteForm] = useState(false);
+  const [data, setData] = useState([]);
   const [invoiceData, setInvoiceData] = useState(null);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
@@ -61,29 +62,36 @@ const CostInvoice = () => {
   const [sectionOptions, setSectionOptions] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-  useEffect(() => {
-    if (docId && screenCode) {
-      handleDocClick(docId, screenCode);
-    }
-  }, [docId, screenCode]);
-  const handleDocClick = async (docId, screenCode) => {
-    // handleView();
-    setShowForm(true);
+useEffect(() => {
+  const { docNo, screenCode } = location.state || {};
+  if (docNo && screenCode) {
+    handleDocClick(docNo, screenCode);
+    console.log("Show form before", showForm );
+    setShowForm(false);
+    console.log("Show form after", showForm );
+  }
+}, [location,docNo,screenCode]);
+
+const handleDocClick = async (docNo, screenCode) => { 
     try {
       let response;
       if(screenCode === 'CI'){
       response = await apiCalls(
         'get',
-        `/costInvoice/getCostByDocIdandScreenCode?docId=${docId}&ScreenCode=${screenCode}`
+        `/costInvoice/getCostByDocIdandScreenCode?docId=${docNo}&ScreenCode=${screenCode}`
       );}
       else{
       response = await apiCalls(
         'get',
-        `/costInvoice/getDebitNoteByDocIdandScreenCode?docId=${docId}&ScreenCode=${screenCode}`
+        `/costInvoice/getDebitNoteByDocIdandScreenCode?docId=${docNo}&ScreenCode=${screenCode}`
       );}
-  
       if (response.status === true) {
-        {screenCode === 'CI' ? setInvoiceData(response.paramObjectsMap.costInvoiceVO || {}) : setInvoiceData(response.paramObjectsMap.costDebitNoteVO || {});}
+        let costRepVO;
+        if(screenCode === 'CI'){
+          costRepVO = response.paramObjectsMap.costInvoiceVO
+        }else{
+          costRepVO = response.paramObjectsMap.costDebitNoteVO
+        }
       } else {
         console.error('API Error:', response);
       }
@@ -482,6 +490,7 @@ const CostInvoice = () => {
   const listViewColumns = [
     { accessorKey: 'vid', header: 'Invoice No', size: 140 },
     { accessorKey: 'vdate', header: 'Invoice Date', size: 140 },
+    { accessorKey: 'docId', header: 'Doc No', size: 140 },
     { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 },
     { accessorKey: 'mode', header: 'Mode', size: 140 },
     { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 }
@@ -638,10 +647,12 @@ const CostInvoice = () => {
   };
 
   useEffect(() => {
-    getAllCostInvoiceByOrgId();
     getCostInvoiceDocId();
     getJobNoFromTmsJobCard();
     getChargeDetailsFromChargeType();
+    if(!routeForm){
+    getAllCostInvoiceByOrgId();
+    }
   }, []);
 
   useEffect(() => {
@@ -655,7 +666,7 @@ const CostInvoice = () => {
         `/costInvoice/getAllCostInvoiceByOrgId?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}`
       );
       setData(result.paramObjectsMap.costInvoiceVO.reverse() || []);
-      setShowForm(true);
+      setShowForm(!showForm);
       console.log('costInvoiceVO', result);
     } catch (err) {
       console.log('error', err);
@@ -827,13 +838,13 @@ const CostInvoice = () => {
 
   const getAllCostInvoiceById = async (row) => {
     console.log('first', row);
-    setShowForm(false);
+    setShowForm(!showForm);
     try {
       const result = await apiCalls('get', `/costInvoice/getAllCostInvoiceById?id=${row.original.id}`);
 
       if (result) {
         const costVO = result.paramObjectsMap.costInvoiceVO[0];
-        setListViewData(costVO);
+        setListViewData([costVO]);
         setEditId(row.original.id);
         setPartyId(costVO.supplierId);
         getCurrencyAndExratesForMatchingParties(costVO.supplierCode);
@@ -959,72 +970,154 @@ const CostInvoice = () => {
     }
   };
 
-  const handleInputChange = (e, fieldType, index) => {
-    const { name, value } = e.target;
+  // const handleInputChange = (e, fieldType, index) => {
+  //   const { name, value } = e.target;
 
-    if (name === 'gstType') {
-      if (formData.gstType !== value) {
-        setChargerCostInvoice([
-          {
-            chargeCode: '',
-            chargeLedger: '',
-            chargeName: '',
-            currency: '',
-            exRate: '',
-            exempted: '',
-            govChargeCode: '',
-            gst: '',
-            gstPercent: '',
-            jobNo: '',
-            party: '',
-            ledger: '',
-            description: '',
-            qty: '',
-            rate: '',
-            sac: '',
-            fcAmount: '',
-            lcAmount: '',
-            taxable: ''
-          }
-        ]);
+  //   if (name === 'gstType') {
+  //     if (formData.gstType !== value) {
+  //       setChargerCostInvoice([
+  //         {
+  //           chargeCode: '',
+  //           chargeLedger: '',
+  //           chargeName: '',
+  //           currency: '',
+  //           exRate: '',
+  //           exempted: '',
+  //           govChargeCode: '',
+  //           gst: '',
+  //           gstPercent: '',
+  //           jobNo: '',
+  //           party: '',
+  //           ledger: '',
+  //           description: '',
+  //           qty: '',
+  //           rate: '',
+  //           sac: '',
+  //           fcAmount: '',
+  //           lcAmount: '',
+  //           taxable: ''
+  //         }
+  //       ]);
 
-        setTdsCostInvoiceDTO([{ section: '', tdsWithHolding: '', tdsWithHoldingPer: '', totTdsWhAmnt: '' }]);
-        setShowChargeDetails(false);
-        setFormData((prevFormData) => ({
-          ...prevFormData,
-          gstType: value,
-          actBillCurrAmt: '',
-          actBillLcAmt: '',
-          gstInputLcAmt: '',
-          netBillCurrAmt: '',
-          netBillLcAmt: '',
-          roundOff: '',
-          totChargesBillCurrAmt: '',
-          totChargesLcAmt: ''
-        }));
-      }
-    }
-    // else if (name === 'currency') {
-    //   const selectedCurrency = exRates.find((item) => item.currency === value);
-    //   setFormData((prevFormData) => ({
-    //     ...prevFormData,
-    //     [name]: value.toUpperCase(),
-    //     exRate: selectedCurrency ? selectedCurrency.buyingExRate : ''
-    //   }));
-    // }
-    else if (fieldType === 'tdsCostInvoiceDTO') {
-      setTdsCostInvoiceDTO((prevData) => prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item)));
+  //       setTdsCostInvoiceDTO([{ section: '', tdsWithHolding: '', tdsWithHoldingPer: '', totTdsWhAmnt: '' }]);
+  //       setShowChargeDetails(false);
+  //       setFormData((prevFormData) => ({
+  //         ...prevFormData,
+  //         gstType: value,
+  //         actBillCurrAmt: '',
+  //         actBillLcAmt: '',
+  //         gstInputLcAmt: '',
+  //         netBillCurrAmt: '',
+  //         netBillLcAmt: '',
+  //         roundOff: '',
+  //         totChargesBillCurrAmt: '',
+  //         totChargesLcAmt: ''
+  //       }));
+  //     }
+  //   }
+  //   // else if (name === 'currency') {
+  //   //   const selectedCurrency = exRates.find((item) => item.currency === value);
+  //   //   setFormData((prevFormData) => ({
+  //   //     ...prevFormData,
+  //   //     [name]: value.toUpperCase(),
+  //   //     exRate: selectedCurrency ? selectedCurrency.buyingExRate : ''
+  //   //   }));
+  //   // }
+  //   else if (fieldType === 'tdsCostInvoiceDTO') {
+  //     setTdsCostInvoiceDTO((prevData) => prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item)));
 
-      if (name === 'tdsWithHolding') {
-        getAllSectionName(value);
-      }
-    } else {
+  //     if (name === 'tdsWithHolding') {
+  //       getAllSectionName(value);
+  //     }
+  //   } else {
+  //     setFormData((prevFormData) => ({
+  //       ...prevFormData,
+  //       [name]: value.toUpperCase()
+  //     }));
+  //   }
+  // };
+
+  const handleInputChange = (e, fieldType, index, fieldName) => {
+  let name, value;
+
+  if (e && e.target) {
+    // Standard input case
+    name = e.target.name;
+    value = e.target.value;
+  } else {
+    // Custom input (like DatePicker or programmatic call)
+    name = fieldName;
+    value = e;
+  }
+
+  if (name === 'gstType') {
+    if (formData.gstType !== value) {
+      setChargerCostInvoice([
+        {
+          chargeCode: '',
+          chargeLedger: '',
+          chargeName: '',
+          currency: '',
+          exRate: '',
+          exempted: '',
+          govChargeCode: '',
+          gst: '',
+          gstPercent: '',
+          jobNo: '',
+          party: '',
+          ledger: '',
+          description: '',
+          qty: '',
+          rate: '',
+          sac: '',
+          fcAmount: '',
+          lcAmount: '',
+          taxable: ''
+        }
+      ]);
+
+      setTdsCostInvoiceDTO([
+        { section: '', tdsWithHolding: '', tdsWithHoldingPer: '', totTdsWhAmnt: '' }
+      ]);
+
+      setShowChargeDetails(false);
+
       setFormData((prevFormData) => ({
         ...prevFormData,
-        [name]: value.toUpperCase()
+        gstType: value,
+        actBillCurrAmt: '',
+        actBillLcAmt: '',
+        gstInputLcAmt: '',
+        netBillCurrAmt: '',
+        netBillLcAmt: '',
+        roundOff: '',
+        totChargesBillCurrAmt: '',
+        totChargesLcAmt: ''
       }));
     }
-  };
+
+  } else if (fieldType === 'tdsCostInvoiceDTO') {
+    setTdsCostInvoiceDTO((prevData) =>
+      prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item))
+    );
+
+    if (name === 'tdsWithHolding') {
+      getAllSectionName(value);
+    }
+
+  } else {
+    const upperCaseFields = [
+      'mode', 'supplierType', 'currency', 'costInvoiceNo',
+      'utrRef', 'purVoucherNo', 'supplierCode', 'supplierGstIn',
+      'supplierGstInCode'
+    ];
+
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: upperCaseFields.includes(name) && value ? value.toUpperCase() : value
+    }));
+  }
+};
 
   const getPartyName = async (partType) => {
     try {
@@ -1035,33 +1128,49 @@ const CostInvoice = () => {
     }
   };
 
-  const handleSelectPartyChange = (e) => {
-    const value = e.target.value;
+  // const handleSelectPartyChange = (e) => {
+  //   const value = e.target.value;
 
-    partyName.forEach((emp, index) => {
-      console.log(`Employee ${index}:`, emp);
-    });
+  //   partyName.forEach((emp, index) => {
+  //     console.log(`Employee ${index}:`, emp);
+  //   });
 
-    const selectedEmp = partyName.find((emp) => emp.partyName === value);
+  //   const selectedEmp = partyName.find((emp) => emp.partyName === value);
 
-    if (selectedEmp) {
-      console.log('Selected Employee:', selectedEmp);
-      setFormData((prevData) => ({
-        ...prevData,
-        supplierName: selectedEmp.partyName,
-        supplierCode: selectedEmp.partyCode,
-        supplierId: selectedEmp.id
-      }));
-      setPartyId(selectedEmp.id);
-      getStateName(selectedEmp.id);
-      getCurrencyAndExratesForMatchingParties(selectedEmp.partyCode);
-      getTdsDetailsFromPartyMasterSpecialTDS(selectedEmp.partyCode);
-      getCreditDaysFromVendor(selectedEmp.partyCode);
-    } else {
-      console.log('No employee found with the given code:', value);
-    }
-  };
-
+  //   if (selectedEmp) {
+  //     console.log('Selected Employee:', selectedEmp);
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       supplierName: selectedEmp.partyName,
+  //       supplierCode: selectedEmp.partyCode,
+  //       supplierId: selectedEmp.id
+  //     }));
+  //     setPartyId(selectedEmp.id);
+  //     getStateName(selectedEmp.id);
+  //     getCurrencyAndExratesForMatchingParties(selectedEmp.partyCode);
+  //     getTdsDetailsFromPartyMasterSpecialTDS(selectedEmp.partyCode);
+  //     getCreditDaysFromVendor(selectedEmp.partyCode);
+  //   } else {
+  //     console.log('No employee found with the given code:', value);
+  //   }
+  // };
+const handleSelectPartyChange = (value) => {
+  const selectedEmp = partyName.find((emp) => emp.partyName === value);
+  
+  if (selectedEmp) {
+    setFormData((prevData) => ({
+      ...prevData,
+      supplierName: selectedEmp.partyName,
+      supplierCode: selectedEmp.partyCode,
+      supplierId: selectedEmp.id
+    }));
+    setPartyId(selectedEmp.id);
+    getStateName(selectedEmp.id);
+    getCurrencyAndExratesForMatchingParties(selectedEmp.partyCode);
+    getTdsDetailsFromPartyMasterSpecialTDS(selectedEmp.partyCode);
+    getCreditDaysFromVendor(selectedEmp.partyCode);
+  }
+};
   const getStateName = async (partId) => {
     try {
       const response = await apiCalls('get', `/costInvoice/getPartyStateDetails?orgId=${orgId}&id=${partId}`);
@@ -1534,11 +1643,14 @@ const CostInvoice = () => {
     }
   };
 
-  const handleView = () => {
-    setShowForm(!showForm);
-    handleClear();
-  };
-
+const handleView = () => {
+  console.log("handle view b",showForm);
+  setShowForm(!showForm);
+  console.log("handle view a",showForm);
+  if (!showForm) {
+    handleClear(); 
+  }
+}
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
@@ -1770,13 +1882,13 @@ const CostInvoice = () => {
             <div className=" justify-content-start">
               {editId && !showForm && (formData.mode === 'SUBMIT' || listViewData.mode === 'SUBMIT') && (
                 <>
-                  {formData.approveStatus === 'Approved' && (
+                  {formData?.approveStatus === 'Approved' && (
                     <Stack direction="row" spacing={2}>
                       <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
                       <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
                     </Stack>
                   )}
-                  {formData.approveStatus === 'Rejected' && (
+                  {formData?.approveStatus === 'Rejected' && (
                     <Stack direction="row" spacing={2}>
                       <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
                       <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
@@ -1856,8 +1968,8 @@ const CostInvoice = () => {
               )}
               {!showForm && (<ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />)}
               {!showForm && (<ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />)}
-              {listViewData.approveStatus === 'Approved' || showForm ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
-              {(listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />)}
+              {listViewData?.approveStatus === 'Approved' || showForm ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
+              {(listViewData?.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />)}
             </div>
           </div>
           {!showForm && (
@@ -1907,17 +2019,6 @@ const CostInvoice = () => {
                     {fieldErrors.mode && <FormHelperText style={{ color: 'red' }}>{fieldErrors.mode}</FormHelperText>}
                   </FormControl>
                 </div>
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small" variant="outlined" error={!!fieldErrors.product}>
-                    <InputLabel id="product">Product</InputLabel>
-                    <Select labelId="product" label="Select product" name="product" value={formData.product} onChange={handleInputChange}>
-                      <MenuItem value="SO">SO</MenuItem>
-                      <MenuItem value="AO">AO</MenuItem>
-                    </Select>
-                    {fieldErrors.product && <FormHelperText style={{ color: 'red' }}>{fieldErrors.product}</FormHelperText>}
-                  </FormControl>
-                </div> */}
-
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField
@@ -1925,7 +2026,7 @@ const CostInvoice = () => {
                       size="small"
                       name="purVoucherNo"
                       inputProps={{ maxLength: 30 }}
-                      value={formData.purVoucherNo}
+                      value={formData.purVoucherNo || ''}
                       onChange={handleInputChange}
                       disabled
                       error={!!fieldErrors.purVoucherNo}
@@ -1939,7 +2040,7 @@ const CostInvoice = () => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         label="Purchase Voucher Date"
-                        value={formData.purVoucherDate}
+                        value={formData.purVoucherDate || null}
                         onChange={(date) => handleDateChange('purVoucherDate', date)}
                         disabled
                         slotProps={{
@@ -1951,44 +2052,12 @@ const CostInvoice = () => {
                     {fieldErrors.purVoucherDate && <p className="dateErrMsg">Pur Voucher Date is required</p>}
                   </FormControl>
                 </div>
-
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <TextField
-                      label="Cost Invoice No"
-                      size="small"
-                      name="costInvoiceNo"
-                      inputProps={{ maxLength: 30 }}
-                      value={formData.costInvoiceNo}
-                      onChange={handleInputChange}
-                      error={!!fieldErrors.costInvoiceNo}
-                      helperText={fieldErrors.costInvoiceNo}
-                    />
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        label="Cost Invoice Date"
-                        value={formData.costInvoiceDate}
-                        onChange={(date) => handleDateChange('costInvoiceDate', date)}
-                        slotProps={{
-                          textField: { size: 'small', clearable: true }
-                        }}
-                        format="DD-MM-YYYY"
-                      />
-                    </LocalizationProvider>
-                    {fieldErrors.costInvoiceDate && <p className="dateErrMsg">Cost Invoice Date is required</p>}
-                  </FormControl>
-                </div> */}
-
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel id="demo-simple-select-label">Supplier Type</InputLabel>
                     <Select
                       labelId="supplierTypeLabel"
-                      value={formData.supplierType}
+                      value={formData.supplierType || ''}
                       name="supplierType"
                       onChange={handleInputChange}
                       label="Supplier Type"
@@ -2001,32 +2070,6 @@ const CostInvoice = () => {
                     {fieldErrors.supplierType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierType}</FormHelperText>}
                   </FormControl>
                 </div>
-
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label-party">Supplier Name</InputLabel>
-                    <Select
-                      labelId="demo-simple-select-label-party"
-                      id="demo-simple-select-party"
-                      label="Supplier Name"
-                      required
-                      value={formData.supplierName || (partyName.length === 1 ? partyName[0].partyName : '')}
-                      onChange={handleSelectPartyChange}
-                      disabled={formData.mode === 'SUBMIT'}
-                      error={!!fieldErrors.supplierName}
-                      helperText={fieldErrors.supplierName}
-                    >
-                      {partyName &&
-                        partyName.map((par, index) => (
-                          <MenuItem key={index} value={par.partyName}>
-                            {par.partyName}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                    {fieldErrors.supplierName && <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierName}</FormHelperText>}
-                  </FormControl>
-                </div> */}
-
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel id="demo-simple-select-label-party">Supplier Name</InputLabel>
@@ -2036,7 +2079,8 @@ const CostInvoice = () => {
                       label="Supplier Name"
                       required
                       value={formData.supplierName || ''}
-                      onChange={handleSelectPartyChange}
+                      // onChange={handleSelectPartyChange}
+                      onChange={(e) => handleSelectPartyChange(e.target.value)}
                       disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.supplierName}
                       helperText={fieldErrors.supplierName}
@@ -2051,7 +2095,6 @@ const CostInvoice = () => {
                     {fieldErrors.supplierName && <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierName}</FormHelperText>}
                   </FormControl>
                 </div>
-
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField
@@ -2060,7 +2103,8 @@ const CostInvoice = () => {
                       name="supplierCode"
                       disabled
                       inputProps={{ maxLength: 30 }}
-                      value={formData.supplierCode}
+                      // value={formData.supplierCode}
+                      value={formData.supplierCode || ''}
                       onChange={handleInputChange}
                       error={!!fieldErrors.supplierCode}
                       helperText={fieldErrors.supplierCode}
@@ -2074,9 +2118,9 @@ const CostInvoice = () => {
                       size="small"
                       name="vid"
                       inputProps={{ maxLength: 30 }}
-                      value={formData.vid}
+                      value={formData.vid || ''}
                       onChange={handleInputChange}
-                      disabled={editId}
+                      disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.vid}
                       helperText={fieldErrors.vid}
                     />
@@ -2087,8 +2131,8 @@ const CostInvoice = () => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         label="V Date"
-                        disabled={editId}
-                        value={formData.vdate}
+                        disabled={formData.mode === 'SUBMIT'}
+                        value={formData.vdate || null}
                         onChange={(date) => handleDateChange('vdate', date)}
                         slotProps={{
                           textField: { size: 'small', clearable: true }
@@ -2136,7 +2180,7 @@ const CostInvoice = () => {
                       name="supplierGstIn"
                       disabled
                       inputProps={{ maxLength: 30 }}
-                      value={formData.supplierGstIn}
+                      value={formData.supplierGstIn || ''}
                       onChange={handleInputChange}
                       error={!!fieldErrors.supplierGstIn}
                       helperText={fieldErrors.supplierGstIn}
@@ -2173,7 +2217,7 @@ const CostInvoice = () => {
                       size="small"
                       name="supplierBillNo"
                       inputProps={{ maxLength: 30 }}
-                      value={formData.supplierBillNo}
+                      value={formData.supplierBillNo || ''}
                       onChange={handleInputChange}
                       disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.supplierBillNo}
@@ -2191,53 +2235,13 @@ const CostInvoice = () => {
                       multiline
                       disabled
                       inputProps={{ maxLength: 30 }}
-                      value={formData.address}
+                      value={formData.address || ''}
                       onChange={handleInputChange}
                       error={!!fieldErrors.address}
                       helperText={fieldErrors.address}
                     />
                   </FormControl>
                 </div>
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.currency}>
-                    <InputLabel id="demo-simple-select-label">{<span>Currency</span>}</InputLabel>
-                    <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      label="Currency"
-                      onChange={handleInputChange}
-                      name="currency"
-                      // value={formData.currency}
-                      value={formData.currency || (exRates.length === 1 ? exRates[0].currency : '')}
-                      disabled={formData.mode === 'SUBMIT'}
-                    >
-                      {exRates &&
-                        exRates.map((item) => (
-                          <MenuItem key={item.id} value={item.currency}>
-                            {item.currency}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                    {fieldErrors.currency && <FormHelperText style={{ color: 'red' }}>Currency is required</FormHelperText>}
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <TextField
-                      label="ExRate"
-                      name="exRate"
-                      size="small"
-                      type="number"
-                      inputProps={{ maxLength: 30 }}
-                      value={formData.exRate}
-                      onChange={handleInputChange}
-                      disabled
-                      error={!!fieldErrors.exRate}
-                      helperText={fieldErrors.exRate}
-                    />
-                  </FormControl>
-                </div> */}
-
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField
@@ -2246,7 +2250,7 @@ const CostInvoice = () => {
                       type="number"
                       name="creditDays"
                       inputProps={{ maxLength: 30 }}
-                      value={formData.creditDays}
+                      value={formData.creditDays || ''}
                       onChange={handleInputChange}
                       disabled
                       error={!!fieldErrors.creditDays}
@@ -2254,62 +2258,13 @@ const CostInvoice = () => {
                     />
                   </FormControl>
                 </div>
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl fullWidth>
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        label="Due Date"
-                        disabled
-                        value={formData.dueDate}
-                        onChange={(date) => handleDateChange('dueDate', date)}
-                        slotProps={{
-                          textField: { size: 'small', clearable: true }
-                        }}
-                        format="DD-MM-YYYY"
-                      />
-                    </LocalizationProvider>
-                    {fieldErrors.dueDate && <p className="dateErrMsg">Due Date is required</p>}
-                  </FormControl>
-                </div> 
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
-                    <TextField
-                      label="Shipper Ref No"
-                      size="small"
-                      name="shipperRefNo"
-                      multiline
-                      inputProps={{ maxLength: 30 }}
-                      value={formData.shipperRefNo}
-                      onChange={handleInputChange}
-                      disabled={formData.mode === 'SUBMIT'}
-                      error={!!fieldErrors.shipperRefNo}
-                      helperText={fieldErrors.shipperRefNo}
-                    />
-                  </FormControl>
-                </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <TextField
-                      label="Other Info"
-                      size="small"
-                      name="otherInfo"
-                      multiline
-                      inputProps={{ maxLength: 30 }}
-                      value={formData.otherInfo}
-                      onChange={handleInputChange}
-                      disabled={formData.mode === 'SUBMIT'}
-                      error={!!fieldErrors.otherInfo}
-                      helperText={fieldErrors.otherInfo}
-                    />
-                  </FormControl>
-                </div>*/}
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label">TAX Type</InputLabel>
+                    <InputLabel id="demo-simple-select-label">Tax Type</InputLabel>
                     <Select
                       labelId="gstType"
                       name="gstType"
-                      value={formData.gstType}
+                      value={formData.gstType || ''}
                       onChange={handleInputChange}
                       disabled={formData.mode === 'SUBMIT'}
                       label="TAX Type"
@@ -2327,7 +2282,7 @@ const CostInvoice = () => {
                     <InputLabel id="demo-simple-select-label">Payment</InputLabel>
                     <Select
                       labelId="payment"
-                      value={formData.payment}
+                      value={formData.payment || ''}
                       onChange={handleInputChange}
                       disabled={formData.mode === 'SUBMIT'}
                       label="Payment"
@@ -2342,22 +2297,6 @@ const CostInvoice = () => {
                     {fieldErrors.payment && <FormHelperText style={{ color: 'red' }}>{fieldErrors.payment}</FormHelperText>}
                   </FormControl>
                 </div>
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <TextField
-                      label="Accrual ID"
-                      size="small"
-                      name="accuralid"
-                      multiline
-                      inputProps={{ maxLength: 30 }}
-                      value={formData.accuralid}
-                      onChange={handleInputChange}
-                      disabled={formData.mode === 'SUBMIT'}
-                      error={!!fieldErrors.accuralid}
-                      helperText={fieldErrors.accuralid}
-                    />
-                  </FormControl>
-                </div> */}
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField
@@ -2366,7 +2305,7 @@ const CostInvoice = () => {
                       name="utrRef"
                       multiline
                       inputProps={{ maxLength: 30 }}
-                      value={formData.utrRef}
+                      value={formData.utrRef || ''}
                       onChange={handleInputChange}
                       disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.utrRef}
@@ -2382,7 +2321,7 @@ const CostInvoice = () => {
                       name="remarks"
                       multiline
                       inputProps={{ maxLength: 30 }}
-                      value={formData.remarks}
+                      value={formData.remarks || ''}
                       onChange={handleInputChange}
                       disabled={formData.mode === 'SUBMIT'}
                       error={!!fieldErrors.remarks}
@@ -2613,6 +2552,34 @@ const CostInvoice = () => {
 <td className="border px-2 py-2">
   <Autocomplete
     options={jobNoList || []}
+    style={{ width: '180px' }}
+    getOptionLabel={(option) => `${option.jobNo} - ${option.shortName}`}
+    value={jobNoList.find(job => job.jobNo === row.jobNo) || null}
+    onChange={(event, newValue) => {
+      const updatedData = [...chargerCostInvoice];
+      updatedData[index] = {
+        ...updatedData[index],
+        jobNo: newValue?.jobNo || '',
+        party: newValue?.customerName || ''
+      };
+      setChargerCostInvoice(updatedData);
+    }}
+    renderInput={(params) => (
+      <TextField
+        {...params}
+        variant="outlined"
+        error={Boolean(costInvoiceErrors[index]?.jobNo)}
+        helperText={costInvoiceErrors[index]?.jobNo}
+        size="small"
+      />
+    )}
+    isOptionEqualToValue={(option, value) => option.jobNo === value.jobNo}
+    disabled={formData.mode === 'SUBMIT'}
+  />
+</td>
+{/* <td className="border px-2 py-2">
+  <Autocomplete
+    options={jobNoList || []}
     disableClearable
     getOptionLabel={(option) => `${option.jobNo} - ${option.shortName}`}
     value={jobNoList.find(job => job.jobNo === row.jobNo) || null}
@@ -2638,17 +2605,7 @@ const CostInvoice = () => {
     isOptionEqualToValue={(option, value) => option.jobNo === value.jobNo}
     className={costInvoiceErrors[index]?.jobNo ? 'error' : ''}
   />
-</td>
-                                          {/* <td className="border px-2 py-2">
-                                            <input
-                                              type="text"
-                                              value={row.party}
-                                              disabled
-                                              style={{ width: '300px' }}
-                                              className={costInvoiceErrors[index]?.party ? 'error form-control' : 'form-control'}
-                                            />
-                                          </td> */}
-
+</td> */}
                                           <td className="border px-2 py-2">
                                             <select
                                               value={row.chargeCode}
@@ -3450,7 +3407,6 @@ const CostInvoice = () => {
             </>
           )}
           {showForm && (
-            // <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getAllCostInvoiceById} />
             <CommonListViewTable
               data={data && data}
               columns={listViewColumns}

@@ -93,7 +93,7 @@ const docs = {
         },
         {
           id: 'mimrimRegister',
-          title: 'MIM Register',
+          title: 'Material Register',
           type: 'item',
           url: '/docs/MimRimRegister'
         }

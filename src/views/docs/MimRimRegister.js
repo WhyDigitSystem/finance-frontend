@@ -836,6 +836,7 @@ const handleDownloadExcel = async () => {
                 {/* <TableCell style={{ textAlign: 'center', width: '8%' }}>Amount</TableCell> */}
                 <TableCell style={{ textAlign: 'center', width: '6%' }}>Kit No</TableCell>
                 <TableCell style={{ textAlign: 'center',width: '15%' }}>Kit Name</TableCell>
+                <TableCell style={{ textAlign: 'center',width: '15%' }}>Kit Qty</TableCell>
                 <TableCell style={{ textAlign: 'center', width: '8%' }}>Product Code</TableCell>
                 <TableCell style={{ textAlign: 'center',width: '15%' }}>Product Name</TableCell>
                 <TableCell style={{ textAlign: 'center', width: '10%' }}>Product Qty</TableCell>
@@ -970,6 +971,7 @@ const handleDownloadExcel = async () => {
                       groups[kitId] = {
                         kitId,
                         kitName: item.kitName,
+                        kitQty: item.kitQty,
                         assets: []
                       };
                     }
@@ -1019,6 +1021,9 @@ const handleDownloadExcel = async () => {
                                 </TableCell>
                                 <TableCell rowSpan={kitGroup.assets.length}>
                                   {kitGroup.kitName}
+                                </TableCell>
+                                <TableCell rowSpan={kitGroup.assets.length} align='center'>
+                                  {kitGroup.kitQty}
                                 </TableCell>
                               </>
                             )}

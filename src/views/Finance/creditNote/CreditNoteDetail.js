@@ -679,12 +679,12 @@ const IrnCreditNote = () => {
     if (selectedBill) {
       setFormData((prev) => ({
         ...prev,
-        orgId: selectedBill?.orgId || '',
-        branch: selectedBill?.branch || '',
-        branchCode: selectedBill?.branchCode || '',
-        finYear: selectedBill?.finYear || '',
-        createdBy: selectedBill?.createdBy || '',
-        modifiedBy: selectedBill?.modifiedBy || '',
+        // orgId: selectedBill?.orgId || '',
+        // branch: selectedBill?.branch || '',
+        // branchCode: selectedBill?.branchCode || '',
+        // finYear: selectedBill?.finYear || '',
+        // createdBy: selectedBill?.createdBy || '',
+        // modifiedBy: selectedBill?.modifiedBy || '',
         stateNo: selectedBill?.stateNo || '',
         stateCode: selectedBill?.stateCode || '',
         vid: selectedBill?.vid || '',
@@ -1180,16 +1180,16 @@ const IrnCreditNote = () => {
         billCurrRate: parseInt(formData.exRate),
         bizMode: formData.bizMode,
         bizType: formData.bizType,
-        branch: formData.branch,
-        branchCode: formData.branchCode,
-        finYear: formData.finYear,
-        createdBy: formData.createdBy,
+        branch: branch,
+        branchCode: branchCode,
+        finYear: finYear,
+        createdBy: loginUserName,
         creditDays: formData.creditDays,
         creditRemarks: formData.creditRemarks,
         dueDate: formData.dueDate,
         gstType: formData.gstType,
         jobNo: formData.jobNo,
-        orgId: formData.orgId,
+        orgId: orgId,
         originBillNo: formData.originBillNo,
         originBillDate: formData.originBillDate,
         partyCode: formData.partyCode,
@@ -1654,14 +1654,45 @@ const IrnCreditNote = () => {
                     label="Party Code"
                     size="small"
                     value={formData.partyCode}
-                    // onChange={handleInputChange}
-                    // error={!!fieldErrors.partyCode}
-                    // helperText={fieldErrors.partyCode}
                     disabled
                   />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
+              <Autocomplete
+                options={originBillList}
+                getOptionLabel={(option) => option.docId || ''}
+                disabled={formData.status === 'TAX'}
+                sx={{ width: '100%' }}
+                size="small"
+                value={
+                  formData.originBillNo
+                    ? originBillList.find((c) => c.docId === formData.originBillNo) || null
+                    : null
+                }
+                onChange={(event, value) => {
+                  handleOriginBillSelection(value);
+                  setFormData((prev) => ({
+                    ...prev,
+                    originBillNo: value ? value.docId : ''
+                  }));
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Origin Bill"
+                    name="originBillNo"
+                    error={!!fieldErrors.originBillNo}
+                    helperText={fieldErrors.originBillNo}
+                    InputProps={{
+                      ...params.InputProps,
+                      style: { height: 40 }
+                    }}
+                  />
+                )}
+              />
+              </div>
+              {/* <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.originBillNo}>
                   <InputLabel id="originBillNo">Origin Bill</InputLabel>
                   <Select
@@ -1688,7 +1719,7 @@ const IrnCreditNote = () => {
                   </Select>
                   {fieldErrors.originBillNo && <FormHelperText>{fieldErrors.originBillNo}</FormHelperText>}
                 </FormControl>
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField

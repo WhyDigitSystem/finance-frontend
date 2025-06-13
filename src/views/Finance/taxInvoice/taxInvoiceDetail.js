@@ -86,6 +86,7 @@ const TaxInvoiceDetails = () => {
     approveOn: '',
     billCurr: 'INR',
     billCurrRate: 1,
+    partyShortName: '',
     // billCurr: '',
     // billCurrRate: '',
     billOfEntry: '',
@@ -119,6 +120,7 @@ const TaxInvoiceDetails = () => {
 
   const [errors, setErrors] = useState({
     address: '',
+    partyShortName: '',
     addressType: '',
     approveStatus: '',
     approveBy: '',
@@ -472,6 +474,7 @@ const TaxInvoiceDetails = () => {
     setFormData({
       address: '',
       addressType: '',
+      partyShortName: '',
       approveStatus: '',
       approveBy: '',
       approveOn: '',
@@ -518,6 +521,7 @@ const TaxInvoiceDetails = () => {
       address: '',
       addressType: '',
       approveStatus: '',
+      partyShortName: '',
       approveBy: '',
       approveOn: '',
       billCurr: '',
@@ -820,7 +824,7 @@ const TaxInvoiceDetails = () => {
 
   const GeneratePdf = (row) => {
     { confirmData.approveStatus === "Approved" ? setPdfData(confirmData) : setPdfData(listViewData); }
-    setDownloadPdf(true);
+    setDownloadPdf(!downloadPdf);
   };
 
   const getPartyName = async () => {
@@ -1212,6 +1216,7 @@ const handleSelectPartyChange = (e) => {
           partyCode: listValueVO.partyCode,
           partyId: listValueVO.partyId,
           partyName: listValueVO.partyName,
+          partyShortName: listValueVO.partyShortName,
           partyType: listValueVO.partyType,
           pinCode: listValueVO.pinCode,
           placeOfSupply: listValueVO.placeOfSupply,
@@ -1588,6 +1593,7 @@ const handleSave = async () => {
     partyCode: formData.partyCode,
     partyId: parseInt(partyId),
     partyName: formData.partyName,
+    partyShortName: formData.partyShortName,
     partyType: formData.partyType,
     pinCode: formData.pinCode,
     placeOfSupply: formData.placeOfSupply,
@@ -2050,7 +2056,7 @@ const handleMultiSelect = async (event) => {
                 <FormControl fullWidth size="small">
                   <TextField
                     label={<span>V Id <span style={{color: 'red', fontSize: '20px'}}>*</span></span>}
-                    disabled={editId}
+                    disabled={formData.status === 'TAX'}
                     size="small"
                     inputProps={{ maxLength: 30 }}
                     value={formData.vid}
@@ -2070,7 +2076,7 @@ const handleMultiSelect = async (event) => {
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
                       label={<span>V Date <span style={{color: 'red', fontSize: '20px'}}>*</span></span>}
-                      disabled={editId}
+                      disabled={formData.status === 'TAX'}
                       format="DD-MM-YYYY"
                       slotProps={{
                         textField: { size: 'small', clearable: true, error: errors.vdate, helperText: errors.vdate }

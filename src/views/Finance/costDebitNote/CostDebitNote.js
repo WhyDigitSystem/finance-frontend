@@ -11,7 +11,7 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { FormControl, FormHelperText, InputLabel, MenuItem, Select } from '@mui/material';
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select,Autocomplete } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import ActionButton from 'utils/ActionButton';
 import Button from '@mui/material/Button';
@@ -915,11 +915,9 @@ const CostDebitNote = () => {
 
   const handleSelectPartyChange = (e) => {
     const value = e.target.value;
-
+    console.log('Selected Employee:', value);
     const selectedEmp = partyName.find((emp) => emp.partyName === value);
-
     if (selectedEmp) {
-      console.log('Selected Employee:', selectedEmp);
       setFormData((prevData) => ({
         ...prevData,
         supplierName: selectedEmp.partyName,
@@ -1872,8 +1870,7 @@ const CostDebitNote = () => {
                     {fieldErrors.supplierType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierType}</FormHelperText>}
                   </FormControl>
                 </div>
-
-                <div className="col-md-3 mb-3">
+                {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel id="demo-simple-select-label-party">Supplier Name</InputLabel>
                     <Select
@@ -1896,8 +1893,66 @@ const CostDebitNote = () => {
                     </Select>
                     {fieldErrors.supplierName && <FormHelperText style={{ color: 'red' }}>{fieldErrors.supplierName}</FormHelperText>}
                   </FormControl>
-                </div>
-
+                </div> */}
+                <div className="col-md-3 mb-3">
+                {/* <Autocomplete
+                  options={partyName}
+                  getOptionLabel={(option) => option.partyName}
+                  disabled={formData.status === 'TAX'}
+                  sx={{ width: '100%' }}
+                  size="small"
+                  onChange={handleSelectPartyChange}
+                  value={formData.supplierName ? partyName.find((c) => c.partyName === formData.supplierName) : null}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Supplier Name"
+                      name="supplierName"
+                      error={!!fieldErrors.supplierName}
+                      helperText={fieldErrors.supplierName}
+                      InputProps={{
+                        ...params.InputProps,
+                        style: { height: 40 }
+                      }}
+                    />
+                  )}
+                /> */}
+                <Autocomplete
+  options={partyName}
+  getOptionLabel={(option) => option.partyName || ''}
+  disabled={formData.status === 'TAX'}
+  sx={{ width: '100%' }}
+  size="small"
+  value={
+    formData.supplierName
+      ? partyName.find((c) => c.partyName === formData.supplierName) || null
+      : null
+  }
+  onChange={(event, newValue) => {
+    setFormData((prev) => ({
+      ...prev,
+      supplierName: newValue ? newValue.partyName : '',
+      supplierCode: newValue ? newValue.partyCode : ''
+    }));
+    if (newValue) {
+      getOriginBillNoByParty(newValue.partyName);
+    }
+  }}
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Supplier Name"
+      name="supplierName"
+      error={!!fieldErrors.supplierName}
+      helperText={fieldErrors.supplierName}
+      InputProps={{
+        ...params.InputProps,
+        style: { height: 40 }
+      }}
+    />
+  )}
+/>
+              </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField
@@ -1913,7 +1968,7 @@ const CostDebitNote = () => {
                     />
                   </FormControl>
                 </div>
-                <div className="col-md-3 mb-3">
+                {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel id="demo-simple-select-label-party">Origin Bill No</InputLabel>
                     <Select
@@ -1936,8 +1991,67 @@ const CostDebitNote = () => {
                     </Select>
                     {fieldErrors.originBill && <FormHelperText style={{ color: 'red' }}>{fieldErrors.originBill}</FormHelperText>}
                   </FormControl>
-                </div>
-
+                </div> */}
+              <div className="col-md-3 mb-3">
+              {/* <Autocomplete
+                options={originBillVo}
+                getOptionLabel={(option) => option.docId || ''}
+                disabled={formData.status === 'TAX'}
+                sx={{ width: '100%' }}
+                size="small"
+                value={
+                  formData.originBill
+                    ? originBillVo.find((c) => c.docId === formData.originBill) || null
+                    : null
+                }
+                onChange={handleOriginBillChange}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Origin Bill"
+                    name="originBillNo"
+                    error={!!fieldErrors.originBill}
+                    helperText={fieldErrors.originBill}
+                    InputProps={{
+                      ...params.InputProps,
+                      style: { height: 40 }
+                    }}
+                  />
+                )}
+              /> */}
+              <Autocomplete
+  options={originBillVo}
+  getOptionLabel={(option) => option.docId || ''}
+  disabled={formData.status === 'TAX'}
+  sx={{ width: '100%' }}
+  size="small"
+  value={
+    formData.originBill
+      ? originBillVo.find((c) => c.docId === formData.originBill) || null
+      : null
+  }
+  onChange={(event, value) => {
+    handleOriginBillChange(value);
+    setFormData((prev) => ({
+      ...prev,
+      originBill: value ? value.docId : ''
+    }));
+  }}
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Origin Bill"
+      name="originBill"
+      error={!!fieldErrors.originBill}
+      helperText={fieldErrors.originBill}
+      InputProps={{
+        ...params.InputProps,
+        style: { height: 40 }
+      }}
+    />
+  )}
+/>
+              </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel id="supplierGSTInCode">Supplier TAX Code</InputLabel>
