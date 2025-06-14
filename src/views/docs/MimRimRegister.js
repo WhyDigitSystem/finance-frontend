@@ -896,7 +896,7 @@ function MimRimRegister() {
                               <TableCell style={{ textAlign: 'center', width: '10%' }}>Receiver</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '6%' }}>Kit No</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '15%' }}>Kit Name</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '15%' }}>Kit Qty</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '6%' }}>Kit Qty</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '8%' }}>Product Code</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '15%' }}>Product Name</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '10%' }}>Product Qty</TableCell>
@@ -913,7 +913,7 @@ function MimRimRegister() {
                               }
                               <TableCell style={{ textAlign: 'center', width: '6%' }}>HSN Code</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '15%' }}>Transporter Name</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '15%' }}>Kit Qty</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '6%' }}>Kit Qty</TableCell>
                               {
                                 formData.mim ?
                                   <TableCell style={{ textAlign: 'center', width: '8%' }}>Amount</TableCell> :
