@@ -61,6 +61,7 @@ const Receipt = () => {
     paymentMode: 'Bank Receipt',
     transactionMethod: 'NEFT',
     docId: '',
+    shortName:'',
     id:'',
     docDate: dayjs(),
     type: 'CUSTOMER',
@@ -84,6 +85,7 @@ const Receipt = () => {
 
   const [fieldErrors, setFieldErrors] = useState({
     paymentMode: '',
+    shortName:'',
     transactionMethod: '',
     docId: '',
     docDate: '',
@@ -128,13 +130,15 @@ const Receipt = () => {
         setFormData({
           ...formData,
           customerName: value,
-          customerCode: selectedCustomer.customerCode
+          customerCode: selectedCustomer.customerCode,
+          shortName: selectedCustomer.shortName
         });
         setInVoiceDetailsData([]);
         setFieldErrors({
           ...fieldErrors,
           customerName: false,
-          customerCode: false
+          customerCode: false,
+          shortName: false,
         });
       }
     } else {
@@ -153,7 +157,7 @@ const Receipt = () => {
     setFormData({
       paymentMode: 'Bank Receipt',
       transactionMethod: 'NEFT',
-      // docId: '',
+      shortName:'',
       docDate: dayjs(),
       type: '',
       customerName: '',
@@ -177,6 +181,7 @@ const Receipt = () => {
       paymentMode: '',
       transactionMethod: '',
       type: '',
+      shortName:'',
       customerName: '',
       customerCode: '',
       tdsAmt: '',
@@ -332,6 +337,7 @@ const Receipt = () => {
           paymentMode: receiptVO.receiptType,
           bankChargeAcc: receiptVO.bankChargeAcc,
           docId: receiptVO.docId,
+          shortName: receiptVO.shortName,
           id: receiptVO.id,
           docDate: dayjs(receiptVO.docDate),
           bankCharges: receiptVO.bankCharges,
@@ -364,8 +370,8 @@ const Receipt = () => {
             id: invoiceData.id,
             invNo: invoiceData.invNo,
             invDate: invoiceData.invDate ? dayjs(invoiceData.invDate, 'YYYY-MM-DD').format('YYYY-MM-DD') : null,
-            // refNo: invoiceData.refNo,
-            // refDate: invoiceData.refDate ? dayjs(invoiceData.refDate, 'YYYY-MM-DD').format('YYYY-MM-DD') : null,
+            refNo: invoiceData.refNo,
+            refDate: invoiceData.refDate ? dayjs(invoiceData.refDate, 'YYYY-MM-DD').format('YYYY-MM-DD') : null,
             currency: invoiceData.currency,
             exRate: invoiceData.exRate,
             gstAmt: invoiceData.gstAmt,
@@ -450,6 +456,7 @@ const Receipt = () => {
         chequeUtiNo: formData.chequeUtiNo,
         chequeUtiDate: formData.chequeUtiDate ? dayjs(formData.chequeUtiDate).format('YYYY-MM-DD') : null,
         remarks: formData.remarks,
+        shortName: formData.shortName,
         receiptInvDetailaDTO: receiptInvDetailVo
       };
 
@@ -962,9 +969,9 @@ const Receipt = () => {
                               </th>
                               <th className="px-2 py-2 text-white text-center"># Invoice</th>
                               <th className="px-2 py-2 text-white text-center" style={{ border: 'none' }}>Date</th>
-                              {/* <th className="px-2 py-2 text-white text-center">Ref No</th>
+                              <th className="px-2 py-2 text-white text-center">Ref No</th>
                                <th className="px-2 py-2 text-white text-center">Ref Date</th> 
-                               <th className="px-2 py-2 text-white text-center">Curr.</th>
+                               {/* <th className="px-2 py-2 text-white text-center">Curr.</th>
                               <th className="px-2 py-2 text-white text-center">Ex. Rate</th> */}
                               <th className="px-2 py-2 text-white text-center">Bill Amount</th>
                               <th className="px-2 py-2 text-white text-center">TAX</th>
@@ -1080,10 +1087,11 @@ const Receipt = () => {
                                     )}
                                   </LocalizationProvider>
                                 </td>
-                                {/* <td className="border px-2 py-2">
+                                <td className="border px-2 py-2">
                                   <input
                                     type="text"
                                     value={row.refNo}
+                                    disabled
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const regex = /^[a-zA-Z0-9\s-]*$/;
@@ -1114,6 +1122,7 @@ const Receipt = () => {
                                 <td className="border px-2 py-2">
                                   <input
                                     type="date"
+                                    disabled
                                     value={row.refDate}
                                     onChange={(e) => {
                                       const date = e.target.value;
@@ -1141,7 +1150,7 @@ const Receipt = () => {
                                     </div>
                                   )}
                                 </td>
-                                  <td className="border px-2 py-2">
+                                 {/*  <td className="border px-2 py-2">
                                     <input
                                       type="text"
                                       value={row.currency}

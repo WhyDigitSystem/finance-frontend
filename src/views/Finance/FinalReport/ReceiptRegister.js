@@ -11,7 +11,7 @@ import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import CommonReportTable from 'utils/CommonReportTable';
-import Button from '@mui/material/Button';
+import { getAllActiveBranches } from 'utils/CommonFunctions';
 function ReceiptReport() {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
@@ -21,14 +21,11 @@ function ReceiptReport() {
   const [partyNameList, setPartyNameList] = useState([]);
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
+  const [branchCodeList, setBranchCodeList] = useState([]);
   const [selectedSections, setSelectedSections] = useState({
     date: false,
-    customer: false
-  });
-
-  const [visibleSections, setVisibleSections] = useState({
-    date: false,
-    customer: false
+    customer: false,
+    branchCode: false
   });
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
@@ -37,37 +34,36 @@ function ReceiptReport() {
       [name]: checked
     }));
   };
-  const handleProceed = () => {
-    setVisibleSections({ ...selectedSections });
-  };
 
   const [formData, setFormData] = useState({
     fromDate: null,
     toDate: null,
-    // dateRange: [null, null],
     customer: 'All',
-    customerCode: 'All'
+    // customerCode: 'All',
+    branchCode:'All'
   });
   const [fieldErrors, setFieldErrors] = useState({
     fromDate: '',
     toDate: '',
     customer: '',
-    customerCode: ''
+    // customerCode: '',
+    branchCode:''
   });
   const handleClear = () => {
     setListView(false);
     setFormData({
-      // dateRange: [null, null],
       fromDate: null,
       toDate: null,
       customer: 'All',
-      customerCode: 'All'
+      customerCode: 'All',
+      branchCode:'All'
     });
     setFieldErrors({
       fromDate: '',
       toDate: '',
       customer: '',
-      customerCode: ''
+      customerCode: '',
+      branchCode:''
     });
     setRowData([]);
   };
@@ -120,6 +116,7 @@ function ReceiptReport() {
   };
   useEffect(() => {
     getPartyName();
+    getAllBranches();
   }, []);
   const getPartyName = async () => {
     try {
@@ -129,60 +126,56 @@ function ReceiptReport() {
       console.error('Error fetching gate passes:', error);
     }
   };
+  const getAllBranches = async () => {
+    try {
+      const branchData = await getAllActiveBranches(orgId);
+      setBranchCodeList(branchData);
+    } catch (error) {
+      console.error('Error fetching country data:', error);
+    }
+  };
   const reportColumns = [
-    { accessorKey: 'docId', header: 'Doc No', size: 110 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 100 },
-    { accessorKey: 'subLedgerName', header: 'Party Name', size: 110 },
-    // { accessorKey: 'bankChargesAmt', header: 'Bank / Cash A/C', size: 110 },
+    { accessorKey: 'docId', header: 'Doc No', size: 100 },
+    { accessorKey: 'docDate', header: 'Date', size: 100 },
+    { accessorKey: 'shortName', header: 'Customer Name', size: 100 },
     {
       accessorKey: 'receiptAmount',
-      header: 'Receipt Amount',
+      header: 'Receipt Amt',
       size: 100,
-      Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    },
-    // {
-    //   accessorKey: 'bankChargesAmt',
-    //   header: 'Bank Charges',
-    //   size: 110,
-    //   Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    // },
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+    )},
     {
-      accessorKey: 'tdsAmt',
-      header: 'TDS Amount',
+      accessorKey: 'tds',
+      header: 'TDS Amt',
       size: 100,
-      Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    },
-    { accessorKey: 'invoiceNo', header: 'Invoice No', size: 100 },
-    { accessorKey: 'invoiceDate', header: 'Invoice Date', size: 100 },
-    // { accessorKey: 'refNo', header: 'Ref No', size: 100 },
-    // { accessorKey: 'refDate', header: 'Ref Date', size: 100 },
-    // { accessorKey: 'mode', header: 'Mode', size: 100 },
-    // { accessorKey: 'chequeBank', header: 'Cheque Bank', size: 200 },
-    { accessorKey: 'chQnNumber', header: 'Cheque No', size: 200 },
-    {
-      accessorKey: 'arapAmt',
-      header: 'Amount',
-      size: 100,
-      Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    },
-    {
-      accessorKey: 'chargableAmt',
-      header: 'Chargeable Amount',
-      size: 100,
-      Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    },
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+    )},
+    // { accessorKey: 'invoiceNo', header: 'Invoice No', size: 100 },
+    // { accessorKey: 'invoiceDate', header: 'Invoice Date', size: 100 },
+    { accessorKey: 'chQnNumber', header: 'Cheque No', size: 100 },
     {
       accessorKey: 'arApOutstanding',
       header: 'OutStanding',
       size: 100,
-      Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    },
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+    )},
     {
       accessorKey: 'arapSettled',
       header: 'Settled',
       size: 100,
-      Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    }
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+    )},
+    {
+      accessorKey: 'netAmount',
+      header: 'Net Amt',
+      size: 100,
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+    )}
   ];
   const handleGo = async () => {
     const errors = {};
@@ -195,18 +188,18 @@ function ReceiptReport() {
       setListView(false);
       try {
         let response;
-        // if(formData.fromDate && formData.toDate){
+        if(formData.fromDate && formData.toDate){
         response = await apiCalls(
           'get',
-          `/reportController/getReceiptRegisterReport?branchCode=${branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyCode=${formData.customer}&toDate=${formData.toDate}`
+          `reportController/getReceiptRegisterReport?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyName=${formData.customer}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
         );
-        // }
-        // else {
-        //   response = await apiCalls(
-        //     'get',
-        //     `/reportController/getReceiptRegisterReport?branchCode=${branchCode}finyear=${finYear}&orgId=${orgId}&partyName=${formData.customer}`
-        //   );
-        // }
+        }
+        else {
+          response = await apiCalls(
+            'get',
+            `reportController/getReceiptRegisterReport?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyName=${formData.customer}`
+          );
+        }
         if (response.status === true) {
           console.log('Response:', response);
           setRowData(response.paramObjectsMap.reciptReport);
@@ -238,8 +231,7 @@ function ReceiptReport() {
           <div className="row">
             <div className="row">
               <div
-                className="col-md-2
-               mb-3"
+                className="col-md-2 mb-3"
               >
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
@@ -254,17 +246,12 @@ function ReceiptReport() {
                   label="Customer"
                 />
               </div>
-              {/* <div className="col-md-2 mb-1">
-                <Button
-                  onClick={handleProceed}
-                  color="secondary"
-                  variant="contained"
-                  style={{ textTransform: 'none', padding: '4px 8px', marginTop: '6px' }}
-                  disabled={isLoading}
-                >
-                  Proceed
-                </Button>
-              </div> */}
+              <div className="col-md-2 mb-1">
+                <FormControlLabel
+                  control={<Checkbox checked={selectedSections.branchCode} onChange={handleCheckboxChange} name="branchCode" color="secondary" />}
+                  label="Branch Code"
+                />
+              </div>
             </div>
             {selectedSections.date && (
               <>
@@ -323,7 +310,30 @@ function ReceiptReport() {
                 </FormControl>
               </div>
             )}
-            {(selectedSections.date || selectedSections.customer) && (
+              {selectedSections.branchCode && ( 
+              <div className="col-md-3 mb-2">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchCode}>
+                  <InputLabel id="branchCode-label">Branch Code</InputLabel>
+                  <Select
+                    labelId="branchCode-label"
+                    label="Branch Code"
+                    value={formData.branchCode}
+                    onChange={handleSelectPartyChange}
+                    name="branchCode"
+                  >
+                    <MenuItem value="All">All</MenuItem>
+
+                    {branchCodeList?.map((row) => (
+                      <MenuItem key={row.id} value={row.branchCode}>
+                        {row.branchCode}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.branchCode && <FormHelperText>{fieldErrors.branchCode}</FormHelperText>}
+                </FormControl>
+              </div>
+              )}
+            {(selectedSections.date || selectedSections.customer || selectedSections.branchCode) && (
               <div className="col-md-3 mb-2">
                 <div className="row d-flex ml">
                   <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>

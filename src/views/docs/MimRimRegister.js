@@ -13,7 +13,6 @@ import {
   TableHead,
   Paper,
   Dialog,
-  DialogActions,
   DialogContent,
 } from '@mui/material';
 import { IconButton } from '@mui/material';
@@ -27,8 +26,7 @@ import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
-import CommonReportTable from 'utils/CommonReportTable';
-// import { TableRow } from 'material-ui';
+
 function MimRimRegister() {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
@@ -412,235 +410,6 @@ function MimRimRegister() {
       showToast('error', 'Failed to generate Excel file');
     }
   };
-  //   const handleDownloadExcel = async () => {
-  //         const workbook = new ExcelJS.Workbook();
-  //         const sheet = workbook.addWorksheet('Report');
-
-  //         // Define columns
-  //         const monthKeys = Object.keys(rowData[0].months);
-  //         const columns = [
-  //             { header: 'Code', key: 'code', width: 15 },
-  //             { header: 'EL GL', key: 'elgl', width: 20 },
-  //             { header: 'NOA', key: 'noa', width: 20 },
-  //             ...monthKeys.map((m) => ({ header: m, key: m, width: 12 })),
-  //             { header: 'Total', key: 'total', width: 15 }
-  //         ];
-
-  //         sheet.columns = columns;
-
-  //         // Title Row
-  //         const titleRow = sheet.addRow(['Fixed Asset Report']);
-  //         titleRow.font = { size: 16, bold: true };
-  //         titleRow.alignment = { horizontal: 'center' };
-  //         sheet.mergeCells(1, 1, 1, columns.length);
-  //         titleRow.fill = {
-  //             type: 'pattern',
-  //             pattern: 'solid',
-  //             fgColor: { argb: 'FFD700' }
-  //         };
-  // const screenName = 'Report';
-  //         // Summary Row
-  //         const summaryRow = sheet.addRow([
-  //             // `Group: ${groupName || ''}`,
-  //             // `Sub Group: ${subGroup || ''}`,
-  //             screenName === 'Report' ? `Year: ${finYear || ''}` : '',
-  //             // `Client Code: ${clientCode || ''}`,
-  //             // clientYear === 'FY' ? '*Values in Lakhs' : '*Values in Million'
-  //         ]);
-
-  //         summaryRow.font = { bold: true };
-  //         summaryRow.eachCell((cell) => {
-  //             cell.fill = {
-  //                 type: 'pattern',
-  //                 pattern: 'solid',
-  //                 fgColor: { argb: 'F0F8FF' } // AliceBlue
-  //             };
-  //             cell.border = {
-  //                 top: { style: 'thin' },
-  //                 bottom: { style: 'thin' },
-  //                 left: { style: 'thin' },
-  //                 right: { style: 'thin' }
-  //             };
-  //         });
-
-  //         // Header Row
-  //         const headerRow = sheet.addRow(columns.map((c) => c.header));
-  //         headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-  //         headerRow.fill = {
-  //             type: 'pattern',
-  //             pattern: 'solid',
-  //             fgColor: { argb: '1F4E78' } // Dark Blue
-  //         };
-  //         headerRow.alignment = { horizontal: 'center' };
-  //         headerRow.eachCell((cell) => {
-  //             cell.border = {
-  //                 top: { style: 'thin' },
-  //                 bottom: { style: 'thin' },
-  //                 left: { style: 'thin' },
-  //                 right: { style: 'thin' }
-  //             };
-  //         });
-  // const clientYear = 'CY';
-  //         // Determine multiplier
-  //         const multiplier = clientYear === 'CY' ? 1000000 : 100000;
-  //         // const multiplier = '';
-
-  //         const groupMapping = {
-  //             'Closing Balance Land': [
-  //                 { name: 'Land', operation: 'add' },
-  //                 { name: 'Additions Land', operation: 'add' },
-  //                 { name: 'Deletion Land', operation: 'subtract' },
-  //                 { name: 'Current Year Depreciation Land', operation: 'subtract' },
-  //             ],
-  //             'Closing Balance Building': [
-  //                 { name: 'Building', operation: 'add' },
-  //                 { name: 'Additions Building', operation: 'add' },
-  //                 { name: 'Deletion Building', operation: 'subtract' },
-  //                 { name: 'Current Year Depreciation Building', operation: 'subtract' },
-  //             ],
-  //             'Closing Balance Electrical and Installation': [
-  //                 { name: 'Opening Balance Electrical and Installation', operation: 'add' },
-  //                 { name: 'Additions Electrical and Installation', operation: 'add' },
-  //                 { name: 'Deletion Electrical and Installation', operation: 'subtract' },
-  //                 { name: 'Current Year Depreciation Electrical and Installation', operation: 'subtract' },
-  //             ],
-  //             'Closing Balance Plant and Machinery': [
-  //                 { name: 'Opening Balance Plant and Machinery', operation: 'add' },
-  //                 { name: 'Additions Plant and Machinery', operation: 'add' },
-  //                 { name: 'Deletion Plant and Machinery', operation: 'subtract' },
-  //                 { name: 'Current Year Depreciation Plant and Machinery', operation: 'subtract' },
-  //             ],
-  //             'Closing Balance Furniture and Fixture': [
-  //                 { name: 'Opening Balance Furniture and Fixture', operation: 'add' },
-  //                 { name: 'Additions Furniture and Fixture', operation: 'add' },
-  //                 { name: 'Deletion Furniture and Fixture', operation: 'subtract' },
-  //                 { name: 'Current Year Depreciation Furniture and Fixture', operation: 'subtract' },
-  //             ],
-  //             'Closing Balance Office Equipment': [
-  //                 { name: 'Opening Balance Office Equipment', operation: 'add' },
-  //                 { name: 'Additions Office Equipment', operation: 'add' },
-  //                 { name: 'Deletion Office Equipment', operation: 'subtract' },
-  //                 { name: 'Current Year Depreciation Office Equipment', operation: 'subtract' },
-  //             ],
-  //             'Closing Balance Vehicle': [
-  //                 { name: 'Opening Balance Vehicle', operation: 'add' },
-  //                 { name: 'Additions Vehicle', operation: 'add' },
-  //                 { name: 'Deletion Vehicle', operation: 'subtract' },
-  //                 { name: 'Current Year Depreciation Vehicle', operation: 'subtract' },
-  //             ],
-  //             'Closing Balance Technical and Know How': [
-  //                 { name: 'Opening Balance Technical and Know How', operation: 'add' },
-  //                 { name: 'Additions Technical and Know How', operation: 'add' },
-  //                 { name: 'Deletion Technical and Know How', operation: 'subtract' },
-  //                 { name: 'Current Year Depreciation Technical and Know How', operation: 'subtract' },
-  //             ],
-  //             'Closing Balance Research and Development': [
-  //                 { name: 'Opening Balance Research and Development', operation: 'add' },
-  //                 { name: 'Additions Research and Development', operation: 'add' },
-  //                 { name: 'Deletion Research and Development', operation: 'subtract' },
-  //                 { name: 'Current Year Depreciation Research and Development', operation: 'subtract' },
-  //             ],
-  //             'Closing Balance Computer': [
-  //                 { name: 'Opening Balance Computer', operation: 'add' },
-  //                 { name: 'Additions Computer', operation: 'add' },
-  //                 { name: 'Deletion Computer', operation: 'subtract' },
-  //                 { name: 'Current Year Depreciation Computer', operation: 'subtract' },
-  //             ],
-  //             'Closing Balance Software': [
-  //                 { name: 'Opening Balance Software', operation: 'add' },
-  //                 { name: 'Additions Software', operation: 'add' },
-  //                 { name: 'Deletion Software', operation: 'subtract' },
-  //                 { name: 'Current Year Depreciation Software', operation: 'subtract' },
-  //             ],
-  //         };
-
-  //         const allComputedTotals = {};
-
-  //         rowData.forEach((entry) => {
-  //             const isTotalRow = Object.keys(groupMapping).includes(entry.subGroupName);
-  //             if (!isTotalRow) {
-  //                 const months = monthKeys.map((m) => (parseInt(entry.months[m]) || 0) / multiplier);
-  //                 const rowTotal = months.reduce((sum, val) => sum + val, 0);
-  //                 const data = [
-  //                     entry.subGroupCode,
-  //                     entry.subGroupName,
-  //                     entry.natureOfAccount,
-  //                     ...months.map((v) => +v.toFixed(2)),
-  //                     +rowTotal.toFixed(2)
-  //                 ];
-  //                 sheet.addRow(data);
-  //             } else {
-  //                 const groupKeywords = groupMapping[entry.subGroupName] || [];
-  //                 const monthlyTotals = {};
-
-  //                 monthKeys.forEach((month) => {
-  //                     let total = 0;
-
-  //                     groupKeywords.forEach((item) => {
-  //                         const keyword = typeof item === 'string' ? item : item.name;
-  //                         const operation = typeof item === 'string' ? 'add' : item.operation;
-  //                         let sum = 0;
-
-  //                         if (Object.keys(groupMapping).includes(keyword)) {
-  //                             sum = allComputedTotals[keyword]?.[month] || 0;
-  //                         } else {
-  //                             rowData.forEach((e) => {
-  //                                 if (!Object.keys(groupMapping).includes(e.subGroupName) && (e.subGroupName === keyword || e.subGroupName.startsWith(keyword))) {
-  //                                     sum += parseInt(e.months[month]) || 0;
-  //                                 }
-  //                             });
-  //                         }
-
-  //                         total += operation === 'subtract' ? -sum : sum;
-  //                     });
-
-  //                     monthlyTotals[month] = total;
-  //                 });
-
-  //                 allComputedTotals[entry.subGroupName] = monthlyTotals;
-
-  //                 const months = monthKeys.map((m) => monthlyTotals[m] / multiplier);
-  //                 const rowTotal = months.reduce((sum, val) => sum + val, 0);
-  //                 const data = [
-  //                     entry.subGroupCode,
-  //                     entry.subGroupName,
-  //                     entry.natureOfAccount,
-  //                     ...months.map((v) => +v.toFixed(2)),
-  //                     +rowTotal.toFixed(2)
-  //                 ];
-  //                 const row = sheet.addRow(data);
-
-  //                 row.font = { bold: true };
-  //                 row.fill = {
-  //                     type: 'pattern',
-  //                     pattern: 'solid',
-  //                     fgColor: { argb: 'FFF2CC' } // Light Yellow highlight
-  //                 };
-  //             }
-  //         });
-
-  //         // Total Row
-  //         const totals = monthKeys.map((month) =>
-  //             rowData.reduce((sum, entry) => sum + (parseInt(entry.months[month]) || 0), 0) / multiplier
-  //         );
-  //         const grandTotal = totals.reduce((sum, val) => sum + val, 0);
-
-  //         const totalRow = sheet.addRow(['Total', '', '', ...totals.map((v) => +v.toFixed(2)), +grandTotal.toFixed(2)]);
-  //         totalRow.font = { bold: true };
-  //         totalRow.fill = {
-  //             type: 'pattern',
-  //             pattern: 'solid',
-  //             fgColor: { argb: 'D9EAD3' } // Light Green
-  //         };
-
-  //         // Freeze header row
-  //         sheet.views = [{ state: 'frozen', ySplit: 4 }];
-
-  //         // Export
-  //         const buffer = await workbook.xlsx.writeBuffer();
-  //         const blob = new Blob([buffer], { type: 'application/octet-stream' });
-  //         saveAs(blob, 'Report.xlsx');
-  //     };
   return (
     <>
       <div className="card w-full bg-base-100 shadow-xl" style={{ padding: '10px', borderRadius: '10px' }}>
@@ -660,12 +429,6 @@ function MimRimRegister() {
                   label="Customer"
                 />
               </div>
-              {/* <div className="col-md-2 mb-1">
-                <FormControlLabel
-                  control={<Checkbox checked={selectedSections.branchCode}  onChange={handleCheckboxChange} name="branchCode" color="secondary" />}
-                  label="Branch Code"
-                />
-              </div> */}
               <div className="col-md-1 mb-1">
                 <FormControlLabel
                   control={<Radio checked={selectedSections.mim} onChange={handleCheckboxChange} name="mim" color="secondary" />}
@@ -706,7 +469,6 @@ function MimRimRegister() {
                   </Button>
                 </ButtonGroup>
               </div>
-              {/* {(selectedSections.date || selectedSections.branchCode || selectedSections.customer) && ( */}
               <div className="col-md-3 mb-2">
                 <div className="row d-flex ml">
                   <div className="d-flex flex-wrap justify-content-start mb-3 mt-1" style={{ marginBottom: '20px' }}>
@@ -834,14 +596,14 @@ function MimRimRegister() {
                   <Typography variant="h6">Report</Typography>
                   {/* <Typography variant="h6">RIM Report</Typography>} */}
 
-                  <Box display="flex" gap={1}>
+                  <Box display="flex" gap={0}>
                     <Button
                       variant="contained"
                       color="success"
                       startIcon={<FileDownloadIcon />}
                       onClick={handleDownloadExcel}
                     >
-                      Download Excel
+                      Excel
                     </Button>
                     <IconButton onClick={handleClose} color="error">
                       <CloseIcon />
@@ -925,119 +687,6 @@ function MimRimRegister() {
 
                       </TableRow>
                     </TableHead>
-                    {/* <TableBody>
-              {rowData.map((transaction, trxIndex) => {
-                const kitGroups = transaction.issueManifestProviderDetailsVOs.reduce((groups, item) => {
-                  const kitId = item.kitId;
-                  if (!groups[kitId]) {
-                    groups[kitId] = {
-                      kitId,
-                      kitName: item.kitName,
-                      assets: []
-                    };
-                  }
-                  groups[kitId].assets.push(item);
-                  return groups;
-                }, {});
-                
-                const kitGroupsArray = Object.values(kitGroups);
-                const totalAssetsInTransaction = transaction.issueManifestProviderDetailsVOs.length;
-                
-                return (
-                  <React.Fragment key={transaction.id}>
-                    {kitGroupsArray.map((kitGroup, kitIndex) => (
-                      kitGroup.assets.map((asset, assetIndex) => (
-                        <TableRow 
-                          key={`${transaction.id}-${kitGroup.kitId}-${asset.id}`}
-                          sx={{ 
-                            backgroundColor: assetIndex % 2 === 0 ? 'inherit' : 'rgba(0, 0, 0, 0.02)'
-                          }}
-                        >
-                          {kitIndex === 0 && assetIndex === 0 && (
-                            <>
-                              <TableCell 
-                                rowSpan={totalAssetsInTransaction} 
-                                align="center"
-                                style={{ verticalAlign: 'top' }}
-                              >
-                                {trxIndex + 1}
-                              </TableCell>
-                              <TableCell 
-                                rowSpan={totalAssetsInTransaction} 
-                                align="center"
-                                style={{ verticalAlign: 'top' }}
-                              >
-                                {transaction.transactionNo}
-                              </TableCell>
-                              <TableCell 
-                                rowSpan={totalAssetsInTransaction} 
-                                align="center"
-                                style={{ verticalAlign: 'top' }}
-                              >
-                                {dayjs(transaction.transactionDate).format('DD-MM-YYYY')}
-                              </TableCell>
-                              <TableCell 
-                                rowSpan={totalAssetsInTransaction} 
-                                style={{ verticalAlign: 'top' }}
-                              >
-                                {transaction.sender}
-                              </TableCell>
-                              <TableCell 
-                                rowSpan={totalAssetsInTransaction} 
-                                style={{ verticalAlign: 'top' }}
-                              >
-                                {transaction.receiver}
-                              </TableCell>
-                              <TableCell 
-                                rowSpan={totalAssetsInTransaction} 
-                                align="right"
-                                style={{ verticalAlign: 'top' }}
-                              >
-                                ₹{Number(transaction.amount).toLocaleString('en-IN')}
-                              </TableCell>
-                            </>
-                          )}
-                          {assetIndex === 0 && (
-                            <>
-                              <TableCell 
-                                rowSpan={kitGroup.assets.length} 
-                                align="center"
-                                style={{ verticalAlign: 'top' }}
-                              >
-                                {kitGroup.kitId}
-                              </TableCell>
-                              <TableCell 
-                                rowSpan={kitGroup.assets.length} 
-                                style={{ verticalAlign: 'top' }}
-                              >
-                                {kitGroup.kitName}
-                              </TableCell>
-                            </>
-                          )}
-                          <TableCell align="center">{asset.assetCode}</TableCell>
-                          <TableCell>{asset.asset}</TableCell>
-                          <TableCell align="center">{asset.assetQty}</TableCell>
-                        </TableRow>
-                      ))
-                    ))}
-
-                    {trxIndex < rowData.length - 1 && (
-                      <TableRow>
-                        <TableCell 
-                          colSpan={11} 
-                          sx={{ 
-                            borderBottom: '1px groove #000',
-                            padding: 0,
-                            height: '1px',
-                            backgroundColor: '#000'
-                          }} 
-                        />
-                      </TableRow>
-                    )}
-                  </React.Fragment>
-                );
-              })}
-            </TableBody> */}
                     <TableBody>
                       {formData.viewMode === 'details' ? (
                         rowData.map((transaction, trxIndex) => {

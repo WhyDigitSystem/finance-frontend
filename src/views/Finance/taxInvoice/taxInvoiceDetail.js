@@ -1301,159 +1301,9 @@ const handleSelectPartyChange = (e) => {
   const handleList = () => {
     setlistView(!listView);
     handleClear();
-    // getAllTaxInvoice();
   };
-  // const handleSave = async () => {
-  //   const errors = {};
-
-  //   if (!formData.partyName) {
-  //     errors.partyName = 'Party Name is required';
-  //   }
-  //   if (!formData.partyType) {
-  //     errors.partyType = 'Party Type is required';
-  //   }
-  //   if (!formData.stateCode) {
-  //     errors.stateCode = 'State Code is required';
-  //   }
-  //   if (!formData.addressType) {
-  //     errors.addressType = 'Address Type is required';
-  //   }
-  //   if (!formData.placeOfSupply) {
-  //     errors.placeOfSupply = 'Place of Supply is required';
-  //   }
-  //   if (!formData.jobNo) {
-  //     errors.jobNo = 'Job No is required';
-  //   }
-  //   if (!formData.vid) {
-  //     errors.vid = 'V Id is required';
-  //   }
-  //   if (!formData.vdate) {
-  //     errors.vdate = 'V Date is required';
-  //   }
-  //   let detailTableDataValid = true;
-  //   const newTableErrors = withdrawalsTableData.map((row) => {
-  //     const rowErrors = {};
-  //     if (!row.chargeType) {
-  //       rowErrors.chargeType = 'Type is required';
-  //       detailTableDataValid = false;
-  //     }
-  //     if (!row.chargeCode) {
-  //       rowErrors.chargeCode = 'Charge Code is required';
-  //       detailTableDataValid = false;
-  //     }
-  //     if (!row.qty) {
-  //       rowErrors.qty = 'Qty is required';
-  //       detailTableDataValid = false;
-  //     }
-  //     if (!row.rate) {
-  //       rowErrors.rate = 'Rate is required';
-  //       detailTableDataValid = false;
-  //     }
-  //     if (!row.currency) {
-  //       rowErrors.currency = 'Currency is required';
-  //       detailTableDataValid = false;
-  //     }
-  //     if (!row.chargeCode) {
-  //       rowErrors.chargeCode = 'Charge Code is required';
-  //       detailTableDataValid = false;
-  //     }
-  //     return rowErrors;
-  //   }); 
-  //   setWithdrawalsTableErrors(newTableErrors);
-  //   if (Object.keys(errors).length > 0 && withdrawalsTableErrors) {
-  //     setErrors(errors);
-  //     return;
-  //   }
-  //   const detailsVo = withdrawalsTableData.map((row) => ({
-  //     ...(editId && { id: row.id }),
-  //     chargeCode: row.chargeCode,
-  //     chargeName: row.chargeName,
-  //     chargeType: row.chargeType,
-  //     currency: row.currency,
-  //     exRate: parseFloat(row.exRate),
-  //     exempted: row.exempted,
-  //     govChargeCode: row.govChargeCode,
-  //     gstpercent: parseFloat(row.GSTPercent),
-  //     ledger: row.ledger,
-  //     description: row.description,
-  //     qty: parseInt(row.qty),
-  //     rate: parseInt(row.rate),
-  //     sac: row.sac,
-  //     taxable: row.taxable
-  //   }));
-
-  //   const isAnnexureEmpty = taxInvoiceAnnexure.every(
-  //     (row) => !row.kitname && !row.kitid && !row.kitqty && !row.rate
-  //   );
-  //   const transactionParam = selectedTransactionNo.join(',')
-  //   const annexureVO = isAnnexureEmpty
-  //     ? null
-  //     : taxInvoiceAnnexure.map((row) => ({
-  //       ...(editId && { id: row.id }),
-  //       skuType: row.skuType ? row.skuType : '',
-  //       rate: parseInt(row.rate),
-  //       qty: parseInt(row.kitqty),
-  //       dsec: row.kitname,
-  //       kitId: row.kitid,
-  //       transDate: row.transactiondate ? dayjs(row.transactiondate).format('YYYY-MM-DD') : null,
-  //       transNo: row.transactionno
-  //     }));
-
-  //   const saveFormData = {
-  //     ...(editId && { id: editId }),
-  //     address: formData.address,
-  //     addressType: formData.addressType,
-  //     billCurr: formData.billCurr,
-  //     billCurrRate: parseFloat(formData.billCurrRate),
-  //     billOfEntry: formData.billOfEntry,
-  //     bizMode: formData.bizMode,
-  //     bizType: formData.bizType,
-  //     branch: branch,
-  //     branchCode: loginBranchCode,
-  //     createdBy: loginUserName,
-  //     creditDays: parseInt(formData.creditDays),
-  //     finYear: finYear,
-  //     gstType: formData.gstType,
-  //     invoiceNo: formData.invoiceNo,
-  //     jobOrderNo: formData.jobNo,
-  //     orgId: orgId,
-  //     partyCode: formData.partyCode,
-  //     partyId: parseInt(partyId),
-  //     partyName: formData.partyName,
-  //     partyType: formData.partyType,
-  //     pinCode: formData.pinCode,
-  //     placeOfSupply: formData.placeOfSupply,
-  //     recipientGSTIN: formData.recipientGSTIN,
-  //     remarks: formData.remarks,
-  //     shipperInvoiceNo: formData.shipperInvoiceNo,
-  //     stateCode: formData.stateCode,
-  //     stateNo: formData.stateNo,
-  //     status: formData.status,
-  //     supplierBillDate: formData.supplierBillDate ? dayjs(formData.supplierBillDate).format('YYYY-MM-DD') : null,
-  //     supplierBillNo: formData.supplierBillNo,
-  //     vid: formData.vid,
-  //     trasactionNo: transactionParam,
-  //     vdate: formData.vdate ? dayjs(formData.vdate).format('YYYY-MM-DD') : null,
-  //     taxInvoiceDetailsDTO: detailsVo,
-  //     taxInvoiceAnnexureDTO: annexureVO
-  //   };
-  //   try {
-  //     const response = await apiCalls('put', '/taxInvoice/updateCreateTaxInvoice', saveFormData);
-  //     if (response.status === true) {
-  //       showToast('success', editId ? 'Tax Invoice updated successfully' : 'Tax Invoice created successfully');
-  //       getAllTaxInvoice();
-  //       handleClear();
-  //     } else {
-  //       showToast('error', response.paramObjectsMap.errorMessage || 'Tax Invoice creation failed');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     showToast('error', 'Tax Invoice creation failed');
-  //   }
-  // };
-const handleSave = async () => {
+  const handleSave = async () => {
   const errors = {};
-
   if (!formData.partyName) {
     errors.partyName = 'Party Name is required';
   }
@@ -1635,13 +1485,6 @@ const handleSave = async () => {
     updatedRows[index].description = newDescription;
     setWithdrawalsTableData(updatedRows);
   };
-
-  const handleAnnexureDescriptionChange = (index, newDescription) => {
-    const updatedRows = [...taxInvoiceAnnexure];
-    updatedRows[index].dsec = newDescription;
-    setTaxInvoiceAnnexure(updatedRows);
-  };
-
   const handleAnnexureInputChange = (index, field, value) => {
     setTaxInvoiceAnnexure((prev) =>
       prev.map((row, i) => {
@@ -2905,7 +2748,7 @@ const handleMultiSelect = async (event) => {
                 </TabPanel>
                 <TabPanel value="2">
                   <div className="row d-flex ml">
-                    <div className="row mt-2">
+                    <div className="row mt-1">
                       <div className="col-lg-12">
                         <div className="table-responsive">
                           <table className="table table-bordered">
@@ -2925,14 +2768,14 @@ const handleMultiSelect = async (event) => {
                               {taxInvoiceAnnexure.map((row, index) => (
                                 <tr key={row.id}>
                                   <td className="text-center">
-                                    <div className="pt-2">{index + 1}</div>
+                                    <div className="pt-0">{index + 1}</div>
                                   </td>
                                   <td className="text-center">{row.transactionno}</td>
                                   <td className="text-center">{dayjs(row.transactiondate).format("DD-MM-YYYY")}</td>
                                   <td className="text-center">{row.kitid}</td>
                                   <td className="text-center">{row.kitname}</td>
                                   <td className="text-center">{row.kitqty}</td>
-                                  <td className="border px-2 py-2">
+                                  <td className="border px-0 py-0">
                                     <input
                                       type="number"
                                       value={row.rate}
@@ -2941,7 +2784,7 @@ const handleMultiSelect = async (event) => {
                                       className={taxInvoiceAnnexureErrors[index]?.rate ? 'error form-control' : 'form-control'}
                                     />
                                     {taxInvoiceAnnexureErrors[index]?.rate && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                      <div className="mt-1" style={{ color: 'red', fontSize: '12px' }}>
                                         {taxInvoiceAnnexureErrors[index].rate}
                                       </div>
                                     )}

@@ -1,4 +1,6 @@
 import React from 'react';
+import CloseIcon from '@mui/icons-material/Close';
+import { IconButton } from '@mui/material';
 import { TextField, Checkbox, FormControlLabel, FormHelperText, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -191,6 +193,9 @@ function TaxRegister() {
     } catch (error) {
       console.error('Error fetching country data:', error);
     }
+  };
+  const handleClose = () => {
+    setOpen(false);
   };
   const getPartyName = async () => {
     try {
@@ -481,9 +486,14 @@ const handleDocClick = async (docId, screenCode) => {
                       PaperComponent={PaperComponent}
                       aria-labelledby="draggable-dialog-title"
                     >
-                      <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
-                        <h6>Report Details</h6>
-                      </DialogTitle>
+                    <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <h6 style={{ margin: 0, textAlign: "center" }}>Report Details</h6>
+                        <IconButton onClick={handleCloseModal} color="error">
+                          <CloseIcon />
+                      </IconButton>
+                      </Box>
+                    </DialogTitle>
                       <DialogContent className="pb-0">
                                         <div className="row mb-2 mb-1">
                                         <div className="col-md-3 mb-1"><strong>Doc ID:</strong> {fillGridData.docId}</div>

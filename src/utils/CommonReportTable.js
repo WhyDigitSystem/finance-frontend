@@ -43,9 +43,10 @@ const sums = sumFields.reduce((acc, field) => {
 const sumFieldLabels = {
   TotalInvAmountLC: 'Total Amount',
   TotalTaxAmountLC: 'Total Tax Amount',
+  TotalAmount: 'Total Amount',
+  Tax: 'Total Tax Amount',
   BillAmount: 'Bill Amount',
   outstanding: 'OutStanding',
-  // Add more mappings as needed
 };
   const csvConfig = mkConfig({
     fieldSeparator: ',',

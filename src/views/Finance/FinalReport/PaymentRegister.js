@@ -148,13 +148,16 @@ function PaymentReport() {
     }
   };
   const reportColumns = [
-    { accessorKey: 'jobOrderNo', header: 'Job No', size: 180 },
-    { accessorKey: 'vId', header: 'Invoice No', size: 180 },
-    { accessorKey: 'vDate', header: 'Date', size: 140 },
-    // { accessorKey: 'voucherNo', header: 'Voucher No', size: 180 },
-    // { accessorKey: 'voucherDate', header: 'Voucher Date', size: 140 },
+    { accessorKey: 'docId', header: 'Doc Id', size: 180 },
+    { accessorKey: 'docDate', header: 'Date', size: 140 },
+    { accessorKey: 'refNo', header: 'Ref No', size: 180 },
+    { accessorKey: 'refDate', header: 'Ref Date', size: 140 },
+    { accessorKey: 'invoiceNo', header: 'Invoice No', size: 180 },
+    { accessorKey: 'invoiceDate', header: 'Invoice Date', size: 140 },
+    { accessorKey: 'subLedgerName', header: 'Vendor Name', size: 180 },
+    { accessorKey: 'voucherDate', header: 'Voucher Date', size: 140 },
     // { accessorKey: '', header: 'Invoice Type', size: 140 },
-    // { accessorKey: 'partyType', header: 'Party Type', size: 140 },
+    { accessorKey: 'partyType', header: 'Party Type', size: 140 },
     { accessorKey: 'billToParty', header: 'Billing Party', size: 240 },
     // { accessorKey: 'controllingOff', header: 'Cont Office', size: 140 },
     // { accessorKey: 'billCurrency', header: 'Currency', size: 140 },
@@ -193,6 +196,7 @@ function PaymentReport() {
         if (response.status === true) {
           console.log('Response:', response);
           setRowData(response.paramObjectsMap.paymentReport);
+          console.log("Payment Report",response.paramObjectsMap.paymentReport);
           setIsLoading(false);
           setListView(true);
         } else {
@@ -211,12 +215,6 @@ function PaymentReport() {
   return(
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-        {/* <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Search" icon={SearchIcon} isLoading={isLoading} onClick={handleGo} margin="0 10px 0 10px" />
-          </div>
-        </div> */}
         <>
             <div className="row">
               <div className="row">
@@ -239,17 +237,6 @@ function PaymentReport() {
                   label="Branch Code"
                 />
               </div>
-              {/* <div className="col-md-2 mb-1">
-                <Button
-                  onClick={handleProceed}
-                  color="secondary"
-                  variant="contained"
-                  style={{ textTransform: 'none', padding: '4px 8px', marginTop: '6px' }}
-                  disabled={isLoading}
-                >
-                  Proceed
-                </Button>
-              </div> */}
               </div>
               {selectedSections.date && (
                 <>
