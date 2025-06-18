@@ -810,7 +810,7 @@ const CostInvoice = () => {
 
       if (result) {
         const costVO = result.paramObjectsMap.costInvoiceVO[0];
-        setListViewData([costVO]);
+        setListViewData(costVO);
         setEditId(row.original.id);
         setPartyId(costVO.supplierId);
         getCurrencyAndExratesForMatchingParties(costVO.supplierCode);
@@ -1842,7 +1842,7 @@ const handleView = () => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
-            <div className=" justify-content-start">
+            <div className="justify-content-start">
               {editId && !showForm && (formData.mode === 'SUBMIT' || listViewData?.mode === 'SUBMIT') && (
                 <>
                   {formData?.approveStatus === 'Approved' && (
@@ -1858,7 +1858,7 @@ const handleView = () => {
                     </Stack>
                   )}
                   {/* {formData.mode === 'SUBMIT' && formData.approveStatus === null && ( */}
-                  {(listViewData?.mode === 'SUBMIT' || formData.mode === 'SUBMIT') && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                  {(listViewData?.mode === 'SUBMIT') && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
                     <div className="d-flex" style={{ marginRight: '30px' }}>
                       <Button
                         variant="outlined"
