@@ -47,6 +47,11 @@ const sumFieldLabels = {
   Tax: 'Total Tax Amount',
   BillAmount: 'Bill Amount',
   outstanding: 'OutStanding',
+  tdsAmt: 'Total Tds',
+  receivableAmount: 'Payable Amount',
+  arapSettled: 'Total Settled',
+  arApOutstanding: 'Total OutStanding',
+  onAccount: 'Total OnAccount',
 };
   const csvConfig = mkConfig({
     fieldSeparator: ',',

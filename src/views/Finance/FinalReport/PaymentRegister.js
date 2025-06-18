@@ -12,12 +12,32 @@ import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import CommonReportTable from 'utils/CommonReportTable';
-import Button from '@mui/material/Button';
+import CloseIcon from '@mui/icons-material/Close';
+import { TabContext } from '@mui/lab';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
+import { IconButton } from '@mui/material';
+import { Box, Button, Chip, Stack } from '@mui/material';
+import Tab from '@mui/material/Tab';
+import Paper from '@mui/material/Paper';
+import Draggable from 'react-draggable';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+function PaperComponent(props) {
+  return (
+    <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
+      <Paper {...props} />
+    </Draggable>
+  );
+}
+
 function PaymentReport() {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
+  const [fillGridData, setFillGridData] = useState([]);
+  const [value, setValue] = useState('1');
+  const [modalOpen, setModalOpen] = useState(false);
   const [partyNameList, setPartyNameList] = useState([]);
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
@@ -148,30 +168,122 @@ function PaymentReport() {
     }
   };
   const reportColumns = [
-    { accessorKey: 'docId', header: 'Doc Id', size: 180 },
-    { accessorKey: 'docDate', header: 'Date', size: 140 },
-    { accessorKey: 'refNo', header: 'Ref No', size: 180 },
-    { accessorKey: 'refDate', header: 'Ref Date', size: 140 },
-    { accessorKey: 'invoiceNo', header: 'Invoice No', size: 180 },
-    { accessorKey: 'invoiceDate', header: 'Invoice Date', size: 140 },
-    { accessorKey: 'subLedgerName', header: 'Vendor Name', size: 180 },
-    { accessorKey: 'voucherDate', header: 'Voucher Date', size: 140 },
-    // { accessorKey: '', header: 'Invoice Type', size: 140 },
-    { accessorKey: 'partyType', header: 'Party Type', size: 140 },
-    { accessorKey: 'billToParty', header: 'Billing Party', size: 240 },
-    // { accessorKey: 'controllingOff', header: 'Cont Office', size: 140 },
-    // { accessorKey: 'billCurrency', header: 'Currency', size: 140 },
-    // { accessorKey: 'billCurrencyRate', header: 'Ex. Rate', size: 140 },
-    { accessorKey: 'totalTaxAmountBC', header: 'Total Inv Amt', size: 140 },
-    { accessorKey: 'totalInvAmountLC', header: 'Total Inv Amt(LC)', size: 140 },
-    { accessorKey: 'totalTaxableAmountLC', header: 'Total Taxable Amt', size: 140 },
-    { accessorKey: 'gstType', header: 'GST Type', size: 140 },
-    { accessorKey: 'totalTaxAmountLC', header: 'GST Amount', size: 140 },
-    // { accessorKey: '', header: 'GST Amount(LC)', size: 140 },
-    // { accessorKey: 'roundOffAmountLC', header: 'Round Amount', size: 140 },
-    // { accessorKey: '', header: 'Amount', size: 140 },
-    // { accessorKey: '', header: 'Amount(LC)', size: 140 },
+    // { accessorKey: 'docId', header: 'Doc No', size: 100 },
+    {
+      accessorKey: 'docId',
+      header: 'Doc Id',
+      size: 100,
+      Cell: ({ row }) => {
+        const docId = row.original.docId;
+        return (
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleDocClick(docId);
+            }}
+            style={{
+              color: 'crimson',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              transition: 'color 0.2s, text-shadow 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.color = 'red';
+              // e.target.style.textShadow = '0 0 2px rgba(255, 0, 0, 0.6)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.color = 'crimson';
+              e.target.style.textShadow = 'none';
+            }}
+          >
+            {docId}
+          </a>
+        );
+      }
+    },
+    { accessorKey: 'docDate', header: 'Date', size: 100 },
+    { accessorKey: 'subLedgerName', header: 'Vendor Name', size: 100 },
+    { accessorKey: 'chequeNo', header: 'Cheque No', size: 100 },
+    { accessorKey: 'chequeDate', header: 'Cheque Date', size: 100 },
+    { accessorKey: 'bankCashAcc', header: 'Bank Account', size: 100 },
+    {
+      accessorKey: 'PaymentAmount',
+      header: 'Payment Amt',
+      size: 70,
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : 0}</div>
+      )
+    },
+    {
+      accessorKey: 'chargeamt',
+      header: 'Payable Amt',
+      size: 70,
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : 0}</div>
+      )
+    },
+    {
+      accessorKey: 'arApOutstanding',
+      header: 'OutStanding',
+      size: 70,
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : 0}</div>
+      )
+    },
+    {
+      accessorKey: 'arapSettled',
+      header: 'Settled',
+      size: 70,
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : 0}</div>
+      )
+    },
+    {
+      accessorKey: 'onaccount',
+      header: 'On Account',
+      size: 70,
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : 0}</div>
+      )
+    }
   ];
+  const handleDocClick = async (docId) => {
+    setModalOpen(true);
+    try {
+      const response = await apiCalls(
+        'get',
+        `/payable/getPaymentByDocId?docId=${docId}&orgId=${orgId}`
+      );
+      if (response.status === true) {
+        setFillGridData(response.paramObjectsMap.PaymentVO)
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    if (isNaN(date)) return '';
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const formatAmount = (value) => {
+    if (value == null || value === '') return '0';
+    return Number(value).toLocaleString('en-IN'); // For Indian numbering system
+  };
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
   const handleGo = async () => {
     const errors = {};
     // if (!formData.partyName) {
@@ -335,6 +447,124 @@ function PaymentReport() {
             <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"Payment Register"} />
           </div>
         )}
+        <>
+          <Dialog
+            open={modalOpen}
+            maxWidth={'xl'}
+            fullWidth={true}
+            onClose={handleCloseModal}
+            PaperComponent={PaperComponent}
+            aria-labelledby="draggable-dialog-title"
+          >
+            <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <h6 style={{ margin: 0, textAlign: "center" }}>Report Details</h6>
+                <IconButton onClick={handleCloseModal} color="error">
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+            </DialogTitle>
+            <DialogContent className="pb-0">
+              <div className="row mb-2 mb-1">
+                <div className="col-md-3 mb-1"><strong>Doc ID:</strong> {fillGridData.docId}</div>
+                <div className="col-md-3 mb-1"><strong>Date:</strong> {fillGridData.docDate ? dayjs(fillGridData.docDate).format('DD-MM-YYYY') : ''}</div>
+                <div className="col-md-3 mb-1"><strong>Payment Type:</strong> {fillGridData.paymentType}</div>
+                <div className="col-md-3 mb-1"><strong>UTI No:</strong> {fillGridData.chequeNo}</div>
+                <div className="col-md-3 mb-1"><strong>Date:</strong> {fillGridData.chequeDate ? dayjs(fillGridData.chequeDate).format('DD-MM-YYYY') : ''}</div>
+                <div className="col-md-3 mb-1"><strong>Payment Amount:</strong> ₹{Number(fillGridData.paymentAmt || 0).toLocaleString('en-IN')}</div>
+                <div className="col-md-3 mb-1"><strong>On Account:</strong> ₹{Number(fillGridData.onAccount || 0).toLocaleString('en-IN')}</div>
+                <div className="col-md-3 mb-1"><strong>Settled Amount:</strong> ₹{Number(fillGridData.netAmount || 0).toLocaleString('en-IN')}</div>
+              </div>
+              <div className="card w-full p-6 bg-base-100 shadow-xl mb-3">
+                <Box sx={{ width: '100%', typography: 'body1' }}>
+                  <TabContext value={value}>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                      <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
+                        <Tab label="Details" value="1" />
+                      </TabList>
+                    </Box>
+                    <TabPanel value="1">
+                      <div className="row">
+                        <div className="col-lg-12">
+                          <div className="table-responsive">
+                            <table className="table table-bordered">
+                              <thead>
+                                <tr style={{ backgroundColor: '#673AB7' }}>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                    #
+                                  </th>
+                                  <th className="table-header">Invoice No</th>
+                                  <th className="table-header">Invoice Date</th>
+                                  <th className="table-header">Ref No</th>
+                                  <th className="table-header">Ref Date</th>
+                                  <th className="table-header">Currency</th>
+                                  <th className="table-header">Ex Rate</th>
+                                  <th className="table-header">Bill Amt</th>
+                                  <th className="table-header">Tax Amt</th>
+                                  <th className="table-header">Payable Amt</th>
+                                  
+                                  <th className="table-header">Outstanding Amt</th>
+                                  <th className="table-header">Settled Amt</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {fillGridData.paymentInvDtlsVO && fillGridData.paymentInvDtlsVO.length > 0 ? (
+                                  fillGridData.paymentInvDtlsVO.map((row, index) => (
+                                    <tr key={row.id}>
+                                      <td className="text-center">{index + 1}</td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.invNo || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatDate(row.invDate)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.refNo || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatDate(row.refDate)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.currency || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatAmount(row.exRate)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatAmount(row.amount)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatAmount(row.gstAmount)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatAmount(row.chargeAmt)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatAmount(row.outstanding)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatAmount(row.settled)}
+                                      </td>
+                                    </tr>
+
+                                  ))
+                                ) : (
+                                  <div className="text-center">
+                                    No Data
+                                  </div>
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </TabPanel>
+                  </TabContext>
+                </Box>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </>
   </div>
     </>
   )

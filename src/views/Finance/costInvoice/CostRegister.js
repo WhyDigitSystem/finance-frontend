@@ -4,6 +4,8 @@ import { TextField, Checkbox, FormControlLabel, FormHelperText, FormControl, Inp
 import SearchIcon from '@mui/icons-material/Search';
 import ClearIcon from '@mui/icons-material/Clear';
 import ActionButton from 'utils/ActionButton';
+import { IconButton } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
@@ -200,13 +202,6 @@ function CostRegister() {
       console.error('Error fetching gate passes:', error);
     }
   };
-  const navigateToCI = (docNo,screenCode) => {
-    if(screenCode === 'CI')
-    navigate(`/finance/costInvoice/CostInvoice`, { state: { docNo,screenCode } });
-  else
-  navigate(`/finance/costDebitNote/CostDebitNote`, { state: { docNo,screenCode } });
-  };
-
   const reportColumns = [
     { accessorKey: 'Vid', header: 'Cost Invoice No', size: 80 },
     { accessorKey: 'Vdate', header: 'Date', size: 80 },
@@ -222,8 +217,7 @@ function CostRegister() {
         href="#"
         onClick={(e) => {
           e.preventDefault();
-          // handleDocClick(docId, screenCode);
-          navigateToCI(docId,screenCode)
+          handleDocClick(docId, screenCode);
         }}
         style={{
           color: 'crimson',
@@ -331,21 +325,15 @@ function CostRegister() {
       console.error('Error fetching data:', error);
     }
   };
-  //   const handleCloseModal = () => {
-  //     setModalOpen(false);
-  //   };
-  // const handleChange = (event, newValue) => {
-  //   setValue(newValue);
-  // };
+    const handleCloseModal = () => {
+      setModalOpen(false);
+    };
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-        {/* <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Search" icon={SearchIcon} isLoading={isLoading} onClick={handleGo} margin="0 10px 0 10px" />
-          </div>
-        </div> */}
         <>
           <div className="row">
             <div className="row">
@@ -480,7 +468,7 @@ function CostRegister() {
             <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"Cost Register"} sumFields={['TotalAmount', 'Tax', 'BillAmount']} />
           </div>
         )}
-        {/* <>
+         <>
                     <Dialog
                       open={modalOpen}
                       maxWidth={'xl'}
@@ -489,9 +477,14 @@ function CostRegister() {
                       PaperComponent={PaperComponent}
                       aria-labelledby="draggable-dialog-title"
                     >
-                      <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
-                        <h6>Report Details</h6>
-                      </DialogTitle>
+                    <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+                      <Box display="flex" justifyContent="space-between" alignItems="center">
+                        <h6 style={{ margin: 0, textAlign: "center" }}>Report Details</h6>
+                        <IconButton onClick={handleCloseModal} color="error">
+                          <CloseIcon />
+                        </IconButton>
+                      </Box>
+                    </DialogTitle>
                       <DialogContent className="pb-0">
                                         <div className="row mb-2 mb-1">
                                         <div className="col-md-3 mb-1"><strong>Doc ID:</strong> {fillGridData.docId}</div>
@@ -702,7 +695,7 @@ function CostRegister() {
                       </div>  
                       </DialogContent>
                     </Dialog>
-        </> */}
+        </> 
       </div>
     </>
   );

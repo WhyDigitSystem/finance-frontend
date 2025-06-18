@@ -1,17 +1,34 @@
 import React from 'react';
 import { TextField, Checkbox, FormControlLabel, FormHelperText, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
+import CloseIcon from '@mui/icons-material/Close';
+import { TabContext } from '@mui/lab';
+import TabList from '@mui/lab/TabList';
+import TabPanel from '@mui/lab/TabPanel';
+import { IconButton } from '@mui/material';
+import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import ClearIcon from '@mui/icons-material/Clear';
 import ActionButton from 'utils/ActionButton';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
+import Tab from '@mui/material/Tab';
 import apiCalls from 'apicall';
+import { Box, Button, Chip, Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import CommonReportTable from 'utils/CommonReportTable';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
+import Paper from '@mui/material/Paper';
+import Draggable from 'react-draggable';
+function PaperComponent(props) {
+  return (
+    <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
+      <Paper {...props} />
+    </Draggable>
+  );
+}
 function ReceiptReport() {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
@@ -19,6 +36,9 @@ function ReceiptReport() {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
   const [partyNameList, setPartyNameList] = useState([]);
+  const [fillGridData, setFillGridData] = useState([]);
+  const [value, setValue] = useState('1');
+  const [modalOpen, setModalOpen] = useState(false);
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
   const [branchCodeList, setBranchCodeList] = useState([]);
@@ -40,14 +60,14 @@ function ReceiptReport() {
     toDate: null,
     customer: 'All',
     // customerCode: 'All',
-    branchCode:'All'
+    branchCode: 'All'
   });
   const [fieldErrors, setFieldErrors] = useState({
     fromDate: '',
     toDate: '',
     customer: '',
     // customerCode: '',
-    branchCode:''
+    branchCode: ''
   });
   const handleClear = () => {
     setListView(false);
@@ -56,14 +76,14 @@ function ReceiptReport() {
       toDate: null,
       customer: 'All',
       customerCode: 'All',
-      branchCode:'All'
+      branchCode: 'All'
     });
     setFieldErrors({
       fromDate: '',
       toDate: '',
       customer: '',
       customerCode: '',
-      branchCode:''
+      branchCode: ''
     });
     setRowData([]);
   };
@@ -135,64 +155,128 @@ function ReceiptReport() {
     }
   };
   const reportColumns = [
-    { accessorKey: 'docId', header: 'Doc No', size: 100 },
+    // { accessorKey: 'docId', header: 'Doc No', size: 100 },
+    {
+      accessorKey: 'docId',
+      header: 'Doc Id',
+      size: 100,
+      Cell: ({ row }) => {
+        const docId = row.original.docId;
+        return (
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handleDocClick(docId);
+            }}
+            style={{
+              color: 'crimson',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              transition: 'color 0.2s, text-shadow 0.2s',
+            }}
+            onMouseEnter={(e) => {
+              e.target.style.color = 'red';
+              // e.target.style.textShadow = '0 0 2px rgba(255, 0, 0, 0.6)';
+            }}
+            onMouseLeave={(e) => {
+              e.target.style.color = 'crimson';
+              e.target.style.textShadow = 'none';
+            }}
+          >
+            {docId}
+          </a>
+        );
+      }
+    },
     { accessorKey: 'docDate', header: 'Date', size: 100 },
     { accessorKey: 'shortName', header: 'Customer Name', size: 100 },
+    { accessorKey: 'chQnNumber', header: 'Cheque No', size: 100 },
+    { accessorKey: 'chequeDate', header: 'Cheque Date', size: 100 },
+    {
+      accessorKey: 'chargeAmount',
+      header: 'Bill Amt',
+      size: 70,
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+      )
+    },
+    {
+      accessorKey: 'tdsAmt',
+      header: 'TDS Amt',
+      size: 70,
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+      )
+    },
+    {
+      accessorKey: 'receivableAmount',
+      header: 'Payable Amt',
+      size: 70,
+      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+      )
+    },
     {
       accessorKey: 'receiptAmount',
       header: 'Receipt Amt',
-      size: 100,
+      size: 70,
       Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
         {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
-    )},
-    {
-      accessorKey: 'tds',
-      header: 'TDS Amt',
-      size: 100,
-      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
-        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
-    )},
-    // { accessorKey: 'invoiceNo', header: 'Invoice No', size: 100 },
-    // { accessorKey: 'invoiceDate', header: 'Invoice Date', size: 100 },
-    { accessorKey: 'chQnNumber', header: 'Cheque No', size: 100 },
+      )
+    },
     {
       accessorKey: 'arApOutstanding',
       header: 'OutStanding',
-      size: 100,
+      size: 70,
       Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
         {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
-    )},
+      )
+    },
     {
       accessorKey: 'arapSettled',
       header: 'Settled',
-      size: 100,
+      size: 70,
       Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
         {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
-    )},
+      )
+    },
     {
-      accessorKey: 'netAmount',
-      header: 'Net Amt',
-      size: 100,
+      accessorKey: 'onAccount',
+      header: 'On Account',
+      size: 70,
       Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
         {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
-    )}
+      )
+    }
   ];
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    if (isNaN(date)) return '';
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  };
+
+  const formatAmount = (value) => {
+    if (value == null || value === '') return '0';
+    return Number(value).toLocaleString('en-IN'); // For Indian numbering system
+  };
+
   const handleGo = async () => {
     const errors = {};
-    // if (!formData.partyName) {
-    //   errors.partyName = 'Sub ledger name is required';
-    // }
-
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       setListView(false);
       try {
         let response;
-        if(formData.fromDate && formData.toDate){
-        response = await apiCalls(
-          'get',
-          `reportController/getReceiptRegisterReport?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyName=${formData.customer}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
-        );
+        if (formData.fromDate && formData.toDate) {
+          response = await apiCalls(
+            'get',
+            `reportController/getReceiptRegisterReport?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyName=${formData.customer}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
+          );
         }
         else {
           response = await apiCalls(
@@ -218,15 +302,31 @@ function ReceiptReport() {
       setFieldErrors(errors);
     }
   };
+  const handleCloseModal = () => {
+    setModalOpen(false);
+  };
+  const handleChange = (event, newValue) => {
+    setValue(newValue);
+  };
+  const handleDocClick = async (docId) => {
+    setModalOpen(true);
+    try {
+      const response = await apiCalls(
+        'get',
+        `/arreceivable/getReceiptByDocIdAndScreenCode?docId=${docId}`
+      );
+      if (response.status === true) {
+        setFillGridData(response.paramObjectsMap.receiptVO)
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-        {/* <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Search" icon={SearchIcon} isLoading={isLoading} onClick={handleGo} margin="0 10px 0 10px" />
-          </div>
-        </div> */}
         <>
           <div className="row">
             <div className="row">
@@ -310,7 +410,7 @@ function ReceiptReport() {
                 </FormControl>
               </div>
             )}
-              {selectedSections.branchCode && ( 
+            {selectedSections.branchCode && (
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchCode}>
                   <InputLabel id="branchCode-label">Branch Code</InputLabel>
@@ -332,7 +432,7 @@ function ReceiptReport() {
                   {fieldErrors.branchCode && <FormHelperText>{fieldErrors.branchCode}</FormHelperText>}
                 </FormControl>
               </div>
-              )}
+            )}
             {(selectedSections.date || selectedSections.customer || selectedSections.branchCode) && (
               <div className="col-md-3 mb-2">
                 <div className="row d-flex ml">
@@ -347,9 +447,130 @@ function ReceiptReport() {
         </>
         {listView && (
           <div>
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"Receipt Register"} />
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"Receipt Register"} sumFields={['tdsAmt', 'receivableAmount', 'arapSettled', 'arApOutstanding', 'onAccount']} />
           </div>
         )}
+        <>
+          <Dialog
+            open={modalOpen}
+            maxWidth={'xl'}
+            fullWidth={true}
+            onClose={handleCloseModal}
+            PaperComponent={PaperComponent}
+            aria-labelledby="draggable-dialog-title"
+          >
+            <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <h6 style={{ margin: 0, textAlign: "center" }}>Report Details</h6>
+                <IconButton onClick={handleCloseModal} color="error">
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+            </DialogTitle>
+            <DialogContent className="pb-0">
+              <div className="row mb-2 mb-1">
+                <div className="col-md-3 mb-1"><strong>Doc ID:</strong> {fillGridData.docId}</div>
+                <div className="col-md-3 mb-1"><strong>Date:</strong> {fillGridData.docDate ? dayjs(fillGridData.docDate).format('DD-MM-YYYY') : ''}</div>
+                <div className="col-md-3 mb-1"><strong>Receipt Type:</strong> {fillGridData.receiptType}</div>
+                <div className="col-md-3 mb-1"><strong>UTI No:</strong> {fillGridData.chequeUtiNo}</div>
+                <div className="col-md-3 mb-1"><strong>Date:</strong> {fillGridData.chequeUtiDate ? dayjs(fillGridData.chequeUtiDate).format('DD-MM-YYYY') : ''}</div>
+                <div className="col-md-3 mb-1"><strong>Receipt Amount:</strong> ₹{Number(fillGridData.receiptAmt || 0).toLocaleString('en-IN')}</div>
+                <div className="col-md-3 mb-1"><strong>Tds Amount:</strong> ₹{Number(fillGridData.tdsAmt || 0).toLocaleString('en-IN')}</div>
+                <div className="col-md-3 mb-1"><strong>On Account:</strong> ₹{Number(fillGridData.onAccount || 0).toLocaleString('en-IN')}</div>
+                <div className="col-md-3 mb-1"><strong>Settled Amount:</strong> ₹{Number(fillGridData.netAmount || 0).toLocaleString('en-IN')}</div>
+                {/* <div className="col-md-3 mb-1"><strong>Amount:</strong> ₹{Number(fillGridData.onAccount || 0).toLocaleString('en-IN')}</div> */}
+              </div>
+              <div className="card w-full p-6 bg-base-100 shadow-xl mb-3">
+                <Box sx={{ width: '100%', typography: 'body1' }}>
+                  <TabContext value={value}>
+                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+                      <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
+                        <Tab label="Details" value="1" />
+                      </TabList>
+                    </Box>
+                    <TabPanel value="1">
+                      <div className="row">
+                        <div className="col-lg-12">
+                          <div className="table-responsive">
+                            <table className="table table-bordered">
+                              <thead>
+                                <tr style={{ backgroundColor: '#673AB7' }}>
+                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                    #
+                                  </th>
+                                  <th className="table-header">Invoice No</th>
+                                  <th className="table-header">Invoice Date</th>
+                                  <th className="table-header">Ref No</th>
+                                  <th className="table-header">Ref Date</th>
+                                  <th className="table-header">Currency</th>
+                                  <th className="table-header">Ex Rate</th>
+                                  <th className="table-header">Bill Amt</th>
+                                  <th className="table-header">Tax Amt</th>
+                                  <th className="table-header">Receivable Amt</th>
+                                  <th className="table-header">Tds Amt</th>
+                                  <th className="table-header">Outstanding Amt</th>
+                                  <th className="table-header">Settled Amt</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {fillGridData.receiptInvDetailsVO && fillGridData.receiptInvDetailsVO.length > 0 ? (
+                                  fillGridData.receiptInvDetailsVO.map((row, index) => (
+                                    <tr key={row.id}>
+                                      <td className="text-center">{index + 1}</td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.invNo || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatDate(row.invDate)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.refNo || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatDate(row.refDate)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.currency || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatAmount(row.exRate)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatAmount(row.amount)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatAmount(row.gstAmt)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatAmount(row.chargeAmt)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatAmount(row.tdsAmount)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatAmount(row.outstanding)}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {formatAmount(row.settled)}
+                                      </td>
+                                    </tr>
+
+                                  ))
+                                ) : (
+                                  "No Data"
+                                )}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      </div>
+                    </TabPanel>
+                  </TabContext>
+                </Box>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </>
       </div>
     </>
   );

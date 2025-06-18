@@ -526,8 +526,8 @@ const Receipt = () => {
     }
   };
   useEffect(() => {
-    // if(!editId){
-    calculateTotals();
+    if(formData.status === 'EDIT'){
+    calculateTotals();}
   }, [inVoiceDetailsData, formData.receiptAmt]);
   const calculateTotals = () => {
     let totalChargeAmt = 0;
@@ -561,7 +561,7 @@ const Receipt = () => {
     setInVoiceDetailsData(updatedInvoiceDetails);
     setFormData((prev) => ({
       ...prev,
-      netAmount: totalChargeAmt.toFixed(2),
+      netAmount: totalSettledAmt.toFixed(2),
       onAccount: onAccount
     }));
   }; 

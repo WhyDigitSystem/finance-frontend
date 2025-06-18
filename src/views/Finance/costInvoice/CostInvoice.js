@@ -28,12 +28,9 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonTable from 'views/basicMaster/CommonTable';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
-import { useLocation,useNavigate  } from 'react-router-dom';
 
 const CostInvoice = () => {
-const location = useLocation();
-const navigate = useNavigate(); 
-  const [showForm, setShowForm] = useState(true);
+  const [showForm, setShowForm] = useState(false);
   // const [routeForm, setRouteForm] = useState(false);
   const [data, setData] = useState([]);
   const [invoiceData, setInvoiceData] = useState(null);
@@ -74,142 +71,6 @@ const navigate = useNavigate();
   useEffect(()=>{
   getAllCostInvoiceByOrgId();
   },[])
-
-useEffect(() => {
-  const { docNo, screenCode } = location.state || {};
-  if (docNo && screenCode) {
-    console.log("doc and Screen code",docNo,screenCode);
-    handleDocClick(docNo, screenCode);
-    // setRouteForm(true);
-    setShowForm(false); 
-    navigate(location.pathname, { replace: true });
-  } else {
-    // setRouteForm(false);
-    setShowForm(false);
-  }
-}, []);
-const handleDocClick = async (docNo, screenCode) => { 
-    try {
-      let response;
-      if(screenCode === 'CI'){
-      response = await apiCalls(
-        'get',
-        `/costInvoice/getCostByDocIdandScreenCode?docId=${docNo}&ScreenCode=${screenCode}`
-      );}
-      else{
-      response = await apiCalls(
-        'get',
-        `/costInvoice/getDebitNoteByDocIdandScreenCode?docId=${docNo}&ScreenCode=${screenCode}`
-      );}
-      if (response.status === true) {
-        // let costRepVO;
-        // if(screenCode === 'CI'){
-      const costRepVO = response.paramObjectsMap.costInvoiceVO
-      if (costRepVO) {
-        console.log("Cost Rep",costRepVO.tdsCostInvoiceVO);
-        setListViewData([costRepVO]);
-        setEditId(costRepVO.id);
-        setPartyId(costRepVO.supplierId);
-        getCurrencyAndExratesForMatchingParties(costRepVO.supplierCode);
-        getStateName(costRepVO.supplierId);
-        getPlaceOfSupply(costRepVO.supplierGstInCode);
-        setDocId(costRepVO.docId)
-        setFormData({
-          docDate: costRepVO.docDate ? dayjs(costRepVO.docDate) : null,
-          mode: costRepVO.mode,
-          purVoucherNo: costRepVO.purVoucherNo,
-          purVoucherDate: costRepVO.purVoucherDate ? dayjs(costRepVO.purVoucherDate) : null,
-          supplierType: costRepVO.supplierType,
-          supplierName: costRepVO.supplierName,
-          supplierCode: costRepVO.supplierCode,
-          vid: costRepVO.vid,
-          vdate: costRepVO.vdate ? dayjs(costRepVO.vdate) : null,
-          supplierGstInCode: costRepVO.supplierGstInCode,
-          supplierGstIn: costRepVO.supplierGstIn,
-          supplierPlace: costRepVO.supplierPlace,
-          supplierBillNo: costRepVO.supplierBillNo,
-          address: costRepVO.address,
-          creditDays: costRepVO.creditDays,
-          gstType: costRepVO.gstType,
-          payment: costRepVO.payment,
-          utrRef: costRepVO.utrRef,
-          costType: costRepVO.costType,
-          remarks: costRepVO.remarks,
-          approveBy: costRepVO.approveBy,
-          approveOn: costRepVO.approveOn,
-          approveStatus: costRepVO.approveStatus,
-          netBillCurrAmt: costRepVO.netBillCurrAmt,
-          actBillLcAmt: costRepVO.actBillLcAmt,
-          netBillLcAmt: costRepVO.netBillLcAmt,
-          gstInputLcAmt: costRepVO.gstInputLcAmt,
-          roundOff: costRepVO.roundOff,
-          totChargesLcAmt: costRepVO.totChargesLcAmt
-        });
-        setChargerCostInvoice(
-          costRepVO.chargerCostInvoiceVO.map((row) => ({
-            jobNo: row.jobNo,
-            party: row.party,
-            chargeCode: row.chargeCode,
-            description: row.description,
-            qty: row.qty,
-            rate: row.rate,
-            currency: row.currency,
-            exRate: row.exRate,
-            fcAmount: row.fcAmt,
-            lcAmount: row.lcAmt,
-            sac: row.sac,
-            gstPercent: row.gstpercent,
-            id: row.id,
-            billAmt: row.billAmt,
-            chargeLedger: row.chargeLedger,
-            chargeName: row.chargeName,
-            govChargeCode: row.govChargeCode,
-            gst: row.gst,
-            ledger: row.ledger,
-            taxable: row.taxable
-          }))
-        );
-// In handleDocClick function:
-setTdsCostInvoiceDTO(
-  Array.isArray(costRepVO.tdsCostInvoiceVO) && costRepVO.tdsCostInvoiceVO.length > 0
-    ? costRepVO.tdsCostInvoiceVO[0].map((row) => ({
-        id: row.id,
-        section: row.section,
-        tdsWithHolding: row.tdsWithHolding,
-        tdsWithHoldingPer: row.tdsWithHoldingPer,
-        totTdsWhAmnt: row.totTdsWhAmnt
-      }))
-    : [{  // Add default empty TDS object if none exists
-        section: '',
-        tdsWithHolding: '',
-        tdsWithHoldingPer: '',
-        totTdsWhAmnt: ''
-      }]
-);
-        setChargeDetails(
-          costRepVO.gstLines.map((row) => ({
-            id: row.id,
-            chargeCode: row.chargeCode,
-            chargeDesc: row.chargeName,
-            gChargeCode: row.govChargeCode,
-            gstPercent: row.gstpercent,
-            sac: row.sac,
-            lcAmount: row.lcAmt
-          }))
-        );
-        getAllSectionName(costRepVO.tdsCostInvoiceVO[0].tdsWithHolding);
-        setShowChargeDetails(true);
-        console.log('DataToEdit', costRepVO);
-      } else {
-        // Handle erro
-      }
-      } else {
-        console.error('API Error:', response);
-      }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
   const [chargeDetails, setChargeDetails] = useState([
     {
       id: 1,

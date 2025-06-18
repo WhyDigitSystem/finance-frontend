@@ -525,7 +525,7 @@ const Payment = () => {
   };
 
   useEffect(() => {
-    if (!editId || editId) calculateTotals();
+    if (formData.status === 'EDIT') calculateTotals();
   }, [withdrawalsTableData, formData.paymentAmt]);
 
   const calculateTotals = () => {
@@ -558,7 +558,7 @@ const Payment = () => {
     setWithdrawalsTableData(updatedInvoiceDetails);
     setFormData((prev) => ({
       ...prev,
-      netAmount: totalChargeAmt.toFixed(2),
+      netAmount: totalSettledAmt.toFixed(2),
       onAccount: onAccount
     }));
   };
