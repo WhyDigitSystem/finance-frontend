@@ -1,7 +1,7 @@
 import React from 'react';
 import { TextField, Checkbox, Box, Typography, Button, FormControlLabel, FormHelperText, FormControl, InputLabel, MenuItem, Select, Radio, TableContainer, Switch, ButtonGroup } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import FileDownload from '@mui/icons-material/FileDownload';
 import CloseIcon from '@mui/icons-material/Close';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -9,6 +9,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableFooter,
   TableRow,
   TableHead,
   Paper,
@@ -26,6 +27,7 @@ import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
+import { red } from '@mui/material/colors';
 
 function SalesReport() {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -35,12 +37,11 @@ function SalesReport() {
   const [isLoading, setIsLoading] = useState(false);
   const [branchCodeList, setBranchCodeList] = useState([]);
   const [partyNameList, setPartyNameList] = useState([]);
-  const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
-  useEffect(()=>{
+  useEffect(() => {
     getPartyName();
     getAllBranches();
-  },[])
+  }, [])
   const [selectedSections, setSelectedSections] = useState({
     date: false,
     branchCode: false,
@@ -48,10 +49,10 @@ function SalesReport() {
   });
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
-      setSelectedSections((prevState) => ({
-        ...prevState,
-        [name]: checked,
-      }));
+    setSelectedSections((prevState) => ({
+      ...prevState,
+      [name]: checked,
+    }));
   };
 
   const [formData, setFormData] = useState({
@@ -68,7 +69,6 @@ function SalesReport() {
     customer: '',
   });
   const handleClear = () => {
-    setListView(false);
     setFormData({
       fromDate: null,
       toDate: null,
@@ -169,68 +169,66 @@ function SalesReport() {
   };
   const handleGo = async () => {
     const errors = {};
-    if(selectedSections.date){
-    if (!formData.toDate) {
-      errors.toDate = 'To Date is required';
+    if (selectedSections.date) {
+      if (!formData.toDate) {
+        errors.toDate = 'To Date is required';
+      }
+      if (!formData.fromDate) {
+        errors.fromDate = 'From Date is required';
+      }
     }
-    if (!formData.fromDate) {
-      errors.fromDate = 'From Date is required';
-    }}
-    if(selectedSections.branchCode){
-    if (!formData.branchCode) {
-      errors.branchCode = 'Branch is required';
-    }}
-    if(selectedSections.customer){
-    if (!formData.customer) {
-      errors.customer = 'Customer name is required';
-    }}
-    console.log("go error",errors);
+    if (selectedSections.branchCode) {
+      if (!formData.branchCode) {
+        errors.branchCode = 'Branch is required';
+      }
+    }
+    if (selectedSections.customer) {
+      if (!formData.customer) {
+        errors.customer = 'Customer name is required';
+      }
+    }
+    console.log("go error", errors);
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
-      setOpen(true);
-      setListView(false);
       try {
         let response;
         if (formData.viewMode === 'details') {
-            if (formData.fromDate && formData.toDate) {
-              response = await apiCalls(
-                'get',
-                `/taxInvoice/getTaxinvoiceDetails?branchCode=${formData.branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
-              );
-            } else {
-              response = await apiCalls(
-                'get',
-                `/taxInvoice/getTaxinvoiceDetails?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyname=${formData.customer}`
-              );
-            }
+          if (formData.fromDate && formData.toDate) {
+            response = await apiCalls(
+              'get',
+              `/taxInvoice/getTaxinvoiceDetails?branchCode=${formData.branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
+            );
+          } else {
+            response = await apiCalls(
+              'get',
+              `/taxInvoice/getTaxinvoiceDetails?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyname=${formData.customer}`
+            );
+          }
         } else {
-            if (formData.fromDate && formData.toDate) {
-              response = await apiCalls(
-                'get',
-                `/taxInvoice/getTaxinvoiceSummary?branchCode=${formData.branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
-              );
-            } else {
-              response = await apiCalls(
-                'get',
-                `/taxInvoice/getTaxinvoiceSummary?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyname=${formData.customer}`
-              );
-            }
+          if (formData.fromDate && formData.toDate) {
+            response = await apiCalls(
+              'get',
+              `/taxInvoice/getTaxinvoiceSummary?branchCode=${formData.branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
+            );
+          } else {
+            response = await apiCalls(
+              'get',
+              `/taxInvoice/getTaxinvoiceSummary?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyname=${formData.customer}`
+            );
+          }
         }
-
-
         if (response.status === true) {
           console.log('Response:', response);
-          setRowData(response.paramObjectsMap.mapp || []); 
-          // { formData.type === 'RIM' && setRowData(response.paramObjectsMap.rimReportFillGrid || []); }
+          setRowData(response.paramObjectsMap.mapp || []);
           setIsLoading(false);
-          setListView(true);
+          setOpen(true);
         } else {
           showToast('error', response.paramObjectsMap.message);
           setIsLoading(false);
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', rowData.paramObjectsMap.message);
+        showToast('error', "Report fetch Failed");
         setIsLoading(false);
       }
     } else {
@@ -299,7 +297,7 @@ function SalesReport() {
               assetIndex === 0 ? dayjs(transaction.transactionDate).format('DD-MM-YYYY') : '',
               assetIndex === 0 ? transaction.fromWarehouse : transaction.sender,
               assetIndex === 0 ? transaction.receiver : '',
-              // assetIndex === 0 ? (transaction.amount ? `₹${Number(transaction.amount).toLocaleString('en-IN')}` : '-') : '',
+              // assetIndex === 0 ? (transaction.amount ? `${Number(transaction.amount).toLocaleString('en-IN')}` : '-') : '',
               assetIndex === 0 ? kitGroup.kitId : '',
               assetIndex === 0 ? kitGroup.kitName : '',
               asset.assetCode,
@@ -360,6 +358,14 @@ function SalesReport() {
       showToast('error', 'Failed to generate Excel file');
     }
   };
+  const totals = rowData.reduce((acc, item) => {
+    acc.qty += Number(item.qty || 0);
+    acc.rate += Number(item.rate || 0);
+    acc.totalCharge += Number(item.billAmount || 0);
+    acc.totalTax += Number(item.gstamount || 0);
+    acc.totalInvoice += Number(item.totalLcAmount || 0);
+    return acc;
+  }, { qty: 0, rate: 0, totalCharge: 0, totalTax: 0, totalInvoice: 0 });
   return (
     <>
       <div className="card w-full bg-base-100 shadow-xl" style={{ padding: '10px', borderRadius: '10px' }}>
@@ -480,7 +486,7 @@ function SalesReport() {
                 </FormControl>
               </div>
             )}
-              {selectedSections.customer && ( 
+            {selectedSections.customer && (
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
                   <InputLabel id="customer-label">Customer</InputLabel>
@@ -502,7 +508,7 @@ function SalesReport() {
                   {fieldErrors.customer && <FormHelperText>{fieldErrors.customer}</FormHelperText>}
                 </FormControl>
               </div>
-              )}
+            )}
           </div>
         </>
         <>
@@ -541,8 +547,18 @@ function SalesReport() {
                     <Button
                       variant="contained"
                       color="success"
-                      startIcon={<FileDownloadIcon />}
+                      disabled={rowData.length === 0}
+                      size="small"
+                      startIcon={<FileDownload />}
                       onClick={handleDownloadExcel}
+                      sx={{
+                        borderRadius: '20px',
+                        px: 2,
+                        textTransform: 'none',
+                        bgcolor: '#388E3C',
+                        color: '#FFF', // Set text color to white
+                        '&:hover': { bgcolor: '#1B5E20', color: '#FFF' } // Ensure text remains white on hover
+                      }}
                     >
                       Excel
                     </Button>
@@ -592,152 +608,134 @@ function SalesReport() {
                         {
                           formData.viewMode === 'details' ? (
                             <>
-                              <TableCell style={{ textAlign: 'center', width: '2%' }}>#</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '8%' }}>Trans No</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '8%' }}>Date</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '13%' }}>Sender</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '10%' }}>Receiver</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '6%' }}>Kit No</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '15%' }}>Kit Name</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '6%' }}>Kit Qty</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '8%' }}>Product Code</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '15%' }}>Product Name</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '10%' }}>Product Qty</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '1%' }}>#</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '2%' }}>Doc ID</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '2%' }}>Date</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '5%' }}>Customer Name</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '2%' }}>Invoice No</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '2%' }}>Invoice Date</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '2%' }}>Place of Supply</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '2%' }}>Charge Type</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '2%' }}>Charge Code</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '2%' }}>Charge Name</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '1%' }}>Qty</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '1%' }}>Rate</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '2%' }}>Charge Amount</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '1%' }}>Tax Amount</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '1%' }}>Total Amount</TableCell>
                             </>
                           ) : (
                             <>
-                              <TableCell style={{ textAlign: 'center', width: '2%' }}>#</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '8%' }}>Trans No</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '1%' }}>#</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '8%' }}>Doc Id</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '8%' }}>Date</TableCell>
-                              {
-                                formData.mim ?
-                                  <TableCell style={{ textAlign: 'center', width: '10%' }}>Receiver</TableCell> :
-                                  <TableCell style={{ textAlign: 'center', width: '10%' }}>Sender</TableCell>
-                              }
-                              <TableCell style={{ textAlign: 'center', width: '6%' }}>HSN Code</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '15%' }}>Transporter Name</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '6%' }}>Kit Qty</TableCell>
-                              {
-                                formData.mim ?
-                                  <TableCell style={{ textAlign: 'center', width: '8%' }}>Amount</TableCell> :
-                                  ''
-                              }
+                              <TableCell style={{ textAlign: 'center', width: '6%' }}>Invoice No</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '6%' }}>Invoice Date</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '6%' }}>Tax Type</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '15%' }}>Customer Name</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '6%' }}>Place of Supply</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '6%' }}>Bill Amt</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '6%' }}>Tax Amt</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '6%' }}>Total Amt</TableCell>
                             </>
                           )
                         }
-
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {formData.viewMode === 'details' ? (
-                        rowData.map((transaction, trxIndex) => {
-                          const details = formData.type === 'MIM'
-                            ? transaction.issueManifestProviderDetailsVOs
-                            : transaction.retrievalManifestProviderDetailsVOs;
-
-                          if (!details) return null;
-
-                          const kitGroups = details.reduce((groups, item) => {
-                            const kitId = item.kitId;
-                            if (!groups[kitId]) {
-                              groups[kitId] = {
-                                kitId,
-                                kitName: item.kitName,
-                                kitQty: item.kitQty,
-                                assets: []
-                              };
-                            }
-                            groups[kitId].assets.push(item);
+                      {formData.viewMode === 'details'
+                        ? Object.entries(
+                          rowData.reduce((groups, item) => {
+                            const { docid } = item;
+                            if (!groups[docid]) groups[docid] = [];
+                            groups[docid].push(item);
                             return groups;
-                          }, {});
+                          }, {})
+                        ).map(([docid, items], groupIndex) => (
+                          <React.Fragment key={docid}>
+                            {items.map((item, itemIndex) => (
+                              <TableRow key={`${docid}-${itemIndex}`}>
+                                {/* Group-level (rowSpan) */}
+                                {itemIndex === 0 && (
+                                  <>
+                                    <TableCell rowSpan={items.length} align="center">
+                                      {groupIndex + 1}
+                                    </TableCell>
+                                    <TableCell rowSpan={items.length}>
+                                      {item.docid}
+                                    </TableCell>
+                                    <TableCell rowSpan={items.length}>
+                                      {item.docdate
+                                        ? dayjs(item.docdate).format('DD-MM-YYYY')
+                                        : 'N/A'}
+                                    </TableCell>
+                                    <TableCell rowSpan={items.length}>{item.partyname}</TableCell>
+                                    <TableCell rowSpan={items.length}>
+                                      {item.Vid || 'N/A'}
+                                    </TableCell>
+                                    <TableCell rowSpan={items.length}>
+                                      {item.Vdate
+                                        ? dayjs(item.Vdate).format('DD-MM-YYYY')
+                                        : 'N/A'}
+                                    </TableCell>
+                                    <TableCell rowSpan={items.length}>{item.placeofsupply}</TableCell>
+                                  </>
+                                )}
 
-                          const kitGroupsArray = Object.values(kitGroups);
-                          const totalAssetsInTransaction = details.length;
-
-                          return (
-                            <React.Fragment key={transaction.id}>
-                              {kitGroupsArray.map((kitGroup, kitIndex) =>
-                                kitGroup.assets.map((asset, assetIndex) => (
-                                  <TableRow key={`${transaction.id}-${kitGroup.kitId}-${asset.id}`}>
-                                    {/* Transaction-level data */}
-                                    {kitIndex === 0 && assetIndex === 0 && (
-                                      <>
-                                        <TableCell rowSpan={totalAssetsInTransaction} align="center">
-                                          {trxIndex + 1}
-                                        </TableCell>
-                                        <TableCell rowSpan={totalAssetsInTransaction} align="center">
-                                          {transaction.transactionNo}
-                                        </TableCell>
-                                        <TableCell rowSpan={totalAssetsInTransaction} align="center">
-                                          {dayjs(transaction.transactionDate).format('DD-MM-YYYY')}
-                                        </TableCell>
-                                        <TableCell rowSpan={totalAssetsInTransaction}>
-                                          {formData.type === 'MIM' ? transaction.fromWarehouse : transaction.sender}
-                                        </TableCell>
-                                        <TableCell rowSpan={totalAssetsInTransaction}>
-                                          {transaction.receiver}
-                                        </TableCell>
-                                      </>
-                                    )}
-
-                                    {/* Kit-level data */}
-                                    {assetIndex === 0 && (
-                                      <>
-                                        <TableCell rowSpan={kitGroup.assets.length} align="center">
-                                          {kitGroup.kitId}
-                                        </TableCell>
-                                        <TableCell rowSpan={kitGroup.assets.length}>
-                                          {kitGroup.kitName}
-                                        </TableCell>
-                                        <TableCell rowSpan={kitGroup.assets.length} align='center'>
-                                          {kitGroup.kitQty}
-                                        </TableCell>
-                                      </>
-                                    )}
-
-                                    {/* Asset-level data */}
-                                    <TableCell align="center">{asset.assetCode}</TableCell>
-                                    <TableCell>{asset.asset}</TableCell>
-                                    <TableCell align="center">{asset.assetQty}</TableCell>
-                                  </TableRow>
-                                ))
-                              )}
-
-                              {/* Separator */}
-                              {trxIndex < rowData.length - 1 && (
-                                <TableRow>
-                                  <TableCell colSpan={11} sx={{ borderBottom: '1px groove #000', height: '1px' }} />
-                                </TableRow>
-                              )}
-                            </React.Fragment>
-                          );
-                        })
-                      ) : (
-                        rowData.map((transaction, index) => (
+                                {/* Line-level */}
+                                <TableCell>{item.chargetype}</TableCell>
+                                <TableCell>{item.chargecode}</TableCell>
+                                <TableCell>{item.chargename}</TableCell>
+                                <TableCell align="center">{item.qty}</TableCell>
+                                <TableCell align="right" sx={{ pl: '2px' }}>{item.rate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right">{item.billAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right">{item.gstamount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
+                                <TableCell align="right">{item.totalLcAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
+                              </TableRow>
+                            ))}
+                          </React.Fragment>
+                        ))
+                        : rowData.map((transaction, index) => (
                           <TableRow key={index}>
                             <TableCell align="center">{index + 1}</TableCell>
-                            <TableCell align="center">{transaction.transactionNo}</TableCell>
-                            <TableCell align="center">{dayjs(transaction.transactionDate).format('DD-MM-YYYY')}</TableCell>
-                            {
-                              formData.mim ?
-                                <TableCell>{transaction.receiver}</TableCell> :
-                                <TableCell>{transaction.sender}</TableCell>
-                            }
-                            <TableCell align="center">{transaction.hsnCode}</TableCell>
-                            <TableCell>{transaction.transporterName || '-'}</TableCell>
-                            <TableCell align="center">{transaction.kitQty}</TableCell>
-                            {
-                              formData.mim ?
-                                <TableCell align="right">
-                                  ₹{transaction.amount ? Number(transaction.amount).toLocaleString('en-IN') : '0'}
-                                </TableCell> :
-                                ''
-                            }
+                            <TableCell>{transaction.docId}</TableCell>
+                            <TableCell align="center">{dayjs(transaction.docdate).format('DD-MM-YYYY')}</TableCell>
+                            <TableCell>{transaction.vId}</TableCell>
+                            <TableCell align="center">{dayjs(transaction.vDate).format('DD-MM-YYYY')}</TableCell>
+                            <TableCell align="center">{transaction.gstType}</TableCell>
+                            <TableCell>{transaction.partyName || '-'}</TableCell>
+                            <TableCell>{transaction.placeofsupply || '-'}</TableCell>
+                            <TableCell align="right">{Number(transaction.billAmount).toLocaleString('en-IN')}</TableCell>
+                            <TableCell align="right">{Number(transaction.gstamount).toLocaleString('en-IN')}</TableCell>
+                            <TableCell align="right">{Number(transaction.totalLcAmount).toLocaleString('en-IN')}</TableCell>
                           </TableRow>
-                        ))
-                      )}
+                        ))}
                     </TableBody>
-
+                    <TableFooter>
+                      <TableRow sx={{ backgroundColor: '#f5f5f5', fontWeight: 'bold' }}>
+                        {formData.viewMode === 'details' ? (
+                          <>
+                            <TableCell colSpan={10} align="right" sx={{ fontWeight: 700, padding: '10px', pr: '20px' }}>
+                              Grand Total
+                            </TableCell>
+                            <TableCell align="center" style={{color: 'red'}}>{totals.qty}</TableCell>
+                            <TableCell align="right" style={{color: 'red'}}>{totals.rate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
+                            <TableCell align="right" style={{color: 'red'}}>{totals.totalCharge.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
+                            <TableCell align="right" style={{color: 'red'}}>{totals.totalTax.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
+                            <TableCell align="right" style={{color: 'red'}}>{totals.totalInvoice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
+                          </>
+                        ) : (
+                          <>
+                            <TableCell colSpan={8} align="right" sx={{ fontWeight: 700 }}>
+                              Grand Total
+                            </TableCell>
+                            <TableCell align="right" style={{color: 'red'}}>{totals.totalCharge.toLocaleString('en-IN')}</TableCell>
+                            <TableCell align="right" style={{color: 'red'}}>{totals.totalTax.toLocaleString('en-IN')}</TableCell>
+                            <TableCell align="right" style={{color: 'red'}}>{totals.totalInvoice.toLocaleString('en-IN')}</TableCell>
+                          </>
+                        )}
+                      </TableRow>
+                    </TableFooter>
                   </Table>
                 </TableContainer>
               </div>
@@ -748,5 +746,4 @@ function SalesReport() {
     </>
   )
 }
-
 export default SalesReport;

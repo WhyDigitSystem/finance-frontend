@@ -1843,7 +1843,7 @@ const handleView = () => {
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
             <div className=" justify-content-start">
-              {editId && !showForm && (formData.mode === 'SUBMIT' || listViewData.mode === 'SUBMIT') && (
+              {editId && !showForm && (formData.mode === 'SUBMIT' || listViewData?.mode === 'SUBMIT') && (
                 <>
                   {formData?.approveStatus === 'Approved' && (
                     <Stack direction="row" spacing={2}>
@@ -1858,7 +1858,7 @@ const handleView = () => {
                     </Stack>
                   )}
                   {/* {formData.mode === 'SUBMIT' && formData.approveStatus === null && ( */}
-                  {listViewData.mode === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                  {(listViewData?.mode === 'SUBMIT' || formData.mode === 'SUBMIT') && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
                     <div className="d-flex" style={{ marginRight: '30px' }}>
                       <Button
                         variant="outlined"
