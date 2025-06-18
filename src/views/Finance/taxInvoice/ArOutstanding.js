@@ -12,7 +12,10 @@ import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import CommonReportTable from 'utils/CommonReportTable';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 import Button from '@mui/material/Button';
+import { style, width } from '@mui/system';
 function ArOutstanding() {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
@@ -28,14 +31,16 @@ function ArOutstanding() {
     date: false,
     partyName: false,
     branch: false,
-    dueDate: false
+    dueDate: false,
+    slab: false
   });
 
   const [visibleSections, setVisibleSections] = useState({
     date: false,
     partyName: false,
     branch: false,
-    dueDate: false
+    dueDate: false,
+    slab: false
   });
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
@@ -49,30 +54,39 @@ function ArOutstanding() {
   };
 
   const [formData, setFormData] = useState({
-    asOnDate: null,
+    asOnDate: dayjs().format('YYYY-MM-DD'),
     partyName: 'All',
     branch: 'All',
-    dueDate: null
+    dueDate: null,
+    slab1: '',
+    slab2: '',
+    slab3: '',
+    slab4: '',
+    slab5: '',
+    slab6: ''
   });
   const [fieldErrors, setFieldErrors] = useState({
     asOnDate: '',
     partyName: '',
     branch: '',
-    dueDate: ''
+    dueDate: '',
+    slab: ''
   });
   const handleClear = () => {
     setListView(false);
     setFormData({
-      asOnDate: null,
+      asOnDate: dayjs().format('YYYY-MM-DD'),
       partyName: 'All',
       branch: 'All',
-      dueDate: null
+      dueDate: null,
+      slab: ''
     });
     setFieldErrors({
       asOnDate: '',
       partyName: '',
       branch: '',
-      dueDate: ''
+      dueDate: '',
+      slab: ''
     });
     setRowData([]);
   };
@@ -148,21 +162,382 @@ function ArOutstanding() {
       setFormData((prevData) => ({ ...prevData, [name]: inputValue }));
     }
   };
-  const handleDateChange = (field, date) => {
-    const formattedDate = dayjs(date).format('YYYY-MM-DD') || null;
-    setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+
+  const handleDownloadExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('AR Outstanding');
+
+    // Title Row
+    sheet.mergeCells('A1', 'K1'); // Adjust column span as per total columns
+    const titleCell = sheet.getCell('A1');
+    titleCell.value = 'AR Outstanding Report';
+    titleCell.font = { size: 16, bold: true, color: { argb: 'FF34449B' } };
+    titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+    sheet.addRow([]);
+
+    // Headers from reportColumns
+    const headers = reportColumns.map(col => col.header);
+    const keys = reportColumns.map(col => col.accessorKey);
+    const headerRow = sheet.addRow(headers);
+
+    headerRow.eachCell(cell => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF34449B' },
+      };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' },
+      };
+    });
+
+    // Add data rows
+    // Add data rows with formatting
+    rowData.forEach((item) => {
+      const row = keys.map((key) => {
+        const value = item[key];
+        if (
+          typeof value === 'string' &&
+          value !== '' &&
+          !isNaN(value) &&
+          value.trim() !== ''
+        ) {
+          return Number(value).toLocaleString('en-IN', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+        }
+        return value ?? '';
+      });
+
+      const dataRow = sheet.addRow(row);
+
+      dataRow.eachCell((cell, colNumber) => {
+        const key = keys[colNumber - 1];
+        const isTextColumn = key === 'subledgerName';
+
+        cell.alignment = {
+          horizontal: isTextColumn ? 'left' : 'right',
+          vertical: 'middle',
+        };
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' },
+        };
+      });
+    });
+
+    // Auto-fit column widths
+    sheet.columns.forEach(col => {
+      let maxLength = 10;
+      col.eachCell({ includeEmpty: true }, cell => {
+        const cellValue = cell.value ? cell.value.toString() : '';
+        if (cellValue.length > maxLength) maxLength = cellValue.length;
+      });
+      col.width = maxLength + 5;
+    });
+
+    // Export
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+    saveAs(blob, 'AR_Outstanding_Report.xlsx');
   };
+
+  const handleDateChange = (field, date) => {
+    const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
+    setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+
+    setFieldErrors((prev) => ({ ...prev, [field]: '' }));
+  };
+
   const reportColumns = [
-    { accessorKey: 'subledgercode', header: 'Customer Code', size: 140 },
-    { accessorKey: 'partyshortname', header: 'Customer', size: 140 },
-    { accessorKey: 'outstanding', header: 'Outstanding', size: 140 },
-    { accessorKey: 'unadjusted', header: 'Unadjusted', size: 140 },
-    { accessorKey: 'amount', header: 'Total Due', size: 140 },
-    { accessorKey: 'mslab1', header: 'Below 30 Days', size: 140 },
-    { accessorKey: 'mslab2', header: 'Days 30 - 60', size: 140 },
-    { accessorKey: 'mslab3', header: 'Days 60 - 90', size: 140 },
-    { accessorKey: 'mslab4', header: 'Days 90 - 120', size: 140 },
-    { accessorKey: 'mslab5', header: 'Days 120+', size: 140 }
+    // { accessorKey: 'branch', header: 'Branch', size: 100 },
+    {
+      accessorKey: 'branch',
+      header: 'Branch',
+      size: 80,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'left', padding: '8px' }}>
+          {cell.getValue() || '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '0px'
+        }
+      },
+      muiTableBodyCellProps: {
+        sx: {
+          padding: '8px',
+          backgroundColor: '#ffffff'
+        }
+      }
+    },
+    {
+      accessorKey: 'subledgerCode',
+      header: 'Customer Code',
+      size: 80,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'left', padding: '8px' }}>
+          {cell.getValue() || '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      },
+      muiTableBodyCellProps: {
+        sx: {
+          padding: '8px',
+          backgroundColor: '#ffffff'
+        }
+      }
+    },
+    // { accessorKey: 'subledgerCode', header: 'Customer Code', size: 100 },
+    {
+      accessorKey: 'subledgerName',
+      header: 'Customer',
+      size: 100,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'left', padding: '8px' }}>
+          {cell.getValue() || '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      },
+      muiTableBodyCellProps: {
+        sx: {
+          padding: '8px',
+          backgroundColor: '#ffffff'
+        }
+      }
+    },
+    // { accessorKey: 'subledgerName', header: 'Customer', size: 140 },
+    {
+      accessorKey: 'creditDays',
+      header: 'Credit Days',
+      size: 100,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'center', padding: '8px' }}>
+          {cell.getValue() || '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      },
+      muiTableBodyCellProps: {
+        sx: {
+          padding: '8px',
+          backgroundColor: '#ffffff'
+        }
+      }
+    },
+    // { accessorKey: 'creditDays', header: 'Credit Days', size: 60 },
+    {
+      accessorKey: 'creditLimit',
+      header: 'Credit Limit',
+      size: 100,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', padding: '8px' }}>
+          {cell.getValue() || '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      },
+      muiTableBodyCellProps: {
+        sx: {
+          padding: '8px',
+          backgroundColor: '#ffffff'
+        }
+      }
+    },
+    {
+      accessorKey: 'currency',
+      header: 'Currency',
+      size: 80,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'left', padding: '8px' }}>
+          {cell.getValue() || '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      },
+      muiTableBodyCellProps: {
+        sx: {
+          padding: '8px',
+          backgroundColor: '#ffffff'
+        }
+      }
+    },
+    // { accessorKey: 'currency', header: 'Currency', size: 70 },
+    {
+      accessorKey: 'outstanding',
+      header: 'Outstanding',
+      size: 100,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', padding: '8px' }}>
+          {cell.getValue() || '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      },
+      muiTableBodyCellProps: {
+        sx: {
+          padding: '8px',
+          backgroundColor: '#ffffff'
+        }
+      }
+    },
+    // {
+    //   accessorKey: 'outstanding',
+    //   header: 'Outstanding',
+    //   size: 90,
+    //   Cell: ({ cell }) => (
+    //     <div style={{ textAlign: 'right' }}>
+    //       {cell.getValue() !== undefined && cell.getValue() !== null
+    //         ? Number(cell.getValue()).toLocaleString('en-IN')
+    //         : '-'}
+    //     </div>
+    //   ),
+    //   muiTableHeadCellProps: { align: 'right' },
+    // },
+    {
+      accessorKey: 'unadjusted',
+      header: 'Unadjusted',
+      size: 100,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', padding: '8px' }}>
+          {cell.getValue() || '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      },
+      muiTableBodyCellProps: {
+        sx: {
+          padding: '8px',
+          backgroundColor: '#ffffff'
+        }
+      }
+    },
+    // {
+    //   accessorKey: 'unadjusted',
+    //   header: 'Unadjusted',
+    //   size: 90,
+    //   Cell: ({ cell }) => (
+    //     <div style={{ textAlign: 'right' }}>
+    //       {cell.getValue() !== undefined && cell.getValue() !== null
+    //         ? Number(cell.getValue()).toLocaleString('en-IN')
+    //         : '-'}
+    //     </div>
+    //   ),
+    //   muiTableHeadCellProps: { align: 'right' },
+    // },
+    {
+      accessorKey: 'amount',
+      header: 'Total Due',
+      size: 80,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', padding: '8px' }}>
+          {cell.getValue() || '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      },
+      muiTableBodyCellProps: {
+        sx: {
+          padding: '8px',
+          backgroundColor: '#ffffff'
+        }
+      }
+    },
+    // {
+    //   accessorKey: 'amount',
+    //   header: 'Total Due',
+    //   size: 90,
+    //   Cell: ({ cell }) => (
+    //     <div style={{ textAlign: 'right' }}>
+    //       {cell.getValue() !== undefined && cell.getValue() !== null
+    //         ? Number(cell.getValue()).toLocaleString('en-IN')
+    //         : '-'}
+    //     </div>
+    //   ),
+    //   muiTableHeadCellProps: { align: 'right' },
+    // }
   ];
   const handleGo = async () => {
     const errors = {};
@@ -179,12 +554,12 @@ function ArOutstanding() {
         if (formData.dueDate) {
           response = await apiCalls(
             'get',
-            `/arapAdjustments/GetArapAdjustments?asondt=${formData.asOnDate}&branch=${formData.branch}&orgId=${orgId}&partyName=${formData.partyName}&pdate=${formData.dueDate}`
+            `/arapAdjustments/GetArapAdjustments?Asondate=${formData.asOnDate}&branch=${formData.branch}&orgId=${orgId}&partyname=${formData.partyName}&finyear=${finYear}&pdate=${formData.dueDate}`
           );
         } else {
           response = await apiCalls(
             'get',
-            `/arapAdjustments/GetArapAdjustments?asondt=${formData.asOnDate}&partyName=${formData.partyName}&orgId=${orgId}&branch=${formData.branch}`
+            `/arapAdjustments/GetArapAdjustments?Asondate=${formData.asOnDate}&partyname=${formData.partyName}&orgId=${orgId}&branch=${formData.branch}&finyear=${finYear}`
           );
         }
         if (response.status === true) {
@@ -247,6 +622,12 @@ function ArOutstanding() {
                 />
               </div>
               {/* <div className="col-md-2 mb-3">
+                <FormControlLabel
+                  control={<Checkbox checked={selectedSections.slab} onChange={handleCheckboxChange} name="slab" color="secondary" />}
+                  label="Slab"
+                />
+              </div> */}
+              {/* <div className="col-md-2 mb-3">
                 <Button
                   onClick={handleProceed}
                   color="secondary"
@@ -265,10 +646,14 @@ function ArOutstanding() {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         label="As On Date"
-                        value={formData.asOnDate ? dayjs(formData.asOnDate, 'YYYY-MM-DD') : null}
+                        value={formData.asOnDate ? dayjs(formData.asOnDate) : null}
                         onChange={(date) => handleDateChange('asOnDate', date)}
                         slotProps={{
-                          textField: { size: 'small', clearable: true, error: fieldErrors.asOnDate, helperText: fieldErrors.asOnDate }
+                          textField: {
+                            size: 'small',
+                            error: !!fieldErrors.asOnDate,
+                            helperText: fieldErrors.asOnDate
+                          }
                         }}
                         format="DD-MM-YYYY"
                       />
@@ -336,6 +721,71 @@ function ArOutstanding() {
                 </FormControl>
               </div>
             )}
+            {selectedSections.slab && (
+              <>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label={<span>Slab 1</span>}
+                      name="slab1"
+                      size="small"
+                      value={formData.slab1}
+                      onChange={handleInputChange}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label={<span>Slab 2</span>}
+                      name="slab2"
+                      size="small"
+                      value={formData.slab2}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label={<span>Slab 3</span>}
+                      name="slab3"
+                      size="small"
+                      value={formData.slab3}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label={<span>Slab 4</span>}
+                      name="slab4"
+                      size="small"
+                      value={formData.slab4}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label={<span>Slab 5</span>}
+                      name="slab5"
+                      size="small"
+                      value={formData.slab5}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label={<span>Slab 6</span>}
+                      name="slab6"
+                      size="small"
+                      value={formData.slab6}
+                    />
+                  </FormControl>
+                </div>
+              </>
+            )}
             {(selectedSections.date || selectedSections.partyName || selectedSections.branch || selectedSections.dueDate) && (
               <div className="col-md-3 mb-3">
                 <div className="row d-flex ml">
@@ -350,7 +800,7 @@ function ArOutstanding() {
         </>
         {listView && (
           <div className="mt-4">
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={'AR Outstanding'} />
+            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={'AR Outstanding'} sumFields={['outstanding', 'totaldue']} handleDownloadExcel={handleDownloadExcel} />
           </div>
         )}
       </div>
