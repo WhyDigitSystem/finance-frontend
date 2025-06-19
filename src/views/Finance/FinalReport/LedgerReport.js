@@ -1,5 +1,21 @@
 import React from 'react';
-import { TextField, Checkbox, FormControlLabel, FormHelperText, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import {
+  Checkbox,
+  FormControlLabel,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Dialog,
+  DialogTitle,
+  IconButton,
+  DialogContent,
+  Grid,
+  Paper,
+  Typography,
+  Box,
+  Tooltip
+} from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import ClearIcon from '@mui/icons-material/Clear';
@@ -12,27 +28,43 @@ import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import CommonReportTable from 'utils/CommonReportTable';
-import Button from '@mui/material/Button';
-function TaxRegister() {
+import CloseIcon from '@mui/icons-material/Close';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+import FilterAltIcon from '@mui/icons-material/FilterAlt';
+import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import InfoIcon from '@mui/icons-material/Info';
+
+function LedgerReport() {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
-  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
   const [accountNameList, setAccountNameList] = useState([]);
   const [branchCodeList, setBranchCodeList] = useState([]);
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
+  const [openModal, setOpenModal] = useState(false);
   const [selectedSections, setSelectedSections] = useState({
-    date: false,
     accountName: false,
     branchCode: false,
+  });
+  const [headerFields, setHeaderFields] = useState([]);
+
+  const [formData, setFormData] = useState({
+    fromDate: null,
+    toDate: null,
+    accountName: 'All',
+    branchCode: 'All',
+    withDetails: 'YES',
   });
 
-  const [visibleSections, setVisibleSections] = useState({
-    date: false,
-    accountName: false,
-    branchCode: false,
+  const [fieldErrors, setFieldErrors] = useState({
+    fromDate: '',
+    toDate: '',
+    accountName: '',
+    branchCode: '',
   });
+
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
     setSelectedSections((prevState) => ({
@@ -40,41 +72,15 @@ function TaxRegister() {
       [name]: checked
     }));
   };
-  const handleProceed = () => {
-    setVisibleSections({ ...selectedSections });
-  };
-  
-  const [formData, setFormData] = useState({
-    fromDate: null,
-    toDate: null,
-    // dateRange: [null, null],
-    accountName: 'All',
-    branchCode: 'All',
-  });
-  const [fieldErrors, setFieldErrors] = useState({
-    fromDate: '',
-    toDate: '',
-    accountName: '',
-    branchCode: '',
-  });
+
   const handleClear = () => {
     setListView(false);
-    // setVisibleSections({
-    //   date: false,
-    //   accountName: false,
-    //   branchCode: false,
-    // });
-    // setSelectedSections({
-    //   date: false,
-    //   accountName: false,
-    //   branchCode: false,
-    // });
     setFormData({
-      // dateRange: [null, null],
       fromDate: null,
       toDate: null,
       accountName: 'All',
       branchCode: 'All',
+      withDetails: 'YES',
     });
     setFieldErrors({
       fromDate: '',
@@ -83,329 +89,747 @@ function TaxRegister() {
       branchCode: '',
     });
     setRowData([]);
+    setHeaderFields([]);
   };
+
   useEffect(() => {
     getAllBranches();
     getAccountName();
   }, []);
+
   const getAllBranches = async () => {
     try {
       const branchData = await getAllActiveBranches(orgId);
       setBranchCodeList(branchData);
     } catch (error) {
-      console.error('Error fetching country data:', error);
+      console.error('Error fetching branch data:', error);
+      showToast('error', 'Failed to load branches');
     }
   };
+
   const getAccountName = async () => {
     try {
       const response = await apiCalls('get', `/master/getAllGroupLedgerByOrgId?orgId=${orgId}`);
-      setAccountNameList(response.paramObjectsMap.groupLedgerVO);
+      if (response.status === true && response.paramObjectsMap?.groupLedgerVO) {
+        setAccountNameList(response.paramObjectsMap.groupLedgerVO);
+      }
     } catch (error) {
-      console.error('Error fetching gate passes:', error);
+      console.error('Error fetching account names:', error);
+      showToast('error', 'Failed to load account names');
     }
   };
+
   const handleSelectAccountChange = (e) => {
     const value = e.target.value;
-    console.log('Selected Account value:', value);
-  
-    if (value === "All") {
-      setFormData((prevData) => ({
-        ...prevData,
-        accountName: "All",
-      }));
-    } else {
-      const selectedEmp = accountNameList.find((emp) => emp.accountGroupName === value);
-  
-      if (selectedEmp) {
-        console.log('Selected party:', selectedEmp);
-        setFormData((prevData) => ({
-          ...prevData,
-          accountName: selectedEmp.accountGroupName,
-        }));
-      } else {
-        console.log('No Account found with the given code:', value);
-      }
-    }
+    setFormData((prevData) => ({
+      ...prevData,
+      accountName: value,
+    }));
   };
-  
-  // const handleSelectAccountChange = (e) => {
-  //   const value = e.target.value;
-  //   console.log('Selected Account value:', value);
-  //   const selectedEmp = accountNameList.find((emp) => emp.accountGroupName === value);
 
-  //   if (selectedEmp) {
-  //     console.log('Selected party:', selectedEmp);
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       accountName: selectedEmp.accountGroupName,
-  //     }));
-  //   } else {
-  //     console.log('No Account found with the given code:', value);
-  //   }
-  // };
+  const handleWithDetailsChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      withDetails: e.target.value
+    }));
+  };
 
   const handleInputChange = (e) => {
-    const { name, value, type } = e.target;
-  
+    const { name, value } = e.target;
+
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
       [name]: '',
     }));
-  
-    if (name === 'branchCode') {
-      if (value === "All") {
-        setFormData((prevData) => ({
-          ...prevData,
-          branchCode: "All",
-        }));
-      } else {
-        const selectedBranch = branchCodeList.find((br) => br.branchCode === value);
-        setFormData((prevData) => ({
-          ...prevData,
-          branchCode: selectedBranch ? selectedBranch.branchCode : '',
-        }));
-      }
-    } else {
-      let inputValue = value;
-      if (type === 'text' || type === 'textarea') {
-        inputValue = value.toUpperCase();
-      }
-      setFormData((prevData) => ({ ...prevData, [name]: inputValue }));
-    }
+
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
+
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date).format('YYYY-MM-DD') || null;
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
+
   const reportColumns = [
-    { accessorKey: 'Vid', header: 'Invoice No', size: 140 },
-    { accessorKey: 'Vdate', header: 'Date', size: 140 },
-    { accessorKey: 'PartyName', header: 'Particulars', size: 300 },
-    { accessorKey: 'OpBal', header: 'Opening Balance', size: 140 },
-    { accessorKey: 'ndAmount', header: 'Debit(INR)', size: 140 },
-    { accessorKey: 'NcAmount', header: 'Credit(INR)', size: 140 },
-    { accessorKey: 'dbAmount', header: 'Debit', size: 140 },
-    { accessorKey: 'CrAmount', header: 'Credit', size: 140 },
-    { accessorKey: 'ClBal', header: 'Closing Balance', size: 140 },
-    // { accessorKey: 'Currency', header: 'Currency', size: 140 },
-    // { accessorKey: '', header: 'Narration', size: 140 },
+    {
+      accessorKey: 'Vid',
+      header: 'Invoice No',
+      size: 110,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'center', padding: '8px' }}>
+          {cell.getValue() || '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'Vdate',
+      header: 'Invoice Date',
+      size: 110,
+      Cell: ({ cell }) => {
+        const value = cell.getValue();
+        return (
+          <div style={{ textAlign: 'center', padding: '8px' }}>
+            {value ? dayjs(value).format('DD-MM-YYYY') : '-'}
+          </div>
+        );
+      },
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'PartyName',
+      header: 'Particulars',
+      size: 250,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'left', paddingLeft: '10px', padding: '8px' }}>
+          {cell.getValue() || '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'left',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'ndAmount',
+      header: 'Debit(INR)',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'NcAmount',
+      header: 'Credit(INR)',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'Currency',
+      header: 'Currency',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() || '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'dbAmount',
+      header: 'Debit',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', color: '#d32f2f', fontWeight: '500', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'CrAmount',
+      header: 'Credit',
+      size: 100,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', color: '#2e7d32', fontWeight: '500', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'Narration',
+      header: 'Narration',
+      size: 100,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'left', paddingLeft: '10px', padding: '8px' }}>
+          {cell.getValue() || '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'left',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
   ];
+
   const handleGo = async () => {
     const errors = {};
-    if (!formData.accountName) {
-      errors.accountName = 'Account Name is required';
+
+    if (!formData.fromDate) {
+      errors.fromDate = 'From Date is required';
+      showToast('error', errors.fromDate);
     }
-      if (!formData.fromDate) {
-        errors.fromDate = 'From Date is required';
-        showToast('error', errors.fromDate);
-      }
-      if (!formData.toDate) {
-        errors.toDate = 'To Date is required';
+    if (!formData.toDate) {
+      errors.toDate = 'To Date is required';
+      showToast('error', errors.toDate);
+    }
+    if (formData.fromDate && formData.toDate) {
+      const fromDate = dayjs(formData.fromDate);
+      const toDate = dayjs(formData.toDate);
+      if (toDate.isBefore(fromDate)) {
+        errors.toDate = 'To Date cannot be before From Date';
         showToast('error', errors.toDate);
       }
+    }
+
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       try {
-        let response;
-        if(formData.fromDate && formData.toDate){
-          response = await apiCalls(
-            'get',
-            `/master/getAllLedgerReport?accountName=${formData.accountName}&branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&toDate=${formData.toDate}`
-          );
-        }else {
-          response = await apiCalls(
-            'get',
-            `/master/getAllLedgerReport?&accountName=${formData.accountName}&orgId=${orgId}&branchCode=${formData.branchCode}`
-          );
-        }
+        // Prepare parameters for API
+        const params = {
+          accountName: formData.accountName === 'All' ? '' : formData.accountName,
+          branch: formData.branchCode === 'All' ? '' : formData.branchCode,
+          details: formData.withDetails,
+          finYear: finYear,
+          fromdate: formData.fromDate,
+          orgId: orgId,
+          toDate: formData.toDate
+        };
+
+        // Build query string
+        const queryString = Object.keys(params)
+          .map(key => `${key}=${encodeURIComponent(params[key])}`)
+          .join('&');
+
+        const response = await apiCalls('get', `/master/getLedgerReport?${queryString}`);
+
         if (response.status === true) {
-          console.log('Response:', response);
-          setRowData(response.paramObjectsMap.partyMasterVO || '');
-          setIsLoading(false);
+          const reportData = response.paramObjectsMap?.ledgerReport || [];
+
+          // Map API fields to table columns
+          const mappedData = reportData.map(item => ({
+            Vid: item.voucherNumber || '',
+            Vdate: item.voucherDate || '',
+            PartyName: item.partyName || '',
+            ndAmount: parseFloat(item.ndbAmnt) || 0,
+            NcAmount: parseFloat(item.ncrAmnt) || 0,
+            Currency: item.currency || '',
+            dbAmount: parseFloat(item.dbAmnt) || 0,
+            CrAmount: parseFloat(item.crAmnt) || 0,
+            Narration: item.narration || '',
+          }));
+
+          // Set header fields dynamically
+          const generatedBy = localStorage.getItem('userName') || 'Admin';
+          // const headers = [
+          //   { label: "From Date",  value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : '' },
+          //   { label: "To Date", value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : '' },
+          //   { label: "Account Name", value: formData.accountName !== 'All' ? formData.accountName : 'All' },
+          //   { label: "Branch Code", value: formData.branchCode !== 'All' ? formData.branchCode : 'All' },
+          //   { label: "With Details", value: formData.withDetails },
+          //   { label: "Generated By", value: generatedBy }
+          // ];
+
+          const headers = [
+            {
+              label: "From Date",
+              value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : ''
+            },
+            {
+              label: "To Date",
+              value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : ''
+            },
+            {
+              label: "Account Name",
+              value: formData.accountName !== 'All' ? formData.accountName : 'All'
+            },
+            {
+              label: "Branch Code",
+              value: formData.branchCode !== 'All' ? formData.branchCode : 'All'
+            },
+            {
+              label: "With Details",
+              value: formData.withDetails
+            },
+          ];
+
+
+          setHeaderFields(headers);
+          setRowData(mappedData);
           setListView(true);
+          setOpenModal(true);
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Report Fetch failed');
-          setIsLoading(false);
+          const errorMsg = response.paramObjectsMap?.errorMessage || 'Failed to fetch report data';
+          showToast('error', errorMsg);
         }
       } catch (error) {
-        console.error('Error:', error);
-        showToast('error', 'Report Fetch failed');
+        console.error('API Error:', error);
+        showToast('error', 'Failed to fetch report data');
+      } finally {
         setIsLoading(false);
       }
     } else {
       setFieldErrors(errors);
     }
   };
-  return(
-    <>
-      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-        {/* <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Search" icon={SearchIcon} isLoading={isLoading} onClick={handleGo} margin="0 10px 0 10px" />
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+
+  const handleDownloadExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('Ledger Report');
+
+    // ====== SHEET VIEW CONFIGURATION ======
+    sheet.views = [{
+      state: 'frozen',
+      ySplit: 5, // Freeze the first 5 rows (title + headers)
+      activeCell: 'A6'
+    }];
+
+    // ====== TITLE ======
+    sheet.mergeCells('A1:I1');
+    const titleCell = sheet.getCell('A1');
+    titleCell.value = 'Ledger Report';
+    titleCell.font = {
+      size: 18,
+      bold: true,
+      color: { argb: 'FF34449B' }
+    };
+    titleCell.alignment = {
+      vertical: 'middle',
+      horizontal: 'center'
+    };
+
+    // ====== HEADER INFORMATION ======
+    const headerInfo = [
+      ...headerFields,
+      { label: "Generated By", value: localStorage.getItem('userName') || 'Admin' },
+      { label: "Generated On", value: dayjs().format('DD-MM-YYYY HH:mm') }
+    ];
+
+    // Add header information rows
+    for (let i = 0; i < headerInfo.length; i += 2) {
+      const rowIndex = i / 2 + 2;
+      const row = sheet.getRow(rowIndex);
+
+      const labelCell1 = row.getCell(1);
+      const valueCell1 = row.getCell(2);
+      labelCell1.value = headerInfo[i].label + ':';
+      labelCell1.font = { bold: true };
+      valueCell1.value = headerInfo[i].value;
+
+      if (headerInfo[i + 1]) {
+        const labelCell2 = row.getCell(4);
+        const valueCell2 = row.getCell(5);
+        labelCell2.value = headerInfo[i + 1].label + ':';
+        labelCell2.font = { bold: true };
+        valueCell2.value = headerInfo[i + 1].value;
+      }
+    }
+
+    // ====== HEADER ROW ======
+    const headerRow = sheet.addRow(reportColumns.map(col => col.header));
+    headerRow.font = {
+      bold: true,
+      color: { argb: 'FFFFFFFF' }
+    };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF34449B' }
+    };
+    headerRow.alignment = {
+      horizontal: 'center',
+      vertical: 'middle'
+    };
+    headerRow.height = 20;
+
+    // ====== DATA ROWS ======
+    rowData.forEach(item => {
+      const row = sheet.addRow([
+        item.Vid || '-',
+        item.Vdate ? dayjs(item.Vdate).format('DD-MM-YYYY') : '-',
+        item.PartyName || '-',
+        item.ndAmount,
+        item.NcAmount,
+        item.Currency || '-',
+        item.dbAmount,
+        item.CrAmount,
+        item.Narration || '-'
+      ]);
+
+      // Format numeric columns
+      [3, 4, 6, 7].forEach(colIdx => {
+        const cell = row.getCell(colIdx + 1);
+        if (typeof cell.value === 'number') {
+          cell.numFmt = '#,##0.00';
+          cell.alignment = { horizontal: 'right' };
+        }
+      });
+    });
+
+    // ====== COLUMN WIDTHS ======
+    sheet.columns = [
+      { width: 15 }, // Invoice No
+      { width: 15 }, // Invoice Date
+      { width: 40 }, // Particulars
+      { width: 15 }, // Debit(INR)
+      { width: 15 }, // Credit(INR)
+      { width: 12 }, // Currency
+      { width: 15 }, // Debit
+      { width: 15 }, // Credit
+      { width: 40 }  // Narration
+    ];
+
+    // ====== FINALIZE AND SAVE ======
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+    saveAs(blob, `Ledger_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
+  };
+
+  // Common table options
+  const tableOptions = {
+    muiTablePaperProps: {
+      sx: {
+        border: '1px solid #e0e0e0',
+        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+        borderRadius: '8px',
+        overflow: 'hidden'
+      }
+    },
+    muiTableContainerProps: {
+      sx: { maxHeight: '70vh' }
+    },
+    muiTableBodyRowProps: ({ row }) => ({
+      sx: {
+        backgroundColor: row.index % 2 ? '#f9f9f9' : '#ffffff',
+        '&:hover': { backgroundColor: '#f0f7ff' }
+      }
+    }),
+    enableStickyHeader: true,
+    muiTableProps: {
+      sx: {
+        borderCollapse: 'collapse',
+        '& .MuiTableCell-root': {
+          border: '1px solid #e0e0e0 !important'
+        }
+      }
+    },
+  };
+
+  return (
+    <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
+      <div className="row">
+        <div className="row">
+          <div className="col-md-2 mb-1">
+            <FormControlLabel
+              control={<Checkbox
+                checked={selectedSections.accountName}
+                onChange={handleCheckboxChange}
+                name="accountName"
+                color="secondary"
+              />}
+              label="Account Name"
+            />
           </div>
-        </div> */}
-        <>
-            <div className="row">
-              <div className="row">
-              {/* <div className="col-md-2
-               mb-2">
-                <FormControlLabel
-                  control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
-                  label="Date"
-                />
-              </div> */}
-              <div className="col-md-2 mb-1">
-                <FormControlLabel
-                  control={<Checkbox checked={selectedSections.accountName} onChange={handleCheckboxChange} name="accountName" color="secondary" />}
-                  label="Account Name"
-                />
-              </div>
-              {/* <div className="col-md-2 mb-3">
-                <FormControlLabel
-                  control={<Checkbox checked={selectedSections.withDetails}  onChange={handleCheckboxChange} name="withDetails" color="secondary" />}
-                  label="With Details"
-                />
-              </div> */}
-              <div className="col-md-2 mb-1">
-                <FormControlLabel
-                  control={<Checkbox checked={selectedSections.branchCode}  onChange={handleCheckboxChange} name="branchCode" color="secondary" />}
-                  label="Branch Code"
-                />
-              </div>
-              {/* <div className="col-md-2 mb-1">
-                <Button
-                  onClick={handleProceed}
-                  color="secondary"
-                  variant="contained"
-                  style={{ textTransform: 'none', padding: '4px 8px', marginTop: '6px' }}
-                  disabled={isLoading}
-                >
-                  Proceed
-                </Button>
-              </div> */}
-              </div>
-              {/* {selectedSections.date && ( */}
-                <>
-                  
-                  <div className="col-md-3 mb-3">
-                    <FormControl fullWidth variant="filled" size="small">
-                      <LocalizationProvider dateAdapter={AdapterDayjs}>
-                        <DatePicker
-                          label="From Date"
-                          value={formData.fromDate ? dayjs(formData.fromDate, 'YYYY-MM-DD') : null}
-                          onChange={(date) => handleDateChange('fromDate', date)}
-                          slotProps={{
-                            textField: { size: 'small', clearable: true, error: fieldErrors.fromDate, helperText: fieldErrors.fromDate }
-                          }}
-                          format="DD-MM-YYYY"
-                        />
-                      </LocalizationProvider>
-                    </FormControl>
-                  </div>
-                  <div className="col-md-3 mb-3">
-                     <FormControl fullWidth variant="filled" size="small">
-                      <LocalizationProvider dateAdapter={AdapterDayjs}> 
-                         <DatePicker 
-                          label="To Date"
-                          value={formData.toDate ? dayjs(formData.toDate, 'YYYY-MM-DD') : null}
-                          onChange={(date) => handleDateChange('toDate', date)}
-                          slotProps={{
-                            textField: { size: 'small', clearable: true, error: fieldErrors.toDate, helperText: fieldErrors.toDate }
-                          }}
-                          format="DD-MM-YYYY"
-                        />
-                       </LocalizationProvider>
-                    </FormControl> 
-                  </div>
-                </>
-              {/* )} */}
-              {selectedSections.accountName && ( 
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.accountName}>
-                  <InputLabel id="accountName-label">Account Name</InputLabel>
-                  <Select
-                  type='text'
-                    labelId="accountName-label"
-                    label="accountName"
-                    value={formData.accountName}
-                    onChange={handleSelectAccountChange}
-                    name="accountName"
-                  >
-                    <MenuItem value="All">All</MenuItem>
+          <div className="col-md-2 mb-1">
+            <FormControlLabel
+              control={<Checkbox
+                checked={selectedSections.branchCode}
+                onChange={handleCheckboxChange}
+                name="branchCode"
+                color="secondary"
+              />}
+              label="Branch Code"
+            />
+          </div>
+        </div>
 
-                    {accountNameList?.map((row) => (
-                      <MenuItem key={row.id} value={row.accountGroupName}>
-                        {row.accountGroupName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.accountName && <FormHelperText>{fieldErrors.accountName}</FormHelperText>}
-                </FormControl>
-              </div>
-              )}
-              {/* {visibleSections.withDetails && ( 
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.withDetails}>
-                  <InputLabel id="withDetails-label">With Details</InputLabel>
-                  <Select
-                  type='text'
-                    labelId="withDetails-label"
-                    label="withDetails"
-                    value={formData.withDetails}
-                    onChange={handleInputChange}
-                    name="withDetails"
-                  >
-                    <MenuItem value="YES">YES</MenuItem>
-                    <MenuItem value="NO">NO</MenuItem>
-                  </Select>
-                  {fieldErrors.withDetails && <FormHelperText>{fieldErrors.withDetails}</FormHelperText>}
-                </FormControl>
-              </div>
-              )} */}
-              {selectedSections.branchCode && ( 
-              <div className="col-md-3 mb-2">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchCode}>
-                  <InputLabel id="branchCode-label">Branch Code</InputLabel>
-                  <Select
-                    labelId="branchCode-label"
-                    label="branchCode"
-                    value={formData.branchCode}
-                    onChange={handleInputChange}
-                    name="branchCode"
-                  >
-                    <MenuItem value="All">All</MenuItem>
+        <div className="col-md-3 mb-3">
+          <FormControl fullWidth variant="filled" size="small">
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                label="From Date"
+                value={formData.fromDate ? dayjs(formData.fromDate, 'YYYY-MM-DD') : null}
+                onChange={(date) => handleDateChange('fromDate', date)}
+                slotProps={{
+                  textField: {
+                    size: 'small',
+                    error: !!fieldErrors.fromDate,
+                    helperText: fieldErrors.fromDate
+                  }
+                }}
+                format="DD-MM-YYYY"
+              />
+            </LocalizationProvider>
+          </FormControl>
+        </div>
 
-                    {branchCodeList?.map((row) => (
-                      <MenuItem key={row.id} value={row.branchCode}>
-                        {row.branchCode}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.branchCode && <FormHelperText>{fieldErrors.branchCode}</FormHelperText>}
-                </FormControl>
-              </div>
-              )}
-              {/* {(visibleSections.date || visibleSections.accountName || visibleSections.branchCode) && ( */}
-                <div className="col-md-3 mb-2">
-                  <div className="row d-flex ml">
-                    <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
-                      <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
-                      <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                    </div>
-                  </div>
-                </div>
-              {/* )} */}
-            </div>
-          </>
-        {listView && (
-          <div>
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"Ledger Report"} />
+        <div className="col-md-3 mb-3">
+          <FormControl fullWidth variant="filled" size="small">
+            <LocalizationProvider dateAdapter={AdapterDayjs}>
+              <DatePicker
+                label="To Date"
+                value={formData.toDate ? dayjs(formData.toDate, 'YYYY-MM-DD') : null}
+                onChange={(date) => handleDateChange('toDate', date)}
+                slotProps={{
+                  textField: {
+                    size: 'small',
+                    error: !!fieldErrors.toDate,
+                    helperText: fieldErrors.toDate
+                  }
+                }}
+                format="DD-MM-YYYY"
+              />
+            </LocalizationProvider>
+          </FormControl>
+        </div>
+
+        <div className="col-md-3 mb-3">
+          <FormControl size="small" variant="outlined" fullWidth>
+            <InputLabel id="withDetails-label">With Details</InputLabel>
+            <Select
+              labelId="withDetails-label"
+              label="With Details"
+              value={formData.withDetails}
+              onChange={handleWithDetailsChange}
+              name="withDetails"
+            >
+              <MenuItem value="YES">Yes</MenuItem>
+              <MenuItem value="NO">No</MenuItem>
+            </Select>
+          </FormControl>
+        </div>
+
+        {selectedSections.accountName && (
+          <div className="col-md-3 mb-3">
+            <FormControl size="small" variant="outlined" fullWidth>
+              <InputLabel id="accountName-label">Account Name</InputLabel>
+              <Select
+                labelId="accountName-label"
+                label="Account Name"
+                value={formData.accountName}
+                onChange={handleSelectAccountChange}
+                name="accountName"
+              >
+                <MenuItem value="All">All</MenuItem>
+                {accountNameList.map((account) => (
+                  <MenuItem key={account.id} value={account.accountGroupName}>
+                    {account.accountGroupName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </div>
         )}
-  </div>
-    </>
+
+        {selectedSections.branchCode && (
+          <div className="col-md-3 mb-2">
+            <FormControl size="small" variant="outlined" fullWidth>
+              <InputLabel id="branchCode-label">Branch Code</InputLabel>
+              <Select
+                labelId="branchCode-label"
+                label="Branch Code"
+                value={formData.branchCode}
+                onChange={handleInputChange}
+                name="branchCode"
+              >
+                <MenuItem value="All">All</MenuItem>
+                {branchCodeList.map((branch) => (
+                  <MenuItem key={branch.id} value={branch.branchCode}>
+                    {branch.branchCode}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+        )}
+
+        <div className="col-md-3 mb-2">
+          <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
+            <ActionButton
+              title="Search"
+              icon={SearchIcon}
+              onClick={handleGo}
+              isLoading={isLoading}
+              disabled={isLoading}
+            />
+            <ActionButton
+              title="Clear"
+              icon={ClearIcon}
+              onClick={handleClear}
+            />
+          </div>
+        </div>
+      </div>
+
+      <Dialog
+        open={openModal}
+        onClose={handleCloseModal}
+        fullWidth
+        maxWidth="xl"
+        sx={{
+          '& .MuiDialog-paper': {
+            borderRadius: '12px',
+            overflow: 'hidden'
+          }
+        }}
+      >
+        <DialogTitle sx={{
+          m: 0,
+          p: 1,
+          backgroundColor: '#34449B',
+          color: 'white',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <span>Ledger Report</span>
+          <IconButton
+            aria-label="close"
+            onClick={handleCloseModal}
+            sx={{
+              color: 'white',
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ padding: 0 }}>
+          <CommonReportTable
+            data={rowData}
+            columns={reportColumns}
+            fileName={"Ledger Report"}
+            tableOptions={tableOptions}
+            handleDownloadExcel={handleDownloadExcel}
+            headerFields={headerFields}
+            sumFields={['dbAmount', 'CrAmount']}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {listView && (
+        <div className="mt-4">
+          <CommonReportTable
+            data={rowData}
+            columns={reportColumns}
+            fileName={"Ledger Report"}
+            isListView={true}
+            handleDownloadExcel={handleDownloadExcel}
+
+            tableOptions={{
+              ...tableOptions,
+              muiTableContainerProps: { sx: { maxHeight: '60vh' } }
+            }}
+            headerFields={headerFields}
+            sumFields={['dbAmount', 'CrAmount']}
+          />
+        </div>
+      )}
+    </div>
   )
 }
 
-export default TaxRegister;
+export default LedgerReport;

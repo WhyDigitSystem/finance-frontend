@@ -1,5 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { FormControlLabel, Checkbox, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import {
+  Checkbox,
+  FormControlLabel,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Dialog,
+  DialogTitle,
+  IconButton,
+  DialogContent,
+  Grid,
+  Paper,
+  Typography,
+  Box,
+  Tooltip
+} from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
 import ActionButton from 'utils/ActionButton';
@@ -9,22 +25,32 @@ import dayjs from 'dayjs';
 import apiCalls from 'apicall';
 import { showToast } from 'utils/toast-component';
 import CommonReportTable from 'utils/CommonReportTable';
+import { getAllActiveBranches } from 'utils/CommonFunctions';
+import CloseIcon from '@mui/icons-material/Close';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 
 const APaging = () => {
   const [orgId] = useState(localStorage.getItem('orgId'));
+  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
   const [partyNameList, setPartyNameList] = useState([]);
   const [fieldErrors, setFieldErrors] = useState({});
   const [rowData, setRowData] = useState([]);
+  const [branchNameList, setBranchNameList] = useState([]);
+  const [openModal, setOpenModal] = useState(false);
+  const [headerFields, setHeaderFields] = useState([]);
   const [formData, setFormData] = useState({
     partyName: 'All',
-    date: dayjs().format('YYYY-MM-DD')
+    date: dayjs().format('YYYY-MM-DD'),
+    branchCode: 'All'
   });
 
   const [selectedSections, setSelectedSections] = useState({
     partyName: false,
-    date: true
+    date: true,
+    branchCode: false
   });
 
   const handleChange = (e) => {
@@ -45,23 +71,46 @@ const APaging = () => {
   };
 
   const allClearData = () => {
-    setFormData({ partyName: 'All', date: dayjs().format('YYYY-MM-DD') });
-    setSelectedSections({ partyName: false, date: true });
+    setFormData({
+      partyName: 'All',
+      date: dayjs().format('YYYY-MM-DD'),
+      branchCode: 'All'
+    });
+    setSelectedSections({
+      partyName: false,
+      date: true,
+      branchCode: false
+    });
     setFieldErrors({});
     setListView(false);
     setRowData([]);
+    setOpenModal(false);
   };
 
   useEffect(() => {
     getPartyName();
+    getAllBranches();
   }, []);
 
   const getPartyName = async () => {
     try {
-      const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=vendor`);
+      const response = await apiCalls(
+        'get',
+        `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=vendor`
+      );
       setPartyNameList(response.paramObjectsMap.partyMasterVO || []);
     } catch (error) {
       console.error('Error fetching party names:', error);
+    }
+  };
+
+  const getAllBranches = async () => {
+    try {
+      const branchData = await getAllActiveBranches(orgId);
+      setBranchNameList(branchData);
+    } catch (error) {
+      console.error('Error fetching branch data:', error);
+      showToast('error', 'Failed to load branches');
     }
   };
 
@@ -77,6 +126,16 @@ const APaging = () => {
     }
   };
 
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
   const handleSearch = async () => {
     if (selectedSections.date && !formData.date) {
       setFieldErrors((prev) => ({
@@ -88,16 +147,47 @@ const APaging = () => {
 
     setIsLoading(true);
     try {
+      const queryParams = new URLSearchParams({
+        Asondate: formData.date,
+        orgId,
+        partyname: formData.partyName
+      });
+
+      if (selectedSections.branchCode && formData.branchCode !== 'All') {
+        queryParams.append('branchCode', formData.branchCode);
+      }
+
       const response = await apiCalls(
         'get',
-        `/payable/getAPAgeing?Asondate=${formData.date}&orgId=${orgId}&partyname=${formData.partyName}`
+        `/payable/getAPAgeing?${queryParams.toString()}`
       );
 
       if (response.status === true) {
         setRowData(response.paramObjectsMap.mapp || []);
+        
+        // Set header fields for AP Ageing report
+        setHeaderFields([
+          {
+            label: "As on Date",
+            value: formData.date ? dayjs(formData.date).format('DD-MM-YYYY') : ''
+          },
+          {
+            label: "Party Name",
+            value: formData.partyName
+          },
+          {
+            label: "Branch Name",
+            value: formData.branchCode
+          }
+        ]);
+        
         setListView(true);
+        setOpenModal(true);
       } else {
-        showToast('error', response.paramObjectsMap.getAPAgeing?.errorMessage || 'Report Fetch failed');
+        showToast(
+          'error',
+          response.paramObjectsMap.getAPAgeing?.errorMessage || 'Report Fetch failed'
+        );
       }
     } catch (error) {
       console.error('Error:', error);
@@ -108,22 +198,173 @@ const APaging = () => {
   };
 
   const reportColumns = [
-    { accessorKey: 'docid', header: 'Cost Inv. No', size: 140 },
-    { accessorKey: 'docdate', header: 'Cost Inv. Date', size: 140 },
-    { accessorKey: 'amount', header: 'Cost Inv. Amount', size: 140 },
-    { accessorKey: 'outstanding', header: 'Outstanding', size: 140 },
-    { accessorKey: 'totaldue', header: 'Total Due', size: 140 },
-    { accessorKey: 'unadjusted', header: 'Unadjusted', size: 140 },
-    { accessorKey: 'mslab1', header: 'Below 30 Days', size: 140 },
-    { accessorKey: 'mslab2', header: 'Days 30 - 60', size: 140 },
-    { accessorKey: 'mslab3', header: 'Days 60 - 90', size: 140 },
-    { accessorKey: 'mslab4', header: 'Days 90 - 120', size: 140 },
-    { accessorKey: 'mslab5', header: 'Days 120+', size: 140 }
+    { accessorKey: 'docid', header: 'Invoice No', size: 90 },
+    { accessorKey: 'docdate', header: 'Invoice Date', size: 90 },
+    { accessorKey: 'duedate', header: 'Due Date', size: 90 },
+    { accessorKey: 'amount', header: 'Inv. Amount', size: 90 },
+    { accessorKey: 'outstanding', header: 'Outstanding', size: 90 },
+    { accessorKey: 'totaldue', header: 'Total Due', size: 90 },
+    { accessorKey: 'unadjusted', header: 'Unadjusted', size: 90 },
+    { accessorKey: 'mslab1', header: 'Below 30 Days', size: 90 },
+    { accessorKey: 'mslab2', header: 'Days 30 - 60', size: 90 },
+    { accessorKey: 'mslab3', header: 'Days 60 - 90', size: 90 },
+    { accessorKey: 'mslab4', header: 'Days 90 - 120', size: 90 },
+    { accessorKey: 'mslab5', header: 'Days 120+', size: 90 }
   ];
+
+  const tableOptions = {
+    muiTablePaperProps: {
+      sx: {
+        border: '1px solid #e0e0e0',
+        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+        borderRadius: '8px',
+        overflow: 'hidden'
+      }
+    },
+    muiTableContainerProps: {
+      sx: { maxHeight: '70vh' }
+    },
+    muiTableBodyRowProps: ({ row }) => ({
+      sx: {
+        backgroundColor: row.index % 2 ? '#f9f9f9' : '#ffffff',
+        '&:hover': { backgroundColor: '#f0f7ff' }
+      }
+    }),
+    enableStickyHeader: true,
+    muiTableProps: {
+      sx: {
+        borderCollapse: 'collapse',
+        '& .MuiTableCell-root': {
+          border: '1px solid #e0e0e0 !important'
+        }
+      }
+    }
+  };
+
+  const handleDownloadExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('AP Ageing Report');
+
+    // ====== SHEET VIEW CONFIGURATION ======
+    sheet.views = [{
+      state: 'frozen',
+      ySplit: 5, // Freeze the first 5 rows (title + headers)
+      activeCell: 'A6'
+    }];
+
+    // ====== TITLE ======
+    sheet.mergeCells('A1:L1');
+    const titleCell = sheet.getCell('A1');
+    titleCell.value = 'Accounts Payable Ageing Report';
+    titleCell.font = {
+      size: 18,
+      bold: true,
+      color: { argb: 'FF34449B' }
+    };
+    titleCell.alignment = {
+      vertical: 'middle',
+      horizontal: 'center'
+    };
+
+    // ====== HEADER INFORMATION ======
+    const headerInfo = [
+      ...headerFields,
+      { label: "Generated By", value: localStorage.getItem('userName') || 'Admin' },
+      { label: "Generated On", value: dayjs().format('DD-MM-YYYY HH:mm') }
+    ];
+
+    // Add header information rows
+    for (let i = 0; i < headerInfo.length; i += 2) {
+      const rowIndex = i / 2 + 2;
+      const row = sheet.getRow(rowIndex);
+
+      const labelCell1 = row.getCell(1);
+      const valueCell1 = row.getCell(2);
+      labelCell1.value = headerInfo[i].label + ':';
+      labelCell1.font = { bold: true };
+      valueCell1.value = headerInfo[i].value;
+
+      if (headerInfo[i + 1]) {
+        const labelCell2 = row.getCell(4);
+        const valueCell2 = row.getCell(5);
+        labelCell2.value = headerInfo[i + 1].label + ':';
+        labelCell2.font = { bold: true };
+        valueCell2.value = headerInfo[i + 1].value;
+      }
+    }
+
+    // ====== HEADER ROW ======
+    const headerRow = sheet.addRow(reportColumns.map(col => col.header));
+    headerRow.font = {
+      bold: true,
+      color: { argb: 'FFFFFFFF' }
+    };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF34449B' }
+    };
+    headerRow.alignment = {
+      horizontal: 'center',
+      vertical: 'middle'
+    };
+    headerRow.height = 20;
+
+    // ====== DATA ROWS ======
+    rowData.forEach(item => {
+      const row = sheet.addRow([
+        item.docid || '-',
+        item.docdate ? dayjs(item.docdate).format('DD-MM-YYYY') : '-',
+        item.duedate ? dayjs(item.duedate).format('DD-MM-YYYY') : '-',
+        item.amount,
+        item.outstanding,
+        item.totaldue,
+        item.unadjusted,
+        item.mslab1,
+        item.mslab2,
+        item.mslab3,
+        item.mslab4,
+        item.mslab5
+      ]);
+
+      // Format numeric columns
+      [3, 4, 5, 6, 7, 8, 9, 10, 11].forEach(colIdx => {
+        const cell = row.getCell(colIdx + 1);
+        if (typeof cell.value === 'number') {
+          cell.numFmt = '#,##0.00';
+          cell.alignment = { horizontal: 'right' };
+        }
+      });
+    });
+
+    // ====== COLUMN WIDTHS ======
+    sheet.columns = [
+      { width: 20 }, // Invoice No
+      { width: 15 }, // Invoice Date
+      { width: 15 }, // Due Date
+      { width: 15 }, // Inv. Amount
+      { width: 15 }, // Outstanding
+      { width: 15 }, // Total Due
+      { width: 15 }, // Unadjusted
+      { width: 15 }, // Below 30 Days
+      { width: 15 }, // Days 30 - 60
+      { width: 15 }, // Days 60 - 90
+      { width: 15 }, // Days 90 - 120
+      { width: 15 }  // Days 120+
+    ];
+
+    // ====== FINALIZE AND SAVE ======
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+    saveAs(blob, `AP_Ageing_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
+  };
 
   return (
     <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
       <div className="row">
+        {/* Section checkboxes */}
         <div className="row">
           <div className="col-md-2 mb-3">
             <FormControlLabel
@@ -131,15 +372,21 @@ const APaging = () => {
               label="Date"
             />
           </div>
-
           <div className="col-md-2 mb-3">
             <FormControlLabel
               control={<Checkbox checked={selectedSections.partyName} onChange={handleChange} name="partyName" color="secondary" />}
               label="Party Name"
             />
           </div>
+          <div className="col-md-2 mb-3">
+            <FormControlLabel
+              control={<Checkbox checked={selectedSections.branchCode} onChange={handleChange} name="branchCode" color="secondary" />}
+              label="Branch Name"
+            />
+          </div>
         </div>
 
+        {/* Date Picker */}
         {selectedSections.date && (
           <div className="col-md-3 mb-3">
             <FormControl fullWidth variant="filled" size="small">
@@ -163,6 +410,7 @@ const APaging = () => {
           </div>
         )}
 
+        {/* Party Name Dropdown */}
         {selectedSections.partyName && (
           <div className="col-md-3 mb-3">
             <FormControl size="small" variant="outlined" fullWidth>
@@ -185,10 +433,34 @@ const APaging = () => {
           </div>
         )}
 
-        {(selectedSections.partyName || selectedSections.date) && (
+        {/* Branch Name Dropdown */}
+        {selectedSections.branchCode && (
+          <div className="col-md-3 mb-3">
+            <FormControl size="small" variant="outlined" fullWidth>
+              <InputLabel id="branchCode-label">Branch Name</InputLabel>
+              <Select
+                labelId="branchCode-label"
+                label="Branch Name"
+                value={formData.branchCode}
+                onChange={handleInputChange}
+                name="branchCode"
+              >
+                <MenuItem value="All">All</MenuItem>
+                {branchNameList.map((branch) => (
+                  <MenuItem key={branch.id} value={branch.branch}>
+                    {branch.branch}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        {(selectedSections.partyName || selectedSections.date || selectedSections.branchCode) && (
           <div className="col-md-3 mb-3">
             <div className="row d-flex ml">
-              <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
+              <div className="d-flex flex-wrap justify-content-start mb-4 mt-1">
                 <ActionButton title="Search" icon={SearchIcon} onClick={handleSearch} />
                 <ActionButton title="Clear" icon={ClearIcon} onClick={allClearData} />
               </div>
@@ -197,9 +469,65 @@ const APaging = () => {
         )}
       </div>
 
+      {/* Dialog for popup */}
+      <Dialog
+        open={openModal}
+        onClose={handleCloseModal}
+        fullWidth
+        maxWidth="xl"
+        sx={{
+          '& .MuiDialog-paper': {
+            borderRadius: '12px',
+            overflow: 'hidden'
+          }
+        }}
+      >
+        <DialogTitle sx={{
+          m: 0,
+          p: 1,
+          backgroundColor: '#34449B',
+          color: 'white',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <span>Accounts Payable Ageing Report</span>
+          <IconButton
+            aria-label="close"
+            onClick={handleCloseModal}
+            sx={{ color: 'white' }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ padding: 0 }}>
+          <CommonReportTable
+            data={rowData}
+            columns={reportColumns}
+            fileName={"AP Ageing Report"}
+            tableOptions={tableOptions}
+            handleDownloadExcel={handleDownloadExcel}
+            headerFields={headerFields}
+            sumFields={['amount', 'outstanding', 'totaldue']}
+          />
+        </DialogContent>
+      </Dialog>
+
       {listView && (
         <div className="mt-4">
-          <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName="AP Outstanding" />
+          <CommonReportTable
+            data={rowData}
+            columns={reportColumns}
+            fileName={"AP Ageing Report"}
+            isListView={true}
+            handleDownloadExcel={handleDownloadExcel}
+            tableOptions={{
+              ...tableOptions,
+              muiTableContainerProps: { sx: { maxHeight: '60vh' } }
+            }}
+            headerFields={headerFields}
+            sumFields={['amount', 'outstanding', 'totaldue',]}
+          />
         </div>
       )}
     </div>
