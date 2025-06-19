@@ -32,6 +32,7 @@ import { red } from '@mui/material/colors';
 function SalesReport() {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [companyName, setCompanyName] = useState(localStorage.getItem('companyName'));
   const [open, setOpen] = useState(false);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
@@ -239,126 +240,297 @@ function SalesReport() {
     setOpen(false);
     setRowData([]);
   };
-  const handleDownloadExcel = async () => {
-    try {
-      const workbook = new ExcelJS.Workbook();
-      const sheet = workbook.addWorksheet('Report');
-      const reportType = formData.type === 'MIM' ? 'MIM Report' : 'RIM Report';
+const handleDownloadExcel = async () => {
+  try {
+    const workbook = new ExcelJS.Workbook();
+    const reportType = formData.viewMode === 'details' 
+      ? 'Detailed Sales Report' 
+      : 'Summary Sales Report';
+    
+    const sheet = workbook.addWorksheet(reportType);
+    let currentRow = 1; // Track current row position
 
-      // Title and headers
-      const titleRow = sheet.addRow([reportType]);
-      titleRow.font = { size: 16, bold: true };
-      titleRow.alignment = { horizontal: 'center' };
-      sheet.mergeCells('A1:K1');
-
-      const headers = [
-        '#', 'Trans No', 'Date', 'Sender', 'Receiver',
-        'Kit No', 'Kit Name', 'Product Code',
-        'Product Name', 'Product Qty'
-      ];
-      const headerRow = sheet.addRow(headers);
-      headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1F4E78' } };
-      headerRow.alignment = { horizontal: 'center' };
-
-      let rowIndex = 3; // Start after header
-
-      rowData.forEach((transaction, trxIndex) => {
-        const details = formData.type === 'MIM'
-          ? transaction.issueManifestProviderDetailsVOs
-          : transaction.retrievalManifestProviderDetailsVOs;
-
-        if (!details) return;
-
-        // Group by kit
-        const kitGroups = details.reduce((groups, item) => {
-          const kitId = item.kitId;
-          if (!groups[kitId]) {
-            groups[kitId] = {
-              kitId,
-              kitName: item.kitName,
-              assets: []
-            };
-          }
-          groups[kitId].assets.push(item);
-          return groups;
-        }, {});
-
-        const kitGroupsArray = Object.values(kitGroups);
-        const transactionStartRow = rowIndex;
-
-        kitGroupsArray.forEach((kitGroup) => {
-          const kitStartRow = rowIndex;
-
-          kitGroup.assets.forEach((asset, assetIndex) => {
-            const row = [
-              trxIndex + 1,
-              assetIndex === 0 ? transaction.transactionNo : '',
-              assetIndex === 0 ? dayjs(transaction.transactionDate).format('DD-MM-YYYY') : '',
-              assetIndex === 0 ? transaction.fromWarehouse : transaction.sender,
-              assetIndex === 0 ? transaction.receiver : '',
-              // assetIndex === 0 ? (transaction.amount ? `${Number(transaction.amount).toLocaleString('en-IN')}` : '-') : '',
-              assetIndex === 0 ? kitGroup.kitId : '',
-              assetIndex === 0 ? kitGroup.kitName : '',
-              asset.assetCode,
-              asset.asset,
-              asset.assetQty
-            ];
-
-            sheet.addRow(row);
-            rowIndex++;
-          });
-
-          // Merge kit cells
-          if (kitGroup.assets.length > 1) {
-            for (let i = 1; i <= 7; i++) { // Columns A-G
-              if ([6, 7].includes(i)) {
-                sheet.mergeCells(kitStartRow, i, kitStartRow + kitGroup.assets.length - 1, i);
-              }
-            }
-          }
-        });
-        const transactionRowCount = rowIndex - transactionStartRow;
-        if (transactionRowCount > 1) {
-          for (let i = 1; i <= 5; i++) { // Columns A-E
-            sheet.mergeCells(transactionStartRow, i, transactionStartRow + transactionRowCount - 1, i);
-          }
-        }
-      });
-      sheet.eachRow((row, rowNumber) => {
-        if (rowNumber > 2) {
-          row.eachCell((cell, colNumber) => {
-            cell.border = {
-              top: { style: 'thin' },
-              left: { style: 'thin' },
-              bottom: { style: 'thin' },
-              right: { style: 'thin' }
-            };
-
-            if (colNumber <= 5 || colNumber === 6 || colNumber === 7) {
-              cell.alignment = { vertical: 'top' };
-            }
-          });
-        }
-      });
-
-      // Auto-fit columns
-      sheet.columns.forEach(column => {
-        const maxLength = column.values.reduce((max, value) =>
-          Math.max(max, value ? value.toString().length : 0), 0
-        );
-        column.width = Math.max(10, maxLength + 2);
-      });
-
-      // Save
-      const buffer = await workbook.xlsx.writeBuffer();
-      saveAs(new Blob([buffer]), `${reportType.replace(' ', '_')}.xlsx`);
-    } catch (error) {
-      console.error('Error generating Excel:', error);
-      showToast('error', 'Failed to generate Excel file');
+    // Title
+    const titleRow = sheet.addRow([reportType]);
+    titleRow.font = { size: 16, bold: true, color: { argb: '1F4E78' } };
+    titleRow.alignment = { horizontal: 'center', vertical: 'middle' };
+    sheet.mergeCells(`A${currentRow}:O${currentRow}`);
+    currentRow++;
+const formatDate = (dateString) => {
+  if (!dateString) return '';
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+    // New parameters section
+    const parameters = [];
+    if (finYear) parameters.push(`Financial Year: ${finYear}`);
+    if (companyName) parameters.push(`Company: ${companyName}`);
+    if (selectedSections.date) {
+      parameters.push(
+        `Date Range: ${formatDate(formData.fromDate)} to ${formatDate(formData.toDate)}`
+      );
     }
-  };
-  const totals = rowData.reduce((acc, item) => {
+    if (selectedSections.branchCode) parameters.push(`Branch: ${formData.branchCode}`);
+    if (selectedSections.customer) parameters.push(`Customer: ${formData.customer}`);
+
+    if (parameters.length > 0) {
+        //  Parameters heading
+        // const paramHeading = sheet.addRow(['Report Parameters']);
+        // paramHeading.font = { bold: true, color: { argb: '1F4E78' } };
+        sheet.mergeCells(`A${currentRow}:O${currentRow}`);
+        currentRow++;
+
+        // Parameters values
+        const paramsRow = sheet.addRow([parameters.join(' | ')]);
+        paramsRow.font = { bold: true, color: { argb: 'black' } };
+        sheet.mergeCells(`A${currentRow}:O${currentRow}`);
+        currentRow++;
+
+        // Empty row for spacing
+        sheet.addRow([]);
+        currentRow++;
+    }
+
+    // Timestamp
+    const timestamp = `Generated on: ${dayjs().format('DD-MM-YYYY HH:mm:ss')}`;
+    const timeRow = sheet.addRow([timestamp]);
+    timeRow.font = { color: { argb: '7F7F7F' } };
+    timeRow.alignment = { horizontal: 'right' };
+    sheet.mergeCells(`A${currentRow}:O${currentRow}`);
+    currentRow++;
+
+    // Headers
+    const headers = formData.viewMode === 'details'
+      ? [
+          '#', 'Doc ID', 'Date', 'Customer', 'Invoice No', 
+          'Invoice Date', 'Supply Place', 'Charge Type',
+          'Charge Code', 'Charge Name', 'Tax Type', 'Tax Percent', 'Qty', 'Rate', 
+          'Amount', 'Tax', 'Total'
+        ]
+      : [
+          '#', 'Doc ID', 'Date', 'Invoice No', 'Invoice Date', 
+          'Tax Type', 'Customer', 'Supply Place',
+          'Amount', 'Tax', 'Total'
+        ];
+    
+    const headerRow = sheet.addRow(headers);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.fill = { 
+      type: 'pattern', 
+      pattern: 'solid', 
+      fgColor: { argb: '1F4E78' }
+    };
+    headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
+    headerRow.height = 25;
+    currentRow++;
+
+    // Data Rows
+    let dataStartRow = currentRow; // Remember where data starts
+
+    // Details Report
+    if (formData.viewMode === 'details') {
+      const groups = rowData.reduce((acc, item) => {
+        const key = item.docid;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(item);
+        return acc;
+      }, {});
+
+      Object.entries( groups).forEach(([docid, items], groupIndex) => {
+        const startRow = currentRow;
+        
+        items.forEach((item, idx) => {
+          const row = [
+            groupIndex + 1,
+            item.docid,
+            dayjs(item.docdate).format('DD-MM-YYYY'),
+            item.partyname,
+            item.Vid || '-',
+            dayjs(item.Vdate).format('DD-MM-YYYY'),
+            item.placeofsupply,
+            item.chargetype,
+            item.chargecode,
+            item.chargename,
+            item.gsttype,
+            item.gstpercent,
+            item.qty,
+            item.rate,
+            item.billAmount,
+            item.gstamount,
+            item.totalLcAmount
+          ];
+          const dataRow = sheet.addRow(row);
+          
+          // Apply zebra striping
+          dataRow.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: groupIndex % 2 === 0 ? 'F2F2F2' : 'FFFFFF' }
+          };
+          
+          // Color coding
+          dataRow.getCell('P').font = { color: { argb: 'FFFF0000' } }; // Tax - Red
+          dataRow.getCell('Q').font = { color: { argb: 'FF00B050' } }; // Total - Green
+          
+          // Format numbers
+          dataRow.getCell('P').numFmt = '#,##0';
+          dataRow.getCell('Q').numFmt = '#,##0.00';
+          dataRow.getCell('M').numFmt = '#,##0.00';
+          dataRow.getCell('N').numFmt = '#,##0.00';
+          dataRow.getCell('O').numFmt = '#,##0.00'; 
+          
+          currentRow++;
+        });
+
+        // Only merge if group has >1 row
+        if (items.length > 1) {
+          const endRow = currentRow - 1;
+          for (let col = 1; col <= 6; col++) {
+            const colChar = String.fromCharCode(64 + col);
+            sheet.mergeCells(`${colChar}${startRow}:${colChar}${endRow}`);
+            const cell = sheet.getCell(`${colChar}${startRow}`);
+            cell.alignment = { vertical: 'middle', horizontal: 'center' };
+          }
+        }
+      });
+    } 
+    // Summary Report
+    else {
+      rowData.forEach((item, index) => {
+        const row = sheet.addRow([
+          index + 1,
+          item.docId,
+          dayjs(item.docdate).format('DD-MM-YYYY'),
+          item.vId || '-',
+          dayjs(item.vDate).format('DD-MM-YYYY'),
+          item.gstType,
+          item.partyName,
+          item.placeofsupply,
+          item.totalchargeamountlc,
+          item.totaltaxamountlc,
+          item.totalinvamountlc
+        ]);
+        
+        // Apply zebra striping
+        row.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: index % 2 === 0 ? 'F2F2F2' : 'FFFFFF' }
+        };
+        
+        // Color coding
+        row.getCell('J').font = { color: { argb: 'FFFF0000' } }; // Tax - Red
+        row.getCell('K').font = { color: { argb: 'FF00B050' } }; // Total - Green
+        
+        // Format numbers
+        row.getCell('I').numFmt = '#,##0.00'; // Amount
+        row.getCell('J').numFmt = '#,##0.00'; // Tax
+        row.getCell('K').numFmt = '#,##0.00'; // Total
+        
+        currentRow++;
+      });
+    }
+
+    // Add totals
+    const totals = rowData.reduce((acc, item) => {
+      acc.qty += Number(item.qty || 0);
+      acc.rate += Number(item.rate || 0);
+      acc.totalCharge += Number(item.billAmount || 0);
+      acc.totalTax += Number(item.gstamount || 0);
+      acc.totalInvoice += Number(item.totalLcAmount || 0);
+      return acc;
+    }, { qty: 0,rate: 0, totalCharge: 0, totalTax: 0, totalInvoice: 0 });
+    const totalSummary = rowData.reduce((acc, item) => {
+    acc.totalchargeamountlc += Number(item.totalchargeamountlc || 0);
+    acc.totaltaxamountlc += Number(item.totaltaxamountlc || 0);
+    acc.totalinvamountlc += Number(item.totalinvamountlc || 0);
+    return acc;
+  }, { totalchargeamountlc: 0, totaltaxamountlc: 0, totalinvamountlc: 0});
+    const totalRow = sheet.addRow([]);
+    
+    if (formData.viewMode === 'details') {
+      totalRow.values = [
+        'Grand Total', '', '', '', '', '', '', '', '', '', '','',
+        totals.qty, 
+        totals.rate,
+        totals.totalCharge, 
+        totals.totalTax, 
+        totals.totalInvoice
+      ];
+      sheet.mergeCells(`A${currentRow}:J${currentRow}`);
+    } else {
+      totalRow.values = [
+        'Grand Total', '', '', '', '', '', '', '',
+        totalSummary.totalchargeamountlc, 
+        totalSummary.totaltaxamountlc, 
+        totalSummary.totalinvamountlc
+      ];
+      sheet.mergeCells(`A${currentRow}:H${currentRow}`);
+    }
+
+    // Style totals row
+    totalRow.font = { bold: true };
+    totalRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'DDEBF7' } // Light blue background
+    };
+    totalRow.getCell(1).alignment = { horizontal: 'right' };
+    
+    // Format totals numbers
+    if (formData.viewMode === 'details') {
+      totalRow.getCell('K').numFmt = '#,##0';
+      totalRow.getCell('K').alignment = { horizontal: 'right' };
+      ['P','Q','M', 'N', 'O'].forEach(col => {
+        const cell = totalRow.getCell(col);
+        cell.numFmt = '#,##0.00';
+        cell.alignment = { horizontal: 'right' };
+      });
+      totalRow.getCell('M').font = { color: { argb: 'FFFF0000' } };
+      totalRow.getCell('N').font = { color: { argb: 'FFFF0000' } };
+      totalRow.getCell('O').font = { color: { argb: 'FFFF0000' } };
+      totalRow.getCell('P').font = { color: { argb: 'FFFF0000' } };
+      totalRow.getCell('Q').font = { color: { argb: 'FF00B050' } };
+    } else {
+      ['I', 'J', 'K'].forEach(col => {
+        const cell = totalRow.getCell(col);
+        cell.numFmt = '#,##0.00';
+        cell.alignment = { horizontal: 'right' };
+      });
+      totalRow.getCell('J').font = { color: { argb: 'FFFF0000' } };
+      totalRow.getCell('K').font = { color: { argb: 'FF00B050' } };
+      // totalRow.getCell('L').font = { color: { argb: 'FF00B050' } };
+    }
+    currentRow++;
+
+    // Set column widths and borders
+    sheet.columns.forEach(column => {
+      column.width = 18;
+      column.alignment = { vertical: 'middle' };
+    });
+
+    sheet.eachRow(row => {
+      row.eachCell(cell => {
+        cell.border = {
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
+        };
+      });
+    });
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    saveAs(new Blob([buffer]), `${reportType.replace(/\s+/g, '_')}.xlsx`);
+  } catch (error) {
+    console.error('Excel generation failed:', error);
+    showToast('error', 'Failed to generate Excel file');
+  }
+};
+const totals = rowData.reduce((acc, item) => {
     acc.qty += Number(item.qty || 0);
     acc.rate += Number(item.rate || 0);
     acc.totalCharge += Number(item.billAmount || 0);
@@ -366,6 +538,12 @@ function SalesReport() {
     acc.totalInvoice += Number(item.totalLcAmount || 0);
     return acc;
   }, { qty: 0, rate: 0, totalCharge: 0, totalTax: 0, totalInvoice: 0 });
+const totalSummary = rowData.reduce((acc, item) => {
+    acc.totalchargeamountlc += Number(item.totalchargeamountlc || 0);
+    acc.totaltaxamountlc += Number(item.totaltaxamountlc || 0);
+    acc.totalinvamountlc += Number(item.totalinvamountlc || 0);
+    return acc;
+  }, { totalchargeamountlc: 0, totaltaxamountlc: 0, totalinvamountlc: 0});
   return (
     <>
       <div className="card w-full bg-base-100 shadow-xl" style={{ padding: '10px', borderRadius: '10px' }}>
@@ -611,13 +789,15 @@ function SalesReport() {
                               <TableCell style={{ textAlign: 'center', width: '1%' }}>#</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '2%' }}>Doc ID</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '2%' }}>Date</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '5%' }}>Customer Name</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '4%' }}>Customer Name</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '2%' }}>Invoice No</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '2%' }}>Invoice Date</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '2%' }}>Place of Supply</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '2%' }}>Charge Type</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '2%' }}>Charge Code</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '2%' }}>Charge Name</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '2%' }}>Tax Type</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '1%' }}>Tax Percent</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '1%' }}>Qty</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '1%' }}>Rate</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '2%' }}>Charge Amount</TableCell>
@@ -632,8 +812,8 @@ function SalesReport() {
                               <TableCell style={{ textAlign: 'center', width: '6%' }}>Invoice No</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '6%' }}>Invoice Date</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '6%' }}>Tax Type</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '15%' }}>Customer Name</TableCell>
-                              <TableCell style={{ textAlign: 'center', width: '6%' }}>Place of Supply</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '5%' }}>Customer Name</TableCell>
+                              <TableCell style={{ textAlign: 'center', width: '4%' }}>Place of Supply</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '6%' }}>Bill Amt</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '6%' }}>Tax Amt</TableCell>
                               <TableCell style={{ textAlign: 'center', width: '6%' }}>Total Amt</TableCell>
@@ -686,6 +866,8 @@ function SalesReport() {
                                 <TableCell>{item.chargetype}</TableCell>
                                 <TableCell>{item.chargecode}</TableCell>
                                 <TableCell>{item.chargename}</TableCell>
+                                <TableCell>{item.gsttype}</TableCell>
+                                <TableCell>{item.gstpercent}</TableCell>
                                 <TableCell align="center">{item.qty}</TableCell>
                                 <TableCell align="right" sx={{ pl: '2px' }}>{item.rate.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
                                 <TableCell align="right">{item.billAmount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>
@@ -705,9 +887,9 @@ function SalesReport() {
                             <TableCell align="center">{transaction.gstType}</TableCell>
                             <TableCell>{transaction.partyName || '-'}</TableCell>
                             <TableCell>{transaction.placeofsupply || '-'}</TableCell>
-                            <TableCell align="right">{Number(transaction.billAmount).toLocaleString('en-IN')}</TableCell>
-                            <TableCell align="right">{Number(transaction.gstamount).toLocaleString('en-IN')}</TableCell>
-                            <TableCell align="right">{Number(transaction.totalLcAmount).toLocaleString('en-IN')}</TableCell>
+                            <TableCell align="right">{Number(transaction.totalchargeamountlc).toLocaleString('en-IN')}</TableCell>
+                            <TableCell align="right">{Number(transaction.totaltaxamountlc).toLocaleString('en-IN')}</TableCell>
+                            <TableCell align="right">{Number(transaction.totalinvamountlc).toLocaleString('en-IN')}</TableCell>
                           </TableRow>
                         ))}
                     </TableBody>
@@ -715,7 +897,7 @@ function SalesReport() {
                       <TableRow sx={{ backgroundColor: '#f5f5f5', fontWeight: 'bold' }}>
                         {formData.viewMode === 'details' ? (
                           <>
-                            <TableCell colSpan={10} align="right" sx={{ fontWeight: 700, padding: '10px', pr: '20px' }}>
+                            <TableCell colSpan={12} align="right" sx={{ fontWeight: 700, padding: '10px', pr: '20px' }}>
                               Grand Total
                             </TableCell>
                             <TableCell align="center" style={{color: 'red'}}>{totals.qty}</TableCell>
@@ -729,9 +911,9 @@ function SalesReport() {
                             <TableCell colSpan={8} align="right" sx={{ fontWeight: 700 }}>
                               Grand Total
                             </TableCell>
-                            <TableCell align="right" style={{color: 'red'}}>{totals.totalCharge.toLocaleString('en-IN')}</TableCell>
-                            <TableCell align="right" style={{color: 'red'}}>{totals.totalTax.toLocaleString('en-IN')}</TableCell>
-                            <TableCell align="right" style={{color: 'red'}}>{totals.totalInvoice.toLocaleString('en-IN')}</TableCell>
+                            <TableCell align="right" style={{color: 'red'}}>{totalSummary.totalchargeamountlc.toLocaleString('en-IN')}</TableCell>
+                            <TableCell align="right" style={{color: 'red'}}>{totalSummary.totaltaxamountlc.toLocaleString('en-IN')}</TableCell>
+                            <TableCell align="right" style={{color: 'red'}}>{totalSummary.totalinvamountlc.toLocaleString('en-IN')}</TableCell>
                           </>
                         )}
                       </TableRow>
