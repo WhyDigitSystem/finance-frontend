@@ -87,6 +87,18 @@ const finalReport =  {
           type: 'item',
           url: '/finance/FinalReport/CostReport'
         },
+        {
+          id: 'receiptReport',
+          title: 'Receipt Report',
+          type: 'item',
+          url: '/finance/FinalReport/receiptReportD&S'
+        },
+        {
+          id: 'paymentReport',
+          title: 'Payment Report',
+          type: 'item',
+          url: '/finance/FinalReport/PaymentReportD&S'
+        },
       ]
       // .filter((item) => allowedScreenIds.includes(item.id))
     }

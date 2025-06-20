@@ -14,9 +14,6 @@ const AssetType = Loadable(lazy(() => import('views/docs/AssetType')));
 const CreateAsset = Loadable(lazy(() => import('views/docs/CreateAsset')));
 const AssetCategory = Loadable(lazy(() => import('views/docs/AssetCategory')));
 const CreateKit = Loadable(lazy(() => import('views/docs/CreateKit')));
-// import PaymentReport from 'views/Finance/FinalReport/PaymentRegister';
-// import ReceiptReport from 'views/Finance/FinalReport/ReceiptRegister';
-// import DashboardNew from 'views/dashboardNew/dashboardNew';
 const Customer = Loadable(lazy(() => import('views/Finance/Customer')));
 const DocumentTypeMaster = Loadable(lazy(() => import('views/Finance/DocumentType/documentType')));
 const DocumentTypeMappingMaster = Loadable(lazy(() => import('views/Finance/DocumentType/documentTypeMapping')));
@@ -103,8 +100,10 @@ const CreatePartyMaster = Loadable(lazy(() => import('views/Finance/CreatePartyM
 const PartyLedger = Loadable(lazy(() => import('views/Finance/FinalReport/PartyLedger')));
 const LedgerReport = Loadable(lazy(() => import('views/Finance/FinalReport/LedgerReport')));
 const TrailBalance = Loadable(lazy(() => import('views/Finance/FinalReport/TrailBalance')));
-const PaymentReport = Loadable(lazy(() => import('views/Finance/FinalReport/PaymentRegister')));
-const ReceiptReport = Loadable(lazy(() => import('views/Finance/FinalReport/ReceiptRegister')));
+const PaymentReportN = Loadable(lazy(() => import('views/Finance/FinalReport/PaymentRegister')));
+const ReceiptReportN = Loadable(lazy(() => import('views/Finance/FinalReport/ReceiptRegister')));
+const PaymentReportDS = Loadable(lazy(() => import('views/Finance/FinalReport/PaymentReport')));
+const ReceiptReportDS = Loadable(lazy(() => import('views/Finance/FinalReport/ReceiptReport')));
 const MaterialIssueManifest = Loadable(lazy(() => import('views/docs/MaterialIssueManifest')));
 const PurchaseOrder = Loadable(lazy(() => import('views/docs/PurchaseOrder')));
 const RetrievalIssueManifest = Loadable(lazy(() => import('views/docs/RetrievalIssueManifest')));
@@ -368,6 +367,14 @@ const FinanceRoute = {
       element: <CostRegister />
     },
     {
+      path: '/Finance/FinalReport/receiptReportD&S',
+      element: <ReceiptReportDS />
+    },
+    {
+      path: '/Finance/FinalReport/PaymentReportD&S',
+      element: <PaymentReportDS />
+    },
+    {
       path: '/Finance/RCostInvoicegna/RCostInvoicegna',
       element: <RCostInvoicegna />
     },
@@ -473,11 +480,11 @@ const FinanceRoute = {
     },
     {
       path: '/Finance/FinalReport/paymentReport',
-      element: <PaymentReport />
+      element: <PaymentReportN />
     },
     {
       path: '/Finance/FinalReport/receiptReport',
-      element: <ReceiptReport />
+      element: <ReceiptReportN />
     },
     {
       path: '/docs/MaterialIssueManifest',
