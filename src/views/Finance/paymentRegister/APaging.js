@@ -45,7 +45,12 @@ const APaging = () => {
     partyName: 'All',
     date: dayjs().format('YYYY-MM-DD'),
     branchCode: 'All',
-    baseType: 'Native'
+    baseType: 'Native',
+    msLab1: '',
+    msLab2: '',
+    msLab3: '',
+    msLab4: '',
+    msLab5: '',
   });
 
   const [selectedSections, setSelectedSections] = useState({
@@ -177,11 +182,11 @@ const APaging = () => {
           outstanding: item.outStanding,
           totaldue: item.totalDue,
           unadjusted: item.outStanding, // Assuming unadjusted is same as outstanding
-          mslab1: 0, // These would come from your actual API response
-          mslab2: 0,
-          mslab3: 0,
-          mslab4: 0,
-          mslab5: 0,
+          msLab1: item.msLab1, // These would come from your actual API response
+          msLab2: item.msLab2,
+          msLab3: item.msLab3,
+          msLab4: item.msLab4,
+          msLab5: item.msLab5,
           // Include additional fields if needed
           partyName: item.partyName,
           subledgerName: item.subledgerName,
@@ -228,18 +233,272 @@ const APaging = () => {
   };
 
   const reportColumns = [
-    { accessorKey: 'docid', header: 'Doc No', size: 120 },
     {
-      accessorKey: 'docdate', header: 'Doc Date', size: 120,
-      Cell: ({ cell }) => cell.getValue() ? dayjs(cell.getValue()).format('DD-MM-YYYY') : '-'
+      accessorKey: 'docid',
+      header: 'Doc No',
+      size: 110,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'center', padding: '8px' }}>
+          {cell.getValue() || ''}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
     },
     {
-      accessorKey: 'duedate', header: 'Due Date', size: 100,
-      Cell: ({ cell }) => cell.getValue() ? dayjs(cell.getValue()).format('DD-MM-YYYY') : '-'
+      accessorKey: 'docdate',
+      header: 'Doc Date',
+      size: 110,
+      Cell: ({ cell }) => {
+        const value = cell.getValue();
+        return (
+          <div style={{ textAlign: 'center', padding: '8px' }}>
+            {value ? dayjs(value).format('DD-MM-YYYY') : ''}
+          </div>
+        );
+      },
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
     },
-    { accessorKey: 'amount', header: 'Inv Amt', size: 100 },
-    { accessorKey: 'outstanding', header: 'Outstanding', size: 100 },
-    { accessorKey: 'totaldue', header: 'Total Due', size: 100 },
+    {
+      accessorKey: 'duedate',
+      header: 'Due Date',
+      size: 110,
+      Cell: ({ cell }) => {
+        const value = cell.getValue();
+        return (
+          <div style={{ textAlign: 'center', padding: '8px' }}>
+            {value ? dayjs(value).format('DD-MM-YYYY') : ''}
+          </div>
+        );
+      },
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'amount',
+      header: 'Inv Amt',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'outstanding',
+      header: 'Outstanding',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'totaldue',
+      header: 'Total Due',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'msLab1',
+      header: 'Below 30 Days',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'msLab2',
+      header: 'Days 30-60',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'msLab3',
+      header: 'Days 60-90',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'msLab4',
+      header: 'Days 90-120',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'msLab5',
+      header: 'Days 120+',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    }
   ];
 
   const tableOptions = {
@@ -559,7 +818,7 @@ const APaging = () => {
             tableOptions={tableOptions}
             handleDownloadExcel={handleDownloadExcel}
             headerFields={headerFields}
-            sumFields={['amount', 'outstanding', 'totaldue']}
+          // sumFields={['amount', 'outstanding', 'totaldue']}
           />
         </DialogContent>
       </Dialog>
@@ -577,7 +836,7 @@ const APaging = () => {
               muiTableContainerProps: { sx: { maxHeight: '60vh' } }
             }}
             headerFields={headerFields}
-            sumFields={['amount', 'outstanding', 'totaldue']}
+          // sumFields={['amount', 'outstanding', 'totaldue']}
           />
         </div>
       )}
