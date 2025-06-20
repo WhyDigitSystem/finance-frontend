@@ -804,7 +804,7 @@ function LedgerReport() {
             tableOptions={tableOptions}
             handleDownloadExcel={handleDownloadExcel}
             headerFields={headerFields}
-            sumFields={['dbAmount', 'CrAmount']}
+            // sumFields={['dbAmount', 'CrAmount']}
           />
         </DialogContent>
       </Dialog>
