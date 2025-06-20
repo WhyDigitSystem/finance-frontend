@@ -44,13 +44,15 @@ const APaging = () => {
   const [formData, setFormData] = useState({
     partyName: 'All',
     date: dayjs().format('YYYY-MM-DD'),
-    branchCode: 'All'
+    branchCode: 'All',
+    baseType: 'Native'
   });
 
   const [selectedSections, setSelectedSections] = useState({
     partyName: false,
     date: true,
-    branchCode: false
+    branchCode: false,
+    baseType: true
   });
 
   const handleChange = (e) => {
@@ -74,12 +76,14 @@ const APaging = () => {
     setFormData({
       partyName: 'All',
       date: dayjs().format('YYYY-MM-DD'),
-      branchCode: 'All'
+      branchCode: 'All',
+      baseType: 'Native'
     });
     setSelectedSections({
       partyName: false,
       date: true,
-      branchCode: false
+      branchCode: false,
+      baseType: true
     });
     setFieldErrors({});
     setListView(false);
@@ -148,23 +152,45 @@ const APaging = () => {
     setIsLoading(true);
     try {
       const queryParams = new URLSearchParams({
-        Asondate: formData.date,
+        asdate: formData.date,
         orgId,
-        partyname: formData.partyName
+        partyname: formData.partyName === 'All' ? 'ALL' : formData.partyName,
+        baseType: formData.baseType
       });
 
       if (selectedSections.branchCode && formData.branchCode !== 'All') {
-        queryParams.append('branchCode', formData.branchCode);
+        queryParams.append('branch', formData.branchCode);
       }
 
       const response = await apiCalls(
         'get',
-        `/payable/getAPAgeing?${queryParams.toString()}`
+        `/reportController/getApAgeing?${queryParams.toString()}`
       );
 
       if (response.status === true) {
-        setRowData(response.paramObjectsMap.mapp || []);
-        
+        // Transform the API response data to match our table structure
+        const transformedData = response.paramObjectsMap.mapp.map(item => ({
+          docid: item.docId || item.refNo,
+          docdate: item.docDate || item.refDate,
+          duedate: item.dueDate,
+          amount: item.amount,
+          outstanding: item.outStanding,
+          totaldue: item.totalDue,
+          unadjusted: item.outStanding, // Assuming unadjusted is same as outstanding
+          mslab1: 0, // These would come from your actual API response
+          mslab2: 0,
+          mslab3: 0,
+          mslab4: 0,
+          mslab5: 0,
+          // Include additional fields if needed
+          partyName: item.partyName,
+          subledgerName: item.subledgerName,
+          branch: item.branch,
+          partyType: item.partyType
+        }));
+
+        setRowData(transformedData);
+
         // Set header fields for AP Ageing report
         setHeaderFields([
           {
@@ -173,20 +199,24 @@ const APaging = () => {
           },
           {
             label: "Party Name",
-            value: formData.partyName
+            value: formData.partyName === 'All' ? 'ALL' : formData.partyName
           },
           {
             label: "Branch Name",
-            value: formData.branchCode
+            value: formData.branchCode === 'All' ? 'ALL' : formData.branchCode
+          },
+          {
+            label: "Base Type",
+            value: formData.baseType
           }
         ]);
-        
+
         setListView(true);
         setOpenModal(true);
       } else {
         showToast(
           'error',
-          response.paramObjectsMap.getAPAgeing?.errorMessage || 'Report Fetch failed'
+          response.paramObjectsMap?.message || 'Report Fetch failed'
         );
       }
     } catch (error) {
@@ -198,18 +228,18 @@ const APaging = () => {
   };
 
   const reportColumns = [
-    { accessorKey: 'docid', header: 'Invoice No', size: 90 },
-    { accessorKey: 'docdate', header: 'Invoice Date', size: 90 },
-    { accessorKey: 'duedate', header: 'Due Date', size: 90 },
-    { accessorKey: 'amount', header: 'Inv. Amount', size: 90 },
-    { accessorKey: 'outstanding', header: 'Outstanding', size: 90 },
-    { accessorKey: 'totaldue', header: 'Total Due', size: 90 },
-    { accessorKey: 'unadjusted', header: 'Unadjusted', size: 90 },
-    { accessorKey: 'mslab1', header: 'Below 30 Days', size: 90 },
-    { accessorKey: 'mslab2', header: 'Days 30 - 60', size: 90 },
-    { accessorKey: 'mslab3', header: 'Days 60 - 90', size: 90 },
-    { accessorKey: 'mslab4', header: 'Days 90 - 120', size: 90 },
-    { accessorKey: 'mslab5', header: 'Days 120+', size: 90 }
+    { accessorKey: 'docid', header: 'Doc No', size: 120 },
+    {
+      accessorKey: 'docdate', header: 'Doc Date', size: 120,
+      Cell: ({ cell }) => cell.getValue() ? dayjs(cell.getValue()).format('DD-MM-YYYY') : '-'
+    },
+    {
+      accessorKey: 'duedate', header: 'Due Date', size: 100,
+      Cell: ({ cell }) => cell.getValue() ? dayjs(cell.getValue()).format('DD-MM-YYYY') : '-'
+    },
+    { accessorKey: 'amount', header: 'Inv Amt', size: 100 },
+    { accessorKey: 'outstanding', header: 'Outstanding', size: 100 },
+    { accessorKey: 'totaldue', header: 'Total Due', size: 100 },
   ];
 
   const tableOptions = {
@@ -253,7 +283,7 @@ const APaging = () => {
     }];
 
     // ====== TITLE ======
-    sheet.mergeCells('A1:L1');
+    sheet.mergeCells('A1:J1');
     const titleCell = sheet.getCell('A1');
     titleCell.value = 'Accounts Payable Ageing Report';
     titleCell.font = {
@@ -320,15 +350,13 @@ const APaging = () => {
         item.outstanding,
         item.totaldue,
         item.unadjusted,
-        item.mslab1,
-        item.mslab2,
-        item.mslab3,
-        item.mslab4,
-        item.mslab5
+        item.partyName,
+        item.branch,
+        item.partyType
       ]);
 
       // Format numeric columns
-      [3, 4, 5, 6, 7, 8, 9, 10, 11].forEach(colIdx => {
+      [3, 4, 5, 6].forEach(colIdx => {
         const cell = row.getCell(colIdx + 1);
         if (typeof cell.value === 'number') {
           cell.numFmt = '#,##0.00';
@@ -339,18 +367,16 @@ const APaging = () => {
 
     // ====== COLUMN WIDTHS ======
     sheet.columns = [
-      { width: 20 }, // Invoice No
-      { width: 15 }, // Invoice Date
+      { width: 20 }, // Invoice/Ref No
+      { width: 15 }, // Invoice/Ref Date
       { width: 15 }, // Due Date
-      { width: 15 }, // Inv. Amount
+      { width: 15 }, // Amount
       { width: 15 }, // Outstanding
       { width: 15 }, // Total Due
       { width: 15 }, // Unadjusted
-      { width: 15 }, // Below 30 Days
-      { width: 15 }, // Days 30 - 60
-      { width: 15 }, // Days 60 - 90
-      { width: 15 }, // Days 90 - 120
-      { width: 15 }  // Days 120+
+      { width: 30 }, // Party Name
+      { width: 15 }, // Branch
+      { width: 15 }  // Party Type
     ];
 
     // ====== FINALIZE AND SAVE ======
@@ -382,6 +408,12 @@ const APaging = () => {
             <FormControlLabel
               control={<Checkbox checked={selectedSections.branchCode} onChange={handleChange} name="branchCode" color="secondary" />}
               label="Branch Name"
+            />
+          </div>
+          <div className="col-md-2 mb-3">
+            <FormControlLabel
+              control={<Checkbox checked={selectedSections.baseType} onChange={handleChange} name="baseType" color="secondary" />}
+              label="Base Type"
             />
           </div>
         </div>
@@ -456,8 +488,27 @@ const APaging = () => {
           </div>
         )}
 
+        {/* Base Type Dropdown */}
+        {selectedSections.baseType && (
+          <div className="col-md-3 mb-3">
+            <FormControl size="small" variant="outlined" fullWidth>
+              <InputLabel id="baseType-label">Base Type</InputLabel>
+              <Select
+                labelId="baseType-label"
+                label="Base Type"
+                value={formData.baseType}
+                onChange={handleInputChange}
+                name="baseType"
+              >
+                <MenuItem value="Native">Native</MenuItem>
+                <MenuItem value="Base">Base</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+        )}
+
         {/* Action Buttons */}
-        {(selectedSections.partyName || selectedSections.date || selectedSections.branchCode) && (
+        {(selectedSections.partyName || selectedSections.date || selectedSections.branchCode || selectedSections.baseType) && (
           <div className="col-md-3 mb-3">
             <div className="row d-flex ml">
               <div className="d-flex flex-wrap justify-content-start mb-4 mt-1">
@@ -526,7 +577,7 @@ const APaging = () => {
               muiTableContainerProps: { sx: { maxHeight: '60vh' } }
             }}
             headerFields={headerFields}
-            sumFields={['amount', 'outstanding', 'totaldue',]}
+            sumFields={['amount', 'outstanding', 'totaldue']}
           />
         </div>
       )}
