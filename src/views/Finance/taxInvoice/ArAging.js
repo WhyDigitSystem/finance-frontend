@@ -1,294 +1,537 @@
-import React from 'react';
-import { TextField, Checkbox, FormControlLabel, FormHelperText, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
-import ClearIcon from '@mui/icons-material/Clear';
-import ActionButton from 'utils/ActionButton';
+import React, { useState, useEffect } from 'react';
+import {
+  Checkbox,
+  FormControlLabel,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Dialog,
+  DialogTitle,
+  IconButton,
+  DialogContent,
+  Grid,
+  Paper,
+  Typography,
+  Box,
+  Tooltip
+} from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
+import ActionButton from 'utils/ActionButton';
+import ClearIcon from '@mui/icons-material/Clear';
+import SearchIcon from '@mui/icons-material/Search';
 import dayjs from 'dayjs';
 import apiCalls from 'apicall';
-import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import CommonReportTable from 'utils/CommonReportTable';
-import Button from '@mui/material/Button';
-function ArAging() {
-  const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+import { getAllActiveBranches } from 'utils/CommonFunctions';
+import CloseIcon from '@mui/icons-material/Close';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
+
+const ArAging = () => {
+  const [orgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
-  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
-  const [customerNameList, setcustomerNameList] = useState([]);
   const [listView, setListView] = useState(false);
+  const [partyNameList, setPartyNameList] = useState([]);
+  const [fieldErrors, setFieldErrors] = useState({});
   const [rowData, setRowData] = useState([]);
-  const [selectedSections, setSelectedSections] = useState({
-    date: false,
-    customerName: false,
-    dueDate: false,
-  });
-  const handleCheckboxChange = (event) => {
-    const { name, checked } = event.target;
-    setSelectedSections((prevState) => ({
-      ...prevState,
-      [name]: checked
-    }));
-  };
-
+  const [branchNameList, setBranchNameList] = useState([]);
+  const [openModal, setOpenModal] = useState(false);
+  const [headerFields, setHeaderFields] = useState([]);
   const [formData, setFormData] = useState({
-    asOnDate: null,
-    customerName: 'All',
-    dueDate: null
+    partyName: 'All',
+    date: dayjs().format('YYYY-MM-DD'),
+    branchCode: 'All'
   });
-  const [fieldErrors, setFieldErrors] = useState({
-    asOnDate: '',
-    customerName: '',
-    dueDate: ''
+
+  const [selectedSections, setSelectedSections] = useState({
+    partyName: false,
+    date: true,
+    branchCode: false
   });
-  const handleClear = () => {
-    setListView(false);
-    setFormData({
-      asOnDate: null,
-      customerName: 'All',
-      dueDate: null
-    });
-    setFieldErrors({
-      asOnDate: '',
-      customerName: '',
-      dueDate: ''
-    });
-    setRowData([]);
-  };
-  useEffect(() => {
-    getcustomerName();
-  }, []);
-  const getcustomerName = async () => {
-    try {
-      const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=customer`);
-      setcustomerNameList(response.paramObjectsMap.partyMasterVO);
-    } catch (error) {
-      console.error('Error fetching gate passes:', error);
-    }
-  };
-  const handleSelectAccountChange = (e) => {
-    const value = e.target.value;
-    console.log('Selected Account value:', value);
 
-    if (value === "All") {
-      setFormData((prevData) => ({
-        ...prevData,
-        customerName: "All",
-      }));
-    } else {
-      const selectedParty = customerNameList.find((emp) => emp.partyName === value);
-      if (selectedParty) {
-        console.log('Selected party:', selectedParty);
-        setFormData((prevData) => ({
-          ...prevData,
-          customerName: selectedParty.partyName,
-        }));
-      } else {
-        console.log('No Account found with the given code:', value);
-      }
-    }
-  };
-  const handleInputChange = (e) => {
-    const { name, value, type } = e.target;
+  const handleChange = (e) => {
+    const { name, checked } = e.target;
+    setSelectedSections((prev) => ({ ...prev, [name]: checked }));
 
-    setFieldErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: '',
-    }));
-    let inputValue = value;
-    if (type === 'text' || type === 'textarea') {
-      inputValue = value.toUpperCase();
+    if (name === 'date' && checked) {
+      const today = dayjs().format('YYYY-MM-DD');
+      setFormData((prev) => ({ ...prev, date: today }));
+      setFieldErrors((prev) => ({ ...prev, date: '' }));
     }
-    setFormData((prevData) => ({ ...prevData, [name]: inputValue }));
   };
+
   const handleDateChange = (field, date) => {
     const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
-    setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+    setFormData((prev) => ({ ...prev, [field]: formattedDate }));
+    setFieldErrors((prev) => ({ ...prev, [field]: '' }));
   };
-  const reportColumns = [
-    { accessorKey: 'docid', header: '# Invoice', size: 110 },
-    { accessorKey: 'docdate', header: 'Date', size: 90 },
-    { accessorKey: 'name', header: 'Party Name', size: 90 },
-    // { accessorKey: 'duedate', header: 'Due Date', size: 90 },
-    { accessorKey: 'amount', header: 'Inv. Amt', size: 120 },
-    { accessorKey: 'outstanding', header: 'Outstanding', size: 110 },
-    { accessorKey: 'totaldue', header: 'Total Due', size: 110 },
-    { accessorKey: 'unadjusted', header: 'Unadjusted', size: 110 },
-    { accessorKey: 'mslab1', header: 'Below 30 Days', size: 120 },
-    { accessorKey: 'mslab2', header: 'Days 30 - 60', size: 120 },
-    { accessorKey: 'mslab3', header: 'Days 60 - 90', size: 120 },
-    { accessorKey: 'mslab4', header: 'Days 90 - 120', size: 120 },
-    { accessorKey: 'mslab5', header: 'Days 120+', size: 120 },
-  ];
-  const handleGo = async () => {
-    const errors = {};
-    if (!formData.asOnDate) {
-      errors.asOnDate = 'As on Date is required';
+
+  const allClearData = () => {
+    setFormData({
+      partyName: 'All',
+      date: dayjs().format('YYYY-MM-DD'),
+      branchCode: 'All'
+    });
+    setSelectedSections({
+      partyName: false,
+      date: true,
+      branchCode: false
+    });
+    setFieldErrors({});
+    setListView(false);
+    setRowData([]);
+    setOpenModal(false);
+  };
+
+  useEffect(() => {
+    getPartyName();
+    getAllBranches();
+  }, []);
+
+  const getPartyName = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=vendor`
+      );
+      setPartyNameList(response.paramObjectsMap.partyMasterVO || []);
+    } catch (error) {
+      console.error('Error fetching party names:', error);
     }
-    if (!formData.customerName) {
-      errors.customerName = 'Customer is required';
+  };
+
+  const getAllBranches = async () => {
+    try {
+      const branchData = await getAllActiveBranches(orgId);
+      setBranchNameList(branchData);
+    } catch (error) {
+      console.error('Error fetching branch data:', error);
+      showToast('error', 'Failed to load branches');
     }
-    if (!formData.dueDate) {
-      errors.dueDate = 'Due Date is required';
-    }
-    if (Object.keys(errors).length === 0) {
-      setIsLoading(true);
-      try {
-        let response;
-        if (formData.dueDate) {
-          response = await apiCalls(
-            'get',
-            `/arapAdjustments/GetArapAgeing?asondate=${formData.asOnDate}&orgId=${orgId}&partyname=${formData.customerName}&pdate=${formData.dueDate}`
-          );
-        } else {
-          response = await apiCalls(
-            'get',
-            `/arapAdjustments/GetArapAgeing?asondate=${formData.asOnDate}&orgId=${orgId}&partyname=${formData.customerName}`
-          );
-        }
-        if (response.status === true) {
-          console.log('Response:', response.paramObjectsMap);
-          setRowData(response.paramObjectsMap.mapp || '');
-          setIsLoading(false);
-          setListView(true);
-        } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Report Fetch failed');
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        showToast('error', 'Report Fetch failed');
-        setIsLoading(false);
-      }
+  };
+
+  const handleSelectPartyName = (e) => {
+    const value = e.target.value;
+    if (value === 'All') {
+      setFormData((prev) => ({ ...prev, partyName: 'All' }));
     } else {
-      setFieldErrors(errors);
+      const selected = partyNameList.find((item) => item.partyName === value);
+      if (selected) {
+        setFormData((prev) => ({ ...prev, partyName: selected.partyName }));
+      }
     }
   };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFieldErrors((prev) => ({ ...prev, [name]: '' }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSearch = async () => {
+    if (selectedSections.date && !formData.date) {
+      setFieldErrors((prev) => ({
+        ...prev,
+        date: 'Date is required'
+      }));
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const queryParams = new URLSearchParams({
+        Asondate: formData.date,
+        orgId,
+        partyname: formData.partyName
+      });
+
+      if (selectedSections.branchCode && formData.branchCode !== 'All') {
+        queryParams.append('branchCode', formData.branchCode);
+      }
+
+      const response = await apiCalls(
+        'get',
+        `/payable/getAPAgeing?${queryParams.toString()}`
+      );
+
+      if (response.status === true) {
+        setRowData(response.paramObjectsMap.mapp || []);
+        
+        // Set header fields for AP Ageing report
+        setHeaderFields([
+          {
+            label: "As on Date",
+            value: formData.date ? dayjs(formData.date).format('DD-MM-YYYY') : ''
+          },
+          {
+            label: "Party Name",
+            value: formData.partyName
+          },
+          {
+            label: "Branch Name",
+            value: formData.branchCode
+          }
+        ]);
+        
+        setListView(true);
+        setOpenModal(true);
+      } else {
+        showToast(
+          'error',
+          response.paramObjectsMap.getAPAgeing?.errorMessage || 'Report Fetch failed'
+        );
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showToast('error', 'Report Fetch failed');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const reportColumns = [
+    { accessorKey: 'docid', header: 'Invoice No', size: 90 },
+    { accessorKey: 'docdate', header: 'Invoice Date', size: 90 },
+    { accessorKey: 'duedate', header: 'Due Date', size: 90 },
+    { accessorKey: 'amount', header: 'Inv. Amount', size: 90 },
+    { accessorKey: 'outstanding', header: 'Outstanding', size: 90 },
+    { accessorKey: 'totaldue', header: 'Total Due', size: 90 },
+    { accessorKey: 'unadjusted', header: 'Unadjusted', size: 90 },
+    { accessorKey: 'mslab1', header: 'Below 30 Days', size: 90 },
+    { accessorKey: 'mslab2', header: 'Days 30 - 60', size: 90 },
+    { accessorKey: 'mslab3', header: 'Days 60 - 90', size: 90 },
+    { accessorKey: 'mslab4', header: 'Days 90 - 120', size: 90 },
+    { accessorKey: 'mslab5', header: 'Days 120+', size: 90 }
+  ];
+
+  const tableOptions = {
+    muiTablePaperProps: {
+      sx: {
+        border: '1px solid #e0e0e0',
+        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+        borderRadius: '8px',
+        overflow: 'hidden'
+      }
+    },
+    muiTableContainerProps: {
+      sx: { maxHeight: '70vh' }
+    },
+    muiTableBodyRowProps: ({ row }) => ({
+      sx: {
+        backgroundColor: row.index % 2 ? '#f9f9f9' : '#ffffff',
+        '&:hover': { backgroundColor: '#f0f7ff' }
+      }
+    }),
+    enableStickyHeader: true,
+    muiTableProps: {
+      sx: {
+        borderCollapse: 'collapse',
+        '& .MuiTableCell-root': {
+          border: '1px solid #e0e0e0 !important'
+        }
+      }
+    }
+  };
+
+  const handleDownloadExcel = async () => {
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet('AP Ageing Report');
+
+    // ====== SHEET VIEW CONFIGURATION ======
+    sheet.views = [{
+      state: 'frozen',
+      ySplit: 5, // Freeze the first 5 rows (title + headers)
+      activeCell: 'A6'
+    }];
+
+    // ====== TITLE ======
+    sheet.mergeCells('A1:L1');
+    const titleCell = sheet.getCell('A1');
+    titleCell.value = 'Accounts Payable Ageing Report';
+    titleCell.font = {
+      size: 18,
+      bold: true,
+      color: { argb: 'FF34449B' }
+    };
+    titleCell.alignment = {
+      vertical: 'middle',
+      horizontal: 'center'
+    };
+
+    // ====== HEADER INFORMATION ======
+    const headerInfo = [
+      ...headerFields,
+      { label: "Generated By", value: localStorage.getItem('userName') || 'Admin' },
+      { label: "Generated On", value: dayjs().format('DD-MM-YYYY HH:mm') }
+    ];
+
+    // Add header information rows
+    for (let i = 0; i < headerInfo.length; i += 2) {
+      const rowIndex = i / 2 + 2;
+      const row = sheet.getRow(rowIndex);
+
+      const labelCell1 = row.getCell(1);
+      const valueCell1 = row.getCell(2);
+      labelCell1.value = headerInfo[i].label + ':';
+      labelCell1.font = { bold: true };
+      valueCell1.value = headerInfo[i].value;
+
+      if (headerInfo[i + 1]) {
+        const labelCell2 = row.getCell(4);
+        const valueCell2 = row.getCell(5);
+        labelCell2.value = headerInfo[i + 1].label + ':';
+        labelCell2.font = { bold: true };
+        valueCell2.value = headerInfo[i + 1].value;
+      }
+    }
+
+    // ====== HEADER ROW ======
+    const headerRow = sheet.addRow(reportColumns.map(col => col.header));
+    headerRow.font = {
+      bold: true,
+      color: { argb: 'FFFFFFFF' }
+    };
+    headerRow.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF34449B' }
+    };
+    headerRow.alignment = {
+      horizontal: 'center',
+      vertical: 'middle'
+    };
+    headerRow.height = 20;
+
+    // ====== DATA ROWS ======
+    rowData.forEach(item => {
+      const row = sheet.addRow([
+        item.docid || '-',
+        item.docdate ? dayjs(item.docdate).format('DD-MM-YYYY') : '-',
+        item.duedate ? dayjs(item.duedate).format('DD-MM-YYYY') : '-',
+        item.amount,
+        item.outstanding,
+        item.totaldue,
+        item.unadjusted,
+        item.mslab1,
+        item.mslab2,
+        item.mslab3,
+        item.mslab4,
+        item.mslab5
+      ]);
+
+      // Format numeric columns
+      [3, 4, 5, 6, 7, 8, 9, 10, 11].forEach(colIdx => {
+        const cell = row.getCell(colIdx + 1);
+        if (typeof cell.value === 'number') {
+          cell.numFmt = '#,##0.00';
+          cell.alignment = { horizontal: 'right' };
+        }
+      });
+    });
+
+    // ====== COLUMN WIDTHS ======
+    sheet.columns = [
+      { width: 20 }, // Invoice No
+      { width: 15 }, // Invoice Date
+      { width: 15 }, // Due Date
+      { width: 15 }, // Inv. Amount
+      { width: 15 }, // Outstanding
+      { width: 15 }, // Total Due
+      { width: 15 }, // Unadjusted
+      { width: 15 }, // Below 30 Days
+      { width: 15 }, // Days 30 - 60
+      { width: 15 }, // Days 60 - 90
+      { width: 15 }, // Days 90 - 120
+      { width: 15 }  // Days 120+
+    ];
+
+    // ====== FINALIZE AND SAVE ======
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+    saveAs(blob, `AP_Ageing_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
+  };
+
   return (
-    <>
-      <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
-        {/* <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-start mb-4" style={{ marginBottom: '20px' }}>
-            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-            <ActionButton title="Search" icon={SearchIcon} isLoading={isLoading} onClick={handleGo} margin="0 10px 0 10px" />
+    <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
+      <div className="row">
+        {/* Section checkboxes */}
+        <div className="row">
+          <div className="col-md-2 mb-3">
+            <FormControlLabel
+              control={<Checkbox checked={selectedSections.date} onChange={handleChange} name="date" color="secondary" />}
+              label="Date"
+            />
           </div>
-        </div> */}
-        <>
-          <div className="row">
-            <div className="row">
-              <div className="col-md-2
-               mb-3">
-                <FormControlLabel
-                  control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
-                  label="Date"
+          <div className="col-md-2 mb-3">
+            <FormControlLabel
+              control={<Checkbox checked={selectedSections.partyName} onChange={handleChange} name="partyName" color="secondary" />}
+              label="Party Name"
+            />
+          </div>
+          <div className="col-md-2 mb-3">
+            <FormControlLabel
+              control={<Checkbox checked={selectedSections.branchCode} onChange={handleChange} name="branchCode" color="secondary" />}
+              label="Branch Name"
+            />
+          </div>
+        </div>
+
+        {/* Date Picker */}
+        {selectedSections.date && (
+          <div className="col-md-3 mb-3">
+            <FormControl fullWidth variant="filled" size="small">
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <DatePicker
+                  label="As on Date"
+                  format="DD-MM-YYYY"
+                  onChange={(date) => handleDateChange('date', date)}
+                  value={formData.date ? dayjs(formData.date, 'YYYY-MM-DD') : null}
+                  slotProps={{
+                    textField: {
+                      size: 'small',
+                      clearable: true,
+                      error: !!fieldErrors.date,
+                      helperText: fieldErrors.date
+                    }
+                  }}
                 />
-              </div>
-              <div className="col-md-2 mb-3">
-                <FormControlLabel
-                  control={<Checkbox checked={selectedSections.customerName} onChange={handleCheckboxChange} name="customerName" color="secondary" />}
-                  label="Customer Name"
-                />
-              </div>
-              <div className="col-md-2 mb-3">
-                <FormControlLabel
-                  control={<Checkbox checked={selectedSections.dueDate} onChange={handleCheckboxChange} name="dueDate" color="secondary" />}
-                  label="Due Date"
-                />
-              </div>
-              <div className="col-md-2 mb-3">
-                {/* <Button
-                  onClick={handleProceed}
-                  color="secondary"
-                  variant="contained"
-                  style={{ textTransform: 'none', padding: '4px 8px', marginTop: '6px' }}
-                  disabled={isLoading}
-                >
-                  Proceed
-                </Button> */}
+              </LocalizationProvider>
+            </FormControl>
+          </div>
+        )}
+
+        {/* Party Name Dropdown */}
+        {selectedSections.partyName && (
+          <div className="col-md-3 mb-3">
+            <FormControl size="small" variant="outlined" fullWidth>
+              <InputLabel id="partyName-label">Party Name</InputLabel>
+              <Select
+                labelId="partyName-label"
+                label="PartyName"
+                name="partyName"
+                onChange={handleSelectPartyName}
+                value={formData.partyName}
+              >
+                <MenuItem value="All">All</MenuItem>
+                {partyNameList.map((row) => (
+                  <MenuItem key={row.id} value={row.partyName}>
+                    {row.partyName}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+        )}
+
+        {/* Branch Name Dropdown */}
+        {selectedSections.branchCode && (
+          <div className="col-md-3 mb-3">
+            <FormControl size="small" variant="outlined" fullWidth>
+              <InputLabel id="branchCode-label">Branch Name</InputLabel>
+              <Select
+                labelId="branchCode-label"
+                label="Branch Name"
+                value={formData.branchCode}
+                onChange={handleInputChange}
+                name="branchCode"
+              >
+                <MenuItem value="All">All</MenuItem>
+                {branchNameList.map((branch) => (
+                  <MenuItem key={branch.id} value={branch.branch}>
+                    {branch.branch}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        {(selectedSections.partyName || selectedSections.date || selectedSections.branchCode) && (
+          <div className="col-md-3 mb-3">
+            <div className="row d-flex ml">
+              <div className="d-flex flex-wrap justify-content-start mb-4 mt-1">
+                <ActionButton title="Search" icon={SearchIcon} onClick={handleSearch} />
+                <ActionButton title="Clear" icon={ClearIcon} onClick={allClearData} />
               </div>
             </div>
-            {selectedSections.date && (
-              <>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled" size="small">
-                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                      <DatePicker
-                        label="As On Date"
-                        value={formData.asOnDate ? dayjs(formData.asOnDate, 'YYYY-MM-DD') : null}
-                        onChange={(date) => handleDateChange('asOnDate', date)}
-                        slotProps={{
-                          textField: { size: 'small', clearable: true, error: fieldErrors.asOnDate, helperText: fieldErrors.asOnDate }
-                        }}
-                        format="DD-MM-YYYY"
-                      />
-                    </LocalizationProvider>
-                  </FormControl>
-                </div>
-              </>
-            )}
-            {selectedSections.customerName && (
-              <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customerName}>
-                  <InputLabel id="customerName-label">Customer Name</InputLabel>
-                  <Select
-                    type='text'
-                    labelId="customerName-label"
-                    label="customerName"
-                    value={formData.customerName}
-                    onChange={handleSelectAccountChange}
-                    name="customerName"
-                  >
-                    <MenuItem value="All">All</MenuItem>
-
-                    {customerNameList?.map((row) => (
-                      <MenuItem key={row.id} value={row.partyName}>
-                        {row.partyName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.customerName && <FormHelperText>{fieldErrors.customerName}</FormHelperText>}
-                </FormControl>
-              </div>
-            )}
-            {selectedSections.dueDate && (
-              <div className="col-md-3 mb-3">
-                <FormControl fullWidth variant="filled" size="small">
-                  <LocalizationProvider dateAdapter={AdapterDayjs}>
-                    <DatePicker
-                      label="Due Date"
-                      value={formData.dueDate ? dayjs(formData.dueDate, 'YYYY-MM-DD') : null}
-                      onChange={(date) => handleDateChange('dueDate', date)}
-                      slotProps={{
-                        textField: { size: 'small', clearable: true, error: fieldErrors.dueDate, helperText: fieldErrors.dueDate }
-                      }}
-                      format="DD-MM-YYYY"
-                    />
-                  </LocalizationProvider>
-                </FormControl>
-              </div>
-            )}
-            {(selectedSections.date || selectedSections.customerName || selectedSections.dueDate) && (
-              <div className="col-md-3 mb-3">
-                <div className="row d-flex ml">
-                  <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
-                    <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} />
-                    <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        </>
-        {listView && (
-          <div className="mt-4">
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"AR Aging"} />
           </div>
         )}
       </div>
-    </>
-  )
-}
+
+      {/* Dialog for popup */}
+      <Dialog
+        open={openModal}
+        onClose={handleCloseModal}
+        fullWidth
+        maxWidth="xl"
+        sx={{
+          '& .MuiDialog-paper': {
+            borderRadius: '12px',
+            overflow: 'hidden'
+          }
+        }}
+      >
+        <DialogTitle sx={{
+          m: 0,
+          p: 1,
+          backgroundColor: '#34449B',
+          color: 'white',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <span>Accounts Payable Ageing Report</span>
+          <IconButton
+            aria-label="close"
+            onClick={handleCloseModal}
+            sx={{ color: 'white' }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent sx={{ padding: 0 }}>
+          <CommonReportTable
+            data={rowData}
+            columns={reportColumns}
+            fileName={"AP Ageing Report"}
+            tableOptions={tableOptions}
+            handleDownloadExcel={handleDownloadExcel}
+            headerFields={headerFields}
+            sumFields={['amount', 'outstanding', 'totaldue']}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {listView && (
+        <div className="mt-4">
+          <CommonReportTable
+            data={rowData}
+            columns={reportColumns}
+            fileName={"AP Ageing Report"}
+            isListView={true}
+            handleDownloadExcel={handleDownloadExcel}
+            tableOptions={{
+              ...tableOptions,
+              muiTableContainerProps: { sx: { maxHeight: '60vh' } }
+            }}
+            headerFields={headerFields}
+            sumFields={['amount', 'outstanding', 'totaldue',]}
+          />
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default ArAging;
