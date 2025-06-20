@@ -37,6 +37,7 @@ const APaging = () => {
   const [fieldErrors, setFieldErrors] = useState({});
   const [rowData, setRowData] = useState([]);
   const [branchList, setbranchList] = useState([]);
+  const [listView, setListView] = useState(false);
   const [selectedSections, setSelectedSections] = useState({
     partyName: false,
     date: true,
@@ -175,6 +176,7 @@ const APaging = () => {
     setFormData({ partyName: 'All', date: dayjs().format('YYYY-MM-DD'), branch: 'ALL' });
     setSelectedSections({ partyName: false, date: true });
     setFieldErrors({});
+    setListView(false);
     setRowData([]);
   };
 
@@ -252,6 +254,11 @@ const APaging = () => {
     }));
   };
 
+  const formatAmount = (value) =>
+    value !== null && value !== undefined && !isNaN(value)
+      ? new Intl.NumberFormat('en-IN').format(value)
+      : '';
+
   const reportColumns = [
     {
       accessorKey: 'branch',
@@ -259,7 +266,7 @@ const APaging = () => {
       size: 80,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'left', padding: '8px' }}>
-          {cell.getValue() || '-'}
+          {cell.getValue() || ''}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -280,40 +287,31 @@ const APaging = () => {
       }
     },
     {
-      accessorKey: 'subledgerCode',
-      header: 'Vendor Code',
-      size: 80,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'left', padding: '8px' }}>
-          {cell.getValue() || '-'}
-        </div>
-      ),
-      muiTableHeadCellProps: {
-        align: 'center',
-        sx: {
-          backgroundColor: '#34449B',
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: '0.875rem',
-          padding: '12px 8px'
-        }
-      },
-      muiTableBodyCellProps: {
-        sx: {
-          padding: '8px',
-          backgroundColor: '#ffffff'
-        }
-      }
-    },
-    {
-      accessorKey: 'subledgerName',
       header: 'Vendor',
-      size: 120,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'left', padding: '8px' }}>
-          {cell.getValue() || '-'}
-        </div>
-      ),
+      accessorKey: 'combinedVendorInfo',
+      size: 300,
+      Cell: ({ row }) => {
+        const code = row.original.subledgerCode || '';
+        const name = row.original.subledgerName || '';
+        const currency = row.original.currency || '';
+
+        if (name.toLowerCase().startsWith('total')) {
+          return (
+            <div style={{ textAlign: 'left', padding: '8px' }}>
+              {name}
+            </div>
+          );
+        }
+
+        const parts = [code, name, currency].filter(Boolean);
+        const displayValue = parts.join(' - ');
+
+        return (
+          <div style={{ textAlign: 'left', padding: '8px' }}>
+            {displayValue}
+          </div>
+        );
+      },
       muiTableHeadCellProps: {
         align: 'center',
         sx: {
@@ -337,7 +335,7 @@ const APaging = () => {
       size: 100,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'left', padding: '8px' }}>
-          {cell.getValue() || '-'}
+          {cell.getValue() || ''}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -363,33 +361,7 @@ const APaging = () => {
       size: 100,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', padding: '8px' }}>
-          {cell.getValue() || '-'}
-        </div>
-      ),
-      muiTableHeadCellProps: {
-        align: 'center',
-        sx: {
-          backgroundColor: '#34449B',
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: '0.875rem',
-          padding: '12px 8px'
-        }
-      },
-      muiTableBodyCellProps: {
-        sx: {
-          padding: '8px',
-          backgroundColor: '#ffffff'
-        }
-      }
-    },
-    {
-      accessorKey: 'currency',
-      header: 'Currency',
-      size: 100,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'left', padding: '8px' }}>
-          {cell.getValue() || '-'}
+          {formatAmount(cell.getValue())}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -415,7 +387,7 @@ const APaging = () => {
       size: 100,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', padding: '8px' }}>
-          {cell.getValue() || '-'}
+          {formatAmount(cell.getValue())}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -441,7 +413,7 @@ const APaging = () => {
       size: 100,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', padding: '8px' }}>
-          {cell.getValue() || '-'}
+          {formatAmount(cell.getValue())}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -467,7 +439,7 @@ const APaging = () => {
       size: 100,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', padding: '8px' }}>
-          {cell.getValue() || '-'}
+          {formatAmount(cell.getValue())}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -486,7 +458,7 @@ const APaging = () => {
           backgroundColor: '#ffffff'
         }
       }
-    },
+    }
   ];
 
   const handleSearch = async () => {
@@ -505,7 +477,31 @@ const APaging = () => {
         );
         if (response.status === true) {
           setRowData(response.paramObjectsMap.APOutstanding);
+
+          const headers = [
+            // {
+            //   // Combined date range value without a label
+            //   value: formData.fromDate && formData.toDate
+            //     ? `${dayjs(formData.fromDate).format('DD-MM-YYYY')} to ${dayjs(formData.toDate).format('DD-MM-YYYY')}`
+            //     : ''
+            // },
+            {
+              label: "As On Date",
+              value: formData.date,
+            },
+            {
+              label: "Party Name",
+              value: formData.partyName !== 'All' ? formData.partyName : 'All'
+            },
+            {
+              label: "Branch",
+              value: formData.branch !== 'All' ? formData.branch : 'All'
+            },
+          ];
+
+          setHeaderFields(headers);
           setIsLoading(false);
+          setListView(true);
           setIsModalOpen(true);
         } else {
           showToast('error', response.paramObjectsMap.APOutstanding.errorMessage || 'Report Fetch failed');
@@ -577,7 +573,7 @@ const APaging = () => {
           </div>
 
           {selectedSections.date && (
-            <div className="col-md-3 mb-3">
+            <div className="col-md-3">
               <FormControl fullWidth variant="filled" size="small">
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <DatePicker
@@ -600,7 +596,7 @@ const APaging = () => {
           )}
 
           {selectedSections.partyName && (
-            <div className="col-md-3 mb-3">
+            <div className="col-md-3">
               <FormControl
                 size="small"
                 variant="outlined"
@@ -638,7 +634,7 @@ const APaging = () => {
           )}
 
           {selectedSections.branch && (
-            <div className="col-md-3 mb-3">
+            <div className="col-md-3">
               <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branch}>
                 <InputLabel id="branch-label">Branch</InputLabel>
                 <Select labelId="branch-label" label="branch" value={formData.branch} onChange={handleInputChange} name="branch">
@@ -656,7 +652,7 @@ const APaging = () => {
 
           {selectedSections.slab && (
             <>
-              <div className="col-md-3 mb-3">
+              <div className="col-md-3">
                 <FormControl fullWidth size="small">
                   <TextField
                     label={<span>Slab 1</span>}
@@ -667,7 +663,7 @@ const APaging = () => {
                   />
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              <div className="col-md-3">
                 <FormControl fullWidth size="small">
                   <TextField
                     label={<span>Slab 2</span>}
@@ -678,7 +674,7 @@ const APaging = () => {
                   />
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              <div className="col-md-3">
                 <FormControl fullWidth size="small">
                   <TextField
                     label={<span>Slab 3</span>}
@@ -689,7 +685,7 @@ const APaging = () => {
                   />
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              <div className="col-md-3">
                 <FormControl fullWidth size="small">
                   <TextField
                     label={<span>Slab 4</span>}
@@ -700,7 +696,7 @@ const APaging = () => {
                   />
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              <div className="col-md-3">
                 <FormControl fullWidth size="small">
                   <TextField
                     label={<span>Slab 5</span>}
@@ -711,7 +707,7 @@ const APaging = () => {
                   />
                 </FormControl>
               </div>
-              <div className="col-md-3 mb-3">
+              <div className="col-md-3">
                 <FormControl fullWidth size="small">
                   <TextField
                     label={<span>Slab 6</span>}
@@ -726,9 +722,9 @@ const APaging = () => {
           )}
 
           {(selectedSections.partyName || selectedSections.date) && (
-            <div className="col-md-3 mb-3">
+            <div className="col-md-3">
               <div className="row d-flex ml">
-                <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
+                <div className="d-flex flex-wrap justify-content-start mb-1 mt-1" >
                   <ActionButton
                     title="Search"
                     icon={SearchIcon}
@@ -745,89 +741,108 @@ const APaging = () => {
             </div>
           )}
         </div>
-      </div>
 
-      {/* Search Results Modal */}
-      <Dialog
-        open={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        fullWidth={true}
-        maxWidth="xl"
-        PaperProps={{
-          sx: {
-            height: '80vh',
-            maxHeight: '80vh',
-            borderRadius: '12px',
-            overflow: 'hidden'
-          }
-        }}
-      >
-        <DialogTitle sx={{
-          backgroundColor: '#34449B',
-          color: 'white',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '16px 24px'
-        }}>
-          <div className="text-xl font-bold">AP Outstanding Report</div>
-          <Button
-            onClick={() => setIsModalOpen(false)}
-            sx={{
-              color: 'white',
-              minWidth: 'auto',
-              padding: '6px'
-            }}
-          >
-            <ClearIcon fontSize="medium" />
-          </Button>
-        </DialogTitle>
+        {/* Search Results Modal */}
+        <Dialog
+          open={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          fullWidth={true}
+          maxWidth="xl"
+          PaperProps={{
+            sx: {
+              height: '80vh',
+              maxHeight: '80vh',
+              borderRadius: '12px',
+              overflow: 'hidden'
+            }
+          }}
+        >
+          <DialogTitle sx={{
+            m: 0,
+            p: 0,
+            px: 3,
+            backgroundColor: '#34449B',
+            color: 'white',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div className="text-xl font-bold">AP Outstanding Report</div>
+            <Button
+              onClick={() => setIsModalOpen(false)}
+              sx={{
+                color: 'white',
+                minWidth: 'auto',
+                padding: '6px'
+              }}
+            >
+              <ClearIcon fontSize="medium" />
+            </Button>
+          </DialogTitle>
 
-        <DialogContent dividers sx={{ padding: 0 }}>
-          <div className="w-full h-full">
+          <DialogContent dividers sx={{ padding: 0 }}>
+            <div className="w-full h-full">
+              <CommonReportTable
+                data={rowData}
+                columns={reportColumns}
+                fileName={"AP_Outstanding_Report"}
+                isListView={true}
+                handleDownloadExcel={handleDownloadExcel}
+                tableOptions={{
+                  muiTablePaperProps: {
+                    sx: {
+                      border: 'none',
+                      boxShadow: 'none',
+                      borderRadius: '0',
+                      height: '100%'
+                    }
+                  },
+                  muiTableContainerProps: {
+                    sx: {
+                      maxHeight: 'calc(80vh - 132px)',
+                      height: '100%'
+                    }
+                  },
+                  muiTableBodyRowProps: ({ row }) => ({
+                    sx: {
+                      backgroundColor: row.index % 2 ? '#f9f9f9' : '#ffffff',
+                      '&:hover': { backgroundColor: '#f0f7ff' }
+                    }
+                  }),
+                  enableStickyHeader: true,
+                  muiTableProps: {
+                    sx: {
+                      borderCollapse: 'collapse',
+                      '& .MuiTableCell-root': {
+                        border: '1px solid #e0e0e0 !important'
+                      }
+                    }
+                  },
+                }}
+                headerFields={headerFields}
+              // sumFields={['outstanding', 'unadjusted', 'totaldue']}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
+        {listView && (
+          <div className="mt-4">
             <CommonReportTable
               data={rowData}
               columns={reportColumns}
-              fileName={"AP_Outstanding_Report"}
+              fileName={"AP Outstanding Report"}
               isListView={true}
               handleDownloadExcel={handleDownloadExcel}
               tableOptions={{
-                muiTablePaperProps: {
-                  sx: {
-                    border: 'none',
-                    boxShadow: 'none',
-                    borderRadius: '0',
-                    height: '100%'
-                  }
-                },
-                muiTableContainerProps: {
-                  sx: {
-                    maxHeight: 'calc(80vh - 132px)',
-                    height: '100%'
-                  }
-                },
-                muiTableBodyRowProps: ({ row }) => ({
-                  sx: {
-                    backgroundColor: row.index % 2 ? '#f9f9f9' : '#ffffff',
-                    '&:hover': { backgroundColor: '#f0f7ff' }
-                  }
-                }),
-                enableStickyHeader: true,
-                muiTableProps: {
-                  sx: {
-                    borderCollapse: 'collapse',
-                    '& .MuiTableCell-root': {
-                      border: '1px solid #e0e0e0 !important'
-                    }
-                  }
-                },
+                ...tableOptions,
+                muiTableContainerProps: { sx: { maxHeight: '60vh' } }
               }}
               headerFields={headerFields}
-              sumFields={['outstanding', 'unadjusted', 'totaldue']}
+            // sumFields={['amount', 'outstanding', 'totaldue',]}
             />
           </div>
-        </DialogContent>
-      </Dialog>
+        )}
+      </div>
     </>
   );
 };
