@@ -1,5 +1,19 @@
 import React from 'react';
-import { FormControlLabel, Checkbox, FormControl, InputLabel, MenuItem, Select, TextField, FormHelperText } from '@mui/material';
+import {
+  FormControlLabel,
+  Checkbox,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  FormHelperText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button
+} from '@mui/material';
 import { useState, useEffect } from 'react';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers';
@@ -13,12 +27,12 @@ import CommonReportTable from 'utils/CommonReportTable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
-// check box
+
 const APaging = () => {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [isLoading, setIsLoading] = useState(false);
-  const [listView, setListView] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [partyNameList, setpartyNameList] = useState([]);
   const [fieldErrors, setFieldErrors] = useState({});
   const [rowData, setRowData] = useState([]);
@@ -28,11 +42,8 @@ const APaging = () => {
     date: true,
     slab: false,
     branch: false,
-    // division: false,
-    // option: false,
-    // branchName: false
   });
-
+  const [headerFields, setHeaderFields] = useState([]);
   const capitalizeHeader = (text) => text.replace(/\b\w/g, char => char.toUpperCase());
 
   const handleChange = (e) => {
@@ -55,7 +66,6 @@ const APaging = () => {
     }
   };
 
-  // input label
   const [formData, setFormData] = useState({
     partyName: 'All',
     date: dayjs().format('YYYY-MM-DD'),
@@ -66,26 +76,14 @@ const APaging = () => {
     slab4: '',
     slab5: '',
     slab6: '',
-    // division: 'All',
-    // option: 'All',
-    // branchName: 'All'
   });
-
-  // const handleInputChange = (e) => {
-  //   const { name, value } = e.target;
-
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     [name]: value
-  //   }));
-  // };
 
   const handleDownloadExcel = async () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('AP Outstanding');
 
     // Title Row
-    sheet.mergeCells('A1', 'K1'); // Adjust column span as per total columns
+    sheet.mergeCells('A1', 'K1');
     const titleCell = sheet.getCell('A1');
     titleCell.value = 'AP Outstanding Report';
     titleCell.font = { size: 16, bold: true, color: { argb: 'FF34449B' } };
@@ -113,8 +111,6 @@ const APaging = () => {
       };
     });
 
-    // Add data rows
-    // Add data rows with formatting
     rowData.forEach((item) => {
       const row = keys.map((key) => {
         const value = item[key];
@@ -204,6 +200,7 @@ const APaging = () => {
       console.error('Error fetching gate passes:', error);
     }
   };
+
   const handleSelectPartyName = (e) => {
     const value = e.target.value;
     if (value === 'All') {
@@ -215,13 +212,10 @@ const APaging = () => {
       const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
 
       if (selectedEmp) {
-        console.log('Selected party:', selectedEmp);
         setFormData((prevData) => ({
           ...prevData,
           partyName: selectedEmp.partyName
         }));
-      } else {
-        console.log('No Account found with the given code:', value);
       }
     }
   };
@@ -240,12 +234,6 @@ const APaging = () => {
           ...prevData,
           branch: 'All'
         }));
-      } else {
-        // const selectedBranch = branchList.find((br) => br.branch === value);
-        // setFormData((prevData) => ({
-        //   ...prevData,
-        //   branch: selectedBranch ? selectedBranch.branch : ''
-        // }));
       }
     } else {
       let inputValue = value;
@@ -515,13 +503,10 @@ const APaging = () => {
           'get',
           `/payable/getAPOutstanding?Asondate=${formData.date}&orgId=${orgId}&partyname=${formData.partyName}&branch=${formData.branch}&finyear=${finYear}`
         );
-        // setpartyNameList(response.paramObjectsMap.APOutstanding);
         if (response.status === true) {
-          console.log('Response:', response);
           setRowData(response.paramObjectsMap.APOutstanding);
-          console.log(rowData);
           setIsLoading(false);
-          setListView(true);
+          setIsModalOpen(true);
         } else {
           showToast('error', response.paramObjectsMap.APOutstanding.errorMessage || 'Report Fetch failed');
           setIsLoading(false);
@@ -534,6 +519,35 @@ const APaging = () => {
         setIsLoading(false);
       }
     }
+  };
+
+  const tableOptions = {
+    muiTablePaperProps: {
+      sx: {
+        border: '1px solid #e0e0e0',
+        boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)',
+        borderRadius: '8px',
+        overflow: 'hidden'
+      }
+    },
+    muiTableContainerProps: {
+      sx: { maxHeight: '70vh' }
+    },
+    muiTableBodyRowProps: ({ row }) => ({
+      sx: {
+        backgroundColor: row.index % 2 ? '#f9f9f9' : '#ffffff',
+        '&:hover': { backgroundColor: '#f0f7ff' }
+      }
+    }),
+    enableStickyHeader: true,
+    muiTableProps: {
+      sx: {
+        borderCollapse: 'collapse',
+        '& .MuiTableCell-root': {
+          border: '1px solid #e0e0e0 !important'
+        }
+      }
+    },
   };
 
   return (
@@ -560,35 +574,7 @@ const APaging = () => {
                 label="Branch"
               />
             </div>
-            {/* <div className="col-md-2 mb-3">
-              <FormControlLabel
-                control={<Checkbox checked={selectedSections.slab} onChange={handleChange} name="slab" color="secondary" />}
-                label="Slab"
-              />
-            </div> */}
-
-            {/* <div className="col-md-2 mb-3">
-              <FormControlLabel
-                control={<Checkbox checked={selectedSections.division} onChange={handleChange} name="division" color="secondary" />}
-                label="Division"
-              />
-            </div> */}
-
-            {/* <div className="col-md-2 mb-3">
-              <FormControlLabel
-                control={<Checkbox checked={selectedSections.option} onChange={handleChange} name="option" color="secondary" />}
-                label="Option"
-              />
-            </div> */}
-
-            {/* <div className="col-md-2 mb-3">
-              <FormControlLabel
-                control={<Checkbox checked={selectedSections.branchName} onChange={handleChange} name="branchName" color="secondary" />}
-                label="Branch Name"
-              />
-            </div> */}
           </div>
-          {/*  */}
 
           {selectedSections.date && (
             <div className="col-md-3 mb-3">
@@ -739,73 +725,109 @@ const APaging = () => {
             </>
           )}
 
-          {/* {selectedSections.division && (
-            <div className="col-md-3 mb-3">
-              <FormControl size="small" variant="outlined" fullWidth>
-                <InputLabel id="division-label">Division</InputLabel>
-                <Select labelId="division-label" label="Division" name="division" onChange={handleInputChange} value={formData.division}>
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="order">Order</MenuItem>
-                  <MenuItem value="supply">Supply</MenuItem>
-                </Select>
-              </FormControl>
-            </div>
-          )} */}
-          {/* 
-          {selectedSections.option && (
-            <div className="col-md-3 mb-3">
-              <FormControl size="small" variant="outlined" fullWidth>
-                <InputLabel id="option-label">Option</InputLabel>
-                <Select labelId="option-label" label="Option" name="option" onChange={handleInputChange} value={formData.option}>
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="order">Order</MenuItem>
-                  <MenuItem value="supply">Supply</MenuItem>
-                </Select>
-              </FormControl>
-            </div>
-          )} */}
-
-          {/* {selectedSections.branchName && (
-            <div className="col-md-3 mb-3">
-              <FormControl size="small" variant="outlined" fullWidth>
-                <InputLabel id="branchName-label">Branch Name</InputLabel>
-                <Select
-                  labelId="branchName-label"
-                  label="Branch Name"
-                  name="branchName"
-                  onChange={handleInputChange}
-                  value={formData.branchName}
-                >
-                  <MenuItem value="All">All</MenuItem>
-                  <MenuItem value="order">Order</MenuItem>
-                  <MenuItem value="supply">Supply</MenuItem>
-                </Select>
-              </FormControl>
-            </div>
-          )} */}
-
           {(selectedSections.partyName || selectedSections.date) && (
-            // selectedSections.division ||
-            // selectedSections.option ||
-            // selectedSections.branchName
             <div className="col-md-3 mb-3">
               <div className="row d-flex ml">
                 <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
-                  <ActionButton title="Search" icon={SearchIcon} onClick={handleSearch} />
-                  <ActionButton title="Clear" icon={ClearIcon} onClick={allClearData} />
+                  <ActionButton
+                    title="Search"
+                    icon={SearchIcon}
+                    onClick={handleSearch}
+                    disabled={isLoading}
+                  />
+                  <ActionButton
+                    title="Clear"
+                    icon={ClearIcon}
+                    onClick={allClearData}
+                  />
                 </div>
               </div>
             </div>
           )}
-
-          {/*  */}
         </div>
-        {listView && (
-          <div className="mt-4">
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={'AP Outstanding'} sumFields={['outstanding', 'totaldue']} handleDownloadExcel={handleDownloadExcel} />
-          </div>
-        )}
       </div>
+
+      {/* Search Results Modal */}
+      <Dialog
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        fullWidth={true}
+        maxWidth="xl"
+        PaperProps={{
+          sx: {
+            height: '80vh',
+            maxHeight: '80vh',
+            borderRadius: '12px',
+            overflow: 'hidden'
+          }
+        }}
+      >
+        <DialogTitle sx={{
+          backgroundColor: '#34449B',
+          color: 'white',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '16px 24px'
+        }}>
+          <div className="text-xl font-bold">AP Outstanding Report</div>
+          <Button
+            onClick={() => setIsModalOpen(false)}
+            sx={{
+              color: 'white',
+              minWidth: 'auto',
+              padding: '6px'
+            }}
+          >
+            <ClearIcon fontSize="medium" />
+          </Button>
+        </DialogTitle>
+
+        <DialogContent dividers sx={{ padding: 0 }}>
+          <div className="w-full h-full">
+            <CommonReportTable
+              data={rowData}
+              columns={reportColumns}
+              fileName={"AP_Outstanding_Report"}
+              isListView={true}
+              handleDownloadExcel={handleDownloadExcel}
+              tableOptions={{
+                muiTablePaperProps: {
+                  sx: {
+                    border: 'none',
+                    boxShadow: 'none',
+                    borderRadius: '0',
+                    height: '100%'
+                  }
+                },
+                muiTableContainerProps: {
+                  sx: {
+                    maxHeight: 'calc(80vh - 132px)',
+                    height: '100%'
+                  }
+                },
+                muiTableBodyRowProps: ({ row }) => ({
+                  sx: {
+                    backgroundColor: row.index % 2 ? '#f9f9f9' : '#ffffff',
+                    '&:hover': { backgroundColor: '#f0f7ff' }
+                  }
+                }),
+                enableStickyHeader: true,
+                muiTableProps: {
+                  sx: {
+                    borderCollapse: 'collapse',
+                    '& .MuiTableCell-root': {
+                      border: '1px solid #e0e0e0 !important'
+                    }
+                  }
+                },
+              }}
+              headerFields={headerFields}
+              sumFields={['outstanding', 'unadjusted', 'totaldue']}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };
