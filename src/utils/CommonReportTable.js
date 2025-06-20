@@ -68,7 +68,7 @@ const CommonReportTable = ({
     outstanding: 'OutStanding',
     ndbAmnt: 'Debit',
     ncrAmnt: 'Credit',
-    
+
   };
 
   const customColumns = columns.map((column) => {
@@ -228,7 +228,7 @@ const CommonReportTable = ({
           },
         }}
         renderTopToolbarCustomActions={({ table }) => (
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center',  gap: 1,}}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1, }}>
             <Box>
               <ActionButton
                 title="Download Excel"
@@ -237,7 +237,7 @@ const CommonReportTable = ({
                 isLoading={isLoading}
                 margin="0 8px 0 8px"
               />
-            </Box>  
+            </Box>
             <Box
               sx={{
                 display: 'flex',
@@ -247,8 +247,18 @@ const CommonReportTable = ({
               }}
             >
               {headerFields.map(({ label, value }, idx) => (
-                <Box key={idx} sx={{ fontSize: '14px', minWidth: '160px', marginTop: '8px', }}>
-                  <strong style={{color:'#171c24', fontWeight:'700'}}>{label}:</strong> <span style={{ color: '#374151' }}>{value}</span>
+                <Box
+                  key={idx}
+                  sx={{ fontSize: '14px', minWidth: '160px', marginTop: '8px' }}
+                >
+                  {label ? (
+                    <>
+                      <strong style={{ color: '#171c24', fontWeight: '700' }}>{label}:</strong>{' '}
+                      <span style={{ color: '#374151' }}>{value}</span>
+                    </>
+                  ) : (
+                    <span style={{ color: '#374151' }}>{value}</span>
+                  )}
                 </Box>
               ))}
             </Box>
