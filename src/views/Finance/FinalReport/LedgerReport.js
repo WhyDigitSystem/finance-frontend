@@ -429,12 +429,10 @@ function LedgerReport() {
 
           const headers = [
             {
-              label: "From Date",
-              value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : ''
-            },
-            {
-              label: "To Date",
-              value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : ''
+              // Combined date range value without a label
+              value: formData.fromDate && formData.toDate
+                ? `${dayjs(formData.fromDate).format('DD-MM-YYYY')} to ${dayjs(formData.toDate).format('DD-MM-YYYY')}`
+                : ''
             },
             {
               label: "Account Name",
@@ -647,7 +645,7 @@ function LedgerReport() {
           </div>
         </div>
 
-        <div className="col-md-3 mb-3">
+        <div className="col-md-3 mb-1">
           <FormControl fullWidth variant="filled" size="small">
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
@@ -667,7 +665,7 @@ function LedgerReport() {
           </FormControl>
         </div>
 
-        <div className="col-md-3 mb-3">
+        <div className="col-md-3 mb-1">
           <FormControl fullWidth variant="filled" size="small">
             <LocalizationProvider dateAdapter={AdapterDayjs}>
               <DatePicker
@@ -687,7 +685,7 @@ function LedgerReport() {
           </FormControl>
         </div>
 
-        <div className="col-md-3 mb-3">
+        <div className="col-md-3 mb-1">
           <FormControl size="small" variant="outlined" fullWidth>
             <InputLabel id="withDetails-label">With Details</InputLabel>
             <Select
@@ -704,7 +702,7 @@ function LedgerReport() {
         </div>
 
         {selectedSections.accountName && (
-          <div className="col-md-3 mb-3">
+          <div className="col-md-3 mb-1">
             <FormControl size="small" variant="outlined" fullWidth>
               <InputLabel id="accountName-label">Account Name</InputLabel>
               <Select
@@ -726,7 +724,7 @@ function LedgerReport() {
         )}
 
         {selectedSections.branchCode && (
-          <div className="col-md-3 mb-2">
+          <div className="col-md-3 mb-1">
             <FormControl size="small" variant="outlined" fullWidth>
               <InputLabel id="branchCode-label">Branch Code</InputLabel>
               <Select
@@ -747,8 +745,8 @@ function LedgerReport() {
           </div>
         )}
 
-        <div className="col-md-3 mb-2">
-          <div className="d-flex flex-wrap justify-content-start mb-4 mt-1" style={{ marginBottom: '20px' }}>
+        <div className="col-md-3">
+          <div className="d-flex flex-wrap justify-content-start mt-1">
             <ActionButton
               title="Search"
               icon={SearchIcon}
@@ -779,7 +777,8 @@ function LedgerReport() {
       >
         <DialogTitle sx={{
           m: 0,
-          p: 1,
+          p: 0,
+          px: 3,
           backgroundColor: '#34449B',
           color: 'white',
           display: 'flex',
@@ -824,7 +823,7 @@ function LedgerReport() {
               muiTableContainerProps: { sx: { maxHeight: '60vh' } }
             }}
             headerFields={headerFields}
-            sumFields={['dbAmount', 'CrAmount']}
+            // sumFields={['dbAmount', 'CrAmount']}
           />
         </div>
       )}
