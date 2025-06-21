@@ -66,8 +66,20 @@ const CommonReportTableGrouped = ({
     Tax: 'Total Tax Amount',
     BillAmount: 'Bill Amount',
     outstanding: 'OutStanding',
+    chargeamt: 'Bill Amt',
+    tdsamt: 'Tds Amt',
+    settled: 'Settled',
     ndbAmnt: 'Debit',
     ncrAmnt: 'Credit',
+    netamount: 'Net Amt',
+    onaccount: 'On Account',
+    paymentamt: 'Paid Amt',
+    receiptAmount: 'Receipt Amt',
+    tdsAmount: 'Tds Amt',
+    onAccount: 'On Account',
+    netAmount: 'Net Amt',
+    settledAmount: 'Settled Amt',
+    outStanding: 'Outstanding Amt',
     
   };
 
@@ -90,7 +102,6 @@ const CommonReportTableGrouped = ({
         ),
       };
     }
-
     if (column.accessorKey === 'closed') {
       return {
         ...column,
