@@ -44,7 +44,8 @@ const ArAging = () => {
   const [formData, setFormData] = useState({
     partyName: 'All',
     date: dayjs().format('YYYY-MM-DD'),
-    branchCode: 'All'
+    branchCode: 'All',
+    base: ''
   });
 
   const [selectedSections, setSelectedSections] = useState({
@@ -74,12 +75,14 @@ const ArAging = () => {
     setFormData({
       partyName: 'All',
       date: dayjs().format('YYYY-MM-DD'),
-      branchCode: 'All'
+      branchCode: 'All',
+      base: ''
     });
     setSelectedSections({
       partyName: false,
       date: true,
-      branchCode: false
+      branchCode: false,
+      base: false
     });
     setFieldErrors({});
     setListView(false);
@@ -148,9 +151,11 @@ const ArAging = () => {
     setIsLoading(true);
     try {
       const queryParams = new URLSearchParams({
-        Asondate: formData.date,
+        asOnDate: formData.date,
+        base: formData.base,
+        branch: formData.branchCode,
         orgId,
-        partyname: formData.partyName
+        partyName: formData.partyName
       });
 
       if (selectedSections.branchCode && formData.branchCode !== 'All') {
@@ -159,12 +164,12 @@ const ArAging = () => {
 
       const response = await apiCalls(
         'get',
-        `/payable/getAPAgeing?${queryParams.toString()}`
+        `/reportController/getARAgeingReport?${queryParams.toString()}`
       );
 
       if (response.status === true) {
-        setRowData(response.paramObjectsMap.mapp || []);
-        
+        setRowData(response.paramObjectsMap.rimReportFillGrid || []);
+
         // Set header fields for AP Ageing report
         setHeaderFields([
           {
@@ -180,7 +185,7 @@ const ArAging = () => {
             value: formData.branchCode
           }
         ]);
-        
+
         setListView(true);
         setOpenModal(true);
       } else {
@@ -198,18 +203,272 @@ const ArAging = () => {
   };
 
   const reportColumns = [
-    { accessorKey: 'docid', header: 'Invoice No', size: 90 },
-    { accessorKey: 'docdate', header: 'Invoice Date', size: 90 },
-    { accessorKey: 'duedate', header: 'Due Date', size: 90 },
-    { accessorKey: 'amount', header: 'Inv. Amount', size: 90 },
-    { accessorKey: 'outstanding', header: 'Outstanding', size: 90 },
-    { accessorKey: 'totaldue', header: 'Total Due', size: 90 },
-    { accessorKey: 'unadjusted', header: 'Unadjusted', size: 90 },
-    { accessorKey: 'mslab1', header: 'Below 30 Days', size: 90 },
-    { accessorKey: 'mslab2', header: 'Days 30 - 60', size: 90 },
-    { accessorKey: 'mslab3', header: 'Days 60 - 90', size: 90 },
-    { accessorKey: 'mslab4', header: 'Days 90 - 120', size: 90 },
-    { accessorKey: 'mslab5', header: 'Days 120+', size: 90 }
+    {
+      accessorKey: 'docId',
+      header: 'Invoice No',
+      size: 110,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'center', padding: '8px' }}>
+          {cell.getValue() || ''}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'docDate',
+      header: 'Invoice Date',
+      size: 110,
+      Cell: ({ cell }) => {
+        const value = cell.getValue();
+        return (
+          <div style={{ textAlign: 'center', paddingRight: '8px' }}>
+            {value ? dayjs(value).format('DD-MM-YYYY') : ''}
+          </div>
+        );
+      },
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'dueDate',
+      header: 'Due Date',
+      size: 110,
+      Cell: ({ cell }) => {
+        const value = cell.getValue();
+        return (
+          <div style={{ textAlign: 'center', padding: '8px' }}>
+            {value ? dayjs(value).format('DD-MM-YYYY') : ''}
+          </div>
+        );
+      },
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'amount',
+      header: 'Inv Amt',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'outstanding',
+      header: 'Outstanding',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'totalDue',
+      header: 'Total Due',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'mSlab1',
+      header: 'Below 30 Days',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'mSlab2',
+      header: 'Days 30-60',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'mSlab3',
+      header: 'Days 60-90',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'mSlab4',
+      header: 'Days 90-120',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'mSlab5',
+      header: 'Days 120+',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
+            : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    }
   ];
 
   const tableOptions = {
@@ -243,122 +502,97 @@ const ArAging = () => {
 
   const handleDownloadExcel = async () => {
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('AP Ageing Report');
+    const sheet = workbook.addWorksheet('AR Ageing Report');
 
-    // ====== SHEET VIEW CONFIGURATION ======
-    sheet.views = [{
-      state: 'frozen',
-      ySplit: 5, // Freeze the first 5 rows (title + headers)
-      activeCell: 'A6'
-    }];
+    // REMOVE FREEZE VIEW — no frozen panes
 
-    // ====== TITLE ======
+    // Report Title
     sheet.mergeCells('A1:L1');
     const titleCell = sheet.getCell('A1');
-    titleCell.value = 'Accounts Payable Ageing Report';
-    titleCell.font = {
-      size: 18,
-      bold: true,
-      color: { argb: 'FF34449B' }
-    };
-    titleCell.alignment = {
-      vertical: 'middle',
-      horizontal: 'center'
-    };
+    titleCell.value = 'Accounts Receivable Ageing Report';
+    titleCell.font = { size: 18, bold: true, color: { argb: 'FF34449B' } };
+    titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
 
-    // ====== HEADER INFORMATION ======
+    // Header Info
     const headerInfo = [
       ...headerFields,
       { label: "Generated By", value: localStorage.getItem('userName') || 'Admin' },
       { label: "Generated On", value: dayjs().format('DD-MM-YYYY HH:mm') }
     ];
 
-    // Add header information rows
     for (let i = 0; i < headerInfo.length; i += 2) {
       const rowIndex = i / 2 + 2;
       const row = sheet.getRow(rowIndex);
-
-      const labelCell1 = row.getCell(1);
-      const valueCell1 = row.getCell(2);
-      labelCell1.value = headerInfo[i].label + ':';
-      labelCell1.font = { bold: true };
-      valueCell1.value = headerInfo[i].value;
-
+      row.getCell(1).value = headerInfo[i].label + ':';
+      row.getCell(1).font = { bold: true };
+      row.getCell(2).value = headerInfo[i].value;
       if (headerInfo[i + 1]) {
-        const labelCell2 = row.getCell(4);
-        const valueCell2 = row.getCell(5);
-        labelCell2.value = headerInfo[i + 1].label + ':';
-        labelCell2.font = { bold: true };
-        valueCell2.value = headerInfo[i + 1].value;
+        row.getCell(4).value = headerInfo[i + 1].label + ':';
+        row.getCell(4).font = { bold: true };
+        row.getCell(5).value = headerInfo[i + 1].value;
       }
     }
 
-    // ====== HEADER ROW ======
-    const headerRow = sheet.addRow(reportColumns.map(col => col.header));
-    headerRow.font = {
-      bold: true,
-      color: { argb: 'FFFFFFFF' }
-    };
-    headerRow.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FF34449B' }
-    };
-    headerRow.alignment = {
-      horizontal: 'center',
-      vertical: 'middle'
-    };
+    // Header Row
+    const headers = [
+      'Invoice No', 'Invoice Date', 'Due Date',
+      'Inv Amt', 'Outstanding', 'Total Due', 'Unadjusted',
+      'Below 30 Days', 'Days 30-60', 'Days 60-90', 'Days 90-120', 'Days 120+'
+    ];
+    const headerRow = sheet.addRow(headers);
+    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF34449B' } };
+    headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
     headerRow.height = 20;
 
-    // ====== DATA ROWS ======
+    headerRow.eachCell(cell => {
+      cell.border = {
+        top: { style: 'thin' }, left: { style: 'thin' },
+        bottom: { style: 'thin' }, right: { style: 'thin' }
+      };
+    });
+
+    // Data Rows
     rowData.forEach(item => {
       const row = sheet.addRow([
-        item.docid || '-',
-        item.docdate ? dayjs(item.docdate).format('DD-MM-YYYY') : '-',
-        item.duedate ? dayjs(item.duedate).format('DD-MM-YYYY') : '-',
-        item.amount,
-        item.outstanding,
-        item.totaldue,
-        item.unadjusted,
-        item.mslab1,
-        item.mslab2,
-        item.mslab3,
-        item.mslab4,
-        item.mslab5
+        item.docId || '-',
+        item.docDate ? dayjs(item.docDate).format('DD-MM-YYYY') : '-',
+        item.dueDate ? dayjs(item.dueDate).format('DD-MM-YYYY') : '-',
+        item.amount ?? 0,
+        item.outstanding ?? 0,
+        item.totalDue ?? 0,
+        item.unadjusted ?? 0,
+        item.mSlab1 ?? 0,
+        item.mSlab2 ?? 0,
+        item.mSlab3 ?? 0,
+        item.mSlab4 ?? 0,
+        item.mSlab5 ?? 0
       ]);
 
-      // Format numeric columns
-      [3, 4, 5, 6, 7, 8, 9, 10, 11].forEach(colIdx => {
-        const cell = row.getCell(colIdx + 1);
-        if (typeof cell.value === 'number') {
-          cell.numFmt = '#,##0.00';
-          cell.alignment = { horizontal: 'right' };
-        }
+      for (let col = 4; col <= 12; col++) {
+        const cell = row.getCell(col);
+        cell.numFmt = '#,##,##0.00';
+        cell.alignment = { horizontal: 'right' };
+      }
+
+      row.eachCell(cell => {
+        cell.border = {
+          top: { style: 'thin' }, left: { style: 'thin' },
+          bottom: { style: 'thin' }, right: { style: 'thin' }
+        };
       });
     });
 
-    // ====== COLUMN WIDTHS ======
-    sheet.columns = [
-      { width: 20 }, // Invoice No
-      { width: 15 }, // Invoice Date
-      { width: 15 }, // Due Date
-      { width: 15 }, // Inv. Amount
-      { width: 15 }, // Outstanding
-      { width: 15 }, // Total Due
-      { width: 15 }, // Unadjusted
-      { width: 15 }, // Below 30 Days
-      { width: 15 }, // Days 30 - 60
-      { width: 15 }, // Days 60 - 90
-      { width: 15 }, // Days 90 - 120
-      { width: 15 }  // Days 120+
-    ];
+    // Column Widths
+    sheet.columns = Array(12).fill({ width: 15 });
+    sheet.getColumn(1).width = 20;
 
-    // ====== FINALIZE AND SAVE ======
+    // Export
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     });
-    saveAs(blob, `AP_Ageing_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
+    saveAs(blob, `AR_Ageing_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
   };
 
   return (
@@ -382,6 +616,12 @@ const ArAging = () => {
             <FormControlLabel
               control={<Checkbox checked={selectedSections.branchCode} onChange={handleChange} name="branchCode" color="secondary" />}
               label="Branch Name"
+            />
+          </div>
+          <div className="col-md-2 mb-3">
+            <FormControlLabel
+              control={<Checkbox checked={selectedSections.branchCode} onChange={handleChange} name="base" color="secondary" />}
+              label="Base"
             />
           </div>
         </div>
@@ -456,6 +696,24 @@ const ArAging = () => {
           </div>
         )}
 
+        {selectedSections.base && (
+          <div className="col-md-3 mb-3">
+            <FormControl size="small" variant="outlined" fullWidth>
+              <InputLabel id="base-label">Base</InputLabel>
+              <Select
+                labelId="base-label"
+                label="Base"
+                value={formData.base}
+                onChange={handleInputChange}
+                name="base"
+              >
+                <MenuItem value="Yes">Yes</MenuItem>
+                <MenuItem value="No">No</MenuItem>
+              </Select>
+            </FormControl>
+          </div>
+        )}
+
         {/* Action Buttons */}
         {(selectedSections.partyName || selectedSections.date || selectedSections.branchCode) && (
           <div className="col-md-3 mb-3">
@@ -508,7 +766,7 @@ const ArAging = () => {
             tableOptions={tableOptions}
             handleDownloadExcel={handleDownloadExcel}
             headerFields={headerFields}
-            sumFields={['amount', 'outstanding', 'totaldue']}
+          // sumFields={['amount', 'outstanding', 'totaldue']}
           />
         </DialogContent>
       </Dialog>
@@ -526,7 +784,7 @@ const ArAging = () => {
               muiTableContainerProps: { sx: { maxHeight: '60vh' } }
             }}
             headerFields={headerFields}
-            sumFields={['amount', 'outstanding', 'totaldue',]}
+          // sumFields={['amount', 'outstanding', 'totaldue',]}
           />
         </div>
       )}

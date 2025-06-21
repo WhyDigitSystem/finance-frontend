@@ -159,6 +159,7 @@ const APaging = () => {
       const queryParams = new URLSearchParams({
         asdate: formData.date,
         orgId,
+        branch: formData.branchCode,
         partyname: formData.partyName === 'All' ? 'ALL' : formData.partyName,
         baseType: formData.baseType
       });
@@ -534,13 +535,6 @@ const APaging = () => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('AP Ageing Report');
 
-    // ====== SHEET VIEW CONFIGURATION ======
-    sheet.views = [{
-      state: 'frozen',
-      ySplit: 5, // Freeze the first 5 rows (title + headers)
-      activeCell: 'A6'
-    }];
-
     // ====== TITLE ======
     sheet.mergeCells('A1:J1');
     const titleCell = sheet.getCell('A1');
@@ -562,7 +556,6 @@ const APaging = () => {
       { label: "Generated On", value: dayjs().format('DD-MM-YYYY HH:mm') }
     ];
 
-    // Add header information rows
     for (let i = 0; i < headerInfo.length; i += 2) {
       const rowIndex = i / 2 + 2;
       const row = sheet.getRow(rowIndex);
@@ -618,7 +611,7 @@ const APaging = () => {
       [3, 4, 5, 6].forEach(colIdx => {
         const cell = row.getCell(colIdx + 1);
         if (typeof cell.value === 'number') {
-          cell.numFmt = '#,##0.00';
+          cell.numFmt = '#,##0.00'; // Indian-style comma format
           cell.alignment = { horizontal: 'right' };
         }
       });

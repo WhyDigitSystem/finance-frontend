@@ -120,25 +120,53 @@ function LedgerReport() {
         setListViewData(response.paramObjectsMap.companyVO.reverse());
         setCompanyName(particularCompany.companyName || '');
 
-        // ✅ Process and store company logo as ArrayBuffer
-        if (
-          particularCompany.companyLogo &&
-          particularCompany.companyLogo.startsWith('data:image')
-        ) {
-          const base64Data = particularCompany.companyLogo.split(',')[1];
-          const byteCharacters = atob(base64Data);
-          const byteNumbers = new Array(byteCharacters.length);
-          for (let i = 0; i < byteCharacters.length; i++) {
-            byteNumbers[i] = byteCharacters.charCodeAt(i);
+        // Handle blob image if it comes as a blob URL
+        if (particularCompany.companyLogo && typeof particularCompany.companyLogo === 'string') {
+          if (particularCompany.companyLogo.startsWith('blob:')) {
+            // Fetch the blob and convert to base64
+            try {
+              const blobResponse = await fetch(particularCompany.companyLogo);
+              const blob = await blobResponse.blob();
+              const base64Image = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(blob);
+              });
+
+              // Extract image type and data
+              const matches = base64Image.match(/^data:(image\/(png|jpeg|jpg));base64,(.+)$/);
+              if (matches) {
+                const extension = matches[2];
+                const base64Data = matches[3];
+                const byteArray = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+
+                setCompanyLogo({
+                  buffer: byteArray,
+                  extension,
+                  base64: base64Image // Store base64 for potential other uses
+                });
+              }
+            } catch (error) {
+              console.error('Error processing blob image:', error);
+            }
+          } else if (particularCompany.companyLogo.startsWith('data:image')) {
+            // Handle base64 image directly
+            const [meta, base64Data] = particularCompany.companyLogo.split(',');
+            const extension = meta.includes('jpeg') ? 'jpeg' : 'png';
+
+            const byteArray = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+            setCompanyLogo({
+              buffer: byteArray,
+              extension,
+              base64: particularCompany.companyLogo
+            });
           }
-          const byteArray = new Uint8Array(byteNumbers);
-          setCompanyLogo(byteArray.buffer); // ✅ Set as ArrayBuffer
         }
 
         setFormData({
           ...formData,
           companyCode: particularCompany.companyCode,
-          companyName: particularCompany.companyName
+          companyName: particularCompany.companyName,
         });
       } else {
         console.error('API Error:', response);
@@ -514,152 +542,175 @@ function LedgerReport() {
   };
 
   const handleDownloadExcel = async () => {
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('Ledger Report');
-
-    sheet.views = [{ state: 'frozen', ySplit: 12, activeCell: 'A13' }]; // Freeze after headers
-
-    // ====== MERGE CELLS FOR IMAGE AND TITLE ======
-    sheet.mergeCells('A1:B6'); // For Logo
-    sheet.mergeCells('C1:I1'); // For Company Name
-    sheet.mergeCells('A7:I7'); // For Report Title
-
-    // ====== LOGO ======
     try {
-      if (companyLogo) {
-        const logoId = workbook.addImage({
-          buffer: companyLogo,
-          extension: 'png', // or 'jpeg'
-        });
+      // Create a new workbook
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = companyName || 'Ledger Report';
+      workbook.created = new Date();
 
-        sheet.addImage(logoId, {
-          tl: { col: 0, row: 0 },
-          ext: { width: 160, height: 80 },
-        });
-      } else {
-        const logoPlaceholder = sheet.getCell('A1');
-        logoPlaceholder.value = 'Company Logo';
-        logoPlaceholder.font = { bold: true, color: { argb: 'FF34449B' } };
-        logoPlaceholder.alignment = { vertical: 'middle', horizontal: 'center' };
-      }
-    } catch (err) {
-      console.error('Error adding logo to Excel:', err);
-    }
+      // Add a worksheet
+      const sheet = workbook.addWorksheet('Ledger Report');
+      sheet.state = 'visible';
 
-    // ====== COMPANY NAME ======
-    const companyCell = sheet.getCell('C1');
-    companyCell.value = companyName || 'Company Name';
-    companyCell.font = { size: 16, bold: true, color: { argb: 'FF34449B' } };
-    companyCell.alignment = { vertical: 'middle', horizontal: 'center' };
+      // Freeze header rows
+      sheet.views = [{ state: 'frozen', ySplit: 12, activeCell: 'A13' }];
 
-    // ====== REPORT TITLE ======
-    const titleCell = sheet.getCell('A7');
-    titleCell.value = 'LEDGER REPORT';
-    titleCell.font = { size: 18, bold: true, color: { argb: 'FF34449B' } };
-    titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+      // ====== MERGE CELLS FOR HEADER ======
+      sheet.mergeCells('A1:B6'); // Logo area
+      sheet.mergeCells('C1:I1'); // Company name
+      sheet.mergeCells('A7:I7'); // Report title
 
-    // ====== HEADER INFORMATION ======
-    const headers = [
-      { label: 'From Date', value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : '' },
-      { label: 'To Date', value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : '' },
-      { label: 'Account Name', value: formData.accountName !== 'All' ? formData.accountName : 'All' },
-      { label: 'Branch Code', value: formData.branchCode !== 'All' ? formData.branchCode : 'All' },
-      { label: 'With Details', value: formData.withDetails },
-      { label: 'Generated By', value: localStorage.getItem('userName') || 'Admin' },
-      { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
-    ];
+      // ====== COMPANY LOGO ======
+      try {
+        if (companyLogo?.buffer) {
+          const imageId = workbook.addImage({
+            buffer: companyLogo.buffer,
+            extension: companyLogo.extension || 'png',
+          });
 
-    for (let i = 0; i < headers.length; i += 2) {
-      const rowIndex = Math.floor(i / 2) + 8; // Start from row 8 (after title)
-      const row = sheet.getRow(rowIndex);
-
-      const labelCell1 = row.getCell(1);
-      const valueCell1 = row.getCell(2);
-      labelCell1.value = headers[i].label;
-      labelCell1.font = { bold: true };
-      valueCell1.value = headers[i].value;
-
-      if (headers[i + 1]) {
-        const labelCell2 = row.getCell(5);
-        const valueCell2 = row.getCell(6);
-        labelCell2.value = headers[i + 1].label;
-        labelCell2.font = { bold: true };
-        valueCell2.value = headers[i + 1].value;
-      }
-    }
-
-    // ====== TABLE HEADERS ======
-    const headerRow = sheet.getRow(12); // Row 12 (after header info)
-    reportColumns.forEach((col, index) => {
-      const cell = headerRow.getCell(index + 1);
-      cell.value = col.header;
-      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FF34449B' }
-      };
-      cell.alignment = { horizontal: 'center', vertical: 'middle' };
-      cell.border = {
-        top: { style: 'thin' },
-        left: { style: 'thin' },
-        bottom: { style: 'thin' },
-        right: { style: 'thin' }
-      };
-    });
-    headerRow.height = 20;
-
-    // ====== DATA ROWS ======
-    rowData.forEach((item) => {
-      const row = sheet.addRow([
-        item.Vid || '-',
-        item.Vdate ? dayjs(item.Vdate).format('DD-MM-YYYY') : '-',
-        item.PartyName || '-',
-        item.ndAmount,
-        item.NcAmount,
-        item.Currency || '-',
-        item.dbAmount,
-        item.CrAmount,
-        item.Narration || '-'
-      ]);
-
-      [3, 4, 6, 7].forEach(colIdx => {
-        const cell = row.getCell(colIdx + 1);
-        if (typeof cell.value === 'number') {
-          cell.numFmt = '#,##0.00';
-          cell.alignment = { horizontal: 'right' };
+          sheet.addImage(imageId, {
+            tl: { col: 0, row: 0 },
+            ext: { width: 160, height: 80 },
+          });
+        } else {
+          // Fallback if no logo
+          const logoCell = sheet.getCell('A1');
+          logoCell.value = 'Company Logo';
+          logoCell.font = { bold: true, color: { argb: 'FF34449B' } };
+          logoCell.alignment = { vertical: 'middle', horizontal: 'center' };
         }
-      });
+      } catch (err) {
+        console.error('Error adding logo:', err);
+      }
 
-      row.eachCell({ includeEmpty: true }, (cell) => {
+      // ====== COMPANY NAME ======
+      const companyCell = sheet.getCell('C1');
+      companyCell.value = companyName || 'Company Name';
+      companyCell.font = { size: 16, bold: true, color: { argb: 'FF34449B' } };
+      companyCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+      // ====== REPORT TITLE ======
+      const titleCell = sheet.getCell('A7');
+      titleCell.value = 'LEDGER REPORT';
+      titleCell.font = { size: 18, bold: true, color: { argb: 'FF34449B' } };
+      titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+
+      // ====== REPORT METADATA ======
+      const metadata = [
+        { label: 'From Date', value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : 'N/A' },
+        { label: 'To Date', value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : 'N/A' },
+        { label: 'Account Name', value: formData.accountName !== 'All' ? formData.accountName : 'All' },
+        { label: 'Branch Code', value: formData.branchCode !== 'All' ? formData.branchCode : 'All' },
+        { label: 'With Details', value: formData.withDetails },
+        { label: 'Generated By', value: localStorage.getItem('userName') || 'System' },
+        { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') },
+      ];
+
+      // Add metadata in two columns
+      for (let i = 0; i < metadata.length; i += 2) {
+        const rowIndex = Math.floor(i / 2) + 8;
+        const row = sheet.getRow(rowIndex);
+
+        // First column pair
+        const labelCell1 = row.getCell(1);
+        const valueCell1 = row.getCell(2);
+        labelCell1.value = metadata[i].label;
+        labelCell1.font = { bold: true };
+        valueCell1.value = metadata[i].value;
+
+        // Second column pair (if exists)
+        if (metadata[i + 1]) {
+          const labelCell2 = row.getCell(5);
+          const valueCell2 = row.getCell(6);
+          labelCell2.value = metadata[i + 1].label;
+          labelCell2.font = { bold: true };
+          valueCell2.value = metadata[i + 1].value;
+        }
+      }
+
+      // ====== TABLE HEADERS ======
+      const headerRow = sheet.getRow(12);
+      reportColumns.forEach((col, index) => {
+        const cell = headerRow.getCell(index + 1);
+        cell.value = col.header;
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF34449B' }, // Dark blue background
+        };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
         cell.border = {
-          top: { style: 'thin' },
-          left: { style: 'thin' },
-          bottom: { style: 'thin' },
-          right: { style: 'thin' }
+          top: { style: 'thin', color: { argb: 'FF000000' } },
+          left: { style: 'thin', color: { argb: 'FF000000' } },
+          bottom: { style: 'thin', color: { argb: 'FF000000' } },
+          right: { style: 'thin', color: { argb: 'FF000000' } },
         };
       });
-    });
+      headerRow.height = 20;
 
-    // ====== COLUMN WIDTHS ======
-    sheet.columns = [
-      { width: 15 },
-      { width: 15 },
-      { width: 40 },
-      { width: 15 },
-      { width: 15 },
-      { width: 12 },
-      { width: 15 },
-      { width: 15 },
-      { width: 40 }
-    ];
+      // ====== TABLE DATA ======
+      rowData.forEach((item) => {
+        const row = sheet.addRow([
+          item.Vid || '-',
+          item.Vdate ? dayjs(item.Vdate).format('DD-MM-YYYY') : '-',
+          item.PartyName || '-',
+          item.ndAmount,
+          item.NcAmount,
+          item.Currency || '-',
+          item.dbAmount,
+          item.CrAmount,
+          item.Narration || '-',
+        ]);
 
-    // ====== DOWNLOAD EXCEL ======
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    });
-    saveAs(blob, `Ledger_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
+        // Format numeric cells
+        [4, 5, 7, 8].forEach(colIndex => {
+          const cell = row.getCell(colIndex);
+          if (typeof cell.value === 'number') {
+            cell.numFmt = '#,##0.00';
+            cell.alignment = { horizontal: 'right' };
+          }
+        });
+
+        // Add borders to all cells
+        row.eachCell({ includeEmpty: true }, (cell) => {
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FF000000' } },
+            left: { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'thin', color: { argb: 'FF000000' } },
+            right: { style: 'thin', color: { argb: 'FF000000' } },
+          };
+        });
+      });
+
+      // ====== COLUMN WIDTHS ======
+      sheet.columns = [
+        { width: 15 }, // Vid
+        { width: 15 }, // Vdate
+        { width: 40 }, // PartyName
+        { width: 15 }, // ndAmount
+        { width: 15 }, // NcAmount
+        { width: 12 }, // Currency
+        { width: 15 }, // dbAmount
+        { width: 15 }, // CrAmount
+        { width: 40 }, // Narration
+      ];
+
+      // ====== DOWNLOAD THE FILE ======
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      });
+
+      saveAs(
+        blob,
+        `Ledger_Report_${companyName || ''}_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`
+      );
+
+    } catch (error) {
+      console.error('Error generating Excel:', error);
+      showToast('error', 'Failed to generate Excel file');
+    }
   };
 
   // Common table options
