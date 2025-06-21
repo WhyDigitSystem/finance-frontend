@@ -51,7 +51,8 @@ const ArAging = () => {
   const [selectedSections, setSelectedSections] = useState({
     partyName: false,
     date: true,
-    branchCode: false
+    branchCode: false,
+    base: false
   });
 
   const handleChange = (e) => {
@@ -620,7 +621,7 @@ const ArAging = () => {
           </div>
           <div className="col-md-2 mb-3">
             <FormControlLabel
-              control={<Checkbox checked={selectedSections.branchCode} onChange={handleChange} name="base" color="secondary" />}
+              control={<Checkbox checked={selectedSections.base} onChange={handleChange} name="base" color="secondary" />}
               label="Base"
             />
           </div>
