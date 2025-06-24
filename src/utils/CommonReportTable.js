@@ -63,62 +63,26 @@ const CommonReportTable = ({
     outstanding: 'OutStanding'
   };
 
-  // const customColumns = columns.map((column) => {
-  //   if (column.accessorKey?.toLowerCase().includes('date')) {
-  //     return {
-  //       ...column,
-  //       Cell: ({ cell }) => formatDate(cell.getValue()),
-  //     };
-  //   }
-
-  //   if (column.accessorKey === 'active') {
-  //     return {
-  //       ...column,
-  //       Cell: ({ cell }) => (
-  //         <Chip
-  //           label={cell.getValue() === true ? 'Active' : 'Inactive'}
-  //           sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX}
-  //         />
-  //       ),
-  //     };
-  //   }
-
-  //   if (column.accessorKey === 'closed') {
-  //     return {
-  //       ...column,
-  //       Cell: ({ cell }) => (
-  //         <Chip
-  //           label={cell.getValue() === 'Yes' ? 'Yes' : 'No'}
-  //           sx={cell.getValue() === 'Yes' ? chipSuccessSX : chipErrorSX}
-  //         />
-  //       ),
-  //     };
-  //   }
-
-  //   return column;
-  // });
-
-  //
-  const customLocalization = {
-    toggleDensity: 'Wide View'
-  };
-
-  //
   const customColumns = columns.map((column) => {
-    const accessorKey = column.accessorKey?.toLowerCase();
+    // if (column.accessorKey?.toLowerCase().includes('date')) {
+    //   return {
+    //     ...column,
+    //     Cell: ({ cell }) => formatDate(cell.getValue());
+    //     //
 
-    // ✅ Date formatting
-    if (accessorKey?.includes('date')) {
+    //   };
+    // }
+
+    if (column.accessorKey?.toLowerCase().includes('date')) {
       return {
         ...column,
         Cell: ({ cell }) => {
           const value = cell.getValue();
-          return value ? formatDate(value) : '';
+          return value ? formatDate(value) : ''; // Only format if value exists
         }
       };
     }
 
-    // ✅ Active status chip
     if (column.accessorKey === 'active') {
       return {
         ...column,
@@ -128,7 +92,6 @@ const CommonReportTable = ({
       };
     }
 
-    // ✅ Closed status chip
     if (column.accessorKey === 'closed') {
       return {
         ...column,
@@ -138,17 +101,12 @@ const CommonReportTable = ({
       };
     }
 
-    // ✅ Default: Show empty string if null/undefined/empty
-    return {
-      ...column,
-      Cell: ({ cell }) => {
-        const value = cell.getValue();
-        return value === null || value === undefined || value === '' ? '' : value;
-      }
-    };
+    return column;
   });
 
-  //
+  const customLocalization = {
+    toggleDensity: 'Wide View'
+  };
 
   return (
     <>

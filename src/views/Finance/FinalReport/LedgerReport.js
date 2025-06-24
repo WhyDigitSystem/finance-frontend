@@ -404,7 +404,7 @@ function LedgerReport() {
       accessorKey: 'Narration',
       header: 'Narration',
       size: 100,
-      Cell: ({ cell }) => <div style={{ textAlign: 'left', paddingLeft: '10px', padding: '8px' }}>{cell.getValue() || '-'}</div>,
+      Cell: ({ cell }) => <div style={{ textAlign: 'left', paddingLeft: '10px', padding: '8px' }}>{cell.getValue() || ''}</div>,
       muiTableHeadCellProps: {
         align: 'left',
         sx: {
