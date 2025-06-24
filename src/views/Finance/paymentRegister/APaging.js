@@ -306,7 +306,7 @@ const APaging = () => {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
               })
-            : '-'}
+            : ''}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -331,7 +331,7 @@ const APaging = () => {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
               })
-            : '-'}
+            : ''}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -356,7 +356,7 @@ const APaging = () => {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
               })
-            : '-'}
+            : ''}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -381,7 +381,7 @@ const APaging = () => {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
               })
-            : '-'}
+            : ''}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -406,7 +406,7 @@ const APaging = () => {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
               })
-            : '-'}
+            : ''}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -431,7 +431,7 @@ const APaging = () => {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
               })
-            : '-'}
+            : ''}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -456,7 +456,7 @@ const APaging = () => {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
               })
-            : '-'}
+            : ''}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -481,7 +481,7 @@ const APaging = () => {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2
               })
-            : '-'}
+            : ''}
         </div>
       ),
       muiTableHeadCellProps: {

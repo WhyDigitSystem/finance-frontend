@@ -1,5 +1,19 @@
 import React from 'react';
-import { TextField, Checkbox, FormControlLabel, FormHelperText, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import {
+  TextField,
+  Checkbox,
+  FormControlLabel,
+  FormHelperText,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent
+} from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { useEffect, useState } from 'react';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/';
@@ -14,9 +28,26 @@ import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
 import CommonFilePL from 'utils/CommonFilePL';
 import CircularProgress from '@mui/material/CircularProgress';
-import { AnimatePresence, motion } from 'framer-motion';
+import Slide from '@mui/material/Slide';
+
+const Transition = React.forwardRef(function Transition(props, ref) {
+  return (
+    <Slide
+      direction="down"
+      ref={ref}
+      {...props}
+      timeout={{
+        appear: 1000,
+        enter: 1000,
+        exit: 1000
+      }}
+    />
+  );
+});
 
 function PartyLedger() {
+  const [openModal, setOpenModal] = useState(false);
+  //
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -150,7 +181,8 @@ function PartyLedger() {
         );
         setRowData(response.paramObjectsMap.partyMasterVO || []);
         setIsLoading(false);
-        setListView(true);
+        setOpenModal(true);
+        setListView(false);
       } catch (error) {
         console.error('Error fetching gate passes:', error);
         showToast('error', 'Report Fetch failed');
@@ -161,7 +193,7 @@ function PartyLedger() {
 
   const reportColumns = [
     { accessorKey: 'DocId', header: 'Doc No', size: 50 },
-    { accessorKey: 'DocDate', header: 'Date', size: 50 },
+    { accessorKey: 'DocDate', header: 'Doc Date', size: 50 },
     { accessorKey: 'RefNo', header: 'Reference No', size: 50 },
     { accessorKey: 'RefDate', header: 'Reference Date', size: 50 },
     // { accessorKey: 'SuppRefNo', header: 'Supplier Code', size: 30 },
@@ -191,7 +223,11 @@ function PartyLedger() {
   //     toDate: today.format('YYYY-MM-DD')
   //   }));
   // }, []);
-
+  //
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    // setListView(true);
+  };
   return (
     <>
       <ToastContainer />
@@ -323,18 +359,56 @@ function PartyLedger() {
             />
           </div>
         )} */}
-        <AnimatePresence>
-          {listView && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.5 }}
+
+        {/*  */}
+        <Dialog
+          open={openModal}
+          onClose={handleCloseModal}
+          fullWidth
+          maxWidth="xl"
+          sx={{
+            '& .MuiDialog-paper': {
+              borderRadius: '12px',
+              overflow: 'hidden'
+            }
+          }}
+          TransitionComponent={Transition}
+        >
+          <DialogTitle
+            sx={{
+              m: 0,
+              p: 0,
+              px: 3,
+              backgroundColor: '#34449B',
+              color: 'white',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}
+          >
+            <span>Party Ledger Report</span>
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseModal}
+              sx={{
+                color: 'white'
+              }}
             >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent sx={{ padding: 0 }}>
+            <div style={{ flex: 1, overflow: 'auto' }}>
               <CommonFilePL data={rowData} columns={reportColumns} isListView={listView} fileName={'Party Ledger'} filters={formData} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+          </DialogContent>
+        </Dialog>
+        {/*  */}
+
+        {/* {listView && (
+          <CommonFilePL data={rowData} columns={reportColumns} isListView={listView} fileName={'Party Ledger'} filters={formData} />
+        )} */}
+
         {/* isloading */}
         {isLoading && (
           <div

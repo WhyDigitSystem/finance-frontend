@@ -251,7 +251,7 @@ function LedgerReport() {
     },
     {
       accessorKey: 'Vdate',
-      header: 'Invoice Date',
+      header: 'Doc Date',
       size: 110,
       Cell: ({ cell }) => {
         const value = cell.getValue();
