@@ -226,6 +226,22 @@ const APaging = () => {
 
   const reportColumns = [
     {
+      accessorKey: 'partyName',
+      header: 'Party Name',
+      size: 110,
+      Cell: ({ cell }) => <div style={{ textAlign: 'center', padding: '8px' }}>{cell.getValue() || ''}</div>,
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
       accessorKey: 'docid',
       header: 'Doc No',
       size: 110,
