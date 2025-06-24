@@ -25,8 +25,8 @@ function PartyLedger() {
   const [partyTypeList, setPartyTypeList] = useState([]);
   const [branchCodeList, setBranchCodeList] = useState([]);
   const [formData, setFormData] = useState({
-    fromDate: null,
-    toDate: null,
+    fromDate: dayjs().startOf('month').format('YYYY-MM-DD'),
+    toDate: dayjs().format('YYYY-MM-DD'),
     branch: 'All',
     partyName: '',
     partyType: ''
@@ -108,8 +108,8 @@ function PartyLedger() {
     setListView(false);
 
     setFormData({
-      fromDate: null,
-      toDate: null,
+      fromDate: dayjs().startOf('month').format('YYYY-MM-DD'),
+      toDate: dayjs().format('YYYY-MM-DD'),
       branch: 'All',
       partyName: '',
       partyType: ''
@@ -179,6 +179,19 @@ function PartyLedger() {
       size: 50
     }
   ];
+
+  //
+  // useEffect(() => {
+  //   const today = dayjs();
+  //   const startOfMonth = dayjs().startOf('month');
+
+  //   setFormData((prevData) => ({
+  //     ...prevData,
+  //     fromDate: startOfMonth.format('YYYY-MM-DD'),
+  //     toDate: today.format('YYYY-MM-DD')
+  //   }));
+  // }, []);
+
   return (
     <>
       <ToastContainer />

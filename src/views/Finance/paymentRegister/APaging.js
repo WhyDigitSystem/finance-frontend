@@ -50,7 +50,7 @@ const APaging = () => {
     msLab2: '',
     msLab3: '',
     msLab4: '',
-    msLab5: '',
+    msLab5: ''
   });
 
   const [selectedSections, setSelectedSections] = useState({
@@ -103,10 +103,7 @@ const APaging = () => {
 
   const getPartyName = async () => {
     try {
-      const response = await apiCalls(
-        'get',
-        `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=vendor`
-      );
+      const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=vendor`);
       setPartyNameList(response.paramObjectsMap.partyMasterVO || []);
     } catch (error) {
       console.error('Error fetching party names:', error);
@@ -168,14 +165,11 @@ const APaging = () => {
         queryParams.append('branch', formData.branchCode);
       }
 
-      const response = await apiCalls(
-        'get',
-        `/reportController/getApAgeing?${queryParams.toString()}`
-      );
+      const response = await apiCalls('get', `/reportController/getApAgeing?${queryParams.toString()}`);
 
       if (response.status === true) {
         // Transform the API response data to match our table structure
-        const transformedData = response.paramObjectsMap.mapp.map(item => ({
+        const transformedData = response.paramObjectsMap.mapp.map((item) => ({
           docid: item.docId || item.refNo,
           docdate: item.docDate || item.refDate,
           duedate: item.dueDate,
@@ -200,19 +194,19 @@ const APaging = () => {
         // Set header fields for AP Ageing report
         setHeaderFields([
           {
-            label: "As on Date",
+            label: 'As on Date',
             value: formData.date ? dayjs(formData.date).format('DD-MM-YYYY') : ''
           },
           {
-            label: "Party Name",
+            label: 'Party Name',
             value: formData.partyName === 'All' ? 'ALL' : formData.partyName
           },
           {
-            label: "Branch Name",
+            label: 'Branch Name',
             value: formData.branchCode === 'All' ? 'ALL' : formData.branchCode
           },
           {
-            label: "Base Type",
+            label: 'Base Type',
             value: formData.baseType
           }
         ]);
@@ -220,10 +214,7 @@ const APaging = () => {
         setListView(true);
         setOpenModal(true);
       } else {
-        showToast(
-          'error',
-          response.paramObjectsMap?.message || 'Report Fetch failed'
-        );
+        showToast('error', response.paramObjectsMap?.message || 'Report Fetch failed');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -238,11 +229,7 @@ const APaging = () => {
       accessorKey: 'docid',
       header: 'Doc No',
       size: 110,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'center', padding: '8px' }}>
-          {cell.getValue() || ''}
-        </div>
-      ),
+      Cell: ({ cell }) => <div style={{ textAlign: 'center', padding: '8px' }}>{cell.getValue() || ''}</div>,
       muiTableHeadCellProps: {
         align: 'center',
         sx: {
@@ -260,11 +247,7 @@ const APaging = () => {
       size: 110,
       Cell: ({ cell }) => {
         const value = cell.getValue();
-        return (
-          <div style={{ textAlign: 'center', padding: '8px' }}>
-            {value ? dayjs(value).format('DD-MM-YYYY') : ''}
-          </div>
-        );
+        return <div style={{ textAlign: 'center', padding: '8px' }}>{value ? dayjs(value).format('DD-MM-YYYY') : ''}</div>;
       },
       muiTableHeadCellProps: {
         align: 'center',
@@ -283,11 +266,7 @@ const APaging = () => {
       size: 110,
       Cell: ({ cell }) => {
         const value = cell.getValue();
-        return (
-          <div style={{ textAlign: 'center', padding: '8px' }}>
-            {value ? dayjs(value).format('DD-MM-YYYY') : ''}
-          </div>
-        );
+        return <div style={{ textAlign: 'center', padding: '8px' }}>{value ? dayjs(value).format('DD-MM-YYYY') : ''}</div>;
       },
       muiTableHeadCellProps: {
         align: 'center',
@@ -308,9 +287,9 @@ const APaging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -333,9 +312,9 @@ const APaging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -358,9 +337,9 @@ const APaging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -383,9 +362,9 @@ const APaging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -408,9 +387,9 @@ const APaging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -433,9 +412,9 @@ const APaging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -458,9 +437,9 @@ const APaging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -483,9 +462,9 @@ const APaging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -552,8 +531,8 @@ const APaging = () => {
     // ====== HEADER INFORMATION ======
     const headerInfo = [
       ...headerFields,
-      { label: "Generated By", value: localStorage.getItem('userName') || 'Admin' },
-      { label: "Generated On", value: dayjs().format('DD-MM-YYYY HH:mm') }
+      { label: 'Generated By', value: localStorage.getItem('userName') || 'Admin' },
+      { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
     ];
 
     for (let i = 0; i < headerInfo.length; i += 2) {
@@ -576,7 +555,7 @@ const APaging = () => {
     }
 
     // ====== HEADER ROW ======
-    const headerRow = sheet.addRow(reportColumns.map(col => col.header));
+    const headerRow = sheet.addRow(reportColumns.map((col) => col.header));
     headerRow.font = {
       bold: true,
       color: { argb: 'FFFFFFFF' }
@@ -593,7 +572,7 @@ const APaging = () => {
     headerRow.height = 20;
 
     // ====== DATA ROWS ======
-    rowData.forEach(item => {
+    rowData.forEach((item) => {
       const row = sheet.addRow([
         item.docid || '-',
         item.docdate ? dayjs(item.docdate).format('DD-MM-YYYY') : '-',
@@ -608,7 +587,7 @@ const APaging = () => {
       ]);
 
       // Format numeric columns
-      [3, 4, 5, 6].forEach(colIdx => {
+      [3, 4, 5, 6].forEach((colIdx) => {
         const cell = row.getCell(colIdx + 1);
         if (typeof cell.value === 'number') {
           cell.numFmt = '#,##0.00'; // Indian-style comma format
@@ -628,7 +607,7 @@ const APaging = () => {
       { width: 15 }, // Unadjusted
       { width: 30 }, // Party Name
       { width: 15 }, // Branch
-      { width: 15 }  // Party Type
+      { width: 15 } // Party Type
     ];
 
     // ====== FINALIZE AND SAVE ======
@@ -662,10 +641,10 @@ const APaging = () => {
               label="Branch Name"
             />
           </div>
-          <div className="col-md-2 mb-3">
+          <div className="col-md-4 mb-3">
             <FormControlLabel
               control={<Checkbox checked={selectedSections.baseType} onChange={handleChange} name="baseType" color="secondary" />}
-              label="Base Type"
+              label="Currency Type"
             />
           </div>
         </div>
@@ -744,14 +723,8 @@ const APaging = () => {
         {selectedSections.baseType && (
           <div className="col-md-3 mb-3">
             <FormControl size="small" variant="outlined" fullWidth>
-              <InputLabel id="baseType-label">Base Type</InputLabel>
-              <Select
-                labelId="baseType-label"
-                label="Base Type"
-                value={formData.baseType}
-                onChange={handleInputChange}
-                name="baseType"
-              >
+              <InputLabel id="baseType-label">Currency Type</InputLabel>
+              <Select labelId="baseType-label" label="Currency Type" value={formData.baseType} onChange={handleInputChange} name="baseType">
                 <MenuItem value="Native">Native</MenuItem>
                 <MenuItem value="Base">Base</MenuItem>
               </Select>
@@ -785,21 +758,19 @@ const APaging = () => {
           }
         }}
       >
-        <DialogTitle sx={{
-          m: 0,
-          p: 1,
-          backgroundColor: '#34449B',
-          color: 'white',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <DialogTitle
+          sx={{
+            m: 0,
+            p: 1,
+            backgroundColor: '#34449B',
+            color: 'white',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
           <span>Accounts Payable Ageing Report</span>
-          <IconButton
-            aria-label="close"
-            onClick={handleCloseModal}
-            sx={{ color: 'white' }}
-          >
+          <IconButton aria-label="close" onClick={handleCloseModal} sx={{ color: 'white' }}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
@@ -807,11 +778,11 @@ const APaging = () => {
           <CommonReportTable
             data={rowData}
             columns={reportColumns}
-            fileName={"AP Ageing Report"}
+            fileName={'AP Ageing Report'}
             tableOptions={tableOptions}
             handleDownloadExcel={handleDownloadExcel}
             headerFields={headerFields}
-          // sumFields={['amount', 'outstanding', 'totaldue']}
+            // sumFields={['amount', 'outstanding', 'totaldue']}
           />
         </DialogContent>
       </Dialog>
@@ -821,7 +792,7 @@ const APaging = () => {
           <CommonReportTable
             data={rowData}
             columns={reportColumns}
-            fileName={"AP Ageing Report"}
+            fileName={'AP Ageing Report'}
             isListView={true}
             handleDownloadExcel={handleDownloadExcel}
             tableOptions={{
@@ -829,7 +800,7 @@ const APaging = () => {
               muiTableContainerProps: { sx: { maxHeight: '60vh' } }
             }}
             headerFields={headerFields}
-          // sumFields={['amount', 'outstanding', 'totaldue']}
+            // sumFields={['amount', 'outstanding', 'totaldue']}
           />
         </div>
       )}

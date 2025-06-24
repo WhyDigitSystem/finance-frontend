@@ -18,7 +18,7 @@ import {
   Tooltip
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import ClearIcon from '@mui/icons-material/Clear';
 import ActionButton from 'utils/ActionButton';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -46,7 +46,7 @@ function LedgerReport() {
   const [openModal, setOpenModal] = useState(false);
   const [selectedSections, setSelectedSections] = useState({
     accountName: false,
-    branchCode: false,
+    branchCode: false
   });
   const [headerFields, setHeaderFields] = useState([]);
   const [companyName, setCompanyName] = useState('');
@@ -56,14 +56,14 @@ function LedgerReport() {
     toDate: null,
     accountName: 'All',
     branchCode: 'All',
-    withDetails: 'YES',
+    withDetails: 'YES'
   });
 
   const [fieldErrors, setFieldErrors] = useState({
     fromDate: '',
     toDate: '',
     accountName: '',
-    branchCode: '',
+    branchCode: ''
   });
 
   const handleCheckboxChange = (event) => {
@@ -92,13 +92,13 @@ function LedgerReport() {
       toDate: null,
       accountName: 'All',
       branchCode: 'All',
-      withDetails: 'YES',
+      withDetails: 'YES'
     });
     setFieldErrors({
       fromDate: '',
       toDate: '',
       accountName: '',
-      branchCode: '',
+      branchCode: ''
     });
     setRowData([]);
     setHeaderFields([]);
@@ -138,7 +138,7 @@ function LedgerReport() {
               if (matches) {
                 const extension = matches[2];
                 const base64Data = matches[3];
-                const byteArray = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+                const byteArray = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
 
                 setCompanyLogo({
                   buffer: byteArray,
@@ -154,7 +154,7 @@ function LedgerReport() {
             const [meta, base64Data] = particularCompany.companyLogo.split(',');
             const extension = meta.includes('jpeg') ? 'jpeg' : 'png';
 
-            const byteArray = Uint8Array.from(atob(base64Data), c => c.charCodeAt(0));
+            const byteArray = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
             setCompanyLogo({
               buffer: byteArray,
               extension,
@@ -166,7 +166,7 @@ function LedgerReport() {
         setFormData({
           ...formData,
           companyCode: particularCompany.companyCode,
-          companyName: particularCompany.companyName,
+          companyName: particularCompany.companyName
         });
       } else {
         console.error('API Error:', response);
@@ -202,12 +202,12 @@ function LedgerReport() {
     const value = e.target.value;
     setFormData((prevData) => ({
       ...prevData,
-      accountName: value,
+      accountName: value
     }));
   };
 
   const handleWithDetailsChange = (e) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       withDetails: e.target.value
     }));
@@ -218,12 +218,12 @@ function LedgerReport() {
 
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: '',
+      [name]: ''
     }));
 
     setFormData((prevData) => ({
       ...prevData,
-      [name]: value,
+      [name]: value
     }));
   };
 
@@ -235,13 +235,9 @@ function LedgerReport() {
   const reportColumns = [
     {
       accessorKey: 'Vid',
-      header: 'Invoice No',
+      header: 'Doc No',
       size: 110,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'center', padding: '8px' }}>
-          {cell.getValue() || '-'}
-        </div>
-      ),
+      Cell: ({ cell }) => <div style={{ textAlign: 'center', padding: '8px' }}>{cell.getValue() || '-'}</div>,
       muiTableHeadCellProps: {
         align: 'center',
         sx: {
@@ -259,11 +255,7 @@ function LedgerReport() {
       size: 110,
       Cell: ({ cell }) => {
         const value = cell.getValue();
-        return (
-          <div style={{ textAlign: 'center', padding: '8px' }}>
-            {value ? dayjs(value).format('DD-MM-YYYY') : '-'}
-          </div>
-        );
+        return <div style={{ textAlign: 'center', padding: '8px' }}>{value ? dayjs(value).format('DD-MM-YYYY') : '-'}</div>;
       },
       muiTableHeadCellProps: {
         align: 'center',
@@ -280,11 +272,7 @@ function LedgerReport() {
       accessorKey: 'PartyName',
       header: 'Particulars',
       size: 250,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'left', paddingLeft: '10px', padding: '8px' }}>
-          {cell.getValue() || '-'}
-        </div>
-      ),
+      Cell: ({ cell }) => <div style={{ textAlign: 'left', paddingLeft: '10px', padding: '8px' }}>{cell.getValue() || '-'}</div>,
       muiTableHeadCellProps: {
         align: 'left',
         sx: {
@@ -304,9 +292,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -329,9 +317,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -350,11 +338,7 @@ function LedgerReport() {
       accessorKey: 'Currency',
       header: 'Currency',
       size: 90,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
-          {cell.getValue() || '-'}
-        </div>
-      ),
+      Cell: ({ cell }) => <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>{cell.getValue() || '-'}</div>,
       muiTableHeadCellProps: {
         align: 'right',
         sx: {
@@ -374,9 +358,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', color: '#d32f2f', fontWeight: '500', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -399,9 +383,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', color: '#2e7d32', fontWeight: '500', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -420,11 +404,7 @@ function LedgerReport() {
       accessorKey: 'Narration',
       header: 'Narration',
       size: 100,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'left', paddingLeft: '10px', padding: '8px' }}>
-          {cell.getValue() || '-'}
-        </div>
-      ),
+      Cell: ({ cell }) => <div style={{ textAlign: 'left', paddingLeft: '10px', padding: '8px' }}>{cell.getValue() || '-'}</div>,
       muiTableHeadCellProps: {
         align: 'left',
         sx: {
@@ -435,7 +415,7 @@ function LedgerReport() {
           padding: '12px 8px'
         }
       }
-    },
+    }
   ];
 
   const handleGo = async () => {
@@ -474,7 +454,7 @@ function LedgerReport() {
 
         // Build query string
         const queryString = Object.keys(params)
-          .map(key => `${key}=${encodeURIComponent(params[key])}`)
+          .map((key) => `${key}=${encodeURIComponent(params[key])}`)
           .join('&');
 
         const response = await apiCalls('get', `/master/getLedgerReport?${queryString}`);
@@ -483,7 +463,7 @@ function LedgerReport() {
           const reportData = response.paramObjectsMap?.ledgerReport || [];
 
           // Map API fields to table columns
-          const mappedData = reportData.map(item => ({
+          const mappedData = reportData.map((item) => ({
             Vid: item.voucherNumber || '',
             Vdate: item.voucherDate || '',
             PartyName: item.partyName || '',
@@ -492,7 +472,7 @@ function LedgerReport() {
             Currency: item.currency || '',
             dbAmount: parseFloat(item.dbAmnt) || 0,
             CrAmount: parseFloat(item.crAmnt) || 0,
-            Narration: item.narration || '',
+            Narration: item.narration || ''
           }));
 
           // Set header fields dynamically
@@ -500,22 +480,23 @@ function LedgerReport() {
           const headers = [
             {
               // Combined date range value without a label
-              value: formData.fromDate && formData.toDate
-                ? `${dayjs(formData.fromDate).format('DD-MM-YYYY')} to ${dayjs(formData.toDate).format('DD-MM-YYYY')}`
-                : ''
+              value:
+                formData.fromDate && formData.toDate
+                  ? `${dayjs(formData.fromDate).format('DD-MM-YYYY')} to ${dayjs(formData.toDate).format('DD-MM-YYYY')}`
+                  : ''
             },
             {
-              label: "Account Name",
+              label: 'Account Name',
               value: formData.accountName !== 'All' ? formData.accountName : 'All'
             },
             {
-              label: "Branch Code",
+              label: 'Branch Code',
               value: formData.branchCode !== 'All' ? formData.branchCode : 'All'
             },
             {
-              label: "With Details",
+              label: 'With Details',
               value: formData.withDetails
-            },
+            }
           ];
 
           setHeaderFields(headers);
@@ -565,12 +546,12 @@ function LedgerReport() {
         if (companyLogo?.buffer) {
           const imageId = workbook.addImage({
             buffer: companyLogo.buffer,
-            extension: companyLogo.extension || 'png',
+            extension: companyLogo.extension || 'png'
           });
 
           sheet.addImage(imageId, {
             tl: { col: 0, row: 0 },
-            ext: { width: 160, height: 80 },
+            ext: { width: 160, height: 80 }
           });
         } else {
           // Fallback if no logo
@@ -603,7 +584,7 @@ function LedgerReport() {
         { label: 'Branch Code', value: formData.branchCode !== 'All' ? formData.branchCode : 'All' },
         { label: 'With Details', value: formData.withDetails },
         { label: 'Generated By', value: localStorage.getItem('userName') || 'System' },
-        { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') },
+        { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
       ];
 
       // Add metadata in two columns
@@ -637,14 +618,14 @@ function LedgerReport() {
         cell.fill = {
           type: 'pattern',
           pattern: 'solid',
-          fgColor: { argb: 'FF34449B' }, // Dark blue background
+          fgColor: { argb: 'FF34449B' } // Dark blue background
         };
         cell.alignment = { horizontal: 'center', vertical: 'middle' };
         cell.border = {
           top: { style: 'thin', color: { argb: 'FF000000' } },
           left: { style: 'thin', color: { argb: 'FF000000' } },
           bottom: { style: 'thin', color: { argb: 'FF000000' } },
-          right: { style: 'thin', color: { argb: 'FF000000' } },
+          right: { style: 'thin', color: { argb: 'FF000000' } }
         };
       });
       headerRow.height = 20;
@@ -660,11 +641,11 @@ function LedgerReport() {
           item.Currency || '-',
           item.dbAmount,
           item.CrAmount,
-          item.Narration || '-',
+          item.Narration || '-'
         ]);
 
         // Format numeric cells
-        [4, 5, 7, 8].forEach(colIndex => {
+        [4, 5, 7, 8].forEach((colIndex) => {
           const cell = row.getCell(colIndex);
           if (typeof cell.value === 'number') {
             cell.numFmt = '#,##0.00';
@@ -678,7 +659,7 @@ function LedgerReport() {
             top: { style: 'thin', color: { argb: 'FF000000' } },
             left: { style: 'thin', color: { argb: 'FF000000' } },
             bottom: { style: 'thin', color: { argb: 'FF000000' } },
-            right: { style: 'thin', color: { argb: 'FF000000' } },
+            right: { style: 'thin', color: { argb: 'FF000000' } }
           };
         });
       });
@@ -693,20 +674,16 @@ function LedgerReport() {
         { width: 12 }, // Currency
         { width: 15 }, // dbAmount
         { width: 15 }, // CrAmount
-        { width: 40 }, // Narration
+        { width: 40 } // Narration
       ];
 
       // ====== DOWNLOAD THE FILE ======
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       });
 
-      saveAs(
-        blob,
-        `Ledger_Report_${companyName || ''}_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`
-      );
-
+      saveAs(blob, `Ledger_Report_${companyName || ''}_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
     } catch (error) {
       console.error('Error generating Excel:', error);
       showToast('error', 'Failed to generate Excel file');
@@ -740,7 +717,7 @@ function LedgerReport() {
           border: '1px solid #e0e0e0 !important'
         }
       }
-    },
+    }
   };
 
   return (
@@ -749,23 +726,17 @@ function LedgerReport() {
         <div className="row">
           <div className="col-md-3 mb-3">
             <FormControlLabel
-              control={<Checkbox
-                checked={selectedSections.accountName}
-                onChange={handleCheckboxChange}
-                name="accountName"
-                color="secondary"
-              />}
+              control={
+                <Checkbox checked={selectedSections.accountName} onChange={handleCheckboxChange} name="accountName" color="secondary" />
+              }
               label="Account Name"
             />
           </div>
           <div className="col-md-3 mb-3">
             <FormControlLabel
-              control={<Checkbox
-                checked={selectedSections.branchCode}
-                onChange={handleCheckboxChange}
-                name="branchCode"
-                color="secondary"
-              />}
+              control={
+                <Checkbox checked={selectedSections.branchCode} onChange={handleCheckboxChange} name="branchCode" color="secondary" />
+              }
               label="Branch Code"
             />
           </div>
@@ -873,18 +844,8 @@ function LedgerReport() {
 
         <div className="col-md-3">
           <div className="d-flex flex-wrap justify-content-start mt-1">
-            <ActionButton
-              title="Search"
-              icon={SearchIcon}
-              onClick={handleGo}
-              isLoading={isLoading}
-              disabled={isLoading}
-            />
-            <ActionButton
-              title="Clear"
-              icon={ClearIcon}
-              onClick={handleClear}
-            />
+            <ActionButton title="Search" icon={SearchIcon} onClick={handleGo} isLoading={isLoading} disabled={isLoading} />
+            <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
           </div>
         </div>
       </div>
@@ -901,22 +862,24 @@ function LedgerReport() {
           }
         }}
       >
-        <DialogTitle sx={{
-          m: 0,
-          p: 0,
-          px: 3,
-          backgroundColor: '#34449B',
-          color: 'white',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <DialogTitle
+          sx={{
+            m: 0,
+            p: 0,
+            px: 3,
+            backgroundColor: '#34449B',
+            color: 'white',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
           <span>Ledger Report</span>
           <IconButton
             aria-label="close"
             onClick={handleCloseModal}
             sx={{
-              color: 'white',
+              color: 'white'
             }}
           >
             <CloseIcon />
@@ -926,7 +889,7 @@ function LedgerReport() {
           <CommonReportTable
             data={rowData}
             columns={reportColumns}
-            fileName={"Ledger Report"}
+            fileName={'Ledger Report'}
             tableOptions={tableOptions}
             handleDownloadExcel={handleDownloadExcel}
             headerFields={headerFields}
@@ -939,7 +902,7 @@ function LedgerReport() {
           <CommonReportTable
             data={rowData}
             columns={reportColumns}
-            fileName={"Ledger Report"}
+            fileName={'Ledger Report'}
             isListView={true}
             handleDownloadExcel={handleDownloadExcel}
             tableOptions={{
@@ -951,7 +914,7 @@ function LedgerReport() {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 export default LedgerReport;

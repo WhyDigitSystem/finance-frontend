@@ -226,16 +226,40 @@ const CommonFilePL = ({
       doc.setTextColor('#555555');
       doc.text(userText, 15, pageHeight - 10, { align: 'left' });
     }
-    //
 
+    //
     const fromDate = filters.fromDate ? dayjs(filters.fromDate).format('DD-MM-YYYY') : '-';
     const toDate = filters.toDate ? dayjs(filters.toDate).format('DD-MM-YYYY') : '-';
     const branch = filters.branch || '-';
     const partyType = filters.partyType || '-';
     const partyName = filters.partyName || '-';
 
-    doc.setFontSize(10);
-    doc.text(`${fromDate} To ${toDate} | ${branch} | ${partyType} | ${partyName}`, 15, 35);
+    //
+    // Set font and color
+    doc.setFontSize(9);
+    doc.setTextColor('#000000');
+
+    // Draw rounded light gray background behind label + value row
+    doc.setFillColor(231, 235, 235); // light gray
+    doc.roundedRect(14, 30, 182, 12, 2, 2, 'F'); // full-width row
+
+    // Row 1: Labels (bold)
+    doc.setFont(undefined, 'bold');
+    doc.text('Branch', 18, 35);
+    doc.text('Party Type', 51, 35);
+    doc.text('Party Name', 91, 35);
+    doc.text('From Date', 135, 35);
+    doc.text('To Date', 174, 35);
+
+    // Row 2: Values (normal)
+    doc.setFont(undefined, 'normal');
+    doc.text(branch, 18, 40);
+    doc.text(partyType, 51, 40);
+    doc.text(partyName, 91, 40);
+    doc.text(fromDate, 135, 40);
+    doc.text(toDate, 174, 40);
+    // doc.setFontSize(10);
+    // doc.text(`${fromDate} To ${toDate} | ${branch} | ${partyType} | ${partyName}`, 15, 35);
 
     const headers = [columns.map((col) => col.header || col.accessorKey)];
     const body = data.map((row) =>
@@ -257,7 +281,7 @@ const CommonFilePL = ({
     );
 
     autoTable(doc, {
-      startY: 37,
+      startY: 45,
       head: headers,
       body: body,
       styles: {
@@ -371,20 +395,54 @@ const CommonFilePL = ({
       // 3. Position filter at row 5
       while (currentRow < 4) worksheet.addRow([]).currentRow++;
 
-      // Filter row (row 5)
-      const filterRow = worksheet.getRow(5);
-      filterRow.values = [
-        `${filters.branch || '-'}`,
-        `${filters.partyType || '-'}`,
-        `${filters.partyName || '-'}`,
-        `${filters.fromDate ? dayjs(filters.fromDate).format('DD-MM-YYYY') : '-'}`,
-        'To',
-        `${filters.toDate ? dayjs(filters.toDate).format('DD-MM-YYYY') : '-'}`
+      // Row 4 – Titles (labels)
+      const labelRow = worksheet.getRow(4);
+      labelRow.values = [
+        '', // ExcelJS rows are 1-based, and column index 1 is for first column, so 0 is ignored
+        'Branch',
+        'Party Type',
+        'Party Name',
+        'From Date',
+        'To Date'
       ];
-      filterRow.eachCell((cell) => {
+      labelRow.eachCell((cell) => {
         cell.font = { bold: true };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
         cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F0F0F0' } };
       });
+
+      // Row 5 – Corresponding filter values
+      const valueRow = worksheet.getRow(5);
+      valueRow.values = [
+        '',
+        filters.branch || '-',
+        filters.partyType || '-',
+        filters.partyName || '-',
+        filters.fromDate ? dayjs(filters.fromDate).format('DD-MM-YYYY') : '-',
+        filters.toDate ? dayjs(filters.toDate).format('DD-MM-YYYY') : '-'
+      ];
+      valueRow.eachCell((cell) => {
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      });
+
+      // // Filter row (row 5)
+      // const filterRow = worksheet.getRow(5);
+      // filterRow.values = [
+      //   `Branch`,
+      //   `${filters.branch || '-'}`,
+      //   'Party Type',
+      //   `${filters.partyType || '-'}`,
+      //   ` Party Name`,
+      //   `${filters.partyName || '-'}`,
+      //   'From Date',
+      //   `${filters.fromDate ? dayjs(filters.fromDate).format('DD-MM-YYYY') : '-'}`,
+      //   ` To Date`,
+      //   `${filters.toDate ? dayjs(filters.toDate).format('DD-MM-YYYY') : '-'}`
+      // ];
+      // filterRow.eachCell((cell) => {
+      //   cell.font = { bold: true };
+      //   cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'F0F0F0' } };
+      // });
 
       // 4. Header row (row 7)
       currentRow = 7;

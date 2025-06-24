@@ -98,10 +98,7 @@ const ArAging = () => {
 
   const getPartyName = async () => {
     try {
-      const response = await apiCalls(
-        'get',
-        `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=vendor`
-      );
+      const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=vendor`);
       setPartyNameList(response.paramObjectsMap.partyMasterVO || []);
     } catch (error) {
       console.error('Error fetching party names:', error);
@@ -163,10 +160,7 @@ const ArAging = () => {
         queryParams.append('branchCode', formData.branchCode);
       }
 
-      const response = await apiCalls(
-        'get',
-        `/reportController/getARAgeingReport?${queryParams.toString()}`
-      );
+      const response = await apiCalls('get', `/reportController/getARAgeingReport?${queryParams.toString()}`);
 
       if (response.status === true) {
         setRowData(response.paramObjectsMap.rimReportFillGrid || []);
@@ -174,15 +168,15 @@ const ArAging = () => {
         // Set header fields for AP Ageing report
         setHeaderFields([
           {
-            label: "As on Date",
+            label: 'As on Date',
             value: formData.date ? dayjs(formData.date).format('DD-MM-YYYY') : ''
           },
           {
-            label: "Party Name",
+            label: 'Party Name',
             value: formData.partyName
           },
           {
-            label: "Branch Name",
+            label: 'Branch Name',
             value: formData.branchCode
           }
         ]);
@@ -190,10 +184,7 @@ const ArAging = () => {
         setListView(true);
         setOpenModal(true);
       } else {
-        showToast(
-          'error',
-          response.paramObjectsMap.getAPAgeing?.errorMessage || 'Report Fetch failed'
-        );
+        showToast('error', response.paramObjectsMap.getAPAgeing?.errorMessage || 'Report Fetch failed');
       }
     } catch (error) {
       console.error('Error:', error);
@@ -206,13 +197,9 @@ const ArAging = () => {
   const reportColumns = [
     {
       accessorKey: 'docId',
-      header: 'Invoice No',
+      header: 'Doc No',
       size: 110,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'center', padding: '8px' }}>
-          {cell.getValue() || ''}
-        </div>
-      ),
+      Cell: ({ cell }) => <div style={{ textAlign: 'center', padding: '8px' }}>{cell.getValue() || ''}</div>,
       muiTableHeadCellProps: {
         align: 'center',
         sx: {
@@ -230,11 +217,7 @@ const ArAging = () => {
       size: 110,
       Cell: ({ cell }) => {
         const value = cell.getValue();
-        return (
-          <div style={{ textAlign: 'center', paddingRight: '8px' }}>
-            {value ? dayjs(value).format('DD-MM-YYYY') : ''}
-          </div>
-        );
+        return <div style={{ textAlign: 'center', paddingRight: '8px' }}>{value ? dayjs(value).format('DD-MM-YYYY') : ''}</div>;
       },
       muiTableHeadCellProps: {
         align: 'center',
@@ -253,11 +236,7 @@ const ArAging = () => {
       size: 110,
       Cell: ({ cell }) => {
         const value = cell.getValue();
-        return (
-          <div style={{ textAlign: 'center', padding: '8px' }}>
-            {value ? dayjs(value).format('DD-MM-YYYY') : ''}
-          </div>
-        );
+        return <div style={{ textAlign: 'center', padding: '8px' }}>{value ? dayjs(value).format('DD-MM-YYYY') : ''}</div>;
       },
       muiTableHeadCellProps: {
         align: 'center',
@@ -278,9 +257,9 @@ const ArAging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -303,9 +282,9 @@ const ArAging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -328,9 +307,9 @@ const ArAging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -353,9 +332,9 @@ const ArAging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -378,9 +357,9 @@ const ArAging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -403,9 +382,9 @@ const ArAging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -428,9 +407,9 @@ const ArAging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -453,9 +432,9 @@ const ArAging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -517,8 +496,8 @@ const ArAging = () => {
     // Header Info
     const headerInfo = [
       ...headerFields,
-      { label: "Generated By", value: localStorage.getItem('userName') || 'Admin' },
-      { label: "Generated On", value: dayjs().format('DD-MM-YYYY HH:mm') }
+      { label: 'Generated By', value: localStorage.getItem('userName') || 'Admin' },
+      { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
     ];
 
     for (let i = 0; i < headerInfo.length; i += 2) {
@@ -536,9 +515,18 @@ const ArAging = () => {
 
     // Header Row
     const headers = [
-      'Invoice No', 'Invoice Date', 'Due Date',
-      'Inv Amt', 'Outstanding', 'Total Due', 'Unadjusted',
-      'Below 30 Days', 'Days 30-60', 'Days 60-90', 'Days 90-120', 'Days 120+'
+      'Invoice No',
+      'Invoice Date',
+      'Due Date',
+      'Inv Amt',
+      'Outstanding',
+      'Total Due',
+      'Unadjusted',
+      'Below 30 Days',
+      'Days 30-60',
+      'Days 60-90',
+      'Days 90-120',
+      'Days 120+'
     ];
     const headerRow = sheet.addRow(headers);
     headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -546,15 +534,17 @@ const ArAging = () => {
     headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
     headerRow.height = 20;
 
-    headerRow.eachCell(cell => {
+    headerRow.eachCell((cell) => {
       cell.border = {
-        top: { style: 'thin' }, left: { style: 'thin' },
-        bottom: { style: 'thin' }, right: { style: 'thin' }
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
       };
     });
 
     // Data Rows
-    rowData.forEach(item => {
+    rowData.forEach((item) => {
       const row = sheet.addRow([
         item.docId || '-',
         item.docDate ? dayjs(item.docDate).format('DD-MM-YYYY') : '-',
@@ -576,10 +566,12 @@ const ArAging = () => {
         cell.alignment = { horizontal: 'right' };
       }
 
-      row.eachCell(cell => {
+      row.eachCell((cell) => {
         cell.border = {
-          top: { style: 'thin' }, left: { style: 'thin' },
-          bottom: { style: 'thin' }, right: { style: 'thin' }
+          top: { style: 'thin' },
+          left: { style: 'thin' },
+          bottom: { style: 'thin' },
+          right: { style: 'thin' }
         };
       });
     });
@@ -701,13 +693,7 @@ const ArAging = () => {
           <div className="col-md-3 mb-3">
             <FormControl size="small" variant="outlined" fullWidth>
               <InputLabel id="base-label">Base</InputLabel>
-              <Select
-                labelId="base-label"
-                label="Base"
-                value={formData.base}
-                onChange={handleInputChange}
-                name="base"
-              >
+              <Select labelId="base-label" label="Base" value={formData.base} onChange={handleInputChange} name="base">
                 <MenuItem value="Yes">Yes</MenuItem>
                 <MenuItem value="No">No</MenuItem>
               </Select>
@@ -741,21 +727,19 @@ const ArAging = () => {
           }
         }}
       >
-        <DialogTitle sx={{
-          m: 0,
-          p: 1,
-          backgroundColor: '#34449B',
-          color: 'white',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <DialogTitle
+          sx={{
+            m: 0,
+            p: 1,
+            backgroundColor: '#34449B',
+            color: 'white',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
           <span>Accounts Payable Ageing Report</span>
-          <IconButton
-            aria-label="close"
-            onClick={handleCloseModal}
-            sx={{ color: 'white' }}
-          >
+          <IconButton aria-label="close" onClick={handleCloseModal} sx={{ color: 'white' }}>
             <CloseIcon />
           </IconButton>
         </DialogTitle>
@@ -763,11 +747,11 @@ const ArAging = () => {
           <CommonReportTable
             data={rowData}
             columns={reportColumns}
-            fileName={"AP Ageing Report"}
+            fileName={'AP Ageing Report'}
             tableOptions={tableOptions}
             handleDownloadExcel={handleDownloadExcel}
             headerFields={headerFields}
-          // sumFields={['amount', 'outstanding', 'totaldue']}
+            // sumFields={['amount', 'outstanding', 'totaldue']}
           />
         </DialogContent>
       </Dialog>
@@ -777,7 +761,7 @@ const ArAging = () => {
           <CommonReportTable
             data={rowData}
             columns={reportColumns}
-            fileName={"AP Ageing Report"}
+            fileName={'AP Ageing Report'}
             isListView={true}
             handleDownloadExcel={handleDownloadExcel}
             tableOptions={{
@@ -785,7 +769,7 @@ const ArAging = () => {
               muiTableContainerProps: { sx: { maxHeight: '60vh' } }
             }}
             headerFields={headerFields}
-          // sumFields={['amount', 'outstanding', 'totaldue',]}
+            // sumFields={['amount', 'outstanding', 'totaldue',]}
           />
         </div>
       )}
