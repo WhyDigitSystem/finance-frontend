@@ -202,12 +202,12 @@ function PartyLedger() {
     // { accessorKey: 'Currency', header: 'Currency', size: 30 },
     {
       accessorKey: 'DbAmount',
-      header: 'Debit',
+      header: 'Debit(Base)',
       size: 50
     },
     {
       accessorKey: 'CrAmount',
-      header: 'Credit',
+      header: 'Credit(Base)',
       size: 50
     }
   ];
