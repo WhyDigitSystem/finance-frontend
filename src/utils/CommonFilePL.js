@@ -360,6 +360,8 @@ const CommonFilePL = ({
               tl: { col: 0, row: currentRow - 1 },
               ext: { width: 130, height: 70 }
             });
+            // Optional: Merge cells under the logo
+            worksheet.mergeCells('A1:A3');
           }
         } catch (err) {
           console.warn('Logo insertion failed:', err);
