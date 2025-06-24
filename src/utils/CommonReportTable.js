@@ -1,11 +1,6 @@
 import React, { useState } from 'react';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import {
-  Box,
-  Typography,
-  Chip,
-  Stack,
-} from '@mui/material';
+import { Box, Typography, Chip, Stack } from '@mui/material';
 import { download, generateCsv, mkConfig } from 'export-to-csv';
 import { MaterialReactTable } from 'material-react-table';
 import dayjs from 'dayjs';
@@ -23,7 +18,7 @@ const CommonReportTable = ({
   sumFields = [],
   headerFields = [],
   filters = [], // [{ label, value, options, onChange }]
-  onFilterDone = () => { },
+  onFilterDone = () => {}
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const theme = useTheme();
@@ -33,20 +28,20 @@ const CommonReportTable = ({
     ...chipSX,
     color: theme.palette.success.dark,
     backgroundColor: theme.palette.success.light,
-    height: 28,
+    height: 28
   };
   const chipErrorSX = {
     ...chipSX,
     color: theme.palette.warning.dark,
     backgroundColor: theme.palette.warning.light,
-    marginRight: '5px',
+    marginRight: '5px'
   };
 
   const csvConfig = mkConfig({
     fieldSeparator: ',',
     decimalSeparator: '.',
     useKeysAsHeaders: true,
-    filename: fileName,
+    filename: fileName
   });
 
   const handleExportData = () => {
@@ -65,48 +60,95 @@ const CommonReportTable = ({
     TotalAmount: 'Total Amount',
     Tax: 'Total Tax Amount',
     BillAmount: 'Bill Amount',
-    outstanding: 'OutStanding',
-
+    outstanding: 'OutStanding'
   };
 
+  // const customColumns = columns.map((column) => {
+  //   if (column.accessorKey?.toLowerCase().includes('date')) {
+  //     return {
+  //       ...column,
+  //       Cell: ({ cell }) => formatDate(cell.getValue()),
+  //     };
+  //   }
+
+  //   if (column.accessorKey === 'active') {
+  //     return {
+  //       ...column,
+  //       Cell: ({ cell }) => (
+  //         <Chip
+  //           label={cell.getValue() === true ? 'Active' : 'Inactive'}
+  //           sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX}
+  //         />
+  //       ),
+  //     };
+  //   }
+
+  //   if (column.accessorKey === 'closed') {
+  //     return {
+  //       ...column,
+  //       Cell: ({ cell }) => (
+  //         <Chip
+  //           label={cell.getValue() === 'Yes' ? 'Yes' : 'No'}
+  //           sx={cell.getValue() === 'Yes' ? chipSuccessSX : chipErrorSX}
+  //         />
+  //       ),
+  //     };
+  //   }
+
+  //   return column;
+  // });
+
+  //
+  const customLocalization = {
+    toggleDensity: 'Wide View'
+  };
+
+  //
   const customColumns = columns.map((column) => {
-    if (column.accessorKey?.toLowerCase().includes('date')) {
+    const accessorKey = column.accessorKey?.toLowerCase();
+
+    // ✅ Date formatting
+    if (accessorKey?.includes('date')) {
       return {
         ...column,
-        Cell: ({ cell }) => formatDate(cell.getValue()),
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          return value ? formatDate(value) : '';
+        }
       };
     }
 
+    // ✅ Active status chip
     if (column.accessorKey === 'active') {
       return {
         ...column,
         Cell: ({ cell }) => (
-          <Chip
-            label={cell.getValue() === true ? 'Active' : 'Inactive'}
-            sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX}
-          />
-        ),
+          <Chip label={cell.getValue() === true ? 'Active' : 'Inactive'} sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX} />
+        )
       };
     }
 
+    // ✅ Closed status chip
     if (column.accessorKey === 'closed') {
       return {
         ...column,
         Cell: ({ cell }) => (
-          <Chip
-            label={cell.getValue() === 'Yes' ? 'Yes' : 'No'}
-            sx={cell.getValue() === 'Yes' ? chipSuccessSX : chipErrorSX}
-          />
-        ),
+          <Chip label={cell.getValue() === 'Yes' ? 'Yes' : 'No'} sx={cell.getValue() === 'Yes' ? chipSuccessSX : chipErrorSX} />
+        )
       };
     }
 
-    return column;
+    // ✅ Default: Show empty string if null/undefined/empty
+    return {
+      ...column,
+      Cell: ({ cell }) => {
+        const value = cell.getValue();
+        return value === null || value === undefined || value === '' ? '' : value;
+      }
+    };
   });
 
-  const customLocalization = {
-    toggleDensity: 'Wide View',
-  };
+  //
 
   return (
     <>
@@ -175,9 +217,9 @@ const CommonReportTable = ({
               fontSize: '12px',
               borderBottom: '2px solid #D1D5DB',
               borderRight: '1px solid #D1D5DB',
-              borderLeft: '1px solid #D1D5DB',
+              borderLeft: '1px solid #D1D5DB'
             },
-            align: 'center',
+            align: 'center'
           },
           muiTableBodyCellProps: {
             sx: {
@@ -186,9 +228,9 @@ const CommonReportTable = ({
               borderBottom: '1px solid #E5E7EB',
               borderRight: '1px solid #E5E7EB',
               borderLeft: '1px solid #E5E7EB',
-              padding: '0px 0px',
-            },
-          },
+              padding: '0px 0px'
+            }
+          }
         }))}
         enableColumnOrdering={false}
         enableColumnActions={false}
@@ -203,16 +245,16 @@ const CommonReportTable = ({
             background: '#FFFFFF',
             borderRadius: '10px',
             boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-            border: '1px solid #E5E7EB',
-          },
+            border: '1px solid #E5E7EB'
+          }
         }}
         muiTableProps={{
           sx: {
             backgroundColor: '#FFFFFF',
             borderRadius: '10px',
             overflow: 'hidden',
-            border: '1px solid #E5E7EB',
-          },
+            border: '1px solid #E5E7EB'
+          }
         }}
         muiTableBodyRowProps={{
           sx: {
@@ -221,12 +263,12 @@ const CommonReportTable = ({
             '&:hover': {
               backgroundColor: '#E5E7EB',
               boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.1)',
-              transition: '0.2s ease-in-out',
-            },
-          },
+              transition: '0.2s ease-in-out'
+            }
+          }
         }}
         renderTopToolbarCustomActions={({ table }) => (
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1, }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
             <Box>
               <ActionButton
                 title="Download Excel"
@@ -241,14 +283,11 @@ const CommonReportTable = ({
                 display: 'flex',
                 flexWrap: 'wrap',
                 columnGap: '32px',
-                rowGap: '10px',
+                rowGap: '10px'
               }}
             >
               {headerFields.map(({ label, value }, idx) => (
-                <Box
-                  key={idx}
-                  sx={{ fontSize: '14px', minWidth: '160px', marginTop: '8px' }}
-                >
+                <Box key={idx} sx={{ fontSize: '14px', minWidth: '160px', marginTop: '8px' }}>
                   {label ? (
                     <>
                       <strong style={{ color: '#171c24', fontWeight: '700' }}>{label}:</strong>{' '}
@@ -260,7 +299,6 @@ const CommonReportTable = ({
                 </Box>
               ))}
             </Box>
-
           </Box>
         )}
         renderBottomToolbarCustomActions={() => (
@@ -269,7 +307,7 @@ const CommonReportTable = ({
               display: 'flex',
               justifyContent: 'flex-end',
               padding: '8px 20px',
-              fontWeight: 'bold',
+              fontWeight: 'bold'
               // backgroundColor: '#F3F4F6',
               // borderTop: '1px solid #E5E7EB',
             }}
