@@ -286,7 +286,7 @@ function LedgerReport() {
     },
     {
       accessorKey: 'ndAmount',
-      header: 'Debit(INR)',
+      header: 'Debit(Base)',
       size: 90,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
@@ -311,7 +311,7 @@ function LedgerReport() {
     },
     {
       accessorKey: 'NcAmount',
-      header: 'Credit(INR)',
+      header: 'Credit(Base)',
       size: 90,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
