@@ -11,7 +11,7 @@ import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBullete
 import SaveIcon from '@mui/icons-material/Save';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { FormControl, FormHelperText, InputLabel, MenuItem, Select,Autocomplete } from '@mui/material';
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select, Autocomplete } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import ActionButton from 'utils/ActionButton';
 import Button from '@mui/material/Button';
@@ -557,14 +557,14 @@ const CostDebitNote = () => {
         setChargeDetails(
           listValueVO.gstLines
             ? listValueVO.gstLines.map((row) => ({
-                id: row.id,
-                chargeCode: row.chargeCode,
-                chargeDesc: row.chargeName,
-                gChargeCode: row.govChargeCode,
-                gstPercent: row.gstpercent,
-                sac: row.sac,
-                lcAmt: row.lcAmt
-              }))
+              id: row.id,
+              chargeCode: row.chargeCode,
+              chargeDesc: row.chargeName,
+              gChargeCode: row.govChargeCode,
+              gstPercent: row.gstpercent,
+              sac: row.sac,
+              lcAmt: row.lcAmt
+            }))
             : []
         );
 
@@ -939,6 +939,7 @@ const CostDebitNote = () => {
       console.log('Selected Employee:', selectedBill);
       setFormData((prevData) => ({
         ...prevData,
+
         actBillCurrAmt: selectedBill.actBillCurrAmt,
         actBillLcAmt: selectedBill.actBillLcAmt,
         customer: selectedBill.customer,
@@ -1010,12 +1011,12 @@ const CostDebitNote = () => {
       setTdsCostInvoice(
         Array.isArray(selectedBill.tdsCostInvoiceVO)
           ? selectedBill.tdsCostInvoiceVO.map((row) => ({
-              id: row.id,
-              section: row.section,
-              tdsWithHolding: row.tdsWithHolding,
-              tdsWithHoldingPer: row.tdsWithHoldingPer,
-              totTdsWhAmnt: row.totTdsWhAmnt
-            }))
+            id: row.id,
+            section: row.section,
+            tdsWithHolding: row.tdsWithHolding,
+            tdsWithHoldingPer: row.tdsWithHoldingPer,
+            totTdsWhAmnt: row.totTdsWhAmnt
+          }))
           : []
       );
       // setTdsCostInvoice(
@@ -1895,7 +1896,7 @@ const CostDebitNote = () => {
                   </FormControl>
                 </div> */}
                 <div className="col-md-3 mb-3">
-                {/* <Autocomplete
+                  {/* <Autocomplete
                   options={partyName}
                   getOptionLabel={(option) => option.partyName}
                   disabled={formData.status === 'TAX'}
@@ -1917,42 +1918,42 @@ const CostDebitNote = () => {
                     />
                   )}
                 /> */}
-                <Autocomplete
-  options={partyName}
-  getOptionLabel={(option) => option.partyName || ''}
-  disabled={formData.status === 'TAX'}
-  sx={{ width: '100%' }}
-  size="small"
-  value={
-    formData.supplierName
-      ? partyName.find((c) => c.partyName === formData.supplierName) || null
-      : null
-  }
-  onChange={(event, newValue) => {
-    setFormData((prev) => ({
-      ...prev,
-      supplierName: newValue ? newValue.partyName : '',
-      supplierCode: newValue ? newValue.partyCode : ''
-    }));
-    if (newValue) {
-      getOriginBillNoByParty(newValue.partyName);
-    }
-  }}
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Supplier Name"
-      name="supplierName"
-      error={!!fieldErrors.supplierName}
-      helperText={fieldErrors.supplierName}
-      InputProps={{
-        ...params.InputProps,
-        style: { height: 40 }
-      }}
-    />
-  )}
-/>
-              </div>
+                  <Autocomplete
+                    options={partyName}
+                    getOptionLabel={(option) => option.partyName || ''}
+                    disabled={formData.status === 'TAX'}
+                    sx={{ width: '100%' }}
+                    size="small"
+                    value={
+                      formData.supplierName
+                        ? partyName.find((c) => c.partyName === formData.supplierName) || null
+                        : null
+                    }
+                    onChange={(event, newValue) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        supplierName: newValue ? newValue.partyName : '',
+                        supplierCode: newValue ? newValue.partyCode : ''
+                      }));
+                      if (newValue) {
+                        getOriginBillNoByParty(newValue.partyName);
+                      }
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Supplier Name"
+                        name="supplierName"
+                        error={!!fieldErrors.supplierName}
+                        helperText={fieldErrors.supplierName}
+                        InputProps={{
+                          ...params.InputProps,
+                          style: { height: 40 }
+                        }}
+                      />
+                    )}
+                  />
+                </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField
@@ -1968,90 +1969,47 @@ const CostDebitNote = () => {
                     />
                   </FormControl>
                 </div>
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label-party">Origin Bill No</InputLabel>
-                    <Select
-                      labelId="demo-simple-select-label-party"
-                      id="demo-simple-select-party"
-                      label="Origin Bill No"
-                      required
-                      value={formData.originBill || ''}
-                      onChange={handleOriginBillChange}
-                      disabled={formData.mode === 'SUBMIT'}
-                      error={!!fieldErrors.originBill}
-                      helperText={fieldErrors.originBill}
-                    >
-                      {originBillVo &&
-                        originBillVo.map((par, index) => (
-                          <MenuItem key={index} value={par.docId}>
-                            {par.docId}
-                          </MenuItem>
-                        ))}
-                    </Select>
-                    {fieldErrors.originBill && <FormHelperText style={{ color: 'red' }}>{fieldErrors.originBill}</FormHelperText>}
-                  </FormControl>
-                </div> */}
-              <div className="col-md-3 mb-3">
-              {/* <Autocomplete
-                options={originBillVo}
-                getOptionLabel={(option) => option.docId || ''}
-                disabled={formData.status === 'TAX'}
-                sx={{ width: '100%' }}
-                size="small"
-                value={
-                  formData.originBill
-                    ? originBillVo.find((c) => c.docId === formData.originBill) || null
-                    : null
-                }
-                onChange={handleOriginBillChange}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Origin Bill"
-                    name="originBillNo"
-                    error={!!fieldErrors.originBill}
-                    helperText={fieldErrors.originBill}
-                    InputProps={{
-                      ...params.InputProps,
-                      style: { height: 40 }
+                <div className="col-md-3 mb-3">
+                  <Autocomplete
+                    options={originBillVo || []}
+                    getOptionLabel={(option) => option?.docId?.toString() || ''}
+                    isOptionEqualToValue={(option, value) => option.docId === value.docId}
+                    size="small"
+                    fullWidth
+                    value={
+                      originBillVo.find((bill) => bill.docId === formData.originBill) || null
+                    }
+                    onChange={(event, newValue) => {
+                      if (newValue) {
+                        setFormData((prev) => ({
+                          ...prev,
+                          originBill: newValue.docId
+                        }));
+                        handleOriginBillChange({ target: { value: newValue.docId } });
+                      } else {
+                        // clear originBill
+                        setFormData((prev) => ({
+                          ...prev,
+                          originBill: ''
+                        }));
+                        handleOriginBillChange({ target: { value: '' } });
+                      }
                     }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Origin Bill"
+                        name="originBill"
+                        error={!!fieldErrors.originBill}
+                        helperText={fieldErrors.originBill}
+                        InputProps={{
+                          ...params.InputProps,
+                          style: { height: 40 }
+                        }}
+                      />
+                    )}
                   />
-                )}
-              /> */}
-              <Autocomplete
-  options={originBillVo}
-  getOptionLabel={(option) => option.docId || ''}
-  disabled={formData.status === 'TAX'}
-  sx={{ width: '100%' }}
-  size="small"
-  value={
-    formData.originBill
-      ? originBillVo.find((c) => c.docId === formData.originBill) || null
-      : null
-  }
-  onChange={(event, value) => {
-    handleOriginBillChange(value);
-    setFormData((prev) => ({
-      ...prev,
-      originBill: value ? value.docId : ''
-    }));
-  }}
-  renderInput={(params) => (
-    <TextField
-      {...params}
-      label="Origin Bill"
-      name="originBill"
-      error={!!fieldErrors.originBill}
-      helperText={fieldErrors.originBill}
-      InputProps={{
-        ...params.InputProps,
-        style: { height: 40 }
-      }}
-    />
-  )}
-/>
-              </div>
+                </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel id="supplierGSTInCode">Supplier TAX Code</InputLabel>
@@ -2692,20 +2650,20 @@ const CostDebitNote = () => {
                                                 (charge) => charge.chargeName === row.chargeName && charge.taxable === null
                                               )
                                             ) && (
-                                              <ActionButton
-                                                title="Delete"
-                                                icon={DeleteIcon}
-                                                onClick={() =>
-                                                  handleDeleteRow(
-                                                    row.id,
-                                                    chargerCostInvoice,
-                                                    setChargerCostInvoice,
-                                                    costInvoiceErrors,
-                                                    setCostInvoiceErrors
-                                                  )
-                                                }
-                                              />
-                                            )}
+                                                <ActionButton
+                                                  title="Delete"
+                                                  icon={DeleteIcon}
+                                                  onClick={() =>
+                                                    handleDeleteRow(
+                                                      row.id,
+                                                      chargerCostInvoice,
+                                                      setChargerCostInvoice,
+                                                      costInvoiceErrors,
+                                                      setCostInvoiceErrors
+                                                    )
+                                                  }
+                                                />
+                                              )}
                                           </td>
 
                                           <td className="text-center">
@@ -2801,7 +2759,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.description ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.description && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3049,7 +3007,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.exRate && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3091,7 +3049,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.fcAmount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3180,7 +3138,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.billAmt ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.billAmt && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3221,7 +3179,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.sac ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.sac && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3264,7 +3222,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.gstPercent ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.gstPercent && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3306,7 +3264,7 @@ const CostDebitNote = () => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.gst ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.gst && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3602,8 +3560,8 @@ const CostDebitNote = () => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllCostDebitNoteById}
-              // isPdf={true}
-              // GeneratePdf={GeneratePdf}
+            // isPdf={true}
+            // GeneratePdf={GeneratePdf}
             />
           )}
           {downloadPdf && <GeneratePdfTempDN row={pdfData} modalClose={() => setDownloadPdf(false)} />}

@@ -60,6 +60,17 @@ const CommonReportTableGrouped = ({
   }, {});
 
   const sumFieldLabels = {
+    billAmount: 'Bill Amt',
+    gstamount: 'Tax Amt',
+    totalLcAmount: 'Total Amt',
+    totalchargeamountlc: 'Bill Amt',
+    totaltaxamountlc: 'Tax Amt',
+    totalinvamountlc: 'Total Amt',
+    gst: 'Tax Amt',
+    lcAmt: 'Total Amt',
+    totChargeLcAmt: 'Total Amt',
+    gstAmount: 'Tax Amt',
+    totalAmount: 'Total Amt',
     TotalInvAmountLC: 'Total Amount',
     TotalTaxAmountLC: 'Total Tax Amount',
     TotalAmount: 'Total Amount',
@@ -80,7 +91,6 @@ const CommonReportTableGrouped = ({
     netAmount: 'Net Amt',
     settledAmount: 'Settled Amt',
     outStanding: 'Outstanding Amt',
-    
   };
 
   const customColumns = columns.map((column) => {

@@ -33,6 +33,7 @@ function ReceiptReport() {
   const [partyNameList, setPartyNameList] = useState([]);
   const [rowData, setRowData] = useState([]);
   const [headerFields, setHeaderFields] = useState([]);
+  const [logo, setLogo] = useState([]);
   useEffect(() => {
     getPartyName();
     getAllBranches();
@@ -148,7 +149,15 @@ function ReceiptReport() {
       [field]: ''
     }))
   };
-
+  const getLogo = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+      return response.paramObjectsMap.companyVO[0]?.companyLogo || null;
+    } catch (error) {
+      console.error('Error fetching logo:', error);
+      return null;
+    }
+  };
   const getAllBranches = async () => {
     try {
       const branchData = await getAllActiveBranches(orgId);
@@ -195,24 +204,24 @@ function ReceiptReport() {
           if (formData.fromDate && formData.toDate) {
             response = await apiCalls(
               'get',
-              `/arreceivable/getReceiptDetails?branchCode=${formData.branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
+              `/arreceivable/getReceiptDetails?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
             );
           } else {
             response = await apiCalls(
               'get',
-              `/payable/getPaymentDetails?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyname=${formData.customer}`
+              `/arreceivable/getReceiptDetails?branchCode=${formData.branchCode}&orgId=${orgId}&partyname=${formData.customer}`
             );
           }
         } else {
           if (formData.fromDate && formData.toDate) {
             response = await apiCalls(
               'get',
-              `/arreceivable/getReceiptSummary?branchCode=${formData.branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
+              `/arreceivable/getReceiptSummary?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
             );
           } else {
             response = await apiCalls(
               'get',
-              `/arreceivable/getReceiptSummary?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyname=${formData.customer}`
+              `/arreceivable/getReceiptSummary?branchCode=${formData.branchCode}&orgId=${orgId}&partyname=${formData.customer}`
             );
           }
         }
@@ -221,10 +230,7 @@ function ReceiptReport() {
           setRowData(response.paramObjectsMap.mapp || []);
           setIsLoading(false);
           setOpen(true);
-          const newHeaderFields = [
-            { label: 'Financial Year', value: finYear },
-            { label: 'Company', value: companyName },
-          ];
+          const newHeaderFields = [];
           if (selectedSections.date) {
             newHeaderFields.push({
               label: 'Date Range',
@@ -232,19 +238,19 @@ function ReceiptReport() {
             });
           }
 
-          if (selectedSections.branchCode) {
+          // if (selectedSections.branchCode) {
             newHeaderFields.push({
               label: 'Branch',
               value: formData.branchCode
             });
-          }
+          // }
 
-          if (selectedSections.customer) {
+          // if (selectedSections.customer) {
             newHeaderFields.push({
               label: 'Customer',
               value: formData.customer
             });
-          }
+          // }
 
           setHeaderFields(newHeaderFields);
         } else {
@@ -328,7 +334,7 @@ function ReceiptReport() {
           }
         },
         {
-          accessorKey: 'tdsAmount', header: 'Tds Amt', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
+          accessorKey: 'tdsAmount1', header: 'Tds Amt', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
             {cell.getValue() !== undefined && cell.getValue() !== null
               ? Number(cell.getValue()).toLocaleString('en-IN')
               : '-'}
@@ -429,71 +435,93 @@ function ReceiptReport() {
   };
   const handleDownloadExcel = async () => {
     try {
+      const logoBase64 = await getLogo();
       const workbook = new ExcelJS.Workbook();
       const reportType = formData.viewMode === 'details'
         ? 'Detailed Receipt Report'
         : 'Summary Receipt Report';
 
       const sheet = workbook.addWorksheet(reportType);
-      let currentRow = 1; // Track current row position
+      let currentRow = 1;
 
-      // Title
-      const titleRow = sheet.addRow([reportType]);
-      titleRow.font = { size: 16, bold: true, color: { argb: '1F4E78' } };
-      titleRow.alignment = { horizontal: 'center', vertical: 'middle' };
-      sheet.mergeCells(`A${currentRow}:O${currentRow}`);
-      currentRow++;
+      // Add logo if available
+      if (logoBase64) {
+        try {
+          const logoId = workbook.addImage({
+            base64: logoBase64,
+            extension: 'png',
+          });
+          sheet.mergeCells('A1:A2');
+          // No merging — place and size logo in A1 neatly
+          sheet.addImage(logoId, {
+            tl: { col: 0, row: 0 },  // top-left corner
+            ext: { width: 90, height: 50 },  // Logo size: adjust to your needs
+          });
+
+          // Optional: set row height and column width for better fit
+          sheet.getRow(1).height = 28;   // 20-30 is good
+          sheet.getColumn(1).width = 18; // Only Column A (index 1)
+
+        } catch (logoError) {
+          console.error('Error adding logo:', logoError);
+        }
+      }
+      sheet.mergeCells('B1:P1');
+      // Company Name (Row 1, centered)
+      const companyCell = sheet.getCell('B1');
+      companyCell.value = companyName;
+      companyCell.font = { bold: true, size: 14, color: { argb: '1F4E78' } };
+      companyCell.alignment = {
+        horizontal: 'center',
+        vertical: 'middle',
+        wrapText: true,
+      };
+      sheet.mergeCells('B2:P2');
+      // Report Title (Row 2, centered)
+      const titleCell = sheet.getCell('B2');
+      titleCell.value = reportType;
+      titleCell.font = { size: 14, bold: true };
+      titleCell.alignment = {
+        horizontal: 'center',
+        vertical: 'middle',
+        wrapText: true,
+      };
+      currentRow = 3;
+      // === Parameters ===
       const formatDate = (dateString) => {
         if (!dateString) return '';
         const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
-        const year = date.getFullYear();
-        return `${day}-${month}-${year}`;
+        return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
       };
-      // New parameters section
+
       const parameters = [];
-      if (finYear) parameters.push(`Financial Year: ${finYear}`);
-      if (companyName) parameters.push(`Company: ${companyName}`);
       if (selectedSections.date) {
-        parameters.push(
-          `Date Range: ${formatDate(formData.fromDate)} to ${formatDate(formData.toDate)}`
-        );
+        parameters.push(`Date Range: ${formatDate(formData.fromDate)} to ${formatDate(formData.toDate)}`);
       }
       if (selectedSections.branchCode) parameters.push(`Branch: ${formData.branchCode}`);
       if (selectedSections.customer) parameters.push(`Customer: ${formData.customer}`);
 
       if (parameters.length > 0) {
-        //  Parameters heading
-        // const paramHeading = sheet.addRow(['Report Parameters']);
-        // paramHeading.font = { bold: true, color: { argb: '1F4E78' } };
-        sheet.mergeCells(`A${currentRow}:O${currentRow}`);
-        currentRow++;
-
-        // Parameters values
         const paramsRow = sheet.addRow([parameters.join(' | ')]);
-        paramsRow.font = { bold: true, color: { argb: 'black' } };
+        paramsRow.font = { italic: true, size: 11 };
         sheet.mergeCells(`A${currentRow}:O${currentRow}`);
-        currentRow++;
-
-        // Empty row for spacing
-        sheet.addRow([]);
         currentRow++;
       }
 
-      // Timestamp
+      // === Timestamp ===
       const timestamp = `Generated on: ${dayjs().format('DD-MM-YYYY HH:mm:ss')}`;
       const timeRow = sheet.addRow([timestamp]);
-      timeRow.font = { color: { argb: '7F7F7F' } };
+      timeRow.font = { size: 10, color: { argb: '7F7F7F' } };
       timeRow.alignment = { horizontal: 'right' };
       sheet.mergeCells(`A${currentRow}:O${currentRow}`);
       currentRow++;
 
-      // Headers
+      // === Header Row ===
       const headers = formData.viewMode === 'details'
         ? [
-          '#', 'Doc ID', 'Date', 'Cheque No', 'Date','Customer','Receipt Amt', 'On Account', 'Net Amt', 'Invoice No',
-          'Date', 'Ref No', 'Ref Date', 'Bill Amt', 'Tax Amt', 'Tds Amt', 'Total Amt', 'Settled Amt', 'Outstanding Amt'
+          '#', 'Doc ID', 'Date', 'Cheque No', 'Cheque Date', 'Customer', 'Receipt Amt',
+          'On Account', 'Net Amt', 'Invoice No', 'Invoice Date', 'Ref No', 'Ref Date',
+          'Bill Amt', 'Tax Amt', 'Tds Amt', 'Total Amt', 'Settled Amt', 'Outstanding Amt'
         ]
         : [
           '#', 'Doc ID', 'Date', 'UTI No', 'UTI Date',
@@ -512,210 +540,77 @@ function ReceiptReport() {
       headerRow.height = 25;
       currentRow++;
 
-      // Data Rows
-      let dataStartRow = currentRow; // Remember where data starts
-
-      // Details Report
-      if (formData.viewMode === 'details') {
-        const groups = rowData.reduce((acc, item) => {
-          const key = item.docId;
-          if (!acc[key]) acc[key] = [];
-          acc[key].push(item);
-          return acc;
-        }, {});
-
-        Object.entries(groups).forEach(([docid, items], groupIndex) => {
-          const startRow = currentRow;
-
-          items.forEach((item, idx) => {
-            const row = [
-              groupIndex + 1,
-              item.docId,
-              dayjs(item.docDate).format('DD-MM-YYYY'),
-              item.jobNo,
-              item.supplierName,
-              item.vId || '-',
-              dayjs(item.vDate).format('DD-MM-YYYY'),
-              item.chargeCode,
-              item.chargerName,
-              item.ledger,
-              item.gstType,
-              item.gstPercentage,
-              item.qty,
-              item.rate,
-              item.lcAmt,
-              item.gst,
-              item.totalTds,
-              item.netAmount,
-            ];
-            const dataRow = sheet.addRow(row);
-
-            // Apply zebra striping
-            dataRow.fill = {
-              type: 'pattern',
-              pattern: 'solid',
-              fgColor: { argb: groupIndex % 2 === 0 ? 'F2F2F2' : 'FFFFFF' }
-            };
-
-            // Color coding
-            dataRow.getCell('O').font = { color: { argb: 'FFFF0000' } }; // Tax - Red
-            dataRow.getCell('P').font = { color: { argb: 'FF00B050' } }; // Total - Green
-            dataRow.getCell('Q').font = { color: { argb: 'FF00B050' } }; // Total - Green
-            dataRow.getCell('R').font = { color: { argb: 'FFFF0000' } }; // Tax - Red
-
-            // Format numbers
-            dataRow.getCell('N').numFmt = '#,##0.00';
-            dataRow.getCell('O').numFmt = '#,##0.00';
-            dataRow.getCell('P').numFmt = '#,##0.00';
-            dataRow.getCell('Q').numFmt = '#,##0.00';
-            dataRow.getCell('R').numFmt = '#,##0.00';
-
-            currentRow++;
-          });
-
-          // Only merge if group has >1 row
-          if (items.length > 1) {
-            const endRow = currentRow - 1;
-            for (let col = 1; col <= 6; col++) {
-              const colChar = String.fromCharCode(64 + col);
-              sheet.mergeCells(`${colChar}${startRow}:${colChar}${endRow}`);
-              const cell = sheet.getCell(`${colChar}${startRow}`);
-              cell.alignment = { vertical: 'middle', horizontal: 'center' };
-            }
-          }
-        });
-      }
-      // Summary Report
-      else {
-        rowData.forEach((item, index) => {
-          const row = sheet.addRow([
-            index + 1,
-            item.docId,
-            dayjs(item.docdate).format('DD-MM-YYYY'),
-            item.vId || '-',
-            dayjs(item.vDate).format('DD-MM-YYYY'),
-            item.gstType,
-            item.supplierName,
-            item.supplierPlace,
-            item.totChargeLcAmt,
+      // === Data Rows ===
+      rowData.forEach((item, index) => {
+        const rowValues = formData.viewMode === 'details'
+          ? [
+            item.docid,
+            formatDate(item.docdate),
+            item.chequeNo || '-',
+            formatDate(item.chequeDate),
+            item.customerName || '-',
+            item.receiptAmount,
+            item.onAccount,
+            item.netAmount,
+            item.invoiceNo,
+            formatDate(item.invoiceDate),
+            item.refNo,
+            formatDate(item.refDate),
+            item.amount,
             item.gstAmount,
             item.tdsAmount,
-            item.totalLcAmount
-          ]);
+            item.chargeamount,
+            item.settledAmount,
+            item.outStanding
+          ]
+          : [
+            item.docId,
+            formatDate(item.docDate),
+            item.chequeNo,
+            formatDate(item.chequeDate),
+            item.customerName,
+            item.bankAccount,
+            item.receiptAmount,
+            item.tdsAmount,
+            item.onAccount,
+            item.netAmount
+          ];
 
-          // Apply zebra striping
-          row.fill = {
-            type: 'pattern',
-            pattern: 'solid',
-            fgColor: { argb: index % 2 === 0 ? 'F2F2F2' : 'FFFFFF' }
-          };
+        const dataRow = sheet.addRow(rowValues);
 
-          // Color coding
-          row.getCell('I').font = { color: { argb: 'FFFF0000' } }; // Tax - Red
-          row.getCell('J').font = { color: { argb: 'FF00B050' } };
-          row.getCell('K').font = { color: { argb: 'FF00B050' } }; // Total - Green
-          row.getCell('L').font = { color: { argb: 'FFFF0000' } };
+        // Zebra striping
+        dataRow.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: index % 2 === 0 ? 'F2F2F2' : 'FFFFFF' }
+        };
 
-          // Format numbers
-          row.getCell('I').numFmt = '#,##0.00'; // Amount
-          row.getCell('J').numFmt = '#,##0.00'; // Tax
-          row.getCell('K').numFmt = '#,##0.00'; // Total
-          row.getCell('L').numFmt = '#,##0.00';
-
-          currentRow++;
-        });
-      }
-
-      // Add totals
-      const totals = rowData.reduce((acc, item) => {
-        acc.totalCharge += Number(item.lcAmt || 0);
-        acc.totalTax += Number(item.gst || 0);
-        acc.totalTds += Number(item.totalTds || 0);
-        acc.totalInvoice += Number(item.netAmount || 0);
-        return acc;
-      }, { totalCharge: 0, totalTax: 0, totalInvoice: 0, totalTds: 0 });
-
-      const totalSummary = rowData.reduce((acc, item) => {
-        acc.totChargeLcAmt += Number(item.totChargeLcAmt || 0);
-        acc.gstAmount += Number(item.gstAmount || 0);
-        acc.tdsAmount += Number(item.tdsAmount || 0);
-        acc.totalLcAmount += Number(item.totalLcAmount || 0);
-        return acc;
-      }, { totChargeLcAmt: 0, gstAmount: 0, tdsAmount: 0, totalLcAmount: 0, });
-      const totalRow = sheet.addRow([]);
-
-      if (formData.viewMode === 'details') {
-        totalRow.values = [
-          'Grand Total', '', '', '', '', '', '', '', '', '', '', '', '', '',
-          totals.totalCharge,
-          totals.totalTax,
-          totals.totalTds,
-          totals.totalInvoice,
-        ];
-        sheet.mergeCells(`A${currentRow}:J${currentRow}`);
-      } else {
-        totalRow.values = [
-          'Grand Total', '', '', '', '', '', '', '',
-          totalSummary.totChargeLcAmt,
-          totalSummary.gstAmount,
-          totalSummary.tdsAmount,
-          totalSummary.totalLcAmount,
-        ];
-        sheet.mergeCells(`A${currentRow}:H${currentRow}`);
-      }
-
-      // Style totals row
-      totalRow.font = { bold: true };
-      totalRow.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'DDEBF7' } // Light blue background
-      };
-      totalRow.getCell(1).alignment = { horizontal: 'right' };
-
-      // Format totals numbers
-      if (formData.viewMode === 'details') {
-        totalRow.getCell('K').numFmt = '#,##0';
-        totalRow.getCell('K').alignment = { horizontal: 'right' };
-        ['O', 'P', 'Q', 'R'].forEach(col => {
-          const cell = totalRow.getCell(col);
-          cell.numFmt = '#,##0.00';
-          cell.alignment = { horizontal: 'right' };
-        });
-        totalRow.getCell('O').font = { color: { argb: 'FFFF0000' } };
-        totalRow.getCell('P').font = { color: { argb: 'FF00B050' } };
-        totalRow.getCell('Q').font = { color: { argb: 'FF00B050' } };
-        totalRow.getCell('R').font = { color: { argb: 'FFFF0000' } };
-      } else {
-        ['I', 'J', 'K', 'L'].forEach(col => {
-          const cell = totalRow.getCell(col);
-          cell.numFmt = '#,##0.00';
-          cell.alignment = { horizontal: 'right' };
-        });
-        totalRow.getCell('I').font = { color: { argb: 'FFFF0000' } };
-        totalRow.getCell('J').font = { color: { argb: 'FF00B050' } };
-        totalRow.getCell('K').font = { color: { argb: 'FF00B050' } };
-        totalRow.getCell('L').font = { color: { argb: 'FFFF0000' } };
-      }
-      currentRow++;
-
-      // Set column widths and borders
-      sheet.columns.forEach(column => {
-        column.width = 18;
-        column.alignment = { vertical: 'middle' };
+        // Right-align amounts
+        for (let i = 6; i <= rowValues.length; i++) {
+          dataRow.getCell(i).alignment = { horizontal: 'right' };
+          dataRow.getCell(i).numFmt = '#,##0.00';
+        }
       });
 
-      sheet.eachRow(row => {
-        row.eachCell(cell => {
-          cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-          };
-        });
+      // === Column formatting ===
+      sheet.columns.forEach(col => {
+        col.width = 18;
+        col.alignment = { vertical: 'middle' };
       });
 
+      // === Borders ===
+      // sheet.eachRow(row => {
+      //   row.eachCell(cell => {
+      //     cell.border = {
+      //       top: { style: 'thin' },
+      //       left: { style: 'thin' },
+      //       bottom: { style: 'thin' },
+      //       right: { style: 'thin' }
+      //     };
+      //   });
+      // });
+
+      // === Download file ===
       const buffer = await workbook.xlsx.writeBuffer();
       saveAs(new Blob([buffer]), `${reportType.replace(/\s+/g, '_')}.xlsx`);
     } catch (error) {
@@ -723,6 +618,7 @@ function ReceiptReport() {
       showToast('error', 'Failed to generate Excel file');
     }
   };
+
 
   return (
     <>

@@ -203,24 +203,24 @@ function SalesReport() {
           if (selectedSections.date) {
             response = await apiCalls(
               'get',
-              `/taxInvoice/getTaxinvoiceDetails?branchCode=${formData.branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
+              `/taxInvoice/getTaxinvoiceDetails?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
             );
           } else {
             response = await apiCalls(
               'get',
-              `/taxInvoice/getTaxinvoiceDetails?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyname=${formData.customer}`
+              `/taxInvoice/getTaxinvoiceDetails?branchCode=${formData.branchCode}&orgId=${orgId}&partyname=${formData.customer}`
             );
           }
         } else {
           if (selectedSections.date) {
             response = await apiCalls(
               'get',
-              `/taxInvoice/getTaxinvoiceSummary?branchCode=${formData.branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
+              `/taxInvoice/getTaxinvoiceSummary?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
             );
           } else {
             response = await apiCalls(
               'get',
-              `/taxInvoice/getTaxinvoiceSummary?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyname=${formData.customer}`
+              `/taxInvoice/getTaxinvoiceSummary?branchCode=${formData.branchCode}&orgId=${orgId}&partyname=${formData.customer}`
             );
           }
         }

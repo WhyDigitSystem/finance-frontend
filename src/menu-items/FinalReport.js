@@ -99,6 +99,12 @@ const finalReport =  {
           type: 'item',
           url: '/finance/FinalReport/PaymentReportD&S'
         },
+        {
+          id: 'pendingReport',
+          title: 'Pending Report',
+          type: 'item',
+          url: '/finance/FinalReport/PendingReport'
+        },
       ]
       // .filter((item) => allowedScreenIds.includes(item.id))
     }

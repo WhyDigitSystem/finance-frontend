@@ -148,7 +148,15 @@ function PaymentReport() {
             [field]: ''
         }))
     };
-
+    const getLogo = async () => {
+        try {
+            const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+            return response.paramObjectsMap.companyVO[0]?.companyLogo || null;
+        } catch (error) {
+            console.error('Error fetching logo:', error);
+            return null;
+        }
+    };
     const getAllBranches = async () => {
         try {
             const branchData = await getAllActiveBranches(orgId);
@@ -195,24 +203,24 @@ function PaymentReport() {
                     if (formData.fromDate && formData.toDate) {
                         response = await apiCalls(
                             'get',
-                            `/payable/getPaymentDetails?branchCode=${formData.branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.vendor}&toDate=${formData.toDate}`
+                            `/payable/getPaymentDetails?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.vendor}&toDate=${formData.toDate}`
                         );
                     } else {
                         response = await apiCalls(
                             'get',
-                            `/payable/getPaymentDetails?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyname=${formData.vendor}`
+                            `/payable/getPaymentDetails?branchCode=${formData.branchCode}&orgId=${orgId}&partyname=${formData.vendor}`
                         );
                     }
                 } else {
                     if (formData.fromDate && formData.toDate) {
                         response = await apiCalls(
                             'get',
-                            `/payable/getPaymentSummary?branchCode=${formData.branchCode}&finYear=${finYear}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.vendor}&toDate=${formData.toDate}`
+                            `/payable/getPaymentSummary?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.vendor}&toDate=${formData.toDate}`
                         );
                     } else {
                         response = await apiCalls(
                             'get',
-                            `/payable/getPaymentSummary?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyname=${formData.vendor}`
+                            `/payable/getPaymentSummary?branchCode=${formData.branchCode}&orgId=${orgId}&partyname=${formData.vendor}`
                         );
                     }
                 }
@@ -232,19 +240,19 @@ function PaymentReport() {
                         });
                     }
 
-                    if (selectedSections.branchCode) {
+                    // if (selectedSections.branchCode) {
                         newHeaderFields.push({
                             label: 'Branch',
                             value: formData.branchCode
                         });
-                    }
+                    // }
 
-                    if (selectedSections.vendor) {
+                    // if (selectedSections.vendor) {
                         newHeaderFields.push({
                             label: 'Vendor',
                             value: formData.vendor
                         });
-                    }
+                    // }
 
                     setHeaderFields(newHeaderFields);
                 } else {
@@ -417,7 +425,6 @@ function PaymentReport() {
                 },
             ];
     };
-
     const getSumFields = () => {
         return formData.viewMode === 'details'
             ? ['tdsamt', 'chargeamt', 'settled', 'outstanding']
@@ -428,303 +435,136 @@ function PaymentReport() {
         setRowData([]);
     };
     const handleDownloadExcel = async () => {
+        if (!rowData || rowData.length === 0) {
+            showToast('warning', 'No data available to download');
+            return;
+        }
+
         try {
+            const logoBase64 = await getLogo();
             const workbook = new ExcelJS.Workbook();
             const reportType = formData.viewMode === 'details'
                 ? 'Detailed Payment Report'
                 : 'Summary Payment Report';
-
             const sheet = workbook.addWorksheet(reportType);
-            let currentRow = 1; // Track current row position
+            let currentRow = 1;
 
-            // Title
-            const titleRow = sheet.addRow([reportType]);
-            titleRow.font = { size: 16, bold: true, color: { argb: '1F4E78' } };
-            titleRow.alignment = { horizontal: 'center', vertical: 'middle' };
-            sheet.mergeCells(`A${currentRow}:O${currentRow}`);
-            currentRow++;
-            const formatDate = (dateString) => {
-                if (!dateString) return '';
-                const date = new Date(dateString);
-                const day = String(date.getDate()).padStart(2, '0');
-                const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
-                const year = date.getFullYear();
-                return `${day}-${month}-${year}`;
+            const columns = getColumns(); // reuse your getColumns function
+            const headers = columns.map(col => col.header);
+            const accessors = columns.map(col => col.accessorKey);
+            const lastCol = String.fromCharCode(64 + headers.length);
+            // Add logo if available
+            if (logoBase64) {
+                try {
+                    const logoId = workbook.addImage({
+                        base64: logoBase64,
+                        extension: 'png',
+                    });
+                    sheet.mergeCells('A1:A2');
+                    // No merging — place and size logo in A1 neatly
+                    sheet.addImage(logoId, {
+                        tl: { col: 0, row: 0 },  // top-left corner
+                        ext: { width: 90, height: 50 },  // Logo size: adjust to your needs
+                    });
+
+                    // Optional: set row height and column width for better fit
+                    sheet.getRow(1).height = 28;   // 20-30 is good
+                    sheet.getColumn(1).width = 18; // Only Column A (index 1)
+
+                } catch (logoError) {
+                    console.error('Error adding logo:', logoError);
+                }
+            }
+            sheet.mergeCells('B1:P1');
+            // Company Name (Row 1, centered)
+            const companyCell = sheet.getCell('B1');
+            companyCell.value = companyName;
+            companyCell.font = { bold: true, size: 14, color: { argb: '1F4E78' } };
+            companyCell.alignment = {
+                horizontal: 'center',
+                vertical: 'middle',
+                wrapText: true,
             };
-            // New parameters section
+            sheet.mergeCells('B2:P2');
+            // Report Title (Row 2, centered)
+            const titleCell = sheet.getCell('B2');
+            titleCell.value = reportType;
+            titleCell.font = { size: 14, bold: true };
+            titleCell.alignment = {
+                horizontal: 'center',
+                vertical: 'middle',
+                wrapText: true,
+            };
+            currentRow = 3;
+
+            // Params
             const parameters = [];
-            if (finYear) parameters.push(`Financial Year: ${finYear}`);
-            if (companyName) parameters.push(`Company: ${companyName}`);
             if (selectedSections.date) {
-                parameters.push(
-                    `Date Range: ${formatDate(formData.fromDate)} to ${formatDate(formData.toDate)}`
-                );
+                parameters.push(`Date Range: ${dayjs(formData.fromDate).format('DD-MM-YYYY')} to ${dayjs(formData.toDate).format('DD-MM-YYYY')}`);
             }
             if (selectedSections.branchCode) parameters.push(`Branch: ${formData.branchCode}`);
             if (selectedSections.vendor) parameters.push(`Vendor: ${formData.vendor}`);
 
-            if (parameters.length > 0) {
-                //  Parameters heading
-                // const paramHeading = sheet.addRow(['Report Parameters']);
-                // paramHeading.font = { bold: true, color: { argb: '1F4E78' } };
-                sheet.mergeCells(`A${currentRow}:O${currentRow}`);
-                currentRow++;
-
-                // Parameters values
-                const paramsRow = sheet.addRow([parameters.join(' | ')]);
-                paramsRow.font = { bold: true, color: { argb: 'black' } };
-                sheet.mergeCells(`A${currentRow}:O${currentRow}`);
-                currentRow++;
-
-                // Empty row for spacing
-                sheet.addRow([]);
-                currentRow++;
-            }
+            const paramRow = sheet.addRow([parameters.join(' | ')]);
+            paramRow.font = { italic: true };
+            sheet.mergeCells(`A${currentRow}:${lastCol}${currentRow}`);
+            currentRow++;
 
             // Timestamp
             const timestamp = `Generated on: ${dayjs().format('DD-MM-YYYY HH:mm:ss')}`;
             const timeRow = sheet.addRow([timestamp]);
-            timeRow.font = { color: { argb: '7F7F7F' } };
-            timeRow.alignment = { horizontal: 'right' };
-            sheet.mergeCells(`A${currentRow}:O${currentRow}`);
+            timeRow.font = { color: { argb: '888888' } };
+            sheet.mergeCells(`A${currentRow}:${lastCol}${currentRow}`);
             currentRow++;
 
-            // Headers
-            const headers = formData.viewMode === 'details'
-                ? [
-                    '#', 'Doc ID', 'Date', 'Job No', 'Vendor', 'Invoice No',
-                    'Date', 'Charge Code', 'Charge Name', 'Ledger', 'Tax Type', 'Tax %', 'Qty', 'Rate',
-                    'Charge Amt', 'Tax Amt', 'Tds Amt', 'Total Amt'
-                ]
-                : [
-                    '#', 'Doc ID', 'Date', 'Invoice No', 'Invoice Date',
-                    'Tax Type', 'Vendor', 'Supply Place',
-                    'Bill Amount', 'Tax Amount', 'Tds Amount', 'Total Amt'
-                ];
-
+            // Header Row
             const headerRow = sheet.addRow(headers);
             headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-            headerRow.fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: '1F4E78' }
-            };
-            headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
-            headerRow.height = 25;
+            headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1F4E78' } };
+            headerRow.alignment = { horizontal: 'center' };
             currentRow++;
 
             // Data Rows
-            let dataStartRow = currentRow; // Remember where data starts
-
-            // Details Report
-            if (formData.viewMode === 'details') {
-                const groups = rowData.reduce((acc, item) => {
-                    const key = item.docId;
-                    if (!acc[key]) acc[key] = [];
-                    acc[key].push(item);
-                    return acc;
-                }, {});
-
-                Object.entries(groups).forEach(([docid, items], groupIndex) => {
-                    const startRow = currentRow;
-
-                    items.forEach((item, idx) => {
-                        const row = [
-                            groupIndex + 1,
-                            item.docId,
-                            dayjs(item.docDate).format('DD-MM-YYYY'),
-                            item.jobNo,
-                            item.supplierName,
-                            item.vId || '-',
-                            dayjs(item.vDate).format('DD-MM-YYYY'),
-                            item.chargeCode,
-                            item.chargerName,
-                            item.ledger,
-                            item.gstType,
-                            item.gstPercentage,
-                            item.qty,
-                            item.rate,
-                            item.lcAmt,
-                            item.gst,
-                            item.totalTds,
-                            item.netAmount,
-                        ];
-                        const dataRow = sheet.addRow(row);
-
-                        // Apply zebra striping
-                        dataRow.fill = {
-                            type: 'pattern',
-                            pattern: 'solid',
-                            fgColor: { argb: groupIndex % 2 === 0 ? 'F2F2F2' : 'FFFFFF' }
-                        };
-
-                        // Color coding
-                        dataRow.getCell('O').font = { color: { argb: 'FFFF0000' } }; // Tax - Red
-                        dataRow.getCell('P').font = { color: { argb: 'FF00B050' } }; // Total - Green
-                        dataRow.getCell('Q').font = { color: { argb: 'FF00B050' } }; // Total - Green
-                        dataRow.getCell('R').font = { color: { argb: 'FFFF0000' } }; // Tax - Red
-
-                        // Format numbers
-                        dataRow.getCell('N').numFmt = '#,##0.00';
-                        dataRow.getCell('O').numFmt = '#,##0.00';
-                        dataRow.getCell('P').numFmt = '#,##0.00';
-                        dataRow.getCell('Q').numFmt = '#,##0.00';
-                        dataRow.getCell('R').numFmt = '#,##0.00';
-
-                        currentRow++;
-                    });
-
-                    // Only merge if group has >1 row
-                    if (items.length > 1) {
-                        const endRow = currentRow - 1;
-                        for (let col = 1; col <= 6; col++) {
-                            const colChar = String.fromCharCode(64 + col);
-                            sheet.mergeCells(`${colChar}${startRow}:${colChar}${endRow}`);
-                            const cell = sheet.getCell(`${colChar}${startRow}`);
-                            cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                        }
-                    }
+            rowData.forEach((item, index) => {
+                const rowValues = accessors.map(key => {
+                    const val = item[key];
+                    if (val === null || val === undefined) return '';
+                    if (key.includes('date')) return dayjs(val).isValid() ? dayjs(val).format('DD-MM-YYYY') : val;
+                    if (typeof val === 'number') return Number(val);
+                    return val;
                 });
-            }
-            // Summary Report
-            else {
-                rowData.forEach((item, index) => {
-                    const row = sheet.addRow([
-                        index + 1,
-                        item.docId,
-                        dayjs(item.docdate).format('DD-MM-YYYY'),
-                        item.vId || '-',
-                        dayjs(item.vDate).format('DD-MM-YYYY'),
-                        item.gstType,
-                        item.supplierName,
-                        item.supplierPlace,
-                        item.totChargeLcAmt,
-                        item.gstAmount,
-                        item.tdsAmount,
-                        item.totalLcAmount
-                    ]);
-
-                    // Apply zebra striping
-                    row.fill = {
-                        type: 'pattern',
-                        pattern: 'solid',
-                        fgColor: { argb: index % 2 === 0 ? 'F2F2F2' : 'FFFFFF' }
-                    };
-
-                    // Color coding
-                    row.getCell('I').font = { color: { argb: 'FFFF0000' } }; // Tax - Red
-                    row.getCell('J').font = { color: { argb: 'FF00B050' } };
-                    row.getCell('K').font = { color: { argb: 'FF00B050' } }; // Total - Green
-                    row.getCell('L').font = { color: { argb: 'FFFF0000' } };
-
-                    // Format numbers
-                    row.getCell('I').numFmt = '#,##0.00'; // Amount
-                    row.getCell('J').numFmt = '#,##0.00'; // Tax
-                    row.getCell('K').numFmt = '#,##0.00'; // Total
-                    row.getCell('L').numFmt = '#,##0.00';
-
-                    currentRow++;
-                });
-            }
-
-            // Add totals
-            const totals = rowData.reduce((acc, item) => {
-                acc.totalCharge += Number(item.lcAmt || 0);
-                acc.totalTax += Number(item.gst || 0);
-                acc.totalTds += Number(item.totalTds || 0);
-                acc.totalInvoice += Number(item.netAmount || 0);
-                return acc;
-            }, { totalCharge: 0, totalTax: 0, totalInvoice: 0, totalTds: 0 });
-
-            const totalSummary = rowData.reduce((acc, item) => {
-                acc.totChargeLcAmt += Number(item.totChargeLcAmt || 0);
-                acc.gstAmount += Number(item.gstAmount || 0);
-                acc.tdsAmount += Number(item.tdsAmount || 0);
-                acc.totalLcAmount += Number(item.totalLcAmount || 0);
-                return acc;
-            }, { totChargeLcAmt: 0, gstAmount: 0, tdsAmount: 0, totalLcAmount: 0, });
-            const totalRow = sheet.addRow([]);
-
-            if (formData.viewMode === 'details') {
-                totalRow.values = [
-                    'Grand Total', '', '', '', '', '', '', '', '', '', '', '', '', '',
-                    totals.totalCharge,
-                    totals.totalTax,
-                    totals.totalTds,
-                    totals.totalInvoice,
-                ];
-                sheet.mergeCells(`A${currentRow}:J${currentRow}`);
-            } else {
-                totalRow.values = [
-                    'Grand Total', '', '', '', '', '', '', '',
-                    totalSummary.totChargeLcAmt,
-                    totalSummary.gstAmount,
-                    totalSummary.tdsAmount,
-                    totalSummary.totalLcAmount,
-                ];
-                sheet.mergeCells(`A${currentRow}:H${currentRow}`);
-            }
-
-            // Style totals row
-            totalRow.font = { bold: true };
-            totalRow.fill = {
-                type: 'pattern',
-                pattern: 'solid',
-                fgColor: { argb: 'DDEBF7' } // Light blue background
-            };
-            totalRow.getCell(1).alignment = { horizontal: 'right' };
-
-            // Format totals numbers
-            if (formData.viewMode === 'details') {
-                totalRow.getCell('K').numFmt = '#,##0';
-                totalRow.getCell('K').alignment = { horizontal: 'right' };
-                ['O', 'P', 'Q', 'R'].forEach(col => {
-                    const cell = totalRow.getCell(col);
-                    cell.numFmt = '#,##0.00';
-                    cell.alignment = { horizontal: 'right' };
-                });
-                totalRow.getCell('O').font = { color: { argb: 'FFFF0000' } };
-                totalRow.getCell('P').font = { color: { argb: 'FF00B050' } };
-                totalRow.getCell('Q').font = { color: { argb: 'FF00B050' } };
-                totalRow.getCell('R').font = { color: { argb: 'FFFF0000' } };
-            } else {
-                ['I', 'J', 'K', 'L'].forEach(col => {
-                    const cell = totalRow.getCell(col);
-                    cell.numFmt = '#,##0.00';
-                    cell.alignment = { horizontal: 'right' };
-                });
-                totalRow.getCell('I').font = { color: { argb: 'FFFF0000' } };
-                totalRow.getCell('J').font = { color: { argb: 'FF00B050' } };
-                totalRow.getCell('K').font = { color: { argb: 'FF00B050' } };
-                totalRow.getCell('L').font = { color: { argb: 'FFFF0000' } };
-            }
-            currentRow++;
-
-            // Set column widths and borders
-            sheet.columns.forEach(column => {
-                column.width = 18;
-                column.alignment = { vertical: 'middle' };
+                sheet.addRow(rowValues);
             });
 
-            sheet.eachRow(row => {
-                row.eachCell(cell => {
-                    cell.border = {
-                        top: { style: 'thin' },
-                        left: { style: 'thin' },
-                        bottom: { style: 'thin' },
-                        right: { style: 'thin' }
-                    };
-                });
+            // Totals Row (Optional: add logic if needed)
+
+            // Style
+            sheet.columns.forEach((col, i) => {
+                col.width = columns[i].size ? Math.floor(columns[i].size / 6) : 15;
             });
 
+            // sheet.eachRow(row => {
+            //     row.eachCell(cell => {
+            //         cell.border = {
+            //             top: { style: 'thin' },
+            //             left: { style: 'thin' },
+            //             bottom: { style: 'thin' },
+            //             right: { style: 'thin' }
+            //         };
+            //     });
+            // });
+
+            // Save
             const buffer = await workbook.xlsx.writeBuffer();
-            saveAs(new Blob([buffer]), `${reportType.replace(/\s+/g, '_')}.xlsx`);
+            const blob = new Blob([buffer], {
+                type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            });
+            saveAs(blob, `${reportType.replace(/\s+/g, '_')}.xlsx`);
         } catch (error) {
-            console.error('Excel generation failed:', error);
-            showToast('error', 'Failed to generate Excel file');
+            console.error("Excel export failed:", error);
+            showToast('error', 'Excel download failed');
         }
     };
-
     return (
         <>
             <div className="card w-full bg-base-100 shadow-xl" style={{ padding: '10px', borderRadius: '10px' }}>
