@@ -446,7 +446,6 @@ function LedgerReport() {
           accountName: formData.accountName === 'All' ? '' : formData.accountName,
           branch: formData.branchCode === 'All' ? '' : formData.branchCode,
           details: formData.withDetails,
-          finYear: finYear,
           fromdate: formData.fromDate,
           orgId: orgId,
           toDate: formData.toDate

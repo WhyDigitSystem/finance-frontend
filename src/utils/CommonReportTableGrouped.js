@@ -6,6 +6,7 @@ import {
   Chip,
   Stack,
 } from '@mui/material';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { download, generateCsv, mkConfig } from 'export-to-csv';
 import { MaterialReactTable } from 'material-react-table';
 import dayjs from 'dayjs';
@@ -20,6 +21,7 @@ const CommonReportTableGrouped = ({
   isListView,
   fileName,
   handleDownloadExcel,
+  handleDownloadPDF,
   sumFields = [],
   headerFields = [],
   filters = [], // [{ label, value, options, onChange }]
@@ -255,6 +257,15 @@ const CommonReportTableGrouped = ({
                 title="Download Excel"
                 icon={FileDownloadIcon}
                 onClick={handleDownloadExcel}
+                isLoading={isLoading}
+                margin="0 8px 0 8px"
+              />
+            </Box>  
+            <Box>
+              <ActionButton
+                title="Download PDF"
+                icon={PictureAsPdfIcon}
+                onClick={handleDownloadPDF}
                 isLoading={isLoading}
                 margin="0 8px 0 8px"
               />

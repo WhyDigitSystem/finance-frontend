@@ -6,6 +6,7 @@ import { MaterialReactTable } from 'material-react-table';
 import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
 import { useTheme } from '@mui/material/styles';
+import { padding, textAlign } from '@mui/system';
 
 const formatDate = (value) => (value ? dayjs(value).format('DD-MM-YYYY') : '-');
 
@@ -18,7 +19,7 @@ const CommonReportTable = ({
   sumFields = [],
   headerFields = [],
   filters = [], // [{ label, value, options, onChange }]
-  onFilterDone = () => {}
+  onFilterDone = () => { }
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const theme = useTheme();
@@ -28,15 +29,18 @@ const CommonReportTable = ({
     ...chipSX,
     color: theme.palette.success.dark,
     backgroundColor: theme.palette.success.light,
-    height: 28
+    height: 18,
+    fontSize: '11px',
   };
   const chipErrorSX = {
     ...chipSX,
     color: theme.palette.warning.dark,
     backgroundColor: theme.palette.warning.light,
-    marginRight: '5px'
+    marginRight: '5px',
+    height: 18,
+    fontSize: '10px',
+    textAlign: 'center'
   };
-
   const csvConfig = mkConfig({
     fieldSeparator: ',',
     decimalSeparator: '.',
@@ -91,7 +95,14 @@ const CommonReportTable = ({
         )
       };
     }
-
+    if (column.accessorKey === 'status') {
+      return {
+        ...column,
+        Cell: ({ cell }) => (
+          <Chip label={cell.getValue() === 'SUBMIT' ? 'SUBMIT' : 'EDIT'} sx={cell.getValue() === 'SUBMIT' ? chipSuccessSX : chipErrorSX} />
+        )
+      };
+    }
     if (column.accessorKey === 'closed') {
       return {
         ...column,

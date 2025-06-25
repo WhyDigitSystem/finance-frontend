@@ -204,24 +204,24 @@ function ReceiptReport() {
           if (formData.fromDate && formData.toDate) {
             response = await apiCalls(
               'get',
-              `/arreceivable/getReceiptDetails?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
+              `/arreceivable/getReceiptDetails?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&finYear=${finYear}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
             );
           } else {
             response = await apiCalls(
               'get',
-              `/arreceivable/getReceiptDetails?branchCode=${formData.branchCode}&orgId=${orgId}&partyname=${formData.customer}`
+              `/arreceivable/getReceiptDetails?branchCode=${formData.branchCode}&orgId=${orgId}&partyname=${formData.customer}&finYear=${finYear}`
             );
           }
         } else {
           if (formData.fromDate && formData.toDate) {
             response = await apiCalls(
               'get',
-              `/arreceivable/getReceiptSummary?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
+              `/arreceivable/getReceiptSummary?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&finYear=${finYear}&orgId=${orgId}&partyname=${formData.customer}&toDate=${formData.toDate}`
             );
           } else {
             response = await apiCalls(
               'get',
-              `/arreceivable/getReceiptSummary?branchCode=${formData.branchCode}&orgId=${orgId}&partyname=${formData.customer}`
+              `/arreceivable/getReceiptSummary?branchCode=${formData.branchCode}&orgId=${orgId}&partyname=${formData.customer}&finYear=${finYear}`
             );
           }
         }
@@ -498,12 +498,12 @@ function ReceiptReport() {
       if (selectedSections.date) {
         parameters.push(`Date Range: ${formatDate(formData.fromDate)} to ${formatDate(formData.toDate)}`);
       }
-      if (selectedSections.branchCode) parameters.push(`Branch: ${formData.branchCode}`);
-      if (selectedSections.customer) parameters.push(`Customer: ${formData.customer}`);
+      if (formData.branchCode) parameters.push(`Branch: ${formData.branchCode}`);
+      if (formData.customer) parameters.push(`Customer: ${formData.customer}`);
 
       if (parameters.length > 0) {
         const paramsRow = sheet.addRow([parameters.join(' | ')]);
-        paramsRow.font = { italic: true, size: 11 };
+        paramsRow.font = { size: 11 };
         sheet.mergeCells(`A${currentRow}:O${currentRow}`);
         currentRow++;
       }
@@ -519,12 +519,12 @@ function ReceiptReport() {
       // === Header Row ===
       const headers = formData.viewMode === 'details'
         ? [
-          '#', 'Doc ID', 'Date', 'Cheque No', 'Cheque Date', 'Customer', 'Receipt Amt',
+          'Doc ID', 'Date', 'Cheque No', 'Cheque Date', 'Customer', 'Receipt Amt',
           'On Account', 'Net Amt', 'Invoice No', 'Invoice Date', 'Ref No', 'Ref Date',
           'Bill Amt', 'Tax Amt', 'Tds Amt', 'Total Amt', 'Settled Amt', 'Outstanding Amt'
         ]
         : [
-          '#', 'Doc ID', 'Date', 'UTI No', 'UTI Date',
+          'Doc ID', 'Date', 'UTI No', 'UTI Date',
           'Customer', 'Bank Account',
           'Received Amt', 'Tds Amount', 'On Account', 'Net Amount'
         ];
@@ -618,8 +618,6 @@ function ReceiptReport() {
       showToast('error', 'Failed to generate Excel file');
     }
   };
-
-
   return (
     <>
       <div className="card w-full bg-base-100 shadow-xl" style={{ padding: '10px', borderRadius: '10px' }}>

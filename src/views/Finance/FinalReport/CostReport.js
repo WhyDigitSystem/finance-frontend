@@ -203,24 +203,24 @@ function CostReport() {
           if (selectedSections.date) {
             response = await apiCalls(
               'get',
-              `/costInvoice/getCostInvoiceSummaryDetails?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyName=${formData.vendor}&toDate=${formData.toDate}`
+              `/costInvoice/getCostInvoiceSummaryDetails?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&finYear=${finYear}&orgId=${orgId}&partyName=${formData.vendor}&toDate=${formData.toDate}`
             );
           } else {
             response = await apiCalls(
               'get',
-              `/costInvoice/getCostInvoiceSummaryDetails?branchCode=${formData.branchCode}&orgId=${orgId}&partyName=${formData.vendor}`
+              `/costInvoice/getCostInvoiceSummaryDetails?branchCode=${formData.branchCode}&orgId=${orgId}&partyName=${formData.vendor}&finYear=${finYear}`
             );
           }
         } else {
           if (selectedSections.date) {
             response = await apiCalls(
               'get',
-              `/costInvoice/getCostInvoiceSummary?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyName=${formData.vendor}&toDate=${formData.toDate}`
+              `/costInvoice/getCostInvoiceSummary?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&finYear=${finYear}&orgId=${orgId}&partyName=${formData.vendor}&toDate=${formData.toDate}`
             );
           } else {
             response = await apiCalls(
               'get',
-              `/costInvoice/getCostInvoiceSummary?branchCode=${formData.branchCode}&orgId=${orgId}&partyName=${formData.vendor}`
+              `/costInvoice/getCostInvoiceSummary?branchCode=${formData.branchCode}&orgId=${orgId}&partyName=${formData.vendor}&finYear=${finYear}`
             );
           }
         }
