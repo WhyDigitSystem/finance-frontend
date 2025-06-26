@@ -8,7 +8,6 @@ import {
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import SearchIcon from '@mui/icons-material/Search';
-import FileDownload from '@mui/icons-material/FileDownload';
 import CloseIcon from '@mui/icons-material/Close';
 import ClearIcon from '@mui/icons-material/Clear';
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -20,6 +19,9 @@ import apiCalls from 'apicall';
 import { showToast } from 'utils/toast-component';
 import CommonReportTableGrouped from '../../../utils/CommonReportTableGrouped';
 import ActionButton from 'utils/ActionButton';
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+// pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 function PaymentReport() {
     const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -203,24 +205,24 @@ function PaymentReport() {
                     if (formData.fromDate && formData.toDate) {
                         response = await apiCalls(
                             'get',
-                            `/payable/getPaymentDetails?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.vendor}&toDate=${formData.toDate}`
+                            `/payable/getPaymentDetails?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.vendor}&toDate=${formData.toDate}&finYear=${finYear}`
                         );
                     } else {
                         response = await apiCalls(
                             'get',
-                            `/payable/getPaymentDetails?branchCode=${formData.branchCode}&orgId=${orgId}&partyname=${formData.vendor}`
+                            `/payable/getPaymentDetails?branchCode=${formData.branchCode}&orgId=${orgId}&partyname=${formData.vendor}&finYear=${finYear}`
                         );
                     }
                 } else {
                     if (formData.fromDate && formData.toDate) {
                         response = await apiCalls(
                             'get',
-                            `/payable/getPaymentSummary?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.vendor}&toDate=${formData.toDate}`
+                            `/payable/getPaymentSummary?branchCode=${formData.branchCode}&fromDate=${formData.fromDate}&orgId=${orgId}&partyname=${formData.vendor}&toDate=${formData.toDate}&finYear=${finYear}`
                         );
                     } else {
                         response = await apiCalls(
                             'get',
-                            `/payable/getPaymentSummary?branchCode=${formData.branchCode}&orgId=${orgId}&partyname=${formData.vendor}`
+                            `/payable/getPaymentSummary?branchCode=${formData.branchCode}&orgId=${orgId}&partyname=${formData.vendor}&finYear=${finYear}`
                         );
                     }
                 }
@@ -229,10 +231,7 @@ function PaymentReport() {
                     setRowData(response.paramObjectsMap.paymentVO || []);
                     setIsLoading(false);
                     setOpen(true);
-                    const newHeaderFields = [
-                        { label: 'Financial Year', value: finYear },
-                        { label: 'Company', value: companyName },
-                    ];
+                    const newHeaderFields = [];
                     if (selectedSections.date) {
                         newHeaderFields.push({
                             label: 'Date Range',
@@ -241,17 +240,17 @@ function PaymentReport() {
                     }
 
                     // if (selectedSections.branchCode) {
-                        newHeaderFields.push({
-                            label: 'Branch',
-                            value: formData.branchCode
-                        });
+                    newHeaderFields.push({
+                        label: 'Branch',
+                        value: formData.branchCode
+                    });
                     // }
 
                     // if (selectedSections.vendor) {
-                        newHeaderFields.push({
-                            label: 'Vendor',
-                            value: formData.vendor
-                        });
+                    newHeaderFields.push({
+                        label: 'Vendor',
+                        value: formData.vendor
+                    });
                     // }
 
                     setHeaderFields(newHeaderFields);
@@ -434,6 +433,88 @@ function PaymentReport() {
         setOpen(false);
         setRowData([]);
     };
+    const handleDownloadPDF = () => {
+        if (!rowData || rowData.length === 0) {
+            showToast('warning', 'No data available to download');
+            return;
+        }
+
+        const reportType = formData.viewMode === 'details'
+            ? 'Detailed Payment Report'
+            : 'Summary Payment Report';
+
+        const columns = getColumns();
+        const headers = columns.map(col => col.header);
+        const accessors = columns.map(col => col.accessorKey);
+
+        // Parameters
+        const formatDate = (dateString) => {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+        };
+
+        const parameters = [];
+        if (selectedSections.date) {
+            parameters.push(`Date Range: ${formatDate(formData.fromDate)} to ${formatDate(formData.toDate)}`);
+        }
+        if (formData.branchCode) parameters.push(`Branch: ${formData.branchCode}`);
+        if (formData.vendor) parameters.push(`Vendor: ${formData.vendor}`);
+
+        const tableBody = [
+            headers,
+            ...rowData.map(row =>
+                accessors.map(key => {
+                    const val = row[key];
+                    if (val === null || val === undefined) return '';
+                    if (key.toLowerCase().includes('date')) return formatDate(val);
+                    if (typeof val === 'number') return Number(val).toLocaleString('en-IN');
+                    return val;
+                })
+            )
+        ];
+
+        const docDefinition = {
+            content: [
+                { text: companyName || 'Company', style: 'header' },
+                { text: reportType, style: 'subheader' },
+                { text: parameters.join(' | '), margin: [0, 5, 0, 10], style: 'params' },
+                {
+                    style: 'tableStyle',
+                    table: {
+                        headerRows: 1,
+                        widths: headers.map(() => '*'),
+                        body: tableBody
+                    },
+                    layout: {
+                        fillColor: (rowIndex) => rowIndex === 0 ? '#1F4E78' : rowIndex % 2 === 0 ? '#F2F2F2' : null,
+                        hLineWidth: () => 0.5,
+                        vLineWidth: () => 0.5,
+                    }
+                },
+                {
+                    text: `Generated on: ${dayjs().format('DD-MM-YYYY HH:mm:ss')}`,
+                    style: 'footer',
+                    alignment: 'right',
+                    margin: [0, 10, 0, 0]
+                }
+            ],
+            styles: {
+                header: { fontSize: 16, bold: true, color: '#1F4E78', alignment: 'center', margin: [0, 0, 0, 5] },
+                subheader: { fontSize: 13, bold: true, alignment: 'center', margin: [0, 0, 0, 10] },
+                params: { fontSize: 10, italics: true },
+                footer: { fontSize: 9, color: 'gray' },
+                tableStyle: { margin: [0, 0, 0, 10] }
+            },
+            defaultStyle: {
+                fontSize: 9
+            },
+            pageOrientation: 'landscape'
+        };
+
+        pdfMake.createPdf(docDefinition).download(`${reportType.replace(/\s+/g, '_')}.pdf`);
+    };
+
     const handleDownloadExcel = async () => {
         if (!rowData || rowData.length === 0) {
             showToast('warning', 'No data available to download');
@@ -446,13 +527,10 @@ function PaymentReport() {
             const reportType = formData.viewMode === 'details'
                 ? 'Detailed Payment Report'
                 : 'Summary Payment Report';
+
             const sheet = workbook.addWorksheet(reportType);
             let currentRow = 1;
 
-            const columns = getColumns(); // reuse your getColumns function
-            const headers = columns.map(col => col.header);
-            const accessors = columns.map(col => col.accessorKey);
-            const lastCol = String.fromCharCode(64 + headers.length);
             // Add logo if available
             if (logoBase64) {
                 try {
@@ -460,108 +538,114 @@ function PaymentReport() {
                         base64: logoBase64,
                         extension: 'png',
                     });
-                    sheet.mergeCells('A1:A2');
-                    // No merging — place and size logo in A1 neatly
                     sheet.addImage(logoId, {
-                        tl: { col: 0, row: 0 },  // top-left corner
-                        ext: { width: 90, height: 50 },  // Logo size: adjust to your needs
+                        tl: { col: 0, row: 0 },
+                        ext: { width: 90, height: 50 },
                     });
-
-                    // Optional: set row height and column width for better fit
-                    sheet.getRow(1).height = 28;   // 20-30 is good
-                    sheet.getColumn(1).width = 18; // Only Column A (index 1)
-
+                    sheet.getRow(1).height = 28;
+                    sheet.getColumn(1).width = 18;
                 } catch (logoError) {
                     console.error('Error adding logo:', logoError);
                 }
             }
-            sheet.mergeCells('B1:P1');
-            // Company Name (Row 1, centered)
+
+            // Company Name
+            const columns = getColumns();
+            const lastColChar = String.fromCharCode(64 + columns.length); // Dynamic last column
+
+            sheet.mergeCells(`B1:${lastColChar}1`);
             const companyCell = sheet.getCell('B1');
             companyCell.value = companyName;
             companyCell.font = { bold: true, size: 14, color: { argb: '1F4E78' } };
-            companyCell.alignment = {
-                horizontal: 'center',
-                vertical: 'middle',
-                wrapText: true,
-            };
-            sheet.mergeCells('B2:P2');
-            // Report Title (Row 2, centered)
+            companyCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+
+            // Report Title
+            sheet.mergeCells(`B2:${lastColChar}2`);
             const titleCell = sheet.getCell('B2');
             titleCell.value = reportType;
             titleCell.font = { size: 14, bold: true };
-            titleCell.alignment = {
-                horizontal: 'center',
-                vertical: 'middle',
-                wrapText: true,
-            };
+            titleCell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
             currentRow = 3;
 
-            // Params
+            // Parameters
+            const formatDate = (dateString) => {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                return `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${date.getFullYear()}`;
+            };
+
             const parameters = [];
-            if (selectedSections.date) {
-                parameters.push(`Date Range: ${dayjs(formData.fromDate).format('DD-MM-YYYY')} to ${dayjs(formData.toDate).format('DD-MM-YYYY')}`);
+            if (selectedSections.date && formData.fromDate && formData.toDate) {
+                parameters.push(`Date Range: ${formatDate(formData.fromDate)} to ${formatDate(formData.toDate)}`);
             }
-            if (selectedSections.branchCode) parameters.push(`Branch: ${formData.branchCode}`);
-            if (selectedSections.vendor) parameters.push(`Vendor: ${formData.vendor}`);
+            if (formData.branchCode) {
+                parameters.push(`Branch: ${formData.branchCode}`);
+            }
+            if (formData.vendor) {
+                parameters.push(`Vendor: ${formData.vendor}`);
+            }
 
-            const paramRow = sheet.addRow([parameters.join(' | ')]);
-            paramRow.font = { italic: true };
-            sheet.mergeCells(`A${currentRow}:${lastCol}${currentRow}`);
-            currentRow++;
+            if (parameters.length > 0) {
+                const paramRow = sheet.addRow([parameters.join(' | ')]);
+                paramRow.font = { italic: true };
+                sheet.mergeCells(`A${currentRow}:${lastColChar}${currentRow}`);
+                currentRow++;
+            }
 
-            // Timestamp
             const timestamp = `Generated on: ${dayjs().format('DD-MM-YYYY HH:mm:ss')}`;
             const timeRow = sheet.addRow([timestamp]);
-            timeRow.font = { color: { argb: '888888' } };
-            sheet.mergeCells(`A${currentRow}:${lastCol}${currentRow}`);
+            timeRow.font = { size: 10, color: { argb: '7F7F7F' } };
+            timeRow.alignment = { horizontal: 'right' };
+            sheet.mergeCells(`A${currentRow}:${lastColChar}${currentRow}`);
             currentRow++;
 
-            // Header Row
+            // Headers
+            const headers = columns.map(col => col.header);
+            const accessors = columns.map(col => col.accessorKey);
             const headerRow = sheet.addRow(headers);
             headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
             headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1F4E78' } };
-            headerRow.alignment = { horizontal: 'center' };
+            headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
+            headerRow.height = 25;
             currentRow++;
 
-            // Data Rows
+            // Rows
             rowData.forEach((item, index) => {
                 const rowValues = accessors.map(key => {
                     const val = item[key];
                     if (val === null || val === undefined) return '';
-                    if (key.includes('date')) return dayjs(val).isValid() ? dayjs(val).format('DD-MM-YYYY') : val;
+                    if (key.toLowerCase().includes('date')) return formatDate(val);
                     if (typeof val === 'number') return Number(val);
                     return val;
                 });
-                sheet.addRow(rowValues);
+                const row = sheet.addRow(rowValues);
+                row.fill = {
+                    type: 'pattern',
+                    pattern: 'solid',
+                    fgColor: { argb: index % 2 === 0 ? 'F2F2F2' : 'FFFFFF' }
+                };
+                for (let i = 0; i < rowValues.length; i++) {
+                    if (typeof rowValues[i] === 'number') {
+                        row.getCell(i + 1).alignment = { horizontal: 'right' };
+                        row.getCell(i + 1).numFmt = '#,##0.00';
+                    }
+                }
             });
 
-            // Totals Row (Optional: add logic if needed)
-
-            // Style
+            // Column formatting
             sheet.columns.forEach((col, i) => {
                 col.width = columns[i].size ? Math.floor(columns[i].size / 6) : 15;
+                col.alignment = { vertical: 'middle' };
             });
 
-            // sheet.eachRow(row => {
-            //     row.eachCell(cell => {
-            //         cell.border = {
-            //             top: { style: 'thin' },
-            //             left: { style: 'thin' },
-            //             bottom: { style: 'thin' },
-            //             right: { style: 'thin' }
-            //         };
-            //     });
-            // });
-
-            // Save
+            // Download
             const buffer = await workbook.xlsx.writeBuffer();
             const blob = new Blob([buffer], {
                 type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
             });
             saveAs(blob, `${reportType.replace(/\s+/g, '_')}.xlsx`);
         } catch (error) {
-            console.error("Excel export failed:", error);
+            console.error('Excel export failed:', error);
             showToast('error', 'Excel download failed');
         }
     };
@@ -755,6 +839,7 @@ function PaymentReport() {
                             data={rowData}
                             fileName={`${formData.viewMode === 'details' ? 'Detailed' : 'Summary'} Payment Report`}
                             handleDownloadExcel={handleDownloadExcel}
+                            handleDownloadPDF={handleDownloadPDF}
                             sumFields={getSumFields()}
                             headerFields={headerFields} // Pass headerFields
                         />

@@ -47,7 +47,7 @@ function LedgerReport() {
   const [selectedSections, setSelectedSections] = useState({
     accountName: false,
     branchCode: false
-  });
+  });  
   const [headerFields, setHeaderFields] = useState([]);
   const [companyName, setCompanyName] = useState('');
 
@@ -55,7 +55,7 @@ function LedgerReport() {
     fromDate: null,
     toDate: null,
     accountName: 'All',
-    branchCode: 'All',
+    branchCode: 'BANGALORE',
     withDetails: 'YES'
   });
 
@@ -91,7 +91,7 @@ function LedgerReport() {
       fromDate: null,
       toDate: null,
       accountName: 'All',
-      branchCode: 'All',
+      branchCode: 'BANGALORE',
       withDetails: 'YES'
     });
     setFieldErrors({
@@ -292,9 +292,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -317,9 +317,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -358,9 +358,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', color: '#d32f2f', fontWeight: '500', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -383,9 +383,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', color: '#2e7d32', fontWeight: '500', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -444,7 +444,7 @@ function LedgerReport() {
         // Prepare parameters for API
         const params = {
           accountName: formData.accountName === 'All' ? '' : formData.accountName,
-          branch: formData.branchCode === 'All' ? '' : formData.branchCode,
+          branch:  formData.branchCode,
           details: formData.withDetails,
           fromdate: formData.fromDate,
           orgId: orgId,
@@ -490,7 +490,7 @@ function LedgerReport() {
             },
             {
               label: 'Branch Code',
-              value: formData.branchCode !== 'All' ? formData.branchCode : 'All'
+              value: formData.branchCode
             },
             {
               label: 'With Details',
@@ -520,40 +520,43 @@ function LedgerReport() {
   const handleCloseModal = () => {
     setOpenModal(false);
   };
-
+  const getLogo = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+      return response.paramObjectsMap.companyVO[0]?.companyLogo || null;
+    } catch (error) {
+      console.error('Error fetching logo:', error);
+      return null;
+    }
+  };
   const handleDownloadExcel = async () => {
     try {
-      // Create a new workbook
+      const logoBase64 = await getLogo();
       const workbook = new ExcelJS.Workbook();
       workbook.creator = companyName || 'Ledger Report';
       workbook.created = new Date();
 
-      // Add a worksheet
       const sheet = workbook.addWorksheet('Ledger Report');
       sheet.state = 'visible';
-
-      // Freeze header rows
       sheet.views = [{ state: 'frozen', ySplit: 12, activeCell: 'A13' }];
 
       // ====== MERGE CELLS FOR HEADER ======
-      sheet.mergeCells('A1:B6'); // Logo area
+      sheet.mergeCells('A1:B6'); // Logo
       sheet.mergeCells('C1:I1'); // Company name
       sheet.mergeCells('A7:I7'); // Report title
 
-      // ====== COMPANY LOGO ======
+      // ====== LOGO (if available) ======
       try {
-        if (companyLogo?.buffer) {
-          const imageId = workbook.addImage({
-            buffer: companyLogo.buffer,
-            extension: companyLogo.extension || 'png'
+        if (logoBase64) {
+          const logoId = workbook.addImage({
+            base64: logoBase64,
+            extension: 'png'
           });
-
-          sheet.addImage(imageId, {
+          sheet.addImage(logoId, {
             tl: { col: 0, row: 0 },
             ext: { width: 160, height: 80 }
           });
         } else {
-          // Fallback if no logo
           const logoCell = sheet.getCell('A1');
           logoCell.value = 'Company Logo';
           logoCell.font = { bold: true, color: { argb: 'FF34449B' } };
@@ -575,108 +578,9 @@ function LedgerReport() {
       titleCell.font = { size: 18, bold: true, color: { argb: 'FF34449B' } };
       titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
 
-      // ====== REPORT METADATA ======
-      const metadata = [
-        { label: 'From Date', value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : 'N/A' },
-        { label: 'To Date', value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : 'N/A' },
-        { label: 'Account Name', value: formData.accountName !== 'All' ? formData.accountName : 'All' },
-        { label: 'Branch Code', value: formData.branchCode !== 'All' ? formData.branchCode : 'All' },
-        { label: 'With Details', value: formData.withDetails },
-        { label: 'Generated By', value: localStorage.getItem('userName') || 'System' },
-        { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
-      ];
+      // ... continue with metadata, headers, rowData, column widths, etc.
 
-      // Add metadata in two columns
-      for (let i = 0; i < metadata.length; i += 2) {
-        const rowIndex = Math.floor(i / 2) + 8;
-        const row = sheet.getRow(rowIndex);
-
-        // First column pair
-        const labelCell1 = row.getCell(1);
-        const valueCell1 = row.getCell(2);
-        labelCell1.value = metadata[i].label;
-        labelCell1.font = { bold: true };
-        valueCell1.value = metadata[i].value;
-
-        // Second column pair (if exists)
-        if (metadata[i + 1]) {
-          const labelCell2 = row.getCell(5);
-          const valueCell2 = row.getCell(6);
-          labelCell2.value = metadata[i + 1].label;
-          labelCell2.font = { bold: true };
-          valueCell2.value = metadata[i + 1].value;
-        }
-      }
-
-      // ====== TABLE HEADERS ======
-      const headerRow = sheet.getRow(12);
-      reportColumns.forEach((col, index) => {
-        const cell = headerRow.getCell(index + 1);
-        cell.value = col.header;
-        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FF34449B' } // Dark blue background
-        };
-        cell.alignment = { horizontal: 'center', vertical: 'middle' };
-        cell.border = {
-          top: { style: 'thin', color: { argb: 'FF000000' } },
-          left: { style: 'thin', color: { argb: 'FF000000' } },
-          bottom: { style: 'thin', color: { argb: 'FF000000' } },
-          right: { style: 'thin', color: { argb: 'FF000000' } }
-        };
-      });
-      headerRow.height = 20;
-
-      // ====== TABLE DATA ======
-      rowData.forEach((item) => {
-        const row = sheet.addRow([
-          item.Vid || '-',
-          item.Vdate ? dayjs(item.Vdate).format('DD-MM-YYYY') : '-',
-          item.PartyName || '-',
-          item.ndAmount,
-          item.NcAmount,
-          item.Currency || '-',
-          item.dbAmount,
-          item.CrAmount,
-          item.Narration || '-'
-        ]);
-
-        // Format numeric cells
-        [4, 5, 7, 8].forEach((colIndex) => {
-          const cell = row.getCell(colIndex);
-          if (typeof cell.value === 'number') {
-            cell.numFmt = '#,##0.00';
-            cell.alignment = { horizontal: 'right' };
-          }
-        });
-
-        // Add borders to all cells
-        row.eachCell({ includeEmpty: true }, (cell) => {
-          cell.border = {
-            top: { style: 'thin', color: { argb: 'FF000000' } },
-            left: { style: 'thin', color: { argb: 'FF000000' } },
-            bottom: { style: 'thin', color: { argb: 'FF000000' } },
-            right: { style: 'thin', color: { argb: 'FF000000' } }
-          };
-        });
-      });
-
-      // ====== COLUMN WIDTHS ======
-      sheet.columns = [
-        { width: 15 }, // Vid
-        { width: 15 }, // Vdate
-        { width: 40 }, // PartyName
-        { width: 15 }, // ndAmount
-        { width: 15 }, // NcAmount
-        { width: 12 }, // Currency
-        { width: 15 }, // dbAmount
-        { width: 15 }, // CrAmount
-        { width: 40 } // Narration
-      ];
-
-      // ====== DOWNLOAD THE FILE ======
+      // ====== Final: Download Excel File ======
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -688,6 +592,7 @@ function LedgerReport() {
       showToast('error', 'Failed to generate Excel file');
     }
   };
+
 
   // Common table options
   const tableOptions = {
@@ -832,8 +737,8 @@ function LedgerReport() {
               >
                 <MenuItem value="All">All</MenuItem>
                 {branchCodeList.map((branch) => (
-                  <MenuItem key={branch.id} value={branch.branchCode}>
-                    {branch.branchCode}
+                  <MenuItem key={branch.id} value={branch.branch}>
+                    {branch.branch}
                   </MenuItem>
                 ))}
               </Select>

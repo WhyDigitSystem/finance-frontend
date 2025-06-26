@@ -101,6 +101,13 @@ const BankCash = {
           type: 'item',
           url: '/finance/Withdrawal',
           icon: icons8.MoneyOffOutlined
+        },
+        {
+          id: 'costEstimate',
+          title: 'Cost Estimate',
+          type: 'item',
+          url: '/finance/CostEstimate',
+          icon: icons8.MoneyOffOutlined
         }
       ]
     }

@@ -5,7 +5,8 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import ArAging from 'views/Finance/taxInvoice/ArAging';
 import ArOutstanding from 'views/Finance/taxInvoice/ArOutstanding';
-const PendingRegister  = Loadable(lazy(() => import('views/Finance/FinalReport/PendingRegister')));
+const CostEstimate  = Loadable(lazy(() => import('views/Finance/CostEstimate')));
+const PendingRegister = Loadable(lazy(() => import('views/Finance/FinalReport/PendingRegister')));
 const CostReport = Loadable(lazy(() => import('views/Finance/FinalReport/CostReport')));
 const SalesReport = Loadable(lazy(() => import('views/Finance/FinalReport/SalesReport')));
 const MimRimRegister = Loadable(lazy(() => import('views/docs/MimRimRegister')));
@@ -438,6 +439,10 @@ const FinanceRoute = {
     {
       path: '/Finance/Withdrawal',
       element: <Withdrawal />
+    },
+    {
+      path: '/Finance/CostEstimate',
+      element: <CostEstimate />
     },
     {
       path: 'Finance/JobCard',
