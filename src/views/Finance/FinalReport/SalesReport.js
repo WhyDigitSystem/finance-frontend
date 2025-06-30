@@ -1,9 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import {
-  TextField, Checkbox, Box, Typography, Button,
-  FormControlLabel, FormHelperText, FormControl,
-  InputLabel, MenuItem, Select, ButtonGroup,
-  Dialog, DialogContent, IconButton, DialogTitle
+  TextField,
+  Checkbox,
+  Box,
+  Typography,
+  Button,
+  FormControlLabel,
+  FormHelperText,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  ButtonGroup,
+  Dialog,
+  DialogContent,
+  IconButton,
+  DialogTitle
 } from '@mui/material';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -11,7 +23,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import FileDownload from '@mui/icons-material/FileDownload';
 import CloseIcon from '@mui/icons-material/Close';
 import ClearIcon from '@mui/icons-material/Clear';
-import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import dayjs from 'dayjs';
@@ -20,8 +32,10 @@ import apiCalls from 'apicall';
 import { showToast } from 'utils/toast-component';
 import CommonReportTableGrouped from '../../../utils/CommonReportTableGrouped';
 import ActionButton from 'utils/ActionButton';
-
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 function SalesReport() {
+  const [userName] = useState(localStorage.getItem('userName'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [open, setOpen] = useState(false);
@@ -36,17 +50,17 @@ function SalesReport() {
   useEffect(() => {
     getPartyName();
     getAllBranches();
-  }, [])
+  }, []);
   const [selectedSections, setSelectedSections] = useState({
     date: false,
     branchCode: false,
-    customer: false,
+    customer: false
   });
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
     setSelectedSections((prevState) => ({
       ...prevState,
-      [name]: checked,
+      [name]: checked
     }));
   };
 
@@ -55,13 +69,13 @@ function SalesReport() {
     toDate: null,
     branchCode: 'All',
     customer: 'All',
-    viewMode: 'details',
+    viewMode: 'details'
   });
   const [fieldErrors, setFieldErrors] = useState({
     fromDate: '',
     toDate: '',
     branchCode: '',
-    customer: '',
+    customer: ''
   });
   const handleClear = () => {
     setFormData({
@@ -69,13 +83,13 @@ function SalesReport() {
       toDate: null,
       branchCode: 'All',
       customer: 'All',
-      viewMode: 'details',
+      viewMode: 'details'
     });
     setFieldErrors({
       fromDate: '',
       toDate: '',
       customer: '',
-      branchCode: '',
+      branchCode: ''
     });
     setSelectedSections({});
     setRowData([]);
@@ -83,20 +97,18 @@ function SalesReport() {
   const handleSelectPartyChange = (e) => {
     const value = e.target.value;
     console.log('Selected employeeCode value:', value);
-    const selectedEmp = partyNameList.find((emp) =>
-      emp.partyName === value
-    );
-    if (value === "All") {
+    const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
+    if (value === 'All') {
       setFormData((prevData) => ({
         ...prevData,
-        customer: "All",
+        customer: 'All'
       }));
     } else {
       if (selectedEmp) {
         console.log('Selected party:', selectedEmp);
         setFormData((prevData) => ({
           ...prevData,
-          customer: selectedEmp.partyName,
+          customer: selectedEmp.partyName
         }));
       } else {
         console.log('No party found with the given code:', value);
@@ -110,19 +122,19 @@ function SalesReport() {
     const { name, value, type, selectionStart, selectionEnd } = e.target;
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: '',
+      [name]: ''
     }));
     if (name === 'branchCode') {
-      if (value === "All") {
+      if (value === 'All') {
         setFormData((prevData) => ({
           ...prevData,
-          branchCode: "All",
+          branchCode: 'All'
         }));
       } else {
         const selectedBranch = branchCodeList.find((br) => br.branchCode === value);
         setFormData((prevData) => ({
           ...prevData,
-          branchCode: selectedBranch ? selectedBranch.branchCode : '',
+          branchCode: selectedBranch ? selectedBranch.branchCode : ''
         }));
       }
     } else {
@@ -146,7 +158,7 @@ function SalesReport() {
     setFieldErrors((prevData) => ({
       ...prevData,
       [field]: ''
-    }))
+    }));
   };
 
   const getAllBranches = async () => {
@@ -194,7 +206,7 @@ function SalesReport() {
         errors.customer = 'Customer name is required';
       }
     }
-    console.log("go error", errors);
+    console.log('go error', errors);
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
       try {
@@ -248,14 +260,14 @@ function SalesReport() {
             value: formData.customer
           });
           // }
-          setHeaderFields(newHeaderFields)
+          setHeaderFields(newHeaderFields);
         } else {
           showToast('error', response.paramObjectsMap.message);
           setIsLoading(false);
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', "Report fetch Failed");
+        showToast('error', 'Report fetch Failed');
         setIsLoading(false);
       }
     } else {
@@ -271,107 +283,131 @@ function SalesReport() {
   const getColumns = () => {
     return formData.viewMode === 'details'
       ? [
-        { accessorKey: 'docid', header: 'Doc ID', size: 80 },
-        { accessorKey: 'docdate', header: 'Date', size: 80 },
-        { accessorKey: 'Vid', header: 'Invoice No', size: 80 },
-        { accessorKey: 'Vdate', header: 'Invoice Date', size: 120 },
-        { accessorKey: 'partyname', header: 'Customer', size: 120 },
-        { accessorKey: 'placeofsupply', header: 'Place Of Supply', size: 80 },
-        { accessorKey: 'gsttype', header: 'Tax Type', size: 80 },
-        { accessorKey: 'chargetype', header: 'Charge Type', size: 80 },
-        { accessorKey: 'chargename', header: 'Charge Name', size: 80 },
-        { accessorKey: 'chargecode', header: 'Charge Code', size: 80 },
-        { accessorKey: 'gstpercent', header: 'Tax %', size: 80 },
-        { accessorKey: 'currency', header: 'Currency', size: 80 },
-        {
-          accessorKey: 'qty', header: 'Qty', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
-            {cell.getValue() !== undefined && cell.getValue() !== null
-              ? Number(cell.getValue()).toLocaleString('en-IN')
-              : '-'}
-          </div>),
-          muiTableHeadCellProps: {
-            align: 'right'
+          { accessorKey: 'docid', header: 'Doc ID', size: 80 },
+          { accessorKey: 'docdate', header: 'Date', size: 80 },
+          { accessorKey: 'Vid', header: 'Invoice No', size: 80 },
+          { accessorKey: 'Vdate', header: 'Invoice Date', size: 120 },
+          { accessorKey: 'partyname', header: 'Customer', size: 120 },
+          { accessorKey: 'placeofsupply', header: 'Place Of Supply', size: 80 },
+          { accessorKey: 'gsttype', header: 'Tax Type', size: 80 },
+          { accessorKey: 'chargetype', header: 'Charge Type', size: 80 },
+          { accessorKey: 'chargename', header: 'Charge Name', size: 80 },
+          { accessorKey: 'chargecode', header: 'Charge Code', size: 80 },
+          { accessorKey: 'gstpercent', header: 'Tax %', size: 80 },
+          { accessorKey: 'currency', header: 'Currency', size: 80 },
+          {
+            accessorKey: 'qty',
+            header: 'Qty',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'rate',
+            header: 'Rate',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'billAmount',
+            header: 'Bill Amt',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'gstamount',
+            header: 'Tax Amt',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'totalLcAmount',
+            header: 'Total Amt',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
           }
-        },
-        {
-          accessorKey: 'rate', header: 'Rate', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
-            {cell.getValue() !== undefined && cell.getValue() !== null
-              ? Number(cell.getValue()).toLocaleString('en-IN')
-              : '-'}
-          </div>),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        },
-        {
-          accessorKey: 'billAmount', header: 'Bill Amt', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-            {cell.getValue() !== undefined && cell.getValue() !== null
-              ? Number(cell.getValue()).toLocaleString('en-IN')
-              : '-'}
-          </div>),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        },
-        {
-          accessorKey: 'gstamount', header: 'Tax Amt', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
-            {cell.getValue() !== undefined && cell.getValue() !== null
-              ? Number(cell.getValue()).toLocaleString('en-IN')
-              : '-'}
-          </div>),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        },
-        {
-          accessorKey: 'totalLcAmount', header: 'Total Amt', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-            {cell.getValue() !== undefined && cell.getValue() !== null
-              ? Number(cell.getValue()).toLocaleString('en-IN')
-              : '-'}
-          </div>),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        },
-      ]
+        ]
       : [
-        { accessorKey: 'docId', header: 'Doc Id', size: 100 },
-        { accessorKey: 'docDate', header: 'Date', size: 100 },
-        { accessorKey: 'vId', header: 'Invoice No', size: 100 },
-        { accessorKey: 'vDate', header: 'Date', size: 100 },
-        { accessorKey: 'partyName', header: 'Customer', size: 200 },
-        { accessorKey: 'placeofsupply', header: 'Place Of Supply', size: 100 },
-        {
-          accessorKey: 'totalchargeamountlc', header: 'Bill Amt', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-            {cell.getValue() !== undefined && cell.getValue() !== null
-              ? Number(cell.getValue()).toLocaleString('en-IN')
-              : '-'}
-          </div>),
-          muiTableHeadCellProps: {
-            align: 'right'
+          { accessorKey: 'docId', header: 'Doc Id', size: 100 },
+          { accessorKey: 'docDate', header: 'Date', size: 100 },
+          { accessorKey: 'vId', header: 'Invoice No', size: 100 },
+          { accessorKey: 'vDate', header: 'Date', size: 100 },
+          { accessorKey: 'partyName', header: 'Customer', size: 200 },
+          { accessorKey: 'placeofsupply', header: 'Place Of Supply', size: 100 },
+          {
+            accessorKey: 'totalchargeamountlc',
+            header: 'Bill Amt',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'totaltaxamountlc',
+            header: 'Tax Amt',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'totalinvamountlc',
+            header: 'Total Amt',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
           }
-        },
-        {
-          accessorKey: 'totaltaxamountlc', header: 'Tax Amt', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
-            {cell.getValue() !== undefined && cell.getValue() !== null
-              ? Number(cell.getValue()).toLocaleString('en-IN')
-              : '-'}
-          </div>),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        },
-        {
-          accessorKey: 'totalinvamountlc', header: 'Total Amt', size: 80, Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-            {cell.getValue() !== undefined && cell.getValue() !== null
-              ? Number(cell.getValue()).toLocaleString('en-IN')
-              : '-'}
-          </div>),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        }
-      ];
+        ];
   };
 
   const getSumFields = () => {
@@ -383,9 +419,7 @@ function SalesReport() {
     try {
       const logoBase64 = await getLogo();
       const workbook = new ExcelJS.Workbook();
-      const reportType = formData.viewMode === 'details'
-        ? 'Detailed Sales Report'
-        : 'Summary Sales Report';
+      const reportType = formData.viewMode === 'details' ? 'Detailed Sales Report' : 'Summary Sales Report';
 
       const sheet = workbook.addWorksheet(reportType);
       let currentRow = 1;
@@ -395,19 +429,18 @@ function SalesReport() {
         try {
           const logoId = workbook.addImage({
             base64: logoBase64,
-            extension: 'png',
+            extension: 'png'
           });
           sheet.mergeCells('A1:A2');
           // No merging — place and size logo in A1 neatly
           sheet.addImage(logoId, {
-            tl: { col: 0, row: 0 },  // top-left corner
-            ext: { width: 90, height: 50 },  // Logo size: adjust to your needs
+            tl: { col: 0, row: 0 }, // top-left corner
+            ext: { width: 90, height: 50 } // Logo size: adjust to your needs
           });
 
           // Optional: set row height and column width for better fit
-          sheet.getRow(1).height = 28;   // 20-30 is good
+          sheet.getRow(1).height = 28; // 20-30 is good
           sheet.getColumn(1).width = 18; // Only Column A (index 1)
-
         } catch (logoError) {
           console.error('Error adding logo:', logoError);
         }
@@ -420,7 +453,7 @@ function SalesReport() {
       companyCell.alignment = {
         horizontal: 'center',
         vertical: 'middle',
-        wrapText: true,
+        wrapText: true
       };
       sheet.mergeCells('B2:P2');
       // Report Title (Row 2, centered)
@@ -430,7 +463,7 @@ function SalesReport() {
       titleCell.alignment = {
         horizontal: 'center',
         vertical: 'middle',
-        wrapText: true,
+        wrapText: true
       };
       currentRow = 3;
       const formatDate = (dateString) => {
@@ -444,9 +477,7 @@ function SalesReport() {
       // New parameters section
       const parameters = [];
       if (selectedSections.date) {
-        parameters.push(
-          `Date Range: ${formatDate(formData.fromDate)} to ${formatDate(formData.toDate)}`
-        );
+        parameters.push(`Date Range: ${formatDate(formData.fromDate)} to ${formatDate(formData.toDate)}`);
       }
       if (formData.branchCode) parameters.push(`Branch: ${formData.branchCode}`);
       if (formData.customer) parameters.push(`Customer: ${formData.customer}`);
@@ -478,7 +509,7 @@ function SalesReport() {
       currentRow++;
       sheet.eachRow((row, currentRow) => {
         if (currentRow <= 6) return;
-        row.eachCell(cell => {
+        row.eachCell((cell) => {
           cell.border = {
             top: { style: 'thin' },
             left: { style: 'thin' },
@@ -489,18 +520,27 @@ function SalesReport() {
       });
 
       // Headers
-      const headers = formData.viewMode === 'details'
-        ? [
-          'Doc ID', 'Date', 'Customer', 'Invoice No',
-          'Invoice Date', 'Supply Place', 'Charge Type',
-          'Charge Code', 'Charge Name', 'Tax Type', 'Tax Percent', 'Qty', 'Rate',
-          'Amount', 'Tax', 'Total'
-        ]
-        : [
-          'Doc ID', 'Date', 'Invoice No', 'Invoice Date',
-          'Tax Type', 'Customer', 'Supply Place',
-          'Amount', 'Tax', 'Total'
-        ];
+      const headers =
+        formData.viewMode === 'details'
+          ? [
+              'Doc ID',
+              'Date',
+              'Customer',
+              'Invoice No',
+              'Invoice Date',
+              'Supply Place',
+              'Charge Type',
+              'Charge Code',
+              'Charge Name',
+              'Tax Type',
+              'Tax Percent',
+              'Qty',
+              'Rate',
+              'Amount',
+              'Tax',
+              'Total'
+            ]
+          : ['Doc ID', 'Date', 'Invoice No', 'Invoice Date', 'Tax Type', 'Customer', 'Supply Place', 'Amount', 'Tax', 'Total'];
 
       const headerRow = sheet.addRow(headers);
       headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -621,25 +661,41 @@ function SalesReport() {
       }
 
       // Add totals
-      const totals = rowData.reduce((acc, item) => {
-        acc.qty += Number(item.qty || 0);
-        acc.rate += Number(item.rate || 0);
-        acc.totalCharge += Number(item.billAmount || 0);
-        acc.totalTax += Number(item.gstamount || 0);
-        acc.totalInvoice += Number(item.totalLcAmount || 0);
-        return acc;
-      }, { qty: 0, rate: 0, totalCharge: 0, totalTax: 0, totalInvoice: 0 });
-      const totalSummary = rowData.reduce((acc, item) => {
-        acc.totalchargeamountlc += Number(item.totalchargeamountlc || 0);
-        acc.totaltaxamountlc += Number(item.totaltaxamountlc || 0);
-        acc.totalinvamountlc += Number(item.totalinvamountlc || 0);
-        return acc;
-      }, { totalchargeamountlc: 0, totaltaxamountlc: 0, totalinvamountlc: 0 });
+      const totals = rowData.reduce(
+        (acc, item) => {
+          acc.qty += Number(item.qty || 0);
+          acc.rate += Number(item.rate || 0);
+          acc.totalCharge += Number(item.billAmount || 0);
+          acc.totalTax += Number(item.gstamount || 0);
+          acc.totalInvoice += Number(item.totalLcAmount || 0);
+          return acc;
+        },
+        { qty: 0, rate: 0, totalCharge: 0, totalTax: 0, totalInvoice: 0 }
+      );
+      const totalSummary = rowData.reduce(
+        (acc, item) => {
+          acc.totalchargeamountlc += Number(item.totalchargeamountlc || 0);
+          acc.totaltaxamountlc += Number(item.totaltaxamountlc || 0);
+          acc.totalinvamountlc += Number(item.totalinvamountlc || 0);
+          return acc;
+        },
+        { totalchargeamountlc: 0, totaltaxamountlc: 0, totalinvamountlc: 0 }
+      );
       const totalRow = sheet.addRow([]);
 
       if (formData.viewMode === 'details') {
         totalRow.values = [
-          'Grand Total', '', '', '', '', '', '', '', '', '', '',
+          'Grand Total',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
           totals.qty,
           totals.rate,
           totals.totalCharge,
@@ -649,7 +705,13 @@ function SalesReport() {
         sheet.mergeCells(`A${currentRow}:J${currentRow}`);
       } else {
         totalRow.values = [
-          'Grand Total', '', '', '', '', '', '',
+          'Grand Total',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
           totalSummary.totalchargeamountlc,
           totalSummary.totaltaxamountlc,
           totalSummary.totalinvamountlc
@@ -670,7 +732,7 @@ function SalesReport() {
       if (formData.viewMode === 'details') {
         totalRow.getCell('K').numFmt = '#,##0';
         totalRow.getCell('K').alignment = { horizontal: 'right' };
-        ['P', 'L', 'M', 'N', 'O'].forEach(col => {
+        ['P', 'L', 'M', 'N', 'O'].forEach((col) => {
           const cell = totalRow.getCell(col);
           cell.numFmt = '#,##0.00';
           cell.alignment = { horizontal: 'right' };
@@ -681,7 +743,7 @@ function SalesReport() {
         totalRow.getCell('O').font = { color: { argb: 'FFFF0000' } };
         totalRow.getCell('P').font = { color: { argb: 'FF00B050' } };
       } else {
-        ['I', 'J', 'H'].forEach(col => {
+        ['I', 'J', 'H'].forEach((col) => {
           const cell = totalRow.getCell(col);
           cell.numFmt = '#,##0.00';
           cell.alignment = { horizontal: 'right' };
@@ -693,7 +755,7 @@ function SalesReport() {
       currentRow++;
 
       // Set column widths and borders
-      sheet.columns.forEach(column => {
+      sheet.columns.forEach((column) => {
         column.width = 18;
         column.alignment = { vertical: 'middle' };
       });
@@ -705,14 +767,172 @@ function SalesReport() {
     }
   };
 
+  // handleDownoadPdf
+  const handleDownloadPdf = ({ logo, columns, data, fileName, userName, formData }) => {
+    const doc = new jsPDF();
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+
+    // 1) COMPANY LOGO (top-left)
+    const logoBase64 = logo;
+    if (logoBase64) {
+      doc.addImage(logoBase64, 'PNG', 10, 10, 30, 23);
+    }
+
+    // 2) TITLE BOX
+    const title = `${fileName}`;
+    const textW = doc.getTextWidth(title);
+    const boxW = textW + 20;
+    const boxX = (pageW - boxW) / 2;
+    doc
+      .setFillColor('#e7ebeb')
+      .roundedRect(boxX, 18, boxW, 10, 4, 4, 'F')
+      .setTextColor('#34449B')
+      .setFontSize(12)
+      .text(title, pageW / 2, 25, { align: 'center' });
+
+    // 3) FILTER METADATA
+    const { fromDate, toDate, branchCode, customer, viewMode } = formData;
+    doc.setFontSize(9);
+    doc.setTextColor('#000000');
+    doc.setFillColor(231, 235, 235);
+    doc.roundedRect(2, 35, 206, 12, 2, 2, 'F');
+
+    // Row 1: Labels
+    doc.setFont(undefined, 'bold');
+    doc.text('From Date', 8, 40);
+    doc.text('To Date', 37, 40);
+    doc.text('Customer', 58, 40);
+    doc.text('Branch Code', 153, 40);
+    doc.text('View Mode', 184, 40);
+
+    // Row 2: Values
+    doc.setFont(undefined, 'normal');
+    doc.text(dayjs(fromDate).format('DD-MM-YYYY'), 8, 45);
+    doc.text(dayjs(toDate).format('DD-MM-YYYY'), 37, 45);
+    doc.text(String(customer ?? '-'), 58, 45);
+    doc.text(String(branchCode ?? '-'), 153, 45);
+    doc.text(String(viewMode ?? '-'), 184, 45);
+
+    // 4) Build Table Body
+    const headerLabels = columns.map((c) => c.header);
+    const numericFields = columns
+      .map((c) => c.accessorKey)
+      .filter((k) => k && /(billAmount|totalchargeamountlc|gstamount|totaltaxamountlc|totalLcAmount|totalinvamountlc)/i.test(k));
+
+    const body = data.map((row) =>
+      columns.map((col) => {
+        const key = col.accessorKey;
+        const raw = key ? row[key] : '';
+        if (key?.toLowerCase().includes('date')) {
+          const d = dayjs(raw);
+          return d.isValid() ? d.format('DD-MM-YYYY') : '-';
+        }
+        if (typeof raw === 'number') {
+          return raw === 0 ? '' : raw.toLocaleString('en-IN');
+        }
+        return raw ?? '';
+      })
+    );
+
+    // 5) Add Total Row
+    const totalFields =
+      viewMode === 'details'
+        ? ['billAmount', 'gstamount', 'totalLcAmount']
+        : ['totalchargeamountlc', 'totaltaxamountlc', 'totalinvamountlc'];
+
+    const totalRow = columns.map((col, index) => {
+      const key = col.accessorKey;
+      if (index === 0) return 'Total';
+      if (totalFields.includes(key)) {
+        const sum = data.reduce((acc, row) => acc + (parseFloat(row[key]) || 0), 0);
+        return sum.toLocaleString('en-IN');
+      }
+      return '';
+    });
+
+    body.push(totalRow); // ✅ Append total row
+
+    // 6) Render Table
+    autoTable(doc, {
+      startY: 50,
+      head: [headerLabels],
+      body,
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+        lineWidth: 0.1,
+        lineColor: [220, 220, 220],
+        overflow: 'linebreak'
+      },
+      headStyles: {
+        fillColor: [52, 68, 155],
+        textColor: 255,
+        halign: 'center'
+      },
+      bodyStyles: {
+        halign: 'left'
+      },
+      theme: 'grid',
+      margin: { left: 5, right: 5 },
+      tableWidth: 'auto',
+      columnStyles: generateFullWidthColumnStyles(columns, doc),
+      didDrawPage: (data) => {
+        doc.setFontSize(8).setTextColor('#555555');
+        doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
+        doc.text(`Generated By: ${userName}`, 15, pageH - 10, { align: 'left' });
+      },
+      didParseCell: (cellHookData) => {
+        const { cell, column, section, row } = cellHookData;
+        const key = columns[column.index]?.accessorKey;
+
+        // Skip color change for total row
+        if (section === 'body' && row.raw !== totalRow) {
+          if (['billAmount', 'totalchargeamountlc'].includes(key)) {
+            cell.styles.textColor = [0, 128, 0];
+          } else if (['gstamount', 'totaltaxamountlc'].includes(key)) {
+            cell.styles.textColor = [255, 0, 0];
+          } else if (['totalLcAmount', 'totalinvamountlc'].includes(key)) {
+            cell.styles.textColor = [0, 128, 0];
+          }
+        }
+
+        if (section === 'body' && numericFields.includes(key)) {
+          cell.styles.halign = 'right';
+        }
+      }
+    });
+
+    // 7) Save
+    doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
+  };
+
+  const generateFullWidthColumnStyles = (columns, doc) => {
+    const totalColumns = columns.length;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 10; // left + right total margin (10 on each side)
+    const usableWidth = pageWidth - margin;
+
+    const colWidth = usableWidth / totalColumns;
+
+    const styles = {};
+    columns.forEach((_, index) => {
+      styles[index] = { cellWidth: colWidth };
+    });
+
+    return styles;
+  };
+
   return (
     <>
       <div className="card w-full bg-base-100 shadow-xl" style={{ padding: '10px', borderRadius: '10px' }}>
         <>
           <div className="row">
             <div className="row">
-              <div className="col-md-2
-               mb-2">
+              <div
+                className="col-md-2
+               mb-2"
+              >
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                   label="Date"
@@ -720,13 +940,17 @@ function SalesReport() {
               </div>
               <div className="col-md-2 mb-1">
                 <FormControlLabel
-                  control={<Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />}
+                  control={
+                    <Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />
+                  }
                   label="Customer"
                 />
               </div>
               <div className="col-md-2 mb-1">
                 <FormControlLabel
-                  control={<Checkbox checked={selectedSections.branchCode} onChange={handleCheckboxChange} name="branchCode" color="secondary" />}
+                  control={
+                    <Checkbox checked={selectedSections.branchCode} onChange={handleCheckboxChange} name="branchCode" color="secondary" />
+                  }
                   label="Branch"
                 />
               </div>
@@ -738,7 +962,7 @@ function SalesReport() {
                     onClick={() =>
                       setFormData((prev) => ({
                         ...prev,
-                        viewMode: 'details',
+                        viewMode: 'details'
                       }))
                     }
                   >
@@ -750,7 +974,7 @@ function SalesReport() {
                     onClick={() =>
                       setFormData((prev) => ({
                         ...prev,
-                        viewMode: 'summary',
+                        viewMode: 'summary'
                       }))
                     }
                   >
@@ -862,15 +1086,17 @@ function SalesReport() {
           }
         }}
       >
-        <DialogTitle sx={{
-          m: 0,
-          p: 1,
-          backgroundColor: '#34449B',
-          color: 'white',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
+        <DialogTitle
+          sx={{
+            m: 0,
+            p: 1,
+            backgroundColor: '#34449B',
+            color: 'white',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}
+        >
           {/* <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                         <Typography variant="h6"> */}
           {formData.viewMode === 'details' ? 'Detailed Sales Report' : 'Summary Sales Report'}
@@ -880,7 +1106,7 @@ function SalesReport() {
               aria-label="close"
               onClick={handleCloseModal}
               sx={{
-                color: 'white',
+                color: 'white'
               }}
             >
               <CloseIcon />
@@ -897,6 +1123,17 @@ function SalesReport() {
               handleDownloadExcel={handleDownloadExcel}
               sumFields={getSumFields()}
               headerFields={headerFields}
+              handleDownloadPDF={async () => {
+                const logoBase64 = await getLogo();
+                handleDownloadPdf({
+                  logo: logoBase64,
+                  columns: getColumns(),
+                  data: rowData,
+                  fileName: 'Sales Report',
+                  userName,
+                  formData
+                });
+              }}
             />
           )}
         </DialogContent>
