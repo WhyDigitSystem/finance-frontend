@@ -6,6 +6,7 @@ import { MaterialReactTable } from 'material-react-table';
 import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
 import { useTheme } from '@mui/material/styles';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import { padding, textAlign } from '@mui/system';
 
 const formatDate = (value) => (value ? dayjs(value).format('DD-MM-YYYY') : '-');
@@ -16,10 +17,11 @@ const CommonReportTable = ({
   isListView,
   fileName,
   handleDownloadExcel,
+  handleDownloadPdf,
   sumFields = [],
   headerFields = [],
   filters = [], // [{ label, value, options, onChange }]
-  onFilterDone = () => { }
+  onFilterDone = () => {}
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const theme = useTheme();
@@ -30,7 +32,7 @@ const CommonReportTable = ({
     color: theme.palette.success.dark,
     backgroundColor: theme.palette.success.light,
     height: 18,
-    fontSize: '11px',
+    fontSize: '11px'
   };
   const chipErrorSX = {
     ...chipSX,
@@ -247,6 +249,16 @@ const CommonReportTable = ({
                 margin="0 8px 0 8px"
               />
             </Box>
+            <Box>
+              <ActionButton
+                title="Download PDF"
+                icon={PictureAsPdfIcon}
+                onClick={handleDownloadPdf}
+                isLoading={isLoading}
+                margin="0 8px 0 8px"
+              />
+            </Box>
+
             <Box
               sx={{
                 display: 'flex',
