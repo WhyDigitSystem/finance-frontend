@@ -845,7 +845,7 @@ function CostReport() {
     doc.setFont(undefined, 'bold');
     doc.text('From Date', 8, 40);
     doc.text('To Date', 37, 40);
-    doc.text('vendor', 58, 40);
+    doc.text('Vendor', 58, 40);
     doc.text('Branch Code', 153, 40);
     doc.text('View Mode', 184, 40);
 
@@ -855,7 +855,7 @@ function CostReport() {
     doc.text(dayjs(toDate).format('DD-MM-YYYY'), 37, 45);
     doc.text(String(vendor ?? '-'), 58, 45);
     doc.text(String(branchCode ?? '-'), 153, 45);
-    doc.text(String(viewMode ?? '-'), 184, 45);
+    doc.text(String(viewMode.toUpperCase() ?? '-'), 184, 45);
 
     // 4) Build Table Body
     const headerLabels = columns.map((c) => c.header);

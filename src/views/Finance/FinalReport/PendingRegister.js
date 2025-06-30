@@ -192,23 +192,6 @@ const PendingRegister = () => {
     { accessorKey: 'vdate', header: 'Date', size: 100 },
     { accessorKey: 'partytype', header: 'Party Type', size: 80 },
     { accessorKey: 'partyname', header: 'Party Name', size: 100 },
-    {
-      accessorKey: 'status',
-      header: 'Status',
-      size: 100,
-      Cell: ({ cell }) => {
-        const value = cell.getValue();
-        return (
-          <span
-            style={{
-              textAlign: 'center'
-            }}
-          >
-            {value}
-          </span>
-        );
-      },
-    },
   ];
   const formatDate = (dateString) => {
     if (!dateString) return '';
@@ -383,11 +366,7 @@ const PendingRegister = () => {
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center'
-            }}>
-              {/* <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                        <Typography variant="h6"> */}
-              {formData.viewMode === 'details' ? 'Detailed Sales Report' : 'Summary Sales Report'}
-              {/* </Typography>*/}
+            }}>UnApproval Register
               <Box>
                 <IconButton
                   aria-label="close"
@@ -406,7 +385,7 @@ const PendingRegister = () => {
                 <CommonReportTable
                   columns={reportColumns}
                   data={rowData}
-                  fileName={'Pending Report'}
+                  fileName={'UnApproval Register'}
                   // handleDownloadExcel={handleDownloadExcel}
                   // sumFields={getSumFields()}
                   headerFields={headerFields}
@@ -415,236 +394,6 @@ const PendingRegister = () => {
             </DialogContent>
           </Dialog>
         </>
-        {/* <>
-        
-          <Dialog
-            open={modalOpen}
-            maxWidth={'xl'}
-            fullWidth={true}
-            onClose={handleCloseModal}
-            PaperComponent={PaperComponent}
-            aria-labelledby="draggable-dialog-title"
-          >
-            <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
-              <Box display="flex" justifyContent="space-between" alignItems="center">
-                <h6 style={{ margin: 0, textAlign: "center" }}>Report Details</h6>
-                <IconButton onClick={handleCloseModal} color="error">
-                  <CloseIcon />
-                </IconButton>
-              </Box>
-            </DialogTitle>
-            <DialogContent className="pb-0">
-              <div className="row mb-2 mb-1">
-                <div className="col-md-3 mb-1"><strong>Doc ID:</strong> {fillGridData.docId}</div>
-                <div className="col-md-3 mb-1"><strong>Doc Date:</strong> {fillGridData.docDate ? dayjs(fillGridData.docDate).format('DD-MM-YYYY') : ''}</div>
-                <div className="col-md-3 mb-1"><strong>Invoice No:</strong> {fillGridData.vid}</div>
-                <div className="col-md-3 mb-1"><strong>Invoice Date:</strong> {fillGridData.vdate ? dayjs(fillGridData.vdate).format('DD-MM-YYYY') : ''}</div>
-                <div className="col-md-3 mb-1"><strong>Customer:</strong> {fillGridData.supplierName}</div>
-                <div className="col-md-3 mb-1"><strong>Gst In:</strong> {fillGridData.supplierGstIn}</div>
-                <div className="col-md-3 mb-1"><strong>Tax Type:</strong> {fillGridData.gstType}</div>
-                <div className="col-md-3 mb-1"><strong>Charge Amount:</strong> ₹{Number(fillGridData.totChargesLcAmt || 0).toLocaleString('en-IN')}</div>
-                <div className="col-md-3 mb-1"><strong>Tax Amount:</strong> ₹{Number(fillGridData.gstInputLcAmt || 0).toLocaleString('en-IN')}</div>
-                <div className="col-md-3 mb-1"><strong>Amount:</strong> ₹{Number(fillGridData.netBillLcAmt || 0).toLocaleString('en-IN')}</div>
-              </div>
-              <div className="card w-full p-6 bg-base-100 shadow-xl mb-3">
-                <Box sx={{ width: '100%', typography: 'body1' }}>
-                  <TabContext value={value}>
-                    <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-                      <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
-                        <Tab label="Charge Particulars" value="1" />
-                        <Tab label="TDS" value="2" />
-                      </TabList>
-                    </Box>
-                    <TabPanel value="1">
-                      <div className="row">
-                        <div className="col-lg-12">
-                          <div className="table-responsive">
-                            <table className="table table-bordered">
-                              <thead>
-                                <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                    S.No
-                                  </th>
-                                  <th className="table-header">Job Order No</th>
-                                  <th className="table-header">Charge Name</th>
-                                  <th className="table-header">Charge Code</th>
-                                  <th className="table-header">SAC Code</th>
-                                  <th className="table-header">Vendor</th>
-                                  <th className="table-header">Qty</th>
-                                  <th className="table-header">Rate</th>
-                                  <th className="table-header">Currency</th>
-                                  <th className="table-header">Ex Rate</th>
-                                  <th className="table-header">GST Amount</th>
-                                  <th className="table-header">FC Amount</th>
-                                  <th className="table-header">LC Amount</th>
-                                  <th className="table-header">Bill Amount</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {fillGridData.chargerCostInvoiceVO && fillGridData.chargerCostInvoiceVO.length > 0 ? (
-                                  fillGridData.chargerCostInvoiceVO.map((row, index) => (
-                                    <tr key={row.id}>
-                                      <td className="text-center">{index + 1}</td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.jobNo || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeName || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeCode || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.govChargeCode || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.party || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.qty || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.rate || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.currency || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.exRate || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstAmount || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.fcAmt || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.lcAmt || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.billAmt || 0}
-                                      </td>
-                                    </tr>
-                                  ))
-                                ) : (
-                                  fillGridData.chargerCostDebitNoteVO?.map((row, index) => (
-                                    <tr key={row.id}>
-                                      <td className="text-center">{index + 1}</td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.jobNo || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeName || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeCode || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.govChargeCode || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.party || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.qty || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.rate || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.currency || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.exRate || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstpercent || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.fcAmt || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.lcAmt || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.billAmt || 0}
-                                      </td>
-                                    </tr>
-                                  ))
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                    </TabPanel>
-                    <TabPanel value="2">
-                      <div className="row">
-                        <div className="col-lg-12">
-                          <div className="table-responsive">
-                            <table className="table table-bordered">
-                              <thead>
-                                <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                    S.No
-                                  </th>
-                                  <th className="table-header">Section</th>
-                                  <th className="table-header">TDS</th>
-                                  <th className="table-header">TDS Percent</th>
-                                  <th className="table-header">TDS Amount</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {fillGridData.tdsCostInvoiceVO && fillGridData.tdsCostInvoiceVO.length > 0 ? (
-                                  fillGridData.tdsCostInvoiceVO.map((row, index) => (
-                                    <tr key={row.id}>
-                                      <td className="text-center">{index + 1}</td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.section || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.totTdsWhAmnt || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.tdsWithHoldingPer || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.tdsWithHolding || ''}
-                                      </td>
-                                    </tr>
-                                  ))
-                                ) : (
-                                  fillGridData.taxInvoiceGstVO?.map((row, index) => (
-                                    <tr key={row.id}>
-                                      <td className="text-center">{index + 1}</td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.tdsWithHolding || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.tdsWithHoldingPer || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.section || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.totTdsWhAmnt || ''}
-                                      </td>
-                                    </tr>
-                                  ))
-                                )}
-                              </tbody>
-                            </table>
-                          </div>
-                        </div>
-                      </div>
-                    </TabPanel>
-                  </TabContext>
-                </Box>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </> */}
-
       </div>
     </>
   );

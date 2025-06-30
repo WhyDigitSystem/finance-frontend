@@ -70,7 +70,7 @@ const CommonReportTableGrouped = ({
     totalinvamountlc: 'Total Amt',
     gst: 'Tax Amt',
     lcAmt: 'Total Amt',
-    totChargeLcAmt: 'Total Amt',
+    totChargeLcAmt: 'Bill Amt',
     gstAmount: 'Tax Amt',
     totalAmount: 'Total Amt',
     TotalInvAmountLC: 'Total Amount',

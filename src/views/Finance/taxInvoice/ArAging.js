@@ -45,7 +45,7 @@ const ArAging = () => {
     partyName: 'All',
     date: dayjs().format('YYYY-MM-DD'),
     branchCode: 'All',
-    base: ''
+    base: 'Yes'
   });
 
   const [selectedSections, setSelectedSections] = useState({
@@ -77,7 +77,7 @@ const ArAging = () => {
       partyName: 'All',
       date: dayjs().format('YYYY-MM-DD'),
       branchCode: 'All',
-      base: ''
+      base: 'Yes'
     });
     setSelectedSections({
       partyName: false,
@@ -155,17 +155,12 @@ const ArAging = () => {
         orgId,
         partyName: formData.partyName
       });
-
-      if (selectedSections.branchCode && formData.branchCode !== 'All') {
-        queryParams.append('branchCode', formData.branchCode);
-      }
-
+      // if (selectedSections.branchCode && formData.branchCode !== 'All') {
+      //   queryParams.append('branchCode', formData.branchCode);
+      // }
       const response = await apiCalls('get', `/reportController/getARAgeingReport?${queryParams.toString()}`);
-
       if (response.status === true) {
         setRowData(response.paramObjectsMap.rimReportFillGrid || []);
-
-        // Set header fields for AP Ageing report
         setHeaderFields([
           {
             label: 'As on Date',
@@ -180,7 +175,6 @@ const ArAging = () => {
             value: formData.branchCode
           }
         ]);
-
         setListView(true);
         setOpenModal(true);
       } else {
@@ -257,9 +251,9 @@ const ArAging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -282,9 +276,9 @@ const ArAging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -307,9 +301,9 @@ const ArAging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -332,9 +326,9 @@ const ArAging = () => {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -351,15 +345,15 @@ const ArAging = () => {
     },
     {
       accessorKey: 'mSlab2',
-      header: 'Days 30-60',
+      header: 'Days 31-60',
       size: 90,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -376,15 +370,15 @@ const ArAging = () => {
     },
     {
       accessorKey: 'mSlab3',
-      header: 'Days 60-90',
+      header: 'Days 61-90',
       size: 90,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -401,15 +395,15 @@ const ArAging = () => {
     },
     {
       accessorKey: 'mSlab4',
-      header: 'Days 90-120',
+      header: 'Days 91-120',
       size: 90,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -426,15 +420,15 @@ const ArAging = () => {
     },
     {
       accessorKey: 'mSlab5',
-      header: 'Days 120+',
+      header: 'Days 121+',
       size: 90,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -479,62 +473,145 @@ const ArAging = () => {
       }
     }
   };
+  const getLogo = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+      return response.paramObjectsMap.companyVO[0]?.companyLogo || null;
+    } catch (error) {
+      console.error('Error fetching logo:', error);
+      return null;
+    }
+  };
+const handleDownloadExcel = async () => {
+  const logoBase64 = await getLogo();
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet('AR Ageing Report');
 
-  const handleDownloadExcel = async () => {
-    const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('AR Ageing Report');
+  let startRow = 1;
 
-    // REMOVE FREEZE VIEW — no frozen panes
+  // Add Logo if available
+  if (logoBase64) {
+    try {
+      const logoId = workbook.addImage({
+        base64: logoBase64,
+        extension: 'png',
+      });
 
-    // Report Title
-    sheet.mergeCells('A1:L1');
-    const titleCell = sheet.getCell('A1');
-    titleCell.value = 'Accounts Receivable Ageing Report';
-    titleCell.font = { size: 18, bold: true, color: { argb: 'FF34449B' } };
-    titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+      // Neatly position the logo
+      sheet.addImage(logoId, {
+        tl: { col: 0, row: 0 },
+        ext: { width: 100, height: 50 },
+      });
 
-    // Header Info
-    const headerInfo = [
-      ...headerFields,
-      { label: 'Generated By', value: localStorage.getItem('userName') || 'Admin' },
-      { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
+      // Add padding row below logo
+      sheet.getRow(1).height = 40;
+      startRow = 2;
+    } catch (logoError) {
+      console.error('Error adding logo:', logoError);
+    }
+  }
+
+  // Title Row
+  const titleRowIndex = startRow;
+  sheet.mergeCells(`A${titleRowIndex}:L${titleRowIndex}`);
+  const titleCell = sheet.getCell(`A${titleRowIndex}`);
+  titleCell.value = 'Accounts Receivable Ageing Report';
+  titleCell.font = { size: 16, bold: true, color: { argb: 'FF34449B' } };
+  titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+  sheet.getRow(titleRowIndex).height = 24;
+
+  // Header Info (parameters)
+  const headerInfo = [
+    ...headerFields,
+    { label: 'Generated By', value: localStorage.getItem('userName') || 'Admin' },
+    { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
+  ];
+
+  const infoStartRow = titleRowIndex + 1;
+
+  for (let i = 0; i < headerInfo.length; i += 2) {
+    const rowIndex = infoStartRow + i / 2;
+    const row = sheet.getRow(rowIndex);
+
+    row.getCell(1).value = headerInfo[i].label + ':';
+    row.getCell(1).font = { bold: true };
+    row.getCell(2).value = headerInfo[i].value;
+
+    if (headerInfo[i + 1]) {
+      row.getCell(4).value = headerInfo[i + 1].label + ':';
+      row.getCell(4).font = { bold: true };
+      row.getCell(5).value = headerInfo[i + 1].value;
+    }
+  }
+
+  const dataStartRow = infoStartRow + Math.ceil(headerInfo.length / 2) + 1;
+
+  // Column Headers
+  const headers = [
+    'Invoice No',
+    'Invoice Date',
+    'Due Date',
+    'Inv Amt',
+    'Outstanding',
+    'Total Due',
+    'Unadjusted',
+    'Below 30 Days',
+    'Days 31-60',
+    'Days 61-90',
+    'Days 91-120',
+    'Days 121+'
+  ];
+
+  const headerRow = sheet.getRow(dataStartRow);
+  headerRow.values = headers;
+  headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF34449B' } };
+  headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
+  headerRow.height = 22;
+
+  headerRow.eachCell((cell) => {
+    cell.border = {
+      top: { style: 'thin' },
+      left: { style: 'thin' },
+      bottom: { style: 'thin' },
+      right: { style: 'thin' }
+    };
+  });
+
+  // Data Rows
+  rowData.forEach((item, index) => {
+    const row = sheet.getRow(dataStartRow + 1 + index);
+
+    row.values = [
+      item.docId || '-',
+      item.docDate ? dayjs(item.docDate).format('DD-MM-YYYY') : '-',
+      item.dueDate ? dayjs(item.dueDate).format('DD-MM-YYYY') : '-',
+      item.amount ?? 0,
+      item.outstanding ?? 0,
+      item.totalDue ?? 0,
+      item.unadjusted ?? 0,
+      item.mSlab1 ?? 0,
+      item.mSlab2 ?? 0,
+      item.mSlab3 ?? 0,
+      item.mSlab4 ?? 0,
+      item.mSlab5 ?? 0
     ];
 
-    for (let i = 0; i < headerInfo.length; i += 2) {
-      const rowIndex = i / 2 + 2;
-      const row = sheet.getRow(rowIndex);
-      row.getCell(1).value = headerInfo[i].label + ':';
-      row.getCell(1).font = { bold: true };
-      row.getCell(2).value = headerInfo[i].value;
-      if (headerInfo[i + 1]) {
-        row.getCell(4).value = headerInfo[i + 1].label + ':';
-        row.getCell(4).font = { bold: true };
-        row.getCell(5).value = headerInfo[i + 1].value;
-      }
+    // Format numeric columns
+    for (let col = 4; col <= 12; col++) {
+      const cell = row.getCell(col);
+      cell.numFmt = '#,##,##0.00';
+      cell.alignment = { horizontal: 'right' };
     }
 
-    // Header Row
-    const headers = [
-      'Invoice No',
-      'Invoice Date',
-      'Due Date',
-      'Inv Amt',
-      'Outstanding',
-      'Total Due',
-      'Unadjusted',
-      'Below 30 Days',
-      'Days 30-60',
-      'Days 60-90',
-      'Days 90-120',
-      'Days 120+'
-    ];
-    const headerRow = sheet.addRow(headers);
-    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-    headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF34449B' } };
-    headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
-    headerRow.height = 20;
-
-    headerRow.eachCell((cell) => {
+    // Border & alternate background
+    const bgColor = index % 2 === 0 ? 'FFF3F4F6' : 'FFFFFFFF'; // Zebra effect
+    row.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: bgColor }
+      };
       cell.border = {
         top: { style: 'thin' },
         left: { style: 'thin' },
@@ -542,52 +619,24 @@ const ArAging = () => {
         right: { style: 'thin' }
       };
     });
+  });
 
-    // Data Rows
-    rowData.forEach((item) => {
-      const row = sheet.addRow([
-        item.docId || '-',
-        item.docDate ? dayjs(item.docDate).format('DD-MM-YYYY') : '-',
-        item.dueDate ? dayjs(item.dueDate).format('DD-MM-YYYY') : '-',
-        item.amount ?? 0,
-        item.outstanding ?? 0,
-        item.totalDue ?? 0,
-        item.unadjusted ?? 0,
-        item.mSlab1 ?? 0,
-        item.mSlab2 ?? 0,
-        item.mSlab3 ?? 0,
-        item.mSlab4 ?? 0,
-        item.mSlab5 ?? 0
-      ]);
+  // Set Column Widths
+  const widths = [20, 15, 15, 12, 14, 14, 12, 12, 12, 12, 12, 12];
+  widths.forEach((w, i) => {
+    sheet.getColumn(i + 1).width = w;
+  });
 
-      for (let col = 4; col <= 12; col++) {
-        const cell = row.getCell(col);
-        cell.numFmt = '#,##,##0.00';
-        cell.alignment = { horizontal: 'right' };
-      }
+  // Optional: Freeze header
+  sheet.views = [{ state: 'frozen', ySplit: dataStartRow }];
 
-      row.eachCell((cell) => {
-        cell.border = {
-          top: { style: 'thin' },
-          left: { style: 'thin' },
-          bottom: { style: 'thin' },
-          right: { style: 'thin' }
-        };
-      });
-    });
-
-    // Column Widths
-    sheet.columns = Array(12).fill({ width: 15 });
-    sheet.getColumn(1).width = 20;
-
-    // Export
-    const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    });
-    saveAs(blob, `AR_Ageing_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
-  };
-
+  // Export
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+  saveAs(blob, `AR_Ageing_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
+};
   return (
     <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
       <div className="row">
@@ -738,7 +787,7 @@ const ArAging = () => {
             alignItems: 'center'
           }}
         >
-          <span>Accounts Payable Ageing Report</span>
+          <span>Accounts Receivable Ageing Report</span>
           <IconButton aria-label="close" onClick={handleCloseModal} sx={{ color: 'white' }}>
             <CloseIcon />
           </IconButton>
@@ -751,7 +800,7 @@ const ArAging = () => {
             tableOptions={tableOptions}
             handleDownloadExcel={handleDownloadExcel}
             headerFields={headerFields}
-            // sumFields={['amount', 'outstanding', 'totaldue']}
+          // sumFields={['amount', 'outstanding', 'totaldue']}
           />
         </DialogContent>
       </Dialog>
@@ -769,7 +818,7 @@ const ArAging = () => {
               muiTableContainerProps: { sx: { maxHeight: '60vh' } }
             }}
             headerFields={headerFields}
-            // sumFields={['amount', 'outstanding', 'totaldue',]}
+          // sumFields={['amount', 'outstanding', 'totaldue',]}
           />
         </div>
       )}

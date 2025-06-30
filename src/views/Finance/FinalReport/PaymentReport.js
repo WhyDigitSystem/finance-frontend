@@ -664,7 +664,7 @@ function PaymentReport() {
     doc.text(dayjs(toDate).format('DD-MM-YYYY'), 37, 45);
     doc.text(String(vendor ?? '-'), 58, 45);
     doc.text(String(branchCode ?? '-'), 153, 45);
-    doc.text(String(viewMode ?? '-'), 184, 45);
+    doc.text(String(viewMode.toUpperCase() ?? '-'), 184, 45);
 
     // 4) Build Table Body
     const headerLabels = columns.map((c) => c.header);
