@@ -32,6 +32,8 @@ import CommonReportTable from 'utils/CommonReportTable';
 import CloseIcon from '@mui/icons-material/Close';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 function LedgerReport() {
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -44,10 +46,11 @@ function LedgerReport() {
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
   const [openModal, setOpenModal] = useState(false);
+  const [userName] = useState(localStorage.getItem('userName'));
   const [selectedSections, setSelectedSections] = useState({
     accountName: false,
-    branchCode: false
-  });  
+    branch: false
+  });
   const [headerFields, setHeaderFields] = useState([]);
   const [companyName, setCompanyName] = useState('');
 
@@ -55,7 +58,7 @@ function LedgerReport() {
     fromDate: null,
     toDate: null,
     accountName: 'All',
-    branchCode: 'BANGALORE',
+    branch: 'All',
     withDetails: 'YES'
   });
 
@@ -63,7 +66,7 @@ function LedgerReport() {
     fromDate: '',
     toDate: '',
     accountName: '',
-    branchCode: ''
+    branch: ''
   });
 
   const handleCheckboxChange = (event) => {
@@ -91,14 +94,14 @@ function LedgerReport() {
       fromDate: null,
       toDate: null,
       accountName: 'All',
-      branchCode: 'BANGALORE',
+      branch: 'All',
       withDetails: 'YES'
     });
     setFieldErrors({
       fromDate: '',
       toDate: '',
       accountName: '',
-      branchCode: ''
+      branch: ''
     });
     setRowData([]);
     setHeaderFields([]);
@@ -121,47 +124,47 @@ function LedgerReport() {
         setCompanyName(particularCompany.companyName || '');
 
         // Handle blob image if it comes as a blob URL
-        if (particularCompany.companyLogo && typeof particularCompany.companyLogo === 'string') {
-          if (particularCompany.companyLogo.startsWith('blob:')) {
-            // Fetch the blob and convert to base64
-            try {
-              const blobResponse = await fetch(particularCompany.companyLogo);
-              const blob = await blobResponse.blob();
-              const base64Image = await new Promise((resolve) => {
-                const reader = new FileReader();
-                reader.onloadend = () => resolve(reader.result);
-                reader.readAsDataURL(blob);
-              });
+        // if (particularCompany.companyLogo && typeof particularCompany.companyLogo === 'string') {
+        //   if (particularCompany.companyLogo.startsWith('blob:')) {
+        //     // Fetch the blob and convert to base64
+        //     try {
+        //       const blobResponse = await fetch(particularCompany.companyLogo);
+        //       const blob = await blobResponse.blob();
+        //       const base64Image = await new Promise((resolve) => {
+        //         const reader = new FileReader();
+        //         reader.onloadend = () => resolve(reader.result);
+        //         reader.readAsDataURL(blob);
+        //       });
 
-              // Extract image type and data
-              const matches = base64Image.match(/^data:(image\/(png|jpeg|jpg));base64,(.+)$/);
-              if (matches) {
-                const extension = matches[2];
-                const base64Data = matches[3];
-                const byteArray = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+        //       // Extract image type and data
+        //       const matches = base64Image.match(/^data:(image\/(png|jpeg|jpg));base64,(.+)$/);
+        //       if (matches) {
+        //         const extension = matches[2];
+        //         const base64Data = matches[3];
+        //         const byteArray = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
 
-                setCompanyLogo({
-                  buffer: byteArray,
-                  extension,
-                  base64: base64Image // Store base64 for potential other uses
-                });
-              }
-            } catch (error) {
-              console.error('Error processing blob image:', error);
-            }
-          } else if (particularCompany.companyLogo.startsWith('data:image')) {
-            // Handle base64 image directly
-            const [meta, base64Data] = particularCompany.companyLogo.split(',');
-            const extension = meta.includes('jpeg') ? 'jpeg' : 'png';
+        //         setCompanyLogo({
+        //           buffer: byteArray,
+        //           extension,
+        //           base64: base64Image // Store base64 for potential other uses
+        //         });
+        //       }
+        //     } catch (error) {
+        //       console.error('Error processing blob image:', error);
+        //     }
+        //   } else if (particularCompany.companyLogo.startsWith('data:image')) {
+        //     // Handle base64 image directly
+        //     const [meta, base64Data] = particularCompany.companyLogo.split(',');
+        //     const extension = meta.includes('jpeg') ? 'jpeg' : 'png';
 
-            const byteArray = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
-            setCompanyLogo({
-              buffer: byteArray,
-              extension,
-              base64: particularCompany.companyLogo
-            });
-          }
-        }
+        //     const byteArray = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+        //     setCompanyLogo({
+        //       buffer: byteArray,
+        //       extension,
+        //       base64: particularCompany.companyLogo
+        //     });
+        //   }
+        // }
 
         setFormData({
           ...formData,
@@ -216,20 +219,23 @@ function LedgerReport() {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
-    setFieldErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: ''
-    }));
-
     setFormData((prevData) => ({
       ...prevData,
       [name]: value
+    }));
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: ''
     }));
   };
 
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date).format('YYYY-MM-DD') || null;
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+    setFieldErrors((prev) => ({
+      ...prev,
+      [field]: ''
+    }));
   };
 
   const reportColumns = [
@@ -292,9 +298,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -317,9 +323,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -358,9 +364,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', color: '#d32f2f', fontWeight: '500', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -383,9 +389,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', color: '#2e7d32', fontWeight: '500', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -444,8 +450,9 @@ function LedgerReport() {
         // Prepare parameters for API
         const params = {
           accountName: formData.accountName === 'All' ? '' : formData.accountName,
-          branch:  formData.branchCode,
+          branch: formData.branch === 'All' ? '' : formData.branch,
           details: formData.withDetails,
+          finYear: finYear,
           fromdate: formData.fromDate,
           orgId: orgId,
           toDate: formData.toDate
@@ -489,8 +496,8 @@ function LedgerReport() {
               value: formData.accountName !== 'All' ? formData.accountName : 'All'
             },
             {
-              label: 'Branch Code',
-              value: formData.branchCode
+              label: 'Branch',
+              value: formData.branch !== 'All' ? formData.branch : 'All'
             },
             {
               label: 'With Details',
@@ -520,67 +527,143 @@ function LedgerReport() {
   const handleCloseModal = () => {
     setOpenModal(false);
   };
-  const getLogo = async () => {
+
+  // Excel
+  const handleDownloadExcel = async ({ logo }) => {
     try {
-      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
-      return response.paramObjectsMap.companyVO[0]?.companyLogo || null;
-    } catch (error) {
-      console.error('Error fetching logo:', error);
-      return null;
-    }
-  };
-  const handleDownloadExcel = async () => {
-    try {
-      const logoBase64 = await getLogo();
       const workbook = new ExcelJS.Workbook();
       workbook.creator = companyName || 'Ledger Report';
       workbook.created = new Date();
 
       const sheet = workbook.addWorksheet('Ledger Report');
       sheet.state = 'visible';
-      sheet.views = [{ state: 'frozen', ySplit: 12, activeCell: 'A13' }];
 
-      // ====== MERGE CELLS FOR HEADER ======
-      sheet.mergeCells('A1:B6'); // Logo
-      sheet.mergeCells('C1:I1'); // Company name
-      sheet.mergeCells('A7:I7'); // Report title
-
-      // ====== LOGO (if available) ======
-      try {
-        if (logoBase64) {
-          const logoId = workbook.addImage({
-            base64: logoBase64,
-            extension: 'png'
-          });
-          sheet.addImage(logoId, {
-            tl: { col: 0, row: 0 },
-            ext: { width: 160, height: 80 }
-          });
-        } else {
-          const logoCell = sheet.getCell('A1');
-          logoCell.value = 'Company Logo';
-          logoCell.font = { bold: true, color: { argb: 'FF34449B' } };
-          logoCell.alignment = { vertical: 'middle', horizontal: 'center' };
+      // ====== COMPANY LOGO (top left A1:B5) ======
+      sheet.mergeCells('A1:B5');
+      if (logo) {
+        try {
+          const base64Data = logo.split(',')[1] || logo;
+          if (base64Data.length >= 100) {
+            const extension = logo.includes('jpeg') ? 'jpeg' : 'png';
+            const imageId = workbook.addImage({ base64: base64Data, extension });
+            sheet.addImage(imageId, {
+              tl: { col: 0, row: 0 },
+              ext: { width: 120, height: 80 }
+            });
+          }
+        } catch (err) {
+          console.error('Error adding logo:', err);
         }
-      } catch (err) {
-        console.error('Error adding logo:', err);
       }
 
-      // ====== COMPANY NAME ======
-      const companyCell = sheet.getCell('C1');
-      companyCell.value = companyName || 'Company Name';
-      companyCell.font = { size: 16, bold: true, color: { argb: 'FF34449B' } };
-      companyCell.alignment = { vertical: 'middle', horizontal: 'center' };
-
-      // ====== REPORT TITLE ======
-      const titleCell = sheet.getCell('A7');
+      // ====== TITLE (C1 to I1) ======
+      sheet.mergeCells('C1:I1');
+      const titleCell = sheet.getCell('C1');
       titleCell.value = 'LEDGER REPORT';
       titleCell.font = { size: 18, bold: true, color: { argb: 'FF34449B' } };
-      titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
+      titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-      // ... continue with metadata, headers, rowData, column widths, etc.
+      // ====== METADATA in 3 columns (C2:D5, E2:F5, G2:H5) ======
+      const metadata = [
+        { label: 'From Date', value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : 'N/A' },
+        { label: 'To Date', value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : 'N/A' },
+        { label: 'Account Name', value: formData.accountName !== 'All' ? formData.accountName : 'All' },
+        { label: 'Branch', value: formData.branch !== 'All' ? formData.branch : 'All' },
+        { label: 'With Details', value: formData.withDetails },
+        { label: 'Generated By', value: localStorage.getItem('userName') || 'System' },
+        { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
+      ];
 
-      // ====== Final: Download Excel File ======
+      metadata.forEach((meta, index) => {
+        const rowIndex = (index % 4) + 2; // Rows 2,3,4,5
+        const colGroup = Math.floor(index / 4); // 0 (C-D), 1 (E-F), 2 (G-H)
+
+        const colStart = 4 + colGroup * 2; // C=3, E=5, G=7
+        const row = sheet.getRow(rowIndex);
+
+        row.getCell(colStart).value = meta.label;
+        row.getCell(colStart).font = { bold: true };
+        row.getCell(colStart + 1).value = meta.value;
+      });
+
+      // ====== TABLE HEADER (Row 7) ======
+      const headerRowIndex = 7;
+      const headerRow = sheet.getRow(headerRowIndex);
+      reportColumns.forEach((col, index) => {
+        const cell = headerRow.getCell(index + 1);
+        cell.value = col.header;
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF34449B' }
+        };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FF000000' } },
+          left: { style: 'thin', color: { argb: 'FF000000' } },
+          bottom: { style: 'thin', color: { argb: 'FF000000' } },
+          right: { style: 'thin', color: { argb: 'FF000000' } }
+        };
+      });
+      headerRow.height = 20;
+
+      // ====== TABLE DATA (From Row 8) ======
+      rowData.forEach((item) => {
+        const row = sheet.addRow([
+          item.Vid || '',
+          item.Vdate ? dayjs(item.Vdate).format('DD-MM-YYYY') : '-',
+          item.PartyName || '-',
+          item.ndAmount,
+          item.NcAmount,
+          item.Currency || '',
+          item.dbAmount,
+          item.CrAmount,
+          item.Narration || ''
+        ]);
+
+        // Format numeric columns
+        [4, 5, 7, 8].forEach((colIndex) => {
+          const cell = row.getCell(colIndex);
+          if (typeof cell.value === 'number') {
+            cell.numFmt = '#,##0.00';
+            cell.alignment = { horizontal: 'right' };
+          }
+        });
+        const debitCell = row.getCell(7);
+        if (typeof debitCell.value === 'number') {
+          debitCell.font = { color: { argb: 'FFFF0000' } }; // Red
+        }
+
+        const creditCell = row.getCell(8);
+        if (typeof creditCell.value === 'number') {
+          creditCell.font = { color: { argb: 'FF00AA00' } }; // Green
+        }
+        // Add borders
+        row.eachCell({ includeEmpty: true }, (cell) => {
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FF000000' } },
+            left: { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'thin', color: { argb: 'FF000000' } },
+            right: { style: 'thin', color: { argb: 'FF000000' } }
+          };
+        });
+      });
+
+      // ====== COLUMN WIDTHS ======
+      sheet.columns = [
+        { width: 15 }, // Vid
+        { width: 15 }, // Vdate
+        { width: 40 }, // PartyName
+        { width: 15 }, // ndAmount
+        { width: 15 }, // NcAmount
+        { width: 12 }, // Currency
+        { width: 15 }, // dbAmount
+        { width: 15 }, // CrAmount
+        { width: 40 } // Narration
+      ];
+
+      // ====== DOWNLOAD ======
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -592,7 +675,6 @@ function LedgerReport() {
       showToast('error', 'Failed to generate Excel file');
     }
   };
-
 
   // Common table options
   const tableOptions = {
@@ -624,6 +706,129 @@ function LedgerReport() {
     }
   };
 
+  // pdf download
+  const handleDownloadPdf = ({ logo, columns, data, fileName = 'Ledger Report', userName, formData }) => {
+    const doc = new jsPDF();
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+
+    // 1) COMPANY LOGO (top-left)
+    const logoBase64 = logo;
+    const logoWidth = 30;
+    const logoHeight = 23;
+    const logoX = 10;
+    const logoY = 10;
+    if (logoBase64) {
+      doc.addImage(logoBase64, 'PNG', logoX, logoY, logoWidth, logoHeight);
+    }
+
+    // 2) TITLE BOX
+    const title = `${fileName}`;
+    const textW = doc.getTextWidth(title);
+    const padX = 10,
+      boxH = 10,
+      yTitle = 25;
+    const boxW = textW + padX * 2,
+      boxX = (pageW - boxW) / 2;
+    doc
+      .setFillColor('#e7ebeb')
+      .roundedRect(boxX, yTitle - boxH + 3, boxW, boxH, 4, 4, 'F')
+      .setTextColor('#34449B')
+      .setFontSize(12)
+      .text(title, pageW / 2, yTitle, { align: 'center' });
+
+    // 3) FOOTER (Generated On / By)
+    doc.setFontSize(8).setTextColor('#555555');
+    doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
+    doc.text(`Generated By: ${userName}`, 15, pageH - 10, { align: 'left' });
+
+    // 4) FILTER METADATA
+    const { fromDate, toDate, accountName, branch, withDetails } = formData;
+
+    doc.setFontSize(9);
+    doc.setTextColor('#000000');
+    doc.setFillColor(231, 235, 235);
+    doc.roundedRect(2, 35, 206, 12, 2, 2, 'F');
+
+    // Row 1: Labels (bold)
+    doc.setFont(undefined, 'bold');
+    doc.text('From Date', 8, 40);
+    doc.text('To Date', 32, 40);
+    doc.text('Account Name', 54, 40);
+    doc.text('Branch', 153, 40);
+    doc.text('WithDetails', 184, 40);
+
+    // Row 2: Values (normal)
+    doc.setFont(undefined, 'normal');
+    doc.text(dayjs(fromDate).format('DD-MM-YYYY'), 8, 45);
+    doc.text(dayjs(toDate).format('DD-MM-YYYY'), 32, 45);
+    doc.text(accountName, 54, 45);
+    doc.text(branch, 153, 45);
+    doc.text(withDetails, 184, 45);
+
+    // 5) TABLE
+    const headerLabels = columns.map((c) => c.header);
+    const numericFields = columns.map((c) => c.accessorKey).filter((k) => k && /(amount|debit|credit|balance)/i.test(k));
+
+    const body = data.map((row) =>
+      columns.map((col) => {
+        const key = col.accessorKey;
+        const raw = key ? row[key] : '';
+        if (key?.toLowerCase().includes('date')) {
+          const d = dayjs(raw);
+          return d.isValid() ? d.format('DD-MM-YYYY') : '-';
+        }
+        if (typeof raw === 'number') {
+          return raw === 0 ? '' : raw.toLocaleString('en-IN');
+        }
+        return raw ?? '';
+      })
+    );
+
+    autoTable(doc, {
+      startY: 50, // replace Fifty with a number like 60
+      head: [headerLabels],
+      body,
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+        lineWidth: 0.1,
+        lineColor: [220, 220, 220]
+      },
+      headStyles: {
+        fillColor: [52, 68, 155],
+        textColor: 255,
+        halign: 'center'
+      },
+      bodyStyles: {
+        halign: 'left'
+      },
+      didParseCell: (cellHookData) => {
+        const { cell, column, section } = cellHookData;
+        if (section === 'body') {
+          // get the accessorKey for this column
+          const key = columns[column.index].accessorKey;
+
+          if (key === 'dbAmount') {
+            // set debit cells to red
+            cell.styles.textColor = [255, 0, 0];
+          } else if (key === 'CrAmount') {
+            // set credit cells to green
+            cell.styles.textColor = [0, 128, 0];
+          }
+
+          // existing right-align logic
+          if (numericFields.includes(key)) {
+            cell.styles.halign = 'right';
+          }
+        }
+      }
+    });
+
+    // 6) SAVE
+    doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
+  };
+
   return (
     <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
       <div className="row">
@@ -638,9 +843,7 @@ function LedgerReport() {
           </div>
           <div className="col-md-3 mb-3">
             <FormControlLabel
-              control={
-                <Checkbox checked={selectedSections.branchCode} onChange={handleCheckboxChange} name="branchCode" color="secondary" />
-              }
+              control={<Checkbox checked={selectedSections.branch} onChange={handleCheckboxChange} name="branch" color="secondary" />}
               label="Branch Code"
             />
           </div>
@@ -724,17 +927,11 @@ function LedgerReport() {
           </div>
         )}
 
-        {selectedSections.branchCode && (
+        {selectedSections.branch && (
           <div className="col-md-3 mb-3">
             <FormControl size="small" variant="outlined" fullWidth>
-              <InputLabel id="branchCode-label">Branch Code</InputLabel>
-              <Select
-                labelId="branchCode-label"
-                label="Branch Code"
-                value={formData.branchCode}
-                onChange={handleInputChange}
-                name="branchCode"
-              >
+              <InputLabel id="branch-label">Branch</InputLabel>
+              <Select labelId="branch-label" label="Branch" value={formData.branch} onChange={handleInputChange} name="branch">
                 <MenuItem value="All">All</MenuItem>
                 {branchCodeList.map((branch) => (
                   <MenuItem key={branch.id} value={branch.branch}>
@@ -795,7 +992,17 @@ function LedgerReport() {
             columns={reportColumns}
             fileName={'Ledger Report'}
             tableOptions={tableOptions}
-            handleDownloadExcel={handleDownloadExcel}
+            handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
+            handleDownloadPdf={() =>
+              handleDownloadPdf({
+                logo: listViewData[0]?.companyLogo,
+                columns: reportColumns,
+                data: rowData,
+                formData,
+                fileName: 'Ledger Report',
+                userName
+              })
+            }
             headerFields={headerFields}
           />
         </DialogContent>
@@ -808,7 +1015,17 @@ function LedgerReport() {
             columns={reportColumns}
             fileName={'Ledger Report'}
             isListView={true}
-            handleDownloadExcel={handleDownloadExcel}
+            handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
+            handleDownloadPdf={() =>
+              handleDownloadPdf({
+                logo: listViewData[0]?.companyLogo,
+                columns: reportColumns,
+                data: rowData,
+                fileName: 'Ledger Report',
+                userName,
+                formData
+              })
+            }
             tableOptions={{
               ...tableOptions,
               muiTableContainerProps: { sx: { maxHeight: '60vh' } }

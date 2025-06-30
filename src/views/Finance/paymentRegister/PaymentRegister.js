@@ -27,8 +27,12 @@ import CommonReportTable from 'utils/CommonReportTable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
+import CircularProgress from '@mui/material/CircularProgress';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
-const APaging = () => {
+const APOutstanding = () => {
+  const [listViewData, setListViewData] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [isLoading, setIsLoading] = useState(false);
@@ -38,6 +42,8 @@ const APaging = () => {
   const [rowData, setRowData] = useState([]);
   const [branchList, setbranchList] = useState([]);
   const [listView, setListView] = useState(false);
+  const [userName] = useState(localStorage.getItem('userName'));
+
   const [selectedSections, setSelectedSections] = useState({
     partyName: false,
     date: true,
@@ -79,13 +85,34 @@ const APaging = () => {
     slab6: ''
   });
 
-  const handleDownloadExcel = async () => {
+  const handleDownloadExcel = async ({ logo }) => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('AR Ageing Report');
 
+    // ====== LOGO ======
+    sheet.mergeCells('A1:B5');
+    if (logo) {
+      try {
+        const base64Data = logo.split(',')[1] || logo;
+        if (base64Data.length >= 100) {
+          const extension = logo.includes('jpeg') ? 'jpeg' : 'png';
+          const imageId = workbook.addImage({ base64: base64Data, extension });
+          sheet.addImage(imageId, {
+            tl: { col: 0, row: 0 },
+            ext: { width: 120, height: 80 }
+          });
+        }
+      } catch (err) {
+        console.error('Error adding logo:', err);
+      }
+    }
+
     // ====== TITLE ======
-    sheet.mergeCells('A1:G1');
-    const titleCell = sheet.getCell('A1');
+    const titleRowIndex = 1;
+    const titleColStart = 3;
+    const titleColEnd = 9;
+    sheet.mergeCells(`${String.fromCharCode(64 + titleColStart)}${titleRowIndex}:${String.fromCharCode(64 + titleColEnd)}${titleRowIndex}`);
+    const titleCell = sheet.getCell(`${String.fromCharCode(64 + titleColStart)}${titleRowIndex}`);
     titleCell.value = 'Accounts Payable Outstanding Report';
     titleCell.font = { size: 18, bold: true, color: { argb: 'FF34449B' } };
     titleCell.alignment = { vertical: 'middle', horizontal: 'center' };
@@ -97,25 +124,28 @@ const APaging = () => {
       { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
     ];
 
-    for (let i = 0; i < headerInfo.length; i += 2) {
-      const rowIndex = i / 2 + 2;
+    for (let i = 0; i < headerInfo.length; i += 3) {
+      const rowIndex = Math.floor(i / 3) + 3;
       const row = sheet.getRow(rowIndex);
-      const labelCell1 = row.getCell(1);
-      const valueCell1 = row.getCell(2);
-      labelCell1.value = headerInfo[i].label + ':';
-      labelCell1.font = { bold: true };
-      valueCell1.value = headerInfo[i].value;
 
+      if (headerInfo[i]) {
+        row.getCell(3).value = headerInfo[i].label + ':';
+        row.getCell(3).font = { bold: true };
+        row.getCell(4).value = headerInfo[i].value;
+      }
       if (headerInfo[i + 1]) {
-        const labelCell2 = row.getCell(4);
-        const valueCell2 = row.getCell(5);
-        labelCell2.value = headerInfo[i + 1].label + ':';
-        labelCell2.font = { bold: true };
-        valueCell2.value = headerInfo[i + 1].value;
+        row.getCell(5).value = headerInfo[i + 1].label + ':';
+        row.getCell(5).font = { bold: true };
+        row.getCell(6).value = headerInfo[i + 1].value;
+      }
+      if (headerInfo[i + 2]) {
+        row.getCell(7).value = headerInfo[i + 2].label + ':';
+        row.getCell(7).font = { bold: true };
+        row.getCell(8).value = headerInfo[i + 2].value;
       }
     }
 
-    // ====== COLUMN HEADERS ======
+    // ====== HEADERS ======
     const headers = reportColumns.map((col) => col.header);
     const accessorKeys = reportColumns.map((col) => col.accessorKey);
 
@@ -138,15 +168,7 @@ const APaging = () => {
       };
     });
 
-    // ====== FORMATTER: Indian Comma Style ======
-    const formatIndianAmount = (num) => {
-      if (num == null || isNaN(num)) return '';
-      return num.toLocaleString('en-IN', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-      });
-    };
-
+    // ====== NUMERIC KEYS ======
     const numericFields = ['creditLimit', 'outstanding', 'unadjusted', 'totaldue'];
 
     // ====== DATA ROWS ======
@@ -158,17 +180,24 @@ const APaging = () => {
           const currency = item.currency || '';
           return name?.toLowerCase().startsWith('total') ? name : [code, name, currency].filter(Boolean).join(' - ');
         }
-        if (numericFields.includes(key)) {
-          return formatIndianAmount(item[key]);
-        }
         return item[key] ?? '';
       });
 
       const row = sheet.addRow(rowValues);
 
-      row.eachCell((cell, colNumber) => {
-        const accessorKey = accessorKeys[colNumber - 1];
-        cell.alignment = numericFields.includes(accessorKey) ? { horizontal: 'right' } : { horizontal: 'left' };
+      row.eachCell((cell, colIndex) => {
+        const key = accessorKeys[colIndex - 1];
+        const isNumeric = numericFields.includes(key);
+        if (isNumeric) {
+          const rawValue = item[key];
+          if (!isNaN(rawValue)) {
+            cell.value = Number(rawValue); // insert as number
+            cell.numFmt = '#,##0.00'; // Excel formatting with commas
+            cell.alignment = { horizontal: 'right' };
+          }
+        } else {
+          cell.alignment = { horizontal: 'left' };
+        }
 
         cell.border = {
           top: { style: 'thin' },
@@ -181,7 +210,7 @@ const APaging = () => {
 
     // ====== COLUMN WIDTHS ======
     sheet.columns = reportColumns.map((col) => ({
-      width: col.size ? col.size / 6 : 15 // Approximated width
+      width: col.size ? col.size / 6 : 15
     }));
 
     // ====== EXPORT ======
@@ -199,7 +228,7 @@ const APaging = () => {
   };
 
   const allClearData = () => {
-    setFormData({ partyName: 'All', date: dayjs().format('YYYY-MM-DD'), branch: 'ALL' });
+    setFormData({ partyName: 'All', date: dayjs().format('YYYY-MM-DD'), branch: 'All' });
     setSelectedSections({ partyName: false, date: true });
     setFieldErrors({});
     setListView(false);
@@ -209,6 +238,7 @@ const APaging = () => {
   useEffect(() => {
     getpartyName();
     getAllBranches();
+    getCompanyDetails();
   }, []);
 
   const getAllBranches = async () => {
@@ -501,7 +531,7 @@ const APaging = () => {
           ];
 
           setHeaderFields(headers);
-          setIsLoading(false);
+          // setIsLoading(false);
           setListView(true);
           setIsModalOpen(true);
         } else {
@@ -547,6 +577,146 @@ const APaging = () => {
     }
   };
 
+  // Logo
+  const getCompanyDetails = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+      console.log('API Response:', response);
+      setListViewData(response.paramObjectsMap.companyVO.reverse());
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  // pdf download
+  const handleDownloadPdf = ({ logo, columns, data, fileName = 'Ledger Report', userName, formData }) => {
+    const doc = new jsPDF();
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+
+    // 1) COMPANY LOGO (top-left)
+    const logoBase64 = logo;
+    const logoWidth = 30;
+    const logoHeight = 23;
+    const logoX = 10;
+    const logoY = 10;
+    if (logoBase64) {
+      doc.addImage(logoBase64, 'PNG', logoX, logoY, logoWidth, logoHeight);
+    }
+
+    // 2) TITLE BOX
+    const title = `${fileName}`;
+    const textW = doc.getTextWidth(title);
+    const padX = 10,
+      boxH = 10,
+      yTitle = 25;
+    const boxW = textW + padX * 2,
+      boxX = (pageW - boxW) / 2;
+    doc
+      .setFillColor('#e7ebeb')
+      .roundedRect(boxX, yTitle - boxH + 3, boxW, boxH, 4, 4, 'F')
+      .setTextColor('#34449B')
+      .setFontSize(18)
+      .text(title, pageW / 2, yTitle, { align: 'center' });
+
+    // 3) FOOTER (Generated On / By)
+    doc.setFontSize(8).setTextColor('#555555');
+    doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
+    doc.text(`Generated By: ${userName}`, 15, pageH - 10, { align: 'left' });
+
+    // 4) FILTER METADATA
+    const { date, partyName, branch } = formData;
+
+    const md = [
+      ['Date', date ? dayjs(date).format('DD-MM-YYYY') : '-'],
+      ['Party Name', partyName || 'All'],
+      ['Branch', branch || 'All']
+    ];
+    const bandX = 14;
+    const bandY = 38;
+    const bandWidth = pageW - bandX * 2; // = pageW - 28
+    const bandHeight = 10;
+
+    doc.setFontSize(9).setTextColor('#000000').setFillColor(231, 235, 235).roundedRect(bandX, bandY, bandWidth, bandHeight, 2, 2, 'F');
+    const cols = md.length;
+    const colWidths = [30, 100, 30];
+    md.forEach(([label, value], i) => {
+      // Left edge of this metadata column
+      const colX = bandX + colWidths.slice(0, i).reduce((a, b) => a + b, 0);
+
+      // Y position for text (vertically center at bandY + bandHeight/2)
+      // jsPDF’s text is drawn on the baseline, so add ~3px for rough vertical centering
+      const textY = bandY + bandHeight / 3 + 3;
+
+      // Draw label in bold
+      doc.setFont(undefined, 'bold');
+      doc.text(label + ':', colX + 3, textY);
+
+      // Draw value right after label
+      const labelW = doc.getTextWidth(label + ': ');
+      doc.setFont(undefined, 'normal');
+      doc.text(String(value), colX + 2 + labelW, textY);
+    });
+
+    // 5) TABLE
+    const headerLabels = columns.map((c) => c.header);
+    const numericFields = columns.map((c) => c.accessorKey).filter((k) => k && /( creditLimit|outstanding|unadjusted|totaldue|)/i.test(k));
+
+    const body = data.map((row) =>
+      columns.map((col) => {
+        const key = col.accessorKey;
+        // ✅ Fix: Vendor column manually combined
+        let raw =
+          key === 'combinedVendorInfo'
+            ? [row.subledgerCode, row.subledgerName, row.currency].filter(Boolean).join(' - ')
+            : key
+              ? row[key]
+              : '';
+        if (key?.toLowerCase().includes('date')) {
+          const d = dayjs(raw);
+          return d.isValid() ? d.format('DD-MM-YYYY') : '-';
+        }
+        if (typeof raw === 'number') {
+          return raw === 0 ? '' : raw.toLocaleString('en-IN');
+        }
+        return raw ?? '';
+      })
+    );
+
+    autoTable(doc, {
+      startY: 50, // replace Fifty with a number like 60
+      head: [headerLabels],
+      body,
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+        lineWidth: 0.1,
+        lineColor: [220, 220, 220]
+      },
+      headStyles: {
+        fillColor: [52, 68, 155],
+        textColor: 255,
+        halign: 'center'
+      },
+      bodyStyles: {
+        halign: 'left'
+      },
+      didParseCell: (cellHookData) => {
+        const { cell, column, section } = cellHookData;
+        if (section === 'body') {
+          // get the accessorKey for this column
+          const key = columns[column.index].accessorKey;
+
+          // existing right-align logic
+          if (numericFields.includes(key)) {
+            cell.styles.halign = 'right';
+          }
+        }
+      }
+    });
+
+    // 6) SAVE
+    doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
+  };
   return (
     <>
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
@@ -738,7 +908,21 @@ const APaging = () => {
                 columns={reportColumns}
                 fileName={'AP_Outstanding_Report'}
                 isListView={true}
-                handleDownloadExcel={handleDownloadExcel}
+                handleDownloadExcel={() =>
+                  handleDownloadExcel({
+                    logo: listViewData[0]?.companyLogo
+                  })
+                }
+                handleDownloadPdf={() =>
+                  handleDownloadPdf({
+                    logo: listViewData[0]?.companyLogo,
+                    columns: reportColumns,
+                    data: rowData,
+                    formData,
+                    fileName: 'AP Outstanding',
+                    userName
+                  })
+                }
                 tableOptions={{
                   muiTablePaperProps: {
                     sx: {
@@ -783,7 +967,21 @@ const APaging = () => {
               columns={reportColumns}
               fileName={'AP Outstanding Report'}
               isListView={true}
-              handleDownloadExcel={handleDownloadExcel}
+              handleDownloadExcel={() =>
+                handleDownloadExcel({
+                  logo: listViewData[0]?.companyLogo
+                })
+              }
+              handleDownloadPdf={() =>
+                handleDownloadPdf({
+                  logo: listViewData[0]?.companyLogo,
+                  columns: reportColumns,
+                  data: rowData,
+                  formData,
+                  fileName: 'AP Outstanding',
+                  userName
+                })
+              }
               tableOptions={{
                 ...tableOptions,
                 muiTableContainerProps: { sx: { maxHeight: '60vh' } }
@@ -793,9 +991,21 @@ const APaging = () => {
             />
           </div>
         )}
+        {isLoading && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: '20px',
+              width: '100%'
+            }}
+          >
+            <CircularProgress size={40} />
+          </div>
+        )}
       </div>
     </>
   );
 };
-
-export default APaging;
+export default APOutstanding;

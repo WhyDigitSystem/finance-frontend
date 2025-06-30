@@ -29,10 +29,15 @@ import { getAllActiveBranches } from 'utils/CommonFunctions';
 import CloseIcon from '@mui/icons-material/Close';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import CircularProgress from '@mui/material/CircularProgress';
 
 const APaging = () => {
+  const [listViewData, setListViewData] = useState([]);
   const [orgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [userName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
   const [partyNameList, setPartyNameList] = useState([]);
@@ -99,6 +104,7 @@ const APaging = () => {
   useEffect(() => {
     getPartyName();
     getAllBranches();
+    getCompanyDetails();
   }, []);
 
   const getPartyName = async () => {
@@ -213,6 +219,7 @@ const APaging = () => {
 
         setListView(true);
         setOpenModal(true);
+        setIsLoading(false);
       } else {
         showToast('error', response.paramObjectsMap?.message || 'Report Fetch failed');
       }
@@ -397,7 +404,7 @@ const APaging = () => {
     },
     {
       accessorKey: 'msLab2',
-      header: 'Days 30-60',
+      header: 'Days 31-60',
       size: 90,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
@@ -422,7 +429,7 @@ const APaging = () => {
     },
     {
       accessorKey: 'msLab3',
-      header: 'Days 60-90',
+      header: 'Days 61-90',
       size: 90,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
@@ -447,7 +454,7 @@ const APaging = () => {
     },
     {
       accessorKey: 'msLab4',
-      header: 'Days 90-120',
+      header: 'Days 91-120',
       size: 90,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
@@ -525,14 +532,35 @@ const APaging = () => {
       }
     }
   };
-
-  const handleDownloadExcel = async () => {
+  const handleDownloadExcel = async ({ logo }) => {
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('AP Ageing Report');
 
-    // ====== TITLE ======
-    sheet.mergeCells('A1:J1');
-    const titleCell = sheet.getCell('A1');
+    // ====== LOGO SECTION ======
+    sheet.mergeCells('A1:B5');
+    if (logo) {
+      try {
+        const base64Data = logo.split(',')[1] || logo;
+        if (base64Data.length >= 100) {
+          const extension = logo.includes('jpeg') ? 'jpeg' : 'png';
+          const imageId = workbook.addImage({
+            base64: base64Data,
+            extension,
+            type: 'image' // Ensure image type is specified
+          });
+          sheet.addImage(imageId, {
+            tl: { col: 0, row: 0 },
+            ext: { width: 120, height: 80 }
+          });
+        }
+      } catch (err) {
+        console.error('Error adding logo:', err);
+      }
+    }
+
+    // ====== TITLE ====== (Shifted to C2:I2 to avoid overlap with A1:B5)
+    sheet.mergeCells('C2:I2');
+    const titleCell = sheet.getCell('C2');
     titleCell.value = 'Accounts Payable Ageing Report';
     titleCell.font = {
       size: 18,
@@ -552,25 +580,27 @@ const APaging = () => {
     ];
 
     for (let i = 0; i < headerInfo.length; i += 2) {
-      const rowIndex = i / 2 + 2;
+      const rowIndex = Math.floor(i / 2) + 3; // Start from row 4
       const row = sheet.getRow(rowIndex);
 
-      const labelCell1 = row.getCell(1);
-      const valueCell1 = row.getCell(2);
+      // First column (C & D)
+      const labelCell1 = row.getCell(3); // C
+      const valueCell1 = row.getCell(4); // D
       labelCell1.value = headerInfo[i].label + ':';
       labelCell1.font = { bold: true };
       valueCell1.value = headerInfo[i].value;
 
+      // Second column (E & F), if exists
       if (headerInfo[i + 1]) {
-        const labelCell2 = row.getCell(4);
-        const valueCell2 = row.getCell(5);
+        const labelCell2 = row.getCell(5); // E
+        const valueCell2 = row.getCell(6); // F
         labelCell2.value = headerInfo[i + 1].label + ':';
         labelCell2.font = { bold: true };
         valueCell2.value = headerInfo[i + 1].value;
       }
     }
 
-    // ====== HEADER ROW ======
+    // ====== TABLE HEADER ======
     const headerRow = sheet.addRow(reportColumns.map((col) => col.header));
     headerRow.font = {
       bold: true,
@@ -590,23 +620,28 @@ const APaging = () => {
     // ====== DATA ROWS ======
     rowData.forEach((item) => {
       const row = sheet.addRow([
-        item.docid || '-',
+        item.partyName,
+        item.docid || '',
         item.docdate ? dayjs(item.docdate).format('DD-MM-YYYY') : '-',
         item.duedate ? dayjs(item.duedate).format('DD-MM-YYYY') : '-',
         item.amount,
         item.outstanding,
         item.totaldue,
-        item.unadjusted,
-        item.partyName,
-        item.branch,
-        item.partyType
+        // item.unadjusted,
+        item.msLab1,
+        item.msLab2,
+        item.msLab3,
+        item.msLab4,
+        item.msLab5
+        // item.branch,
+        // item.partyType
       ]);
 
       // Format numeric columns
-      [3, 4, 5, 6].forEach((colIdx) => {
+      [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].forEach((colIdx) => {
         const cell = row.getCell(colIdx + 1);
         if (typeof cell.value === 'number') {
-          cell.numFmt = '#,##0.00'; // Indian-style comma format
+          cell.numFmt = '#,##0.00'; // Indian comma format
           cell.alignment = { horizontal: 'right' };
         }
       });
@@ -621,9 +656,11 @@ const APaging = () => {
       { width: 15 }, // Outstanding
       { width: 15 }, // Total Due
       { width: 15 }, // Unadjusted
-      { width: 30 }, // Party Name
-      { width: 15 }, // Branch
-      { width: 15 } // Party Type
+      { width: 15 }, // Below 30 Days
+      { width: 15 }, // Days 31-60
+      { width: 15 }, // Days 61-90
+      { width: 15 }, // Days 91-120
+      { width: 15 } // Days 120+
     ];
 
     // ====== FINALIZE AND SAVE ======
@@ -632,6 +669,143 @@ const APaging = () => {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     });
     saveAs(blob, `AP_Ageing_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
+  };
+
+  // Logo
+  const getCompanyDetails = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+      console.log('API Response:', response);
+      setListViewData(response.paramObjectsMap.companyVO.reverse());
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  // pdf download
+  const handleDownloadPdf = ({ logo, columns, data, fileName = 'AP Ageing', userName, formData }) => {
+    const doc = new jsPDF();
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+
+    // 1) COMPANY LOGO (top-left)
+    const logoBase64 = logo;
+    const logoWidth = 30;
+    const logoHeight = 23;
+    const logoX = 10;
+    const logoY = 10;
+    if (logoBase64) {
+      doc.addImage(logoBase64, 'PNG', logoX, logoY, logoWidth, logoHeight);
+    }
+
+    // 2) TITLE BOX
+    const title = `${fileName}`;
+    const textW = doc.getTextWidth(title);
+    const padX = 10,
+      boxH = 10,
+      yTitle = 25;
+    const boxW = textW + padX * 2,
+      boxX = (pageW - boxW) / 2;
+    doc
+      .setFillColor('#e7ebeb')
+      .roundedRect(boxX, yTitle - boxH + 3, boxW, boxH, 4, 4, 'F')
+      .setTextColor('#34449B')
+      .setFontSize(18)
+      .text(title, pageW / 2, yTitle, { align: 'center' });
+
+    // 3) FOOTER (Generated On / By)
+    doc.setFontSize(8).setTextColor('#555555');
+    doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
+    doc.text(`Generated By: ${userName}`, 15, pageH - 10, { align: 'left' });
+
+    // 4) FILTER METADATA
+    const { date, branchCode, baseType, partyName } = formData;
+
+    const md = [
+      ['Date', date ? dayjs(date).format('DD-MM-YYYY') : '-'],
+      ['Party Name', partyName || 'All'],
+      ['Branch', branchCode || 'All'],
+      ['Currency Type', baseType ? 'Native' : 'Base']
+    ];
+    const bandX = 14;
+    const bandY = 38;
+    const bandWidth = pageW - bandX * 2; // = pageW - 28
+    const bandHeight = 10;
+
+    doc.setFontSize(9).setTextColor('#000000').setFillColor(231, 235, 235).roundedRect(bandX, bandY, bandWidth, bandHeight, 2, 2, 'F');
+    const cols = md.length;
+    const colWidth = bandWidth / cols;
+    md.forEach(([label, value], i) => {
+      // Left edge of this metadata column
+      const colX = bandX + i * colWidth;
+
+      // Y position for text (vertically center at bandY + bandHeight/2)
+      // jsPDF’s text is drawn on the baseline, so add ~3px for rough vertical centering
+      const textY = bandY + bandHeight / 3 + 3;
+
+      // Draw label in bold
+      doc.setFont(undefined, 'bold');
+      doc.text(label + ':', colX + 4, textY);
+
+      // Draw value right after label
+      const labelW = doc.getTextWidth(label + ': ');
+      doc.setFont(undefined, 'normal');
+      doc.text(String(value), colX + 4 + labelW, textY);
+    });
+
+    // 5) TABLE
+    const headerLabels = columns.map((c) => c.header);
+    const numericFields = columns
+      .map((c) => c.accessorKey)
+      .filter((k) => k && /(amount|outStanding|totalDue|msLab1|msLab2|msLab3|msLab4|msLab5)/i.test(k));
+    const body = data.map((row) =>
+      columns.map((col) => {
+        const key = col.accessorKey;
+        const raw = key ? row[key] : '';
+        if (key?.toLowerCase().includes('date')) {
+          const d = dayjs(raw);
+          return d.isValid() ? d.format('DD-MM-YYYY') : '-';
+        }
+        if (typeof raw === 'number') {
+          return raw === 0 ? '' : raw.toLocaleString('en-IN');
+        }
+        return raw ?? '';
+      })
+    );
+
+    autoTable(doc, {
+      startY: 50, // replace Fifty with a number like 60
+      head: [headerLabels],
+      body,
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+        lineWidth: 0.1,
+        lineColor: [220, 220, 220]
+      },
+      headStyles: {
+        fillColor: [52, 68, 155],
+        textColor: 255,
+        halign: 'center'
+      },
+      bodyStyles: {
+        halign: 'left'
+      },
+      didParseCell: (cellHookData) => {
+        const { cell, column, section } = cellHookData;
+        if (section === 'body') {
+          // get the accessorKey for this column
+          const key = columns[column.index].accessorKey;
+
+          // existing right-align logic
+          if (numericFields.includes(key)) {
+            cell.styles.halign = 'right';
+          }
+        }
+      }
+    });
+
+    // 6) SAVE
+    doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
   };
 
   return (
@@ -796,7 +970,17 @@ const APaging = () => {
             columns={reportColumns}
             fileName={'AP Ageing Report'}
             tableOptions={tableOptions}
-            handleDownloadExcel={handleDownloadExcel}
+            handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
+            handleDownloadPdf={() =>
+              handleDownloadPdf({
+                logo: listViewData[0]?.companyLogo,
+                columns: reportColumns,
+                data: rowData,
+                formData,
+                fileName: 'AP Ageing',
+                userName
+              })
+            }
             headerFields={headerFields}
             // sumFields={['amount', 'outstanding', 'totaldue']}
           />
@@ -810,18 +994,41 @@ const APaging = () => {
             columns={reportColumns}
             fileName={'AP Ageing Report'}
             isListView={true}
-            handleDownloadExcel={handleDownloadExcel}
+            handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
             tableOptions={{
               ...tableOptions,
               muiTableContainerProps: { sx: { maxHeight: '60vh' } }
             }}
+            handleDownloadPdf={() =>
+              handleDownloadPdf({
+                logo: listViewData[0]?.companyLogo,
+                columns: reportColumns,
+                data: rowData,
+                formData,
+                fileName: 'AP Ageing',
+                userName
+              })
+            }
             headerFields={headerFields}
             // sumFields={['amount', 'outstanding', 'totaldue']}
           />
+          {/* isloading component */}
+        </div>
+      )}
+      {isLoading && (
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            marginTop: '20px',
+            width: '100%'
+          }}
+        >
+          <CircularProgress size={40} />
         </div>
       )}
     </div>
   );
 };
-
 export default APaging;
