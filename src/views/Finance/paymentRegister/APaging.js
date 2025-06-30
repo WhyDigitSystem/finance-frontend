@@ -709,7 +709,7 @@ const APaging = () => {
       .setFillColor('#e7ebeb')
       .roundedRect(boxX, yTitle - boxH + 3, boxW, boxH, 4, 4, 'F')
       .setTextColor('#34449B')
-      .setFontSize(18)
+      .setFontSize(12)
       .text(title, pageW / 2, yTitle, { align: 'center' });
 
     // 3) FOOTER (Generated On / By)
@@ -719,38 +719,23 @@ const APaging = () => {
 
     // 4) FILTER METADATA
     const { date, branchCode, baseType, partyName } = formData;
+    doc.setFontSize(9);
+    doc.setTextColor('#000000');
+    doc.setFillColor(231, 235, 235);
+    doc.roundedRect(2, 35, 206, 12, 2, 2, 'F');
+    // Row 1: Labels (bold)
+    doc.setFont(undefined, 'bold');
+    doc.text('Date', 8, 40);
+    doc.text('Party Name', 37, 40);
+    doc.text('Branch Name', 125, 40);
+    doc.text('Currency Type', 178, 40);
 
-    const md = [
-      ['Date', date ? dayjs(date).format('DD-MM-YYYY') : '-'],
-      ['Party Name', partyName || 'All'],
-      ['Branch', branchCode || 'All'],
-      ['Currency Type', baseType ? 'Native' : 'Base']
-    ];
-    const bandX = 14;
-    const bandY = 38;
-    const bandWidth = pageW - bandX * 2; // = pageW - 28
-    const bandHeight = 10;
-
-    doc.setFontSize(9).setTextColor('#000000').setFillColor(231, 235, 235).roundedRect(bandX, bandY, bandWidth, bandHeight, 2, 2, 'F');
-    const cols = md.length;
-    const colWidth = bandWidth / cols;
-    md.forEach(([label, value], i) => {
-      // Left edge of this metadata column
-      const colX = bandX + i * colWidth;
-
-      // Y position for text (vertically center at bandY + bandHeight/2)
-      // jsPDF’s text is drawn on the baseline, so add ~3px for rough vertical centering
-      const textY = bandY + bandHeight / 3 + 3;
-
-      // Draw label in bold
-      doc.setFont(undefined, 'bold');
-      doc.text(label + ':', colX + 4, textY);
-
-      // Draw value right after label
-      const labelW = doc.getTextWidth(label + ': ');
-      doc.setFont(undefined, 'normal');
-      doc.text(String(value), colX + 4 + labelW, textY);
-    });
+    // Row 2: Values (normal)
+    doc.setFont(undefined, 'normal');
+    doc.text(dayjs(date).format('DD-MM-YYYY'), 8, 45);
+    doc.text(partyName, 37, 45);
+    doc.text(branchCode, 125, 45);
+    doc.text(baseType, 178, 45);
 
     // 5) TABLE
     const headerLabels = columns.map((c) => c.header);

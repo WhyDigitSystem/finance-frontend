@@ -615,7 +615,7 @@ const APOutstanding = () => {
       .setFillColor('#e7ebeb')
       .roundedRect(boxX, yTitle - boxH + 3, boxW, boxH, 4, 4, 'F')
       .setTextColor('#34449B')
-      .setFontSize(18)
+      .setFontSize(12)
       .text(title, pageW / 2, yTitle, { align: 'center' });
 
     // 3) FOOTER (Generated On / By)
