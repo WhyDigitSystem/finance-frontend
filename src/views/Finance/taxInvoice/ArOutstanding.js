@@ -27,8 +27,12 @@ import CommonReportTable from 'utils/CommonReportTable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
-
+import CircularProgress from '@mui/material/CircularProgress';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 const ArOutstanding = () => {
+  const [listViewData, setListViewData] = useState([]);
+  const [userName] = useState(localStorage.getItem('userName'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [isLoading, setIsLoading] = useState(false);
@@ -81,14 +85,36 @@ const ArOutstanding = () => {
     slab6: ''
   });
 
-  const handleDownloadExcel = async () => {
+  const handleDownloadExcel = async ({ logo }) => {
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet('AR Ageing Report');
+    const sheet = workbook.addWorksheet('AR OutStanding Report');
+
+    // ====== LOGO SECTION ======
+    sheet.mergeCells('A1:B5');
+    if (logo) {
+      try {
+        const base64Data = logo.split(',')[1] || logo;
+        if (base64Data.length >= 100) {
+          const extension = logo.includes('jpeg') ? 'jpeg' : 'png';
+          const imageId = workbook.addImage({
+            base64: base64Data,
+            extension,
+            type: 'image' // Ensure image type is specified
+          });
+          sheet.addImage(imageId, {
+            tl: { col: 0, row: 0 },
+            ext: { width: 120, height: 80 }
+          });
+        }
+      } catch (err) {
+        console.error('Error adding logo:', err);
+      }
+    }
 
     // ====== TITLE ======
-    sheet.mergeCells('A1:G1');
-    const titleCell = sheet.getCell('A1');
-    titleCell.value = 'Accounts Receivable Outstanding Report';
+    sheet.mergeCells('C1:H2');
+    const titleCell = sheet.getCell('C1');
+    titleCell.value = 'AR_Outstanding_Report';
     titleCell.font = {
       size: 18,
       bold: true,
@@ -107,18 +133,18 @@ const ArOutstanding = () => {
     ];
 
     for (let i = 0; i < headerInfo.length; i += 2) {
-      const rowIndex = i / 2 + 2;
+      const rowIndex = i / 2 + 3;
       const row = sheet.getRow(rowIndex);
 
-      const labelCell1 = row.getCell(1);
-      const valueCell1 = row.getCell(2);
+      const labelCell1 = row.getCell(3);
+      const valueCell1 = row.getCell(4);
       labelCell1.value = headerInfo[i].label + ':';
       labelCell1.font = { bold: true };
       valueCell1.value = headerInfo[i].value;
 
       if (headerInfo[i + 1]) {
-        const labelCell2 = row.getCell(4);
-        const valueCell2 = row.getCell(5);
+        const labelCell2 = row.getCell(6);
+        const valueCell2 = row.getCell(7);
         labelCell2.value = headerInfo[i + 1].label + ':';
         labelCell2.font = { bold: true };
         valueCell2.value = headerInfo[i + 1].value;
@@ -213,7 +239,7 @@ const ArOutstanding = () => {
   };
 
   const allClearData = () => {
-    setFormData({ partyName: 'All', date: dayjs().format('YYYY-MM-DD'), branch: 'ALL' });
+    setFormData({ partyName: 'All', date: dayjs().format('YYYY-MM-DD'), branch: 'All' });
     setSelectedSections({ partyName: false, date: true });
     setFieldErrors({});
     setListView(false);
@@ -223,6 +249,7 @@ const ArOutstanding = () => {
   useEffect(() => {
     getpartyName();
     getAllBranches();
+    getCompanyDetails();
   }, []);
 
   const getAllBranches = async () => {
@@ -557,6 +584,153 @@ const ArOutstanding = () => {
       }
     }
   };
+  const getCompanyDetails = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+      console.log('API Response:', response);
+      setListViewData(response.paramObjectsMap.companyVO.reverse());
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  // PDF download
+  const handleDownloadPdf = ({ logo, columns, data, fileName, userName, formData }) => {
+    const doc = new jsPDF();
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+
+    // 1) COMPANY LOGO (top-left)
+    const logoBase64 = logo;
+    const logoWidth = 30;
+    const logoHeight = 23;
+    const logoX = 10;
+    const logoY = 10;
+    if (logoBase64) {
+      doc.addImage(logoBase64, 'PNG', logoX, logoY, logoWidth, logoHeight);
+    }
+
+    // 2) TITLE BOX
+    const title = `${fileName}`;
+    const textW = doc.getTextWidth(title);
+    const padX = 10,
+      boxH = 10,
+      yTitle = 25;
+    const boxW = textW + padX * 2,
+      boxX = (pageW - boxW) / 2;
+    doc
+      .setFillColor('#e7ebeb')
+      .roundedRect(boxX, yTitle - boxH + 3, boxW, boxH, 4, 4, 'F')
+      .setTextColor('#34449B')
+      .setFontSize(12)
+      .text(title, pageW / 2, yTitle, { align: 'center' });
+
+    // 4) FILTER METADATA
+    const { date, partyName, branch, dueDate } = formData;
+    doc.setFontSize(9);
+    doc.setTextColor('#000000');
+    doc.setFillColor(231, 235, 235);
+    doc.roundedRect(2, 35, 206, 12, 2, 2, 'F');
+    // Row 1: Labels (bold)
+    doc.setFont(undefined, 'bold');
+    doc.text('As on Date', 8, 40);
+    doc.text('Party Name', 37, 40);
+    doc.text('Branch', 125, 40);
+    doc.text('Due Date', 178, 40);
+
+    // Row 2: Values (normal)
+    doc.setFont(undefined, 'normal');
+    doc.text(dayjs(date).format('DD-MM-YYYY'), 8, 45);
+    doc.text(partyName, 37, 45);
+    doc.text(branch, 125, 45);
+    doc.text(dayjs(dueDate).format('DD-MM-YYYY'), 178, 45);
+
+    // 5) TABLE
+    const headerLabels = columns.map((c) => c.header);
+    const numericFields = columns
+      .map((c) => c.accessorKey)
+      .filter((k) => k && /(amount|outstanding|unAdjusted|totaldue|creditLimit|creditDays)/i.test(k));
+    const body = data.map((row) =>
+      columns.map((col) => {
+        const key = col.accessorKey;
+        const raw = key ? row[key] : '';
+        if (key === 'combinedVendorInfo') {
+          const parts = [row.subledgerCode, row.subledgerName, row.currency].filter(Boolean);
+          return parts.join(' - ');
+        }
+        if (key?.toLowerCase().includes('date')) {
+          const d = dayjs(raw);
+          return d.isValid() ? d.format('DD-MM-YYYY') : '-';
+        }
+        if (!isNaN(raw) && raw !== null && raw !== '') {
+          const number = Math.round(Number(raw));
+          return number === 0 ? '' : number.toLocaleString('en-IN');
+        }
+        return raw ?? '';
+      })
+    );
+
+    autoTable(doc, {
+      startY: 50, // replace Fifty with a number like 60
+      head: [headerLabels],
+      body,
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+        lineWidth: 0.1,
+        lineColor: [220, 220, 220]
+      },
+      headStyles: {
+        fillColor: [52, 68, 155],
+        textColor: 255,
+        halign: 'center'
+      },
+      bodyStyles: {
+        halign: 'left'
+      },
+      bodyStyles: {
+        halign: 'left'
+      },
+      theme: 'grid',
+      margin: { left: 5, right: 5 },
+      tableWidth: 'auto',
+      columnStyles: generateFullWidthColumnStyles(columns, doc),
+      didDrawPage: (data) => {
+        doc.setFontSize(8).setTextColor('#555555');
+        doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
+        doc.text(`Generated By: ${userName}`, 15, pageH - 10, { align: 'left' });
+      },
+      didParseCell: (cellHookData) => {
+        const { cell, column, section } = cellHookData;
+        if (section === 'body') {
+          // get the accessorKey for this column
+          const key = columns[column.index].accessorKey;
+
+          // existing right-align logic
+          if (numericFields.includes(key)) {
+            cell.styles.halign = 'right';
+          }
+        }
+      }
+    });
+    // 6) SAVE
+    doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
+  };
+  const generateFullWidthColumnStyles = (columns, doc) => {
+    const totalColumns = columns.length;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 10; // left + right total margin (10 on each side)
+    const usableWidth = pageWidth - margin;
+
+    const colWidth = usableWidth / totalColumns;
+
+    const styles = {};
+    columns.forEach((_, index) => {
+      styles[index] = { cellWidth: colWidth };
+    });
+
+    return styles;
+  };
 
   return (
     <>
@@ -775,7 +949,18 @@ const ArOutstanding = () => {
                 columns={reportColumns}
                 fileName={'AP_Outstanding_Report'}
                 isListView={true}
-                handleDownloadExcel={handleDownloadExcel}
+                handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
+                handleDownloadPdf={() =>
+                  handleDownloadPdf({
+                    logo: listViewData[0]?.companyLogo,
+                    columns: reportColumns,
+                    data: rowData,
+                    formData,
+                    fileName: 'AR_Outstanding_Report',
+
+                    userName
+                  })
+                }
                 tableOptions={{
                   muiTablePaperProps: {
                     sx: {
@@ -820,7 +1005,17 @@ const ArOutstanding = () => {
               columns={reportColumns}
               fileName={'AP Outstanding Report'}
               isListView={true}
-              handleDownloadExcel={handleDownloadExcel}
+              handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
+              handleDownloadPdf={() =>
+                handleDownloadPdf({
+                  logo: listViewData[0]?.companyLogo,
+                  columns: reportColumns,
+                  data: rowData,
+                  formData,
+                  fileName: 'AR_Outstanding_Report',
+                  userName
+                })
+              }
               tableOptions={{
                 ...tableOptions,
                 muiTableContainerProps: { sx: { maxHeight: '60vh' } }
@@ -828,6 +1023,19 @@ const ArOutstanding = () => {
               headerFields={headerFields}
               // sumFields={['amount', 'outstanding', 'totaldue',]}
             />
+          </div>
+        )}
+        {isLoading && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: '20px',
+              width: '100%'
+            }}
+          >
+            <CircularProgress size={40} />
           </div>
         )}
       </div>
