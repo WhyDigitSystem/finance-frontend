@@ -26,7 +26,7 @@ import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonTable from 'views/basicMaster/CommonTable';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
-const UrCostInvoicegna = () => {
+const UrCostInvoicegna = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
   const [data, setData] = useState(true);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
@@ -48,6 +48,11 @@ const UrCostInvoicegna = () => {
   const [addressTypeList, setAddressTypeList] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+    useEffect(() => {
+    if (selectedRow) {
+      getAllUrCostInvoiceById({ original: selectedRow });
+    }
+  }, [selectedRow]);
   const [chargeDetails, setChargeDetails] = useState([
     {
       id: 1,

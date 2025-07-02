@@ -39,9 +39,7 @@ function PaperComponent(props) {
     </Draggable>
   );
 }
-const Payment = () => {
-  const [tabIndex, setTabIndex] = useState(0);
-
+const Payment = ({ selectedRow }) => {
   const [value, setValue] = useState('1');
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
@@ -67,7 +65,11 @@ const Payment = () => {
   const handleChangeTab = (event, newValue) => {
     setValue(newValue);
   };
-
+  useEffect(() => {
+    if (selectedRow) {
+      getPaymentById({ original: selectedRow });
+    }
+  }, [selectedRow]);
   const [formData, setFormData] = useState({
     paymentType: 'BANK PAYMENT',
     partyName: '',

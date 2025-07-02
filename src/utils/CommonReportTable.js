@@ -222,6 +222,7 @@ const CommonReportTable = ({
         muiTableProps={{
           sx: {
             backgroundColor: '#FFFFFF',
+            color: 'black',
             borderRadius: '10px',
             overflow: 'hidden',
             border: '1px solid #E5E7EB'

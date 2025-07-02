@@ -27,7 +27,7 @@ import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonTable from 'views/basicMaster/CommonTable';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
-const RCostInvoicegna = () => {
+const RCostInvoicegna = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
   const [data, setData] = useState(true);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
@@ -49,8 +49,11 @@ const RCostInvoicegna = () => {
   const [addressTypeList, setAddressTypeList] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-  // const [downloadPdf, setDownloadPdf] = useState(false);
-  // const [pdfData, setPdfData] = useState([]);
+  useEffect(() => {
+    if (selectedRow) {
+      getAllRCostInvoiceById({ original: selectedRow });
+    }
+  }, [selectedRow]);
   const [chargeDetails, setChargeDetails] = useState([
     {
       id: 1,
@@ -491,7 +494,7 @@ const RCostInvoicegna = () => {
   }, [stateCodeList]);
   const getAllCostInvoiceByOrgId = async () => {
     try {
-      const result = await apiCalls('get', `/rCostInvoiceGna/getAllRCostInvoiceGnaByOrgId?orgId=${orgId}`);
+      const result = await apiCalls('get', `/rCostInvoiceGna/getAllRCostInvoiceGnaByOrgId?orgId=${orgId}&finYear=${finYear}&branchCode=${branchCode}`);
       setData(result.paramObjectsMap.rCostInvoiceGnaVO.reverse() || []);
       setShowForm(true);
     } catch (err) {

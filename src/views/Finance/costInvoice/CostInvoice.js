@@ -11,7 +11,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import { FormControl, FormHelperText, Checkbox, FormControlLabel, FormLabel, InputLabel, MenuItem, Select,Autocomplete } from '@mui/material';
+import { FormControl, FormHelperText, Checkbox, FormControlLabel, FormLabel, InputLabel, MenuItem, Select, Autocomplete } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import ActionButton from 'utils/ActionButton';
 import Button from '@mui/material/Button';
@@ -29,9 +29,8 @@ import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonTable from 'views/basicMaster/CommonTable';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
-const CostInvoice = () => {
+const CostInvoice = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
-  // const [routeForm, setRouteForm] = useState(false);
   const [data, setData] = useState([]);
   const [invoiceData, setInvoiceData] = useState(null);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
@@ -59,18 +58,17 @@ const CostInvoice = () => {
   const [sectionOptions, setSectionOptions] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-
-    useEffect(() => {
+  useEffect(() => {
+    if (selectedRow) {
+      getAllCostInvoiceById({ original: selectedRow });
+    }
+  }, [selectedRow]);
+  useEffect(() => {
     getCostInvoiceDocId();
     getJobNoFromTmsJobCard();
     getChargeDetailsFromChargeType();
-    // if(!routeForm){
-    // }
+    getAllCostInvoiceByOrgId();
   }, []);
-
-  useEffect(()=>{
-  getAllCostInvoiceByOrgId();
-  },[])
   const [chargeDetails, setChargeDetails] = useState([
     {
       id: 1,
@@ -329,136 +327,6 @@ const CostInvoice = () => {
     getCostInvoiceDocId();
     setShowChargeDetails(false);
   };
-
-  const handleSaveClear = () => {
-    setFormData({
-      accuralid: '',
-      actBillCurrAmt: '',
-      actBillLcAmt: '',
-      address: '',
-      approveStatus: '',
-      approveBy: '',
-      approveOn: '',
-      branch: '',
-      branchCode: '',
-      client: '',
-      costInvoiceDate: null,
-      costInvoiceNo: '',
-      creditDays: '',
-      // currency: '',
-      customer: '',
-      dueDate: null,
-      docDate: dayjs(),
-      exRate: 1,
-      finYear: '',
-      gstInputLcAmt: '',
-      // gstType: '',
-      ipNo: '',
-      latitude: '',
-      mode: 'EDIT',
-      netBillCurrAmt: '',
-      netBillLcAmt: '',
-      otherInfo: '',
-      product: '',
-      payment: '',
-      purVoucherDate: null,
-      purVoucherNo: '',
-      remarks: '',
-      roundOff: '',
-      shipperRefNo: '',
-      supplierBillNo: '',
-      // supplierCode: '',
-      // supplierGstIn: '',
-      supplierGstInCode: '',
-      supplierId: '',
-      // supplierName: '',
-      // supplierPlace: '',
-      supplierType: 'VENDOR',
-      vid: '',
-      vdate: null,
-      totChargesBillCurrAmt: '',
-      totChargesLcAmt: '',
-      utrRef: ''
-    });
-    setExRates([]);
-    // setStateName([]);
-    getAllActiveCurrency(orgId);
-    setFieldErrors({
-      accuralid: '',
-      address: '',
-      branch: '',
-      branchCode: '',
-      client: '',
-      costInvoiceDate: null,
-      costInvoiceNo: '',
-      creditDays: '',
-      currency: '',
-      customer: '',
-      dueDate: null,
-      exRate: '',
-      finYear: '',
-      gstType: '',
-      ipNo: '',
-      latitude: '',
-      mode: '',
-      otherInfo: '',
-      product: '',
-      payment: '',
-      purVoucherDate: null,
-      purVoucherNo: '',
-      remarks: '',
-      shipperRefNo: '',
-      supplierBillNo: '',
-      supplierCode: '',
-      supplierGstIn: '',
-      supplierGstInCode: '',
-      supplierId: '',
-      supplierName: '',
-      supplierPlace: '',
-      supplierType: '',
-      vid: '',
-      vdate: null,
-      utrRef: ''
-    });
-    setChargerCostInvoice([
-      {
-        chargeCode: '',
-        chargeLedger: '',
-        chargeName: '',
-        currency: '',
-        exRate: '',
-        exempted: '',
-        govChargeCode: '',
-        gst: '',
-        gstPercent: '',
-        jobNo: '',
-        party: '',
-        ledger: '',
-        description: '',
-        qty: '',
-        rate: '',
-        sac: '',
-        fcAmount: '',
-        lcAmount: '',
-        taxable: ''
-      }
-    ]);
-    setTdsCostInvoiceDTO([
-      {
-        section: '',
-        tdsWithHolding: '',
-        tdsWithHoldingPer: '',
-        totTdsWhAmnt: ''
-      }
-    ]);
-    setCostInvoiceErrors([]);
-    setTdsCostErrors([]);
-    setSectionOptions([]);
-    setEditId('');
-    getCostInvoiceDocId();
-    setShowChargeDetails(false);
-  };
-
   const listViewColumns = [
     { accessorKey: 'vid', header: 'Invoice No', size: 140 },
     { accessorKey: 'vdate', header: 'Invoice Date', size: 140 },
@@ -516,24 +384,6 @@ const CostInvoice = () => {
       }));
     }
   }, [partyName]);
-
-  // const handleSelectPlaceChange = (e) => {
-  //   const value = e.target.value;
-
-  //   const selectedEmp = placeOfSupply.find((emp) => emp.placeOfSupply === value);
-
-  //   if (selectedEmp) {
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       supplierPlace: selectedEmp.placeOfSupply
-  //     }));
-  //     getAddessType(selectedEmp.placeOfSupply);
-  //     console.log('selectedEmp.placeOfSupply', selectedEmp.placeOfSupply);
-  //   } else {
-  //     console.log('No employee found with the given code:', value);
-  //   }
-  // };
-
   useEffect(() => {
     if (placeOfSupply.length === 1) {
       const defaultSupplierPlace = placeOfSupply[0];
@@ -544,19 +394,6 @@ const CostInvoice = () => {
       getAddessType(defaultSupplierPlace.placeOfSupply);
     }
   }, [placeOfSupply]);
-
-  // useEffect(() => {
-  //   if (exRates.length === 1) {
-  //     const defaultExRate = exRates[0];
-  //     setFormData((prevData) => ({
-  //       ...prevData,
-  //       currency: defaultExRate.currency,
-  //       // currency: defaultExRate.currency.toUpperCase(),
-  //       exRate: defaultExRate.buyingExRate
-  //     }));
-  //     console.log('defaultExRate.exRate', defaultExRate.buyingExRate);
-  //   }
-  // }, [exRates]);
 
   useEffect(() => {
     if (stateName.length === 1) {
@@ -585,8 +422,8 @@ const CostInvoice = () => {
   }, [chargerCostInvoice, tdsCostInvoiceDTO.map((item) => item.tdsWithHoldingPer)]);
 
   useEffect(() => {
-    if(!editId || showForm)
-    calculateTotals();
+    if (!editId || formData.mode === 'EDIT')
+      calculateTotals();
   }, [chargerCostInvoice, tdsCostInvoiceDTO]);
 
   const calculateTotals = () => {
@@ -1004,86 +841,86 @@ const CostInvoice = () => {
   // };
 
   const handleInputChange = (e, fieldType, index, fieldName) => {
-  let name, value;
+    let name, value;
 
-  if (e && e.target) {
-    // Standard input case
-    name = e.target.name;
-    value = e.target.value;
-  } else {
-    // Custom input (like DatePicker or programmatic call)
-    name = fieldName;
-    value = e;
-  }
+    if (e && e.target) {
+      // Standard input case
+      name = e.target.name;
+      value = e.target.value;
+    } else {
+      // Custom input (like DatePicker or programmatic call)
+      name = fieldName;
+      value = e;
+    }
 
-  if (name === 'gstType') {
-    if (formData.gstType !== value) {
-      setChargerCostInvoice([
-        {
-          chargeCode: '',
-          chargeLedger: '',
-          chargeName: '',
-          currency: '',
-          exRate: '',
-          exempted: '',
-          govChargeCode: '',
-          gst: '',
-          gstPercent: '',
-          jobNo: '',
-          party: '',
-          ledger: '',
-          description: '',
-          qty: '',
-          rate: '',
-          sac: '',
-          fcAmount: '',
-          lcAmount: '',
-          taxable: ''
-        }
-      ]);
+    if (name === 'gstType') {
+      if (formData.gstType !== value) {
+        setChargerCostInvoice([
+          {
+            chargeCode: '',
+            chargeLedger: '',
+            chargeName: '',
+            currency: '',
+            exRate: '',
+            exempted: '',
+            govChargeCode: '',
+            gst: '',
+            gstPercent: '',
+            jobNo: '',
+            party: '',
+            ledger: '',
+            description: '',
+            qty: '',
+            rate: '',
+            sac: '',
+            fcAmount: '',
+            lcAmount: '',
+            taxable: ''
+          }
+        ]);
 
-      setTdsCostInvoiceDTO([
-        { section: '', tdsWithHolding: '', tdsWithHoldingPer: '', totTdsWhAmnt: '' }
-      ]);
+        setTdsCostInvoiceDTO([
+          { section: '', tdsWithHolding: '', tdsWithHoldingPer: '', totTdsWhAmnt: '' }
+        ]);
 
-      setShowChargeDetails(false);
+        setShowChargeDetails(false);
+
+        setFormData((prevFormData) => ({
+          ...prevFormData,
+          gstType: value,
+          actBillCurrAmt: '',
+          actBillLcAmt: '',
+          gstInputLcAmt: '',
+          netBillCurrAmt: '',
+          netBillLcAmt: '',
+          roundOff: '',
+          totChargesBillCurrAmt: '',
+          totChargesLcAmt: ''
+        }));
+      }
+
+    } else if (fieldType === 'tdsCostInvoiceDTO') {
+      setTdsCostInvoiceDTO((prevData) =>
+        prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item))
+      );
+
+      if (name === 'tdsWithHolding') {
+        getAllSectionName(value);
+      }
+
+    } else {
+      const upperCaseFields = [
+        'mode', 'supplierType', 'currency', 'costInvoiceNo',
+        'utrRef', 'purVoucherNo', 'supplierCode', 'supplierGstIn',
+        'supplierGstInCode'
+      ];
 
       setFormData((prevFormData) => ({
         ...prevFormData,
-        gstType: value,
-        actBillCurrAmt: '',
-        actBillLcAmt: '',
-        gstInputLcAmt: '',
-        netBillCurrAmt: '',
-        netBillLcAmt: '',
-        roundOff: '',
-        totChargesBillCurrAmt: '',
-        totChargesLcAmt: ''
+        [name]: upperCaseFields.includes(name) && value ? value.toUpperCase() : value
       }));
     }
-
-  } else if (fieldType === 'tdsCostInvoiceDTO') {
-    setTdsCostInvoiceDTO((prevData) =>
-      prevData.map((item, i) => (i === index ? { ...item, [name]: value } : item))
-    );
-
-    if (name === 'tdsWithHolding') {
-      getAllSectionName(value);
-    }
-
-  } else {
-    const upperCaseFields = [
-      'mode', 'supplierType', 'currency', 'costInvoiceNo',
-      'utrRef', 'purVoucherNo', 'supplierCode', 'supplierGstIn',
-      'supplierGstInCode'
-    ];
-
-    setFormData((prevFormData) => ({
-      ...prevFormData,
-      [name]: upperCaseFields.includes(name) && value ? value.toUpperCase() : value
-    }));
-  }
-};
+  };
 
   const getPartyName = async (partType) => {
     try {
@@ -1120,23 +957,23 @@ const CostInvoice = () => {
   //     console.log('No employee found with the given code:', value);
   //   }
   // };
-const handleSelectPartyChange = (value) => {
-  const selectedEmp = partyName.find((emp) => emp.partyName === value);
-  
-  if (selectedEmp) {
-    setFormData((prevData) => ({
-      ...prevData,
-      supplierName: selectedEmp.partyName,
-      supplierCode: selectedEmp.partyCode,
-      supplierId: selectedEmp.id
-    }));
-    setPartyId(selectedEmp.id);
-    getStateName(selectedEmp.id);
-    getCurrencyAndExratesForMatchingParties(selectedEmp.partyCode);
-    getTdsDetailsFromPartyMasterSpecialTDS(selectedEmp.partyCode);
-    getCreditDaysFromVendor(selectedEmp.partyCode);
-  }
-};
+  const handleSelectPartyChange = (value) => {
+    const selectedEmp = partyName.find((emp) => emp.partyName === value);
+
+    if (selectedEmp) {
+      setFormData((prevData) => ({
+        ...prevData,
+        supplierName: selectedEmp.partyName,
+        supplierCode: selectedEmp.partyCode,
+        supplierId: selectedEmp.id
+      }));
+      setPartyId(selectedEmp.id);
+      getStateName(selectedEmp.id);
+      getCurrencyAndExratesForMatchingParties(selectedEmp.partyCode);
+      getTdsDetailsFromPartyMasterSpecialTDS(selectedEmp.partyCode);
+      getCreditDaysFromVendor(selectedEmp.partyCode);
+    }
+  };
   const getStateName = async (partId) => {
     try {
       const response = await apiCalls('get', `/costInvoice/getPartyStateDetails?orgId=${orgId}&id=${partId}`);
@@ -1609,14 +1446,14 @@ const handleSelectPartyChange = (value) => {
     }
   };
 
-const handleView = () => {
-  console.log("handle view b",showForm);
-  setShowForm(!showForm);
-  console.log("handle view a",showForm);
-  if (!showForm) {
-    handleClear(); 
+  const handleView = () => {
+    console.log("handle view b", showForm);
+    setShowForm(!showForm);
+    console.log("handle view a", showForm);
+    if (!showForm) {
+      handleClear();
+    }
   }
-}
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
@@ -1976,6 +1813,7 @@ const handleView = () => {
                   >
                     <InputLabel id="mode-label">Mode</InputLabel>
                     <Select label="Mode" name="mode" value={formData.mode} onChange={handleInputChange}>
+                      {/* {editId && <MenuItem value="SUBMIT">SUBMIT</MenuItem>} */}
                       {editId && <MenuItem value="SUBMIT">SUBMIT</MenuItem>}
                       <MenuItem value="EDIT">EDIT</MenuItem>
                     </Select>
@@ -2512,35 +2350,35 @@ const handleView = () => {
                                               </div>
                                             )}
                                           </td> */}
-<td className="border px-2 py-2">
-  <Autocomplete
-    options={jobNoList || []}
-    style={{ width: '180px' }}
-    getOptionLabel={(option) => `${option.jobNo} - ${option.shortName}`}
-    value={jobNoList.find(job => job.jobNo === row.jobNo) || null}
-    onChange={(event, newValue) => {
-      const updatedData = [...chargerCostInvoice];
-      updatedData[index] = {
-        ...updatedData[index],
-        jobNo: newValue?.jobNo || '',
-        party: newValue?.customerName || ''
-      };
-      setChargerCostInvoice(updatedData);
-    }}
-    renderInput={(params) => (
-      <TextField
-        {...params}
-        variant="outlined"
-        error={Boolean(costInvoiceErrors[index]?.jobNo)}
-        helperText={costInvoiceErrors[index]?.jobNo}
-        size="small"
-      />
-    )}
-    isOptionEqualToValue={(option, value) => option.jobNo === value.jobNo}
-    disabled={formData.mode === 'SUBMIT'}
-  />
-</td>
-{/* <td className="border px-2 py-2">
+                                          <td className="border px-2 py-2">
+                                            <Autocomplete
+                                              options={jobNoList || []}
+                                              style={{ width: '180px' }}
+                                              getOptionLabel={(option) => `${option.jobNo} - ${option.shortName}`}
+                                              value={jobNoList.find(job => job.jobNo === row.jobNo) || null}
+                                              onChange={(event, newValue) => {
+                                                const updatedData = [...chargerCostInvoice];
+                                                updatedData[index] = {
+                                                  ...updatedData[index],
+                                                  jobNo: newValue?.jobNo || '',
+                                                  party: newValue?.customerName || ''
+                                                };
+                                                setChargerCostInvoice(updatedData);
+                                              }}
+                                              renderInput={(params) => (
+                                                <TextField
+                                                  {...params}
+                                                  variant="outlined"
+                                                  error={Boolean(costInvoiceErrors[index]?.jobNo)}
+                                                  helperText={costInvoiceErrors[index]?.jobNo}
+                                                  size="small"
+                                                />
+                                              )}
+                                              isOptionEqualToValue={(option, value) => option.jobNo === value.jobNo}
+                                              disabled={formData.mode === 'SUBMIT'}
+                                            />
+                                          </td>
+                                          {/* <td className="border px-2 py-2">
   <Autocomplete
     options={jobNoList || []}
     disableClearable

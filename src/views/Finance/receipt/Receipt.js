@@ -33,7 +33,7 @@ function PaperComponent(props) {
     </Draggable>
   );
 }
-const Receipt = () => {
+const Receipt = ({ selectedRow }) => {
   const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [branch, setLoginBranch] = useState(localStorage.getItem('branch'));
@@ -57,6 +57,11 @@ const Receipt = () => {
   const [pdfData, setPdfData] = useState([]);
   const [bankName, setBankName] = useState([]);
   const [confirmData, setConfirmData] = useState([]);
+    useEffect(() => {
+    if (selectedRow) {
+      getReceiptById({ original: selectedRow });
+    }
+  }, [selectedRow]);
   const [formData, setFormData] = useState({
     paymentMode: 'Bank Receipt',
     transactionMethod: 'NEFT',

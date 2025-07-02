@@ -36,7 +36,7 @@ import GeneratePdfTempIRN from 'utils/pdfTempIRN';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../../basicMaster/CommonListViewTable';
 
-const IrnCreditNote = () => {
+const IrnCreditNote = ({ selectedRow }) => {
   const [tabIndex, setTabIndex] = useState(0);
 
   const theme = useTheme();
@@ -61,6 +61,11 @@ const IrnCreditNote = () => {
   const [downloadPdf, setDownloadPdf] = useState(false);
   const [pdfData, setPdfData] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
+  useEffect(() => {
+    if (selectedRow) {
+      getIrnCreditById({ original: selectedRow });
+    }
+  }, [selectedRow]);
   const [formData, setFormData] = useState({
     voucherNo: '',
     voucherDate: null,
@@ -1279,12 +1284,12 @@ const IrnCreditNote = () => {
     const totalChargeAmountBc = rows.reduce((sum, row) => sum + (parseFloat(row.billAmount) || 0), 0);
     // const totalTaxAmountBc = rows.reduce((sum, row) => sum + (parseFloat(row.gstAmount) || 0), 0);
     const totalTaxAmountBc = parseFloat(
-  rows.reduce((sum, row) => {
-    const exRate = parseFloat(row.exRate || 0);
-    const gst = parseFloat(row.gstAmount || 0);
-    return sum + (exRate !== 0 ? gst / exRate : 0);
-  }, 0).toFixed(2)
-);
+      rows.reduce((sum, row) => {
+        const exRate = parseFloat(row.exRate || 0);
+        const gst = parseFloat(row.gstAmount || 0);
+        return sum + (exRate !== 0 ? gst / exRate : 0);
+      }, 0).toFixed(2)
+    );
     const totalInvAmountBc = totalChargeAmountBc + totalTaxAmountBc;
     const totalTaxableAmountLc = 0;
 
@@ -1659,38 +1664,38 @@ const IrnCreditNote = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-              <Autocomplete
-                options={originBillList}
-                getOptionLabel={(option) => option.docId || ''}
-                disabled={formData.status === 'TAX'}
-                sx={{ width: '100%' }}
-                size="small"
-                value={
-                  formData.originBillNo
-                    ? originBillList.find((c) => c.docId === formData.originBillNo) || null
-                    : null
-                }
-                onChange={(event, value) => {
-                  handleOriginBillSelection(value);
-                  setFormData((prev) => ({
-                    ...prev,
-                    originBillNo: value ? value.docId : ''
-                  }));
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label="Origin Bill"
-                    name="originBillNo"
-                    error={!!fieldErrors.originBillNo}
-                    helperText={fieldErrors.originBillNo}
-                    InputProps={{
-                      ...params.InputProps,
-                      style: { height: 40 }
-                    }}
-                  />
-                )}
-              />
+                <Autocomplete
+                  options={originBillList}
+                  getOptionLabel={(option) => option.docId || ''}
+                  disabled={formData.status === 'TAX'}
+                  sx={{ width: '100%' }}
+                  size="small"
+                  value={
+                    formData.originBillNo
+                      ? originBillList.find((c) => c.docId === formData.originBillNo) || null
+                      : null
+                  }
+                  onChange={(event, value) => {
+                    handleOriginBillSelection(value);
+                    setFormData((prev) => ({
+                      ...prev,
+                      originBillNo: value ? value.docId : ''
+                    }));
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Origin Bill"
+                      name="originBillNo"
+                      error={!!fieldErrors.originBillNo}
+                      helperText={fieldErrors.originBillNo}
+                      InputProps={{
+                        ...params.InputProps,
+                        style: { height: 40 }
+                      }}
+                    />
+                  )}
+                />
               </div>
               {/* <div className="col-md-3 mb-3">
                 <FormControl variant="outlined" fullWidth size="small" error={!!fieldErrors.originBillNo}>

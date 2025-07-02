@@ -14,11 +14,22 @@ import {
   InputLabel, MenuItem, Select, ButtonGroup,
   Dialog, DialogContent, IconButton, DialogTitle
 } from '@mui/material';
+import { fontSize } from '@mui/system';
+import CostInvoice from '../costInvoice/CostInvoice';
+import CostDebitNote from '../costDebitNote/CostDebitNote';
+import Payment from '../payment/Payment';
+import RCostInvoicegna from '../costInvoice/RCostInvoicegna';
+import UrCostInvoicegna from '../costInvoice/UrCostInvoicegna';
+import TaxInvoiceDetails from '../taxInvoice/taxInvoiceDetail';
+import IrnCreditNote from '../creditNote/CreditNoteDetail';
+import Receipt from '../receipt/Receipt';
 const PendingRegister = () => {
+  const [groupedData, setGroupedData] = useState({});
   const [partyTypeList, setPartyTypeList] = useState([]);
   const [partyNameList, setPartyNameList] = useState([]);
   const [rowData, setRowData] = useState([]);
   const [open, setOpen] = useState(false);
+  const [salesOpen, setSalesOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
   const [dialogBoxData, setDialogBoxData] = useState([]);
@@ -90,7 +101,7 @@ const PendingRegister = () => {
     }
   };
   const handleDocClick = async (docId, screenCode) => {
-    setOpen(true);
+    setSalesOpen(!salesOpen);
     try {
       let response;
       if (screenCode === 'TI') {
@@ -187,16 +198,23 @@ const PendingRegister = () => {
       }
     },
     { accessorKey: 'docdate', header: 'Date', size: 100 },
-    { accessorKey: 'screencode', header: 'Screen', size: 100 },
     { accessorKey: 'vid', header: '# Invoice', size: 100 },
     { accessorKey: 'vdate', header: 'Date', size: 100 },
-    { accessorKey: 'partytype', header: 'Party Type', size: 80 },
-    { accessorKey: 'partyname', header: 'Party Name', size: 100 },
+    { accessorKey: 'partyname', header: 'Party Name', size: 100, },
+    {
+      accessorKey: 'amount',
+      header: 'Amount',
+      size: 80,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%', color: 'black' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right'
+      }
+    },
   ];
-  const formatDate = (dateString) => {
-    if (!dateString) return '';
-    return dayjs(dateString).format('DD-MM-YYYY');
-  };
   const handleGo = async () => {
     try {
       const response = await apiCalls(
@@ -205,7 +223,10 @@ const PendingRegister = () => {
       );
       console.log('Response:', response);
       if (response.status === true) {
-        setRowData(response.paramObjectsMap.mapp || []);
+        // setRowData(response.paramObjectsMap.mapp || []);
+        const data = response.paramObjectsMap.mapp || [];
+        setRowData(data);
+        setGroupedData(groupByScreenName(data));
         setIsLoading(false);
         setOpen(true);
         const newHeaderFields = [];
@@ -237,6 +258,26 @@ const PendingRegister = () => {
       console.error('Error fetching data:', error);
       showToast('error', 'Error fetching data');
     }
+  };
+  // const groupByScreenName = (data) => {
+  //   const grouped = {};
+  //   data.forEach((item) => {
+  //     const key = item.screenname || 'Others';
+  //     if (!grouped[key]) grouped[key] = [];
+  //     grouped[key].push(item);
+  //   });
+  //   return grouped;
+  // };
+  const groupByScreenName = (data) => {
+    const grouped = {};
+    data.forEach((item) => {
+      const screen = item.screenname?.trim();
+      if (!screen) return; // Skip records with empty or missing screenname
+
+      if (!grouped[screen]) grouped[screen] = [];
+      grouped[screen].push(item);
+    });
+    return grouped;
   };
 
   return (
@@ -273,39 +314,6 @@ const PendingRegister = () => {
               {fieldErrors.partyName && <FormHelperText>{fieldErrors.partyName}</FormHelperText>}
             </FormControl>
           </div>
-          {/* Screen Name */}
-          {/* <div className="col-md-3 mb-3">
-            <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.screenName}>
-              <InputLabel id="screenName-label">Screen Name</InputLabel>
-              <Select
-                labelId="screenName-label"
-                label="screenName"
-                value={formData.screenName}
-                onChange={handleInputChange}
-                name="screenName"
-              >
-                <MenuItem value="">
-                  <em>None</em>
-                </MenuItem>
-                {(formData.partyType === 'All' || formData.partyType === 'CUSTOMER') && (
-                  <>
-                    <MenuItem value="TAX INVOICE"><em>TAX INVOICE</em></MenuItem>
-                    <MenuItem value="RECEIPT">RECEIPT</MenuItem>
-                  </>
-                )}
-
-                {(formData.partyType === 'All' || formData.partyType === 'VENDOR') && (
-                  <>
-                    <MenuItem value="COST INVOICE">COST INVOICE</MenuItem>
-                    <MenuItem value="PAYMENT">PAYMENT</MenuItem>
-                    <MenuItem value="R COSTINVOICE">R COSTINVOICE</MenuItem>
-                    <MenuItem value="UR COSTINVOICE">UR COSTINVOICE</MenuItem>
-                  </>
-                )}
-              </Select>
-              {fieldErrors.screenName && <FormHelperText>{fieldErrors.screenName}</FormHelperText>}
-            </FormControl>
-          </div> */}
           <div className="col-md-3 mb-3">
             <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.screenName}>
               <InputLabel id="screenName-label">Screen Name</InputLabel>
@@ -322,15 +330,17 @@ const PendingRegister = () => {
                 {/* {(formData.partyType === 'All' || formData.partyType === 'CUSTOMER') && (
                   <> */}
                 <MenuItem value="TAX INVOICE">TAX INVOICE</MenuItem>
+                <MenuItem value="COST DEBIT NOTE">DEBIT NOTE</MenuItem>
                 <MenuItem value="RECEIPT">RECEIPT</MenuItem>
                 {/* </>
                 )} */}
                 {/* {(formData.partyType === 'All' || formData.partyType === 'VENDOR') && (
                   <> */}
                 <MenuItem value="COST INVOICE">COST INVOICE</MenuItem>
+                <MenuItem value="INR CREDIT NOTE">CREDIT NOTE</MenuItem>
                 <MenuItem value="PAYMENT">PAYMENT</MenuItem>
-                <MenuItem value="R COSTINVOICE">R COSTINVOICE</MenuItem>
-                <MenuItem value="UR COSTINVOICE">UR COSTINVOICE</MenuItem>
+                <MenuItem value="REGISTER COSTINVOICE GNA">R COSTINVOICE</MenuItem>
+                <MenuItem value="UR COSTINVOICE GNA">UR COSTINVOICE</MenuItem>
                 {/* </>
                 )} */}
               </Select>
@@ -381,16 +391,69 @@ const PendingRegister = () => {
               {/* </Box> */}
             </DialogTitle>
             <DialogContent>
-              {rowData.length > 0 && (
-                <CommonReportTable
-                  columns={reportColumns}
-                  data={rowData}
-                  fileName={'UnApproval Register'}
-                  // handleDownloadExcel={handleDownloadExcel}
-                  // sumFields={getSumFields()}
-                  headerFields={headerFields}
-                />
-              )}
+              {Object.entries(groupedData).map(([screen, records]) => (
+                <Box key={screen} sx={{ marginBottom: 4 }}>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 600,
+                      marginBottom: 1,
+                      color: '#34449B',
+                      borderBottom: '2px solid #ccc',
+                      paddingBottom: '4px',
+                    }}
+                  >
+                    {screen}
+                  </Typography>
+                  <CommonReportTable
+                    columns={reportColumns}
+                    data={records}
+                    fileName={`${screen} Register`}
+                    headerFields={headerFields}
+                  />
+                </Box>
+              ))}
+            </DialogContent>
+          </Dialog>
+        </>
+        <>
+          <Dialog
+            open={salesOpen}
+            onClose={() => setSalesOpen(!salesOpen)}
+            fullWidth
+            maxWidth="xl"
+            sx={{
+              '& .MuiDialog-paper': {
+                borderRadius: '12px',
+                overflow: 'hidden'
+              }
+            }}
+          >
+            <DialogTitle sx={{
+              m: 0,
+              p: 1,
+              backgroundColor: '#34449B',
+              color: 'white',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              Cost Invoice
+              <Box>
+                <IconButton aria-label="close" onClick={() => setSalesOpen(!salesOpen)} sx={{ color: 'white' }}>
+                  <CloseIcon />
+                </IconButton>
+              </Box>
+            </DialogTitle>
+            <DialogContent>
+              {(dialogBoxData && formData.screenName === 'COST INVOICE') && <CostInvoice selectedRow={dialogBoxData} />}
+              {(dialogBoxData && formData.screenName === 'COST DEBIT NOTE') && <CostDebitNote selectedRow={dialogBoxData} />}
+              {(dialogBoxData && formData.screenName === 'PAYMENT') && <Payment selectedRow={dialogBoxData} />}
+              {(dialogBoxData && formData.screenName === 'REGISTER COSTINVOICE GNA') && <RCostInvoicegna selectedRow={dialogBoxData} />}
+              {(dialogBoxData && formData.screenName === 'UR COSTINVOICE GNA') && <UrCostInvoicegna selectedRow={dialogBoxData} />}
+              {(dialogBoxData && formData.screenName === 'TAX INVOICE') && <TaxInvoiceDetails selectedRow={dialogBoxData} />}
+              {(dialogBoxData && formData.screenName === 'IRN CREDIT NOTE') && <IrnCreditNote selectedRow={dialogBoxData} />}
+              {(dialogBoxData && formData.screenName === 'RECEIPT') && <Receipt selectedRow={dialogBoxData} />}
             </DialogContent>
           </Dialog>
         </>

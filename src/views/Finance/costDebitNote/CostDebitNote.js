@@ -29,7 +29,7 @@ import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import GeneratePdfTempDN from 'utils/PdfTempDebitNote';
 
-const CostDebitNote = () => {
+const CostDebitNote = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
   const [data, setData] = useState(true);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
@@ -55,7 +55,11 @@ const CostDebitNote = () => {
   const [pdfData, setPdfData] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-
+  useEffect(() => {
+    if (selectedRow) {
+      getAllCostDebitNoteById({ original: selectedRow });
+    }
+  }, [selectedRow]);
   const [chargeDetails, setChargeDetails] = useState([
     {
       id: 1,
