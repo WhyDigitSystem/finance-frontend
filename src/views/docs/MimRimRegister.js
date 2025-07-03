@@ -1027,13 +1027,13 @@ function MimRimRegister() {
                             </TableCell>
                             <TableCell align="center">Trans No</TableCell>
                             <TableCell align="center">Date</TableCell>
-                            <TableCell>Sender</TableCell>
-                            <TableCell>Receiver</TableCell>
+                            <TableCell align="center">Sender</TableCell>
+                            <TableCell align="center">Receiver</TableCell>
                             <TableCell align="center">Kit No</TableCell>
-                            <TableCell>Kit Name</TableCell>
+                            <TableCell align="center">Kit Name</TableCell>
                             <TableCell align="center">Kit Qty</TableCell>
                             <TableCell align="center">Product Code</TableCell>
-                            <TableCell>Product Name</TableCell>
+                            <TableCell align="center">Product Name</TableCell>
                             <TableCell align="center">Product Qty</TableCell>
                           </>
                         ) : (
@@ -1043,10 +1043,10 @@ function MimRimRegister() {
                             </TableCell>
                             <TableCell align="center">Trans No</TableCell>
                             <TableCell align="center">Date</TableCell>
-                            <TableCell>Sender</TableCell>
-                            <TableCell>Receiver</TableCell>
+                            <TableCell align="center">Sender</TableCell>
+                            <TableCell align="center">Receiver</TableCell>
                             {/* <TableCell align="center">HSN Code</TableCell> */}
-                            <TableCell>Transporter Name</TableCell>
+                            <TableCell align="center">Transporter Name</TableCell>
                             <TableCell align="center">Kit Qty</TableCell>
                             {/* {formData.mim && <TableCell align="right">Amount</TableCell>} */}
                           </>
