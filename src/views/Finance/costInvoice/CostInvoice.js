@@ -31,6 +31,7 @@ import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
 const CostInvoice = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
+  const [listViewRoute, setlistViewRoute] = useState(true);
   const [data, setData] = useState([]);
   const [invoiceData, setInvoiceData] = useState(null);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
@@ -58,8 +59,11 @@ const CostInvoice = ({ selectedRow }) => {
   const [sectionOptions, setSectionOptions] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const selectedRowCalledRef = useRef(false);
   useEffect(() => {
-    if (selectedRow) {
+    if (selectedRow && !selectedRowCalledRef.current) {
+      selectedRowCalledRef.current = true;
+      setlistViewRoute(false);
       getAllCostInvoiceById({ original: selectedRow });
     }
   }, [selectedRow]);
@@ -68,7 +72,7 @@ const CostInvoice = ({ selectedRow }) => {
     getJobNoFromTmsJobCard();
     getChargeDetailsFromChargeType();
     getAllCostInvoiceByOrgId();
-  }, []);
+  }, [listViewRoute]);
   const [chargeDetails, setChargeDetails] = useState([
     {
       id: 1,
@@ -644,7 +648,6 @@ const CostInvoice = ({ selectedRow }) => {
     setShowForm(!showForm);
     try {
       const result = await apiCalls('get', `/costInvoice/getAllCostInvoiceById?id=${row.original.id}`);
-
       if (result) {
         const costVO = result.paramObjectsMap.costInvoiceVO[0];
         setListViewData(costVO);
@@ -1447,9 +1450,7 @@ const CostInvoice = ({ selectedRow }) => {
   };
 
   const handleView = () => {
-    console.log("handle view b", showForm);
     setShowForm(!showForm);
-    console.log("handle view a", showForm);
     if (!showForm) {
       handleClear();
     }
@@ -1680,7 +1681,7 @@ const CostInvoice = ({ selectedRow }) => {
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
             <div className="justify-content-start">
-              {editId && !showForm && (formData.mode === 'SUBMIT' || listViewData?.mode === 'SUBMIT') && (
+              {editId && !showForm && formData.mode === 'SUBMIT' && (
                 <>
                   {formData?.approveStatus === 'Approved' && (
                     <Stack direction="row" spacing={2}>
@@ -1694,8 +1695,7 @@ const CostInvoice = ({ selectedRow }) => {
                       <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
                     </Stack>
                   )}
-                  {/* {formData.mode === 'SUBMIT' && formData.approveStatus === null && ( */}
-                  {(listViewData?.mode === 'SUBMIT') && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                  {((listViewData?.mode === 'SUBMIT') && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected') && (
                     <div className="d-flex" style={{ marginRight: '30px' }}>
                       <Button
                         variant="outlined"
@@ -1813,9 +1813,9 @@ const CostInvoice = ({ selectedRow }) => {
                   >
                     <InputLabel id="mode-label">Mode</InputLabel>
                     <Select label="Mode" name="mode" value={formData.mode} onChange={handleInputChange}>
-                      {/* {editId && <MenuItem value="SUBMIT">SUBMIT</MenuItem>} */}
+                      {/* {showForm && <MenuItem value="SUBMIT">SUBMIT</MenuItem>} */}
                       {editId && <MenuItem value="SUBMIT">SUBMIT</MenuItem>}
-                      <MenuItem value="EDIT">EDIT</MenuItem>
+                      <MenuItem value="EDIT">DRAFT</MenuItem>
                     </Select>
                     {fieldErrors.mode && <FormHelperText style={{ color: 'red' }}>{fieldErrors.mode}</FormHelperText>}
                   </FormControl>
@@ -3213,7 +3213,7 @@ const CostInvoice = ({ selectedRow }) => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllCostInvoiceById}
-            // isPdf={true}
+            // isPdf={true} 
             // GeneratePdf={GeneratePdf}
             />
           )}

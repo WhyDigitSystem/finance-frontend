@@ -1,11 +1,11 @@
 import DownloadIcon from '@mui/icons-material/Download';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import dayjs from 'dayjs';
-import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import { useEffect, useState } from 'react';
 import apiCalls from 'apicall';
 import 'jspdf-autotable';
+
 const dummyImageURL = 'https://t3.ftcdn.net/jpg/04/62/93/66/240_F_462936689_BpEEcxfgMuYPfTaIAOC1tCDurmsno7Sp.jpg';
 
 const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
@@ -83,7 +83,6 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       fontWeight: 'bold'
     }
   };
-
   // Function to open the dialog
   const handleOpen = () => {
     setOpen(true);
@@ -93,170 +92,425 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   const handleClose = () => {
     setOpen(false);
   };
+
   const handleDownloadPdf = async () => {
     const pdf = new jsPDF('p', 'mm', 'a4');
-    const padding = 4;
-    const headerHeight = 28;
-    const footerHeight = 10;
+    const padding = 3;
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const headerHeight = 30;
+    const footerHeight = 15;
+    let currentY = padding + headerHeight;
 
-    // Add separator line to footer
-    const addFooter = () => {
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
+    // Preload company logo
+    let logoData = null;
+    if (companyDetails?.companyLogo) {
+      logoData = `data:image/jpeg;base64,${companyDetails.companyLogo}`;
+    }
 
-      // Draw separator line at the top of footer
-      const footerTopY = pdfHeight - footerHeight - 1;
-      pdf.setLineWidth(0.1);
-      pdf.line(padding, footerTopY, pdfWidth - padding, footerTopY);
-
-      // Add footer text below the separator line
-      const footerY = footerTopY + 3;
-      pdf.setFontSize(6);
-      pdf.text(
-        `${companyDetails.address} | ${currentDateTime} | System Generated Invoice`,
-        padding,
-        footerY
-      );
-    };
-    const addHeader = async () => {
-      const padding = 5;
-      const pdfWidth = pdf.internal.pageSize.getWidth();
+    // Reusable header function
+    const addHeader = (doc) => {
+      const headerY = padding;
       const logoWidth = 18;
-      const midSectionX = pdfWidth / 2 - 10;
-      const rightSectionX = pdfWidth - 50;
-
       let logoHeight = 0;
 
-      if (companyDetails?.companyLogo) {
-        const img = new Image();
-        img.src = `data:image/jpeg;base64,${companyDetails.companyLogo}`;
+      // Reset styles
+      doc.setFont('timesnewroman', 'normal');
+      doc.setFontSize(10);
 
-        await new Promise((resolve) => {
-          img.onload = () => {
-            const aspectRatio = img.height / img.width;
-            logoHeight = logoWidth * aspectRatio;
-
-            pdf.addImage(
-              img.src,
-              'JPEG',
-              padding,
-              padding,
-              logoWidth,
-              logoHeight
-            );
-            resolve();
-          };
-        });
+      // Add logo
+      if (logoData) {
+        const aspectRatio = 1; // Default aspect ratio
+        logoHeight = logoWidth * aspectRatio;
+        doc.addImage(
+          logoData,
+          'JPEG',
+          padding,
+          headerY,
+          logoWidth,
+          logoHeight
+        );
       }
 
-      let currentY = padding;
+      // Company details
+      const textX = padding + (logoData ? logoWidth + 5 : padding);
+      let textY = headerY + 3;
+      doc.setFontSize(9);
+      doc.setFont(undefined, 'bold');
+      doc.text(localStorage.getItem('companyName') || '', textX, textY);
+      doc.setFont(undefined, 'normal');
+      textY += 6;
 
-      const leftX = padding + logoWidth + 3;
-      currentY += 3;
-      pdf.setFontSize(9);
-      pdf.setFont(undefined, 'bold');
-      pdf.text(localStorage.getItem('companyName') || '', leftX, currentY);
-      pdf.setFont(undefined, 'normal');
-      currentY += 6;
-
-      pdf.setFontSize(7);
+      doc.setFontSize(7);
       if (companyDetails?.cin) {
-        pdf.text(`CIN: ${companyDetails.cin}`, leftX, currentY);
-        currentY += 3;
+        doc.text(`CIN: ${companyDetails.cin}`, textX, textY);
+        textY += 3;
       }
       if (companyDetails?.gst) {
-        pdf.text(`GST IN: ${companyDetails.gst}`, leftX, currentY);
-        currentY += 3;
+        doc.text(`GST IN: ${companyDetails.gst}`, textX, textY);
+        textY += 3;
       }
       if (companyDetails?.city) {
-        pdf.text(`${companyDetails.city} - ${companyDetails.zip}`, leftX, currentY);
+        doc.text(`${companyDetails.city} - ${companyDetails.zip}`, textX, textY);
+        textY += 3;
       }
+
+      // Invoice title
+      doc.setFontSize(12);
+      doc.setFont(undefined, 'bold');
+      doc.text('TAX INVOICE', pageWidth / 2, headerY + 5, { align: 'center' });
+      doc.setFont(undefined, 'normal');
+
+      const rightX = pageWidth - padding;
+      let detailY = headerY + 3;
+      doc.setFontSize(10);
+
+      // Invoice No
+      doc.setFont(undefined, 'bold');
+      doc.text(`Invoice No:`, rightX - 40, detailY); // Adjust 60 as needed
+      doc.setFont(undefined, 'normal');
+      doc.text(`${row.vid}`, rightX, detailY, { align: 'right' });
+
+      detailY += 4;
+
+      // Date
+      const invoiceDate = row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A';
+      doc.setFont(undefined, 'bold');
+      doc.text(`Date:`, rightX - 40, detailY);
+      doc.setFont(undefined, 'normal');
+      doc.text(`${invoiceDate}`, rightX, detailY, { align: 'right' });
+      // Header separator
+      const lineY = headerY + Math.max(logoHeight, 20);
+      doc.setLineWidth(0.2);
+      doc.line(padding, lineY, pageWidth - padding, lineY);
+    };
+
+    // Reusable footer function
+    const addFooter = (doc) => {
+      const footerY = pageHeight - footerHeight;
+      doc.setLineWidth(0.1);
+      doc.line(padding, footerY, pageWidth - padding, footerY);
+      doc.setFontSize(6);
+      doc.text(
+        `${companyDetails.address} | ${currentDateTime} | System Generated Invoice`,
+        padding,
+        footerY + 3
+      );
+    };
+
+    // Function to add a new page with header
+    const addNewPage = () => {
+      pdf.addPage();
+      addHeader(pdf);
+      return padding + headerHeight;
+    };
+
+    // Add first header
+    addHeader(pdf);
+    pdf.setFontSize(8);
+    const labelWidth = 28; // Fixed spacing for labels
+    const valueX = padding + labelWidth;
+
+    // Bill To
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Bill To:', padding, currentY);
+    pdf.setFont(undefined, 'normal');
+    pdf.text(`${row.partyName}`, valueX, currentY);
+    currentY += 4;
+
+    // GST IN
+    pdf.setFont(undefined, 'bold');
+    pdf.text('GST IN:', padding, currentY);
+    pdf.setFont(undefined, 'normal');
+    pdf.text(`${row.recipientGSTIN}`, valueX, currentY);
+    currentY += 4;
+
+    // Place Of Supply
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Place Of Supply:', padding, currentY);
+    pdf.setFont(undefined, 'normal');
+    pdf.text(`${row.stateNo}`, valueX, currentY);
+    currentY += 4;
+
+    // Address
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Address:', padding, currentY);
+    pdf.setFont(undefined, 'normal');
+
+    // Calculate available width for address (half page)
+    const halfPageWidth = (pageWidth / 2) - valueX - padding;
+    currentY += 4;
+
+    // Wrap the address into multiple lines that fit within half the page
+    const addressLines = pdf.splitTextToSize(row.address || '', halfPageWidth);
+
+    // Print wrapped lines
+    addressLines.forEach(line => {
+      pdf.text(line, valueX, currentY);
+      currentY += 4;
+    });
+    currentY += 2;
+    // Due Date
+    const dueDate = row.dueDate ? dayjs(row.dueDate).format('DD-MM-YYYY') : 'N/A';
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Due Date:', padding, currentY);
+    pdf.setFont(undefined, 'normal');
+    pdf.text(`${dueDate}`, valueX, currentY);
+    currentY += 5;
+
+    // Tax Type (centered)
+    pdf.setFontSize(10);
+    pdf.setFont(undefined, 'bold');
+    const taxType = row.gstType === 'INTRA' ? 'Intra State Tax' : 'Inter State Tax';
+    pdf.text(taxType, pageWidth / 2, currentY, { align: 'center' });
+    currentY += 10;
+    // Main table
+    const tableHeaders = [
+      'HSN/SAC',
+      'Description',
+      'Qty',
+      'Rate',
+      'Tax %',
+      'Tax Amount',
+      'Amount'
+    ];
+
+    const tableData = row.taxInvoiceDetailsVO?.map(item => [
+      item.govChargeCode,
+      item.description,
+      item.qty,
+      parseFloat(item.rate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      item.gstpercent,
+      parseFloat(item.gstAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+      parseFloat(item.lcAmount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+    ]);
+
+    pdf.autoTable({
+      startY: currentY,
+      head: [tableHeaders],
+      body: tableData,
+      margin: { left: padding, right: padding },
+      styles: {
+        fontSize: 9,
+        lineWidth: 0.1,               // Thin border
+        lineColor: [0, 0, 0],         // Black border
+        halign: 'center',             // Optional: center align values
+        valign: 'middle',            // Optional: vertical centering
+      },
+      headStyles: {
+        fillColor: [103, 58, 183],
+        textColor: 255,
+        fontStyle: 'bold',
+        lineWidth: 0.1,               // Ensure header borders are also thin
+        lineColor: [0, 0, 0]
+      },
+      didDrawPage: function (data) {
+        currentY = data.cursor.y;
+      }
+    });
+    // Start left and right block from same currentY
+    currentY += 7;
+    pdf.setFontSize(8);
+
+    const leftX = padding;
+    const rightX = pageWidth / 2 + 70;
+    const lineHeight = 5;
+
+    let startY = currentY;
+    currentY += 10;
+
+    // ---------- LEFT SIDE ----------
+    let leftY = startY;
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Amount in words:', leftX, leftY);
+    pdf.setFont(undefined, 'normal');
+    pdf.text((row.amountInWords || '').trim(), leftX + 30, leftY);
+    leftY += lineHeight;
+
+    if (row.remarks) {
+      pdf.setFont(undefined, 'bold');
+      pdf.text('Remarks:', leftX, leftY);
+      pdf.setFont(undefined, 'normal');
+      pdf.text((row.remarks || '').trim(), leftX + 30, leftY);
+      leftY += lineHeight;
+    }
+
+    // Leave a bit of bottom margin
+    leftY += lineHeight ;
+
+    pdf.setFontSize(8);
+    let rightY = currentY - (row.amountInWords ? 2 * lineHeight : lineHeight);
+
+    pdf.setFont(undefined, 'normal');
+    // Suh Total
+    pdf.text('Sub Total:', rightX, rightY);
+    pdf.text(
+      `${parseFloat(row.totalChargeAmountLc).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}`,
+      pageWidth - padding,
+      rightY,
+      { align: 'right' }
+    );
+    rightY += lineHeight;
+
+    // GST(GST)
+    pdf.text('GST(IGST):', rightX, rightY);
+    pdf.text(
+      `${parseFloat(row.totalTaxAmountLc).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}`,
+      pageWidth - padding,
+      rightY,
+      { align: 'right' }
+    );
+    rightY += lineHeight;
+
+    // Grand Total
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Total:', rightX, rightY);
+    pdf.text(
+      `${parseFloat(row.totalInvAmountLc).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })}`,
+      pageWidth - padding,
+      rightY,
+      { align: 'right' }
+    );
+    // Update currentY based on whichever column is taller
+    currentY = Math.max(leftY, rightY);
+    // ------- Terms & Conditions -------
+    pdf.setFont(undefined, 'bold');
+    pdf.setFontSize(10);
+    pdf.text('Terms & Conditions :', padding, currentY);
+    currentY += 6;
+
+    pdf.setFont(undefined, 'normal');
+    pdf.setFontSize(9);
+    const terms = companyDetails.termsAndConditions?.split('\n') || [];
+
+    terms.forEach((term, index) => {
+      const termLines = pdf.splitTextToSize(`${index + 1}. ${term}`, pageWidth - 2 * padding);
+      termLines.forEach(line => {
+        if (currentY > pageHeight - footerHeight - 10) {
+          currentY = addNewPage();
+        }
+        pdf.text(line, padding, currentY);
+        currentY += 5;
+      });
+    });
+
+    // ------- Bank Details -------
+    pdf.setFont(undefined, 'bold');
+    pdf.setFontSize(10);
+    pdf.text('Bank Details:', padding, currentY);
+    currentY += 6;
+
+    pdf.setFontSize(9);
+    pdf.setFont(undefined, 'bold');
+    pdf.text('BANK NAME:', padding, currentY);
+    pdf.setFont(undefined, 'normal');
+    pdf.text(bankDetails.bankName || '', padding + 40, currentY);
+    currentY += 5;
+
+    pdf.setFont(undefined, 'bold');
+    pdf.text('BRANCH:', padding, currentY);
+    pdf.setFont(undefined, 'normal');
+    pdf.text(bankDetails.branch || '', padding + 40, currentY);
+    currentY += 5;
+
+    pdf.setFont(undefined, 'bold');
+    pdf.text('IFSC:', padding, currentY);
+    pdf.setFont(undefined, 'normal');
+    pdf.text(bankDetails.ifsc || '', padding + 40, currentY);
+    currentY += 5;
+
+    pdf.setFont(undefined, 'bold');
+    pdf.text('BENEFICIARY NAME:', padding, currentY);
+    pdf.setFont(undefined, 'normal');
+    pdf.text(bankDetails.beneficiaryName || '', padding + 40, currentY);
+    currentY += 5;
+
+    pdf.setFont(undefined, 'bold');
+    pdf.text('ACCOUNT NO:', padding, currentY);
+    pdf.setFont(undefined, 'normal');
+    pdf.text(bankDetails.accountNo || '', padding + 40, currentY);
+    currentY += 25;
+
+    // ------- Authorized Signatory -------
+    pdf.setFont(undefined, 'bold');
+    pdf.setFontSize(10);
+    pdf.text('Authorized Signatory', padding, currentY);
+    currentY += 10;
+    // Add footer to the first page
+    addFooter(pdf);
+
+    // Annexure
+    if (row.taxInvoiceAnnexureVO?.length > 0) {
+      // Add new page for annexure
+      currentY = addNewPage();
+
+      // Annexure header
+      pdf.setFontSize(10);
+      pdf.text(`Invoice No: ${row.vid}`, padding, currentY);
+      pdf.text(`Invoice Date: ${row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}`, pageWidth - padding, currentY, { align: 'right' });
+      currentY += 10;
 
       pdf.setFontSize(12);
-      pdf.setFont(undefined, 'bold');
-      pdf.text('TAX INVOICE', midSectionX, padding + 5);
-      pdf.setFont(undefined, 'normal');
+      pdf.text('ANNEXURE - A', pageWidth / 2, currentY, { align: 'center' });
+      currentY += 10;
 
-      let rightY = padding;
-      pdf.setFontSize(10);
-      pdf.text(`Invoice No: ${row.vid}`, rightSectionX, rightY += 3);
-      const invoiceDate = row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A';
-      pdf.text(`Date: ${invoiceDate}`, rightSectionX, rightY += 4);
+      // Annexure table
+      const annexureHeaders = [
+        'Date',
+        'Transaction No',
+        'KIT Id',
+        'Kit Description',
+        'Kit Qty',
+        'Rate',
+        'Amount'
+      ];
 
-      // Draw a line below the logo
-      const lineY = padding + logoWidth;
-      pdf.setLineWidth(0.2);
-      pdf.line(padding, lineY, pdfWidth - padding, lineY);
-    };
-    const addElementToPdf = async (element) => {
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#fff',
+      const annexureData = row.taxInvoiceAnnexureVO.map(item => [
+        item.transDate ? dayjs(item.transDate).format('DD-MM-YYYY') : 'N/A',
+        item.transNo,
+        item.kitId,
+        item.dsec,
+        item.qty,
+        parseFloat(item.rate).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+        parseFloat(item.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      ]);
+
+      pdf.autoTable({
+        startY: currentY,
+        head: [annexureHeaders],
+        body: annexureData,
+        margin: { left: padding, right: padding },
+        styles: { fontSize: 8 },
+        didDrawPage: function (data) {
+          // Add footer to every page of the annexure
+          addFooter(pdf);
+
+          // Update currentY after table is drawn
+          currentY = data.cursor.y;
+        }
       });
 
-      const imgData = canvas.toDataURL('image/png');
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
-      const contentWidth = pdfWidth - 2 * padding;
-      const imgHeight = (imgProps.height * contentWidth) / imgProps.width;
+      currentY += 5;
 
-      // Calculate available content height per page
-      const availableHeight = pdfHeight - (headerHeight - footerHeight);
-
-      let position = 0;
-      let pageIndex = 0;
-      let heightLeft = imgHeight;
-
-      while (heightLeft > 0) {
-        if (pageIndex > 0) {
-          pdf.addPage();
-        }
-
-        // Add header to every page
-        await addHeader();
-
-        // Calculate how much to show on this page
-        const drawHeight = Math.min(heightLeft, availableHeight);
-
-        // Add content image
-        pdf.addImage(
-          imgData,
-          'PNG',
-          padding,
-          headerHeight + padding - position,
-          contentWidth,
-          imgHeight
-        );
-
-        // Add footer to every page
-        addFooter();
-
-        // Update position for next page
-        position += availableHeight;
-        heightLeft -= availableHeight;
-        pageIndex++;
-      }
-    };
-
-    // Add main content
-    const mainContent = document.getElementById('main-content');
-    if (!mainContent) {
-      console.error('Main content element not found!');
-      return;
+      // Annexure totals
+      pdf.setFontSize(10);
+      pdf.text(`Sub Total: ${parseFloat(row.annexureSubTotal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, pageWidth - padding, currentY, { align: 'right' });
+      currentY += 5;
+      pdf.text(`Total Kit Qty: ${parseInt(row.totalQty).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`, pageWidth - padding, currentY, { align: 'right' });
     }
-    await addElementToPdf(mainContent);
 
-    // Add annexure if exists
-    const annexureContent = document.getElementById('annexure-content');
-    if (row.taxInvoiceAnnexureVO?.length > 0 && annexureContent) {
-      pdf.addPage();
-      await addHeader();
-      await addElementToPdf(annexureContent);
-    }
     pdf.save(`${row.screenCode || 'TI'}_${row.partyShortName}_${row.vid}.pdf`);
   };
+
   useEffect(() => {
     if ((row && row.approveStatus === 'Approved') || (row && row.approveStatus === 'Rejected')) {
       handleOpen();
@@ -265,7 +519,6 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     } else {
       setOpen(false);
     }
-    console.log('RowData =>', row);
 
     // Call the callback function to pass handleDownloadPdf if needed
     if (callBackFunction) {
@@ -273,8 +526,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     }
 
     const now = new Date();
-    const formattedDate = now.toLocaleDateString('en-GB'); // Format date as DD/MM/YYYY
-    const formattedTime = now.toLocaleTimeString('en-GB'); // Format time as HH:MM:SS
+    const formattedDate = now.toLocaleDateString('en-GB');
+    const formattedTime = now.toLocaleTimeString('en-GB');
     setCurrentDateTime(`${formattedDate} ${formattedTime}`);
   }, [row, callBackFunction]);
 
@@ -282,7 +535,6 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     try {
       const response = await apiCalls('get', `/commonmaster/getBankDetailsByOrgId?orgId=${orgId}`);
       setBankDetails(response.paramObjectsMap.bankDetailsVO[0]);
-      console.log('setBankDetails =>', response.paramObjectsMap.bankDetailsVO);
     } catch (error) {
       console.error('Error fetching invoice:', error);
     }
@@ -291,10 +543,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   const getCompanyDetails = async () => {
     try {
       const response = await apiCalls('get', `commonmaster/company/${orgId}`);
-
       if (response.status === true) {
         setCompanyDetails(response.paramObjectsMap.companyVO[0]);
-        console.log('getCompanyDetails:', response.paramObjectsMap.companyVO[0]);
       } else {
         console.error('API Error:', response);
       }

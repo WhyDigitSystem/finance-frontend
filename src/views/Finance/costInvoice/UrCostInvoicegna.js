@@ -28,6 +28,7 @@ import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
 const UrCostInvoicegna = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
+  const [listViewRoute, setlistViewRoute] = useState(true);
   const [data, setData] = useState(true);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
@@ -48,8 +49,16 @@ const UrCostInvoicegna = ({ selectedRow }) => {
   const [addressTypeList, setAddressTypeList] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-    useEffect(() => {
-    if (selectedRow) {
+  // useEffect(() => {
+  //   if (selectedRow) {
+  //     getAllUrCostInvoiceById({ original: selectedRow });
+  //   }
+  // }, [selectedRow]);
+  const selectedRowCalledRef = useRef(false);
+  useEffect(() => {
+    if (selectedRow && !selectedRowCalledRef.current) {
+      selectedRowCalledRef.current = true;
+      setlistViewRoute(false);
       getAllUrCostInvoiceById({ original: selectedRow });
     }
   }, [selectedRow]);
@@ -401,7 +410,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
     getAllUrCostInvoiceByOrgId();
     getUrCostInvoiceDocId();
     getChargeAC();
-  }, []);
+  }, [listViewRoute]);
 
   useEffect(() => {
     getPartyName(formData.supplierType);
@@ -413,7 +422,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
     try {
       const result = await apiCalls('get', `/UrCostInvoiceGna/getAllUrCostInvoiceGnaByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
       setData(result.paramObjectsMap.urCostInvoiceGnaVO || []);
-      setShowForm(true);
+      setShowForm(!showForm);
     } catch (err) {
       console.log('error', err);
     }
@@ -435,8 +444,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
   };
 
   const getAllUrCostInvoiceById = async (row) => {
-    // console.log('first', row);
-    setShowForm(false);
+    setShowForm(!showForm);
     try {
       const result = await apiCalls('get', `/UrCostInvoiceGna/getUrCostInvoiceGnaById?id=${row.original.id}`);
 
@@ -876,7 +884,10 @@ const UrCostInvoicegna = ({ selectedRow }) => {
 
   const handleView = () => {
     setShowForm(!showForm);
-  };
+    if (!showForm) {
+      handleClear();
+    }
+  }
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -1743,7 +1754,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                             {row.chargeAccount}
-                                          </td> 
+                                          </td>
                                           <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                             {row.currency}
                                           </td>
@@ -1764,7 +1775,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
                                             {row.billAmt}
-                                          </td> 
+                                          </td>
                                         </tr>
                                       ))}
                                     </>
@@ -2247,7 +2258,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                               name="totChargesLcAmt"
                               value={formData.totalChargeAmtlc}
                               size="small"
-                              
+
                               disabled
                               inputProps={{ maxLength: 30 }}
                             />
@@ -2260,7 +2271,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                               name="netAmtBillCurr"
                               value={formData.netAmtBillCurr}
                               size="small"
-                              
+
                               disabled
                               inputProps={{ maxLength: 30 }}
                             />
@@ -2273,7 +2284,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                               name="actBillLcAmt"
                               value={formData.actBillAmtLc}
                               size="small"
-                              
+
                               disabled
                               inputProps={{ maxLength: 30 }}
                             />
@@ -2286,7 +2297,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                               name="roundOff"
                               value={formData.roundOff}
                               size="small"
-                              
+
                               disabled
                               inputProps={{ maxLength: 30 }}
                             />
@@ -2299,7 +2310,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                               name="gstAmt"
                               value={formData.gstAmt}
                               size="small"
-                              
+
                               disabled
                               inputProps={{ maxLength: 30 }}
                             />
@@ -2312,7 +2323,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                               name="input"
                               value={formData.input}
                               size="small"
-                              
+
                               disabled
                               inputProps={{ maxLength: 30 }}
                             />
@@ -2325,7 +2336,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                               name="output"
                               value={formData.output}
                               size="small"
-                              
+
                               disabled
                               inputProps={{ maxLength: 30 }}
                             />
@@ -2340,17 +2351,13 @@ const UrCostInvoicegna = ({ selectedRow }) => {
             </>
           )}
           {showForm && (
-            // <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getAllCostInvoiceById} />
             <CommonTable
               data={data && data}
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllUrCostInvoiceById}
-            // isPdf={true}
-            // GeneratePdf={GeneratePdf}
             />
           )}
-          {/* {downloadPdf && <GeneratePdfTemp row={pdfData} />} */}
         </div>
       </div>
       <ConfirmationModal

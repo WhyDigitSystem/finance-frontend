@@ -25,11 +25,11 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonTable from 'views/basicMaster/CommonTable';
-import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
 const RCostInvoicegna = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
   const [data, setData] = useState(true);
+  const [listViewRoute, setlistViewRoute] = useState(true);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -49,8 +49,11 @@ const RCostInvoicegna = ({ selectedRow }) => {
   const [addressTypeList, setAddressTypeList] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const selectedRowCalledRef = useRef(false);
   useEffect(() => {
-    if (selectedRow) {
+    if (selectedRow && !selectedRowCalledRef.current) {
+      selectedRowCalledRef.current = true;
+      setlistViewRoute(false);
       getAllRCostInvoiceById({ original: selectedRow });
     }
   }, [selectedRow]);
@@ -115,7 +118,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
       rate: '',
       gstPer: '',
       gstAmt: '',
-      taxfcAmt:'',
+      taxfcAmt: '',
       fcAmount: '',
       lcAmount: '',
       billAmount: '',
@@ -131,7 +134,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
       gstPer: '',
       gstAmt: '',
       rate: '',
-      taxfcAmt:'',
+      taxfcAmt: '',
       fcAmount: '',
       lcAmount: '',
       billAmount: '',
@@ -240,7 +243,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
         currency: '',
         exRate: '',
         tdsApplicable: true,
-        taxfcAmt:'',
+        taxfcAmt: '',
         gstPer: '',
         gstAmt: '',
         rate: '',
@@ -447,7 +450,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
       netLcAmt: Math.round(((totalLcAmount + totgstAmt) - totalTds) + totgtaAmt),
       taxAmountLc: (totgstAmt).toFixed(2),
       amtInWords: toWords(Math.round((totalLcAmount + totgstAmt) - totalTds) + totgtaAmt).toUpperCase(),
-      roundOff : parseFloat(((totalLcAmount + totgstAmt) - totalTds) - (Math.round((totalLcAmount + totgstAmt) - totalTds))).toFixed(2)
+      roundOff: parseFloat(((totalLcAmount + totgstAmt) - totalTds) - (Math.round((totalLcAmount + totgstAmt) - totalTds))).toFixed(2)
     }));
   };
   // const calculateSummary = () => {
@@ -472,7 +475,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
     getAllCostInvoiceByOrgId();
     getRCostInvoiceDocId();
     getChargeAC();
-  }, []);
+  }, [listViewRoute]);
 
   useEffect(() => {
     getPartyName(formData.partyType);
@@ -496,7 +499,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
     try {
       const result = await apiCalls('get', `/rCostInvoiceGna/getAllRCostInvoiceGnaByOrgId?orgId=${orgId}&finYear=${finYear}&branchCode=${branchCode}`);
       setData(result.paramObjectsMap.rCostInvoiceGnaVO.reverse() || []);
-      setShowForm(true);
+      setShowForm(!showForm);
     } catch (err) {
       console.log('error', err);
     }
@@ -517,7 +520,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
     }
   };
   const getAllRCostInvoiceById = async (row) => {
-    setShowForm(false);
+    setShowForm(!showForm);
     try {
       const result = await apiCalls('get', `/rCostInvoiceGna/getAllRCostInvoiceGnaById?id=${row.original.id}`);
       console.log('Byid', result);
@@ -529,7 +532,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
         setEditId(row.original.id);
         getCityName(rCostVO.partyCode, rCostVO.state, rCostVO.addressType);
         getAddressType(rCostVO.partyCode, rCostVO.state);
-        getSection(rCostVO.tdsRCostInvoiceGnaVO[0].tds);
+        // getSection(rCostVO.tdsRCostInvoiceGnaVO[0].tds);
         setFormData({
           approveStatus: rCostVO.approveStatus,
           approveBy: rCostVO.approveBy,
@@ -907,7 +910,10 @@ const RCostInvoicegna = ({ selectedRow }) => {
 
   const handleView = () => {
     setShowForm(!showForm);
-  };
+    if (!showForm) {
+      handleClear();
+    }
+  }
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -1293,7 +1299,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
                       onChange={handleSelectPartyChange}
                       name="partyName"
                       value={formData.partyName}
-                      // (partyName.length === 1 ? partyName[0].partyName : '')
+                    // (partyName.length === 1 ? partyName[0].partyName : '')
                     >
                       {partyName &&
                         partyName.map((item) => (
@@ -1507,7 +1513,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
                       name="currency"
                       value={formData.currency}
                       disabled={formData.mode === 'SUBMIT'}
-                      // || (exRates.length === 1 ? exRates[0].currency : '')
+                    // || (exRates.length === 1 ? exRates[0].currency : '')
                     >
                       {exRates &&
                         exRates.map((item) => (
@@ -2317,8 +2323,8 @@ const RCostInvoicegna = ({ selectedRow }) => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllRCostInvoiceById}
-              // isPdf={false}
-              // GeneratePdf={GeneratePdf}
+            // isPdf={false}
+            // GeneratePdf={GeneratePdf}
             />
           )}
           {/* {downloadPdf && <GeneratePdfTemp row={pdfData} />} */}
@@ -2330,7 +2336,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={handleConfirmAction}
         onCancel={handleCloseModal}
-        // onCancel={() => setModalOpen(false)}
+      // onCancel={() => setModalOpen(false)}
       />
     </>
   );

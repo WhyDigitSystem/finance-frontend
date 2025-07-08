@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import apiCalls from 'apicall';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -31,6 +31,7 @@ import GeneratePdfTempDN from 'utils/PdfTempDebitNote';
 
 const CostDebitNote = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
+  const [listViewRoute, setlistViewRoute] = useState(true);
   const [data, setData] = useState(true);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
@@ -55,8 +56,16 @@ const CostDebitNote = ({ selectedRow }) => {
   const [pdfData, setPdfData] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const selectedRowCalledRef = useRef(false);
+  // useEffect(() => {
+  //   if (selectedRow) {
+  //     getAllCostDebitNoteById({ original: selectedRow });
+  //   }
+  // }, [selectedRow]);
   useEffect(() => {
-    if (selectedRow) {
+    if (selectedRow && !selectedRowCalledRef.current) {
+      selectedRowCalledRef.current = true;
+      setlistViewRoute(false);
       getAllCostDebitNoteById({ original: selectedRow });
     }
   }, [selectedRow]);
@@ -334,7 +343,7 @@ const CostDebitNote = ({ selectedRow }) => {
     getJobNoFromTmsJobCard();
     getChargeDetailsFromChargeType();
     getCurrencyAndExRatesForMatchingParties();
-  }, []);
+  }, [listViewRoute]);
 
   useEffect(() => {
     if (formData.supplierName) {
@@ -440,7 +449,7 @@ const CostDebitNote = ({ selectedRow }) => {
         `/costdebitnote/getCostDebitNoteByOrgId?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}`
       );
       setData(result.paramObjectsMap.costDebitNoteVOs.reverse());
-      setShowForm(true);
+      setShowForm(!showForm);
       console.log('costInvoiceVO', result);
     } catch (err) {
       console.log('error', err);
@@ -715,7 +724,7 @@ const CostDebitNote = ({ selectedRow }) => {
 
   const getAllCostDebitNoteById = async (row) => {
     console.log('first', row);
-    setShowForm(false);
+    setShowForm(!showForm);
     try {
       const result = await apiCalls('get', `/costdebitnote/getCostDebitNoteById?id=${row.original.id}`);
 
@@ -1474,9 +1483,10 @@ const CostDebitNote = ({ selectedRow }) => {
 
   const handleView = () => {
     setShowForm(!showForm);
-    handleClear();
-  };
-
+    if (!showForm) {
+      handleClear();
+    }
+  }
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };

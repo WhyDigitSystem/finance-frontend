@@ -1,6 +1,6 @@
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -42,6 +42,7 @@ function PaperComponent(props) {
 const Payment = ({ selectedRow }) => {
   const [value, setValue] = useState('1');
   const [showForm, setShowForm] = useState(true);
+  const [listViewRoute, setlistViewRoute] = useState(true);
   const [data, setData] = useState([]);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
   const [validationErrors, setValidationErrors] = useState({});
@@ -65,11 +66,19 @@ const Payment = ({ selectedRow }) => {
   const handleChangeTab = (event, newValue) => {
     setValue(newValue);
   };
-  useEffect(() => {
-    if (selectedRow) {
-      getPaymentById({ original: selectedRow });
-    }
-  }, [selectedRow]);
+useEffect(() => {
+  if (selectedRow?.id) {
+    console.log("Triggering getPaymentById with ID:", selectedRow.id);
+    setlistViewRoute(false);
+    getPaymentById({ original: selectedRow });
+  }
+}, [selectedRow?.id]);
+
+  // useEffect(() => {
+  //   if (selectedRow) {
+  //     getPaymentById({ original: selectedRow });
+  //   }
+  // }, [selectedRow]);
   const [formData, setFormData] = useState({
     paymentType: 'BANK PAYMENT',
     partyName: '',
@@ -143,7 +152,7 @@ const Payment = ({ selectedRow }) => {
     getPaymentDocId();
     getPartName();
     bankList();
-  }, []);
+  }, [listViewRoute]);
 
   useEffect(() => {
     if (partyName.length === 1) {
@@ -736,7 +745,7 @@ const Payment = ({ selectedRow }) => {
           {/*  */}
           <div className="row d-flex align-items-center">
             <div className="col d-flex justify-content-start align-items-center">
-              {editId && showForm && (listViewData.status === 'SUBMIT' || formData.status === 'SUBMIT') && (
+              {editId && showForm && (listViewData?.status === 'SUBMIT' || formData.status === 'SUBMIT') && (
                 <>
                   {formData.approveStatus === 'Approved' && (
                     <Stack direction="row" spacing={2}>
@@ -751,7 +760,7 @@ const Payment = ({ selectedRow }) => {
                     </Stack>
                   )}
 
-                  {listViewData.status === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                  {(listViewData?.status === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected') && (
                     <div className="d-flex align-items-center">
                       <Button
                         variant="outlined"
@@ -828,7 +837,7 @@ const Payment = ({ selectedRow }) => {
               <div className="d-flex flex-wrap justify-content-end ">
                 {showForm && <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />}
                 {showForm && <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />}
-                {listViewData.approveStatus === 'Approved' || !showForm ? (
+                {listViewData?.approveStatus === 'Approved' || !showForm ? (
                   ''
                 ) : (
                   <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
@@ -1062,7 +1071,7 @@ const Payment = ({ selectedRow }) => {
                       }}
                     >
                       {editId && <MenuItem value="SUBMIT">SUBMIT</MenuItem>}
-                      <MenuItem value="EDIT">EDIT</MenuItem>
+                      <MenuItem value="EDIT">DRAFT</MenuItem>
                     </Select>
                     {formDataErrors.status && <FormHelperText>{formDataErrors.status}</FormHelperText>}
                   </FormControl>

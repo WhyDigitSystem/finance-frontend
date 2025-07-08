@@ -21,7 +21,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import ActionButton from 'utils/ActionButton';
 import ConfirmationModal from 'utils/confirmationPopup';
@@ -45,12 +45,13 @@ function getStyles(name, selectedTransactionNo, theme) {
     fontWeight: selectedTransactionNo.indexOf(name) === -1 ? theme.typography.fontWeightRegular : theme.typography.fontWeightMedium
   };
 }
-const TaxInvoiceDetails = () => {
+const TaxInvoiceDetails = ({ selectedRow }) => {
   const theme = useTheme();
   const [selectedTransactionNo, setSelectedTransactionNo] = useState([]);
   const [tabIndex, setTabIndex] = useState(0);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
   const [downloadPdf, setDownloadPdf] = useState(false);
+  const [listViewRoute, setlistViewRoute] = useState(true);
   const [pdfData, setPdfData] = useState([]);
   const [confirmData, setConfirmData] = useState([]);
   const [listView, setlistView] = useState(false);
@@ -78,6 +79,14 @@ const TaxInvoiceDetails = () => {
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const selectedRowCalledRef = useRef(false);
+  useEffect(() => {
+    if (selectedRow && !selectedRowCalledRef.current) {
+      selectedRowCalledRef.current = true;
+      setlistViewRoute(false);
+      getTaxInvoiceById({ original: selectedRow });
+    }
+  }, [selectedRow]);
   const [formData, setFormData] = useState({
     address: '',
     addressType: '',
@@ -227,7 +236,7 @@ const TaxInvoiceDetails = () => {
     getAllType();
     getPartyName();
     // getJobCardNo();
-  }, []);
+  }, [listViewRoute]);
 
   const handleOpenModalApprove = () => {
     setModalOpen(true);
@@ -316,7 +325,7 @@ const TaxInvoiceDetails = () => {
       } else {
         console.error('API Error:', result.data);
       }
-      
+
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -331,7 +340,7 @@ const TaxInvoiceDetails = () => {
 
       if (result.status === true) {
         setData(result.paramObjectsMap.taxInvoiceVO);
-        setlistView(true);
+        setlistView(!listView);
       } else {
         // Handle error
         console.error('API Error:', result.data);
@@ -968,13 +977,13 @@ const TaxInvoiceDetails = () => {
     const roundOffAmountLc = (Math.round(totalInvAmountLc) - parseFloat(parseFloat(totalChargeAmountLc) + parseFloat(totalTaxAmountLc))).toFixed(2);
     const totalChargeAmountBc = rows.reduce((sum, row) => sum + parseFloat(row.billAmount || 0), 0);
     // const totalTaxAmountBc = rows.reduce((row) => parseFloat(totalTaxAmountLc) / parseFloat(row.exRate || 0), 0);
-const totalTaxAmountBc = parseFloat(
-  rows.reduce((sum, row) => {
-    const exRate = parseFloat(row.exRate || 0);
-    const gst = parseFloat(row.gst || 0);
-    return sum + (exRate !== 0 ? gst / exRate : 0);
-  }, 0).toFixed(2)
-);
+    const totalTaxAmountBc = parseFloat(
+      rows.reduce((sum, row) => {
+        const exRate = parseFloat(row.exRate || 0);
+        const gst = parseFloat(row.gst || 0);
+        return sum + (exRate !== 0 ? gst / exRate : 0);
+      }, 0).toFixed(2)
+    );
     const totalInvAmountBc = totalChargeAmountBc + totalTaxAmountBc;
     const totalTaxableAmountLc = totalChargeAmountLc;
     setFormData((prev) => ({
@@ -990,39 +999,39 @@ const totalTaxAmountBc = parseFloat(
       amountInWords: toWords(totalInvAmountLc).toUpperCase()
     }));
   };
-const handleSelectPartyChange = (e) => {
-  const value = e.target.value;
-  const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
+  const handleSelectPartyChange = (e) => {
+    const value = e.target.value;
+    const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
 
-  if (selectedEmp) {
-    // Reset dependent fields
-    setSelectedTransactionNo([]); // clears selected transactions
-    setTransactionNoList([]);     // clears the transaction number dropdown
-    setTaxInvoiceAnnexure([]);    // clears annexure details
-    setFormData((prevData) => ({
-      ...prevData,
-      partyName: selectedEmp.partyName,
-      partyCode: selectedEmp.partyCode,
-      partyShortName: selectedEmp.partyShortName,
-      partyId: selectedEmp.id,
-      screenDTO: [] // clear old transaction screenDTO
-    }));
-    setErrors((prevErrors) => ({
-      ...prevErrors,
-      partyName: ''
-    }));
+    if (selectedEmp) {
+      // Reset dependent fields
+      setSelectedTransactionNo([]); // clears selected transactions
+      setTransactionNoList([]);     // clears the transaction number dropdown
+      setTaxInvoiceAnnexure([]);    // clears annexure details
+      setFormData((prevData) => ({
+        ...prevData,
+        partyName: selectedEmp.partyName,
+        partyCode: selectedEmp.partyCode,
+        partyShortName: selectedEmp.partyShortName,
+        partyId: selectedEmp.id,
+        screenDTO: [] // clear old transaction screenDTO
+      }));
+      setErrors((prevErrors) => ({
+        ...prevErrors,
+        partyName: ''
+      }));
 
-    // Re-fetch dependent data
-    getCreditDays(selectedEmp.partyCode);
-    getJobCardNo(selectedEmp.partyCode);
-    getCurrencyAndExratesForMatchingParties(selectedEmp.partyCode);
-    getStateName(selectedEmp.id);
-    setPartyId(selectedEmp.id);
-    getAllTransactionNo(selectedEmp.partyShortName);
-  } else {
-    console.log('No employee found with the given code:', value);
-  }
-};
+      // Re-fetch dependent data
+      getCreditDays(selectedEmp.partyCode);
+      getJobCardNo(selectedEmp.partyCode);
+      getCurrencyAndExratesForMatchingParties(selectedEmp.partyCode);
+      getStateName(selectedEmp.id);
+      setPartyId(selectedEmp.id);
+      getAllTransactionNo(selectedEmp.partyShortName);
+    } else {
+      console.log('No employee found with the given code:', value);
+    }
+  };
 
   // const handleSelectPartyChange = (e) => {
   //   const value = e.target.value;  
@@ -1056,7 +1065,7 @@ const handleSelectPartyChange = (e) => {
   // };
 
   const handleSelectStateChange = (e) => {
-    const value = e.target.value; 
+    const value = e.target.value;
 
     // Find the selected employee from empList based on employeeCode
     const selectedEmp = stateName.find((emp) => emp.stateCode === value); // Check if 'empCode' is correct
@@ -1075,7 +1084,8 @@ const handleSelectPartyChange = (e) => {
         setErrors((prevErrors) => ({
           ...prevErrors,
           stateCode: ''
-        }))}
+        }))
+      }
     } else {
       console.log('No employee found with the given code:', value); // Log if no employee is found
     }
@@ -1132,17 +1142,17 @@ const handleSelectPartyChange = (e) => {
       }));
       setErrors((prevErrors) => ({
         ...prevErrors,
-        addressType:''
+        addressType: ''
       }));
     } else {
       console.log('No employee found with the given code:', value);
     }
-    
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        addressType: formData.addressType ? '' : 'Address Type is required',
-      }));
-    
+
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      addressType: formData.addressType ? '' : 'Address Type is required',
+    }));
+
   };
   const handleChangeField = (e) => {
     const { name, value } = e.target;
@@ -1175,7 +1185,7 @@ const handleSelectPartyChange = (e) => {
 
   const getTaxInvoiceById = async (row) => {
     setErrors({});
-    setlistView(false);
+    setlistView(!listView);
     try {
       const result = await apiCalls('get', `/taxInvoice/getTaxInvoiceById?id=${row.original.id}`);
       setListViewData(result.paramObjectsMap.taxInvoiceVO);
@@ -1245,7 +1255,7 @@ const handleSelectPartyChange = (e) => {
             ? listValueVO.trasactionNo
             : listValueVO?.trasactionNo?.split(',') || []
         );
-        console.log("Selected mim",selectedTransactionNo);
+        console.log("Selected mim", selectedTransactionNo);
         if (!listValueVO?.taxInvoiceDetailsVO) return;
 
         const mappedData = listValueVO.taxInvoiceDetailsVO.map((cl, index) => {
@@ -1297,119 +1307,120 @@ const handleSelectPartyChange = (e) => {
       console.error('Error fetching data:', error);
     }
   };
-
   const handleList = () => {
     setlistView(!listView);
-    handleClear();
+    if (!listView) {
+      handleClear();
+    }
   };
   const handleSave = async () => {
-  const errors = {};
-  if (!formData.partyName) {
-    errors.partyName = 'Party Name is required';
-  }
-  if (!formData.partyType) {
-    errors.partyType = 'Party Type is required';
-  }
-  if (!formData.stateCode) {
-    errors.stateCode = 'State Code is required';
-  }
-  if (!formData.addressType) {
-    errors.addressType = 'Address Type is required';
-  }
-  if (!formData.placeOfSupply) {
-    errors.placeOfSupply = 'Place of Supply is required';
-  }
-  if (!formData.jobNo) {
-    errors.jobNo = 'Job No is required';
-  }
-  if (!formData.vid) {
-    errors.vid = 'V Id is required';
-  }
-  if (!formData.vdate) {
-    errors.vdate = 'V Date is required';
-  }
-
-  let detailTableDataValid = true;
-  const newTableErrors = withdrawalsTableData.map((row) => {
-    const rowErrors = {};
-    if (!row.chargeType) {
-      rowErrors.chargeType = 'Type is required';
-      detailTableDataValid = false;
+    const errors = {};
+    if (!formData.partyName) {
+      errors.partyName = 'Party Name is required';
     }
-    if (!row.chargeCode) {
-      rowErrors.chargeCode = 'Charge Code is required';
-      detailTableDataValid = false;
+    if (!formData.partyType) {
+      errors.partyType = 'Party Type is required';
     }
-    if (!row.qty) {
-      rowErrors.qty = 'Qty is required';
-      detailTableDataValid = false;
+    if (!formData.stateCode) {
+      errors.stateCode = 'State Code is required';
     }
-    if (!row.rate) {
-      rowErrors.rate = 'Rate is required';
-      detailTableDataValid = false;
+    if (!formData.addressType) {
+      errors.addressType = 'Address Type is required';
     }
-    if (!row.currency) {
-      rowErrors.currency = 'Currency is required';
-      detailTableDataValid = false;
+    if (!formData.placeOfSupply) {
+      errors.placeOfSupply = 'Place of Supply is required';
     }
-    return rowErrors;
-  });
+    if (!formData.jobNo) {
+      errors.jobNo = 'Job No is required';
+    }
+    if (!formData.vid) {
+      errors.vid = 'V Id is required';
+    }
+    if (!formData.vdate) {
+      errors.vdate = 'V Date is required';
+    }
 
-  setWithdrawalsTableErrors(newTableErrors);
+    let detailTableDataValid = true;
+    const newTableErrors = withdrawalsTableData.map((row) => {
+      const rowErrors = {};
+      if (!row.chargeType) {
+        rowErrors.chargeType = 'Type is required';
+        detailTableDataValid = false;
+      }
+      if (!row.chargeCode) {
+        rowErrors.chargeCode = 'Charge Code is required';
+        detailTableDataValid = false;
+      }
+      if (!row.qty) {
+        rowErrors.qty = 'Qty is required';
+        detailTableDataValid = false;
+      }
+      if (!row.rate) {
+        rowErrors.rate = 'Rate is required';
+        detailTableDataValid = false;
+      }
+      if (!row.currency) {
+        rowErrors.currency = 'Currency is required';
+        detailTableDataValid = false;
+      }
+      return rowErrors;
+    });
 
-  if (Object.keys(errors).length > 0 || !detailTableDataValid) {
-    setErrors(errors);
-    return;
-  }
-  const entryDate = dayjs(formData.vdate);
-  if (entryDate.isValid()) {
-    const today = dayjs();
-    const currentYear = today.year();
-    const currentMonth = today.month();
+    setWithdrawalsTableErrors(newTableErrors);
 
-    const finYearStart = currentMonth >= 3
-      ? dayjs(`${finYear}-04-01`)
-      : dayjs(`${finYear - 1}-04-01`);
+    if (Object.keys(errors).length > 0 || !detailTableDataValid) {
+      setErrors(errors);
+      return;
+    }
+    const entryDate = dayjs(formData.vdate);
+    if (entryDate.isValid()) {
+      const today = dayjs();
+      const currentYear = today.year();
+      const currentMonth = today.month();
 
-    const finYearEnd = finYearStart.add(1, 'year').subtract(1, 'day');
+      const finYearStart = currentMonth >= 3
+        ? dayjs(`${finYear}-04-01`)
+        : dayjs(`${finYear - 1}-04-01`);
 
-    if (entryDate.isBefore(finYearStart) || entryDate.isAfter(finYearEnd)) {
-      const confirmProceed = showToast('error',
-        `You are entering data for a different financial year (${entryDate.format('DD-MM-YYYY')}).Which is not Allowed!!`
-      );
-      if (!confirmProceed) {
-        return;
+      const finYearEnd = finYearStart.add(1, 'year').subtract(1, 'day');
+
+      if (entryDate.isBefore(finYearStart) || entryDate.isAfter(finYearEnd)) {
+        const confirmProceed = showToast('error',
+          `You are entering data for a different financial year (${entryDate.format('DD-MM-YYYY')}).Which is not Allowed!!`
+        );
+        if (!confirmProceed) {
+          return;
+        }
       }
     }
-  }
 
-  const detailsVo = withdrawalsTableData.map((row) => ({
-    ...(editId && { id: row.id }),
-    chargeCode: row.chargeCode,
-    chargeName: row.chargeName,
-    chargeType: row.chargeType,
-    currency: row.currency,
-    exRate: parseFloat(row.exRate),
-    exempted: row.exempted,
-    govChargeCode: row.govChargeCode,
-    gstpercent: parseFloat(row.GSTPercent),
-    ledger: row.ledger,
-    description: row.description,
-    qty: parseInt(row.qty),
-    rate: parseInt(row.rate),
-    sac: row.sac,
-    taxable: row.taxable
-  }));
+    const detailsVo = withdrawalsTableData.map((row) => ({
+      ...(editId && { id: row.id }),
+      chargeCode: row.chargeCode,
+      chargeName: row.chargeName,
+      chargeType: row.chargeType,
+      currency: row.currency,
+      exRate: parseFloat(row.exRate),
+      exempted: row.exempted,
+      govChargeCode: row.govChargeCode,
+      gstpercent: parseFloat(row.GSTPercent),
+      ledger: row.ledger,
+      description: row.description,
+      qty: parseInt(row.qty),
+      rate: parseInt(row.rate),
+      sac: row.sac,
+      taxable: row.taxable
+    }));
 
-  const isAnnexureEmpty = taxInvoiceAnnexure.every(
-    (row) => !row.kitname && !row.kitid && !row.kitqty && !row.rate
-  );
+    const isAnnexureEmpty = taxInvoiceAnnexure.every(
+      (row) => !row.kitname && !row.kitid && !row.kitqty && !row.rate
+    );
 
-  const transactionParam = selectedTransactionNo.join(',');
+    const transactionParam = selectedTransactionNo.join(',');
 
-  const annexureVO = isAnnexureEmpty
-    ? null
-    : taxInvoiceAnnexure.map((row) => ({
+    const annexureVO = isAnnexureEmpty
+      ? null
+      : taxInvoiceAnnexure.map((row) => ({
         ...(editId && { id: row.id }),
         skuType: row.skuType || '',
         rate: parseInt(row.rate),
@@ -1422,64 +1433,64 @@ const handleSelectPartyChange = (e) => {
         transNo: row.transactionno
       }));
 
-  const saveFormData = {
-    ...(editId && { id: editId }),
-    address: formData.address,
-    addressType: formData.addressType,
-    billCurr: formData.billCurr,
-    billCurrRate: parseFloat(formData.billCurrRate),
-    billOfEntry: formData.billOfEntry,
-    bizMode: formData.bizMode,
-    bizType: formData.bizType,
-    branch: branch,
-    branchCode: loginBranchCode,
-    createdBy: loginUserName,
-    creditDays: parseInt(formData.creditDays),
-    finYear: finYear,
-    gstType: formData.gstType,
-    invoiceNo: formData.invoiceNo,
-    jobOrderNo: formData.jobNo,
-    orgId: orgId,
-    partyCode: formData.partyCode,
-    partyId: parseInt(partyId),
-    partyName: formData.partyName,
-    partyShortName: formData.partyShortName,
-    partyType: formData.partyType,
-    pinCode: formData.pinCode,
-    placeOfSupply: formData.placeOfSupply,
-    recipientGSTIN: formData.recipientGSTIN,
-    remarks: formData.remarks,
-    shipperInvoiceNo: formData.shipperInvoiceNo,
-    stateCode: formData.stateCode,
-    stateNo: formData.stateNo,
-    status: formData.status,
-    supplierBillDate: formData.supplierBillDate
-      ? dayjs(formData.supplierBillDate).format('YYYY-MM-DD')
-      : null,
-    supplierBillNo: formData.supplierBillNo,
-    vid: formData.vid,
-    trasactionNo: transactionParam,
-    vdate: formData.vdate
-      ? dayjs(formData.vdate).format('YYYY-MM-DD')
-      : null,
-    taxInvoiceDetailsDTO: detailsVo,
-    taxInvoiceAnnexureDTO: annexureVO
-  };
+    const saveFormData = {
+      ...(editId && { id: editId }),
+      address: formData.address,
+      addressType: formData.addressType,
+      billCurr: formData.billCurr,
+      billCurrRate: parseFloat(formData.billCurrRate),
+      billOfEntry: formData.billOfEntry,
+      bizMode: formData.bizMode,
+      bizType: formData.bizType,
+      branch: branch,
+      branchCode: loginBranchCode,
+      createdBy: loginUserName,
+      creditDays: parseInt(formData.creditDays),
+      finYear: finYear,
+      gstType: formData.gstType,
+      invoiceNo: formData.invoiceNo,
+      jobOrderNo: formData.jobNo,
+      orgId: orgId,
+      partyCode: formData.partyCode,
+      partyId: parseInt(partyId),
+      partyName: formData.partyName,
+      partyShortName: formData.partyShortName,
+      partyType: formData.partyType,
+      pinCode: formData.pinCode,
+      placeOfSupply: formData.placeOfSupply,
+      recipientGSTIN: formData.recipientGSTIN,
+      remarks: formData.remarks,
+      shipperInvoiceNo: formData.shipperInvoiceNo,
+      stateCode: formData.stateCode,
+      stateNo: formData.stateNo,
+      status: formData.status,
+      supplierBillDate: formData.supplierBillDate
+        ? dayjs(formData.supplierBillDate).format('YYYY-MM-DD')
+        : null,
+      supplierBillNo: formData.supplierBillNo,
+      vid: formData.vid,
+      trasactionNo: transactionParam,
+      vdate: formData.vdate
+        ? dayjs(formData.vdate).format('YYYY-MM-DD')
+        : null,
+      taxInvoiceDetailsDTO: detailsVo,
+      taxInvoiceAnnexureDTO: annexureVO
+    };
 
-  try {
-    const response = await apiCalls('put', '/taxInvoice/updateCreateTaxInvoice', saveFormData);
-    if (response.status === true) {
-      showToast('success', editId ? 'Tax Invoice updated successfully' : 'Tax Invoice created successfully');
-      getAllTaxInvoice();
-      handleClear();
-    } else {
-      showToast('error', response.paramObjectsMap.errorMessage || 'Tax Invoice creation failed');
+    try {
+      const response = await apiCalls('put', '/taxInvoice/updateCreateTaxInvoice', saveFormData);
+      if (response.status === true) {
+        showToast('success', editId ? 'Tax Invoice updated successfully' : 'Tax Invoice created successfully');
+        getAllTaxInvoice();
+        handleClear();
+      } else {
+        showToast('error', response.paramObjectsMap.errorMessage || 'Tax Invoice creation failed');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showToast('error', 'Tax Invoice creation failed');
     }
-  } catch (error) {
-    console.error('Error:', error);
-    showToast('error', 'Tax Invoice creation failed');
-  }
-};
+  };
   const handleDescriptionChange = (index, newDescription) => {
     const updatedRows = [...withdrawalsTableData];
     updatedRows[index].description = newDescription;
@@ -1604,56 +1615,56 @@ const handleSelectPartyChange = (e) => {
       console.error('Error fetching gate passes:', error);
     }
   };
-const handleMultiSelect = async (event) => {
-  const {
-    target: { value }
-  } = event;
+  const handleMultiSelect = async (event) => {
+    const {
+      target: { value }
+    } = event;
 
-  const selectedTransactionNo = typeof value === 'string' ? value.split(',') : value;
+    const selectedTransactionNo = typeof value === 'string' ? value.split(',') : value;
 
-  setSelectedTransactionNo(selectedTransactionNo);
+    setSelectedTransactionNo(selectedTransactionNo);
 
-  // Update formData
-  const screenDTO = selectedTransactionNo.map((transactionno) => ({ transactionno }));
-  setFormData((prevFormData) => ({
-    ...prevFormData,
-    screenDTO
-  }));
-
-  // 🔽 Make API call with selected transaction numbers
-  try {
-    const transactionParam = selectedTransactionNo.join(',');
-    const response = await apiCalls('get', `/reportController/getMimFillGridgetKitDetails?orgId=${orgId}&TransactionNo=${transactionParam}`);
-    const annexureList = response?.paramObjectsMap?.["MIM Fillgrid"] || [];
-    const annexureData = annexureList.map((item, index) => ({
-      id: index,
-      transactionno: item.transactionno,
-      // transactiondate: item.transactiondate ? dayjs(item.transactiondate).format("DD-MM-YYYY"): null,
-      transactiondate: item.transactiondate ? item.transactiondate : null,
-      kitid: item.kitid,
-      kitname: item.kitname,
-      kitqty: parseInt(item.kitqty),
-      rate: '',
-      amount: '',
-      skuType: ''
+    // Update formData
+    const screenDTO = selectedTransactionNo.map((transactionno) => ({ transactionno }));
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      screenDTO
     }));
-    setTaxInvoiceAnnexure(annexureData);
-    setTaxInvoiceAnnexureErrors(
-      annexureData.map(() => ({
-        transDate: '',
-        transNo: '',
-        kitId: '',
-        qty: '',
-        dsec: '',
+
+    // 🔽 Make API call with selected transaction numbers
+    try {
+      const transactionParam = selectedTransactionNo.join(',');
+      const response = await apiCalls('get', `/reportController/getMimFillGridgetKitDetails?orgId=${orgId}&TransactionNo=${transactionParam}`);
+      const annexureList = response?.paramObjectsMap?.["MIM Fillgrid"] || [];
+      const annexureData = annexureList.map((item, index) => ({
+        id: index,
+        transactionno: item.transactionno,
+        // transactiondate: item.transactiondate ? dayjs(item.transactiondate).format("DD-MM-YYYY"): null,
+        transactiondate: item.transactiondate ? item.transactiondate : null,
+        kitid: item.kitid,
+        kitname: item.kitname,
+        kitqty: parseInt(item.kitqty),
         rate: '',
         amount: '',
         skuType: ''
-      }))
-    );
-  } catch (error) {
-    console.error('Failed to fetch annexure data:', error);
-  }
-};
+      }));
+      setTaxInvoiceAnnexure(annexureData);
+      setTaxInvoiceAnnexureErrors(
+        annexureData.map(() => ({
+          transDate: '',
+          transNo: '',
+          kitId: '',
+          qty: '',
+          dsec: '',
+          rate: '',
+          amount: '',
+          skuType: ''
+        }))
+      );
+    } catch (error) {
+      console.error('Failed to fetch annexure data:', error);
+    }
+  };
 
   return (
     <>
@@ -1834,13 +1845,13 @@ const handleMultiSelect = async (event) => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label">
-                    Status <span style={{color: 'red', fontSize: '20px'}}>*</span>
+                    Status <span style={{ color: 'red', fontSize: '20px' }}>*</span>
                   </InputLabel>
                   <Select
                     labelId="statusLabel"
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    label="Status *" 
+                    label="Status *"
                     error={!!errors.status}
                     disabled={formData.status === 'TAX' || !editId}
                   >
@@ -1852,7 +1863,7 @@ const handleMultiSelect = async (event) => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
-                    label={<span>Party Type <span style={{color: 'red', fontSize: '20px'}}>*</span></span>}
+                    label={<span>Party Type <span style={{ color: 'red', fontSize: '20px' }}>*</span></span>}
                     size="small"
                     disabled
                     value={formData.partyType}
@@ -1864,7 +1875,7 @@ const handleMultiSelect = async (event) => {
 
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
-                  <InputLabel id="demo-simple-select-label-party" error={!!errors.partyName}>Party Name<span style={{color: 'red', fontSize: '20px'}}>*</span></InputLabel>
+                  <InputLabel id="demo-simple-select-label-party" error={!!errors.partyName}>Party Name<span style={{ color: 'red', fontSize: '20px' }}>*</span></InputLabel>
                   <Select
                     labelId="demo-simple-select-label-party"
                     id="demo-simple-select-party"
@@ -1898,7 +1909,7 @@ const handleMultiSelect = async (event) => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
-                    label={<span>V Id <span style={{color: 'red', fontSize: '20px'}}>*</span></span>}
+                    label={<span>V Id <span style={{ color: 'red', fontSize: '20px' }}>*</span></span>}
                     disabled={formData.status === 'TAX'}
                     size="small"
                     inputProps={{ maxLength: 30 }}
@@ -1918,7 +1929,7 @@ const handleMultiSelect = async (event) => {
                 <FormControl fullWidth>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label={<span>V Date <span style={{color: 'red', fontSize: '20px'}}>*</span></span>}
+                      label={<span>V Date <span style={{ color: 'red', fontSize: '20px' }}>*</span></span>}
                       disabled={formData.status === 'TAX'}
                       format="DD-MM-YYYY"
                       slotProps={{
@@ -1938,7 +1949,7 @@ const handleMultiSelect = async (event) => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label" error={!!errors.stateCode}>
-                    State Code <span style={{color: 'red', fontSize: '20px'}}>*</span>
+                    State Code <span style={{ color: 'red', fontSize: '20px' }}>*</span>
                   </InputLabel>
                   <Select
                     labelId="addressTypeLabel"
@@ -1988,7 +1999,7 @@ const handleMultiSelect = async (event) => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label" error={!!errors.placeOfSupply}>
-                    Place Of Supply <span style={{color: 'red', fontSize: '20px'}}>*</span>
+                    Place Of Supply <span style={{ color: 'red', fontSize: '20px' }}>*</span>
                   </InputLabel>
                   <Select
                     labelId="addressTypeLabel"
@@ -2012,7 +2023,7 @@ const handleMultiSelect = async (event) => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label" error={!!errors.addressType}>
-                    Address Type <span style={{color: 'red', fontSize: '20px'}}>*</span>
+                    Address Type <span style={{ color: 'red', fontSize: '20px' }}>*</span>
                   </InputLabel>
                   <Select
                     labelId="addressTypeLabel"
@@ -2083,7 +2094,7 @@ const handleMultiSelect = async (event) => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label">
-                    Job Card No <span style={{color: 'red', fontSize: '20px'}}>*</span>
+                    Job Card No <span style={{ color: 'red', fontSize: '20px' }}>*</span>
                   </InputLabel>
                   <Select
                     labelId="jobCardNo"
@@ -2150,30 +2161,30 @@ const handleMultiSelect = async (event) => {
                   />
                 </FormControl>
               </div>
-                <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="demo-multiple-checkbox-label">Transaction No</InputLabel>
-                    <Select
-                      labelId="demo-multiple-checkbox-label"
-                      id="demo-multiple-checkbox"
-                      multiple
-                      disabled={formData.status === 'TAX'}
-                      value={selectedTransactionNo}
-                      onChange={handleMultiSelect}
-                      input={<OutlinedInput label="Transaction No" />}
-                      renderValue={(selected) =>
-                        Array.isArray(selected) ? selected.join(', ') : ''
-                      }
-                    >
-                      {transactionNoList.map((item, index) => (
-                        <MenuItem key={index} value={item.transactionno}>
-                          <Checkbox checked={selectedTransactionNo.indexOf(item.transactionno) > -1} />
-                          <ListItemText primary={item.transactionno} />
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <InputLabel id="demo-multiple-checkbox-label">Transaction No</InputLabel>
+                  <Select
+                    labelId="demo-multiple-checkbox-label"
+                    id="demo-multiple-checkbox"
+                    multiple
+                    disabled={formData.status === 'TAX'}
+                    value={selectedTransactionNo}
+                    onChange={handleMultiSelect}
+                    input={<OutlinedInput label="Transaction No" />}
+                    renderValue={(selected) =>
+                      Array.isArray(selected) ? selected.join(', ') : ''
+                    }
+                  >
+                    {transactionNoList.map((item, index) => (
+                      <MenuItem key={index} value={item.transactionno}>
+                        <Checkbox checked={selectedTransactionNo.indexOf(item.transactionno) > -1} />
+                        <ListItemText primary={item.transactionno} />
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+              </div>
             </div>
           )}
         </div>
@@ -2216,8 +2227,8 @@ const handleMultiSelect = async (event) => {
                                 <th className="table-header" style={{ width: '50px' }}>
                                   S.No
                                 </th>
-                                <th className="table-header">Type <span style={{color: 'white', fontSize: '20px'}}>*</span></th>
-                                <th className="table-header">Charge Code <span style={{color: 'white', fontSize: '20px'}}>*</span></th>
+                                <th className="table-header">Type <span style={{ color: 'white', fontSize: '20px' }}>*</span></th>
+                                <th className="table-header">Charge Code <span style={{ color: 'white', fontSize: '20px' }}>*</span></th>
                                 {/* <th className="table-header">GCharge Code</th>
                                 <th className="table-header">Charge Name</th>
                                 <th className="table-header">Taxable</th> */}
@@ -2225,13 +2236,13 @@ const handleMultiSelect = async (event) => {
                                   Description
                                 </th>
                                 <th className="table-header" style={{ width: '100px' }}>
-                                  Qty <span style={{color: 'white', fontSize: '20px'}}>*</span>
+                                  Qty <span style={{ color: 'white', fontSize: '20px' }}>*</span>
                                 </th>
                                 <th className="table-header" style={{ width: '100px' }}>
-                                  Rate <span style={{color: 'white', fontSize: '20px'}}>*</span>
+                                  Rate <span style={{ color: 'white', fontSize: '20px' }}>*</span>
                                 </th>
-                                <th className="table-header">Currency <span style={{color: 'white', fontSize: '20px'}}>*</span></th>
-                                <th className="table-header">Ex Rate <span style={{color: 'white', fontSize: '20px'}}>*</span></th>
+                                <th className="table-header">Currency <span style={{ color: 'white', fontSize: '20px' }}>*</span></th>
+                                <th className="table-header">Ex Rate <span style={{ color: 'white', fontSize: '20px' }}>*</span></th>
                                 <th className="table-header">FC Amount</th>
                                 <th className="table-header">LC Amount</th>
                                 <th className="table-header">Bill Amount</th>
@@ -2317,7 +2328,7 @@ const handleMultiSelect = async (event) => {
                                         setWithdrawalsTableData(updatedCurrencyData);
                                         updatedChargeCodeError[index] = {
                                           ...updatedChargeCodeError[index],
-                                          chargeCode:''
+                                          chargeCode: ''
                                         }
                                         setWithdrawalsTableErrors(updatedChargeCodeError);
                                       }}
@@ -2334,7 +2345,7 @@ const handleMultiSelect = async (event) => {
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                         {withdrawalsTableErrors[index].chargeCode}
                                       </div>
-                                    )}  
+                                    )}
                                   </td>
                                   <td className="border px-2 py-2">
                                     <input
@@ -2370,10 +2381,10 @@ const handleMultiSelect = async (event) => {
                                       value={row.qty}
                                       disabled={formData.status === 'TAX'}
                                       style={{ width: '100px' }}
-                                      
+
                                       onChange={(e) => handleTableInputChange(index, 'qty', e.target.value)}
                                       className={withdrawalsTableErrors[index]?.qty ? 'error form-control' : 'form-control'}
-                                    
+
                                     />
                                     {withdrawalsTableErrors[index]?.qty && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>

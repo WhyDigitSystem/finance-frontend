@@ -41,6 +41,7 @@ const IrnCreditNote = ({ selectedRow }) => {
 
   const theme = useTheme();
   const anchorRef = useRef(null);
+  const [listViewRoute, setlistViewRoute] = useState(true);
   const [editId, setEditId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [listView, setListView] = useState(false);
@@ -61,8 +62,12 @@ const IrnCreditNote = ({ selectedRow }) => {
   const [downloadPdf, setDownloadPdf] = useState(false);
   const [pdfData, setPdfData] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
+
+  const selectedRowCalledRef = useRef(false);
   useEffect(() => {
-    if (selectedRow) {
+    if (selectedRow && !selectedRowCalledRef.current) {
+      selectedRowCalledRef.current = true;
+      setlistViewRoute(false);
       getIrnCreditById({ original: selectedRow });
     }
   }, [selectedRow]);
@@ -831,7 +836,7 @@ const IrnCreditNote = ({ selectedRow }) => {
     getAllPartyTypeByOrgId();
     getAllCurrency();
     getAllIrnCredit();
-  }, []);
+  }, [listViewRoute]);
 
   const getIrnCreditNoteDocId = async () => {
     try {
