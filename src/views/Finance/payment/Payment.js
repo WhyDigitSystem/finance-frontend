@@ -1,6 +1,6 @@
 import FormControl from '@mui/material/FormControl';
 import TextField from '@mui/material/TextField';
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -42,7 +42,6 @@ function PaperComponent(props) {
 const Payment = ({ selectedRow }) => {
   const [value, setValue] = useState('1');
   const [showForm, setShowForm] = useState(true);
-  const [listViewRoute, setlistViewRoute] = useState(true);
   const [data, setData] = useState([]);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
   const [validationErrors, setValidationErrors] = useState({});
@@ -66,19 +65,11 @@ const Payment = ({ selectedRow }) => {
   const handleChangeTab = (event, newValue) => {
     setValue(newValue);
   };
-useEffect(() => {
-  if (selectedRow?.id) {
-    console.log("Triggering getPaymentById with ID:", selectedRow.id);
-    setlistViewRoute(false);
-    getPaymentById({ original: selectedRow });
-  }
-}, [selectedRow?.id]);
-
-  // useEffect(() => {
-  //   if (selectedRow) {
-  //     getPaymentById({ original: selectedRow });
-  //   }
-  // }, [selectedRow]);
+  useEffect(() => {
+    if (selectedRow) {
+      getPaymentById({ original: selectedRow });
+    }
+  }, [selectedRow]);
   const [formData, setFormData] = useState({
     paymentType: 'BANK PAYMENT',
     partyName: '',
@@ -152,7 +143,7 @@ useEffect(() => {
     getPaymentDocId();
     getPartName();
     bankList();
-  }, [listViewRoute]);
+  }, []);
 
   useEffect(() => {
     if (partyName.length === 1) {
@@ -745,7 +736,7 @@ useEffect(() => {
           {/*  */}
           <div className="row d-flex align-items-center">
             <div className="col d-flex justify-content-start align-items-center">
-              {editId && showForm && (listViewData?.status === 'SUBMIT' || formData.status === 'SUBMIT') && (
+              {editId && showForm && (listViewData.status === 'SUBMIT' || formData.status === 'SUBMIT') && (
                 <>
                   {formData.approveStatus === 'Approved' && (
                     <Stack direction="row" spacing={2}>
@@ -760,7 +751,7 @@ useEffect(() => {
                     </Stack>
                   )}
 
-                  {(listViewData?.status === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected') && (
+                  {listViewData.status === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
                     <div className="d-flex align-items-center">
                       <Button
                         variant="outlined"
@@ -837,7 +828,7 @@ useEffect(() => {
               <div className="d-flex flex-wrap justify-content-end ">
                 {showForm && <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />}
                 {showForm && <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />}
-                {listViewData?.approveStatus === 'Approved' || !showForm ? (
+                {listViewData.approveStatus === 'Approved' || !showForm ? (
                   ''
                 ) : (
                   <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
@@ -933,7 +924,8 @@ useEffect(() => {
                       labelId="demo-simple-select-label"
                       id="demo-simple-select"
                       label="Reg State"
-                      value={formData.gstState || (gstState.length === 1 ? gstState[0].gstState : '')}
+                      // value={formData.gstState || (gstState.length === 1 ? gstState[0].gstState : '')}
+                      value={formData.gstState || gstState.length === 1}
                       onChange={handleSelectGst}
                       disabled={formData.status === 'SUBMIT'}
                       error={!!formDataErrors.gstState}
@@ -1003,6 +995,7 @@ useEffect(() => {
                       inputProps={{ maxLength: 30 }}
                       error={!!formDataErrors.tdsAmt}
                       helperText={formDataErrors.tdsAmt}
+                      InputLabelProps={{ shrink: true }}
                     />
                   </FormControl>
                 </div>
@@ -1071,7 +1064,7 @@ useEffect(() => {
                       }}
                     >
                       {editId && <MenuItem value="SUBMIT">SUBMIT</MenuItem>}
-                      <MenuItem value="EDIT">DRAFT</MenuItem>
+                      <MenuItem value="EDIT">EDIT</MenuItem>
                     </Select>
                     {formDataErrors.status && <FormHelperText>{formDataErrors.status}</FormHelperText>}
                   </FormControl>
@@ -1557,21 +1550,38 @@ useEffect(() => {
                                               <input
                                                 type="text"
                                                 value={row.settled}
-                                                // disabled={editId}
-                                                disabled={formData.status === 'SUBMIT'}
+                                                disabled={formData.status === 'SUBMIT' || !formData.paymentAmt}
                                                 style={{ width: '100px' }}
                                                 onChange={(e) => {
                                                   const value = e.target.value;
                                                   const numericRegex = /^[0-9.]*$/;
+
                                                   if (numericRegex.test(value)) {
-                                                    setWithdrawalsTableData((prev) =>
-                                                      prev.map((r) => (r.id === row.id ? { ...r, settled: value } : r))
+                                                    const settledValue = parseFloat(value || '0');
+                                                    const paymentValue = parseFloat(formData.paymentAmt || '0');
+
+                                                    const updatedData = withdrawalsTableData.map((r) =>
+                                                      r.id === row.id ? { ...r, settled: value } : r
                                                     );
+                                                    setWithdrawalsTableData(updatedData);
+
+                                                    const totalSettled = updatedData.reduce((sum, r) => {
+                                                      const val = parseFloat(r.settled);
+                                                      return sum + (isNaN(val) ? 0 : val);
+                                                    }, 0);
+
+                                                    let errorMessage = '';
+                                                    if (!value) {
+                                                      errorMessage = 'Settled is required';
+                                                    } else if (totalSettled > paymentValue) {
+                                                      errorMessage = `Settled amount can't exceed payment amount`;
+                                                    }
+
                                                     setWithdrawalsTableErrors((prev) => {
                                                       const newErrors = [...prev];
                                                       newErrors[index] = {
                                                         ...newErrors[index],
-                                                        settled: !value ? 'Settled is required' : ''
+                                                        settled: errorMessage
                                                       };
                                                       return newErrors;
                                                     });
