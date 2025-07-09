@@ -499,6 +499,10 @@ export const JobCard = () => {
         closedOn: checked ? dayjs().format('YYYY-MM-DD HH:mm:ss') : null
       })
     }));
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: '' // Clear any existing error for the field being changed
+    }));
   };
 
   // Date change handler for DatePicker

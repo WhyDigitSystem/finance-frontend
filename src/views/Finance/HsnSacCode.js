@@ -13,6 +13,7 @@ import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import CommonListViewTable from '../../views/basicMaster/CommonListViewTable';
+import FormHelperText from '@mui/material/FormHelperText';
 
 const HsnSacCode = () => {
   const [formData, setFormData] = useState({
@@ -112,6 +113,10 @@ const HsnSacCode = () => {
       ...prevFormData,
       [name]: inputValue
     }));
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: ''
+    }));
   };
 
   const handleCheckboxChange = (event) => {
@@ -207,27 +212,30 @@ const HsnSacCode = () => {
         {showForm ? (
           <div className="row d-flex align-items-center">
             <div className="col-md-3 mb-3">
-              <FormControl fullWidth size="small">
+              <FormControl fullWidth size="small" error={!!fieldErrors.type}>
                 <InputLabel id="demo-simple-select-label" required>
                   Type
                 </InputLabel>
                 <Select
                   labelId="statusLabel"
                   value={formData.type}
-                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, type: e.target.value });
+                    setFieldErrors({ ...fieldErrors, type: '' });
+                  }}
                   label={
                     <span>
                       Type <span className="asterisk">*</span>
                     </span>
                   }
                   required
-                  error={!!fieldErrors.type}
-                  helperText={fieldErrors.type}
+                  // helperText={fieldErrors.type}
                   // disabled={formData.type === 'TAX' || !editId}
                 >
                   <MenuItem value="HSN">HSN</MenuItem>
                   <MenuItem value="SAC">SAC</MenuItem>
                 </Select>
+                <FormHelperText>{fieldErrors.type}</FormHelperText>
               </FormControl>
             </div>
             <div className="col-md-3 mb-3">

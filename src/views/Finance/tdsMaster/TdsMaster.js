@@ -31,6 +31,7 @@ const TdsMaster = () => {
     sectionName: ''
   });
   const [validationErrors, setValidationErrors] = useState({});
+
   const [isLoading, setIsLoading] = useState(false);
   const [editMode, setEditMode] = useState(false);
 
@@ -47,7 +48,11 @@ const TdsMaster = () => {
       [id]: type === 'checkbox' ? checked : value.toUpperCase()
     }));
 
-    setValidationErrors({ ...validationErrors, [name]: '' });
+    // setValidationErrors({ ...validationErrors, [name]: '' });
+    setValidationErrors((prev) => ({
+      ...prev,
+      [name]: ''
+    }));
   };
 
   const [tdsTableData, setTdsTableData] = useState([
@@ -323,6 +328,7 @@ const TdsMaster = () => {
                     id="sectionName"
                     label="Section Name"
                     size="small"
+                    name="sectionName"
                     value={formValues.sectionName}
                     onChange={handleInputChange}
                     inputProps={{ maxLength: 100 }}

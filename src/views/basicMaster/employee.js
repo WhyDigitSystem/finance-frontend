@@ -200,6 +200,7 @@ export const Employee = () => {
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date).format('YYYY-MM-DD');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+    setFieldErrors((prevErrors) => ({ ...prevErrors, [field]: '' }));
   };
 
   const maxDate = dayjs().subtract(18, 'years');

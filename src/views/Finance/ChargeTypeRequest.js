@@ -124,6 +124,7 @@ export const ChargeTypeRequest = () => {
     } else {
       setFormData({ ...formData, [name]: newValue });
     }
+    setFieldErrors({ ...fieldErrors, [name]: '' });
   };
 
   useEffect(() => {
@@ -458,10 +459,10 @@ export const ChargeTypeRequest = () => {
       errors.serviceAccountCode = 'Service Account Code is required';
       hasError = true;
     }
-    if (!formData.sacDescripition) {
-      errors.sacDescripition = 'Sac Desc is required';
-      hasError = true;
-    }
+    // if (!formData.sacDescripition) {
+    //   errors.sacDescripition = 'Sac Desc is required';
+    //   hasError = true;
+    // }
     if (!formData.salesAccount) {
       errors.salesAccount = 'Sales Account is required';
       hasError = true;

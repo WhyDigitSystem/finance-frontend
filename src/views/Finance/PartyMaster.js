@@ -3154,6 +3154,9 @@ export const PartyMaster = () => {
                                         const updatedPartyAddressData = [...partyAddressData];
                                         updatedPartyAddressData[index].state = e.target.value;
                                         setPartyAddressData(updatedPartyAddressData);
+                                        const updatedErrors = [...partyAddressDataErrors];
+                                        updatedErrors[index].state = '';
+                                        setPartyAddressDataErrors(updatedErrors);
                                         getAllCities(e.target.value);
                                       }}
                                       className={partyAddressDataErrors[index]?.state ? 'error form-control' : 'form-control'}
@@ -3180,6 +3183,9 @@ export const PartyMaster = () => {
                                         const updatedPartyAddressData = [...partyAddressData];
                                         updatedPartyAddressData[index].city = e.target.value;
                                         setPartyAddressData(updatedPartyAddressData);
+                                        const updatedErrors = [...partyAddressDataErrors];
+                                        updatedErrors[index].city = '';
+                                        setPartyAddressDataErrors(updatedErrors);
                                       }}
                                       className={partyAddressDataErrors[index]?.city ? 'error form-control' : 'form-control'}
                                     >

@@ -555,7 +555,7 @@ const Group = () => {
         {showForm ? (
           <div className="row d-flex ">
             <div className="col-md-3 mb-3">
-              <FormControl fullWidth size="small">
+              <FormControl fullWidth size="small" error={!!fieldErrors.type}>
                 <InputLabel id="demo-simple-select-label">Type</InputLabel>
                 <Select
                   labelId="demo-simple-select-label"
@@ -616,7 +616,7 @@ const Group = () => {
             {/* GST Type - Conditional Rendering */}
             {formData.gstTaxFlag !== 'NA' && (
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small">
+                <FormControl fullWidth size="small" error={!!fieldErrors.gstType}>
                   <InputLabel id="gstType">TAX Type</InputLabel>
                   <Select
                     labelId="gstType"
@@ -645,6 +645,7 @@ const Group = () => {
                     onChange={handleInputChange}
                     name="gstPercentage"
                     value={formData.gstPercentage}
+                    error={!!fieldErrors.gstPercentage}
                   />
                   {fieldErrors.gstPercentage && <FormHelperText style={{ color: 'red' }}>{fieldErrors.gstPercentage}</FormHelperText>}
                 </FormControl>
@@ -822,10 +823,7 @@ const Group = () => {
           </div>
         ) : (
           // <CommonTable columns={columns} data={data} blockEdit={true} toEdit={getGruopById} />
-          <CoaTreeView
-            toEdit={getGruopById}
-            onAddGroup={getGroupName}
-          />
+          <CoaTreeView toEdit={getGruopById} onAddGroup={getGroupName} />
         )}
       </div>
     </>

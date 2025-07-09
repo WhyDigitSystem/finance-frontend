@@ -499,8 +499,8 @@ export const Customer = () => {
         errorMessage = 'Exceeded Maximum Length (50)';
       }
     }
-    if (name === "country") {
-      getAllStates(value); 
+    if (name === 'country') {
+      getAllStates(value);
     }
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
@@ -1324,24 +1324,18 @@ export const Customer = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-  <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.country}>
-    <InputLabel id="country-label">Country</InputLabel>
-    <Select
-      labelId="country-label"
-      label="Country"
-      value={formData.country}
-      onChange={handleInputChange}
-      name="country"
-    >
-      {countryList?.map((row) => (
-        <MenuItem key={row.id} value={row.countryName}>
-          {row.countryName}
-        </MenuItem>
-      ))}
-    </Select>
-    {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
-  </FormControl>
-</div>
+                <FormControl variant="outlined" size="small" fullWidth error={!!fieldErrors.country}>
+                  <InputLabel id="country-label">Country</InputLabel>
+                  <Select labelId="country-label" label="Country" value={formData.country} onChange={handleInputChange} name="country">
+                    {countryList?.map((row) => (
+                      <MenuItem key={row.id} value={row.countryName}>
+                        {row.countryName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.country && <FormHelperText>{fieldErrors.country}</FormHelperText>}
+                </FormControl>
+              </div>
             </div>
 
             <div className="row mt-2">
@@ -1674,6 +1668,11 @@ export const Customer = () => {
                                         updatedPartyAddressData[index].state = e.target.value;
                                         updatedPartyAddressData[index].city = '';
                                         setPartyAddressData(updatedPartyAddressData);
+                                        setPartyAddressDataErrors((prev) => {
+                                          const updatedErrors = [...prev];
+                                          updatedErrors[index] = { ...updatedErrors[index], state: '' };
+                                          return updatedErrors;
+                                        });
                                         getAllCities(e.target.value, row.id);
                                       }}
                                       className={partyAddressDataErrors[index]?.state ? 'error form-control' : 'form-control'}

@@ -38,7 +38,6 @@ import CommonListViewTable from '../../basicMaster/CommonListViewTable';
 
 const IrnCreditNote = ({ selectedRow }) => {
   const [tabIndex, setTabIndex] = useState(0);
-
   const theme = useTheme();
   const anchorRef = useRef(null);
   const [listViewRoute, setlistViewRoute] = useState(true);
@@ -802,6 +801,19 @@ const IrnCreditNote = ({ selectedRow }) => {
       }
       console.log('orgin bill ', formData.originBillDate, 'docDate', selectedBill.docDate);
     }
+    setFieldErrors((prevErrors) => ({
+      ...prevErrors,
+      originBillNo: '',
+      originBillDate: '',
+      stateCode: '',
+      stateNo: '',
+      recipientGSTIN: '',
+      placeOfSupply: '',
+      addressType: '',
+      address: '',
+      pinCode: '',
+      gstType: ''
+    }));
   };
 
   const getAllPartyTypeByOrgId = async () => {
@@ -1261,7 +1273,7 @@ const IrnCreditNote = ({ selectedRow }) => {
     { accessorKey: 'docId', header: 'Doc No', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 },
     { accessorKey: 'status', header: 'Status', size: 140 },
-    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 },
+    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 }
     // { accessorKey: 'partyCode', header: 'Party Code', size: 140 },
     // { accessorKey: 'partyType', header: 'Party Type', size: 140 },
     // { accessorKey: 'voucherNo', header: 'Voucher No', size: 140 },
@@ -1289,11 +1301,13 @@ const IrnCreditNote = ({ selectedRow }) => {
     const totalChargeAmountBc = rows.reduce((sum, row) => sum + (parseFloat(row.billAmount) || 0), 0);
     // const totalTaxAmountBc = rows.reduce((sum, row) => sum + (parseFloat(row.gstAmount) || 0), 0);
     const totalTaxAmountBc = parseFloat(
-      rows.reduce((sum, row) => {
-        const exRate = parseFloat(row.exRate || 0);
-        const gst = parseFloat(row.gstAmount || 0);
-        return sum + (exRate !== 0 ? gst / exRate : 0);
-      }, 0).toFixed(2)
+      rows
+        .reduce((sum, row) => {
+          const exRate = parseFloat(row.exRate || 0);
+          const gst = parseFloat(row.gstAmount || 0);
+          return sum + (exRate !== 0 ? gst / exRate : 0);
+        }, 0)
+        .toFixed(2)
     );
     const totalInvAmountBc = totalChargeAmountBc + totalTaxAmountBc;
     const totalTaxableAmountLc = 0;
@@ -1532,8 +1546,8 @@ const IrnCreditNote = ({ selectedRow }) => {
                     '&:hover': {
                       borderColor: '#1565c0',
                       backgroundColor: '#bbdefb',
-                      color: '#1565c0',
-                    },
+                      color: '#1565c0'
+                    }
                   }}
                   onClick={handleView}
                 >
@@ -1541,10 +1555,16 @@ const IrnCreditNote = ({ selectedRow }) => {
                 </Button>
               )}
 
-              {!listView && (<ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />)}
-              {!listView && (<ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />)}
-              {listViewById.approveStatus === 'Approved' || listView ? '' : <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />}
-              {(listViewById.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (<ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />)}
+              {!listView && <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />}
+              {!listView && <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />}
+              {listViewById.approveStatus === 'Approved' || listView ? (
+                ''
+              ) : (
+                <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+              )}
+              {(listViewById.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (
+                <ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />
+              )}
             </div>
           </div>
         </div>
@@ -1555,10 +1575,9 @@ const IrnCreditNote = ({ selectedRow }) => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getIrnCreditById}
-            // isPdf={true}
-            // GeneratePdf={GeneratePdf}
+              // isPdf={true}
+              // GeneratePdf={GeneratePdf}
             />
-
           </div>
         ) : (
           <>
@@ -1658,14 +1677,7 @@ const IrnCreditNote = ({ selectedRow }) => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
-                  <TextField
-                    id="partyCode"
-                    name="partyCode"
-                    label="Party Code"
-                    size="small"
-                    value={formData.partyCode}
-                    disabled
-                  />
+                  <TextField id="partyCode" name="partyCode" label="Party Code" size="small" value={formData.partyCode} disabled />
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
@@ -1675,11 +1687,7 @@ const IrnCreditNote = ({ selectedRow }) => {
                   disabled={formData.status === 'TAX'}
                   sx={{ width: '100%' }}
                   size="small"
-                  value={
-                    formData.originBillNo
-                      ? originBillList.find((c) => c.docId === formData.originBillNo) || null
-                      : null
-                  }
+                  value={formData.originBillNo ? originBillList.find((c) => c.docId === formData.originBillNo) || null : null}
                   onChange={(event, value) => {
                     handleOriginBillSelection(value);
                     setFormData((prev) => ({
@@ -1741,7 +1749,7 @@ const IrnCreditNote = ({ selectedRow }) => {
                     value={formData.vid}
                     onChange={(e) => setFormData({ ...formData, vid: e.target.value })}
                     error={!!fieldErrors.vid}
-                  // helperText={fieldErrors.pincode}
+                    // helperText={fieldErrors.pincode}
                   />
                 </FormControl>
               </div>
@@ -3107,8 +3115,8 @@ const IrnCreditNote = ({ selectedRow }) => {
                               value={formData.totalTaxableAmountLc}
                               onChange={handleInputChange}
                               inputProps={{ maxLength: 30 }}
-                            // error={!!fieldErrors.netLCAmt}
-                            // helperText={fieldErrors.netLCAmt}
+                              // error={!!fieldErrors.netLCAmt}
+                              // helperText={fieldErrors.netLCAmt}
                             />
                           </FormControl>
                         </div>
