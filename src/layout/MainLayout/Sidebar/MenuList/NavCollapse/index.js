@@ -24,26 +24,32 @@ const NavCollapse = ({ menu, level }) => {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState(null);
 
+  // const handleClick = () => {
+  //   setOpen(!open);
+  //   setSelected(!selected ? menu.id : null);
+  //   if (
+  //     // menu?.id !== 'authentication' &&
+  //     // menu?.id !== 'icons' &&
+  //     // menu?.id !== 'rolesAndResponsibilities' &&
+  //     menu?.id !== 'companySetup' &&
+  //     menu?.id !== 'rolesAndResponsibilities' &&
+  //     menu?.id !== 'basicMasters' &&
+  //     menu?.id !== 'finance' &&
+  //     menu?.id !== 'transaction' &&
+  //     menu?.id !== 'ar' &&
+  //     menu?.id !== 'ap' &&
+  //     menu?.id !== 'report' &&
+  //     menu.id !== 'userManagement'
+  //   ) {
+  //     navigate(menu.children[0]?.url);
+  //   }
+  // };
+
   const handleClick = () => {
-    setOpen(!open);
-    setSelected(!selected ? menu.id : null);
-    if (
-      // menu?.id !== 'authentication' &&
-      // menu?.id !== 'icons' &&
-      // menu?.id !== 'rolesAndResponsibilities' &&
-      menu?.id !== 'companySetup' &&
-      menu?.id !== 'rolesAndResponsibilities' &&
-      menu?.id !== 'basicMasters' &&
-      menu?.id !== 'finance' &&
-      menu?.id !== 'transaction' &&
-      menu?.id !== 'ar' &&
-      menu?.id !== 'ap' &&
-      menu?.id !== 'report' &&
-      menu.id !== 'userManagement'
-    ) {
-      navigate(menu.children[0]?.url);
-    }
+    setOpen((prev) => !prev);
+    setSelected((prevSelected) => (prevSelected !== menu.id ? menu.id : null));
   };
+
 
   const { pathname } = useLocation();
   const checkOpenForParent = (child, id) => {

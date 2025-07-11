@@ -5,7 +5,7 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import ArAging from 'views/Finance/taxInvoice/ArAging';
 import ArOutstanding from 'views/Finance/taxInvoice/ArOutstanding';
-const CostEstimate  = Loadable(lazy(() => import('views/Finance/CostEstimate')));
+const CostEstimate = Loadable(lazy(() => import('views/Finance/CostEstimate')));
 const PendingRegister = Loadable(lazy(() => import('views/Finance/FinalReport/PendingRegister')));
 const CostReport = Loadable(lazy(() => import('views/Finance/FinalReport/CostReport')));
 const SalesReport = Loadable(lazy(() => import('views/Finance/FinalReport/SalesReport')));
@@ -79,6 +79,7 @@ const FinYear = Loadable(lazy(() => import('views/basicMaster/finYear')));
 const Roles = Loadable(lazy(() => import('views/basicMaster/roles')));
 const ScreenNames = Loadable(lazy(() => import('views/basicMaster/ScreenNames')));
 const Employee = Loadable(lazy(() => import('views/basicMaster/employee')));
+const ScreenAccess = Loadable(lazy(() => import('views/ScreenAccess/ScreenAccess')));
 const ChargeTypeRequest = Loadable(lazy(() => import('views/Finance/ChargeTypeRequest')));
 const JobCard = Loadable(lazy(() => import('views/Finance/JobCard')));
 const ProductService = Loadable(lazy(() => import('views/Finance/ProductService')));
@@ -345,6 +346,10 @@ const FinanceRoute = {
       element: <Employee />
     },
     {
+      path: '/basicMaster/ScreenAccess',
+      element: <ScreenAccess />
+    },
+    {
       path: '/Finance/ChargeTypeRequest',
       element: <ChargeTypeRequest />
     },
@@ -353,7 +358,7 @@ const FinanceRoute = {
       element: <TaxInvoiceDetail />
     },
     {
-      path: '/Finance/taxInvoice/TaxRegister',
+      path: '/Finance/taxInvoice/SalesRegister',
       element: <TaxRegister />
     },
     {

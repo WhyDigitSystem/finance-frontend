@@ -70,9 +70,9 @@ const ScreenAccess = () => {
       const initialPermissions = screensData.map((screen) => ({
         module: screen.screenName,
         screenCode: screen.screenCode,
-        read: false,
-        write: false,
-        delete: false
+        canRead: false,
+        canWrite: false,
+        canDelete: false
       }));
       setPermissions(initialPermissions);
       setFilteredPermissions(initialPermissions);
@@ -90,24 +90,11 @@ const ScreenAccess = () => {
     }
   };
 
-  const handleRoleChange = (event) => {
-    const selectedRole = event.target.value;
-    setRole(selectedRole);
-    setLoading(true);
-
-    setTimeout(() => {
-      const setTo = selectedRole.toLowerCase() === 'admin';
-      const updatedPermissions = permissions.map((item) => ({
-        ...item,
-        read: setTo,
-        write: setTo,
-        delete: setTo
-      }));
-      setPermissions(updatedPermissions);
-      setFilteredPermissions(filterPermissions(updatedPermissions, searchText));
-      setLoading(false);
-    }, 300);
-  };
+ const handleRoleChange = (event) => {
+  const selectedRole = event.target.value;
+  setRole(selectedRole);
+  setLoading(true);
+};
 
   const handleCheckboxChange = (screenCode, type) => {
     const updatedPermissions = permissions.map((item) => (item.screenCode === screenCode ? { ...item, [type]: !item[type] } : item));
@@ -141,9 +128,9 @@ const ScreenAccess = () => {
       ...(editId && { id: editId }),
       role: role,
       rolesPermissionDTO: permissions.map((item) => ({
-        canDelete: item.delete,
-        canRead: item.read,
-        canWrite: item.write,
+        canDelete: item.canDelete,
+        canRead: item.canRead,
+        canWrite: item.canWrite,
         screenId: item.screenCode,
         screenName: item.module
       }))
@@ -164,59 +151,74 @@ const ScreenAccess = () => {
     }
   };
 
-  const getScreenAccess = async () => {
-    try {
-      const response = await apiCalls('get', `auth/getRolesPermissionHeaderByRoleandOrgid?orgid=${orgId}&role=${role}`);
-      console.log('API Response:', response);
+ const getScreenAccess = async () => {
+  try {
+    setLoading(true);
+    const response = await apiCalls('get', `auth/getRolesPermissionHeaderByRoleandOrgid?orgid=${orgId}&role=${role}`);
+    
+    const userList = response?.paramObjectsMap?.userVO;
+    let apiPermissions = [];
 
-      const userList = response?.paramObjectsMap?.userVO;
+    if (Array.isArray(userList) && userList.length > 0) {
+      const user = userList[0];
+      setEditId(user.id);
 
-      console.log('userList', userList);
+      const permissionList = user.rolesPermissionVO || [];
+      
+      // Create a map of permissions by screenCode
+      const permissionMap = new Map();
+      permissionList.forEach(perm => {
+        permissionMap.set(perm.screenId, {
+          canRead: !!perm.canRead,
+          canWrite: !!perm.canWrite,
+          canDelete: !!perm.canDelete
+        });
+      });
 
-      if (Array.isArray(userList) && userList.length > 0) {
-        const user = userList[0];
-
-        setEditId(user.id);
-
-        console.log('Test', user.id);
-
-        const permissionList = user.rolesPermissionVO;
-
-        if (Array.isArray(permissionList) && permissionList.length > 0) {
-          const mappedPermissions = permissionList.map((item) => ({
-            screenCode: item.screenId,
-            module: item.screenName,
-            read: !!item.canRead,
-            write: !!item.canWrite,
-            delete: !!item.canDelete
-          }));
-
-          setPermissions(mappedPermissions);
-          setFilteredPermissions(filterPermissions(mappedPermissions, searchText));
-
-          console.log('Mapped Permissions:', mappedPermissions);
-
-          if (user.role) setRole(user.role);
-        } else {
-          console.warn('No rolesPermissionVO data found.');
-          setPermissions([]);
-        }
-      } else {
-        console.warn('No userVO data found.');
-        // setPermissions([]);
-      }
-    } catch (error) {
-      console.error('Error fetching permissions:', error);
+      // Merge API permissions with master screen list
+      apiPermissions = screenList.map(screen => {
+        const apiPerm = permissionMap.get(screen.screenCode);
+        return {
+          module: screen.screenName,
+          screenCode: screen.screenCode,
+          canRead: apiPerm ? apiPerm.canRead : false,
+          canWrite: apiPerm ? apiPerm.canWrite : false,
+          canDelete: apiPerm ? apiPerm.canDelete : false
+        };
+      });
+    } else {
+      // No API data - use default false values
+      apiPermissions = screenList.map(screen => ({
+        module: screen.screenName,
+        screenCode: screen.screenCode,
+        canRead: false,
+        canWrite: false,
+        canDelete: false
+      }));
+      setEditId('');
     }
-  };
+
+    setPermissions(apiPermissions);
+    setFilteredPermissions(filterPermissions(apiPermissions, searchText));
+  } catch (error) {
+    console.error('Error fetching permissions:', error);
+    setSnackbar({
+      open: true,
+      message: 'Failed to fetch permissions',
+      severity: 'error'
+    });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const confirmResetPermissions = () => setConfirmReset(true);
   const handleResetConfirm = () => {
     const resetPermissions = permissions.map((item) => ({
       ...item,
-      read: false,
-      write: false,
-      delete: false
+      canRead: false,
+      canWrite: false,
+      canDelete: false
     }));
     setPermissions(resetPermissions);
     setFilteredPermissions(filterPermissions(resetPermissions, searchText));
@@ -289,14 +291,14 @@ const ScreenAccess = () => {
                     <TableCell sx={{ py: 0.5, backgroundColor: '#e3f2fd' }}>
                       <strong>Screen Name</strong>
                     </TableCell>
-                    {['read', 'write', 'delete'].map((type) => (
+                    {['canRead', 'canWrite', 'canDelete'].map((type) => (
                       <TableCell key={type} align="center" sx={{ py: 0.5, backgroundColor: '#e3f2fd' }}>
                         <Checkbox
                           size="small"
                           checked={filteredPermissions.length > 0 && filteredPermissions.every((p) => p[type])}
                           onChange={() => handleSelectAll(type)}
                         />
-                        <strong>{type.charAt(0).toUpperCase() + type.slice(1)}</strong>
+                        <strong>{type.replace('can', '')}</strong>
                       </TableCell>
                     ))}
                   </TableRow>
@@ -305,11 +307,11 @@ const ScreenAccess = () => {
                   {filteredPermissions.map((item) => (
                     <TableRow key={item.screenCode} hover>
                       <TableCell sx={{ py: 0.3 }}>{item.module}</TableCell>
-                      {['read', 'write', 'delete'].map((type) => (
+                      {['canRead', 'canWrite', 'canDelete'].map((type) => (
                         <TableCell key={type} align="center" sx={{ py: 0.3 }}>
                           <Checkbox
                             size="small"
-                            color={type === 'read' ? 'primary' : type === 'write' ? 'success' : 'error'}
+                            color={type === 'canRead' ? 'primary' : type === 'canWrite' ? 'success' : 'error'}
                             checked={item[type]}
                             onChange={() => handleCheckboxChange(item.screenCode, type)}
                           />
@@ -359,7 +361,7 @@ const ScreenAccess = () => {
           <DialogContentText>Are you sure you want to reset all permissions to default (unchecked)?</DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => 
+          <Button onClick={() =>
             (false)} color="secondary">
             Cancel
           </Button>

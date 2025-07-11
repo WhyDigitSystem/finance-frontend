@@ -1,114 +1,123 @@
 // assets
 import { IconCopyright } from '@tabler/icons-react';
 
-// constant
+// constants
 const icons = {
   IconCopyright
 };
 
-// const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
+// Safe screen access
+const screenAccess = JSON.parse(localStorage.getItem('screenAccess') || '{}');
 
-// // Mapping of screen names (from localStorage) to menu item IDs
-// const screenMapping = {
-//   'PARTY LEDGER': 'partyLedger',
-//   'LEDGER REPORT': 'ledgerReport',
-//   'TRAIL BALANCE': 'trailBalance',
-//   'PROFIT': 'profit',
-//   'BALANCESHEET': 'balanceSheet'
-// };
+const hasScreenAccess = (screenId) => {
+  const access = screenAccess?.[screenId];
+  return access?.canRead || access?.canWrite || access?.canDelete;
+};
 
-// const allowedScreenIds = allowedScreens.map((screen) => screenMapping[screen]).filter(Boolean);
+// Child items with access check
+const reportChildren = [
+  {
+    id: 'partyLedger',
+    title: 'Party Ledger',
+    type: 'item',
+    url: '/finance/FinalReport/PartyLedger',
+    visible: hasScreenAccess('PL')
+  },
+  {
+    id: 'ledgerReport',
+    title: 'Ledger Report',
+    type: 'item',
+    url: '/finance/FinalReport/LedgerReport',
+    visible: hasScreenAccess('LR')
+  },
+  {
+    id: 'trailBalance',
+    title: 'Trail Balance',
+    type: 'item',
+    url: '/finance/FinalReport/TrailBalance',
+    visible: hasScreenAccess('TB')
+  },
+  {
+    id: 'profit',
+    title: 'Profit & Loss',
+    type: 'item',
+    url: '/finance/FinalReport/TrailBalance',
+    visible: hasScreenAccess('PF')
+  },
+  {
+    id: 'balanceSheet',
+    title: 'Balance Sheet',
+    type: 'item',
+    url: '/finance/FinalReport/TrailBalance',
+    visible: hasScreenAccess('BLS')
+  },
+  {
+    id: 'paymentRegister',
+    title: 'Payment Register',
+    type: 'item',
+    url: '/finance/FinalReport/PaymentReport',
+    visible: hasScreenAccess('PYR')
+  },
+  {
+    id: 'receiptRegister',
+    title: 'Receipt Register',
+    type: 'item',
+    url: '/finance/FinalReport/ReceiptReport',
+    visible: hasScreenAccess('RR')
+  },
+  {
+    id: 'salesReport',
+    title: 'Sales Report',
+    type: 'item',
+    url: '/finance/FinalReport/SalesReport',
+    visible: hasScreenAccess('SLR')
+  },
+  {
+    id: 'costReport',
+    title: 'Cost Report',
+    type: 'item',
+    url: '/finance/FinalReport/CostReport',
+    visible: hasScreenAccess('CSTR')
+  },
+  {
+    id: 'receiptReport',
+    title: 'Receipt Report',
+    type: 'item',
+    url: '/finance/FinalReport/receiptReportD&S',
+    visible: hasScreenAccess('RCR')
+  },
+  {
+    id: 'paymentReport',
+    title: 'Payment Report',
+    type: 'item',
+    url: '/finance/FinalReport/PaymentReportD&S',
+    visible: hasScreenAccess('PR')
+  },
+  {
+    id: 'pendingReport',
+    title: 'Pending Report',
+    type: 'item',
+    url: '/finance/FinalReport/PendingReport',
+    visible: hasScreenAccess('PENR')
+  }
+].filter((item) => item.visible !== false);
 
-// ==============================|| DASHBOARD MENU ITEMS ||============================== //
-
-const finalReport =  {
-  id: ' finalReport',
-  // title: 'Final Report',
-  //   caption: 'Pages Caption',
-  type: 'group',
-  children: [
-    {
-      id: 'report',
-      title: 'Reports',
-      type: 'collapse',
-      icon: icons.IconCopyright,
-      children: [
-        {
-          id: 'partyLedger',
-          title: 'Party Ledger',
-          type: 'item',
-          url: '/finance/FinalReport/PartyLedger'
-        },
-        {
-          id: 'ledgerReport',
-          title: 'Ledger Report',
-          type: 'item',
-          url: '/finance/FinalReport/LedgerReport'
-        },
-        {
-          id: 'trailBalance',
-          title: 'Trail Balance',
-          type: 'item',
-          url: '/finance/FinalReport/TrailBalance'
-        },
-        {
-          id: 'profit',
-          title: 'Profit & Loss',
-          type: 'item',
-          url: '/finance/FinalReport/TrailBalance'
-        },
-        {
-          id: 'balanceSheet',
-          title: 'Balance Sheet',
-          type: 'item',
-          url: '/finance/FinalReport/TrailBalance'
-        },
-        {
-          id: 'paymentRegister',
-          title: 'Payment Register',
-          type: 'item',
-          url: '/finance/FinalReport/PaymentReport'
-        },
-        {
-          id: 'receiptRegister',
-          title: 'Receipt Register',
-          type: 'item',
-          url: '/finance/FinalReport/ReceiptReport'
-        },
-        {
-          id: 'salesReport',
-          title: 'Sales Report',
-          type: 'item',
-          url: '/finance/FinalReport/SalesReport'
-        },
-        {
-          id: 'costReport',
-          title: 'Cost Report',
-          type: 'item',
-          url: '/finance/FinalReport/CostReport'
-        },
-        {
-          id: 'receiptReport',
-          title: 'Receipt Report',
-          type: 'item',
-          url: '/finance/FinalReport/receiptReportD&S'
-        },
-        {
-          id: 'paymentReport',
-          title: 'Payment Report',
-          type: 'item',
-          url: '/finance/FinalReport/PaymentReportD&S'
-        },
-        {
-          id: 'pendingReport',
-          title: 'Pending Report',
-          type: 'item',
-          url: '/finance/FinalReport/PendingReport'
-        },
-      ]
-      // .filter((item) => allowedScreenIds.includes(item.id))
-    }
-  ]
-} 
+// Export finalReport only if any child is visible
+const finalReport =
+  reportChildren.length > 0
+    ? {
+        id: 'finalReport',
+        type: 'group',
+        children: [
+          {
+            id: 'report',
+            title: 'Reports',
+            type: 'collapse',
+            icon: icons.IconCopyright,
+            children: reportChildren
+          }
+        ]
+      }
+    : null;
 
 export default finalReport;

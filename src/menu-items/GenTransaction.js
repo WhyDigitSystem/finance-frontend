@@ -1,176 +1,106 @@
 // assets
 import { IconRepeat } from '@tabler/icons-react';
-import { BuildCircleOutlined, CreditCardOutlined, MenuBookOutlined, ArticleOutlined, ReceiptLongOutlined } from '@mui/icons-material';
+import {
+  BuildCircleOutlined,
+  CreditCardOutlined,
+  MenuBookOutlined,
+  ArticleOutlined,
+  ReceiptLongOutlined
+} from '@mui/icons-material';
 
-// constant
-const icons = {
-  IconRepeat
-};
-const icons1 = {
-  BuildCircleOutlined
-};
-
+// constants
+const icons = { IconRepeat };
+const icons1 = { BuildCircleOutlined };
 const icons2 = { CreditCardOutlined };
 const icons3 = { MenuBookOutlined };
 const icons4 = { ArticleOutlined };
 const icons5 = { ReceiptLongOutlined };
 
-// const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
+// safely parse screen access
+const screenAccess = JSON.parse(localStorage.getItem('screenAccess') || '{}');
 
-// // Mapping of screen names (from localStorage) to menu item IDs
-// const screenMapping = {
-//   'EX RATES': 'daily',
-//   'CHART OF COST CENTER': 'chartOfCostCenter',
-//   'BRS OPENING': 'brsOpening',
-//   'FUND TRANSFER': 'fundTransfer',
-//   'GENERAL JOURNAL': 'generalJournal',
-//   'RECONCILE BANK': 'reconcile-bank',
-//   'RECONCILE CORP': 'reconcile-corp',
-//   'RECONCILE CASH': 'reconcile-cash',
-//   'PAYMENT VOUCHER': 'paymentVoucher',
-//   'ADJUSTMENT JOURNAL': 'adjustmentJournal',
-//   'JOB CARD': 'JobCard',
-//   'ARAP ADJUSTMENT OFFSET': 'AdjustmentOffset',
-//   'BANKING DEPOSIT': 'deposit',
-//   'BANKINGWITHDRAWAL': 'withdrawal',
-// };
+const hasScreenAccess = (screenId) => {
+  const access = screenAccess?.[screenId];
+  return access?.canRead || access?.canWrite || access?.canDelete;
+};
 
-// // Convert allowed screen names to corresponding menu item IDs
-// const allowedScreenIds = allowedScreens.map((screen) => screenMapping[screen]).filter(Boolean);
-
-// Define the transaction menu without filtering
+// Build transaction menu with visibility logic
 const transactionChildren = [
-  {
-    id: 'finance',
-    title: 'Operations',
-    type: 'collapse',
-    icon: icons1.BuildCircleOutlined,
-    children: [
+  ...(function () {
+    const operationChildren = [
       {
         id: 'JobCard',
         title: 'Card',
         type: 'item',
         url: '/finance/JobCard',
-        icon: icons2.CreditCardOutlined
+        icon: icons2.CreditCardOutlined,
+        visible: hasScreenAccess('JC')
       }
-    ]
-  },
-  {
-    id: 'finance',
-    title: 'GNA',
-    type: 'collapse',
-    // icon: icons7.IconLayoutDashboard,
-    icon: icons3.MenuBookOutlined,
-    children: [
+    ].filter((item) => item.visible !== false);
+
+    return operationChildren.length
+      ? [
+          {
+            id: 'operations',
+            title: 'Operations',
+            type: 'collapse',
+            icon: icons1.BuildCircleOutlined,
+            children: operationChildren
+          }
+        ]
+      : [];
+  })(),
+
+  ...(function () {
+    const gnaChildren = [
       {
         id: 'generalJournal',
         title: 'General Journal',
         type: 'item',
         url: '/finance/GeneralJournal/GeneralJournal',
-        icon: icons4.ArticleOutlined
+        icon: icons4.ArticleOutlined,
+        visible: hasScreenAccess('GJ')
       },
       {
         id: 'adjustmentJournal',
         title: 'Adjustment Journal',
         type: 'item',
         url: '/finance/AdjustmentJournal',
-        icon: icons5.ReceiptLongOutlined
+        icon: icons5.ReceiptLongOutlined,
+        visible: hasScreenAccess('AJ')
       }
-    ]
-  }
-  // {
-  //   id: 'finance',
-  //   title: 'Bank & Cash',
-  //   type: 'collapse',
-  //   // icon: icons8.IconBriefcase,
-  //   children: [
-  //     {
-  //       id: 'daily',
-  //       title: 'EX Rates',
-  //       type: 'item',
-  //       url: '/finance/daily/DailyRate'
-  //     },
-  //     {
-  //       id: 'chartOfCostCenter',
-  //       title: 'Cost center',
-  //       type: 'item',
-  //       url: '/finance/chartOfCostcenter/ChartOfCostcenter'
-  //     },
-  //     {
-  //       id: 'brsOpening',
-  //       title: 'BRS Opening',
-  //       type: 'item',
-  //       url: '/finance/BRSOpening'
-  //     },
-  //     {
-  //       id: 'reconcile-bank',
-  //       title: 'Reconcile Bank',
-  //       type: 'item',
-  //       url: '/finance/Reconcile/Reconcile'
-  //     },
-  //     {
-  //       id: 'reconcile-cash',
-  //       title: 'Reconcile Cash',
-  //       type: 'item',
-  //       url: '/finance/Reconcile/ReconcileCash'
-  //     },
-  //     {
-  //       id: 'paymentVoucher',
-  //       title: 'Payment Voucher',
-  //       type: 'item',
-  //       url: '/finance/paymentVoucher/paymentVoucher'
-  //     },
-  //     {
-  //       id: 'deposit',
-  //       title: 'Deposit',
-  //       type: 'item',
-  //       url: '/finance/Deposit'
-  //     },
-  //     {
-  //       id: 'withdrawal',
-  //       title: 'Withdrawal',
-  //       type: 'item',
-  //       url: '/finance/Withdrawal'
-  //     }
-  //   ]
-  // },
-  // {
-  //   id: 'finance',
-  //   title: 'Hidden',
-  //   type: 'collapse',
-  //   // icon: icons8.IconBriefcase,
-  //   children: [
-  //     {
-  //       id: 'fundTransfer',
-  //       title: 'Fund Transfer',
-  //       type: 'item',
-  //       url: '/finance/FundTransfer'
-  //     },
-  //     {
-  //       id: 'reconcile-corp',
-  //       title: 'Reconcile - FX',
-  //       type: 'item',
-  //       url: '/finance/Reconcile/ReconcileCorp'
-  //     }
-  //   ]
-  // }
-];
-// .filter((item) => allowedScreenIds.includes(item.id))
+    ].filter((item) => item.visible !== false);
 
-// Define the transaction menu
-const genTransaction = {
-  id: 'transaction',
-  // title: 'General Transaction',
-  type: 'group',
-  children: [
-    {
-      id: 'transaction',
-      title: 'Transaction',
-      type: 'collapse',
-      icon: icons.IconRepeat,
-      children: transactionChildren
-    }
-  ]
-};
+    return gnaChildren.length
+      ? [
+          {
+            id: 'gna',
+            title: 'GNA',
+            type: 'collapse',
+            icon: icons3.MenuBookOutlined,
+            children: gnaChildren
+          }
+        ]
+      : [];
+  })()
+];
+
+// Define the transaction menu object
+const genTransaction =
+  transactionChildren.length > 0
+    ? {
+        id: 'transaction',
+        type: 'group',
+        children: [
+          {
+            id: 'transaction',
+            title: 'Transaction',
+            type: 'collapse',
+            icon: icons.IconRepeat,
+            children: transactionChildren
+          }
+        ]
+      }
+    : null; // return null if no children visible
 
 export default genTransaction;

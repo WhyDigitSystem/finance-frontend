@@ -1,5 +1,4 @@
 // assets
-import { IconKey } from '@tabler/icons-react';
 import { IconFileDollar } from '@tabler/icons-react';
 import {
   RequestQuoteOutlined,
@@ -11,7 +10,7 @@ import {
   TimelapseOutlined
 } from '@mui/icons-material';
 
-// constant
+// constants
 const icons = {
   IconFileDollar
 };
@@ -37,117 +36,107 @@ const icons7 = {
   TimelapseOutlined
 };
 
-// const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
+// get screen access safely
+const screenAccess = JSON.parse(localStorage.getItem('screenAccess'));
 
-// // Mapping of screen names (from localStorage) to menu item IDs
-// const screenMapping = {
-//   'TAX INVOICE': 'taxInvoiceDetail',
-//   'IRN CREDIT NOTE': 'creditNoteDetail',
-//   'TAX REGISTER': 'taxRegister',
-//   'RECEIPT': 'receipt',
-//   'AR ADJUSTMENT OFFSET': 'adjustmentOffset',
-//   'CUSTOMER LEDGER': 'customerLedger',
-//   'ADJUSTMENT JOURNAL': 'adjustmentJournal',
-//   'AR OUTSTANDING': 'Outstanding'
-// };
+const hasScreenAccess = (screenId) => {
+  const access = screenAccess?.[screenId];
+  return access?.canRead || access?.canWrite || access?.canDelete;
+};
 
-// // Convert allowed screen names to corresponding menu item IDs
-// const allowedScreenIds = allowedScreens.map((screen) => screenMapping[screen]).filter(Boolean);
+// Define AR items
+const arChildren = [
+  // {
+  //   id: 'arBill',
+  //   title: 'AR Bill Balance',
+  //   type: 'item',
+  //   url: '/finance/receipt/ArBillBalance'
+  // },
+  // {
+  //   id: 'receipt',
+  //   title: 'Receipt',
+  //   type: 'item',
+  //   url: '/finance/receipt/Receipt'
+  // },
+  // {
+  //   id: 'receiptRegister',
+  //   title: 'Receipt Register',
+  //   type: 'item',
+  //   url: '/finance/receiptRegister/ReceiptRegister'
+  // }
+  {
+    id: 'taxInvoiceDetail',
+    title: 'Tax Invoice',
+    type: 'item',
+    url: '/finance/taxInvoice/taxInvoiceDetail',
+    icon: icons1.RequestQuoteOutlined,
+    visible: hasScreenAccess('TI')
+  },
+  {
+    id: 'creditNoteDetail',
+    title: 'Credit Note',
+    type: 'item',
+    url: '/finance/creditNote/creditNoteDetail',
+    icon: icons2.CreditScoreOutlined,
+    visible: hasScreenAccess('ICN')
+  },
+  {
+    id: 'taxRegister',
+    title: 'Sales Register',
+    type: 'item',
+    url: '/finance/taxInvoice/SalesRegister',
+    icon: icons3.AssignmentOutlined,
+    visible: hasScreenAccess('SR')
+  },
+  {
+    id: 'receipt',
+    title: 'Receipt',
+    type: 'item',
+    url: '/finance/receipt/Receipt',
+    icon: icons4.ReceiptLongOutlined,
+    visible: hasScreenAccess('RT')
+  },
+  {
+    id: 'adjustmentOffset',
+    title: 'AR Offset',
+    type: 'item',
+    url: '/finance/AR-adjustment',
+    icon: icons5.SyncAltOutlined,
+    visible: hasScreenAccess('ARA')
+  },
+  {
+    id: 'Outstanding',
+    title: 'AR Outstanding',
+    type: 'item',
+    url: '/finance/AR-outstanding',
+    icon: icons6.PendingActionsOutlined,
+    visible: hasScreenAccess('ARO')
+  },
+  {
+    id: 'aging',
+    title: 'AR Ageing',
+    type: 'item',
+    url: '/finance/AR-aging',
+    icon: icons7.TimelapseOutlined,
+    visible: hasScreenAccess('ARAG')
+  }
+].filter((item) => item.visible !== false);
 
-// ==============================|| DASHBOARD MENU ITEMS ||============================== //
-
-const ar = {
-  id: 'ar',
-  // title: 'Accounts Receivable',
-  //   caption: 'Pages Caption',
-  type: 'group',
-  children: [
-    {
+const ar =
+  arChildren.length > 0
+    ? {
       id: 'ar',
-      title: 'Sales',
-      type: 'collapse',
-      icon: icons.IconFileDollar,
-
+      type: 'group',
       children: [
-        // {
-        //   id: 'arBill',
-        //   title: 'AR Bill Balance',
-        //   type: 'item',
-        //   url: '/finance/receipt/ArBillBalance'
-        // },
-        // {
-        //   id: 'receipt',
-        //   title: 'Receipt',
-        //   type: 'item',
-        //   url: '/finance/receipt/Receipt'
-        // },
-        // {
-        //   id: 'receiptRegister',
-        //   title: 'Receipt Register',
-        //   type: 'item',
-        //   url: '/finance/receiptRegister/ReceiptRegister'
-        // }
-
         {
-          id: 'taxInvoiceDetail',
-          title: 'Tax Invoice',
-          type: 'item',
-          url: '/finance/taxInvoice/taxInvoiceDetail',
-          icon: icons1.RequestQuoteOutlined
-        },
-        {
-          id: 'creditNoteDetail',
-          title: 'Credit Note',
-          type: 'item',
-          url: '/finance/creditNote/creditNoteDetail',
-          icon: icons2.CreditScoreOutlined
-        },
-        {
-          id: 'taxRegister',
-          title: 'Sales Register',
-          type: 'item',
-          url: '/finance/taxInvoice/TaxRegister',
-          icon: icons3.AssignmentOutlined
-        },
-        {
-          id: 'receipt',
-          title: 'Receipt',
-          type: 'item',
-          url: '/finance/receipt/Receipt',
-          icon: icons4.ReceiptLongOutlined
-        },
-
-        {
-          id: 'adjustmentOffset',
-          title: 'AR Offset',
-          type: 'item',
-          url: '/finance/AR-adjustment',
-          icon: icons5.SyncAltOutlined
-        },
-        // {
-        //   id: 'customerLedger',
-        //   title: 'Customer Ledger',
-        //   type: 'item',
-        //   url: '/finance/AR-adjustment'
-        // },
-        {
-          id: 'Outstanding',
-          title: 'AR Outstanding',
-          type: 'item',
-          url: '/finance/AR-outstanding',
-          icon: icons6.PendingActionsOutlined
-        },
-        {
-          id: 'aging',
-          title: 'AR Ageing',
-          type: 'item',
-          url: '/finance/AR-aging',
-          icon: icons7.TimelapseOutlined
+          id: 'sales',
+          title: 'Sales',
+          type: 'collapse',
+          icon: icons.IconFileDollar,
+          children: arChildren
         }
       ]
-      // .filter((item) => allowedScreenIds.includes(item.id))
     }
-  ]
-};
+    : null;
 
 export default ar;

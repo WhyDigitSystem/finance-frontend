@@ -1,120 +1,109 @@
 // assets
-import { IconKey } from '@tabler/icons-react';
-import { MdOutlinePayment } from 'react-icons/md';
 import { IconFileInvoice } from '@tabler/icons-react';
-import { BiCreditCard } from 'react-icons/bi';
 
 // constant
 const icons = {
   IconFileInvoice
 };
 
-// const allowedScreens = JSON.parse(localStorage.getItem('screens')) || [];
+// Safe screen access
+const screenAccess = JSON.parse(localStorage.getItem('screenAccess') || '{}');
 
-// // Mapping of screen names (from localStorage) to menu item IDs
-// const screenMapping = {
-//   'COST INVOICE': 'costInvoice',
-//   'COST DEBIT NOTE': 'costDebitNote',
-//   'R COST INVOICE': 'rcostInvoicegna',
-//   'UR COST INVOICE': 'urcostInvoicegna',
-//   'COST REGISTER': 'costRegister',
-//   'AP BILL BALANCE': 'apBill',
-//   'PAYMENT': 'payment',
-//   'AP ADJUSTMENT OFFSET': 'apAdjustment',
-//   'VENDOR LEDGER': 'vendorLedger',
-//   'PAYMENT REGISTER': 'paymentRegister',
-// };
-
-// // Convert allowed screen names to corresponding menu item IDs
-// const allowedScreenIds = allowedScreens.map((screen) => screenMapping[screen]).filter(Boolean);
-
-// ==============================|| DASHBOARD MENU ITEMS ||============================== //
-
-const ap = {
-  id: 'ap',
-  // title: 'Accounts Payable',
-  //   caption: 'Pages Caption',
-  type: 'group',
-  children: [
-    {
-      id: 'ap',
-      title: 'Purchase',
-      type: 'collapse',
-      icon: icons.IconFileInvoice,
-
-      children: [
-        {
-          id: 'costInvoice',
-          title: 'Cost Invoice',
-          type: 'item',
-          url: '/finance/costInvoice/CostInvoice'
-        },
-        {
-          id: 'costDebitNote',
-          title: 'Debit Note',
-          type: 'item',
-          url: '/finance/costDebitNote/CostDebitNote'
-        },
-        {
-          id: 'rcostInvoicegna',
-          title: 'R Cost Invoice',
-          type: 'item',
-          url: '/finance/RCostInvoicegna/RCostInvoicegna'
-        },
-        {
-          id: 'urcostInvoicegna',
-          title: 'UR Cost Invoice',
-          type: 'item',
-          url: '/finance/UrCostInvoicegna/UrCostInvoicegna'
-        },
-        {
-          id: 'costRegister',
-          title: 'Cost Register',
-          type: 'item',
-          url: '/finance/costInvoice/CostRegister'
-        },
-        {
-          id: 'apBill',
-          title: 'AP Bill Balance',
-          type: 'item',
-          url: '/finance/payment/ApBillBalance'
-        },
-        {
-          id: 'payment',
-          title: 'Payment',
-          type: 'item',
-          url: '/finance/payment/Payment'
-        },
-        {
-          id: 'apAdjustment',
-          title: 'AP Offset',
-          type: 'item',
-          url: '/finance/AP-adjustment'
-        },
-        // {
-        //   id: 'vendorLedger',
-        //   title: 'Vendor Ledger',
-        //   type: 'item',
-        //   url: '/finance/paymentRegister/PaymentRegister'
-        // },
-        {
-          // id: 'paymentRegister',
-          id: 'Ap OutSstanding',
-          title: 'AP Outstanding',
-          type: 'item',
-          url: '/Finance/paymentRegister/PaymentRegister'
-        },
-
-        {
-          id: 'apAging',
-          title: 'AP Ageing',
-          type: 'item',
-          url: '/Finance/paymentRegister/APaging'
-        }
-      ]
-      // .filter((item) => allowedScreenIds.includes(item.id))
-    }
-  ]
+const hasScreenAccess = (screenId) => {
+  const access = screenAccess?.[screenId];
+  return access?.canRead || access?.canWrite || access?.canDelete;
 };
+
+// Define children with access check
+const apChildren = [
+  {
+    id: 'costInvoice',
+    title: 'Cost Invoice',
+    type: 'item',
+    url: '/finance/costInvoice/CostInvoice',
+    visible: hasScreenAccess('CI')
+  },
+  {
+    id: 'costDebitNote',
+    title: 'Debit Note',
+    type: 'item',
+    url: '/finance/costDebitNote/CostDebitNote',
+    visible: hasScreenAccess('CDN')
+  },
+  {
+    id: 'rcostInvoicegna',
+    title: 'R Cost Invoice',
+    type: 'item',
+    url: '/finance/RCostInvoicegna/RCostInvoicegna',
+    visible: hasScreenAccess('RCOI')
+  },
+  {
+    id: 'urcostInvoicegna',
+    title: 'UR Cost Invoice',
+    type: 'item',
+    url: '/finance/UrCostInvoicegna/UrCostInvoicegna',
+    visible: hasScreenAccess('URCI')
+  },
+  {
+    id: 'costRegister',
+    title: 'Cost Register',
+    type: 'item',
+    url: '/finance/costInvoice/CostRegister',
+    visible: hasScreenAccess('CR')
+  },
+  {
+    id: 'apBill',
+    title: 'AP Bill Balance',
+    type: 'item',
+    url: '/finance/payment/ApBillBalance',
+    visible: hasScreenAccess('APB')
+  },
+  {
+    id: 'payment',
+    title: 'Payment',
+    type: 'item',
+    url: '/finance/payment/Payment',
+    visible: hasScreenAccess('PT')
+  },
+  {
+    id: 'apAdjustment',
+    title: 'AP Offset',
+    type: 'item',
+    url: '/finance/AP-adjustment',
+    visible: hasScreenAccess('APA')
+  },
+  {
+    id: 'Ap OutSstanding',
+    title: 'AP Outstanding',
+    type: 'item',
+    url: '/Finance/paymentRegister/PaymentRegister',
+    visible: hasScreenAccess('APO')
+  },
+  {
+    id: 'apAging',
+    title: 'AP Ageing',
+    type: 'item',
+    url: '/Finance/paymentRegister/APaging',
+    visible: hasScreenAccess('APAG')
+  }
+].filter((item) => item.visible !== false);
+
+// Only show if at least one child is visible
+const ap =
+  apChildren.length > 0
+    ? {
+        id: 'ap',
+        type: 'group',
+        children: [
+          {
+            id: 'purchase',
+            title: 'Purchase',
+            type: 'collapse',
+            icon: icons.IconFileInvoice,
+            children: apChildren
+          }
+        ]
+      }
+    : null;
 
 export default ap;
