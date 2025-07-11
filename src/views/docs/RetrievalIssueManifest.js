@@ -5,7 +5,7 @@ import SaveIcon from '@mui/icons-material/Save';
 import FormControl from '@mui/material/FormControl';
 import Tabs from '@mui/material/Tabs';
 import 'react-tabs/style/react-tabs.css';
-import { FaTrash } from "react-icons/fa";
+import { FaTrash } from 'react-icons/fa';
 import React from 'react';
 import {
   Button,
@@ -23,7 +23,7 @@ import {
   TableContainer,
   TableRow,
   TableHead,
-  Paper,
+  Paper
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -40,11 +40,14 @@ import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import RIMpdf from './RIMpdf';
 
 const RetrievalIssueManifest = () => {
+  const [tabIndex, setTabIndex] = useState(0);
+  const theme = useTheme();
+  const anchorRef = useRef(null);
   const [value, setValue] = useState(0);
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
-
+  const [validationErrors, setValidationErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState();
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
@@ -68,9 +71,8 @@ const RetrievalIssueManifest = () => {
     docId: '',
     docDate: dayjs(),
     dispatchType: null,
-    transactionType: 'RETRIEVAL',
+    transactionType: 'RETRIEVAL DOCKET',
     sender: '',
-    code: '',
     senderAddress: '',
     senderGst: '',
     receiverWarehouse: '',
@@ -84,14 +86,13 @@ const RetrievalIssueManifest = () => {
     docId: '',
     docDate: dayjs(),
     dispatchType: null,
-    transactionType: '',
+    transactionType: 'Retrieval Docket',
     sender: '',
-    code: '',
     senderAddress: '',
     senderGst: '',
     receiverWarehouse: '',
     transporterName: '',
-    vehicleNo: '',
+    vehicleNo: ''
   });
 
   const [detailsKitData, setDetailsKitData] = useState([]);
@@ -104,8 +105,7 @@ const RetrievalIssueManifest = () => {
       hsnsacCode: '',
       asset: '',
       assetCode: '',
-      assetQty: '',
-      actualQty: ''
+      assetQty: ''
     }
   ]);
 
@@ -161,7 +161,6 @@ const RetrievalIssueManifest = () => {
     try {
       const response = await apiCalls('get', `/warehouser/getAllWarehouseByOrgId?orgId=${orgId}`);
       setReceiverDetails(response.paramObjectsMap.warehouseVO);
-
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -179,9 +178,8 @@ const RetrievalIssueManifest = () => {
     setFormData({
       docId: '',
       dispatchType: null,
-      transactionType: 'RETRIEVAL',
+      transactionType: 'Retrieval Docket',
       sender: '',
-      code: '',
       senderAddress: '',
       senderGst: '',
       receiverWarehouse: '',
@@ -201,8 +199,7 @@ const RetrievalIssueManifest = () => {
         hsnsacCode: '',
         asset: '',
         assetCode: '',
-        assetQty: '',
-        actualQty: ''
+        assetQty: ''
       }
     ]);
 
@@ -215,13 +212,15 @@ const RetrievalIssueManifest = () => {
     const { name, value, type } = e.target;
 
     // Uppercase only for free text input types
-    const newValue = type === 'text' || type === 'textarea' || typeof type === 'undefined'
-      ? value.toUpperCase()
-      : value;
+    const newValue = type === 'text' || type === 'textarea' || typeof type === 'undefined' ? value.toUpperCase() : value;
 
     setFormData((prevData) => ({
       ...prevData,
       [name]: newValue
+    }));
+    setFormDataErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: ''
     }));
   };
   const handleChange = (event, newValue) => {
@@ -230,9 +229,8 @@ const RetrievalIssueManifest = () => {
 
   const columns = [
     { accessorKey: 'sender', header: 'Sender', size: 140 },
-    { accessorKey: 'code', header: 'Sender Code', size: 140 },
     { accessorKey: 'transactionNo', header: 'Transaction No', size: 140 },
-    { accessorKey: 'transactionDate', header: 'Transaction Date', size: 140 },
+    { accessorKey: 'transactionDate', header: 'Transaction Date', size: 140 }
   ];
 
   const handleList = () => {
@@ -278,7 +276,7 @@ const RetrievalIssueManifest = () => {
       setDetailsKitErrors(newTableErrors);
     }
     setFormDataErrors(errors);
-    console.log("errors", detailsKitErrors, errors);
+    console.log('errors', detailsKitErrors, errors);
     if (Object.keys(errors).length === 0 && detailsTableDataValid) {
       setIsLoading(true);
       const retrievalManifestProviderDetailsVo = detailsKitData.map((row) => ({
@@ -289,8 +287,7 @@ const RetrievalIssueManifest = () => {
         hsnCode: parseInt(row.hsnsacCode),
         kitId: row.kitNo,
         kitName: row.kitName,
-        kitQty: parseInt(row.kitQty),
-        actualQty: row.actualQty,
+        kitQty: parseInt(row.kitQty)
       }));
 
       const saveFormData = {
@@ -304,7 +301,6 @@ const RetrievalIssueManifest = () => {
         receiverAddress: formData.receiverAddress,
         retrievalManifestProviderDetailsDTO: retrievalManifestProviderDetailsVo,
         sender: formData.sender,
-        code: formData.code,
         senderAddress: formData.senderAddress,
         senderGst: formData.senderGst,
         transactionDate: formData.docDate ? dayjs(formData.docDate).format('YYYY-MM-DD') : null,
@@ -317,14 +313,14 @@ const RetrievalIssueManifest = () => {
       try {
         const response = await apiCalls('put', '/reportController/createUpdateRetrievalManifest', saveFormData);
         if (response.status === true) {
-          showToast('success', editId ? 'Retrieval Manifest updated successfully' : 'Retrieval Manifest created successfully');
+          showToast('success', editId ? 'Retrieval Issue Manifest updated successfully' : 'Retrieval Issue Manifest created successfully');
           handleClear();
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Retrieval Manifest creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'Retrieval Issue Manifest creation failed');
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'Retrieval Manifest creation failed');
+        showToast('error', 'Retrieval Issue Manifest creation failed');
       }
 
       setIsLoading(false);
@@ -346,9 +342,8 @@ const RetrievalIssueManifest = () => {
           docId: listValueVO.transactionNo || '',
           docDate: listValueVO.transactionDate || dayjs(),
           dispatchType: listValueVO.dispatchDate || null,
-          transactionType: listValueVO.transactionType || 'RETRIEVAL',
+          transactionType: listValueVO.transactionType || 'Retrieval Docket',
           sender: listValueVO.sender || '',
-          code: listValueVO.code || '',
           senderAddress: listValueVO.senderAddress || '',
           senderGst: listValueVO.senderGst || '',
           receiverWarehouse: listValueVO.receiver || '',
@@ -367,8 +362,7 @@ const RetrievalIssueManifest = () => {
             hsnsacCode: row.hsnCode,
             productCode: row.assetCode,
             productName: row.asset,
-            productQty: row.assetQty,
-            actualQty: row.actualQty,
+            productQty: row.assetQty
           }))
         );
         console.log('Edited', detailsKitData);
@@ -404,8 +398,7 @@ const RetrievalIssueManifest = () => {
       hsnsacCode: selectedhsn.code || '',
       productCode: asset.assetCodeId || '',
       productName: asset.assetName || '',
-      productQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
-      actualQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
+      productQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0)
     }));
     setDetailsKitData((prev) => [...prev, ...newKitRows]);
     setOpen(false);
@@ -419,17 +412,6 @@ const RetrievalIssueManifest = () => {
     acc[kitKey].push(row);
     return acc;
   }, {});
-  const handleProductQtyChange = (value, kitIndex, rowIndex) => {
-    const groupedEntries = Object.entries(groupedData);
-    const currentKitRows = groupedEntries[kitIndex]?.[1];
-    if (currentKitRows && currentKitRows[rowIndex]) {
-      const rowId = currentKitRows[rowIndex].id;
-      const updatedData = detailsKitData.map((item) =>
-        item.id === rowId ? { ...item, actualQty: Number(value) } : item
-      );
-      setDetailsKitData(updatedData);
-    }
-  };
   const GeneratePdf = async (row) => {
     try {
       const result = await apiCalls('get', `/reportController/getRetrievalManifestProviderById?id=${row.original.id}`);
@@ -479,7 +461,10 @@ const RetrievalIssueManifest = () => {
                   size="small"
                   value={formData.docId}
                   fullWidth
-                  onChange={(e) => setFormData({ ...formData, docId: e.target.value.toUpperCase() })}
+                  onChange={(e) => {
+                    setFormData({ ...formData, docId: e.target.value.toUpperCase() });
+                    setFormDataErrors((prev) => ({ ...prev, docId: '' }));
+                  }}
                   error={!!formDataErrors.docId}
                   helperText={formDataErrors.docId}
                 />
@@ -506,7 +491,10 @@ const RetrievalIssueManifest = () => {
                     label="Dispatch Date"
                     format="DD-MM-YYYY"
                     value={formData.dispatchType ? dayjs(formData.dispatchType) : null}
-                    onChange={(newValue) => setFormData({ ...formData, dispatchType: newValue })}
+                    onChange={(newValue) => {
+                      setFormData({ ...formData, dispatchType: newValue });
+                      setFormDataErrors((prev) => ({ ...prev, dispatchType: '' }));
+                    }}
                     slotProps={{
                       textField: {
                         size: 'small',
@@ -528,7 +516,7 @@ const RetrievalIssueManifest = () => {
                   onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
                   options={customerDetails}
@@ -540,9 +528,16 @@ const RetrievalIssueManifest = () => {
                   onChange={(event, newValue) => {
                     handleInputChange({
                       target: {
-                        name: 'sender', value: newValue ? newValue.name : ''
+                        name: 'sender',
+                        value: newValue ? newValue.name : ''
                       }
                     });
+                    // const address = newValue?.partyAddressVO?.[0];
+                    // const fullAddress = address
+                    //   ? [address.addressLine1, address.addressLine2, address.addressLine3]
+                    //     .filter(Boolean)
+                    //     .join(', ')
+                    //   : '';
                     handleInputChange({
                       target: {
                         name: 'senderAddress',
@@ -551,49 +546,10 @@ const RetrievalIssueManifest = () => {
                     });
                     handleInputChange({
                       target: {
-                        name: 'senderCode',
-                        value: newValue ? newValue.code : ''
-                      }
-                    });
-                    handleInputChange({
-                      target: {
                         name: 'senderGst',
                         value: newValue ? newValue.gst : ''
                       }
                     });
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Sender"
-                      name="sender"
-                      InputProps={{
-                        ...params.InputProps,
-                        style: { height: 40 }
-                      }}
-                      error={!!formDataErrors.sender}
-                      helperText={formDataErrors.sender}
-                    />
-                  )}
-                />
-              </div> */}
-              <div className="col-md-3 mb-3">
-                <Autocomplete
-                  disablePortal
-                  options={customerDetails}
-                  getOptionLabel={(option) => option.name || ''}
-                  isOptionEqualToValue={(option, value) => option.name === value.name}
-                  size="small"
-                  fullWidth
-                  value={formData.sender ? customerDetails.find((c) => c.name === formData.sender) : null}
-                  onChange={(event, newValue) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      sender: newValue?.name || '',
-                      code: newValue?.code || '',
-                      senderAddress: newValue?.address || '',
-                      senderGst: newValue?.gst || ''
-                    }));
                   }}
                   renderInput={(params) => (
                     <TextField
@@ -618,12 +574,8 @@ const RetrievalIssueManifest = () => {
                   fullWidth
                   value={formData.senderAddress}
                   multiline={formData.senderAddress.includes('\n') || formData.senderAddress.length > 50}
-                  minRows={
-                    formData.senderAddress.includes('\n') || formData.senderAddress.length > 50 ? 2 : 1
-                  }
-                  onChange={(e) =>
-                    setFormData({ ...formData, senderAddress: e.target.value })
-                  }
+                  minRows={formData.senderAddress.includes('\n') || formData.senderAddress.length > 50 ? 2 : 1}
+                  onChange={(e) => setFormData({ ...formData, senderAddress: e.target.value })}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -644,11 +596,7 @@ const RetrievalIssueManifest = () => {
                   isOptionEqualToValue={(option, value) => option.id === value.id} // ✅ Add this line
                   sx={{ width: '100%' }}
                   size="small"
-                  value={
-                    formData.receiverWarehouse
-                      ? receiverDetails.find((c) => c.name === formData.receiverWarehouse)
-                      : null
-                  }
+                  value={formData.receiverWarehouse ? receiverDetails.find((c) => c.name === formData.receiverWarehouse) : null}
                   onChange={(event, newValue) => {
                     handleInputChange({
                       target: {
@@ -685,19 +633,13 @@ const RetrievalIssueManifest = () => {
                   value={formData.receiverAddress}
                   size="small"
                   fullWidth
-                  onChange={(e) =>
-                    setFormData({ ...formData, receiverAddress: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, receiverAddress: e.target.value })}
                   disabled
                   multiline={
-                    !!formData.receiverAddress &&
-                    (formData.receiverAddress.includes('\n') || formData.receiverAddress.length > 50)
+                    !!formData.receiverAddress && (formData.receiverAddress.includes('\n') || formData.receiverAddress.length > 50)
                   }
                   minRows={
-                    !!formData.receiverAddress &&
-                      (formData.receiverAddress.includes('\n') || formData.receiverAddress.length > 50)
-                      ? 2
-                      : 1
+                    !!formData.receiverAddress && (formData.receiverAddress.includes('\n') || formData.receiverAddress.length > 50) ? 2 : 1
                   }
                 />
               </div>
@@ -706,11 +648,7 @@ const RetrievalIssueManifest = () => {
                   options={allTransporters}
                   getOptionLabel={(option) => option.partyName || ''}
                   isOptionEqualToValue={(option, value) => option?.transporterName === value?.transporterName}
-                  value={
-                    formData.transporterName
-                      ? allTransporters.find((c) => c.partyName === formData.transporterName)
-                      : null
-                  }
+                  value={formData.transporterName ? allTransporters.find((c) => c.partyName === formData.transporterName) : null}
                   onChange={(event, newValue) => {
                     handleInputChange({
                       target: {
@@ -753,7 +691,7 @@ const RetrievalIssueManifest = () => {
                   inputProps={{
                     maxLength: 10,
                     inputMode: 'numeric', // mobile-friendly numeric keypad
-                    pattern: '[0-9]*'      // enforce digits only
+                    pattern: '[0-9]*' // enforce digits only
                   }}
                   onChange={(e) => {
                     const value = e.target.value;
@@ -766,7 +704,6 @@ const RetrievalIssueManifest = () => {
                   }}
                 />
               </div>
-
             </div>
             <>
               <div className="row mt-2">
@@ -797,13 +734,7 @@ const RetrievalIssueManifest = () => {
                             onChange={(e, newValue) => setSelectedKit(newValue)}
                             renderInput={(params) => <TextField {...params} label="Kit No" margin="dense" fullWidth />}
                           />
-                          <TextField
-                            label="Kit Name"
-                            margin="dense"
-                            fullWidth
-                            value={selectedKit?.kitDesc || ''}
-                            disabled
-                          />
+                          <TextField label="Kit Name" margin="dense" fullWidth value={selectedKit?.kitDesc || ''} disabled />
                           <TextField
                             label="Kit Quantity"
                             margin="dense"
@@ -821,8 +752,12 @@ const RetrievalIssueManifest = () => {
                           />
                         </DialogContent>
                         <DialogActions>
-                          <Button onClick={() => setOpen(false)} color="secondary">Cancel</Button>
-                          <Button onClick={handleProceed} color="primary" variant="contained">Proceed</Button>
+                          <Button onClick={() => setOpen(false)} color="secondary">
+                            Cancel
+                          </Button>
+                          <Button onClick={handleProceed} color="primary" variant="contained">
+                            Proceed
+                          </Button>
                         </DialogActions>
                       </Dialog>
                       <TableContainer component={Paper} sx={{ mt: 2 }}>
@@ -838,7 +773,6 @@ const RetrievalIssueManifest = () => {
                               <TableCell>Product Code</TableCell>
                               <TableCell>Product Name</TableCell>
                               <TableCell>Product Qty</TableCell>
-                              <TableCell>Actual Qty</TableCell>
                             </TableRow>
                           </TableHead>
                           <TableBody>
@@ -852,7 +786,7 @@ const RetrievalIssueManifest = () => {
                                         <TableCell rowSpan={kitRows.length}>
                                           <FaTrash
                                             onClick={() => handleDeleteKit(kitNo)}
-                                            style={{ cursor: "pointer", color: "red" }}
+                                            style={{ cursor: 'pointer', color: 'red' }}
                                             className="ms-4"
                                           />
                                         </TableCell>
@@ -868,15 +802,6 @@ const RetrievalIssueManifest = () => {
                                     <TableCell>{row.productCode}</TableCell>
                                     <TableCell>{row.productName}</TableCell>
                                     <TableCell>{row.productQty}</TableCell>
-                                    <TableCell>
-                                      <input
-                                        type="number"
-                                        value={row.actualQty}
-                                        onChange={(e) => handleProductQtyChange(e.target.value, kitIndex, rowIndex)}
-                                        style={{ width: "80px" }}
-                                        min={0}
-                                      />
-                                    </TableCell>
                                   </TableRow>
                                 ))}
 
@@ -890,7 +815,6 @@ const RetrievalIssueManifest = () => {
                             ))}
                           </TableBody>
                         </Table>
-
                       </TableContainer>
                     </>
                   )}
@@ -899,7 +823,14 @@ const RetrievalIssueManifest = () => {
             </>
           </>
         ) : (
-          <CommonListViewTable data={data && data} columns={columns} blockEdit={true} toEdit={getReconcileById} isPdf={true} GeneratePdf={GeneratePdf} />
+          <CommonListViewTable
+            data={data && data}
+            columns={columns}
+            blockEdit={true}
+            toEdit={getReconcileById}
+            isPdf={true}
+            GeneratePdf={GeneratePdf}
+          />
         )}
         {downloadPdf && <RIMpdf row={pdfData} modalClose={() => setDownloadPdf(false)} />}
       </div>
