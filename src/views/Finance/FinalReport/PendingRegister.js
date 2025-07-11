@@ -469,7 +469,7 @@ const PendingRegister = () => {
               justifyContent: 'space-between',
               alignItems: 'center'
             }}>
-              Cost Invoice
+              Invoice
               <Box>
                 <IconButton aria-label="close" onClick={() => setSalesOpen(!salesOpen)} sx={{ color: 'white' }}>
                   <CloseIcon />

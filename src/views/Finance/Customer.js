@@ -475,7 +475,7 @@ export const Customer = () => {
   };
   const handleInputChange = (e) => {
     const { name, value, checked, type, selectionStart, selectionEnd } = e.target;
-    const nameRegex = /^[A-Za-z ]*$/;
+    const nameRegex = /^[A-Za-z& ]*$/;
     const panRegex = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
 
     let formattedValue = value;

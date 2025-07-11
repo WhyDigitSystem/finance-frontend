@@ -152,7 +152,7 @@ const ArOutstanding = () => {
     }
 
     // ====== COLUMN HEADERS ======
-    const headers = ['Branch', 'Vendor', 'Credit Days', 'Credit Limit', 'Outstanding', 'Unadjusted', 'Total Due'];
+    const headers = ['Branch', 'Customer', 'Credit Days', 'Credit Limit', 'Outstanding', 'Unadjusted', 'Total Due'];
     const headerRow = sheet.addRow(headers);
     headerRow.font = {
       bold: true,
@@ -346,8 +346,8 @@ const ArOutstanding = () => {
       }
     },
     {
-      header: 'Vendor',
-      accessorKey: 'combinedVendorInfo',
+      header: 'Customer',
+      accessorKey: 'combinedCustomerInfo',
       size: 300,
       Cell: ({ row }) => {
         const code = row.original.subledgerCode || '';
@@ -654,7 +654,7 @@ const ArOutstanding = () => {
       columns.map((col) => {
         const key = col.accessorKey;
         const raw = key ? row[key] : '';
-        if (key === 'combinedVendorInfo') {
+        if (key === 'combinedCustomerInfo') {
           const parts = [row.subledgerCode, row.subledgerName, row.currency].filter(Boolean);
           return parts.join(' - ');
         }

@@ -1,22 +1,35 @@
 import React from 'react';
 import { Box, Typography } from '@mui/material';
 
-const FancyLoader = () => {
+const FancyLoader = ({ open = true, text = 'Processing...' }) => {
+  if (!open) return null;
+
   return (
     <Box
-      display="flex"
-      flexDirection="column"
-      alignItems="center"
-      justifyContent="center"
-      minHeight="250px"
+      sx={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+        zIndex: 1300,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+      }}
     >
       <div className="coin-wrapper">
         <div className="coin-shine"></div>
         <div className="coin-face">$</div>
       </div>
 
-      <Typography variant="subtitle1" sx={{ mt: 2, fontWeight: 500, color: '#34449B' }}>
-        Processing...
+      <Typography
+        variant="subtitle1"
+        sx={{ mt: 2, fontWeight: 500, color: '#000' }}
+      >
+        {text}
       </Typography>
 
       <style>{`
@@ -24,7 +37,7 @@ const FancyLoader = () => {
           width: 100px;
           height: 100px;
           border-radius: 50%;
-          background: radial-gradient(circle at 30% 30%, #fff7c0, #ffd700);
+          background: radial-gradient(circle at 30% 30%, #ffffff, #bbbbbb); /* grayscale */
           display: flex;
           align-items: center;
           justify-content: center;
@@ -40,8 +53,8 @@ const FancyLoader = () => {
         .coin-face {
           font-size: 40px;
           font-weight: bold;
-          color: #4d3b00;
-          text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+          color: #000; /* black text */
+          text-shadow: 0 1px 2px rgba(255,255,255,0.2);
         }
 
         .coin-shine {
@@ -51,7 +64,7 @@ const FancyLoader = () => {
           border-radius: 50%;
           background: linear-gradient(
             120deg,
-            rgba(255, 255, 255, 0.6) 0%,
+            rgba(255, 255, 255, 0.4) 0%,
             rgba(255, 255, 255, 0) 60%
           );
           animation: shineEffect 2.5s infinite;

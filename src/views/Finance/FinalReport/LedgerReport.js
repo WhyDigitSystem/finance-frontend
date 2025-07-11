@@ -275,10 +275,19 @@ function LedgerReport() {
       }
     },
     {
-      accessorKey: 'PartyName',
+      accessorKey: 'Particulars',
       header: 'Particulars',
       size: 250,
-      Cell: ({ cell }) => <div style={{ textAlign: 'left', paddingLeft: '10px', padding: '8px' }}>{cell.getValue() || '-'}</div>,
+      Cell: ({ cell }) => (
+        <div style={{
+          textAlign: 'left',
+          padding: '8px 10px',
+          whiteSpace: 'pre-wrap',
+          wordBreak: 'break-word'
+        }}>
+          {cell.getValue() || '-'}
+        </div>
+      ),
       muiTableHeadCellProps: {
         align: 'left',
         sx: {
@@ -290,17 +299,33 @@ function LedgerReport() {
         }
       }
     },
+    // {
+    //   accessorKey: 'particulars',
+    //   header: 'Particulars',
+    //   size: 250,
+    //   Cell: ({ cell }) => <div style={{ textAlign: 'left', paddingLeft: '10px', padding: '8px' }}>{cell.getValue() || '-'}</div>,
+    //   muiTableHeadCellProps: {
+    //     align: 'left',
+    //     sx: {
+    //       backgroundColor: '#34449B',
+    //       color: 'white',
+    //       fontWeight: 'bold',
+    //       fontSize: '0.875rem',
+    //       padding: '12px 8px'
+    //     }
+    //   }
+    // },
     {
-      accessorKey: 'ndAmount',
-      header: 'Debit(Base)',
+      accessorKey: 'dbAmount',
+      header: 'Debit',
       size: 90,
       Cell: ({ cell }) => (
-        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+        <div style={{ textAlign: 'right', paddingRight: '20px', color: '#d32f2f', fontWeight: '500', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -316,16 +341,16 @@ function LedgerReport() {
       }
     },
     {
-      accessorKey: 'NcAmount',
-      header: 'Credit(Base)',
-      size: 90,
+      accessorKey: 'CrAmount',
+      header: 'Credit',
+      size: 100,
       Cell: ({ cell }) => (
-        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
+        <div style={{ textAlign: 'right', paddingRight: '20px', color: '#2e7d32', fontWeight: '500', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -357,16 +382,16 @@ function LedgerReport() {
       }
     },
     {
-      accessorKey: 'dbAmount',
-      header: 'Debit',
+      accessorKey: 'ndAmount',
+      header: 'Debit(Base)',
       size: 90,
       Cell: ({ cell }) => (
-        <div style={{ textAlign: 'right', paddingRight: '20px', color: '#d32f2f', fontWeight: '500', padding: '8px' }}>
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -382,16 +407,16 @@ function LedgerReport() {
       }
     },
     {
-      accessorKey: 'CrAmount',
-      header: 'Credit',
-      size: 100,
+      accessorKey: 'NcAmount',
+      header: 'Credit(Base)',
+      size: 90,
       Cell: ({ cell }) => (
-        <div style={{ textAlign: 'right', paddingRight: '20px', color: '#2e7d32', fontWeight: '500', padding: '8px' }}>
+        <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -429,11 +454,11 @@ function LedgerReport() {
 
     if (!formData.fromDate) {
       errors.fromDate = 'From Date is required';
-      showToast('error', errors.fromDate);
+      // showToast('error', errors.fromDate);
     }
     if (!formData.toDate) {
       errors.toDate = 'To Date is required';
-      showToast('error', errors.toDate);
+      // showToast('error', errors.toDate);
     }
     if (formData.fromDate && formData.toDate) {
       const fromDate = dayjs(formData.fromDate);
@@ -449,8 +474,8 @@ function LedgerReport() {
       try {
         // Prepare parameters for API
         const params = {
-          accountName: formData.accountName === 'All' ? '' : formData.accountName,
-          branch: formData.branch === 'All' ? '' : formData.branch,
+          accountName: formData.accountName === 'All' ? 'All' : formData.accountName,
+          branch: formData.branch === 'All' ? 'All' : formData.branch,
           details: formData.withDetails,
           finYear: finYear,
           fromdate: formData.fromDate,
@@ -472,7 +497,7 @@ function LedgerReport() {
           const mappedData = reportData.map((item) => ({
             Vid: item.voucherNumber || '',
             Vdate: item.voucherDate || '',
-            PartyName: item.partyName || '',
+            Particulars: item.particulars || '',
             ndAmount: parseFloat(item.ndbAmnt) || 0,
             NcAmount: parseFloat(item.ncrAmnt) || 0,
             Currency: item.currency || '',
@@ -485,7 +510,7 @@ function LedgerReport() {
           const generatedBy = localStorage.getItem('userName') || 'Admin';
           const headers = [
             {
-              // Combined date range value without a label
+              label: 'Range',
               value:
                 formData.fromDate && formData.toDate
                   ? `${dayjs(formData.fromDate).format('DD-MM-YYYY')} to ${dayjs(formData.toDate).format('DD-MM-YYYY')}`

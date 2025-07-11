@@ -179,7 +179,7 @@ const handleDownloadPdf = async () => {
     position -= pdfHeight;
   }
 
-  pdf.save(`${row.transactionNo || 'RIM'}_${selectedCopy}.pdf`);
+  pdf.save(`${row.transactionNo || 'RM'}_${row.code}_${selectedCopy}.pdf`);
   setSelectedCopy('');
 };
   // Trigger PDF download when selectedCopy changes
@@ -311,7 +311,7 @@ const groupedData = (row.retrievalManifestProviderDetailsVOs || []).reduce((acc,
             </div>
             <div>
               <div className="mb-0" style={{fontSize: '10px'}}>
-                RIM No<strong className="">: {row.transactionNo}</strong>
+                Docket No<strong className="">: {row.transactionNo}</strong>
               </div>
               <div className="mb-0" style={{fontSize: '10px'}}>
                 Date<strong> : {row.transactionDate ? dayjs(row.transactionDate).format('DD-MM-YYYY') : 'N/A'}</strong>

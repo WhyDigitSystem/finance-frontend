@@ -1,6 +1,5 @@
 import dayjs from 'dayjs';
 import React, { useState, useEffect } from 'react';
-import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
@@ -66,7 +65,7 @@ export const MaterialIssueManifest = () => {
     transactionNo: '',
     transactionDate: dayjs(),
     dispatchDate: dayjs(),
-    transactionType: 'ISSUE DOCKET',
+    transactionType: 'ISSUE',
     fromWarehouse: '',
     warehouseAddress: '',
     customer: '',
@@ -136,7 +135,7 @@ export const MaterialIssueManifest = () => {
     transactionNo: '',
     transactionDate: dayjs(),
     dispatchDate: dayjs(),
-    transactionType: 'ISSUE DOCKET',
+    transactionType: 'ISSUE',
     fromWarehouse: '',
     warehouseAddress: '',
     customer: '',
@@ -151,7 +150,6 @@ export const MaterialIssueManifest = () => {
     vehicleNo: '',
     driverNo: '',
     });
-    getAllActiveCurrency(orgId);
     setFieldErrors({
     transactionNo: '',
     transactionDate: dayjs(),

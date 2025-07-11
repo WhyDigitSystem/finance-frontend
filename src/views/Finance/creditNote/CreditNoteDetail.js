@@ -35,11 +35,13 @@ import ConfirmationModal from 'utils/confirmationPopup';
 import GeneratePdfTempIRN from 'utils/pdfTempIRN';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from '../../basicMaster/CommonListViewTable';
+import FancyLoader from 'utils/FancyLoader';
 
 const IrnCreditNote = ({ selectedRow }) => {
   const [tabIndex, setTabIndex] = useState(0);
   const theme = useTheme();
   const anchorRef = useRef(null);
+  const [loading, setloading] = useState(true);
   const [listViewRoute, setlistViewRoute] = useState(true);
   const [editId, setEditId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -1464,6 +1466,11 @@ const IrnCreditNote = ({ selectedRow }) => {
   };
   return (
     <div>
+      {loading && (
+        <div style={{ position: 'fixed', top: '45%', left: '45%', zIndex: 9999 }}>
+          <FancyLoader />
+        </div>
+      )}
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <div className="row">
           <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
@@ -1575,8 +1582,8 @@ const IrnCreditNote = ({ selectedRow }) => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getIrnCreditById}
-              // isPdf={true}
-              // GeneratePdf={GeneratePdf}
+            // isPdf={true}
+            // GeneratePdf={GeneratePdf}
             />
           </div>
         ) : (
@@ -1749,7 +1756,7 @@ const IrnCreditNote = ({ selectedRow }) => {
                     value={formData.vid}
                     onChange={(e) => setFormData({ ...formData, vid: e.target.value })}
                     error={!!fieldErrors.vid}
-                    // helperText={fieldErrors.pincode}
+                  // helperText={fieldErrors.pincode}
                   />
                 </FormControl>
               </div>
@@ -3115,8 +3122,8 @@ const IrnCreditNote = ({ selectedRow }) => {
                               value={formData.totalTaxableAmountLc}
                               onChange={handleInputChange}
                               inputProps={{ maxLength: 30 }}
-                              // error={!!fieldErrors.netLCAmt}
-                              // helperText={fieldErrors.netLCAmt}
+                            // error={!!fieldErrors.netLCAmt}
+                            // helperText={fieldErrors.netLCAmt}
                             />
                           </FormControl>
                         </div>

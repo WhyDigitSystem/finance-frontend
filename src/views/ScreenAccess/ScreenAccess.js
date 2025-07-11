@@ -362,7 +362,7 @@ const ScreenAccess = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() =>
-            (false)} color="secondary">
+            setConfirmReset(false)} color="secondary">
             Cancel
           </Button>
           <Button onClick={handleResetConfirm} color="error" variant="contained">

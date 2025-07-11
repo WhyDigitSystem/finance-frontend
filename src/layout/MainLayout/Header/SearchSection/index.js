@@ -115,7 +115,7 @@ const screens = [
   { name: 'Payment Register', path: '/finance/FinalReport/PaymentReport' },
   { name: 'Receipt Register', path: '/finance/FinalReport/ReceiptReport' },
   { name: 'Material Issue Manifest', path: '/docs/materialIssueManifest' },
-  { name: 'Retrieval Issue Manifest', path: '/docs/RetrievalIssueManifest' },
+  { name: 'Retrieval Manifest', path: '/docs/RetrievalIssueManifest' },
   { name: 'Asset Type', path: '/docs/assetType' },
   { name: 'Asset Category', path: '/docs/assetCategory' },
   { name: 'Create Asset', path: '/docs/createAsset' },

@@ -356,7 +356,7 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
             </div>
             <div>
               <div className="mb-0" style={{fontSize: '10px'}}>
-                MIM No<strong className="">: {row.transactionNo}</strong>
+                Docket No<strong className="">: {row.transactionNo}</strong>
               </div>
               <div className="mb-0" style={{fontSize: '10px'}}>
                 Date<strong> : {row.transactionDate ? dayjs(row.transactionDate).format('DD-MM-YYYY') : 'N/A'}</strong>

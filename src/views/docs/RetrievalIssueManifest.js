@@ -40,14 +40,11 @@ import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import RIMpdf from './RIMpdf';
 
 const RetrievalIssueManifest = () => {
-  const [tabIndex, setTabIndex] = useState(0);
-  const theme = useTheme();
-  const anchorRef = useRef(null);
   const [value, setValue] = useState(0);
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
-  const [validationErrors, setValidationErrors] = useState({});
+
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState();
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
@@ -64,15 +61,16 @@ const RetrievalIssueManifest = () => {
   const [downloadPdf, setDownloadPdf] = useState(false);
   const [pdfData, setPdfData] = useState([]);
   const [allHsnSacCode, setAllHsnSacCode] = useState([]);
-  const [receiverDetails, setReceiverDetails]  = useState([]);
+  const [receiverDetails, setReceiverDetails] = useState([]);
   const [allTransporters, setAllTransporters] = useState([]);
 
   const [formData, setFormData] = useState({
     docId: '',
     docDate: dayjs(),
     dispatchType: null,
-    transactionType: 'RETRIEVAL DOCKET',
+    transactionType: 'RETRIEVAL',
     sender: '',
+    code: '',
     senderAddress: '',
     senderGst: '',
     receiverWarehouse: '',
@@ -86,8 +84,9 @@ const RetrievalIssueManifest = () => {
     docId: '',
     docDate: dayjs(),
     dispatchType: null,
-    transactionType: 'Retrieval Docket',
+    transactionType: '',
     sender: '',
+    code: '',
     senderAddress: '',
     senderGst: '',
     receiverWarehouse: '',
@@ -105,7 +104,8 @@ const RetrievalIssueManifest = () => {
       hsnsacCode: '',
       asset: '',
       assetCode: '',
-      assetQty: ''
+      assetQty: '',
+      actualQty: ''
     }
   ]);
 
@@ -179,8 +179,9 @@ const RetrievalIssueManifest = () => {
     setFormData({
       docId: '',
       dispatchType: null,
-      transactionType: 'Retrieval Docket',
+      transactionType: 'RETRIEVAL',
       sender: '',
+      code: '',
       senderAddress: '',
       senderGst: '',
       receiverWarehouse: '',
@@ -200,7 +201,8 @@ const RetrievalIssueManifest = () => {
         hsnsacCode: '',
         asset: '',
         assetCode: '',
-        assetQty: ''
+        assetQty: '',
+        actualQty: ''
       }
     ]);
 
@@ -228,6 +230,7 @@ const RetrievalIssueManifest = () => {
 
   const columns = [
     { accessorKey: 'sender', header: 'Sender', size: 140 },
+    { accessorKey: 'code', header: 'Sender Code', size: 140 },
     { accessorKey: 'transactionNo', header: 'Transaction No', size: 140 },
     { accessorKey: 'transactionDate', header: 'Transaction Date', size: 140 },
   ];
@@ -275,7 +278,7 @@ const RetrievalIssueManifest = () => {
       setDetailsKitErrors(newTableErrors);
     }
     setFormDataErrors(errors);
-console.log("errors",detailsKitErrors,errors);
+    console.log("errors", detailsKitErrors, errors);
     if (Object.keys(errors).length === 0 && detailsTableDataValid) {
       setIsLoading(true);
       const retrievalManifestProviderDetailsVo = detailsKitData.map((row) => ({
@@ -287,6 +290,7 @@ console.log("errors",detailsKitErrors,errors);
         kitId: row.kitNo,
         kitName: row.kitName,
         kitQty: parseInt(row.kitQty),
+        actualQty: row.actualQty,
       }));
 
       const saveFormData = {
@@ -300,6 +304,7 @@ console.log("errors",detailsKitErrors,errors);
         receiverAddress: formData.receiverAddress,
         retrievalManifestProviderDetailsDTO: retrievalManifestProviderDetailsVo,
         sender: formData.sender,
+        code: formData.code,
         senderAddress: formData.senderAddress,
         senderGst: formData.senderGst,
         transactionDate: formData.docDate ? dayjs(formData.docDate).format('YYYY-MM-DD') : null,
@@ -312,14 +317,14 @@ console.log("errors",detailsKitErrors,errors);
       try {
         const response = await apiCalls('put', '/reportController/createUpdateRetrievalManifest', saveFormData);
         if (response.status === true) {
-          showToast('success', editId ? 'Retrieval Issue Manifest updated successfully' : 'Retrieval Issue Manifest created successfully');
+          showToast('success', editId ? 'Retrieval Manifest updated successfully' : 'Retrieval Manifest created successfully');
           handleClear();
         } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Retrieval Issue Manifest creation failed');
+          showToast('error', response.paramObjectsMap.errorMessage || 'Retrieval Manifest creation failed');
         }
       } catch (error) {
         console.error('Error:', error);
-        showToast('error', 'Retrieval Issue Manifest creation failed');
+        showToast('error', 'Retrieval Manifest creation failed');
       }
 
       setIsLoading(false);
@@ -341,8 +346,9 @@ console.log("errors",detailsKitErrors,errors);
           docId: listValueVO.transactionNo || '',
           docDate: listValueVO.transactionDate || dayjs(),
           dispatchType: listValueVO.dispatchDate || null,
-          transactionType: listValueVO.transactionType || 'Retrieval Docket',
+          transactionType: listValueVO.transactionType || 'RETRIEVAL',
           sender: listValueVO.sender || '',
+          code: listValueVO.code || '',
           senderAddress: listValueVO.senderAddress || '',
           senderGst: listValueVO.senderGst || '',
           receiverWarehouse: listValueVO.receiver || '',
@@ -361,7 +367,8 @@ console.log("errors",detailsKitErrors,errors);
             hsnsacCode: row.hsnCode,
             productCode: row.assetCode,
             productName: row.asset,
-            productQty: row.assetQty
+            productQty: row.assetQty,
+            actualQty: row.actualQty,
           }))
         );
         console.log('Edited', detailsKitData);
@@ -383,58 +390,70 @@ console.log("errors",detailsKitErrors,errors);
       totalWithdrawal: totalWithdrawalAmt
     }));
   }, [detailsKitData]);
-const handleProceed = () => {
-  if (!selectedKit || !selectedhsn || !kitQty) return;
+  const handleProceed = () => {
+    if (!selectedKit || !selectedhsn || !kitQty) return;
 
-  const kitAssets = selectedKit.kitAssetVO || [];
-  const timestamp = Date.now();
+    const kitAssets = selectedKit.kitAssetVO || [];
+    const timestamp = Date.now();
 
-  const newKitRows = kitAssets.map((asset, idx) => ({
-    id: timestamp + idx,
-    kitNo: selectedKit.kitNo,
-    kitName: selectedKit.kitDesc, 
-    kitQty: parseFloat(kitQty),  
-    hsnsacCode: selectedhsn.code || '',
-    productCode: asset.assetCodeId || '',
-    productName: asset.assetName || '',
-    productQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
-  }));
-  setDetailsKitData((prev) => [...prev, ...newKitRows]);
-  setOpen(false);
-  setSelectedKit(null);
-  setSelectedhsn(null);
-  setKitQty('');
-};
-const groupedData = detailsKitData.reduce((acc, row) => {
-  const kitKey = row.kitNo;
-  if (!acc[kitKey]) acc[kitKey] = [];
-  acc[kitKey].push(row);
-  return acc;
-}, {});
-const GeneratePdf = async (row) => {
-  try {
-    const result = await apiCalls('get', `/reportController/getRetrievalManifestProviderById?id=${row.original.id}`);
-    const RIMVO = result.paramObjectsMap.retrievalManifestProviderVO;
-    if (RIMVO) {
-      setPdfData(RIMVO);
-      setDownloadPdf(true);
-    } else {
-      showToast('error', 'Record is Incomplete Please fill needed Data');
+    const newKitRows = kitAssets.map((asset, idx) => ({
+      id: timestamp + idx,
+      kitNo: selectedKit.kitNo,
+      kitName: selectedKit.kitDesc,
+      kitQty: parseFloat(kitQty),
+      hsnsacCode: selectedhsn.code || '',
+      productCode: asset.assetCodeId || '',
+      productName: asset.assetName || '',
+      productQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
+      actualQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
+    }));
+    setDetailsKitData((prev) => [...prev, ...newKitRows]);
+    setOpen(false);
+    setSelectedKit(null);
+    setSelectedhsn(null);
+    setKitQty('');
+  };
+  const groupedData = detailsKitData.reduce((acc, row) => {
+    const kitKey = row.kitNo;
+    if (!acc[kitKey]) acc[kitKey] = [];
+    acc[kitKey].push(row);
+    return acc;
+  }, {});
+  const handleProductQtyChange = (value, kitIndex, rowIndex) => {
+    const groupedEntries = Object.entries(groupedData);
+    const currentKitRows = groupedEntries[kitIndex]?.[1];
+    if (currentKitRows && currentKitRows[rowIndex]) {
+      const rowId = currentKitRows[rowIndex].id;
+      const updatedData = detailsKitData.map((item) =>
+        item.id === rowId ? { ...item, actualQty: Number(value) } : item
+      );
+      setDetailsKitData(updatedData);
     }
-  } catch (error) {
-    console.error('Error generating PDF:', error);
-    showToast('error', 'Failed to fetch data for PDF');
-  }
-};
+  };
+  const GeneratePdf = async (row) => {
+    try {
+      const result = await apiCalls('get', `/reportController/getRetrievalManifestProviderById?id=${row.original.id}`);
+      const RIMVO = result.paramObjectsMap.retrievalManifestProviderVO;
+      if (RIMVO) {
+        setPdfData(RIMVO);
+        setDownloadPdf(true);
+      } else {
+        showToast('error', 'Record is Incomplete Please fill needed Data');
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      showToast('error', 'Failed to fetch data for PDF');
+    }
+  };
   const handleAddRow = () => {
     setSelectedKit(null);
     setKitQty('');
     setOpen(true);
   };
-const handleDeleteKit = (kitNoToDelete) => {
-  const updatedKits = detailsKitData.filter((row) => row.kitNo !== kitNoToDelete);
-  setDetailsKitData(updatedKits);
-};
+  const handleDeleteKit = (kitNoToDelete) => {
+    const updatedKits = detailsKitData.filter((row) => row.kitNo !== kitNoToDelete);
+    setDetailsKitData(updatedKits);
+  };
   return (
     <>
       <div>
@@ -509,7 +528,7 @@ const handleDeleteKit = (kitNoToDelete) => {
                   onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                 />
               </div>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
                   options={customerDetails}
@@ -524,12 +543,6 @@ const handleDeleteKit = (kitNoToDelete) => {
                         name: 'sender', value: newValue ? newValue.name : ''
                       }
                     });
-                    // const address = newValue?.partyAddressVO?.[0];
-                    // const fullAddress = address
-                    //   ? [address.addressLine1, address.addressLine2, address.addressLine3]
-                    //     .filter(Boolean)
-                    //     .join(', ')
-                    //   : '';
                     handleInputChange({
                       target: {
                         name: 'senderAddress',
@@ -538,10 +551,49 @@ const handleDeleteKit = (kitNoToDelete) => {
                     });
                     handleInputChange({
                       target: {
+                        name: 'senderCode',
+                        value: newValue ? newValue.code : ''
+                      }
+                    });
+                    handleInputChange({
+                      target: {
                         name: 'senderGst',
                         value: newValue ? newValue.gst : ''
                       }
                     });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Sender"
+                      name="sender"
+                      InputProps={{
+                        ...params.InputProps,
+                        style: { height: 40 }
+                      }}
+                      error={!!formDataErrors.sender}
+                      helperText={formDataErrors.sender}
+                    />
+                  )}
+                />
+              </div> */}
+              <div className="col-md-3 mb-3">
+                <Autocomplete
+                  disablePortal
+                  options={customerDetails}
+                  getOptionLabel={(option) => option.name || ''}
+                  isOptionEqualToValue={(option, value) => option.name === value.name}
+                  size="small"
+                  fullWidth
+                  value={formData.sender ? customerDetails.find((c) => c.name === formData.sender) : null}
+                  onChange={(event, newValue) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      sender: newValue?.name || '',
+                      code: newValue?.code || '',
+                      senderAddress: newValue?.address || '',
+                      senderGst: newValue?.gst || ''
+                    }));
                   }}
                   renderInput={(params) => (
                     <TextField
@@ -584,7 +636,7 @@ const handleDeleteKit = (kitNoToDelete) => {
                   onChange={(e) => setFormData({ ...formData, senderGst: e.target.value })}
                 />
               </div>
-                <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
                   options={receiverDetails}
@@ -649,7 +701,7 @@ const handleDeleteKit = (kitNoToDelete) => {
                   }
                 />
               </div>
-                <div className="col-md-3 mb-3">
+              <div className="col-md-3 mb-3">
                 <Autocomplete
                   options={allTransporters}
                   getOptionLabel={(option) => option.partyName || ''}
@@ -672,8 +724,8 @@ const handleDeleteKit = (kitNoToDelete) => {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      name= "transporterName"
-                      label= "Transporter Name"
+                      name="transporterName"
+                      label="Transporter Name"
                       InputProps={{
                         ...params.InputProps,
                         style: { height: 40 }
@@ -730,108 +782,118 @@ const handleDeleteKit = (kitNoToDelete) => {
                   </Tabs>
                 </Box>
                 <Box sx={{ padding: 2 }}>
-                    {value === 0 && (
-                      <>
-                          <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddRow}>
-                            Add Kit
-                          </Button>
-                          <Dialog open={open} onClose={() => setOpen(false)}>
-                            <DialogTitle>Select Kit</DialogTitle>
-                            <DialogContent sx={{ minWidth: 400 }}>
-                              <Autocomplete
-                                options={allKitId}
-                                getOptionLabel={(option) => option.kitNo || ''}
-                                value={selectedKit}
-                                onChange={(e, newValue) => setSelectedKit(newValue)}
-                                renderInput={(params) => <TextField {...params} label="Kit No" margin="dense" fullWidth />}
-                              />
-                              <TextField
-                                label="Kit Name"
-                                margin="dense"
-                                fullWidth
-                                value={selectedKit?.kitDesc || ''}
-                                disabled
-                              />
-                              <TextField
-                                label="Kit Quantity"
-                                margin="dense"
-                                fullWidth
-                                type="number"
-                                value={kitQty}
-                                onChange={(e) => setKitQty(e.target.value)}
-                              />
-                              <Autocomplete
-                                options={allHsnSacCode}
-                                getOptionLabel={(option) => option.code || ''}
-                                value={selectedhsn}
-                                onChange={(e, newValue) => setSelectedhsn(newValue)}
-                                renderInput={(params) => <TextField {...params} label="HSN/SAC" margin="dense" fullWidth />}
-                              />
-                            </DialogContent>
-                            <DialogActions>
-                              <Button onClick={() => setOpen(false)} color="secondary">Cancel</Button>
-                              <Button onClick={handleProceed} color="primary" variant="contained">Proceed</Button>
-                            </DialogActions>
-                          </Dialog>
-                          <TableContainer component={Paper} sx={{ mt: 2 }}>
-                            <Table>
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell>S.No</TableCell>
-                                  <TableCell>Action</TableCell>
-                                  <TableCell>Kit No</TableCell>
-                                  <TableCell>Kit Name</TableCell>
-                                  <TableCell>Kit Qty</TableCell>
-                                  <TableCell>HSN/SAC</TableCell>
-                                  <TableCell>Product Code</TableCell>
-                                  <TableCell>Product Name</TableCell>
-                                  <TableCell>Product Qty</TableCell>
-                                </TableRow>
-                              </TableHead>
-                                <TableBody>
-                                  {Object.entries(groupedData).map(([kitNo, kitRows], kitIndex, kitArray) => (
-                                    <React.Fragment key={kitNo}>
-                                      {kitRows.map((row, rowIndex) => (
-                                        <TableRow key={row.id}>
-                                          {rowIndex === 0 && (
-                                            <>
-                                              <TableCell rowSpan={kitRows.length}>{kitIndex + 1}</TableCell>
-                                              <TableCell rowSpan={kitRows.length}>
-                                              <FaTrash
-                                                onClick={() => handleDeleteKit(kitNo)}
-                                                style={{ cursor: "pointer", color: "red" }}
-                                                className="ms-4"
-                                              />
-                                              </TableCell>
-                                              <TableCell rowSpan={kitRows.length}>{row.kitNo}</TableCell>
-                                              <TableCell rowSpan={kitRows.length}>{row.kitName}</TableCell>
-                                              <TableCell rowSpan={kitRows.length}>{row.kitQty}</TableCell>
-                                              <TableCell rowSpan={kitRows.length}>{row.hsnsacCode}</TableCell>
-                                            </>
-                                          )}
+                  {value === 0 && (
+                    <>
+                      <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddRow}>
+                        Add Kit
+                      </Button>
+                      <Dialog open={open} onClose={() => setOpen(false)}>
+                        <DialogTitle>Select Kit</DialogTitle>
+                        <DialogContent sx={{ minWidth: 400 }}>
+                          <Autocomplete
+                            options={allKitId}
+                            getOptionLabel={(option) => option.kitNo || ''}
+                            value={selectedKit}
+                            onChange={(e, newValue) => setSelectedKit(newValue)}
+                            renderInput={(params) => <TextField {...params} label="Kit No" margin="dense" fullWidth />}
+                          />
+                          <TextField
+                            label="Kit Name"
+                            margin="dense"
+                            fullWidth
+                            value={selectedKit?.kitDesc || ''}
+                            disabled
+                          />
+                          <TextField
+                            label="Kit Quantity"
+                            margin="dense"
+                            fullWidth
+                            type="number"
+                            value={kitQty}
+                            onChange={(e) => setKitQty(e.target.value)}
+                          />
+                          <Autocomplete
+                            options={allHsnSacCode}
+                            getOptionLabel={(option) => option.code || ''}
+                            value={selectedhsn}
+                            onChange={(e, newValue) => setSelectedhsn(newValue)}
+                            renderInput={(params) => <TextField {...params} label="HSN/SAC" margin="dense" fullWidth />}
+                          />
+                        </DialogContent>
+                        <DialogActions>
+                          <Button onClick={() => setOpen(false)} color="secondary">Cancel</Button>
+                          <Button onClick={handleProceed} color="primary" variant="contained">Proceed</Button>
+                        </DialogActions>
+                      </Dialog>
+                      <TableContainer component={Paper} sx={{ mt: 2 }}>
+                        <Table>
+                          <TableHead>
+                            <TableRow>
+                              <TableCell>S.No</TableCell>
+                              <TableCell>Action</TableCell>
+                              <TableCell>Kit No</TableCell>
+                              <TableCell>Kit Name</TableCell>
+                              <TableCell>Kit Qty</TableCell>
+                              <TableCell>HSN/SAC</TableCell>
+                              <TableCell>Product Code</TableCell>
+                              <TableCell>Product Name</TableCell>
+                              <TableCell>Product Qty</TableCell>
+                              <TableCell>Actual Qty</TableCell>
+                            </TableRow>
+                          </TableHead>
+                          <TableBody>
+                            {Object.entries(groupedData).map(([kitNo, kitRows], kitIndex, kitArray) => (
+                              <React.Fragment key={kitNo}>
+                                {kitRows.map((row, rowIndex) => (
+                                  <TableRow key={row.id}>
+                                    {rowIndex === 0 && (
+                                      <>
+                                        <TableCell rowSpan={kitRows.length}>{kitIndex + 1}</TableCell>
+                                        <TableCell rowSpan={kitRows.length}>
+                                          <FaTrash
+                                            onClick={() => handleDeleteKit(kitNo)}
+                                            style={{ cursor: "pointer", color: "red" }}
+                                            className="ms-4"
+                                          />
+                                        </TableCell>
+                                        <TableCell rowSpan={kitRows.length}>{row.kitNo}</TableCell>
+                                        <TableCell rowSpan={kitRows.length}>{row.kitName}</TableCell>
+                                        <TableCell rowSpan={kitRows.length}>{row.kitQty}</TableCell>
+                                        <TableCell rowSpan={kitRows.length}>{row.hsnsacCode}</TableCell>
+                                      </>
+                                    )}
 
-                                          {rowIndex !== 0 && null}
+                                    {rowIndex !== 0 && null}
 
-                                          <TableCell>{row.productCode}</TableCell>
-                                          <TableCell>{row.productName}</TableCell>
-                                          <TableCell>{row.productQty}</TableCell>
-                                        </TableRow>
-                                      ))}
+                                    <TableCell>{row.productCode}</TableCell>
+                                    <TableCell>{row.productName}</TableCell>
+                                    <TableCell>{row.productQty}</TableCell>
+                                    <TableCell>
+                                      <input
+                                        type="number"
+                                        value={row.actualQty}
+                                        onChange={(e) => handleProductQtyChange(e.target.value, kitIndex, rowIndex)}
+                                        style={{ width: "80px" }}
+                                        min={0}
+                                      />
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
 
-                                      {/* horizontal line */}
-                                      {kitIndex !== kitArray.length - 1 && (
-                                        <TableRow>
-                                          <TableCell colSpan={8} sx={{ borderBottom: '2px solid #ccc' }} />
-                                        </TableRow>
-                                      )}
-                                    </React.Fragment>
-                                  ))}
-                                </TableBody>
-                            </Table>
+                                {/* horizontal line */}
+                                {kitIndex !== kitArray.length - 1 && (
+                                  <TableRow>
+                                    <TableCell colSpan={8} sx={{ borderBottom: '2px solid #ccc' }} />
+                                  </TableRow>
+                                )}
+                              </React.Fragment>
+                            ))}
+                          </TableBody>
+                        </Table>
 
-                          </TableContainer>
-                      </>
-                    )}
+                      </TableContainer>
+                    </>
+                  )}
                 </Box>
               </div>
             </>

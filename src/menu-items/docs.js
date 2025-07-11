@@ -67,7 +67,7 @@ const docsChildren = [
   },
   {
     id: 'retrievalIssueManifest',
-    title: 'Retrieval Issue Manifest',
+    title: 'Retrieval Manifest',
     type: 'item',
     url: '/docs/RetrievalIssueManifest',
     visible: hasScreenAccess('RIM')

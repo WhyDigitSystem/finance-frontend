@@ -29,6 +29,7 @@ import GeneratePdfTemp from 'utils/PdfTempTaxInvoice';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import GstTable from './GstTable';
+import FancyLoader from 'utils/FancyLoader';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -48,13 +49,14 @@ function getStyles(name, selectedTransactionNo, theme) {
 const TaxInvoiceDetails = ({ selectedRow }) => {
   const theme = useTheme();
   const [selectedTransactionNo, setSelectedTransactionNo] = useState([]);
+  const [partyCurrency, setPartyCurrency] = useState([]);
   const [tabIndex, setTabIndex] = useState(0);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
   const [downloadPdf, setDownloadPdf] = useState(false);
-  const [listViewRoute, setlistViewRoute] = useState(true);
   const [pdfData, setPdfData] = useState([]);
   const [confirmData, setConfirmData] = useState([]);
-  const [listView, setlistView] = useState(false);
+  const [listView, setlistView] = useState(true);
+  const [loading, setloading] = useState(true);
   const [editId, setEditId] = useState('');
   const [partyId, setPartyId] = useState('');
   const [stateCode, setStateCode] = useState('');
@@ -81,9 +83,16 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const selectedRowCalledRef = useRef(false);
   useEffect(() => {
+    // Always fetch data on mount
+    getAllTaxInvoice();
+    getTaxInvoiceDocId();
+    getAllType();
+    getPartyName();
+
+    // Also fetch if selectedRow changes
     if (selectedRow && !selectedRowCalledRef.current) {
       selectedRowCalledRef.current = true;
-      setlistViewRoute(false);
+      setlistView(false);
       getTaxInvoiceById({ original: selectedRow });
     }
   }, [selectedRow]);
@@ -93,8 +102,8 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
     approveStatus: '',
     approveBy: '',
     approveOn: '',
-    billCurr: 'INR',
-    billCurrRate: 1,
+    billCurr: '',
+    billCurrRate: '',
     partyShortName: '',
     // billCurr: '',
     // billCurrRate: '',
@@ -230,14 +239,6 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
     // { accessorKey: 'partyCode', header: 'Party Code', size: 140 }
   ];
 
-  useEffect(() => {
-    getAllTaxInvoice();
-    getTaxInvoiceDocId();
-    getAllType();
-    getPartyName();
-    // getJobCardNo();
-  }, [listViewRoute]);
-
   const handleOpenModalApprove = () => {
     setModalOpen(true);
     setApproveStatus('Approved');
@@ -249,7 +250,6 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
   };
 
   const handleCloseModal = () => setModalOpen(false);
-
   const handleConfirmAction = async () => {
     try {
       const result = await apiCalls(
@@ -321,7 +321,6 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
         });
         handleCloseModal();
         getAllTaxInvoice();
-        // setlistView(!listView);
       } else {
         console.error('API Error:', result.data);
       }
@@ -331,15 +330,15 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
   };
 
   const getAllTaxInvoice = async () => {
+    setloading(true)
     try {
       const result = await apiCalls(
         'get',
         `/taxInvoice/getAllTaxInvoiceByFinYearAndBranchCode?orgId=${orgId}&branchCode=${loginBranchCode}&finYear=${finYear}`
       );
-
       if (result.status === true) {
         setData(result.paramObjectsMap.taxInvoiceVO);
-        setlistView(!listView);
+        setloading(false);
       } else {
         // Handle error
         console.error('API Error:', result.data);
@@ -486,8 +485,8 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
       approveStatus: '',
       approveBy: '',
       approveOn: '',
-      billCurr: 'INR',
-      billCurrRate: 1,
+      billCurr: '',
+      billCurrRate: '',
       billOfEntry: '',
       bizMode: 'TAX',
       bizType: 'B2B',
@@ -624,132 +623,6 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
     ]);
   };
 
-  const handleSaveClear = () => {
-    setFormData({
-      address: '',
-      // addressType: '',
-      approveStatus: '',
-      approveBy: '',
-      approveOn: '',
-      billCurr: 'INR',
-      billCurrRate: 1,
-      billOfEntry: '',
-      bizMode: 'TAX',
-      bizType: 'B2B',
-      creditDays: '',
-      docId: '',
-      docDate: dayjs(),
-      gstType: '',
-      invoiceDate: null,
-      invoiceNo: '',
-      jobNo: '',
-      partyCode: '',
-      partyId: '',
-      partyName: '',
-      partyType: 'CUSTOMER',
-      pinCode: '',
-      // placeOfSupply: '',
-      recipientGSTIN: '',
-      remarks: '',
-      shipperInvoiceNo: '',
-      // stateCode: '',
-      stateNo: '',
-      status: 'PROFORMA',
-      supplierBillDate: '',
-      supplierBillNo: '',
-      vid: '',
-      vdate: '',
-      totalChargeAmountLc: '',
-      totalTaxAmountLc: '',
-      totalInvAmountLc: '',
-      roundOffAmountLc: '',
-      totalChargeAmountBc: '',
-      totalTaxAmountBc: '',
-      totalInvAmountBc: '',
-      totalTaxableAmountLc: '',
-      amountInWords: ''
-    });
-    getTaxInvoiceDocId();
-    setErrors({
-      address: '',
-      // addressType: '',
-      approveStatus: '',
-      approveBy: '',
-      approveOn: '',
-      billCurr: '',
-      billCurrRate: '',
-      billOfEntry: '',
-      bizMode: '',
-      bizType: '',
-      creditDays: '',
-      gstType: '',
-      invoiceDate: '',
-      invoiceNo: '',
-      jobNo: '',
-      partyCode: '',
-      partyId: '',
-      partyName: '',
-      partyType: '',
-      pinCode: '',
-      // placeOfSupply: '',
-      recipientGSTIN: '',
-      remarks: '',
-      shipperInvoiceNo: '',
-      // stateCode: '',
-      stateNo: '',
-      status: '',
-      supplierBillDate: '',
-      supplierBillNo: '',
-      vid: '',
-      vdate: ''
-    });
-    setEditId('');
-    // setAddressType('');
-    // setStateName('');
-    // setPlaceOfSupply('');
-    setWithdrawalsTableErrors({
-      sno: '',
-      chargeCode: '',
-      chargeName: '',
-      chargeType: '',
-      currency: '',
-      exRate: '',
-      exempted: '',
-      govChargeCode: '',
-      GSTPercent: '',
-      ledger: '',
-      description: '',
-      qty: '',
-      rate: '',
-      sac: '',
-      taxable: ''
-    });
-
-    setWithdrawalsTableData([
-      {
-        sno: '',
-        chargeCode: '',
-        chargeName: '',
-        chargeType: '',
-        currency: '',
-        exRate: '',
-        exempted: '',
-        govChargeCode: '',
-        GSTPercent: '',
-        ledger: '',
-        description: '',
-        qty: '',
-        rate: '',
-        sac: '',
-        taxable: ''
-      }
-    ]);
-  };
-
-  const handleTabSelect = (index) => {
-    setTabIndex(index);
-  };
-
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
@@ -765,6 +638,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
       getStateName(defaultPartyName.id);
       getJobCardNo(defaultPartyName.partyCode);
       getCurrencyAndExratesForMatchingParties(defaultPartyName.partyCode);
+      getCurrencyAndExratesFromParty(defaultPartyName.partyCode);
       setPartyId(defaultPartyName.id);
     }
   }, [partyNameList]);
@@ -943,6 +817,20 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
       setPartyCurrencyList([]); // Prevent undefined state
     }
   };
+  const getCurrencyAndExratesFromParty = async (partyCode) => {
+    try {
+      const response = await apiCalls('get', `/taxInvoice/getCurrencyFromPartyMaster?orgId=${orgId}&partyCode=${partyCode}`);
+
+      if (response?.paramObjectsMap?.mapp) {
+        setPartyCurrency(response.paramObjectsMap.mapp);
+      } else {
+        setPartyCurrency([]); // Set an empty array if data is missing
+      }
+    } catch (error) {
+      console.error('Error fetching currency details:', error);
+      setPartyCurrency([]); // Prevent undefined state
+    }
+  };
 
   const getChargeCodeDetail = async (type, rowIndex) => {
     // Check if chargeCodeList for the type is already cached
@@ -1032,6 +920,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
       getCreditDays(selectedEmp.partyCode);
       getJobCardNo(selectedEmp.partyCode);
       getCurrencyAndExratesForMatchingParties(selectedEmp.partyCode);
+      getCurrencyAndExratesFromParty(selectedEmp.partyCode);
       getStateName(selectedEmp.id);
       setPartyId(selectedEmp.id);
       getAllTransactionNo(selectedEmp.partyShortName);
@@ -1205,6 +1094,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
         getPlaceOfSupply(listValueVO.stateCode, listValueVO.partyId);
         getJobCardNo(listValueVO.partyCode);
         getCurrencyAndExratesForMatchingParties(listValueVO.partyCode);
+        getCurrencyAndExratesFromParty(listValueVO.partyCode);
         getAddessType(listValueVO.placeOfSupply, listValueVO.stateCode, listValueVO.partyId);
         console.log('DataToEdit ==>', listValueVO);
 
@@ -1314,6 +1204,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
     setlistView(!listView);
     if (!listView) {
       handleClear();
+      getAllTaxInvoice();
     }
   };
   const handleSave = async () => {
@@ -1421,15 +1312,15 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
     const annexureVO = isAnnexureEmpty
       ? null
       : taxInvoiceAnnexure.map((row) => ({
-          ...(editId && { id: row.id }),
-          skuType: row.skuType || '',
-          rate: parseInt(row.rate),
-          qty: parseInt(row.kitqty),
-          dsec: row.kitname,
-          kitId: row.kitid,
-          transDate: row.transactiondate ? dayjs(row.transactiondate).format('YYYY-MM-DD') : null,
-          transNo: row.transactionno
-        }));
+        ...(editId && { id: row.id }),
+        skuType: row.skuType || '',
+        rate: parseInt(row.rate),
+        qty: parseInt(row.kitqty),
+        dsec: row.kitname,
+        kitId: row.kitid,
+        transDate: row.transactiondate ? dayjs(row.transactiondate).format('YYYY-MM-DD') : null,
+        transNo: row.transactionno
+      }));
 
     const saveFormData = {
       ...(editId && { id: editId }),
@@ -1669,6 +1560,11 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
 
   return (
     <>
+      {loading && (
+        <div style={{ position: 'fixed', top: '45%', left: '45%', zIndex: 9999 }}>
+          <FancyLoader />
+        </div>
+      )}
       <ToastComponent />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row">
@@ -1731,7 +1627,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
               )}
             </div>
             <div className="justify-content-end">
-              {listView && (
+              {(listView && !loading) && (
                 <Button
                   variant="outlined"
                   startIcon={<AddIcon />}
@@ -1772,11 +1668,9 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
               )}
             </div>
           </div>
-          {listView && (
+          {(listView && !loading) && (
             <div>
-              {/* <CommonTable data={data} columns={columns} editCallback={editCity} countryVO={countryVO} stateVO={stateVO} /> */}
-
-              <CommonListViewTable data={data && data} columns={columns} blockEdit={true} toEdit={getTaxInvoiceById} />
+              <CommonListViewTable data={data} columns={columns} blockEdit={true} toEdit={getTaxInvoiceById} />
             </div>
           )}
           {!listView && (
@@ -1903,6 +1797,49 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                     disabled
                     value={formData.partyCode}
                     onChange={(e) => setFormData({ ...formData, partyCode: e.target.value })}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.billCurr}>
+                  <InputLabel id="billCurrency">Bill Currency</InputLabel>
+                  <Select
+                    labelId="billCurrency"
+                    id="billCurrency"
+                    disabled={formData.status === 'TAX'}
+                    label="Bill Currency"
+                    name="billCurrency"
+                    value={formData.billCurr}
+                    onChange={(e) => {
+                      const selectedCurrency = e.target.value;
+                      const matched = partyCurrency.find(item => item.currency === selectedCurrency);
+                      const exRate = matched?.sellingRate || "";
+
+                      setFormData({
+                        ...formData,
+                        billCurr: selectedCurrency,
+                        billCurrRate: exRate
+                      });
+                    }}
+                  >
+                    {partyCurrency.map((billCurrency) => (
+                      <MenuItem key={billCurrency.id} value={billCurrency.currency}>
+                        {billCurrency.currency}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.billCurr && <FormHelperText>{fieldErrors.billCurr}</FormHelperText>}
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth variant="filled">
+                  <TextField
+                    id="exRate"
+                    name="exRate"
+                    label="Ex. rate"
+                    size="small"
+                    value={formData.billCurrRate}
+                    disabled
                   />
                 </FormControl>
               </div>
@@ -2408,7 +2345,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                       style={{ width: '100px' }}
                                       onChange={(e) => handleTableInputChange(index, 'rate', e.target.value)}
                                       className={withdrawalsTableErrors[index]?.rate ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.rate && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2511,7 +2448,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.exRate && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2550,7 +2487,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.fcAmount && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2592,7 +2529,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.lcAmount && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2630,7 +2567,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.billAmount ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.billAmount && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2669,7 +2606,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.sac ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.sac && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2711,7 +2648,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.GSTPercent ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.GSTPercent && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2750,7 +2687,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.gst ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.gst && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
