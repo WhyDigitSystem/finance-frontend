@@ -58,7 +58,7 @@ const ARadjustmentOffset = () => {
   const [branch, setLoginBranch] = useState(localStorage.getItem('branch'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [selectedDocId, setSelectedDocId] = useState("");
+  const [selectedDocId, setSelectedDocId] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [modalPopupOpen, setModalPopupOpen] = useState(false);
   const [selectAll, setSelectAll] = useState(false);
@@ -81,7 +81,7 @@ const ARadjustmentOffset = () => {
     approveStatus: '',
     approveBy: '',
     approveOn: '',
-    status: 'EDIT',
+    status: 'EDIT'
   });
 
   const [fieldErrors, setFieldErrors] = useState({
@@ -110,13 +110,13 @@ const ARadjustmentOffset = () => {
       gstAmt: '',
       chargeAmt: '',
       outStanding: '',
-      settled: '',
+      settled: ''
     }
   ]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
-    const inputValue = type === "checkbox" ? checked : value;
+    const inputValue = type === 'checkbox' ? checked : value;
     if (name === 'customerName') {
       const selectedCustomer = allCustomerName.find((customer) => customer.customerName === value);
       if (selectedCustomer) {
@@ -140,7 +140,7 @@ const ARadjustmentOffset = () => {
     }
     setFieldErrors((prev) => ({
       ...prev,
-      [name]: false,
+      [name]: false
     }));
   };
   useEffect(() => {
@@ -179,7 +179,7 @@ const ARadjustmentOffset = () => {
       ...prev,
       totalSettled: totalSettledAmt.toFixed(2),
       netAmount: totalChargeAmt.toFixed(2),
-      onAccount: onAccount.toFixed(2),
+      onAccount: onAccount.toFixed(2)
     }));
   };
 
@@ -223,7 +223,7 @@ const ARadjustmentOffset = () => {
       gstAmt: '',
       chargeAmt: '',
       outStanding: '',
-      settled: '',
+      settled: ''
     });
     getArOffsetDocId();
     setFillGridData([]);
@@ -304,6 +304,9 @@ const ARadjustmentOffset = () => {
         amount: selectedReceipt.netAmount
       }));
     }
+    //
+    setFieldErrors({ ...fieldErrors, receiptDocId: '', amount: '' });
+    //
   };
   const getAllARAdjustmentOffset = async () => {
     try {
@@ -332,7 +335,6 @@ const ARadjustmentOffset = () => {
         await getAllReceiptId(receiptVO.subLedgerName);
         // await getAllReceiptId(receiptVO.subLedgerCode);
 
-
         setFormData({
           docNo: receiptVO.docId,
           docDate: dayjs(receiptVO.docDate),
@@ -342,8 +344,8 @@ const ARadjustmentOffset = () => {
           supplierRefNo: receiptVO.supplierRefNo,
           customerCode: receiptVO.subLedgerCode, // ✅ Ensure this exists
           customerName: receiptVO.subLedgerName, // ✅ Ensure this exists
-          customerCode: receiptVO.subLedgerCode,  // ✅ Optional alias for backward compatibility
-          customerName: receiptVO.subLedgerName,  // ✅ Optional alias for backward compatibility
+          customerCode: receiptVO.subLedgerCode, // ✅ Optional alias for backward compatibility
+          customerName: receiptVO.subLedgerName, // ✅ Optional alias for backward compatibility
           gainorLoss: receiptVO.forexGainOrLoss,
           totalSettled: receiptVO.totalSettled,
           onAccount: receiptVO.onAccount,
@@ -353,7 +355,7 @@ const ARadjustmentOffset = () => {
           approveBy: receiptVO.approveBy,
           approveOn: receiptVO.approveOn,
           approveStatus: receiptVO.approveStatus,
-          active: receiptVO.active ?? true,
+          active: receiptVO.active ?? true
         });
 
         setInVoiceDetailsData(
@@ -372,7 +374,7 @@ const ARadjustmentOffset = () => {
             tnxSettled: invoiceData.tnxSettled,
             chargeAmt: invoiceData.chargeAmt,
             gstAmt: invoiceData.gstAmt,
-            gainAmt: invoiceData.gainOrLoss,
+            gainAmt: invoiceData.gainOrLoss
           }))
         );
       } else {
@@ -414,7 +416,7 @@ const ARadjustmentOffset = () => {
           approveOn: listValueVO.approveOn,
           onAccount: listValueVO.onAccount,
           narration: listValueVO.narration,
-          approveStatus: listValueVO.approveStatus,
+          approveStatus: listValueVO.approveStatus
         });
         handleCloseModal();
         getAllARAdjustmentOffset();
@@ -423,7 +425,6 @@ const ARadjustmentOffset = () => {
       } else {
         console.error('API Error:', result.data);
       }
-
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -439,6 +440,12 @@ const ARadjustmentOffset = () => {
     const errors = {};
     if (!formData.amount) {
       errors.amount = 'Amount is required';
+    }
+    if (!formData.customerName) {
+      errors.customerName = 'Customer Name is required';
+    }
+    if (!formData.receiptDocId) {
+      errors.receiptDocId = 'Receipt Doc Id is required';
     }
 
     setFieldErrors(errors);
@@ -458,7 +465,7 @@ const ARadjustmentOffset = () => {
       exRate: parseFloat(row.exRate),
       invAmount: parseFloat(row.amount),
       outStanding: parseFloat(row.outStanding),
-      settled: parseFloat(row.settled),
+      settled: parseFloat(row.settled)
     }));
 
     const saveFormData = {
@@ -476,15 +483,11 @@ const ARadjustmentOffset = () => {
       receiptDocDate: formatDate(new Date(formData.receiptDocDate)),
       receiptDocId: formData.receiptDocId,
       subLedgerCode: formData.subLedgerCode || formData.customerCode, // ✅ Safe fallback
-      subLedgerName: formData.subLedgerName || formData.customerName, // ✅ Safe fallback
+      subLedgerName: formData.subLedgerName || formData.customerName // ✅ Safe fallback
     };
-    console.log('COde', formData.subLedgerName)
+    console.log('COde', formData.subLedgerName);
     try {
-      const response = await apiCalls(
-        'put',
-        `/aradjustmentoffset/updateCreateArAdjustmentOffSet`,
-        saveFormData
-      );
+      const response = await apiCalls('put', `/aradjustmentoffset/updateCreateArAdjustmentOffSet`, saveFormData);
 
       if (response.status === true) {
         showToast('success', editId ? 'AR-Adjustment Offset Updated Successfully' : 'AR-Adjustment Offset created successfully');
@@ -504,10 +507,7 @@ const ARadjustmentOffset = () => {
 
   const getAllCustomerName = async () => {
     try {
-      const response = await apiCalls(
-        'get',
-        `arreceivable/getCustomerNameAndCodeForReceipt?orgId=${orgId}`
-      );
+      const response = await apiCalls('get', `arreceivable/getCustomerNameAndCodeForReceipt?orgId=${orgId}`);
       if (response.status === true) {
         setAllCustomerName(response.paramObjectsMap.PartyMasterVO);
         console.log(response.paramObjectsMap.PartyMasterVO);
@@ -526,7 +526,7 @@ const ARadjustmentOffset = () => {
     { accessorKey: 'receiptDocDate', header: 'Receipt Doc Date', size: 140 },
     { accessorKey: 'onAccount', header: 'On Account', size: 140 },
     { accessorKey: 'status', header: 'Status', size: 140 },
-    { accessorKey: 'approveStatus', header: 'Approved Status', size: 140 },
+    { accessorKey: 'approveStatus', header: 'Approved Status', size: 140 }
   ];
 
   const handleFullGrid = () => {
@@ -552,12 +552,10 @@ const ARadjustmentOffset = () => {
   };
   const handleSubmitSelectedRows = async () => {
     const selectedData = selectedRows.map((index) => fillGridData[index]);
-    console.log("charge amt", selectedData);
+    console.log('charge amt', selectedData);
     const newData = selectedData
       .filter((data) => {
-        return !inVoiceDetailsData.some(
-          (item) => item.invNo === data.vid && item.invDate === data.vdate
-        );
+        return !inVoiceDetailsData.some((item) => item.invNo === data.vid && item.invDate === data.vdate);
       })
       .map((data) => ({
         id: Date.now() + Math.random(),
@@ -569,7 +567,7 @@ const ARadjustmentOffset = () => {
         gstAmt: data.gstamount || '',
         chargeAmt: data.chargeAmt || '',
         currency: data.acccurrency || '',
-        exRate: data.exrate || '',
+        exRate: data.exrate || ''
       }));
 
     if (newData.length < selectedData.length) {
@@ -614,7 +612,7 @@ const ARadjustmentOffset = () => {
     <div>
       <div className="card w-full p-6 bg-base-100 shadow-xl mb-3" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
-          <div className="d-flex flex-wrap justify-content-between mb-2" >
+          <div className="d-flex flex-wrap justify-content-between mb-2">
             <div className=" justify-content-start mb-0">
               {editId && !listView && (formData.status === 'SUBMIT' || listViewDataApprove.status === 'SUBMIT') && (
                 <>
@@ -631,43 +629,45 @@ const ARadjustmentOffset = () => {
                     </Stack>
                   )}
                   {/* {formData.status === 'SUBMIT' && formData.approveStatus === null && ( */}
-                  {listViewDataApprove.status === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
-                    <div className="d-flex" style={{ marginRight: '30px' }}>
-                      <Button
-                        variant="outlined"
-                        startIcon={<CheckCircleIcon />}
-                        size="small"
-                        style={{
-                          borderColor: '#4CAF50',
-                          color: '#4CAF50',
-                          fontWeight: 'bold',
-                          textTransform: 'none',
-                          padding: '2px 8px',
-                          fontSize: '0.8rem',
-                          marginRight: '10px'
-                        }}
-                        onClick={handleOpenModalApprove}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        startIcon={<CancelIcon />}
-                        size="small"
-                        style={{
-                          borderColor: '#F44336',
-                          color: '#F44336',
-                          fontWeight: 'bold',
-                          textTransform: 'none',
-                          padding: '2px 8px',
-                          fontSize: '0.8rem'
-                        }}
-                        onClick={handleOpenModalReject}
-                      >
-                        Reject
-                      </Button>
-                    </div>
-                  )}
+                  {listViewDataApprove.status === 'SUBMIT' &&
+                    formData.approveStatus !== 'Approved' &&
+                    formData.approveStatus !== 'Rejected' && (
+                      <div className="d-flex" style={{ marginRight: '30px' }}>
+                        <Button
+                          variant="outlined"
+                          startIcon={<CheckCircleIcon />}
+                          size="small"
+                          style={{
+                            borderColor: '#4CAF50',
+                            color: '#4CAF50',
+                            fontWeight: 'bold',
+                            textTransform: 'none',
+                            padding: '2px 8px',
+                            fontSize: '0.8rem',
+                            marginRight: '10px'
+                          }}
+                          onClick={handleOpenModalApprove}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          startIcon={<CancelIcon />}
+                          size="small"
+                          style={{
+                            borderColor: '#F44336',
+                            color: '#F44336',
+                            fontWeight: 'bold',
+                            textTransform: 'none',
+                            padding: '2px 8px',
+                            fontSize: '0.8rem'
+                          }}
+                          onClick={handleOpenModalReject}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    )}
                 </>
               )}
             </div>
@@ -789,12 +789,7 @@ const ARadjustmentOffset = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl
-                  fullWidth
-                  size="small"
-                  variant="outlined"
-                  error={!!fieldErrors.status}
-                >
+                <FormControl fullWidth size="small" variant="outlined" error={!!fieldErrors.status}>
                   <InputLabel id="status-label">Status</InputLabel>
                   <Select
                     label="Status"
@@ -806,14 +801,9 @@ const ARadjustmentOffset = () => {
                     {editId && <MenuItem value="SUBMIT">SUBMIT</MenuItem>}
                     <MenuItem value="EDIT">EDIT</MenuItem>
                   </Select>
-                  {fieldErrors.status && (
-                    <FormHelperText style={{ color: 'red' }}>
-                      {fieldErrors.status}
-                    </FormHelperText>
-                  )}
+                  {fieldErrors.status && <FormHelperText style={{ color: 'red' }}>{fieldErrors.status}</FormHelperText>}
                 </FormControl>
               </div>
-
             </div>
             <Tabs
               value={value}
@@ -846,7 +836,9 @@ const ARadjustmentOffset = () => {
                                 S.No
                               </th>
                               <th className="px-2 py-2 text-white text-center"># Invoice</th>
-                              <th className="px-2 py-2 text-white text-center" style={{ border: 'none' }}>Date</th>
+                              <th className="px-2 py-2 text-white text-center" style={{ border: 'none' }}>
+                                Date
+                              </th>
                               <th className="px-2 py-2 text-white text-center">Ref No</th>
                               <th className="px-2 py-2 text-white text-center">Ref Date</th>
                               <th className="px-2 py-2 text-white text-center">Currency</th>
@@ -898,7 +890,7 @@ const ARadjustmentOffset = () => {
                                   )}
                                 </td>
                                 <td style={{ border: 'none', padding: '1px 2px' }}>
-                                  <LocalizationProvider dateAdapter={AdapterDayjs} >
+                                  <LocalizationProvider dateAdapter={AdapterDayjs}>
                                     <DatePicker
                                       value={
                                         row.invDate
@@ -912,16 +904,14 @@ const ARadjustmentOffset = () => {
                                       onChange={(newValue) => {
                                         setInVoiceDetailsData((prev) =>
                                           prev.map((r) =>
-                                            r.id === row.id
-                                              ? { ...r, invDate: newValue ? newValue.format('YYYY-MM-DD') : null }
-                                              : r
+                                            r.id === row.id ? { ...r, invDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
                                           )
                                         );
                                         setInvoiceDetailsError((prev) => {
                                           const newErrors = [...prev];
                                           newErrors[index] = {
                                             ...newErrors[index],
-                                            invDate: !newValue ? 'Inv Date is required' : '',
+                                            invDate: !newValue ? 'Inv Date is required' : ''
                                           };
                                           return newErrors;
                                         });
@@ -932,15 +922,15 @@ const ARadjustmentOffset = () => {
                                             sx: {
                                               '& input': {
                                                 padding: '9px 8px',
-                                                fontSize: '14px',
-                                              },
-                                            },
+                                                fontSize: '14px'
+                                              }
+                                            }
                                           },
                                           sx: {
                                             width: '200px',
-                                            padding: '8px',
-                                          },
-                                        },
+                                            padding: '8px'
+                                          }
+                                        }
                                       }}
                                     />
                                     {invoiceDetailsError[index]?.invDate && (
@@ -1022,9 +1012,7 @@ const ARadjustmentOffset = () => {
                                       const value = e.target.value;
                                       const regex = /^[a-zA-Z0-9\s-]*$/;
                                       if (regex.test(value)) {
-                                        setInVoiceDetailsData((prev) =>
-                                          prev.map((r) => (r.id === row.id ? { ...r, currency: value } : r))
-                                        );
+                                        setInVoiceDetailsData((prev) => prev.map((r) => (r.id === row.id ? { ...r, currency: value } : r)));
                                         setInvoiceDetailsError((prev) => {
                                           const newErrors = [...prev];
                                           newErrors[index] = { ...newErrors[index], currency: !value ? 'Currency is required' : '' };
@@ -1124,9 +1112,7 @@ const ARadjustmentOffset = () => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9]*$/;
                                       if (isNumeric.test(value)) {
-                                        setInVoiceDetailsData((prev) =>
-                                          prev.map((r) => (r.id === row.id ? { ...r, gstAmt: value } : r))
-                                        );
+                                        setInVoiceDetailsData((prev) => prev.map((r) => (r.id === row.id ? { ...r, gstAmt: value } : r)));
                                         setInvoiceDetailsError((prev) => {
                                           const newErrors = [...prev];
                                           newErrors[index] = { ...newErrors[index], gstAmt: !value ? 'Tax Amt is required' : '' };
@@ -1249,8 +1235,9 @@ const ARadjustmentOffset = () => {
                                       }
 
                                       const newValue = parseFloat(value || 0);
-                                      const totalOtherSettled = inVoiceDetailsData.reduce((sum, r) =>
-                                        r.id !== row.id ? sum + parseFloat(r.settled || 0) : sum, 0
+                                      const totalOtherSettled = inVoiceDetailsData.reduce(
+                                        (sum, r) => (r.id !== row.id ? sum + parseFloat(r.settled || 0) : sum),
+                                        0
                                       );
 
                                       const totalSettledAfterChange = totalOtherSettled + newValue;
@@ -1272,9 +1259,7 @@ const ARadjustmentOffset = () => {
                                         });
                                         return;
                                       }
-                                      setInVoiceDetailsData((prev) =>
-                                        prev.map((r) => (r.id === row.id ? { ...r, settled: value } : r))
-                                      );
+                                      setInVoiceDetailsData((prev) => prev.map((r) => (r.id === row.id ? { ...r, settled: value } : r)));
                                       setInvoiceDetailsError((prev) => {
                                         const newErrors = [...prev];
                                         newErrors[index] = { ...newErrors[index], settled: '' };
@@ -1673,14 +1658,7 @@ const ARadjustmentOffset = () => {
                     </div>
                     <div className="col-md-3 mb-3">
                       <FormControl fullWidth variant="filled">
-                        <TextField
-                          id="onAccount"
-                          name="onAccount"
-                          label="On Account"
-                          size="small"
-                          value={formData.onAccount}
-                          disabled
-                        />
+                        <TextField id="onAccount" name="onAccount" label="On Account" size="small" value={formData.onAccount} disabled />
                       </FormControl>
                     </div>
                     <div className="col-md-6 mb-3">
@@ -1722,13 +1700,16 @@ const ARadjustmentOffset = () => {
                         <thead>
                           <tr style={{ backgroundColor: '#673AB7' }}>
                             <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                              <Checkbox sx={{
-                                color: 'white',
-                                '&.Mui-checked': {
+                              <Checkbox
+                                sx={{
                                   color: 'white',
-                                },
-                              }}
-                                checked={selectAll} onChange={handleSelectAll} />
+                                  '&.Mui-checked': {
+                                    color: 'white'
+                                  }
+                                }}
+                                checked={selectAll}
+                                onChange={handleSelectAll}
+                              />
                             </th>
                             <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                               S.No
@@ -1783,12 +1764,7 @@ const ARadjustmentOffset = () => {
                 <Button onClick={handleCloseModal} sx={{ color: '#673AB7' }}>
                   Cancel
                 </Button>
-                <Button
-                  color="secondary"
-                  onClick={handleSubmitSelectedRows}
-                  variant="contained"
-                  sx={{ backgroundColor: '#673AB7' }}
-                >
+                <Button color="secondary" onClick={handleSubmitSelectedRows} variant="contained" sx={{ backgroundColor: '#673AB7' }}>
                   Proceed
                 </Button>
               </DialogActions>

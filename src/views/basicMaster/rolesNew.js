@@ -144,6 +144,9 @@ const RolesNew = () => {
     console.log('THE VALUE IS:', value);
 
     setSelectedRes(value);
+    if (value.length > 0) {
+      setFieldErrors((prev) => ({ ...prev, selectedRes: '' }));
+    }
     console.log('responsibilities list from multiselect :', responsibilityList);
 
     const selectedResScreen = responsibilityList

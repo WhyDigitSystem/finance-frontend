@@ -155,7 +155,7 @@ const AdjustmentOffset = () => {
     }
     setFieldErrors((prev) => ({
       ...prev,
-      [name]: false
+      [name]: ''
     }));
   };
   useEffect(() => {
@@ -345,6 +345,7 @@ const AdjustmentOffset = () => {
         currency: selectedReceipt.currency
       }));
     }
+    setFieldErrors({ ...fieldErrors, receiptDocId: '', amount: '' });
   };
   const getAllARAdjustmentOffset = async () => {
     try {
@@ -430,7 +431,12 @@ const AdjustmentOffset = () => {
     if (!formData.amount) {
       errors.amount = 'Amount is required';
     }
-
+    if (!formData.customerName) {
+      errors.customerName = 'Supplier Name is required';
+    }
+    if (!formData.receiptDocId) {
+      errors.receiptDocId = 'Receipt Doc Id is required';
+    }
     setFieldErrors(errors);
 
     if (Object.keys(errors).length === 0) {
@@ -837,7 +843,7 @@ const AdjustmentOffset = () => {
                         </MenuItem>
                       ))}
                   </Select>
-                  {fieldErrors.customerName && <FormHelperText>{fieldErrors.customerName}</FormHelperText>}{' '}
+                  {fieldErrors.customerName && <FormHelperText>{fieldErrors.customerName}</FormHelperText>}
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">

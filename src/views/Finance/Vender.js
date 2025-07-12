@@ -18,7 +18,7 @@ import { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import CommonBulkUpload from 'utils/CommonBulkUpload';
 import UploadIcon from '@mui/icons-material/Upload';
-import { getAllActiveCitiesByState, getAllActiveStatesByCountry,getAllActiveCountries } from 'utils/CommonFunctions';
+import { getAllActiveCitiesByState, getAllActiveStatesByCountry, getAllActiveCountries } from 'utils/CommonFunctions';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
@@ -417,6 +417,10 @@ export const Vender = () => {
         }));
       }
     }
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: ''
+    }));
   };
 
   const handleCurrencyChange = (row, index, event) => {
@@ -489,7 +493,7 @@ export const Vender = () => {
         stateNo: '',
         contactPerson: '',
         contactPhoneNo: '',
-        email: '',
+        email: ''
       }
     ]);
     setPartyStateDataErrors([]);
@@ -586,28 +590,29 @@ export const Vender = () => {
       setErrorTable(updatedErrors);
     }
   };
-// const getAllActiveCitiesByState = async (state, orgId) => {
-//   try {
-//     const response = await apiCalls('get', `/commonmaster/city?state=${state}&orgId=${orgId}`);
-//     return response.paramObjectsMap.cityVO || [];
-//   } catch (error) {
-//     console.error('Error fetching cities:', error);
-//     return [];
-//   }
-// };
-const handleCountryChange = (row, rowIndex, e) => {
-  const selectedCountry = e.target.value;
-  const updatedData = [...partyStateData];
-  updatedData[rowIndex].country = selectedCountry;
-  updatedData[rowIndex].state = '';
-  updatedData[rowIndex].stateCode = '';
-  updatedData[rowIndex].stateNo = '';
-  updatedData[rowIndex].stateOptions = [];
-  setPartyStateData(updatedData);
-  getAvailableStates(selectedCountry, rowIndex, false); // false for Party State
-};const handleStateChange = (selectedOption, rowIndex) => {
+  // const getAllActiveCitiesByState = async (state, orgId) => {
+  //   try {
+  //     const response = await apiCalls('get', `/commonmaster/city?state=${state}&orgId=${orgId}`);
+  //     return response.paramObjectsMap.cityVO || [];
+  //   } catch (error) {
+  //     console.error('Error fetching cities:', error);
+  //     return [];
+  //   }
+  // };
+  const handleCountryChange = (row, rowIndex, e) => {
+    const selectedCountry = e.target.value;
     const updatedData = [...partyStateData];
-  
+    updatedData[rowIndex].country = selectedCountry;
+    updatedData[rowIndex].state = '';
+    updatedData[rowIndex].stateCode = '';
+    updatedData[rowIndex].stateNo = '';
+    updatedData[rowIndex].stateOptions = [];
+    setPartyStateData(updatedData);
+    getAvailableStates(selectedCountry, rowIndex, false); // false for Party State
+  };
+  const handleStateChange = (selectedOption, rowIndex) => {
+    const updatedData = [...partyStateData];
+
     if (selectedOption) {
       updatedData[rowIndex].state = selectedOption.stateName;
       updatedData[rowIndex].stateCode = selectedOption.stateCode;
@@ -619,30 +624,32 @@ const handleCountryChange = (row, rowIndex, e) => {
     }
     setPartyStateData(updatedData);
   };
-const handleCountryPartyAddress = (row, rowIndex, e) => {
-  const selectedCountry = e.target.value;
-  const updatedData = [...partyAddressData];
-  updatedData[rowIndex].country = selectedCountry;
-  updatedData[rowIndex].state = '';
-  updatedData[rowIndex].stateOptions = [];
-  setPartyAddressData(updatedData);
-  getAvailableStates(selectedCountry, rowIndex, true); 
-};const handleStatePartyAddress = async (selectedOption, rowIndex) => {
-  const updatedData = [...partyAddressData];
-  if (selectedOption) {
-    updatedData[rowIndex].state = selectedOption.stateName;
-    try {
-      const cityData = await getAllActiveCitiesByState(selectedOption.stateName, orgId);
-      updatedData[rowIndex].cityOptions = cityData || [];
-    } catch (error) {
-      console.error('Error fetching cities:', error);
-    }
-  } else {
+  const handleCountryPartyAddress = (row, rowIndex, e) => {
+    const selectedCountry = e.target.value;
+    const updatedData = [...partyAddressData];
+    updatedData[rowIndex].country = selectedCountry;
     updatedData[rowIndex].state = '';
-    updatedData[rowIndex].cityOptions = [];
-  }
-  setPartyAddressData(updatedData);
-};const getAvailableCountry = async () => {
+    updatedData[rowIndex].stateOptions = [];
+    setPartyAddressData(updatedData);
+    getAvailableStates(selectedCountry, rowIndex, true);
+  };
+  const handleStatePartyAddress = async (selectedOption, rowIndex) => {
+    const updatedData = [...partyAddressData];
+    if (selectedOption) {
+      updatedData[rowIndex].state = selectedOption.stateName;
+      try {
+        const cityData = await getAllActiveCitiesByState(selectedOption.stateName, orgId);
+        updatedData[rowIndex].cityOptions = cityData || [];
+      } catch (error) {
+        console.error('Error fetching cities:', error);
+      }
+    } else {
+      updatedData[rowIndex].state = '';
+      updatedData[rowIndex].cityOptions = [];
+    }
+    setPartyAddressData(updatedData);
+  };
+  const getAvailableCountry = async () => {
     try {
       const response = await apiCalls('get', `/commonmaster/country?orgid=${orgId}`);
       setCountryList(response.paramObjectsMap.countryVO);
@@ -652,7 +659,7 @@ const handleCountryPartyAddress = (row, rowIndex, e) => {
   };
   const handleCityPartyAddress = (selectedOption, rowIndex) => {
     const updatedData = [...partyAddressData];
-  
+
     if (selectedOption) {
       updatedData[rowIndex].city = selectedOption.cityName;
     } else {
@@ -660,26 +667,27 @@ const handleCountryPartyAddress = (row, rowIndex, e) => {
     }
     setPartyAddressData(updatedData);
   };
-const getAvailableStates = async (country, rowIndex, isAddressTab = false) => {
-  try {
-    const response = await apiCalls('get', `/warehouser/getAllStatesByCountry?country=${country}&orgId=${orgId}`);
-    if (response.status === true) {
-      if (isAddressTab) {
-        const updatedData = [...partyAddressData];
-        updatedData[rowIndex].stateOptions = response.paramObjectsMap.stateVO || [];
-        setPartyAddressData(updatedData);
+  const getAvailableStates = async (country, rowIndex, isAddressTab = false) => {
+    try {
+      const response = await apiCalls('get', `/warehouser/getAllStatesByCountry?country=${country}&orgId=${orgId}`);
+      if (response.status === true) {
+        if (isAddressTab) {
+          const updatedData = [...partyAddressData];
+          updatedData[rowIndex].stateOptions = response.paramObjectsMap.stateVO || [];
+          setPartyAddressData(updatedData);
+        } else {
+          const updatedData = [...partyStateData];
+          updatedData[rowIndex].stateOptions = response.paramObjectsMap.stateVO || [];
+          setPartyStateData(updatedData);
+        }
       } else {
-        const updatedData = [...partyStateData];
-        updatedData[rowIndex].stateOptions = response.paramObjectsMap.stateVO || [];
-        setPartyStateData(updatedData);
+        console.error('API Error:', response);
       }
-    } else {
-      console.error('API Error:', response);
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-};const [partyStateData, setPartyStateData] = useState([
+  };
+  const [partyStateData, setPartyStateData] = useState([
     {
       id: 1,
       state: '',
@@ -690,7 +698,7 @@ const getAvailableStates = async (country, rowIndex, isAddressTab = false) => {
       contactPhoneNo: '',
       email: '',
       stateCode: '',
-      stateOptions: [],
+      stateOptions: []
     }
   ]);
 
@@ -722,7 +730,7 @@ const getAvailableStates = async (country, rowIndex, isAddressTab = false) => {
       contactPhoneNo: '',
       email: '',
       stateCode: '',
-      stateOptions: [],
+      stateOptions: []
     };
     setPartyStateData([...partyStateData, newRow]);
     setPartyStateDataErrors([
@@ -755,7 +763,7 @@ const getAvailableStates = async (country, rowIndex, isAddressTab = false) => {
       country: '',
       stateGstIn: '',
       stateOptions: [],
-      cityOptions: [],
+      cityOptions: []
     }
   ]);
 
@@ -923,10 +931,10 @@ const getAvailableStates = async (country, rowIndex, isAddressTab = false) => {
     let partyAddressDataValid = true;
     const newTableErrors1 = partyAddressData.map((row) => {
       const rowErrors = {};
-      if (!row.state) {
-        rowErrors.state = 'State is required';
-        partyAddressDataValid = false;
-      }
+      // if (!row.state) {
+      //   rowErrors.state = 'State is required';
+      //   partyAddressDataValid = false;
+      // }
       return rowErrors;
     });
     setPartyAddressDataErrors(newTableErrors1);
@@ -1275,31 +1283,27 @@ const getAvailableStates = async (country, rowIndex, isAddressTab = false) => {
                                       </div>
                                     )}
                                   </td>
-                                     <td className="border px-2 py-2">
-                                      <Autocomplete
-                                        options={row.stateOptions || []}
-                                        getOptionLabel={(option) => option.stateName || ''}
-                                        disableClearable
-                                        sx={{ width: '200px' }}
-                                        value={
-                                          row.stateOptions?.find(
-                                            (option) => option.stateName === row.state
-                                          ) || null
-                                        }
-                                        onChange={(event, newValue) => {
-                                          handleStateChange(newValue, index);
-                                        }}
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            placeholder="Select State"
-                                            size="small"
-                                            error={!!partyAddressDataErrors[index]?.state}
-                                            helperText={partyAddressDataErrors[index]?.state}
-                                          />
-                                        )}
-                                      />
-                                    </td>
+                                  <td className="border px-2 py-2">
+                                    <Autocomplete
+                                      options={row.stateOptions || []}
+                                      getOptionLabel={(option) => option.stateName || ''}
+                                      disableClearable
+                                      sx={{ width: '200px' }}
+                                      value={row.stateOptions?.find((option) => option.stateName === row.state) || null}
+                                      onChange={(event, newValue) => {
+                                        handleStateChange(newValue, index);
+                                      }}
+                                      renderInput={(params) => (
+                                        <TextField
+                                          {...params}
+                                          placeholder="Select State"
+                                          size="small"
+                                          error={!!partyStateDataErrors[index]?.state}
+                                          helperText={partyStateDataErrors[index]?.state}
+                                        />
+                                      )}
+                                    />
+                                  </td>
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"
@@ -1533,56 +1537,48 @@ const getAvailableStates = async (country, rowIndex, isAddressTab = false) => {
                                       </div>
                                     )}
                                   </td>
-                                     <td className="border px-2 py-2">
-                                      <Autocomplete
-                                        options={row.stateOptions || []}
-                                        getOptionLabel={(option) => option.stateName || ''}
-                                        disableClearable
-                                        sx={{ width: '200px' }}
-                                        value={
-                                          row.stateOptions?.find(
-                                            (option) => option.stateName === row.state
-                                          ) || null
-                                        }
-                                        onChange={(event, newValue) => {
-                                          handleStatePartyAddress(newValue, index);
-                                        }}
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            placeholder="Select State"
-                                            size="small"
-                                            error={!!partyAddressDataErrors[index]?.state}
-                                            helperText={partyAddressDataErrors[index]?.state}
-                                          />
-                                        )}
-                                      />
-                                    </td>
-                                     <td className="border px-2 py-2">
-                                      <Autocomplete
-                                        options={row.cityOptions || []}
-                                        sx={{ width: '150px' }}
-                                        getOptionLabel={(option) => option.cityName || ''}
-                                        disableClearable
-                                        value={
-                                          row.cityOptions?.find(
-                                            (option) => option.cityName === row.city
-                                          ) || null
-                                        }
-                                        onChange={(event, newValue) => {
-                                          handleCityPartyAddress(newValue, index);
-                                        }}
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            placeholder="Select City"
-                                            size="small"
-                                            error={!!partyAddressDataErrors[index]?.city}
-                                            helperText={partyAddressDataErrors[index]?.city}
-                                          />
-                                        )}
-                                      />
-                                    </td>
+                                  <td className="border px-2 py-2">
+                                    <Autocomplete
+                                      options={row.stateOptions || []}
+                                      getOptionLabel={(option) => option.stateName || ''}
+                                      disableClearable
+                                      sx={{ width: '200px' }}
+                                      value={row.stateOptions?.find((option) => option.stateName === row.state) || null}
+                                      onChange={(event, newValue) => {
+                                        handleStatePartyAddress(newValue, index);
+                                      }}
+                                      renderInput={(params) => (
+                                        <TextField
+                                          {...params}
+                                          placeholder="Select State"
+                                          size="small"
+                                          error={!!partyAddressDataErrors[index]?.state}
+                                          helperText={partyAddressDataErrors[index]?.state}
+                                        />
+                                      )}
+                                    />
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <Autocomplete
+                                      options={row.cityOptions || []}
+                                      sx={{ width: '150px' }}
+                                      getOptionLabel={(option) => option.cityName || ''}
+                                      disableClearable
+                                      value={row.cityOptions?.find((option) => option.cityName === row.city) || null}
+                                      onChange={(event, newValue) => {
+                                        handleCityPartyAddress(newValue, index);
+                                      }}
+                                      renderInput={(params) => (
+                                        <TextField
+                                          {...params}
+                                          placeholder="Select City"
+                                          size="small"
+                                          error={!!partyAddressDataErrors[index]?.city}
+                                          helperText={partyAddressDataErrors[index]?.city}
+                                        />
+                                      )}
+                                    />
+                                  </td>
                                   <td className="border px-2 py-2">
                                     <input
                                       type="text"

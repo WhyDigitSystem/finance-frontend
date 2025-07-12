@@ -30,17 +30,17 @@ const CreateKit = () => {
   const [allassetType, setAllassetType] = useState([]);
   const [editId, setEditId] = useState('');
   const [data, setData] = useState(true);
-    const [value, setValue] = useState(0);
+  const [value, setValue] = useState(0);
   const [formData, setFormData] = useState({
-    kitId:'',
-    kitDesc:'',
-    partQty:'',
-    active: true,
+    kitId: '',
+    kitDesc: '',
+    partQty: '',
+    active: true
   });
   const [fieldErrors, setFieldErrors] = useState({
-    kitId:'',
-    kitDesc:'',
-    partQty:''
+    kitId: '',
+    kitDesc: '',
+    partQty: ''
   });
   const [detailsTableData, setDetailsTableData] = useState([
     {
@@ -52,7 +52,7 @@ const CreateKit = () => {
       assetDesc: '',
       assetQty: '',
       categoryOptions: [],
-      assetOptions: [],
+      assetOptions: []
     }
   ]);
   const [detailsTableErrors, setDetailsTableErrors] = useState([
@@ -70,23 +70,17 @@ const CreateKit = () => {
   };
   const handleClear = () => {
     setFormData({
-      kitId:'',
-      kitDesc:'',
-      partQty:'',
-      active: true,
+      kitId: '',
+      kitDesc: '',
+      partQty: '',
+      active: true
     });
     setFieldErrors({
-      kitId:'',
-      kitDesc:'',
-      partQty:''
+      kitId: '',
+      kitDesc: '',
+      partQty: ''
     });
-    setDetailsTableData([{ id: 1,       
-      assetType: '',
-      category: '',
-      categoryCode: '',
-      assetCode: '',
-      assetDesc: '',
-      assetQty: '' }]);
+    setDetailsTableData([{ id: 1, assetType: '', category: '', categoryCode: '', assetCode: '', assetDesc: '', assetQty: '' }]);
     setDetailsTableErrors('');
     setEditId('');
   };
@@ -98,14 +92,14 @@ const CreateKit = () => {
     { accessorKey: 'kitNo', header: 'Kit Id', size: 140 },
     { accessorKey: 'kitDesc', header: 'Description', size: 140 },
     { accessorKey: 'partQty', header: 'Part Qty', size: 140 },
-    { accessorKey: 'active', header: 'Active', size: 140 },
+    { accessorKey: 'active', header: 'Active', size: 140 }
   ];
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd, type } = e.target;
     let errorMessage = '';
-  if ((name === 'kitId' || name === 'kitDesc') && !/^[A-Za-z0-9- ]*$/.test(value)) {
-    errorMessage = 'Only Alphanumerics Allowed';
-  }
+    if ((name === 'kitId' || name === 'kitDesc') && !/^[A-Za-z0-9- ]*$/.test(value)) {
+      errorMessage = 'Only Alphanumerics Allowed';
+    }
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
       [name]: errorMessage
@@ -142,13 +136,17 @@ const CreateKit = () => {
       assetOptions: []
     };
     setDetailsTableData([...detailsTableData, newRow]);
-    setDetailsTableErrors([...detailsTableErrors, {       
-      assetType: '',
-      category: '',
-      categoryCode: '',
-      assetCode: '',
-      assetDesc: '',
-      assetQty: '' }]);
+    setDetailsTableErrors([
+      ...detailsTableErrors,
+      {
+        assetType: '',
+        category: '',
+        categoryCode: '',
+        assetCode: '',
+        assetDesc: '',
+        assetQty: ''
+      }
+    ]);
   };
   const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
     const rowIndex = table.findIndex((row) => row.id === id);
@@ -163,7 +161,7 @@ const CreateKit = () => {
     try {
       const result = await apiCalls('get', `/kitController/getAssetTypeByOrgId?orgid=${orgId}`);
       const allTypes = result.paramObjectsMap.assetTypeVO || [];
-      const activeTypes = allTypes.filter(type => type.active === 'Active');
+      const activeTypes = allTypes.filter((type) => type.active === 'Active');
       setAllTypes(activeTypes);
     } catch (err) {
       console.log('error', err);
@@ -186,23 +184,27 @@ const CreateKit = () => {
     }
   };
   const getAllAsset = async (assetCategory, rowIndex) => {
-    if(detailsTableData[rowIndex]?.assetType){
-    const assetType = detailsTableData[rowIndex]?.assetType;
-    try {
-      const response = await apiCalls('get', `/kitController/getAssetDescriptionByAssetCode?assetCategory=${assetCategory}&assetType=${assetType}&orgId=${orgId}`);
-      if (response.status === true) {
-        const updatedData = [...detailsTableData];
-        updatedData[rowIndex].assetOptions = response.paramObjectsMap.asset || [];
-        updatedData[rowIndex].assetCode = '';
-        updatedData[rowIndex].asset = '';
-        setDetailsTableData(updatedData);
-      } else {
-        console.error('API Error:', response);
+    if (detailsTableData[rowIndex]?.assetType) {
+      const assetType = detailsTableData[rowIndex]?.assetType;
+      try {
+        const response = await apiCalls(
+          'get',
+          `/kitController/getAssetDescriptionByAssetCode?assetCategory=${assetCategory}&assetType=${assetType}&orgId=${orgId}`
+        );
+        if (response.status === true) {
+          const updatedData = [...detailsTableData];
+          updatedData[rowIndex].assetOptions = response.paramObjectsMap.asset || [];
+          updatedData[rowIndex].assetCode = '';
+          updatedData[rowIndex].asset = '';
+          setDetailsTableData(updatedData);
+        } else {
+          console.error('API Error:', response);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
       }
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }}else{
-      showToast("error","Need Asset Type");
+    } else {
+      showToast('error', 'Need Asset Type');
     }
   };
   const getAllAssetCategoryByOrgId = async () => {
@@ -253,73 +255,79 @@ const CreateKit = () => {
   //     console.error('Error fetching data:', error);
   //   }
   // };
-const getAssetCategoryById = async (row) => {
-  setShowForm(true);
-  try {
-    const result = await apiCalls('get', `/kitController/getKitById?id=${row.original.id}`);
+  const getAssetCategoryById = async (row) => {
+    setShowForm(true);
+    try {
+      const result = await apiCalls('get', `/kitController/getKitById?id=${row.original.id}`);
 
-    if (result) {
-      const assetTypeVO = result.paramObjectsMap.kitVO;
-      setEditId(row.original.id);
-      setFormData({
-        createdBy: assetTypeVO.createdBy,
-        updatedBy: assetTypeVO.updatedBy,
-        orgId: assetTypeVO.orgId,
-        finYear: assetTypeVO.finyr,
-        kitId: assetTypeVO.kitNo,
-        kitDesc: assetTypeVO.kitDesc,
-        partQty: assetTypeVO.partQty,
-        active: assetTypeVO.active === 'Active' ? true : false,
-      });
+      if (result) {
+        const assetTypeVO = result.paramObjectsMap.kitVO;
+        setEditId(row.original.id);
+        setFormData({
+          createdBy: assetTypeVO.createdBy,
+          updatedBy: assetTypeVO.updatedBy,
+          orgId: assetTypeVO.orgId,
+          finYear: assetTypeVO.finyr,
+          kitId: assetTypeVO.kitNo,
+          kitDesc: assetTypeVO.kitDesc,
+          partQty: assetTypeVO.partQty,
+          active: assetTypeVO.active === 'Active' ? true : false
+        });
 
-      // Process each row to also populate categoryOptions and assetOptions
-      const updatedDetails = await Promise.all(
-        assetTypeVO.kitAssetVO.map(async (rowItem) => {
-          let categoryOptions = [];
-          let assetOptions = [];
+        // Process each row to also populate categoryOptions and assetOptions
+        const updatedDetails = await Promise.all(
+          assetTypeVO.kitAssetVO.map(async (rowItem) => {
+            let categoryOptions = [];
+            let assetOptions = [];
 
-          // Fetch category options
-          try {
-            const categoryRes = await apiCalls('get', `/kitController/getAssetCategoeyByAsset?assetType=${rowItem.assetType}&orgId=${orgId}`);
-            if (categoryRes.status === true) {
-              categoryOptions = categoryRes.paramObjectsMap.assetCategory || [];
+            // Fetch category options
+            try {
+              const categoryRes = await apiCalls(
+                'get',
+                `/kitController/getAssetCategoeyByAsset?assetType=${rowItem.assetType}&orgId=${orgId}`
+              );
+              if (categoryRes.status === true) {
+                categoryOptions = categoryRes.paramObjectsMap.assetCategory || [];
+              }
+            } catch (err) {
+              console.error('Error fetching category options', err);
             }
-          } catch (err) {
-            console.error("Error fetching category options", err);
-          }
 
-          // Fetch asset options
-          try {
-            const assetRes = await apiCalls('get', `/kitController/getAssetDescriptionByAssetCode?assetCategory=${rowItem.assetCategory}&assetType=${rowItem.assetType}&orgId=${orgId}`);
-            if (assetRes.status === true) {
-              assetOptions = assetRes.paramObjectsMap.asset || [];
+            // Fetch asset options
+            try {
+              const assetRes = await apiCalls(
+                'get',
+                `/kitController/getAssetDescriptionByAssetCode?assetCategory=${rowItem.assetCategory}&assetType=${rowItem.assetType}&orgId=${orgId}`
+              );
+              if (assetRes.status === true) {
+                assetOptions = assetRes.paramObjectsMap.asset || [];
+              }
+            } catch (err) {
+              console.error('Error fetching asset options', err);
             }
-          } catch (err) {
-            console.error("Error fetching asset options", err);
-          }
 
-          return {
-            id: rowItem.id,
-            assetQty: rowItem.quantity,
-            assetDesc: rowItem.assetName,
-            assetCode: rowItem.assetCodeId,
-            categoryCode: rowItem.categoryCode,
-            category: rowItem.assetCategory,
-            assetType: rowItem.assetType,
-            categoryOptions: categoryOptions,
-            assetOptions: assetOptions
-          };
-        })
-      );
+            return {
+              id: rowItem.id,
+              assetQty: rowItem.quantity,
+              assetDesc: rowItem.assetName,
+              assetCode: rowItem.assetCodeId,
+              categoryCode: rowItem.categoryCode,
+              category: rowItem.assetCategory,
+              assetType: rowItem.assetType,
+              categoryOptions: categoryOptions,
+              assetOptions: assetOptions
+            };
+          })
+        );
 
-      setDetailsTableData(updatedDetails);
-    } else {
-      showToast("error", "Failed to fetch Kit details");
+        setDetailsTableData(updatedDetails);
+      } else {
+        showToast('error', 'Failed to fetch Kit details');
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
     }
-  } catch (error) {
-    console.error('Error fetching data:', error);
-  }
-};
+  };
   const handleSave = async () => {
     const errors = {};
     if (!formData.kitId) {
@@ -362,7 +370,7 @@ const getAssetCategoryById = async (row) => {
         categoryCode: row.categoryCode,
         assetCodeId: row.assetCode,
         assetName: row.assetDesc,
-        quantity: parseInt(row.assetQty),
+        quantity: parseInt(row.assetQty)
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
@@ -376,7 +384,7 @@ const getAssetCategoryById = async (row) => {
         finyr: finYear,
         kitNo: formData.kitId,
         kitDesc: formData.kitDesc,
-        partQty: parseInt(formData.partQty),
+        partQty: parseInt(formData.partQty)
       };
       try {
         const response = await apiCalls('put', `/kitController/updateCreateKit`, saveFormData);
@@ -410,10 +418,17 @@ const getAssetCategoryById = async (row) => {
     updatedData[rowIndex].categoryOptions = [];
     setDetailsTableData(updatedData);
     getAllCategory(selectedAssetType, rowIndex);
+    setDetailsTableErrors((prevErrors) => ({
+      ...prevErrors,
+      [rowIndex]: {
+        ...prevErrors[rowIndex],
+        assetType: ''
+      }
+    }));
   };
   const handleCategoryChange = (selectedOption, rowIndex) => {
     const updatedData = [...detailsTableData];
-  
+
     if (selectedOption) {
       updatedData[rowIndex].category = selectedOption.category;
       updatedData[rowIndex].categoryCode = selectedOption.categoryCode;
@@ -423,13 +438,21 @@ const getAssetCategoryById = async (row) => {
     }
     getAllAsset(selectedOption.category, rowIndex);
     setDetailsTableData(updatedData);
+    setDetailsTableErrors((prevErrors) => ({
+      ...prevErrors,
+      [rowIndex]: {
+        ...prevErrors[rowIndex],
+        category: ''
+      }
+    }));
   };
   useEffect(() => {
-    if(detailsTableData.assetType && detailsTableData.category){
-  }},[detailsTableData])
+    if (detailsTableData.assetType && detailsTableData.category) {
+    }
+  }, [detailsTableData]);
   const handleAssetCodeChange = (selectedOption, rowIndex) => {
     const updatedData = [...detailsTableData];
-  
+
     if (selectedOption) {
       updatedData[rowIndex].assetCode = selectedOption.assetCode;
       updatedData[rowIndex].assetDesc = selectedOption.asset;
@@ -438,6 +461,13 @@ const getAssetCategoryById = async (row) => {
       updatedData[rowIndex].assetDesc = '';
     }
     setDetailsTableData(updatedData);
+    setDetailsTableErrors((prevErrors) => ({
+      ...prevErrors,
+      [rowIndex]: {
+        ...prevErrors[rowIndex],
+        assetCode: ''
+      }
+    }));
   };
   return (
     <>
@@ -458,7 +488,7 @@ const getAssetCategoryById = async (row) => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="kitId"
-                    label= "Kit Id"
+                    label="Kit Id"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -472,7 +502,7 @@ const getAssetCategoryById = async (row) => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="kitDesc"
-                    label= "Kit Description"
+                    label="Kit Description"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -486,11 +516,11 @@ const getAssetCategoryById = async (row) => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="partQty"
-                    label= "Part Quantity"
+                    label="Part Quantity"
                     variant="outlined"
                     size="small"
                     fullWidth
-                    type='number'
+                    type="number"
                     name="partQty"
                     value={formData.partQty}
                     onChange={handleInputChange}
@@ -563,105 +593,97 @@ const getAssetCategoryById = async (row) => {
                                         <td className="text-center">
                                           <div className="pt-2">{index + 1}</div>
                                         </td>
-                                      <td>
-                                        <select
-                                        value={row.assetType}
-                                        style={{ width: '150px' }}
-                                        onChange={(e) => handleAssetTypeChange(e, index)}
-                                        className={detailsTableErrors[index]?.assetType ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">--Select--</option>
-                                        {allTypes &&
-                                          allTypes.map((asset) => (
-                                            <option key={asset.id} value={asset.assetType}>
-                                              {asset.assetType}
-                                            </option>
-                                          ))}
-                                        </select>
-                                    {detailsTableErrors[index]?.assetType && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {detailsTableErrors[index].assetType}
-                                      </div>
-                                    )}
-                                      </td>
-                                     <td className="border px-2 py-2">
-                                      <Autocomplete
-                                        options={row.categoryOptions || []}
-                                        getOptionLabel={(option) => option.category || ''}
-                                        disableClearable
-                                        sx={{ width: '200px' }}
-                                        value={
-                                          row.categoryOptions?.find(
-                                            (option) => option.category === row.category
-                                          ) || null
-                                        }
-                                        onChange={(event, newValue) => {
-                                          handleCategoryChange(newValue, index);
-                                        }}
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            placeholder="Select Category"
-                                            size="small"
-                                            error={!!detailsTableErrors[index]?.category}
-                                            helperText={detailsTableErrors[index]?.category}
+                                        <td>
+                                          <select
+                                            value={row.assetType}
+                                            style={{ width: '150px' }}
+                                            onChange={(e) => handleAssetTypeChange(e, index)}
+                                            className={detailsTableErrors[index]?.assetType ? 'error form-control' : 'form-control'}
+                                          >
+                                            <option value="">--Select--</option>
+                                            {allTypes &&
+                                              allTypes.map((asset) => (
+                                                <option key={asset.id} value={asset.assetType}>
+                                                  {asset.assetType}
+                                                </option>
+                                              ))}
+                                          </select>
+                                          {detailsTableErrors[index]?.assetType && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailsTableErrors[index].assetType}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <Autocomplete
+                                            options={row.categoryOptions || []}
+                                            getOptionLabel={(option) => option.category || ''}
+                                            disableClearable
+                                            sx={{ width: '200px' }}
+                                            value={row.categoryOptions?.find((option) => option.category === row.category) || null}
+                                            onChange={(event, newValue) => {
+                                              handleCategoryChange(newValue, index);
+                                            }}
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                placeholder="Select Category"
+                                                size="small"
+                                                error={!!detailsTableErrors[index]?.category}
+                                                helperText={detailsTableErrors[index]?.category}
+                                              />
+                                            )}
                                           />
-                                        )}
-                                      />
-                                    </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.categoryCode}
-                                          disabled
-                                          style={{ width: '140px' }}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            setDetailsTableData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, categoryCode: value } : r))
-                                            );
-                                            setDetailsTableErrors((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                categoryCode: value ? '' : 'Category Code is required'
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={detailsTableErrors[index]?.categoryCode ? 'error form-control' : 'form-control'}
-                                        />
-                                        {detailsTableErrors[index]?.categoryCode && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {detailsTableErrors[index].categoryCode}
-                                          </div>
-                                        )}
-                                      </td>
-                                     <td className="border px-2 py-2">
-                                      <Autocomplete
-                                        options={row.assetOptions || []}
-                                        sx={{ width: '150px' }}
-                                        getOptionLabel={(option) => option.assetCode || ''}
-                                        disableClearable
-                                        value={
-                                          row.assetOptions?.find(
-                                            (option) => option.assetCode === row.assetCode
-                                          ) || null
-                                        }
-                                        onChange={(event, newValue) => {
-                                          handleAssetCodeChange(newValue, index);
-                                        }}
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            placeholder="Select Asset"
-                                            size="small"
-                                            error={!!detailsTableErrors[index]?.assetCode}
-                                            helperText={detailsTableErrors[index]?.assetCode}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <input
+                                            type="text"
+                                            value={row.categoryCode}
+                                            disabled
+                                            style={{ width: '140px' }}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setDetailsTableData((prev) =>
+                                                prev.map((r) => (r.id === row.id ? { ...r, categoryCode: value } : r))
+                                              );
+                                              setDetailsTableErrors((prev) => {
+                                                const newErrors = [...prev];
+                                                newErrors[index] = {
+                                                  ...newErrors[index],
+                                                  categoryCode: value ? '' : 'Category Code is required'
+                                                };
+                                                return newErrors;
+                                              });
+                                            }}
+                                            className={detailsTableErrors[index]?.categoryCode ? 'error form-control' : 'form-control'}
                                           />
-                                        )}
-                                      />
-                                    </td>
+                                          {detailsTableErrors[index]?.categoryCode && (
+                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                              {detailsTableErrors[index].categoryCode}
+                                            </div>
+                                          )}
+                                        </td>
+                                        <td className="border px-2 py-2">
+                                          <Autocomplete
+                                            options={row.assetOptions || []}
+                                            sx={{ width: '150px' }}
+                                            getOptionLabel={(option) => option.assetCode || ''}
+                                            disableClearable
+                                            value={row.assetOptions?.find((option) => option.assetCode === row.assetCode) || null}
+                                            onChange={(event, newValue) => {
+                                              handleAssetCodeChange(newValue, index);
+                                            }}
+                                            renderInput={(params) => (
+                                              <TextField
+                                                {...params}
+                                                placeholder="Select Asset"
+                                                size="small"
+                                                error={!!detailsTableErrors[index]?.assetCode}
+                                                helperText={detailsTableErrors[index]?.assetCode}
+                                              />
+                                            )}
+                                          />
+                                        </td>
                                         <td className="border px-2 py-2">
                                           <input
                                             type="text"
@@ -699,6 +721,13 @@ const getAssetCategoryById = async (row) => {
                                               setDetailsTableData((prev) =>
                                                 prev.map((r) => (r.id === row.id ? { ...r, assetQty: value } : r))
                                               );
+                                              setDetailsTableErrors((prevErrors) => ({
+                                                ...prevErrors,
+                                                [index]: {
+                                                  ...prevErrors[index],
+                                                  assetQty: ''
+                                                }
+                                              }));
                                             }}
                                             className={detailsTableErrors[index]?.assetQty ? 'error form-control' : 'form-control'}
                                           />
@@ -728,7 +757,7 @@ const getAssetCategoryById = async (row) => {
         </div>
       </div>
     </>
-  )
-}
+  );
+};
 
-export default CreateKit
+export default CreateKit;

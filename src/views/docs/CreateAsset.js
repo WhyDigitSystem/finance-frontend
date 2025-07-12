@@ -97,7 +97,7 @@ export const CreateAsset = () => {
     scrapValue: '',
     length: '',
     breath: '',
-    height: '',
+    height: ''
   });
 
   const columns = [
@@ -134,6 +134,7 @@ export const CreateAsset = () => {
     } else {
       setFormData({ ...formData, [name]: newValue });
     }
+    setFieldErrors({ ...fieldErrors, [name]: '' });
   };
 
   useEffect(() => {
@@ -148,7 +149,6 @@ export const CreateAsset = () => {
     try {
       const response = await apiCalls('get', `/master/getAllCustomers?orgId=${orgId}`);
       setCustomerDetails(response.paramObjectsMap.masterVOs);
-
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
@@ -206,7 +206,7 @@ export const CreateAsset = () => {
         setShowForm(true);
 
         setFormData({
-          active: assetDetailsVO.active === "Active", // ✅ Convert to boolean
+          active: assetDetailsVO.active === 'Active', // ✅ Convert to boolean
           type: assetDetailsVO.assetType || '',
           category: assetDetailsVO.category || '',
           categoryCode: assetDetailsVO.categoryCode || '',
@@ -229,7 +229,7 @@ export const CreateAsset = () => {
           taxRate: assetDetailsVO.taxRate || '',
           costPrice: assetDetailsVO.costPrice || '',
           sellPrice: assetDetailsVO.sellPrice || '',
-          scrapValue: assetDetailsVO.scrapValue || '',
+          scrapValue: assetDetailsVO.scrapValue || ''
         });
 
         console.log('DataToEdit', assetDetailsVO);
@@ -287,7 +287,7 @@ export const CreateAsset = () => {
       scrapValue: '',
       length: '',
       breath: '',
-      height: '',
+      height: ''
     });
 
     setEditId('');
@@ -315,7 +315,7 @@ export const CreateAsset = () => {
       scrapValue: '',
       length: '',
       breath: '',
-      height: '',
+      height: ''
     });
   };
 
@@ -331,10 +331,10 @@ export const CreateAsset = () => {
       errors.category = 'Category is required';
       hasError = true;
     }
-    if (!formData.categoryCode) {
-      errors.categoryCode = 'Category Code is required';
-      hasError = true;
-    }
+    // if (!formData.categoryCode) {
+    //   errors.categoryCode = 'Category Code is required';
+    //   hasError = true;
+    // }
     if (!formData.assetCode) {
       errors.assetCode = 'Asset Code is required';
       hasError = true;
@@ -410,7 +410,6 @@ export const CreateAsset = () => {
 
   const handleSave = async () => {
     if (validateForm()) {
-
       const formDataToSend = {
         ...(editId && { id: editId }),
         active: formData.active,
@@ -446,7 +445,7 @@ export const CreateAsset = () => {
         skuFrom: 0,
         skuTo: 0,
         taxRate: formData.taxRate,
-        weight: parseFloat(formData.grossWeight),
+        weight: parseFloat(formData.grossWeight)
       };
 
       console.log('Data to save is:', formDataToSend);
@@ -626,10 +625,8 @@ export const CreateAsset = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth >
-                  <InputLabel id="materialIdentification" >
-                    Material Identification
-                  </InputLabel>
+                <FormControl size="small" variant="outlined" fullWidth>
+                  <InputLabel id="materialIdentification">Material Identification</InputLabel>
                   <Select
                     labelId="materialIdentification"
                     id="materialIdentification"
@@ -646,18 +643,9 @@ export const CreateAsset = () => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth >
-                  <InputLabel id="design" >
-                    Design
-                  </InputLabel>
-                  <Select
-                    labelId="design"
-                    id="design"
-                    name="design"
-                    value={formData.design}
-                    label="design"
-                    onChange={handleInputChange}
-                  >
+                <FormControl size="small" variant="outlined" fullWidth>
+                  <InputLabel id="design">Design</InputLabel>
+                  <Select labelId="design" id="design" name="design" value={formData.design} label="design" onChange={handleInputChange}>
                     <MenuItem value={'ONLY SLEEVES FOLDABLE'}>ONLY SLEEVES FOLDABLE</MenuItem>
                     <MenuItem value={'WITH PALLET AND FOLDABLE'}>WITH PALLET AND FOLDABLE</MenuItem>
                   </Select>
@@ -682,7 +670,7 @@ export const CreateAsset = () => {
                   variant="outlined"
                   size="small"
                   name="eanUpc"
-                  type='number'
+                  type="number"
                   value={formData.eanUpc}
                   onChange={handleInputChange}
                   className="w-100"
@@ -695,7 +683,7 @@ export const CreateAsset = () => {
                   variant="outlined"
                   size="small"
                   name="grossWeight"
-                  type='number'
+                  type="number"
                   value={formData.grossWeight}
                   onChange={handleInputChange}
                   className="w-100"
@@ -708,7 +696,7 @@ export const CreateAsset = () => {
                   variant="outlined"
                   size="small"
                   name="chargeableWeight"
-                  type='number'
+                  type="number"
                   value={formData.chargeableWeight}
                   onChange={handleInputChange}
                   className="w-100"
@@ -729,8 +717,8 @@ export const CreateAsset = () => {
                     InputProps={{
                       sx: {
                         height: '40px',
-                        fontSize: '12px',
-                      },
+                        fontSize: '12px'
+                      }
                     }}
                     InputLabelProps={{
                       style: { fontSize: '12px' }
@@ -748,8 +736,8 @@ export const CreateAsset = () => {
                     InputProps={{
                       sx: {
                         height: '40px', // Adjust as needed
-                        fontSize: '12px', // Optional: smaller text
-                      },
+                        fontSize: '12px' // Optional: smaller text
+                      }
                     }}
                     InputLabelProps={{
                       style: { fontSize: '12px' } // Smaller label text
@@ -770,8 +758,8 @@ export const CreateAsset = () => {
                     InputProps={{
                       sx: {
                         height: '40px',
-                        fontSize: '12px',
-                      },
+                        fontSize: '12px'
+                      }
                     }}
                     InputLabelProps={{
                       style: { fontSize: '12px' }
@@ -789,8 +777,8 @@ export const CreateAsset = () => {
                     InputProps={{
                       sx: {
                         height: '38px',
-                        fontSize: '12px',
-                      },
+                        fontSize: '12px'
+                      }
                     }}
                     InputLabelProps={{
                       style: { fontSize: '12px' }
@@ -803,7 +791,7 @@ export const CreateAsset = () => {
                     variant="outlined"
                     size="small"
                     name="height"
-                    type='number'
+                    type="number"
                     value={formData.height}
                     onChange={handleInputChange}
                     error={!!fieldErrors.height}
@@ -811,8 +799,8 @@ export const CreateAsset = () => {
                     InputProps={{
                       sx: {
                         height: '38px',
-                        fontSize: '12px',
-                      },
+                        fontSize: '12px'
+                      }
                     }}
                     InputLabelProps={{
                       style: { fontSize: '12px' }
@@ -831,7 +819,7 @@ export const CreateAsset = () => {
                   variant="outlined"
                   size="small"
                   name="expectedLife"
-                  type='number'
+                  type="number"
                   value={formData.expectedLife}
                   onChange={handleInputChange}
                   className="w-100"
@@ -844,7 +832,7 @@ export const CreateAsset = () => {
                   variant="outlined"
                   size="small"
                   name="maintenancePeriod"
-                  type='number'
+                  type="number"
                   value={formData.maintenancePeriod}
                   onChange={handleInputChange}
                   className="w-100"
@@ -857,14 +845,14 @@ export const CreateAsset = () => {
                   variant="outlined"
                   size="small"
                   name="expectedTrips"
-                  type='number'
+                  type="number"
                   value={formData.expectedTrips}
                   onChange={handleInputChange}
                   className="w-100"
                 />
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl fullWidth size="small" >
+                <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label">HSN Code</InputLabel>
                   <Select
                     labelId="demo-simple-select-label"
@@ -890,7 +878,7 @@ export const CreateAsset = () => {
                   variant="outlined"
                   size="small"
                   name="taxRate"
-                  type='number'
+                  type="number"
                   value={formData.taxRate}
                   onChange={handleInputChange}
                   className="w-100"
@@ -905,7 +893,7 @@ export const CreateAsset = () => {
                   variant="outlined"
                   size="small"
                   name="costPrice"
-                  type='number'
+                  type="number"
                   value={formData.costPrice}
                   onChange={handleInputChange}
                   className="w-100"
@@ -918,7 +906,7 @@ export const CreateAsset = () => {
                   variant="outlined"
                   size="small"
                   name="sellPrice"
-                  type='number'
+                  type="number"
                   value={formData.sellPrice}
                   onChange={handleInputChange}
                   className="w-100"
@@ -931,7 +919,7 @@ export const CreateAsset = () => {
                   variant="outlined"
                   size="small"
                   name="scrapValue"
-                  type='number'
+                  type="number"
                   value={formData.scrapValue}
                   onChange={handleInputChange}
                   className="w-100"

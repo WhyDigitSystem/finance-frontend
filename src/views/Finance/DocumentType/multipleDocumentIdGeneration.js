@@ -102,8 +102,8 @@ const MultipleDocumentIdGeneration = () => {
   const handleFullGrid = () => {
     setModalOpen(true);
     if (branchNameGrid && finYearGrid && formData.docCode) {
-          getAllFillGrid();
-        }
+      getAllFillGrid();
+    }
   };
   const handleCloseModal = () => {
     setModalOpen(false);
@@ -119,29 +119,26 @@ const MultipleDocumentIdGeneration = () => {
 
   const handleSubmitSelectedRows = async () => {
     const selectedData = selectedRows.map((index) => fillGridData[index]);
-  
+
     const newData = selectedData.filter((data) => {
       return !detailsTableData.some(
-        (item) =>
-          item.screenName === data.screenName &&
-          item.screenCode === data.screenCode &&
-          item.docCode === data.docCode
+        (item) => item.screenName === data.screenName && item.screenCode === data.screenCode && item.docCode === data.docCode
       );
     });
-  
+
     if (newData.length < selectedData.length) {
       showToast('warning', 'Some of the selected items are already added!');
     }
     if (newData.length === 0) {
-      return; 
+      return;
     }
     setDetailsTableData((prev) => [...prev, ...newData]);
     console.log('New Data added:', newData);
     setSelectedRows([]);
     setSelectAll(false);
-    handleCloseModal(); 
+    handleCloseModal();
   };
-  
+
   const getAllScreens = async () => {
     try {
       const response = await apiCalls('get', `/commonmaster/getAllScreenNames`);
@@ -201,7 +198,7 @@ const MultipleDocumentIdGeneration = () => {
       const response = await apiCalls(
         'get',
         `/multipleDocIdGeneration/getPendingMultipleDocIdGeneration?branch=${branchNameGrid}&branchCode=${branchCodeId}&docCode=${formData.docCode}&finYear=${finYearGrid}&finYearIdentifier=${finYrId}&orgId=${orgId}`
-        );
+      );
 
       console.log('API Response:', response);
 
@@ -330,7 +327,7 @@ const MultipleDocumentIdGeneration = () => {
       branchName: '',
       branchCode: ''
     });
-    setDetailsTableData([])
+    setDetailsTableData([]);
     setEditId('');
     setIsEditMode(false);
   };
@@ -351,9 +348,9 @@ const MultipleDocumentIdGeneration = () => {
     if (!formData.screenCode) {
       errors.screenCode = 'Screen Code is required';
     }
-    if (!formData.screenName) {
-      errors.screenName = 'Screen Name is required';
-    }
+    // if (!formData.screenName) {
+    //   errors.screenName = 'Screen Name is required';
+    // }
 
     setFieldErrors(errors);
 
@@ -435,7 +432,7 @@ const MultipleDocumentIdGeneration = () => {
         </div>
         {listView ? (
           <div className="mt-4">
-            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={false} toEdit={getAllMultipleDocumentIdById}  />
+            <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={false} toEdit={getAllMultipleDocumentIdById} />
           </div>
         ) : (
           <>

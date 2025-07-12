@@ -359,7 +359,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
             lcAmount: row.lcAmt,
             billAmount: row.billAmt,
             gtaAmount: row.gtaAmount,
-            gstAmt: row.gstAmt,
+            gstAmt: row.gstAmt
           }))
         );
         setTdsCostInvoiceDTO(
@@ -435,22 +435,22 @@ const RCostInvoicegna = ({ selectedRow }) => {
     setFormData((prev) => ({
       ...prev,
       netBillCurrAmt: updatedChargerCostInvoice.some((item) => item.currency === 'INR')
-        ? ((totalLcAmount + totgstAmt) - totalTds).toFixed(2)
+        ? (totalLcAmount + totgstAmt - totalTds).toFixed(2)
         : (totalFcAmount + totfctaxAmt).toFixed(2),
       actBillCurrAmt: updatedChargerCostInvoice.some((item) => item.currency === 'INR')
         ? (totalLcAmount - totalTds).toFixed(2)
-        : (totalFcAmount).toFixed(2),
+        : totalFcAmount.toFixed(2),
       // netLcAmt: updatedChargerCostInvoice.some((item) => item.currency === 'INR')
       //   ? ((totalLcAmount + totgstAmt) - totalTds).toFixed(2)
       //   : (totalFcAmount + totgstPer).toFixed(2),
       // actLcAmt: updatedChargerCostInvoice.some((item) => item.currency === 'INR')
       //   ? (totalLcAmount - totalTds).toFixed(2)
       //   : (totalFcAmount).toFixed(2),
-      actLcAmt: (totalLcAmount).toFixed(2),
-      netLcAmt: Math.round(((totalLcAmount + totgstAmt) - totalTds) + totgtaAmt),
-      taxAmountLc: (totgstAmt).toFixed(2),
-      amtInWords: toWords(Math.round((totalLcAmount + totgstAmt) - totalTds) + totgtaAmt).toUpperCase(),
-      roundOff: parseFloat(((totalLcAmount + totgstAmt) - totalTds) - (Math.round((totalLcAmount + totgstAmt) - totalTds))).toFixed(2)
+      actLcAmt: totalLcAmount.toFixed(2),
+      netLcAmt: Math.round(totalLcAmount + totgstAmt - totalTds + totgtaAmt),
+      taxAmountLc: totgstAmt.toFixed(2),
+      amtInWords: toWords(Math.round(totalLcAmount + totgstAmt - totalTds) + totgtaAmt).toUpperCase(),
+      roundOff: parseFloat(totalLcAmount + totgstAmt - totalTds - Math.round(totalLcAmount + totgstAmt - totalTds)).toFixed(2)
     }));
   };
   // const calculateSummary = () => {
@@ -497,7 +497,10 @@ const RCostInvoicegna = ({ selectedRow }) => {
   }, [stateCodeList]);
   const getAllCostInvoiceByOrgId = async () => {
     try {
-      const result = await apiCalls('get', `/rCostInvoiceGna/getAllRCostInvoiceGnaByOrgId?orgId=${orgId}&finYear=${finYear}&branchCode=${branchCode}`);
+      const result = await apiCalls(
+        'get',
+        `/rCostInvoiceGna/getAllRCostInvoiceGnaByOrgId?orgId=${orgId}&finYear=${finYear}&branchCode=${branchCode}`
+      );
       setData(result.paramObjectsMap.rCostInvoiceGnaVO.reverse() || []);
       setShowForm(!showForm);
     } catch (err) {
@@ -646,12 +649,19 @@ const RCostInvoicegna = ({ selectedRow }) => {
           );
         }
       }
+      //
+      setTdsCostErrors((prev) => prev.map((err, i) => (i === index ? { ...err, [name]: '' } : err)));
+      //
     } else {
       setFormData((prevFormData) => ({
         ...prevFormData,
         [name]: value.toUpperCase()
       }));
     }
+    setFieldErrors((prev) => ({
+      ...prev,
+      [name]: ''
+    }));
   };
   const handleSelectPartyChange = (e) => {
     const value = e.target.value;
@@ -663,6 +673,11 @@ const RCostInvoicegna = ({ selectedRow }) => {
         partyCode: selectedParty.partyCode,
         creditDays: selectedParty.creditDays
       }));
+      setFieldErrors((prev) => ({
+        ...prev,
+        partyName: ''
+      }));
+
       getStateCode(selectedParty.partyCode);
       // getCurrencyAndExratesForMatchingParties(selectedParty.partyCode);
     } else {
@@ -913,7 +928,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
     if (!showForm) {
       handleClear();
     }
-  }
+  };
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -1060,6 +1075,13 @@ const RCostInvoicegna = ({ selectedRow }) => {
         return row;
       })
     );
+    setCostInvoiceErrors((prev) => ({
+      ...prev,
+      [index]: {
+        ...prev[index],
+        chargeAC: ''
+      }
+    }));
   };
 
   // const handleTypeChange = (event) => {
@@ -1299,7 +1321,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
                       onChange={handleSelectPartyChange}
                       name="partyName"
                       value={formData.partyName}
-                    // (partyName.length === 1 ? partyName[0].partyName : '')
+                      // (partyName.length === 1 ? partyName[0].partyName : '')
                     >
                       {partyName &&
                         partyName.map((item) => (
@@ -1513,7 +1535,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
                       name="currency"
                       value={formData.currency}
                       disabled={formData.mode === 'SUBMIT'}
-                    // || (exRates.length === 1 ? exRates[0].currency : '')
+                      // || (exRates.length === 1 ? exRates[0].currency : '')
                     >
                       {exRates &&
                         exRates.map((item) => (
@@ -2323,8 +2345,8 @@ const RCostInvoicegna = ({ selectedRow }) => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllRCostInvoiceById}
-            // isPdf={false}
-            // GeneratePdf={GeneratePdf}
+              // isPdf={false}
+              // GeneratePdf={GeneratePdf}
             />
           )}
           {/* {downloadPdf && <GeneratePdfTemp row={pdfData} />} */}
@@ -2336,7 +2358,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={handleConfirmAction}
         onCancel={handleCloseModal}
-      // onCancel={() => setModalOpen(false)}
+        // onCancel={() => setModalOpen(false)}
       />
     </>
   );

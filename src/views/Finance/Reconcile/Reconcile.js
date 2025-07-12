@@ -194,32 +194,59 @@ const Reconcile = () => {
         !lastRow.chequeDate ||
         // !lastRow.clearedDate ||
         !lastRow.deposit ||
-        !lastRow.withdrawal ||
-        !lastRow.bankRef
+        !lastRow.withdrawal
+        // !lastRow.bankRef
       );
     }
     return false;
   };
 
+  //
   const displayRowError = (table) => {
-    if (table === withdrawalsTableErrors) {
+    if (table === withdrawalsTableData) {
       setWithdrawalsTableErrors((prevErrors) => {
         const newErrors = [...prevErrors];
+        const lastRow = table[table.length - 1];
+
         newErrors[table.length - 1] = {
-          ...newErrors[table.length - 1],
-          voucherNo: !table[table.length - 1].voucherNo ? 'Voucher No is required' : '',
-          voucherDate: !table[table.length - 1].voucherDate ? 'Voucher Date is required' : '',
-          chequeNo: !table[table.length - 1].chequeNo ? 'Cheque No is required' : '',
-          chequeDate: !table[table.length - 1].chequeDate ? 'Cheque Date is required' : '',
-          clearedDate: !table[table.length - 1].clearedDate ? 'Cleared Date is required' : '',
-          withdrawal: !table[table.length - 1].withdrawal ? 'Withdrawal is required' : '',
-          bankRef: !table[table.length - 1].bankRef ? 'Bank Ref is required' : '',
-          deposit: !table[table.length - 1].deposit ? 'Deposit is required' : ''
+          sno: '',
+          voucherNo: !lastRow.voucherNo ? 'Voucher No is required' : '',
+          voucherDate: !lastRow.voucherDate ? 'Voucher Date is required' : '',
+          chequeNo: !lastRow.chequeNo ? 'Cheque No is required' : '',
+          chequeDate: !lastRow.chequeDate ? 'Cheque Date is required' : '',
+          // clearedDate: !lastRow.clearedDate ? 'Cleared Date is required' : '',
+          withdrawal: !lastRow.withdrawal ? 'Withdrawal is required' : '',
+          // bankRef: !lastRow.bankRef ? 'Bank Ref is required' : '',
+          deposit: !lastRow.deposit ? 'Deposit is required' : '',
+          narration: ''
         };
+
         return newErrors;
       });
     }
   };
+
+  //
+
+  // const displayRowError = (table) => {
+  //   if (table === withdrawalsTableErrors) {
+  //     setWithdrawalsTableErrors((prevErrors) => {
+  //       const newErrors = [...prevErrors];
+  //       newErrors[table.length - 1] = {
+  //         ...newErrors[table.length - 1],
+  //         voucherNo: !table[table.length - 1].voucherNo ? 'Voucher No is required' : '',
+  //         voucherDate: !table[table.length - 1].voucherDate ? 'Voucher Date is required' : '',
+  //         chequeNo: !table[table.length - 1].chequeNo ? 'Cheque No is required' : '',
+  //         chequeDate: !table[table.length - 1].chequeDate ? 'Cheque Date is required' : '',
+  //         clearedDate: !table[table.length - 1].clearedDate ? 'Cleared Date is required' : '',
+  //         withdrawal: !table[table.length - 1].withdrawal ? 'Withdrawal is required' : '',
+  //         bankRef: !table[table.length - 1].bankRef ? 'Bank Ref is required' : '',
+  //         deposit: !table[table.length - 1].deposit ? 'Deposit is required' : ''
+  //       };
+  //       return newErrors;
+  //     });
+  //   }
+  // };
 
   // const handleDeleteRow = (id, table, setTable, errorTable, setErrorTable) => {
   //   const rowIndex = table.findIndex((row) => row.id === id);
@@ -240,6 +267,7 @@ const Reconcile = () => {
       totalDeposit: '',
       totalWithdrawal: ''
     });
+    setFormDataErrors({});
 
     // Set the table to only have one empty row
     setWithdrawalsTableData([
@@ -378,106 +406,104 @@ const Reconcile = () => {
     if (!formData.bankAccount) errors.bankAccount = 'Bank Account is required';
 
     let detailsTableDataValid = true;
-    // if (!withdrawalsTableData || withdrawalsTableData.length === 0) {
-    //   detailsTableDataValid = false;
-    //   setWithdrawalsTableErrors([{ general: 'detail Table Data is required' }]);
-    // }
-    // else {
-    //   const newTableErrors = withdrawalsTableData.map((row, index) => {
-    //     const rowErrors = {};
-    //     if (!row.voucherNo) {
-    //       rowErrors.voucherNo = 'VoucherNo is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.voucherDate) {
-    //       rowErrors.voucherDate = 'voucherDate is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.chequeNo) {
-    //       rowErrors.chequeNo = 'cheque No is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.chequeDate) {
-    //       rowErrors.chequeDate = 'cheque Date is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.deposit) {
-    //       rowErrors.deposit = 'deposit is required';
-    //       detailsTableDataValid = false;
-    //     }
-    //     if (!row.withdrawal) {
-    //       rowErrors.withdrawal = 'withdrawal is required';
-    //       detailsTableDataValid = false;
-    //     }
+    if (!withdrawalsTableData || withdrawalsTableData.length === 0) {
+      detailsTableDataValid = false;
+      setWithdrawalsTableErrors([{ general: 'detail Table Data is required' }]);
+    } else {
+      const newTableErrors = withdrawalsTableData.map((row, index) => {
+        const rowErrors = {};
+        if (!row.voucherNo) {
+          rowErrors.voucherNo = 'VoucherNo is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.voucherDate) {
+          rowErrors.voucherDate = 'voucherDate is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.chequeNo) {
+          rowErrors.chequeNo = 'cheque No is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.chequeDate) {
+          rowErrors.chequeDate = 'cheque Date is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.deposit) {
+          rowErrors.deposit = 'deposit is required';
+          detailsTableDataValid = false;
+        }
+        if (!row.withdrawal) {
+          rowErrors.withdrawal = 'withdrawal is required';
+          detailsTableDataValid = false;
+        }
 
-    //     if (row.active === undefined || row.active === null) {
-    //       rowErrors.active = 'Active is required';
-    //       detailsTableDataValid = false;
-    //     }
+        if (row.active === undefined || row.active === null) {
+          rowErrors.active = 'Active is required';
+          detailsTableDataValid = false;
+        }
 
-    //     return rowErrors;
-    //   });
-    //   setWithdrawalsTableErrors(newTableErrors);
-    // }
-    // setFormDataErrors(errors);
+        return rowErrors;
+      });
+      setWithdrawalsTableErrors(newTableErrors);
+    }
+    setFormDataErrors(errors);
+    if (Object.keys(errors).length === 0 && detailsTableDataValid)
+      if (detailsTableDataValid) {
+        setIsLoading(true);
 
-    // if (Object.keys(errors).length === 0 && detailsTableDataValid) {
-    if (detailsTableDataValid) {
-      setIsLoading(true);
+        const detailsVo = withdrawalsTableData.map((row) => ({
+          ...(editId && { id: row.id }),
+          voucherNo: row.voucherNo,
+          voucherDate: row.voucherDate,
+          chequeNo: row.chequeNo,
+          chequeDate: row.voucherDate,
+          deposit: parseInt(row.deposit),
+          withdrawal: parseInt(row.withdrawal),
+          bankRef: row.bankRef
+          // active: row.active === 'true' || row.active === true // Convert string 'true' to boolean true if necessary
+        }));
 
-      const detailsVo = withdrawalsTableData.map((row) => ({
-        ...(editId && { id: row.id }),
-        voucherNo: row.voucherNo,
-        voucherDate: row.voucherDate,
-        chequeNo: row.chequeNo,
-        chequeDate: row.voucherDate,
-        deposit: parseInt(row.deposit),
-        withdrawal: parseInt(row.withdrawal),
-        bankRef: row.bankRef
-        // active: row.active === 'true' || row.active === true // Convert string 'true' to boolean true if necessary
-      }));
+        const saveFormData = {
+          ...(editId && { id: editId }),
+          // active: formData.active,
+          // docId: formData.docId,
+          // docDate: formData.docDate,
+          bankStmtDate: formData.bankStmtDate ? dayjs(formData.bankStmtDate).format('YYYY-MM-DD') : null,
+          bankAccount: formData.bankAccount,
+          remarks: formData.remarks,
+          particularsReconcileDTO: detailsVo,
+          createdBy: loginUserName,
+          totalDeposit: parseInt(formData.totalDeposit),
+          totalWithdrawal: parseInt(formData.totalWithdrawal),
+          orgId: orgId,
+          branch: branch,
+          branchCode: loginBranchCode,
+          finYear: finYear
+        };
 
-      const saveFormData = {
-        ...(editId && { id: editId }),
-        // active: formData.active,
-        // docId: formData.docId,
-        // docDate: formData.docDate,
-        bankStmtDate: formData.bankStmtDate ? dayjs(formData.bankStmtDate).format('YYYY-MM-DD') : null,
-        bankAccount: formData.bankAccount,
-        remarks: formData.remarks,
-        particularsReconcileDTO: detailsVo,
-        createdBy: loginUserName,
-        totalDeposit: parseInt(formData.totalDeposit),
-        totalWithdrawal: parseInt(formData.totalWithdrawal),
-        orgId: orgId,
-        branch: branch,
-        branchCode: loginBranchCode,
-        finYear: finYear
-      };
+        console.log('DATA TO SAVE IS:', saveFormData);
 
-      console.log('DATA TO SAVE IS:', saveFormData);
-
-      try {
-        const response = await apiCalls('put', '/transaction/updateCreateReconcileBank', saveFormData);
-        if (response.status === true) {
-          console.log('Response:', response);
-          showToast('success', editId ? 'Reconcile Bank updated successfully' : 'Reconcile Bank created successfully');
-          getAllReconsileBank();
-          getNewBankDocId();
-          handleClear();
-          setIsLoading(false);
-        } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'List of value creation failed');
+        try {
+          const response = await apiCalls('put', '/transaction/updateCreateReconcileBank', saveFormData);
+          if (response.status === true) {
+            console.log('Response:', response);
+            showToast('success', editId ? 'Reconcile Bank updated successfully' : 'Reconcile Bank created successfully');
+            getAllReconsileBank();
+            getNewBankDocId();
+            handleClear();
+            setIsLoading(false);
+          } else {
+            showToast('error', response.paramObjectsMap.errorMessage || 'List of value creation failed');
+            setIsLoading(false);
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          showToast('error', 'List of value creation failed');
           setIsLoading(false);
         }
-      } catch (error) {
-        console.error('Error:', error);
-        showToast('error', 'List of value creation failed');
-        setIsLoading(false);
+      } else {
+        // setFieldErrors(errors);
       }
-    } else {
-      // setFieldErrors(errors);
-    }
   };
 
   const getReconcileById = async (row) => {
@@ -647,7 +673,10 @@ const Reconcile = () => {
                     label="Doc Date"
                     disabled
                     slotProps={{
-                      textField: { size: 'small', clearable: true }
+                      textField: {
+                        size: 'small',
+                        clearable: true
+                      }
                     }}
                     format="DD-MM-YYYY"
                     value={formData.docDate ? dayjs(formData.docDate) : null}
@@ -660,11 +689,19 @@ const Reconcile = () => {
                   <DatePicker
                     label="Bank Stmt Date"
                     slotProps={{
-                      textField: { size: 'small', clearable: true }
+                      textField: {
+                        size: 'small',
+                        clearable: true,
+                        error: !!formDataErrors.bankStmtDate,
+                        helperText: formDataErrors.bankStmtDate
+                      }
                     }}
                     format="DD-MM-YYYY"
                     value={formData.bankStmtDate ? dayjs(formData.docDate) : null}
-                    onChange={(newValue) => setFormData({ ...formData, bankStmtDate: newValue })}
+                    onChange={(newValue) => {
+                      setFormData({ ...formData, bankStmtDate: newValue });
+                      setFormDataErrors({ ...formDataErrors, bankStmtDate: '' });
+                    }}
                   />
                 </LocalizationProvider>
               </div>
@@ -679,18 +716,20 @@ const Reconcile = () => {
                   onChange={(e) => setFormData({ ...formData, bankAccount: e.target.value })}
                 /> */}
 
-                <FormControl fullWidth size="small">
+                <FormControl fullWidth size="small" error={!!formDataErrors.bankAccount}>
                   <InputLabel id="demo-simple-select-label" required>
                     Bank Account
                   </InputLabel>
                   <Select
                     labelId="bankAccount"
                     value={formData.bankAccount}
-                    onChange={(e) => setFormData({ ...formData, bankAccount: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, bankAccount: e.target.value });
+                      setFormDataErrors({ ...formDataErrors, bankAccount: '' });
+                    }}
                     label="Bank Account"
                     required
-                    // error={!!errors.bankAccount}
-                    // helperText={errors.bankAccount}
+                    helperText={formDataErrors.bankAccount}
                   >
                     {bankName &&
                       bankName.map((bank, index) => (
@@ -707,7 +746,6 @@ const Reconcile = () => {
                   size="small"
                   value={formData.remarks}
                   fullWidth
-                  required
                   onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                 />
               </div>
@@ -760,31 +798,31 @@ const Reconcile = () => {
                               <table className="table table-bordered">
                                 <thead>
                                   <tr style={{ backgroundColor: '#673AB7' }}>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '5%' }}>
                                       Action
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '5%' }}>
                                       S.No
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '10%' }}>
                                       Voucher No
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '240px' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '20%' }}>
                                       Voucher Date
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '10%' }}>
                                       Chq/DD No
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '240px' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '20%' }}>
                                       Chq/DD Date
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '10%' }}>
                                       Deposit
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '10%' }}>
                                       Withdrawal
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '150px' }}>
+                                    <th className="px-2 py-2 text-white text-center" style={{ width: '10%' }}>
                                       Bank Ref
                                     </th>
                                   </tr>
@@ -855,7 +893,10 @@ const Reconcile = () => {
                                                   : null
                                               }
                                               slotProps={{
-                                                textField: { size: 'small', clearable: true }
+                                                textField: {
+                                                  size: 'small'
+                                                  // clearable: true
+                                                }
                                               }}
                                               format="DD-MM-YYYY"
                                               onChange={(newValue) => {
@@ -943,7 +984,10 @@ const Reconcile = () => {
                                                   : null
                                               }
                                               slotProps={{
-                                                textField: { size: 'small', clearable: true }
+                                                textField: {
+                                                  size: 'small'
+                                                  // clearable: true
+                                                }
                                               }}
                                               format="DD-MM-YYYY"
                                               onChange={(newValue) => {

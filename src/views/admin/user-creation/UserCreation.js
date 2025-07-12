@@ -179,6 +179,7 @@ const UserCreation = () => {
         }, 0);
       }
     }
+    setFieldErrors({ ...fieldErrors, [name]: '' });
   };
 
   // Handling Select's onChange
@@ -203,6 +204,13 @@ const UserCreation = () => {
         employeeCode: selectedEmp.employeeCode,
         employeeName: selectedEmp.employeeName,
         email: selectedEmp.email
+      }));
+      setFieldErrors((prevErrors) => ({
+        ...prevErrors,
+        employeeCode: '',
+        employeeName: '',
+        email: '',
+        userName: ''
       }));
     } else {
       console.log('No employee found with the given code:', value); // Log if no employee is found
@@ -825,16 +833,14 @@ const UserCreation = () => {
                                             onChange={(newValue) => {
                                               setRoleTableData((prev) =>
                                                 prev.map((r) =>
-                                                  r.id === row.id
-                                                    ? { ...r, startDate: newValue ? newValue.format('YYYY-MM-DD') : null }
-                                                    : r
+                                                  r.id === row.id ? { ...r, startDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
                                                 )
                                               );
                                               setRoleTableDataErrors((prev) => {
                                                 const newErrors = [...prev];
                                                 newErrors[index] = {
                                                   ...newErrors[index],
-                                                  startDate: !newValue ? 'Start Date is required' : '',
+                                                  startDate: !newValue ? 'Start Date is required' : ''
                                                 };
                                                 return newErrors;
                                               });
@@ -842,9 +848,7 @@ const UserCreation = () => {
                                             renderInput={(params) => (
                                               <TextField
                                                 {...params}
-                                                className={
-                                                  roleTableDataErrors[index]?.startDate ? 'error form-control' : 'form-control'
-                                                }
+                                                className={roleTableDataErrors[index]?.startDate ? 'error form-control' : 'form-control'}
                                               />
                                             )}
                                             minDate={dayjs()}
@@ -873,16 +877,14 @@ const UserCreation = () => {
                                             onChange={(newValue) => {
                                               setRoleTableData((prev) =>
                                                 prev.map((r) =>
-                                                  r.id === row.id
-                                                    ? { ...r, endDate: newValue ? newValue.format('YYYY-MM-DD') : null }
-                                                    : r
+                                                  r.id === row.id ? { ...r, endDate: newValue ? newValue.format('YYYY-MM-DD') : null } : r
                                                 )
                                               );
                                               setRoleTableDataErrors((prev) => {
                                                 const newErrors = [...prev];
                                                 newErrors[index] = {
                                                   ...newErrors[index],
-                                                  endDate: !newValue ? 'End Date is required' : '',
+                                                  endDate: !newValue ? 'End Date is required' : ''
                                                 };
                                                 return newErrors;
                                               });
@@ -891,11 +893,7 @@ const UserCreation = () => {
                                               <TextField
                                                 {...params}
                                                 // size="small"
-                                                className={
-                                                  roleTableDataErrors[index]?.endDate
-                                                    ? 'error form-control'
-                                                    : 'form-control'
-                                                }
+                                                className={roleTableDataErrors[index]?.endDate ? 'error form-control' : 'form-control'}
                                               />
                                             )}
                                             minDate={row.endDate ? dayjs(row.endDate) : dayjs()}

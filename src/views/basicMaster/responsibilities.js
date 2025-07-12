@@ -107,6 +107,9 @@ const Responsibilities = () => {
       ...prevFormData,
       screenDTO
     }));
+    if (value.length > 0) {
+      setFieldErrors((prev) => ({ ...prev, selectedScreens: '' }));
+    }
   };
 
   const handleInputChange = (e) => {
@@ -278,6 +281,7 @@ const Responsibilities = () => {
                       labelId="demo-multiple-chip-label"
                       id="demo-multiple-chip"
                       multiple
+                      name="selectedScreens"
                       value={selectedScreens}
                       onChange={handleChange}
                       input={<OutlinedInput id="select-multiple-chip" label="Screens" />}

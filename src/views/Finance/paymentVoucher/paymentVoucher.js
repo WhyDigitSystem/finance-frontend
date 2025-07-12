@@ -1,7 +1,7 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import { FormControl, FormHelperText, InputLabel, MenuItem,Autocomplete, Select } from '@mui/material';
+import { FormControl, FormHelperText, InputLabel, MenuItem, Autocomplete, Select } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
@@ -97,19 +97,19 @@ const PaymentVoucher = () => {
     }
   ]);
   const getCurrencyandExRate = async () => {
-  try {
-    const response = await apiCalls('get', `transaction/getCurrencyAndExrateDetails?orgId=${orgId}`);
-    if (response.status === true) {
-      setCurrencies(response.paramObjectsMap.currencyVO);
-    } else {
-      console.error('API Error:', response);
-      return response;
+    try {
+      const response = await apiCalls('get', `transaction/getCurrencyAndExrateDetails?orgId=${orgId}`);
+      if (response.status === true) {
+        setCurrencies(response.paramObjectsMap.currencyVO);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
     }
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    return error;
-  }
-};
+  };
   useEffect(() => {
     getCurrencyandExRate();
     getAllPaymentVoucherByOrgId();
@@ -117,7 +117,7 @@ const PaymentVoucher = () => {
     getAccountNameFromGroup();
   }, []);
   const handleSelectCurrency = (e) => {
-    const value = e.target.value;  
+    const value = e.target.value;
     console.log('Selected Currency value:', value);
     currencies.forEach((curr, index) => {
       console.log(`Currency ${index}:`, curr);
@@ -128,13 +128,13 @@ const PaymentVoucher = () => {
       setFormData((prevData) => ({
         ...prevData,
         currency: selectedCurr.currency,
-        exRate: selectedCurr.buyingExRate,
+        exRate: selectedCurr.buyingExRate
         // partyId: selectedCurr.sellingExRate
       }));
       setFieldErrors((prevErrors) => ({
         ...prevErrors,
-        currency:'',
-        exRate:''
+        currency: '',
+        exRate: ''
       }));
     } else {
       console.log('No Currency found', value);
@@ -158,7 +158,7 @@ const PaymentVoucher = () => {
     try {
       const response = await apiCalls('get', `/transaction/getSubLedgerNameFromPartyMaster?accountName=${accountName}&OrgId=${orgId}`);
       console.log('API Response:', response);
-  
+
       if (response.status === true) {
         const updatedData = [...detailsTableData];
         updatedData[rowIndex].subledgerNameOptions = response.paramObjectsMap.GeneralJournalVO || [];
@@ -181,16 +181,16 @@ const PaymentVoucher = () => {
     updatedData[rowIndex].subledgerNameOptions = [];
     setDetailsTableData(updatedData);
     const updatedErrorData = [...detailsTableErrors];
-    if(selectedAccountName){
-      updatedErrorData[rowIndex].accountName = ''
+    if (selectedAccountName) {
+      updatedErrorData[rowIndex].accountName = '';
     }
     setDetailsTableErrors(updatedErrorData);
     getSubledgerName(selectedAccountName, rowIndex);
-  };  
+  };
   const handleSubLedgerNameChange = (selectedOption, rowIndex) => {
     const updatedData = [...detailsTableData];
     const updatedErrorData = [...detailsTableErrors];
-  
+
     if (selectedOption) {
       updatedData[rowIndex].subLedgerName = selectedOption.subLedgerName;
       updatedData[rowIndex].subLedgerCode = selectedOption.subLedgerCode;
@@ -198,11 +198,11 @@ const PaymentVoucher = () => {
       updatedData[rowIndex].subLedgerName = '';
       updatedData[rowIndex].subLedgerCode = '';
     }
-    if(selectedOption.subLedgerName){
-      updatedErrorData[rowIndex].subLedgerName = ''
-      updatedErrorData[rowIndex].subLedgerCode = ''
+    if (selectedOption.subLedgerName) {
+      updatedErrorData[rowIndex].subLedgerName = '';
+      updatedErrorData[rowIndex].subLedgerCode = '';
     }
-  
+
     setDetailsTableData(updatedData);
     setDetailsTableErrors(updatedErrorData);
   };
@@ -359,6 +359,7 @@ const PaymentVoucher = () => {
     console.log('formattedDate', formattedDate);
     // const formattedDate = dayjs(date).format('YYYY-MM-DD');
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+    setFieldErrors((prevErrors) => ({ ...prevErrors, [field]: '' }));
   };
 
   const handleClear = () => {
@@ -700,19 +701,20 @@ const PaymentVoucher = () => {
                     name="referenceNo"
                     value={formData.referenceNo}
                     onChange={handleInputChange}
+                    error={!!fieldErrors.referenceNo}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.referenceNo ? 'Ref No is required' : ''}</span>}
                     inputProps={{ maxLength: 40 }}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
-                  <FormControl fullWidth variant="filled" size="small">
+                  <FormControl fullWidth variant="filled" size="small" error={!!fieldErrors.referenceDate}>
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         label="Reference Date"
                         value={formData.referenceDate}
                         onChange={(date) => handleDateChange('referenceDate', date)}
                         slotProps={{
-                          textField: { size: 'small', clearable: true }
+                          textField: { size: 'small', clearable: true, error: !!fieldErrors.referenceDate }
                         }}
                         format="DD-MM-YYYY"
                       />
@@ -734,6 +736,7 @@ const PaymentVoucher = () => {
                     name="chequeNo"
                     value={formData.chequeNo}
                     onChange={handleInputChange}
+                    error={!!fieldErrors.chequeNo}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.chequeNo ? 'Cheque No is required' : ''}</span>}
                     inputProps={{ maxLength: 40 }}
                   />
@@ -746,7 +749,7 @@ const PaymentVoucher = () => {
                         value={formData.chequeDate}
                         onChange={(date) => handleDateChange('chequeDate', date)}
                         slotProps={{
-                          textField: { size: 'small', clearable: true }
+                          textField: { size: 'small', clearable: true, error: !!fieldErrors.chequeDate }
                         }}
                         format="DD-MM-YYYY"
                       />
@@ -768,6 +771,7 @@ const PaymentVoucher = () => {
                     name="chequeBank"
                     value={formData.chequeBank}
                     onChange={handleInputChange}
+                    error={!!fieldErrors.chequeBank}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.chequeBank ? 'Cheque Bank is required' : ''}</span>}
                     inputProps={{ maxLength: 40 }}
                   />
@@ -849,49 +853,47 @@ const PaymentVoucher = () => {
                                       </td>
                                       <td>
                                         <select
-                                        value={row.accountName}
-                                        style={{ width: '150px' }}
-                                        // disabled={formData.status === 'TAX'}
-                                        onChange={(e) => handleAccountNameChange(e, index)}
-                                        className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">--Select--</option>
-                                        {accountNames &&
-                                          accountNames.map((currency) => (
-                                            <option key={currency.id} value={currency.accountName}>
-                                              {currency.accountName}
-                                            </option>
-                                          ))}
+                                          value={row.accountName}
+                                          style={{ width: '150px' }}
+                                          // disabled={formData.status === 'TAX'}
+                                          onChange={(e) => handleAccountNameChange(e, index)}
+                                          className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
+                                        >
+                                          <option value="">--Select--</option>
+                                          {accountNames &&
+                                            accountNames.map((currency) => (
+                                              <option key={currency.id} value={currency.accountName}>
+                                                {currency.accountName}
+                                              </option>
+                                            ))}
                                         </select>
-                                    {detailsTableErrors[index]?.accountName && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {detailsTableErrors[index].accountName}
-                                      </div>
-                                    )}
-                                      </td>
-                                     <td className="border px-2 py-2">
-                                      <Autocomplete
-                                        options={row.subledgerNameOptions || []}
-                                        getOptionLabel={(option) => option.subLedgerName || ''}
-                                        value={
-                                          row.subledgerNameOptions?.find(
-                                            (option) => option.subLedgerName === row.subLedgerName
-                                          ) || null
-                                        }
-                                        onChange={(event, newValue) => {
-                                          handleSubLedgerNameChange(newValue, index);
-                                        }}
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            placeholder="Select Subledger"
-                                            size="small"
-                                            error={!!detailsTableErrors[index]?.subLedgerName}
-                                            helperText={detailsTableErrors[index]?.subLedgerName}
-                                          />
+                                        {detailsTableErrors[index]?.accountName && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].accountName}
+                                          </div>
                                         )}
-                                      />
-                                    </td>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <Autocomplete
+                                          options={row.subledgerNameOptions || []}
+                                          getOptionLabel={(option) => option.subLedgerName || ''}
+                                          value={
+                                            row.subledgerNameOptions?.find((option) => option.subLedgerName === row.subLedgerName) || null
+                                          }
+                                          onChange={(event, newValue) => {
+                                            handleSubLedgerNameChange(newValue, index);
+                                          }}
+                                          renderInput={(params) => (
+                                            <TextField
+                                              {...params}
+                                              placeholder="Select Subledger"
+                                              size="small"
+                                              error={!!detailsTableErrors[index]?.subLedgerName}
+                                              helperText={detailsTableErrors[index]?.subLedgerName}
+                                            />
+                                          )}
+                                        />
+                                      </td>
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"
@@ -927,7 +929,7 @@ const PaymentVoucher = () => {
                                           maxLength="20"
                                           className={detailsTableErrors[index]?.debit ? 'error form-control' : 'form-control'}
                                         />
-                                        {detailsTableErrors[index]?.debit && (
+                                        {!row.credit && detailsTableErrors[index]?.debit && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                             {detailsTableErrors[index].debit}
                                           </div>
@@ -941,7 +943,7 @@ const PaymentVoucher = () => {
                                           maxLength="20"
                                           className={detailsTableErrors[index]?.credit ? 'error form-control' : 'form-control'}
                                         />
-                                        {detailsTableErrors[index]?.credit && (
+                                        {!row.debit && detailsTableErrors[index]?.credit && (
                                           <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
                                             {detailsTableErrors[index].credit}
                                           </div>
