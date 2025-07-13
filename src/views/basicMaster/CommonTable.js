@@ -60,6 +60,16 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
     backgroundColor: theme.palette.orange.light,
     marginRight: '5px'
   };
+  const chipPendingSX = {
+    ...chipSX,
+    color: theme.palette.warning.dark,          
+    backgroundColor: theme.palette.warning.light, 
+    fontWeight: 'bold',
+    padding: '0 8px',
+    borderRadius: '8px',
+    fontSize: '0.75rem',
+    marginRight: '5px'
+  };
 
   const handleEditClick = (row) => {
     setEditingRow(row);
@@ -116,15 +126,23 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
       };
     }
     if (column.accessorKey === 'approveStatus') {
-      console.log('the columns are:', column);
       return {
         ...column,
-        Cell: ({ cell }) => (
-          <Chip
-            label={cell.getValue() === 'Approved' ? 'Approved' : 'Pending'}
-            sx={cell.getValue() === 'Approved' ? chipSuccessSX : chipErrorSX}
-          />
-        )
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          let label = 'Pending';
+          let sx = chipPendingSX
+
+          if (value === 'Approved') {
+            label = 'Approved';
+            sx = chipSuccessSX;
+          } else if (value === 'Rejected') {
+            label = 'Rejected';
+            sx = chipErrorSX;
+          }
+
+          return <Chip label={label} sx={sx} />;
+        }
       };
     }
     return column;

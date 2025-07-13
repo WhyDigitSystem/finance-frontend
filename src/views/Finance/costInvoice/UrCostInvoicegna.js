@@ -58,7 +58,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
   useEffect(() => {
     if (selectedRow && !selectedRowCalledRef.current) {
       selectedRowCalledRef.current = true;
-      setlistViewRoute(false);
+      // setlistViewRoute(false);
       getAllUrCostInvoiceById({ original: selectedRow });
     }
   }, [selectedRow]);
