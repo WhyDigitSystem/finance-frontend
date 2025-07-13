@@ -28,7 +28,7 @@ import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
 const UrCostInvoicegna = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
-  const [listViewRoute, setlistViewRoute] = useState(true);
+  // const [listViewRoute, setlistViewRoute] = useState(true);
   const [data, setData] = useState(true);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
@@ -408,9 +408,12 @@ const UrCostInvoicegna = ({ selectedRow }) => {
 
   useEffect(() => {
     getAllUrCostInvoiceByOrgId();
-    getUrCostInvoiceDocId();
     getChargeAC();
-  }, [listViewRoute]);
+    // getUrCostInvoiceDocId();
+  }, []);
+  useEffect(() => {
+    if (!selectedRow) getUrCostInvoiceDocId();
+  }, []);
 
   useEffect(() => {
     getPartyName(formData.supplierType);
