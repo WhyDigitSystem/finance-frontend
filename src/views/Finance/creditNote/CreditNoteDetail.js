@@ -68,7 +68,7 @@ const IrnCreditNote = ({ selectedRow }) => {
   useEffect(() => {
     if (selectedRow && !selectedRowCalledRef.current) {
       selectedRowCalledRef.current = true;
-      setlistViewRoute(false);
+      setListView(false);
       getIrnCreditById({ original: selectedRow });
     }
   }, [selectedRow]);
@@ -850,7 +850,7 @@ const IrnCreditNote = ({ selectedRow }) => {
     getAllPartyTypeByOrgId();
     getAllCurrency();
     getAllIrnCredit();
-  }, [listViewRoute]);
+  }, []);
 
   const getIrnCreditNoteDocId = async () => {
     try {
@@ -888,6 +888,7 @@ const IrnCreditNote = ({ selectedRow }) => {
   };
 
   const getAllIrnCredit = async () => {
+    setloading(true)
     try {
       const response = await apiCalls(
         'get',
@@ -897,7 +898,8 @@ const IrnCreditNote = ({ selectedRow }) => {
 
       if (response.status === true) {
         setListViewData(response.paramObjectsMap.irnCreditVO.reverse());
-        setListView(true);
+        // setListView(true);
+        setloading(false)
       } else {
         console.error('API Error:', response);
       }

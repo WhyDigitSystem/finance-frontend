@@ -115,6 +115,18 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
         )
       };
     }
+    if (column.accessorKey === 'approveStatus') {
+      console.log('the columns are:', column);
+      return {
+        ...column,
+        Cell: ({ cell }) => (
+          <Chip
+            label={cell.getValue() === 'Approved' ? 'Approved' : 'Pending'}
+            sx={cell.getValue() === 'Approved' ? chipSuccessSX : chipErrorSX}
+          />
+        )
+      };
+    }
     return column;
   });
 

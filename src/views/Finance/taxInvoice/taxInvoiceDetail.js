@@ -80,17 +80,43 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
   const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
+  const [role] = useState(() => {
+    const roles = JSON.parse(localStorage.getItem('ROLES'));
+    return roles?.[0]?.role || null;
+  });
+
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const selectedRowCalledRef = useRef(false);
+
+  // useEffect(() => {
+  //   console.log("Roles", role);
+  //   if (!selectedRow) {
+  //     getAllTaxInvoice();
+  //     getTaxInvoiceDocId();
+  //   }
+  //   getAllType();
+  //   getPartyName();
+  //   if (selectedRow && !selectedRowCalledRef.current) {
+  //     setloading(true);
+  //     selectedRowCalledRef.current = true;
+  //     setlistView(false);
+  //     // Handle both direct data and table row format
+  //   //   // const rowData = selectedRow.original ? selectedRow : { original: selectedRow };
+  //   //   // getTaxInvoiceById(rowData);
+  //   }
+  // }, [selectedRow]);
   useEffect(() => {
-    // Always fetch data on mount
-    getAllTaxInvoice();
-    getTaxInvoiceDocId();
+    console.log("Roles", role);
+    if (!selectedRow) {
+      getAllTaxInvoice();
+      getTaxInvoiceDocId();
+    }
     getAllType();
     getPartyName();
 
     // Also fetch if selectedRow changes
     if (selectedRow && !selectedRowCalledRef.current) {
+      setloading(true);
       selectedRowCalledRef.current = true;
       setlistView(false);
       getTaxInvoiceById({ original: selectedRow });
@@ -1095,6 +1121,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
         getJobCardNo(listValueVO.partyCode);
         getCurrencyAndExratesForMatchingParties(listValueVO.partyCode);
         getCurrencyAndExratesFromParty(listValueVO.partyCode);
+        getAllTransactionNo(listValueVO.partyShortName);
         getAddessType(listValueVO.placeOfSupply, listValueVO.stateCode, listValueVO.partyId);
         console.log('DataToEdit ==>', listValueVO);
 
@@ -1192,12 +1219,15 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
             amount: row.amount
           }))
         );
+        setloading(false);
         // setTaxInvoiceAnnexure(listValueVO.taxInvoiceAnnexureVO);
       } else {
         // Handle erro
+        setloading(false);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      setloading(false);
     }
   };
   const handleList = () => {
@@ -1586,7 +1616,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                     </Stack>
                   )}
                   {/* {listViewData.status === 'TAX' && (formData.approveStatus === 'Rejected' || formData.approveStatus === 'Approved') &&( */}
-                  {listViewData.status === 'TAX' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                  {listViewData.status === 'TAX' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (role === 'FINANCE MANAGER' || role === 'ADMIN')(
                     <div className="d-flex" style={{ marginRight: '30px' }}>
                       <Button
                         variant="outlined"

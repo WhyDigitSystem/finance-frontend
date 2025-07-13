@@ -162,12 +162,11 @@ const PendingRegister = () => {
       }
 
       if (response.status === true) {
-        // const dataKey = screenCode === 'TI' ? 'taxIn
         {
           screenCode === 'TI' ? setDialogBoxData(response.paramObjectsMap.taxInvoiceVO) :
             (screenCode === 'CI') ? setDialogBoxData(response.paramObjectsMap.costInvoiceVO) :
               (screenCode === 'CDN') ? setDialogBoxData(response.paramObjectsMap.costDebitNoteVO) :
-                (screenCode === 'ICN') ? setDialogBoxData(response.paramObjectsMap.IrnCreditNoteVO) :
+                (screenCode === 'ICN') ? setDialogBoxData(response.paramObjectsMap.irnCreditNoteVO) :
                   (screenCode === 'RCI') ? setDialogBoxData(response.paramObjectsMap.rCostInvoiceGnaVO) :
                     (screenCode === 'URCI') ? setDialogBoxData(response.paramObjectsMap.urCostInvoiceGnaVO) :
                       (screenCode === 'RT') ? setDialogBoxData(response.paramObjectsMap.receiptVO) :

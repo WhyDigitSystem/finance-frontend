@@ -407,7 +407,7 @@ const groupedData = (row.retrievalManifestProviderDetailsVOs || []).reduce((acc,
 
                                           <TableCell style={{textAlign: 'center'}}>{row.assetCode}</TableCell>
                                           <TableCell>{row.asset}</TableCell>
-                                          <TableCell style={{textAlign: 'center'}}>{row.assetQty}</TableCell>
+                                          <TableCell style={{textAlign: 'center'}}>{row.actualQty}</TableCell>
                                         </TableRow>
                                       ))}
 

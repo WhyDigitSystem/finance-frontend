@@ -122,7 +122,8 @@ const screens = [
   { name: 'Create Kit', path: '/docs/createKit' },
   { name: 'Purchase Order', path: '/docs/purchaseOrder' },
   { name: 'Quotation', path: '/docs/Quotation' },
-  { name: 'Contra Voucher', path: '/Finance/ContraVoucher' }
+  { name: 'Contra Voucher', path: '/Finance/ContraVoucher' },
+  { name: 'Cost Estimate', path: '/finance/CostEstimate' }
 ];
 
 // Styled Components
