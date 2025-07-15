@@ -23,8 +23,8 @@ import ConfirmationModal from 'utils/confirmationPopup';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
-// import CommonTable from 'views/basicMaster/CommonTable';
-import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import CommonTable from 'views/basicMaster/CommonTable';
+// import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
 const UrCostInvoicegna = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
@@ -2383,9 +2383,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
               </div>
             </>
           )}
-          {showForm && (
-            <CommonListViewTable data={data && data} columns={listViewColumns} blockEdit={true} toEdit={getAllUrCostInvoiceById} />
-          )}
+          {showForm && <CommonTable data={data && data} columns={listViewColumns} blockEdit={true} toEdit={getAllUrCostInvoiceById} />}
         </div>
       </div>
       <ConfirmationModal
