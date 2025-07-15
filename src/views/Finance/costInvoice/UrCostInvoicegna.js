@@ -23,12 +23,11 @@ import ConfirmationModal from 'utils/confirmationPopup';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
-// import CommonTable from 'views/basicMaster/CommonTable';
+import CommonTable from 'views/basicMaster/CommonTable';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
 const UrCostInvoicegna = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
-  // const [listViewRoute, setlistViewRoute] = useState(true);
   const [data, setData] = useState(true);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
@@ -49,19 +48,11 @@ const UrCostInvoicegna = ({ selectedRow }) => {
   const [addressTypeList, setAddressTypeList] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-  // useEffect(() => {
-  //   if (selectedRow) {
-  //     getAllUrCostInvoiceById({ original: selectedRow });
-  //   }
-  // }, [selectedRow]);
-  // const selectedRowCalledRef = useRef(false);
-  // useEffect(() => {
-  //   if (selectedRow && !selectedRowCalledRef.current) {
-  //     selectedRowCalledRef.current = true;
-  //     // setlistViewRoute(false);
-  //     getAllUrCostInvoiceById({ original: selectedRow });
-  //   }
-  // }, [selectedRow]);
+  useEffect(() => {
+    if (selectedRow) {
+      getAllUrCostInvoiceById({ original: selectedRow });
+    }
+  }, [selectedRow]);
   const [chargeDetails, setChargeDetails] = useState([
     {
       id: 1,
@@ -408,11 +399,8 @@ const UrCostInvoicegna = ({ selectedRow }) => {
 
   useEffect(() => {
     getAllUrCostInvoiceByOrgId();
+    getUrCostInvoiceDocId();
     getChargeAC();
-    // getUrCostInvoiceDocId();
-  }, []);
-  useEffect(() => {
-    if (!selectedRow) getUrCostInvoiceDocId();
   }, []);
 
   useEffect(() => {
@@ -428,7 +416,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
         `/UrCostInvoiceGna/getAllUrCostInvoiceGnaByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
       setData(result.paramObjectsMap.urCostInvoiceGnaVO || []);
-      setShowForm(!showForm);
+      setShowForm(true);
     } catch (err) {
       console.log('error', err);
     }
@@ -450,7 +438,8 @@ const UrCostInvoicegna = ({ selectedRow }) => {
   };
 
   const getAllUrCostInvoiceById = async (row) => {
-    setShowForm(!showForm);
+    // console.log('first', row);
+    setShowForm(false);
     try {
       const result = await apiCalls('get', `/UrCostInvoiceGna/getUrCostInvoiceGnaById?id=${row.original.id}`);
 
@@ -581,7 +570,6 @@ const UrCostInvoicegna = ({ selectedRow }) => {
           }
         ]);
         setTdsCostInvoiceDTO([{ section: '', tdsWithHolding: '', tdsWithHoldingPer: '', totalTdsAmt: '' }]);
-
         // setShowChargeDetails(false);
         setFormData((prevFormData) => ({
           ...prevFormData,
@@ -631,15 +619,6 @@ const UrCostInvoicegna = ({ selectedRow }) => {
         [name]: value
       }));
     }
-    //
-    // setTdsCostErrors((prev) => ({
-    //   ...prev,
-    //   [index]: {
-    //     ...prev[index],
-    //     [name]: ''
-    //   }
-    // }));
-    //
   };
 
   const getPartyName = async (partType) => {
@@ -664,7 +643,6 @@ const UrCostInvoicegna = ({ selectedRow }) => {
         supplierCode: selectedParty.partyCode,
         creditDays: selectedParty.creditDays
       }));
-      setFieldErrors({ ...fieldErrors, supplierName: '' });
       getStateCode(selectedParty.partyCode);
       getCurrencyAndExratesForMatchingParties(selectedParty.partyCode);
       // getTdsDetailsFromPartyMasterSpecialTDS(selectedParty.partyCode);
@@ -768,12 +746,6 @@ const UrCostInvoicegna = ({ selectedRow }) => {
           : row
       )
     );
-    // setCostInvoiceErrors((prev) => ({
-    //   ...prev,
-    //   [index]: {
-    //     chargeLedger: ''
-    //   }
-    // }));
 
     // Clear summary-related fields in formData
     setFormData((prevData) => ({
@@ -810,15 +782,15 @@ const UrCostInvoicegna = ({ selectedRow }) => {
       });
     });
 
-    // setCostInvoiceErrors((prev) => {
-    //   const newErrors = [...prev];
-    //   const updatedErrors = {
-    //     ...newErrors[index],
-    //     [field]: !value ? `${field} is required` : ''
-    //   };
-    //   newErrors[index] = updatedErrors;
-    //   return newErrors;
-    // });
+    setCostInvoiceErrors((prev) => {
+      const newErrors = [...prev];
+      const updatedErrors = {
+        ...newErrors[index],
+        [field]: !value ? `${field} is required` : ''
+      };
+      newErrors[index] = updatedErrors;
+      return newErrors;
+    });
   };
 
   const handleAddRow = () => {
@@ -917,9 +889,6 @@ const UrCostInvoicegna = ({ selectedRow }) => {
 
   const handleView = () => {
     setShowForm(!showForm);
-    if (!showForm) {
-      handleClear();
-    }
   };
 
   const handleChange = (event, newValue) => {
@@ -966,7 +935,6 @@ const UrCostInvoicegna = ({ selectedRow }) => {
         supplierPlace: selectedCity.city,
         address: selectedCity.address
       }));
-      setFieldErrors((prevErrors) => ({ ...prevErrors, supplierPlace: '' }));
     } else {
       console.log('No City found with the given code:', value);
     }
@@ -1091,10 +1059,6 @@ const UrCostInvoicegna = ({ selectedRow }) => {
     let tdsValid = true;
     const tdsTableErrors = tdsCostInvoiceDTO.map((row) => {
       const rowErrors = {};
-      if (!row.tds) {
-        rowErrors.tds = 'TDS is required';
-        tdsValid = false;
-      }
       if (!row.section) {
         rowErrors.section = 'Section is required';
         tdsValid = false;
@@ -1977,14 +1941,14 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                                   setChargerCostInvoice((prev) =>
                                                     prev.map((r) => (r.id === row.id ? { ...r, gstPercent: value } : r))
                                                   );
-                                                  // setCostInvoiceErrors((prev) => {
-                                                  //   const newErrors = [...prev];
-                                                  //   newErrors[index] = {
-                                                  //     ...newErrors[index],
-                                                  //     gstPercent: !value ? 'Tax % is required' : ''
-                                                  //   };
-                                                  //   return newErrors;
-                                                  // });
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      gstPercent: !value ? 'Tax % is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
                                                 } else {
                                                   setCostInvoiceErrors((prev) => {
                                                     const newErrors = [...prev];
@@ -2384,8 +2348,17 @@ const UrCostInvoicegna = ({ selectedRow }) => {
             </>
           )}
           {showForm && (
-            <CommonListViewTable data={data && data} columns={listViewColumns} blockEdit={true} toEdit={getAllUrCostInvoiceById} />
+            // <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getAllCostInvoiceById} />
+            <CommonListViewTable
+              data={data && data}
+              columns={listViewColumns}
+              blockEdit={true}
+              toEdit={getAllUrCostInvoiceById}
+              // isPdf={true}
+              // GeneratePdf={GeneratePdf}
+            />
           )}
+          {/* {downloadPdf && <GeneratePdfTemp row={pdfData} />} */}
         </div>
       </div>
       <ConfirmationModal
