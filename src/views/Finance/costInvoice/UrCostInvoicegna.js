@@ -23,8 +23,8 @@ import ConfirmationModal from 'utils/confirmationPopup';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
-import CommonTable from 'views/basicMaster/CommonTable';
-// import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+// import CommonTable from 'views/basicMaster/CommonTable';
+import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
 const UrCostInvoicegna = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
@@ -54,14 +54,14 @@ const UrCostInvoicegna = ({ selectedRow }) => {
   //     getAllUrCostInvoiceById({ original: selectedRow });
   //   }
   // }, [selectedRow]);
-  const selectedRowCalledRef = useRef(false);
-  useEffect(() => {
-    if (selectedRow && !selectedRowCalledRef.current) {
-      selectedRowCalledRef.current = true;
-      // setlistViewRoute(false);
-      getAllUrCostInvoiceById({ original: selectedRow });
-    }
-  }, [selectedRow]);
+  // const selectedRowCalledRef = useRef(false);
+  // useEffect(() => {
+  //   if (selectedRow && !selectedRowCalledRef.current) {
+  //     selectedRowCalledRef.current = true;
+  //     // setlistViewRoute(false);
+  //     getAllUrCostInvoiceById({ original: selectedRow });
+  //   }
+  // }, [selectedRow]);
   const [chargeDetails, setChargeDetails] = useState([
     {
       id: 1,
@@ -2383,7 +2383,9 @@ const UrCostInvoicegna = ({ selectedRow }) => {
               </div>
             </>
           )}
-          {showForm && <CommonTable data={data && data} columns={listViewColumns} blockEdit={true} toEdit={getAllUrCostInvoiceById} />}
+          {showForm && (
+            <CommonListViewTable data={data && data} columns={listViewColumns} blockEdit={true} toEdit={getAllUrCostInvoiceById} />
+          )}
         </div>
       </div>
       <ConfirmationModal
