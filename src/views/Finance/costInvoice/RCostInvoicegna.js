@@ -829,15 +829,15 @@ const RCostInvoicegna = ({ selectedRow }) => {
       });
     });
 
-    setCostInvoiceErrors((prev) => {
-      const newErrors = [...prev];
-      const updatedErrors = {
-        ...newErrors[index],
-        [field]: !value ? `${field} is required` : ''
-      };
-      newErrors[index] = updatedErrors;
-      return newErrors;
-    });
+    // setCostInvoiceErrors((prev) => {
+    //   const newErrors = [...prev];
+    //   const updatedErrors = {
+    //     ...newErrors[index],
+    //     [field]: !value ? `${field} is required` : ''
+    //   };
+    //   newErrors[index] = updatedErrors;
+    //   return newErrors;
+    // });
   };
   const handleAddRow = () => {
     if (isLastRowEmpty(chargerCostInvoice)) {
@@ -2070,14 +2070,14 @@ const RCostInvoicegna = ({ selectedRow }) => {
                                                   setChargerCostInvoice((prev) =>
                                                     prev.map((r) => (r.id === row.id ? { ...r, gtaAmount: value } : r))
                                                   );
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      gtaAmount: !value ? 'GTA Amt is required' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
+                                                  // setCostInvoiceErrors((prev) => {
+                                                  //   const newErrors = [...prev];
+                                                  //   newErrors[index] = {
+                                                  //     ...newErrors[index],
+                                                  //     gtaAmount: !value ? 'GTA Amt is required' : ''
+                                                  //   };
+                                                  //   return newErrors;
+                                                  // });
                                                 } else {
                                                   setCostInvoiceErrors((prev) => {
                                                     const newErrors = [...prev];
