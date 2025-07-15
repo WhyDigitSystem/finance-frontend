@@ -810,15 +810,15 @@ const UrCostInvoicegna = ({ selectedRow }) => {
       });
     });
 
-    setCostInvoiceErrors((prev) => {
-      const newErrors = [...prev];
-      const updatedErrors = {
-        ...newErrors[index],
-        [field]: !value ? `${field} is required` : ''
-      };
-      newErrors[index] = updatedErrors;
-      return newErrors;
-    });
+    // setCostInvoiceErrors((prev) => {
+    //   const newErrors = [...prev];
+    //   const updatedErrors = {
+    //     ...newErrors[index],
+    //     [field]: !value ? `${field} is required` : ''
+    //   };
+    //   newErrors[index] = updatedErrors;
+    //   return newErrors;
+    // });
   };
 
   const handleAddRow = () => {
@@ -1977,14 +1977,14 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                                   setChargerCostInvoice((prev) =>
                                                     prev.map((r) => (r.id === row.id ? { ...r, gstPercent: value } : r))
                                                   );
-                                                  setCostInvoiceErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      gstPercent: !value ? 'Tax % is required' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
+                                                  // setCostInvoiceErrors((prev) => {
+                                                  //   const newErrors = [...prev];
+                                                  //   newErrors[index] = {
+                                                  //     ...newErrors[index],
+                                                  //     gstPercent: !value ? 'Tax % is required' : ''
+                                                  //   };
+                                                  //   return newErrors;
+                                                  // });
                                                 } else {
                                                   setCostInvoiceErrors((prev) => {
                                                     const newErrors = [...prev];
