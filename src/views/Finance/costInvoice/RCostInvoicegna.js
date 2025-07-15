@@ -24,12 +24,12 @@ import ConfirmationModal from 'utils/confirmationPopup';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
-import CommonTable from 'views/basicMaster/CommonTable';
+// import CommonTable from 'views/basicMaster/CommonTable';
+import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
-const RCostInvoicegna = ({ selectedRow }) => {
+const RCostInvoicegna = () => {
   const [showForm, setShowForm] = useState(false);
   const [data, setData] = useState(true);
-  const [listViewRoute, setlistViewRoute] = useState(true);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -49,14 +49,8 @@ const RCostInvoicegna = ({ selectedRow }) => {
   const [addressTypeList, setAddressTypeList] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-  const selectedRowCalledRef = useRef(false);
-  useEffect(() => {
-    if (selectedRow && !selectedRowCalledRef.current) {
-      selectedRowCalledRef.current = true;
-      setlistViewRoute(false);
-      getAllRCostInvoiceById({ original: selectedRow });
-    }
-  }, [selectedRow]);
+  // const [downloadPdf, setDownloadPdf] = useState(false);
+  // const [pdfData, setPdfData] = useState([]);
   const [chargeDetails, setChargeDetails] = useState([
     {
       id: 1,
@@ -118,7 +112,6 @@ const RCostInvoicegna = ({ selectedRow }) => {
       rate: '',
       gstPer: '',
       gstAmt: '',
-      taxfcAmt: '',
       fcAmount: '',
       lcAmount: '',
       billAmount: '',
@@ -134,7 +127,6 @@ const RCostInvoicegna = ({ selectedRow }) => {
       gstPer: '',
       gstAmt: '',
       rate: '',
-      taxfcAmt: '',
       fcAmount: '',
       lcAmount: '',
       billAmount: '',
@@ -243,7 +235,6 @@ const RCostInvoicegna = ({ selectedRow }) => {
         currency: '',
         exRate: '',
         tdsApplicable: true,
-        taxfcAmt: '',
         gstPer: '',
         gstAmt: '',
         rate: '',
@@ -358,8 +349,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
             fcAmount: row.fcAmt,
             lcAmount: row.lcAmt,
             billAmount: row.billAmt,
-            gtaAmount: row.gtaAmount,
-            gstAmt: row.gstAmt
+            gtaAmount: row.gtaamount
           }))
         );
         setTdsCostInvoiceDTO(
@@ -394,32 +384,24 @@ const RCostInvoicegna = ({ selectedRow }) => {
   useEffect(() => {
     if (!editId) {
       calculateTotals();
-      // calculateSummary();
+      calculateSummary();
     }
   }, [chargerCostInvoice, tdsCostInvoiceDTO]);
 
   const calculateTotals = () => {
     let totalBillAmt = 0;
     let totalLcAmount = 0;
-    let totalFcAmount = 0;
     let totgstAmt = 0;
-    let totgstPer = 0;
-    let totgtaAmt = 0;
-    let totfctaxAmt = 0;
 
     const updatedChargerCostInvoice = chargerCostInvoice.map((item) => ({
       ...item,
-      gstAmt: ((item.gstPer * item.lcAmount) / 100).toFixed(2),
-      taxfcAmt: ((item.gstPer * item.fcAmount) / 100).toFixed(2)
+      gstAmt: ((item.gstPer * item.lcAmount) / 100).toFixed(2)
     }));
+
     updatedChargerCostInvoice.forEach((row) => {
       totalLcAmount += parseFloat(row.lcAmount || 0);
-      totalFcAmount += parseFloat(row.fcAmount || 0);
       totalBillAmt += parseFloat(row.billAmount || 0);
       totgstAmt += parseFloat(row.gstAmt || 0);
-      totgstPer += parseFloat(row.gstPer || 0);
-      totgtaAmt += parseFloat(row.gtaAmount || 0);
-      totfctaxAmt += parseFloat(row.taxfcAmt || 0);
     });
 
     setChargerCostInvoice(updatedChargerCostInvoice);
@@ -434,48 +416,36 @@ const RCostInvoicegna = ({ selectedRow }) => {
     setTdsCostInvoiceDTO(updatedTdsCostInvoiceDTO);
     setFormData((prev) => ({
       ...prev,
+      taxAmountLc: (totalLcAmount - totgstAmt).toFixed(2),
       netBillCurrAmt: updatedChargerCostInvoice.some((item) => item.currency === 'INR')
-        ? (totalLcAmount + totgstAmt - totalTds).toFixed(2)
-        : (totalFcAmount + totfctaxAmt).toFixed(2),
-      actBillCurrAmt: updatedChargerCostInvoice.some((item) => item.currency === 'INR')
         ? (totalLcAmount - totalTds).toFixed(2)
-        : totalFcAmount.toFixed(2),
-      // netLcAmt: updatedChargerCostInvoice.some((item) => item.currency === 'INR')
-      //   ? ((totalLcAmount + totgstAmt) - totalTds).toFixed(2)
-      //   : (totalFcAmount + totgstPer).toFixed(2),
-      // actLcAmt: updatedChargerCostInvoice.some((item) => item.currency === 'INR')
-      //   ? (totalLcAmount - totalTds).toFixed(2)
-      //   : (totalFcAmount).toFixed(2),
-      actLcAmt: totalLcAmount.toFixed(2),
-      netLcAmt: Math.round(totalLcAmount + totgstAmt - totalTds + totgtaAmt),
-      taxAmountLc: totgstAmt.toFixed(2),
-      amtInWords: toWords(Math.round(totalLcAmount + totgstAmt - totalTds) + totgtaAmt).toUpperCase(),
-      roundOff: parseFloat(totalLcAmount + totgstAmt - totalTds - Math.round(totalLcAmount + totgstAmt - totalTds)).toFixed(2)
+        : totalBillAmt.toFixed(2),
+      roundOff: parseFloat(totalBillAmt - totalTds) - parseInt(totalBillAmt - totalTds)
     }));
   };
-  // const calculateSummary = () => {
-  //   let totalBillAmt = 0;
-  //   let totalLcAmount = 0;
-  //   chargerCostInvoice.forEach((row) => {
-  //     totalLcAmount += parseFloat(row.lcAmount || 0);
-  //     totalBillAmt += parseFloat(row.fcAmount || 0);
-  //   });
-  //   const totalTds = tdsCostInvoiceDTO.reduce((acc, row) => acc + parseFloat(row.totalTdsAmt || 0), 0);
-  //   // const roundedValue = Math.round(totalLcAmount - totalTds);
-  //   setFormData((prev) => ({
-  //     ...prev,
-  //     // actBillCurrAmt: totalBillAmt.toFixed(2),
-  //     // actLcAmt: (totalBillAmt - totalTds).toFixed(2),
-  //     // netLcAmt: (totalLcAmount - totalTds).toFixed(2),
-  //     // roundOff: (roundedValue - (totalLcAmount - totalTds)).toFixed(2),
-  //     amtInWords: toWords(parseFloat(totalBillAmt)).toUpperCase()
-  //   }));
-  // };
+  const calculateSummary = () => {
+    let totalBillAmt = 0;
+    let totalLcAmount = 0;
+    chargerCostInvoice.forEach((row) => {
+      totalLcAmount += parseFloat(row.lcAmount || 0);
+      totalBillAmt += parseFloat(row.billAmount || 0);
+    });
+    const totalTds = tdsCostInvoiceDTO.reduce((acc, row) => acc + parseFloat(row.totalTdsAmt || 0), 0);
+    // const roundedValue = Math.round(totalLcAmount - totalTds);
+    setFormData((prev) => ({
+      ...prev,
+      actBillCurrAmt: totalBillAmt.toFixed(2),
+      actLcAmt: (totalBillAmt - totalTds).toFixed(2),
+      netLcAmt: (totalLcAmount - totalTds).toFixed(2),
+      // roundOff: (roundedValue - (totalLcAmount - totalTds)).toFixed(2),
+      amtInWords: toWords(parseFloat(totalBillAmt)).toUpperCase()
+    }));
+  };
   useEffect(() => {
     getAllCostInvoiceByOrgId();
     getRCostInvoiceDocId();
     getChargeAC();
-  }, [listViewRoute]);
+  }, []);
 
   useEffect(() => {
     getPartyName(formData.partyType);
@@ -502,7 +472,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
         `/rCostInvoiceGna/getAllRCostInvoiceGnaByOrgId?orgId=${orgId}&finYear=${finYear}&branchCode=${branchCode}`
       );
       setData(result.paramObjectsMap.rCostInvoiceGnaVO.reverse() || []);
-      setShowForm(!showForm);
+      setShowForm(true);
     } catch (err) {
       console.log('error', err);
     }
@@ -523,7 +493,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
     }
   };
   const getAllRCostInvoiceById = async (row) => {
-    setShowForm(!showForm);
+    setShowForm(false);
     try {
       const result = await apiCalls('get', `/rCostInvoiceGna/getAllRCostInvoiceGnaById?id=${row.original.id}`);
       console.log('Byid', result);
@@ -535,7 +505,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
         setEditId(row.original.id);
         getCityName(rCostVO.partyCode, rCostVO.state, rCostVO.addressType);
         getAddressType(rCostVO.partyCode, rCostVO.state);
-        // getSection(rCostVO.tdsRCostInvoiceGnaVO[0].tds);
+        getSection(rCostVO.tdsRCostInvoiceGnaVO[0].tds);
         setFormData({
           approveStatus: rCostVO.approveStatus,
           approveBy: rCostVO.approveBy,
@@ -589,7 +559,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
             fcAmount: row.fcAmt,
             lcAmount: row.lcAmt,
             billAmount: row.billAmt,
-            gtaAmount: row.gtaAmount
+            gtaAmount: row.gtaamount
           }))
         );
         setTdsCostInvoiceDTO(
@@ -649,19 +619,12 @@ const RCostInvoicegna = ({ selectedRow }) => {
           );
         }
       }
-      //
-      setTdsCostErrors((prev) => prev.map((err, i) => (i === index ? { ...err, [name]: '' } : err)));
-      //
     } else {
       setFormData((prevFormData) => ({
         ...prevFormData,
         [name]: value.toUpperCase()
       }));
     }
-    setFieldErrors((prev) => ({
-      ...prev,
-      [name]: ''
-    }));
   };
   const handleSelectPartyChange = (e) => {
     const value = e.target.value;
@@ -673,11 +636,6 @@ const RCostInvoicegna = ({ selectedRow }) => {
         partyCode: selectedParty.partyCode,
         creditDays: selectedParty.creditDays
       }));
-      setFieldErrors((prev) => ({
-        ...prev,
-        partyName: ''
-      }));
-
       getStateCode(selectedParty.partyCode);
       // getCurrencyAndExratesForMatchingParties(selectedParty.partyCode);
     } else {
@@ -814,8 +772,9 @@ const RCostInvoicegna = ({ selectedRow }) => {
           const selectedCurrencyData = exRates.find((currency) => currency.currency === updatedRow.currency);
           const exRate = selectedCurrencyData?.buyingExRate || 1;
           const fcAmount = updatedRow.currency === 'INR' ? 0 : rate;
-          const lcAmount = (rate * exRate).toFixed(2);
-          const billAmount = rate;
+          const lcAmount = rate * exRate;
+          const billAmount = rate * exRate;
+
           return {
             ...updatedRow,
             // rate,
@@ -829,15 +788,15 @@ const RCostInvoicegna = ({ selectedRow }) => {
       });
     });
 
-    // setCostInvoiceErrors((prev) => {
-    //   const newErrors = [...prev];
-    //   const updatedErrors = {
-    //     ...newErrors[index],
-    //     [field]: !value ? `${field} is required` : ''
-    //   };
-    //   newErrors[index] = updatedErrors;
-    //   return newErrors;
-    // });
+    setCostInvoiceErrors((prev) => {
+      const newErrors = [...prev];
+      const updatedErrors = {
+        ...newErrors[index],
+        [field]: !value ? `${field} is required` : ''
+      };
+      newErrors[index] = updatedErrors;
+      return newErrors;
+    });
   };
   const handleAddRow = () => {
     if (isLastRowEmpty(chargerCostInvoice)) {
@@ -907,7 +866,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
           rate: !table[table.length - 1].rate ? 'Rate is required' : '',
           lcAmount: !table[table.length - 1].lcAmount ? 'LC Amount is required' : '',
           billAmount: !table[table.length - 1].billAmount ? 'Bll Amount is required' : '',
-          gtaAmount: !table[table.length - 1].gtaAmount ? 'GST Amount is required' : ''
+          gtaAmount: !table[table.length - 1].gtaAmount ? 'GTA Amount is required' : ''
         };
         return newErrors;
       });
@@ -925,9 +884,6 @@ const RCostInvoicegna = ({ selectedRow }) => {
 
   const handleView = () => {
     setShowForm(!showForm);
-    if (!showForm) {
-      handleClear();
-    }
   };
 
   const handleChange = (event, newValue) => {
@@ -989,18 +945,17 @@ const RCostInvoicegna = ({ selectedRow }) => {
         ...(editId && { id: row.id }),
         chargeName: row.chargeAC,
         currency: row.currency || '',
-        exRate: parseFloat(row.exRate),
-        gstPer: parseFloat(row.gstPer),
-        gstAmt: parseFloat(row.gstAmt),
-        gtaAmount: parseFloat(row.gtaAmount),
-        rate: parseFloat(row.rate),
+        exRate: parseInt(row.exRate),
+        gstPer: parseInt(row.gstPer),
+        gtaamount: parseInt(row.gtaAmount),
+        rate: parseInt(row.rate),
         tdsApplicable: row.tdsApplicable
       }));
       const tdsVO = tdsCostInvoiceDTO.map((row) => ({
         ...(editId && { id: row.id }),
         section: row.section,
         tds: row.tds,
-        tdsPer: parseFloat(row.tdsPer)
+        tdsPer: parseInt(row.tdsPer)
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
@@ -1016,7 +971,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
         creditDays: parseInt(formData.creditDays) || 0,
         currency: formData.currency,
         dueDate: formData.dueDate,
-        exRate: parseFloat(formData.exRate),
+        exRate: parseInt(formData.exRate),
         gstType: formData.gstType,
         partyType: formData.partyType,
         partyName: formData.partyName,
@@ -1075,13 +1030,6 @@ const RCostInvoicegna = ({ selectedRow }) => {
         return row;
       })
     );
-    setCostInvoiceErrors((prev) => ({
-      ...prev,
-      [index]: {
-        ...prev[index],
-        chargeAC: ''
-      }
-    }));
   };
 
   // const handleTypeChange = (event) => {
@@ -1592,8 +1540,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
                           textField: { size: 'small', clearable: true, error: fieldErrors.dueDate, helperText: fieldErrors.dueDate }
                         }}
                         format="DD-MM-YYYY"
-                        // disabled={formData.mode === 'SUBMIT'}
-                        disabled
+                        disabled={formData.mode === 'SUBMIT'}
                       />
                     </LocalizationProvider>
                   </FormControl>
@@ -1610,9 +1557,8 @@ const RCostInvoicegna = ({ selectedRow }) => {
                       label="Tax Type"
                       disabled={formData.mode === 'SUBMIT' || editId}
                     >
-                      {formData.currency === 'INR' && <MenuItem value="INTER">INTER</MenuItem>}
-                      {formData.currency === 'INR' && <MenuItem value="INTRA">INTRA</MenuItem>}
-                      {formData.currency !== 'INR' && <MenuItem value="SERVICE TAX">SERVICE TAX</MenuItem>}
+                      <MenuItem value="INTER">INTER</MenuItem>
+                      <MenuItem value="INTRA">INTRA</MenuItem>
                     </Select>
                     {fieldErrors.gstType && <FormHelperText style={{ color: 'red' }}>{fieldErrors.gstType}</FormHelperText>}
                   </FormControl>
@@ -1896,7 +1842,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
                                               style={{ width: '100px' }}
                                               onChange={(e) => {
                                                 const value = e.target.value;
-                                                const numericRegex = /^[0-9.]*$/;
+                                                const numericRegex = /^[0-9]*$/;
                                                 if (numericRegex.test(value)) {
                                                   handleRowUpdate(index, 'rate', value);
                                                 } else {
@@ -1920,7 +1866,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
                                               style={{ width: '100px' }}
                                               onChange={(e) => {
                                                 const value = e.target.value;
-                                                const numericRegex = /^[0-9.]*$/;
+                                                const numericRegex = /^[0-9]*$/;
                                                 if (numericRegex.test(value)) {
                                                   handleRowUpdate(index, 'gstPer', value);
                                                 } else {
@@ -2062,7 +2008,6 @@ const RCostInvoicegna = ({ selectedRow }) => {
                                               type="text"
                                               value={row.gtaAmount ? row.gtaAmount : ''}
                                               style={{ width: '100px' }}
-                                              // disabled
                                               onChange={(e) => {
                                                 const value = e.target.value;
                                                 const numericRegex = /^[0-9]*$/;
@@ -2070,14 +2015,14 @@ const RCostInvoicegna = ({ selectedRow }) => {
                                                   setChargerCostInvoice((prev) =>
                                                     prev.map((r) => (r.id === row.id ? { ...r, gtaAmount: value } : r))
                                                   );
-                                                  // setCostInvoiceErrors((prev) => {
-                                                  //   const newErrors = [...prev];
-                                                  //   newErrors[index] = {
-                                                  //     ...newErrors[index],
-                                                  //     gtaAmount: !value ? 'GTA Amt is required' : ''
-                                                  //   };
-                                                  //   return newErrors;
-                                                  // });
+                                                  setCostInvoiceErrors((prev) => {
+                                                    const newErrors = [...prev];
+                                                    newErrors[index] = {
+                                                      ...newErrors[index],
+                                                      gtaAmount: !value ? 'GTA Amt is required' : ''
+                                                    };
+                                                    return newErrors;
+                                                  });
                                                 } else {
                                                   setCostInvoiceErrors((prev) => {
                                                     const newErrors = [...prev];
@@ -2194,7 +2139,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
                                 size="small"
                                 name="tdsPer"
                                 type="number"
-                                // disabled
+                                disabled
                                 inputProps={{ maxLength: 30 }}
                                 value={tdsCostInvoiceDTO[index]?.tdsPer || ''}
                                 onChange={(e) => handleInputChange(e, 'tdsCostInvoiceDTO', index)}
@@ -2294,7 +2239,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
                             />
                           </FormControl>
                         </div>
-                        <div className="col-md-6 mb-3">
+                        <div className="col-md-3 mb-3">
                           <FormControl fullWidth variant="filled">
                             <TextField
                               label="Amount In Words"
@@ -2340,7 +2285,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
             </>
           )}
           {showForm && (
-            <CommonTable
+            <CommonListViewTable
               data={data && data}
               columns={listViewColumns}
               blockEdit={true}
