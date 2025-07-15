@@ -349,7 +349,7 @@ const RCostInvoicegna = () => {
             fcAmount: row.fcAmt,
             lcAmount: row.lcAmt,
             billAmount: row.billAmt,
-            gtaAmount: row.gtaamount
+            gtaAmount: row.gtaAmount
           }))
         );
         setTdsCostInvoiceDTO(
@@ -559,7 +559,7 @@ const RCostInvoicegna = () => {
             fcAmount: row.fcAmt,
             lcAmount: row.lcAmt,
             billAmount: row.billAmt,
-            gtaAmount: row.gtaamount
+            gtaAmount: row.gtaAmount
           }))
         );
         setTdsCostInvoiceDTO(
@@ -947,7 +947,7 @@ const RCostInvoicegna = () => {
         currency: row.currency || '',
         exRate: parseInt(row.exRate),
         gstPer: parseInt(row.gstPer),
-        gtaamount: parseInt(row.gtaAmount),
+        gtaAmount: parseInt(row.gtaAmount),
         rate: parseInt(row.rate),
         tdsApplicable: row.tdsApplicable
       }));
