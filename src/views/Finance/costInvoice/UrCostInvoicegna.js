@@ -632,13 +632,13 @@ const UrCostInvoicegna = ({ selectedRow }) => {
       }));
     }
     //
-    setTdsCostErrors((prev) => ({
-      ...prev,
-      [index]: {
-        ...prev[index],
-        [name]: ''
-      }
-    }));
+    // setTdsCostErrors((prev) => ({
+    //   ...prev,
+    //   [index]: {
+    //     ...prev[index],
+    //     [name]: ''
+    //   }
+    // }));
     //
   };
 
@@ -768,12 +768,12 @@ const UrCostInvoicegna = ({ selectedRow }) => {
           : row
       )
     );
-    setCostInvoiceErrors((prev) => ({
-      ...prev,
-      [index]: {
-        chargeLedger: ''
-      }
-    }));
+    // setCostInvoiceErrors((prev) => ({
+    //   ...prev,
+    //   [index]: {
+    //     chargeLedger: ''
+    //   }
+    // }));
 
     // Clear summary-related fields in formData
     setFormData((prevData) => ({
