@@ -99,6 +99,13 @@ const reportChildren = [
     type: 'item',
     url: '/finance/FinalReport/PendingReport',
     visible: hasScreenAccess('PENR')
+  },
+  {
+    id: 'costEstimateReport',
+    title: 'Cost Estimate Report',
+    type: 'item',
+    url: '/finance/FinalReport/CostEstimateReport',
+    visible: hasScreenAccess('CER')
   }
 ].filter((item) => item.visible !== false);
 
