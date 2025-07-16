@@ -336,7 +336,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     }
 
     // Leave a bit of bottom margin
-    leftY += lineHeight ;
+    leftY += lineHeight;
 
     pdf.setFontSize(8);
     let rightY = currentY - (row.amountInWords ? 2 * lineHeight : lineHeight);
@@ -512,7 +512,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   };
 
   useEffect(() => {
-    if ((row && row.approveStatus === 'Approved') || (row && row.approveStatus === 'Rejected')) {
+    if ((row && row.approveStatus === 'Approved') || (row && row.approveStatus === 'Rejected') || (row && row.status === 'TAX')) {
       handleOpen();
       getBankDetailsByOrgId();
       getCompanyDetails();
@@ -622,7 +622,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               </div>
             )}
             <div style={{ marginRight: '100px' }}>
-              <strong style={{ fontSize: '20px' }}>TAX INVOICE</strong>
+              {(row.status === 'PROFORMA') ? <strong style={{ fontSize: '20px' }}>PROFORMA</strong> : <strong style={{ fontSize: '20px' }}>TAX INVOICE</strong>}
             </div>
             <div>
               <div className="mb-2">

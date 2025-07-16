@@ -1643,7 +1643,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
                     indicatorColor="secondary"
                     aria-label="secondary tabs example"
                   >
-                    <Tab value={0} label="Expence Charges" />
+                    <Tab value={0} label="Expense Charges" />
                     <Tab value={1} label="TDS" />
                     <Tab value={2} label="Summary" />
                   </Tabs>
@@ -1676,7 +1676,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
                                     <th className="table-header" style={{ width: '50px' }}>
                                       S.No
                                     </th>
-                                    <th className="table-header">Charge / Expence A/C</th>
+                                    <th className="table-header">Charge / Expense A/C</th>
                                     <th className="table-header">TDS Applicable</th>
                                     <th className="table-header">Currency</th>
                                     <th className="table-header">Ex Rate</th>

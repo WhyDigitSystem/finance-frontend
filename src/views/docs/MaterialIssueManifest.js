@@ -70,7 +70,7 @@ export const MaterialIssueManifest = () => {
     warehouseAddress: '',
     customer: '',
     customerName: '',
-    locationUnit:'',
+    locationUnit: '',
     customerAddress: '',
     receiverRegIn: '',
     // sender: sender,
@@ -89,7 +89,7 @@ export const MaterialIssueManifest = () => {
     warehouseAddress: '',
     customer: '',
     customerName: '',
-    locationUnit:'',
+    locationUnit: '',
     customerAddress: '',
     receiverRegIn: '',
     // sender: sender,
@@ -128,46 +128,47 @@ export const MaterialIssueManifest = () => {
     getAllKitDetails();
     getAllTransporters();
     getAllManifestByOrgId();
+    getMIMDocId();
   }, []);
 
   const handleClear = () => {
     setFormData({
-    transactionNo: '',
-    transactionDate: dayjs(),
-    dispatchDate: dayjs(),
-    transactionType: 'ISSUE',
-    fromWarehouse: '',
-    warehouseAddress: '',
-    customer: '',
-    locationUnit:'',
-    customerName: '',
-    customerAddress: '',
-    receiverRegIn: '',
-    // sender: sender,
-    amount: 0,
-    amountInWords: '',
-    transporterName: '',
-    vehicleNo: '',
-    driverNo: '',
+      transactionNo: '',
+      transactionDate: dayjs(),
+      dispatchDate: dayjs(),
+      transactionType: 'ISSUE',
+      fromWarehouse: '',
+      warehouseAddress: '',
+      customer: '',
+      locationUnit: '',
+      customerName: '',
+      customerAddress: '',
+      receiverRegIn: '',
+      // sender: sender,
+      amount: 0,
+      amountInWords: '',
+      transporterName: '',
+      vehicleNo: '',
+      driverNo: '',
     });
     setFieldErrors({
-    transactionNo: '',
-    transactionDate: dayjs(),
-    dispatchDate: dayjs(),
-    transactionType: '',
-    fromWarehouse: '',
-    warehouseAddress: '',
-    customer: '',
-    locationUnit:'',
-    customerName: '',
-    customerAddress: '',
-    receiverRegIn: '',
-    // sender: sender,
-    amount: 0,
-    amountInWords: '',
-    transporterName: '',
-    vehicleNo: '',
-    driverNo: '',
+      transactionNo: '',
+      transactionDate: dayjs(),
+      dispatchDate: dayjs(),
+      transactionType: '',
+      fromWarehouse: '',
+      warehouseAddress: '',
+      customer: '',
+      locationUnit: '',
+      customerName: '',
+      customerAddress: '',
+      receiverRegIn: '',
+      // sender: sender,
+      amount: 0,
+      amountInWords: '',
+      transporterName: '',
+      vehicleNo: '',
+      driverNo: '',
     });
     setDetailsTableData([]);
     setDetailsTableErrors([{
@@ -181,7 +182,7 @@ export const MaterialIssueManifest = () => {
       actualQty: ''
     }]);
     setEditId('');
-
+    getMIMDocId();
   };
 
   const handleView = () => {
@@ -240,7 +241,7 @@ export const MaterialIssueManifest = () => {
       console.log('error', err);
     }
   };
-const getAllReceiverDetails = async () => {
+  const getAllReceiverDetails = async () => {
     try {
       const response = await apiCalls('get', `/warehouser/getAllWarehouseByOrgId?orgId=${orgId}`);
       setAllWarehouse(response.paramObjectsMap.warehouseVO);
@@ -282,10 +283,10 @@ const getAllReceiverDetails = async () => {
       console.log('error', err);
     }
   };
-const handleDeleteKit = (kitNoToDelete) => {
-  const updatedKits = detailsTableData.filter((row) => row.kitNo !== kitNoToDelete);
-  setDetailsTableData(updatedKits);
-};
+  const handleDeleteKit = (kitNoToDelete) => {
+    const updatedKits = detailsTableData.filter((row) => row.kitNo !== kitNoToDelete);
+    setDetailsTableData(updatedKits);
+  };
   const getAllMIMById = async (row) => {
     console.log('first', row);
     setShowForm(true);
@@ -337,21 +338,21 @@ const handleDeleteKit = (kitNoToDelete) => {
       console.error('Error fetching data:', error);
     }
   };
-const GeneratePdf = async (row) => {
-  try {
-    const result = await apiCalls('get', `/reportController/getAllIssueManifestProviderById?id=${row.original.id}`);
-    const MIMVO = result.paramObjectsMap.IssueManifestProviderVO;
-    if (MIMVO) {
-      setPdfData(MIMVO);
-      setDownloadPdf(true);
-    } else {
-      showToast('error', 'Record is Incomplete Please fill needed Data');
+  const GeneratePdf = async (row) => {
+    try {
+      const result = await apiCalls('get', `/reportController/getAllIssueManifestProviderById?id=${row.original.id}`);
+      const MIMVO = result.paramObjectsMap.IssueManifestProviderVO;
+      if (MIMVO) {
+        setPdfData(MIMVO);
+        setDownloadPdf(true);
+      } else {
+        showToast('error', 'Record is Incomplete Please fill needed Data');
+      }
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      showToast('error', 'Failed to fetch data for PDF');
     }
-  } catch (error) {
-    console.error('Error generating PDF:', error);
-    showToast('error', 'Failed to fetch data for PDF');
-  }
-};
+  };
   const handleSave = async () => {
     const errors = {};
     if (!formData.transactionNo) {
@@ -384,7 +385,7 @@ const GeneratePdf = async (row) => {
         detailTableDataValid = false;
       }
       return rowErrors;
-    }); 
+    });
     setFieldErrors(errors);
     setDetailsTableErrors(newTableErrors);
     if (Object.keys(errors).length === 0 && detailTableDataValid) {
@@ -446,46 +447,60 @@ const GeneratePdf = async (row) => {
       setFieldErrors(errors);
     }
   };
-const handleProceed = () => {
-  if (!selectedKit || !selectedhsn || !kitQty) return;
+  const getMIMDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/reportController/getIssueManifestProviderDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
+      );
+      setFormData((prevData) => ({
+        ...prevData,
+        transactionNo: response.paramObjectsMap.issueManifestProviderDocId
+      }));
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+  const handleProceed = () => {
+    if (!selectedKit || !selectedhsn || !kitQty) return;
 
-  const kitAssets = selectedKit.kitAssetVO || [];
-  const timestamp = Date.now();
+    const kitAssets = selectedKit.kitAssetVO || [];
+    const timestamp = Date.now();
 
-  const newKitRows = kitAssets.map((asset, idx) => ({
-    id: timestamp + idx,
-    kitNo: selectedKit.kitNo,
-    kitName: selectedKit.kitDesc, 
-    kitQty: parseFloat(kitQty),  
-    hsnsacCode: selectedhsn.code || '',
-    productCode: asset.assetCodeId || '',
-    productName: asset.assetName || '',
-    productQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
-    actualQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
-  }));
-  setDetailsTableData((prev) => [...prev, ...newKitRows]);
-  setOpen(false);
-  setSelectedKit(null);
-  setSelectedhsn(null);
-  setKitQty('');
-};
-const groupedData = detailsTableData.reduce((acc, row) => {
-  const kitKey = row.kitNo;
-  if (!acc[kitKey]) acc[kitKey] = [];
-  acc[kitKey].push(row);
-  return acc;
-}, {});
-const handleProductQtyChange = (value, kitIndex, rowIndex) => {
-  const groupedEntries = Object.entries(groupedData);
-  const currentKitRows = groupedEntries[kitIndex]?.[1];
-  if (currentKitRows && currentKitRows[rowIndex]) {
-    const rowId = currentKitRows[rowIndex].id;
-    const updatedData = detailsTableData.map((item) =>
-      item.id === rowId ? { ...item, actualQty: Number(value) } : item
-    );
-    setDetailsTableData(updatedData);
-  }
-};
+    const newKitRows = kitAssets.map((asset, idx) => ({
+      id: timestamp + idx,
+      kitNo: selectedKit.kitNo,
+      kitName: selectedKit.kitDesc,
+      kitQty: parseFloat(kitQty),
+      hsnsacCode: selectedhsn.code || '',
+      productCode: asset.assetCodeId || '',
+      productName: asset.assetName || '',
+      productQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
+      actualQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
+    }));
+    setDetailsTableData((prev) => [...prev, ...newKitRows]);
+    setOpen(false);
+    setSelectedKit(null);
+    setSelectedhsn(null);
+    setKitQty('');
+  };
+  const groupedData = detailsTableData.reduce((acc, row) => {
+    const kitKey = row.kitNo;
+    if (!acc[kitKey]) acc[kitKey] = [];
+    acc[kitKey].push(row);
+    return acc;
+  }, {});
+  const handleProductQtyChange = (value, kitIndex, rowIndex) => {
+    const groupedEntries = Object.entries(groupedData);
+    const currentKitRows = groupedEntries[kitIndex]?.[1];
+    if (currentKitRows && currentKitRows[rowIndex]) {
+      const rowId = currentKitRows[rowIndex].id;
+      const updatedData = detailsTableData.map((item) =>
+        item.id === rowId ? { ...item, actualQty: Number(value) } : item
+      );
+      setDetailsTableData(updatedData);
+    }
+  };
   return (
     <>
       <div>
@@ -494,7 +509,6 @@ const handleProductQtyChange = (value, kitIndex, rowIndex) => {
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
-            {/* <ActionButton title="Search" icon={SearchIcon} onClick={() => console.log('Search Clicked')} /> */}
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
@@ -503,8 +517,21 @@ const handleProductQtyChange = (value, kitIndex, rowIndex) => {
           {showForm ? (
             <>
               <div className="row d-flex ml">
-                <div className="col-md-3 mb-3">
+                {/* <div className="col-md-3 mb-3">
                   <TextField id="transactionNo" label="Transaction No" onChange={handleInputChange} variant="outlined" size="small" fullWidth name="transactionNo" value={formData.transactionNo} />
+                </div> */}
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Transaction No"
+                      size="small"
+                      disabled
+                      value={formData.transactionNo}
+                      onChange={(e) => setFormData({ ...formData, transactionNo: e.target.value })}
+                      error={!!fieldErrors.transactionNo}
+                      helperText={fieldErrors.transactionNo}
+                    />
+                  </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled" size="small">
@@ -554,73 +581,73 @@ const handleProductQtyChange = (value, kitIndex, rowIndex) => {
                 </div>
 
                 <div className="col-md-3 mb-3">
-                <Autocomplete
-                  disablePortal
-                  options={allWarehouse}
-                  getOptionLabel={(option) => option.name || ''}
-                  isOptionEqualToValue={(option, value) => option.id === value.id} // ✅ Add this line
-                  sx={{ width: '100%' }}
-                  size="small"
-                  value={
-                    formData.fromWarehouse
-                      ? allWarehouse.find((c) => c.name === formData.fromWarehouse)
-                      : null
-                  }
-                  onChange={(event, newValue) => {
-                    handleInputChange({
-                      target: {
-                        name: 'fromWarehouse',
-                        value: newValue ? newValue.name : ''
-                      }
-                    });
-                    handleInputChange({
-                      target: {
-                        name: 'locationUnit',
-                        value: newValue ? newValue.locationUnit : ''
-                      }
-                    });
-                    handleInputChange({
-                      target: {
-                        name: 'warehouseAddress',
-                        value: newValue ? newValue.address : ''
-                      }
-                    });
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Warehouse"
-                      name="fromWarehouse"
-                      InputProps={{
-                        ...params.InputProps,
-                        style: { height: 40 }
-                      }}
-                      error={!!fieldErrors.fromWarehouse}
-                      helperText={fieldErrors.fromWarehouse}
-                    />
-                  )}
-                />
-              </div>
-              <div className="col-md-3 mb-3">
-                <TextField
-                  label="Warehouse Address"
-                  value={formData.warehouseAddress}
-                  size="small"
-                  fullWidth
-                  disabled
-                  multiline={
-                    !!formData.warehouseAddress &&
-                    (formData.warehouseAddress.includes('\n') || formData.warehouseAddress.length > 50)
-                  }
-                  minRows={
-                    !!formData.warehouseAddress &&
-                      (formData.warehouseAddress.includes('\n') || formData.warehouseAddress.length > 50) ? 2 : 1
-                  }
-                  onChange={(e) =>
-                    setFormData({ ...formData, warehouseAddress: e.target.value })
-                  }
-                />
-              </div>
+                  <Autocomplete
+                    disablePortal
+                    options={allWarehouse}
+                    getOptionLabel={(option) => option.name || ''}
+                    isOptionEqualToValue={(option, value) => option.id === value.id} // ✅ Add this line
+                    sx={{ width: '100%' }}
+                    size="small"
+                    value={
+                      formData.fromWarehouse
+                        ? allWarehouse.find((c) => c.name === formData.fromWarehouse)
+                        : null
+                    }
+                    onChange={(event, newValue) => {
+                      handleInputChange({
+                        target: {
+                          name: 'fromWarehouse',
+                          value: newValue ? newValue.name : ''
+                        }
+                      });
+                      handleInputChange({
+                        target: {
+                          name: 'locationUnit',
+                          value: newValue ? newValue.locationUnit : ''
+                        }
+                      });
+                      handleInputChange({
+                        target: {
+                          name: 'warehouseAddress',
+                          value: newValue ? newValue.address : ''
+                        }
+                      });
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Warehouse"
+                        name="fromWarehouse"
+                        InputProps={{
+                          ...params.InputProps,
+                          style: { height: 40 }
+                        }}
+                        error={!!fieldErrors.fromWarehouse}
+                        helperText={fieldErrors.fromWarehouse}
+                      />
+                    )}
+                  />
+                </div>
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    label="Warehouse Address"
+                    value={formData.warehouseAddress}
+                    size="small"
+                    fullWidth
+                    disabled
+                    multiline={
+                      !!formData.warehouseAddress &&
+                      (formData.warehouseAddress.includes('\n') || formData.warehouseAddress.length > 50)
+                    }
+                    minRows={
+                      !!formData.warehouseAddress &&
+                        (formData.warehouseAddress.includes('\n') || formData.warehouseAddress.length > 50) ? 2 : 1
+                    }
+                    onChange={(e) =>
+                      setFormData({ ...formData, warehouseAddress: e.target.value })
+                    }
+                  />
+                </div>
                 <div className="col-md-3 mb-3">
                   <Autocomplete
                     disablePortal
@@ -674,7 +701,7 @@ const handleProductQtyChange = (value, kitIndex, rowIndex) => {
                       />
                     )}
                   />
-              </div>
+                </div>
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="customerAddress"
@@ -750,42 +777,42 @@ const handleProductQtyChange = (value, kitIndex, rowIndex) => {
                   />
                 </div>
                 <div className="col-md-3 mb-3">
-                <Autocomplete
-                  options={allTransporters}
-                  getOptionLabel={(option) => option.partyName || ''}
-                  isOptionEqualToValue={(option, value) => option?.transporterName === value?.transporterName}
-                  value={
-                    formData.transporterName
-                      ? allTransporters.find((c) => c.partyName === formData.transporterName)
-                      : null
-                  }
-                  onChange={(event, newValue) => {
-                    handleInputChange({
-                      target: {
-                        name: 'transporterName',
-                        value: newValue ? newValue.partyName : ''
-                      }
-                    });
-                  }}
-                  sx={{ width: '100%' }}
-                  size="small"
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      name= "transporterName"
-                      label= "Transporter Name"
-                      InputProps={{
-                        ...params.InputProps,
-                        style: { height: 40 }
-                      }}
-                    />
-                  )}
-                />
-              </div>
+                  <Autocomplete
+                    options={allTransporters}
+                    getOptionLabel={(option) => option.partyName || ''}
+                    isOptionEqualToValue={(option, value) => option?.transporterName === value?.transporterName}
+                    value={
+                      formData.transporterName
+                        ? allTransporters.find((c) => c.partyName === formData.transporterName)
+                        : null
+                    }
+                    onChange={(event, newValue) => {
+                      handleInputChange({
+                        target: {
+                          name: 'transporterName',
+                          value: newValue ? newValue.partyName : ''
+                        }
+                      });
+                    }}
+                    sx={{ width: '100%' }}
+                    size="small"
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        name="transporterName"
+                        label="Transporter Name"
+                        InputProps={{
+                          ...params.InputProps,
+                          style: { height: 40 }
+                        }}
+                      />
+                    )}
+                  />
+                </div>
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="vehicleNo"
-                    label= "Vehicle No"
+                    label="Vehicle No"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -800,7 +827,7 @@ const handleProductQtyChange = (value, kitIndex, rowIndex) => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="driverNo"
-                    label= "Driver No"
+                    label="Driver No"
                     type='number'
                     variant="outlined"
                     size="small"
@@ -808,19 +835,19 @@ const handleProductQtyChange = (value, kitIndex, rowIndex) => {
                     name="driverNo"
                     value={formData.driverNo}
                     inputProps={{
-                    maxLength: 10,
-                    inputMode: 'numeric',
-                    pattern: '[0-9]*'
-                  }}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    if (/^\d{0,10}$/.test(value)) {
-                      setFormData({ ...formData, driverNo: value });
-                      setFieldErrors({ ...fieldErrors, driverNo: '' });
-                    } else {
-                      setFieldErrors({ ...fieldErrors, driverNo: 'Enter up to 10 digits only' });
-                    }
-                  }}
+                      maxLength: 10,
+                      inputMode: 'numeric',
+                      pattern: '[0-9]*'
+                    }}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      if (/^\d{0,10}$/.test(value)) {
+                        setFormData({ ...formData, driverNo: value });
+                        setFieldErrors({ ...fieldErrors, driverNo: '' });
+                      } else {
+                        setFieldErrors({ ...fieldErrors, driverNo: 'Enter up to 10 digits only' });
+                      }
+                    }}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.driverNo ? fieldErrors.driverNo : ''}</span>}
                     error={!!fieldErrors.driverNo}
                   />
@@ -842,114 +869,114 @@ const handleProductQtyChange = (value, kitIndex, rowIndex) => {
                   <Box sx={{ padding: 2 }}>
                     {value === 0 && (
                       <>
-                          <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddRow}>
-                            Add Kit
-                          </Button>
-                          <Dialog open={open} onClose={() => setOpen(false)}>
-                            <DialogTitle>Select Kit</DialogTitle>
-                            <DialogContent sx={{ minWidth: 400 }}>
-                              <Autocomplete
-                                options={allKitId}
-                                getOptionLabel={(option) => option.kitNo || ''}
-                                value={selectedKit}
-                                onChange={(e, newValue) => setSelectedKit(newValue)}
-                                renderInput={(params) => <TextField {...params} label="Kit No" margin="dense" fullWidth />}
-                              />
-                              <TextField
-                                label="Kit Name"
-                                margin="dense"
-                                fullWidth
-                                value={selectedKit?.kitDesc || ''}
-                                disabled
-                              />
-                              <TextField
-                                label="Kit Quantity"
-                                margin="dense"
-                                fullWidth
-                                type="number"
-                                value={kitQty}
-                                onChange={(e) => setKitQty(e.target.value)}
-                              />
-                              <Autocomplete
-                                options={allHsnSacCode}
-                                getOptionLabel={(option) => option.code || ''}
-                                value={selectedhsn}
-                                onChange={(e, newValue) => setSelectedhsn(newValue)}
-                                renderInput={(params) => <TextField {...params} label="HSN/SAC" margin="dense" fullWidth />}
-                              />
-                            </DialogContent>
-                            <DialogActions>
-                              <Button onClick={() => setOpen(false)} color="secondary">Cancel</Button>
-                              <Button onClick={handleProceed} color="primary" variant="contained">Proceed</Button>
-                            </DialogActions>
-                          </Dialog>
-                          <TableContainer component={Paper} sx={{ mt: 2 }}>
-                            <Table>
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell>S.No</TableCell>
-                                  <TableCell>Action</TableCell>
-                                  <TableCell>Kit No</TableCell>
-                                  <TableCell>Kit Name</TableCell>
-                                  <TableCell>Kit Qty</TableCell>
-                                  <TableCell>HSN/SAC</TableCell>
-                                  <TableCell>Product Code</TableCell>
-                                  <TableCell>Product Name</TableCell>
-                                  <TableCell>Product Qty</TableCell>
-                                  <TableCell>Actual Qty</TableCell>
-                                </TableRow>
-                              </TableHead>
-                                <TableBody>
-                                  {Object.entries(groupedData).map(([kitNo, kitRows], kitIndex, kitArray) => (
-                                    <React.Fragment key={kitNo}>
-                                      {kitRows.map((row, rowIndex) => (
-                                        <TableRow key={row.id}>
-                                          {rowIndex === 0 && (
-                                            <>
-                                              <TableCell rowSpan={kitRows.length}>{kitIndex + 1}</TableCell>
-                                              <TableCell rowSpan={kitRows.length}>
-                                              <FaTrash
-                                                onClick={() => handleDeleteKit(kitNo)}
-                                                style={{ cursor: "pointer", color: "red" }}
-                                                className="ms-4"
-                                              />
-                                              </TableCell>
-                                              <TableCell rowSpan={kitRows.length}>{row.kitNo}</TableCell>
-                                              <TableCell rowSpan={kitRows.length}>{row.kitName}</TableCell>
-                                              <TableCell rowSpan={kitRows.length}>{row.kitQty}</TableCell>
-                                              <TableCell rowSpan={kitRows.length}>{row.hsnsacCode}</TableCell>
-                                            </>
-                                          )}
-
-                                          {rowIndex !== 0 && null}
-
-                                          <TableCell>{row.productCode}</TableCell>
-                                          <TableCell>{row.productName}</TableCell>
-                                          <TableCell>{row.productQty}</TableCell>
-                                          <TableCell>
-                                          <input
-                                            type="number"
-                                            value={row.actualQty}
-                                            onChange={(e) => handleProductQtyChange(e.target.value, kitIndex, rowIndex)}
-                                            style={{ width: "80px" }}
-                                            min={0}
-                                          />
-                                        </TableCell>
-                                        </TableRow>
-                                      ))}
-
-                                      {/* horizontal line */}
-                                      {kitIndex !== kitArray.length - 1 && (
-                                        <TableRow>
-                                          <TableCell colSpan={8} sx={{ borderBottom: '2px solid #ccc' }} />
-                                        </TableRow>
+                        <Button variant="contained" startIcon={<AddIcon />} onClick={handleAddRow}>
+                          Add Kit
+                        </Button>
+                        <Dialog open={open} onClose={() => setOpen(false)}>
+                          <DialogTitle>Select Kit</DialogTitle>
+                          <DialogContent sx={{ minWidth: 400 }}>
+                            <Autocomplete
+                              options={allKitId}
+                              getOptionLabel={(option) => option.kitNo || ''}
+                              value={selectedKit}
+                              onChange={(e, newValue) => setSelectedKit(newValue)}
+                              renderInput={(params) => <TextField {...params} label="Kit No" margin="dense" fullWidth />}
+                            />
+                            <TextField
+                              label="Kit Name"
+                              margin="dense"
+                              fullWidth
+                              value={selectedKit?.kitDesc || ''}
+                              disabled
+                            />
+                            <TextField
+                              label="Kit Quantity"
+                              margin="dense"
+                              fullWidth
+                              type="number"
+                              value={kitQty}
+                              onChange={(e) => setKitQty(e.target.value)}
+                            />
+                            <Autocomplete
+                              options={allHsnSacCode}
+                              getOptionLabel={(option) => option.code || ''}
+                              value={selectedhsn}
+                              onChange={(e, newValue) => setSelectedhsn(newValue)}
+                              renderInput={(params) => <TextField {...params} label="HSN/SAC" margin="dense" fullWidth />}
+                            />
+                          </DialogContent>
+                          <DialogActions>
+                            <Button onClick={() => setOpen(false)} color="secondary">Cancel</Button>
+                            <Button onClick={handleProceed} color="primary" variant="contained">Proceed</Button>
+                          </DialogActions>
+                        </Dialog>
+                        <TableContainer component={Paper} sx={{ mt: 2 }}>
+                          <Table>
+                            <TableHead>
+                              <TableRow>
+                                <TableCell>S.No</TableCell>
+                                <TableCell>Action</TableCell>
+                                <TableCell>Kit No</TableCell>
+                                <TableCell>Kit Name</TableCell>
+                                <TableCell>Kit Qty</TableCell>
+                                <TableCell>HSN/SAC</TableCell>
+                                <TableCell>Product Code</TableCell>
+                                <TableCell>Product Name</TableCell>
+                                <TableCell>Product Qty</TableCell>
+                                <TableCell>Actual Qty</TableCell>
+                              </TableRow>
+                            </TableHead>
+                            <TableBody>
+                              {Object.entries(groupedData).map(([kitNo, kitRows], kitIndex, kitArray) => (
+                                <React.Fragment key={kitNo}>
+                                  {kitRows.map((row, rowIndex) => (
+                                    <TableRow key={row.id}>
+                                      {rowIndex === 0 && (
+                                        <>
+                                          <TableCell rowSpan={kitRows.length}>{kitIndex + 1}</TableCell>
+                                          <TableCell rowSpan={kitRows.length}>
+                                            <FaTrash
+                                              onClick={() => handleDeleteKit(kitNo)}
+                                              style={{ cursor: "pointer", color: "red" }}
+                                              className="ms-4"
+                                            />
+                                          </TableCell>
+                                          <TableCell rowSpan={kitRows.length}>{row.kitNo}</TableCell>
+                                          <TableCell rowSpan={kitRows.length}>{row.kitName}</TableCell>
+                                          <TableCell rowSpan={kitRows.length}>{row.kitQty}</TableCell>
+                                          <TableCell rowSpan={kitRows.length}>{row.hsnsacCode}</TableCell>
+                                        </>
                                       )}
-                                    </React.Fragment>
-                                  ))}
-                                </TableBody>
-                            </Table>
 
-                          </TableContainer>
+                                      {rowIndex !== 0 && null}
+
+                                      <TableCell>{row.productCode}</TableCell>
+                                      <TableCell>{row.productName}</TableCell>
+                                      <TableCell>{row.productQty}</TableCell>
+                                      <TableCell>
+                                        <input
+                                          type="number"
+                                          value={row.actualQty}
+                                          onChange={(e) => handleProductQtyChange(e.target.value, kitIndex, rowIndex)}
+                                          style={{ width: "80px" }}
+                                          min={0}
+                                        />
+                                      </TableCell>
+                                    </TableRow>
+                                  ))}
+
+                                  {/* horizontal line */}
+                                  {kitIndex !== kitArray.length - 1 && (
+                                    <TableRow>
+                                      <TableCell colSpan={8} sx={{ borderBottom: '2px solid #ccc' }} />
+                                    </TableRow>
+                                  )}
+                                </React.Fragment>
+                              ))}
+                            </TableBody>
+                          </Table>
+
+                        </TableContainer>
                       </>
                     )}
                   </Box>

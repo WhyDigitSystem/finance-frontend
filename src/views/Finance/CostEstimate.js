@@ -1,18 +1,17 @@
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import { FormControl, FormHelperText, InputLabel, MenuItem, Autocomplete, Select, Button, Chip, Stack } from '@mui/material';
+import { FormControl, FormHelperText, InputLabel, MenuItem, Autocomplete, Select, Button, Chip, Stack, Avatar, Typography, Dialog, DialogContent } from '@mui/material';
 import TextField from '@mui/material/TextField';
 import { DatePicker } from '@mui/x-date-pickers';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef  } from 'react';
 import 'react-tabs/style/react-tabs.css';
 import 'react-toastify/dist/ReactToastify.css';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
-import CommonTable from 'views/basicMaster/CommonTable';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import Box from '@mui/material/Box';
@@ -24,7 +23,26 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import ConfirmationModal from 'utils/confirmationPopup';
 import FancyLoader from 'utils/FancyLoader';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import IconButton from '@mui/material/IconButton';
+import ControlCameraIcon from '@mui/icons-material/ControlCamera';
+import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import CostEstimatePDF from 'views/docs/CostEstimatePDF';
+const base64StringToFile = (base64String, filename, mimeType = 'image/jpeg') => {
+    const byteCharacters = atob(base64String);
+    const byteArrays = [];
+    for (let offset = 0; offset < byteCharacters.length; offset += 512) {
+        const slice = byteCharacters.slice(offset, offset + 512);
+        const byteNumbers = new Array(slice.length);
+        for (let i = 0; i < slice.length; i++) {
+            byteNumbers[i] = slice.charCodeAt(i);
+        }
+        const byteArray = new Uint8Array(byteNumbers);
+        byteArrays.push(byteArray);
+    }
+    const blob = new Blob(byteArrays, { type: mimeType });
+    return new File([blob], filename, { type: mimeType });
+};
 // Add these animation variants
 const buttonVariants = {
     hover: {
@@ -82,6 +100,8 @@ const CostEstimate = () => {
         return roles?.[0]?.role || null;
     });
     const [value, setValue] = useState(0);
+    const [downloadPdf, setDownloadPdf] = useState(false);
+    const [pdfData, setPdfData] = useState([]);
     const [modalOpen, setModalOpen] = useState(false);
     const [loading, setLoading] = useState(false);
     const [approveStatus, setApproveStatus] = useState('');
@@ -98,6 +118,7 @@ const CostEstimate = () => {
         empCode: loginUserName,
         empName: '',
         totalAmt: '',
+        approvalRemarks: '',
         status: 'DRAFT',
         approvedBy: '',
         approvedOn: '',
@@ -112,6 +133,7 @@ const CostEstimate = () => {
         empName: '',
         status: '',
         totalAmt: '',
+        approvalRemarks: '',
         approvedBy: '',
         approvedOn: '',
         // approveStatus: '',
@@ -147,6 +169,7 @@ const CostEstimate = () => {
             particulars: '',
             amount: '',
             remarks: '',
+            supportingimg: null,
         }
     ]);
     const [detailsTableErrors, setDetailsTableErrors] = useState([
@@ -155,6 +178,7 @@ const CostEstimate = () => {
             particulars: '',
             amount: '',
             remarks: '',
+            supportingimg: '',
         }
     ]);
     const getEmpCode = async () => {
@@ -187,7 +211,6 @@ const CostEstimate = () => {
     //     }
     // };
     useEffect(() => {
-        // getAllDepartment();
         getEmpCode();
         getAllCostEstimateByOrgId();
         getCostEstimateDocId();
@@ -205,7 +228,19 @@ const CostEstimate = () => {
         { category: 'Marketing & Advertising' },
         { category: 'Miscellaneous' }
     ];
-
+    const initialNameSet = useRef(false);
+    useEffect(() => {
+        if (!initialNameSet.current && formData.empCode && empCodeList.length > 0) {
+            const employee = empCodeList.find(emp => emp.employeeCode === formData.empCode);
+            if (employee) {
+                setFormData(prev => ({
+                    ...prev,
+                    empName: employee.employeeName
+                }));
+            }
+            initialNameSet.current = true;
+        }
+    }, [empCodeList, formData.empCode]);
     useEffect(() => {
         const totalAmount = detailsTableData.reduce((sum, row) => sum + Number(row.amount || 0), 0);
         setFormData((prev) => ({
@@ -217,7 +252,7 @@ const CostEstimate = () => {
     const getAllCostEstimateByOrgId = async () => {
         setLoading(true);
         try {
-            const result = await apiCalls('get', `/costEstimation/getAllCostEstimationByOrgId?orgId=${orgId}`);
+            const result = await apiCalls('get', `/costEstimation/getAllCostEstimationByOrgId?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}`);
             setData(result.paramObjectsMap.costEstimationVO.reverse() || []);
             setLoading(false);
         } catch (err) {
@@ -249,6 +284,7 @@ const CostEstimate = () => {
                 setDocId(costEstimateVO.docId);
                 setApproveStatus(costEstimateVO.approveStatus || '');
                 // getEmpCode(costEstimateVO.department);
+                // setImg(result.paramObjectsMap.costEstimationVO.costEstimationDetailsVO[0].image)
                 setFormData({
                     id: costEstimateVO.id || '',
                     docDate: costEstimateVO.docDate ? dayjs(costEstimateVO.docDate, 'YYYY-MM-DD') : dayjs(),
@@ -256,6 +292,7 @@ const CostEstimate = () => {
                     empCode: costEstimateVO.employeeCode || '',
                     // department: costEstimateVO.department || '',
                     totalAmt: costEstimateVO.totalAmount || '',
+                    approvalRemarks: costEstimateVO.approvalRemarks || '',
                     status: costEstimateVO.status || '',
                     fromDate: costEstimateVO.fromDate ? dayjs(costEstimateVO.fromDate, 'YYYY-MM-DD') : null,
                     toDate: costEstimateVO.toDate ? dayjs(costEstimateVO.toDate, 'YYYY-MM-DD') : null,
@@ -268,7 +305,8 @@ const CostEstimate = () => {
                         category: row.category,
                         particulars: row.particulars,
                         remarks: row.remarks,
-                        amount: row.amount
+                        amount: row.amount,
+                        supportingimg: row.image
                     }))
                 );
                 setLoading(false);
@@ -312,6 +350,7 @@ const CostEstimate = () => {
         setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
     };
     const handleClear = () => {
+        setApproveStatus('');
         setFormData({
             docDate: dayjs(),
             // department: '',
@@ -319,6 +358,7 @@ const CostEstimate = () => {
             empName: '',
             status: 'DRAFT',
             totalAmt: '',
+            approvalRemarks: '',
             approvedBy: '',
             approvedOn: '',
             fromDate: dayjs(),
@@ -331,6 +371,7 @@ const CostEstimate = () => {
             particulars: '',
             amount: '',
             remarks: '',
+            supportingimg: ''
         }]);
         setDetailsTableErrors([
             {
@@ -338,6 +379,7 @@ const CostEstimate = () => {
                 particulars: '',
                 amount: '',
                 remarks: '',
+                supportingimg: ''
             }
         ]);
         setEditId('');
@@ -350,6 +392,7 @@ const CostEstimate = () => {
             particulars: '',
             amount: '',
             remarks: '',
+            supportingimg: null
         };
         setDetailsTableData([...detailsTableData, newRow]);
         setDetailsTableErrors([...detailsTableErrors, {
@@ -426,6 +469,33 @@ const CostEstimate = () => {
                     console.log('Response:', response);
                     showToast('success', editId ? 'Cost Estimate Updated Successfully' : 'Cost Estimate Created successfully');
                     getAllCostEstimateByOrgId();
+                    getCostEstimateDocId();
+                    const generatedId = response.paramObjectsMap.costEstimationVO.id;
+                    const detailsFromServer = response.paramObjectsMap.costEstimationVO.costEstimationDetailsVO;
+                    for (let i = 0; i < detailsFromServer.length; i++) {
+                        const serverDetail = detailsFromServer[i];
+                        const localDetail = detailsTableData[i];
+
+                        if (localDetail?.supportingimg) {
+                            let file;
+                            if (typeof localDetail.supportingimg === 'string') {
+                                // Handle base64 string from server
+                                file = base64StringToFile(
+                                    localDetail.supportingimg,
+                                    `image_${i}.jpg`
+                                );
+                            } else {
+                                // Handle new File objects
+                                file = localDetail.supportingimg;
+                            }
+
+                            await handleFileUpload(
+                                generatedId,
+                                serverDetail.id,
+                                file
+                            );
+                        }
+                    }
                     handleClear();
                     setLoading(false);
                 } else {
@@ -478,6 +548,7 @@ const CostEstimate = () => {
                     empCode: listValueVO.employeeCode || '',
                     // department: listValueVO.department || '',
                     totalAmt: listValueVO.totalAmount || '',
+                    approvalRemarks: listValueVO.approvalRemarks || '',
                     status: listValueVO.status || '',
                     fromDate: listValueVO.fromDate ? dayjs(listValueVO.fromDate, 'YYYY-MM-DD') : null,
                     toDate: listValueVO.toDate ? dayjs(listValueVO.toDate, 'YYYY-MM-DD') : null,
@@ -502,6 +573,83 @@ const CostEstimate = () => {
         } catch (error) {
             console.error('Error fetching data:', error);
         }
+    };
+    const GeneratePdf = async (row) => {
+        try {
+            const result = await apiCalls('get', `/costEstimation/getAllCostEstimationById?id=${row.original.id}`);
+            const CEVO = result.paramObjectsMap.costEstimationVO;
+            if (CEVO) {
+                setPdfData(CEVO);
+                setDownloadPdf(true);
+            } else {
+                showToast('error', 'Record is Incomplete Please fill needed Data');
+            }
+        } catch (error) {
+            console.error('Error generating PDF:', error);
+            showToast('error', 'Failed to fetch data for PDF');
+        }
+    };
+    const [openImgIndex, setOpenImgIndex] = useState(null);
+    const handleOpen = (index) => {
+        setOpenImgIndex(index);
+    };
+    const handleClose = () => {
+        setOpenImgIndex(null);
+    };
+    const handleImgChange = (e, index) => {
+        const file = e.target.files[0];
+        if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
+            const updatedData = [...detailsTableData];
+            updatedData[index].supportingimg = file;
+            setDetailsTableData(updatedData);
+        } else {
+            showToast('error', 'Please upload a valid image (PNG or JPEG).');
+        }
+    };
+    const handleFileUpload = async (generatedId, generatedDetailsId, file) => {
+        if (!generatedId && !generatedDetailsId) {
+            console.warn('Generated ID is missing');
+            showToast('error', 'Generated ID is required');
+            return;
+        }
+        const formData = new FormData();
+        formData.append('file', file);
+        // const handleFileUpload = async (generatedId, generatedDetailsId) => {
+        //     const formData = new FormData();
+        //     formData.append('file', supportingimg);
+        try {
+            const response = await apiCalls(
+                'post',
+                `/costEstimation/uploadImageCostEstimationDetail?costEstimationDetailsId=${generatedDetailsId}&costEstimationId=${generatedId}`,
+                formData,
+                {},
+                { 'Content-Type': 'multipart/form-data' }
+            );
+            console.log('Img Upload Response:', response);
+
+            if (response.status === true) {
+                console.log("Image Uploaded Successfully!")
+                // showToast('success', response.message || 'Image Uploaded successfully!');
+            } else {
+                console.warn('Img upload failed:', response);
+                showToast('error', 'Img upload failed');
+            }
+        } catch (error) {
+            console.error('Img Upload Error:', error);
+            showToast('error', 'Failed to upload Img');
+        }
+    };
+    useEffect(() => {
+        return () => {
+            if (detailsTableData.supportingimg && typeof detailsTableData.supportingimg === 'object') {
+                URL.revokeObjectURL(detailsTableData.supportingimg);
+            }
+        };
+    }, [detailsTableData.supportingimg]);
+    const handleRemoveImg = (index) => {
+        const updatedData = [...detailsTableData];
+        updatedData[index].supportingimg = null;
+        setDetailsTableData(updatedData);
     };
     return (
         <>
@@ -713,7 +861,7 @@ const CostEstimate = () => {
                                         <DatePicker
                                             label="Period From"
                                             value={formData.fromDate}
-                                            maxDate={formData.toDate}
+                                            // maxDate={formData.toDate}
                                             disabled={formData.status === 'SUBMIT'}
                                             onChange={(date) => {
                                                 setFormData((prev) => ({
@@ -728,7 +876,6 @@ const CostEstimate = () => {
                                         />
                                     </LocalizationProvider>
                                 </div>
-
                                 <div className="col-md-3 mb-3">
                                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                                         <DatePicker
@@ -747,26 +894,6 @@ const CostEstimate = () => {
                                         />
                                     </LocalizationProvider>
                                 </div>
-                                {/* <div className="col-md-6 mb-3">
-                                    <LocalizationProvider dateAdapter={AdapterDayjs}>
-                                        <DateRangePicker
-                                            value={[formData.fromDate, formData.toDate]}
-                                            onChange={(newValue) => {
-                                                setFormData((prev) => ({
-                                                    ...prev,
-                                                    fromDate: newValue[0],
-                                                    toDate: newValue[1],
-                                                }));
-                                            }}
-                                            localeText={{ start: 'From Date', end: 'To Date' }}
-                                            slotProps={{
-                                                textField: {
-                                                    size: 'small',
-                                                }
-                                            }}
-                                        />
-                                    </LocalizationProvider>
-                                </div> */}
                                 <div className="col-md-3 mb-3">
                                     <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.status}>
                                         <InputLabel id="status-label">Status</InputLabel>
@@ -779,7 +906,8 @@ const CostEstimate = () => {
                                             name="status"
                                         >
                                             <MenuItem value="DRAFT">DRAFT</MenuItem>
-                                            {(editId || (role === 'FINANCE MANAGER' || role === 'ADMIN')) && <MenuItem value="SUBMIT">SUBMIT</MenuItem>}
+                                            <MenuItem value="SUBMIT">SUBMIT</MenuItem>
+                                            {/* {(editId || (role === 'FINANCE MANAGER' || role === 'ADMIN')) && <MenuItem value="SUBMIT">SUBMIT</MenuItem>} */}
                                         </Select>
                                         {fieldErrors.status && <FormHelperText>{fieldErrors.status}</FormHelperText>}
                                     </FormControl>
@@ -796,6 +924,21 @@ const CostEstimate = () => {
                                         value={formData.totalAmt}
                                         onChange={handleInputChange}
                                     />
+                                </div>
+                                <div className="col-md-8">
+                                    <FormControl fullWidth variant="filled">
+                                        <TextField
+                                            id="approvalRemarks"
+                                            label="Approval Remarks"
+                                            size="small"
+                                            disabled={approveStatus === 'Approved'}
+                                            name="approvalRemarks"
+                                            value={formData.approvalRemarks}
+                                            multiline
+                                            // minRows={2}
+                                            onChange={handleInputChange}
+                                        />
+                                    </FormControl>
                                 </div>
                             </div>
                             <div className="row mt-2">
@@ -829,6 +972,7 @@ const CostEstimate = () => {
                                                                         <th className="table-header">Particulars</th>
                                                                         <th className="table-header">Estimated Amt</th>
                                                                         <th className="table-header">Remarks</th>
+                                                                        <th className="table-header">Supporting Document</th>
                                                                     </tr>
                                                                 </thead>
                                                                 <tbody>
@@ -951,6 +1095,79 @@ const CostEstimate = () => {
                                                                                     </div>
                                                                                 )}
                                                                             </td>
+                                                                            <td className="border px-2 py-2" style={{ width: '30%' }}>
+                                                                                <Box display="flex" alignItems="center" gap={1}>
+                                                                                    <Button
+                                                                                        variant="outlined"
+                                                                                        component="label"
+                                                                                        multiline
+                                                                                        disabled={approveStatus === 'Approved'}
+                                                                                        startIcon={<CloudUploadIcon />}
+                                                                                        sx={{ color: 'rgb(103 58 183)', borderRadius: '12px' }}
+                                                                                    >
+                                                                                        {row.supportingimg ? (typeof row.supportingimg === 'object' && row.supportingimg.name ? row.supportingimg.name : 'Img👉') : 'Upload Img'}
+
+                                                                                        <input type="file" hidden accept="image/png, image/jpeg" onChange={(e) => handleImgChange(e, index)} />
+                                                                                    </Button>
+
+                                                                                    {row.supportingimg && (
+                                                                                        <IconButton variant="contained" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }} onClick={() => handleOpen(index)}>
+                                                                                            <ControlCameraIcon />
+                                                                                        </IconButton>
+                                                                                    )}
+                                                                                </Box>
+                                                                                <Dialog open={openImgIndex === index} onClose={handleClose} maxWidth="sm" fullWidth>
+                                                                                    <DialogContent sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', gap: 2 }}>
+                                                                                        <Typography variant="h5" sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)' }}>
+                                                                                            Supporting Img
+                                                                                        </Typography>
+                                                                                        {row.supportingimg ? (
+                                                                                            <Box>
+                                                                                                <Avatar
+                                                                                                    src={typeof row.supportingimg === 'object'
+                                                                                                        ? URL.createObjectURL(row.supportingimg)
+                                                                                                        : `data:image/png;base64,${row.supportingimg}`}
+                                                                                                    // src={typeof supportingimg === 'object' ? URL.createObjectURL(supportingimg.image) : `data:image/png;base64,${supportingimg.image}`}
+                                                                                                    // src={`data:image/png;base64,${detailsTableData.supportingimg}`}
+                                                                                                    alt="Supporting Img"
+                                                                                                    sx={{ maxWidth: '100%', maxHeight: '100%', width: 'auto', height: 'auto', borderRadius: 2 }}
+                                                                                                />
+                                                                                                <Box display="flex" gap={2} mt={2}>
+                                                                                                    <IconButton
+                                                                                                        variant="contained"
+                                                                                                        sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                                                                                                        onClick={() => handleRemoveImg(index)}
+                                                                                                    >
+                                                                                                        Delete
+                                                                                                    </IconButton>
+                                                                                                    <IconButton
+                                                                                                        variant="contained"
+                                                                                                        sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '13px' }}
+                                                                                                        onClick={handleClose}
+                                                                                                    >
+                                                                                                        Close
+                                                                                                    </IconButton>
+                                                                                                </Box>
+                                                                                            </Box>
+                                                                                        ) : (
+                                                                                            <Box>
+                                                                                                <Avatar sx={{ width: 150, height: 150, bgcolor: '#F0F0F0', borderRadius: 2 }}>
+                                                                                                    <Typography variant="caption">Upload Supporting Img</Typography>
+                                                                                                </Avatar>
+                                                                                                <Box display="flex" gap={2} mt={2}>
+                                                                                                    <IconButton
+                                                                                                        variant="contained"
+                                                                                                        sx={{ whiteSpace: 'nowrap', color: 'rgb(103 58 183)', fontSize: '15px' }}
+                                                                                                        onClick={handleClose}
+                                                                                                    >
+                                                                                                        Close
+                                                                                                    </IconButton>
+                                                                                                </Box>
+                                                                                            </Box>
+                                                                                        )}
+                                                                                    </DialogContent>
+                                                                                </Dialog>
+                                                                            </td>
                                                                         </tr>
                                                                     ))}
                                                                 </tbody>
@@ -965,8 +1182,10 @@ const CostEstimate = () => {
                             </div>
                         </>
                     ) : (
-                        <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getCostEstimateById} />
+                        <CommonListViewTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getCostEstimateById} isPdf={true} GeneratePdf={GeneratePdf} />
+                        // <CommonTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getCostEstimateById} />
                     )}
+                    {downloadPdf && <CostEstimatePDF row={pdfData} modalClose={() => setDownloadPdf(false)} />}
                 </div >
             </div >
             {/* <ConfirmationModal

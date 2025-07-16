@@ -734,7 +734,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
 
   const GeneratePdf = (row) => {
     {
-      confirmData.approveStatus === 'Approved' ? setPdfData(confirmData) : setPdfData(listViewData);
+      (confirmData.approveStatus === 'Approved' || confirmData.status === 'TAX`') ? setPdfData(confirmData) : setPdfData(listViewData);
     }
     setDownloadPdf(!downloadPdf);
   };
@@ -1329,8 +1329,8 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
       gstpercent: parseFloat(row.GSTPercent),
       ledger: row.ledger,
       description: row.description,
-      qty: parseInt(row.qty),
-      rate: parseInt(row.rate),
+      qty: parseFloat(row.qty),
+      rate: parseFloat(row.rate),
       sac: row.sac,
       taxable: row.taxable
     }));
@@ -1344,8 +1344,8 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
       : taxInvoiceAnnexure.map((row) => ({
         ...(editId && { id: row.id }),
         skuType: row.skuType || '',
-        rate: parseInt(row.rate),
-        qty: parseInt(row.kitqty),
+        rate: parseFloat(row.rate),
+        qty: parseFloat(row.kitqty),
         dsec: row.kitname,
         kitId: row.kitid,
         transDate: row.transactiondate ? dayjs(row.transactiondate).format('YYYY-MM-DD') : null,
@@ -1615,44 +1615,47 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                       <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
                     </Stack>
                   )}
-                  {/* {listViewData.status === 'TAX' && (formData.approveStatus === 'Rejected' || formData.approveStatus === 'Approved') &&( */}
-                  {listViewData.status === 'TAX' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (role === 'FINANCE MANAGER' || role === 'ADMIN')(
-                    <div className="d-flex" style={{ marginRight: '30px' }}>
-                      <Button
-                        variant="outlined"
-                        startIcon={<CheckCircleIcon />}
-                        size="small"
-                        style={{
-                          borderColor: '#4CAF50',
-                          color: '#4CAF50',
-                          fontWeight: 'bold',
-                          textTransform: 'none',
-                          padding: '2px 8px',
-                          fontSize: '0.8rem',
-                          marginRight: '10px'
-                        }}
-                        onClick={handleOpenModalApprove}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        startIcon={<CancelIcon />}
-                        size="small"
-                        style={{
-                          borderColor: '#F44336',
-                          color: '#F44336',
-                          fontWeight: 'bold',
-                          textTransform: 'none',
-                          padding: '2px 8px',
-                          fontSize: '0.8rem'
-                        }}
-                        onClick={handleOpenModalReject}
-                      >
-                        Reject
-                      </Button>
-                    </div>
-                  )}
+                  {/* {listViewData.status === 'TAX' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (role === 'FINANCE MANAGER' || role === 'ADMIN')( */}
+                  {listViewData.status === 'SUBMIT' &&
+                    approveStatus !== 'Approved' &&
+                    approveStatus !== 'Rejected' &&
+                    (role === 'FINANCE MANAGER' || role === 'ADMIN') && (
+                      <div className="d-flex" style={{ marginRight: '30px' }}>
+                        <Button
+                          variant="outlined"
+                          startIcon={<CheckCircleIcon />}
+                          size="small"
+                          style={{
+                            borderColor: '#4CAF50',
+                            color: '#4CAF50',
+                            fontWeight: 'bold',
+                            textTransform: 'none',
+                            padding: '2px 8px',
+                            fontSize: '0.8rem',
+                            marginRight: '10px'
+                          }}
+                          onClick={handleOpenModalApprove}
+                        >
+                          Approve
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          startIcon={<CancelIcon />}
+                          size="small"
+                          style={{
+                            borderColor: '#F44336',
+                            color: '#F44336',
+                            fontWeight: 'bold',
+                            textTransform: 'none',
+                            padding: '2px 8px',
+                            fontSize: '0.8rem'
+                          }}
+                          onClick={handleOpenModalReject}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    )}
                 </>
               )}
             </div>
@@ -1693,7 +1696,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
               ) : (
                 <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
               )}
-              {!listView && (listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved') && (
+              {!listView && (listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved' || listViewData.status === 'TAX') && (
                 <ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />
               )}
             </div>

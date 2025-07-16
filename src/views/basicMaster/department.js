@@ -247,9 +247,7 @@ export const Department = () => {
           </>
         )}
       </div>
-      <div>
         <ToastComponent />
-      </div>
     </>
   );
 };

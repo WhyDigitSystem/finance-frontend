@@ -119,6 +119,7 @@ const RetrievalIssueManifest = () => {
     getAllKitDetails();
     getAllReceiverDetails();
     getAllTransporters();
+    getRMDocId();
   }, []);
 
   const getAllRetrievalManifestProvider = async () => {
@@ -206,10 +207,8 @@ const RetrievalIssueManifest = () => {
         assetQty: ''
       }
     ]);
-
-    // setValidationErrors({});
     setEditId('');
-    // getNewBankDocId();
+    getRMDocId();
   };
 
   const handleInputChange = (e) => {
@@ -383,7 +382,20 @@ const RetrievalIssueManifest = () => {
       console.error('Error fetching data:', error);
     }
   };
-
+  const getRMDocId = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/reportController/getRetrievalManifestProviderDocId?branch=${branch}&branchCode=${loginBranchCode}&finYear=${finYear}&orgId=${orgId}`
+      );
+      setFormData((prevData) => ({
+        ...prevData,
+        docId: response.paramObjectsMap.retrievalManifestProviderDocId
+      }));
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
   useEffect(() => {
     const totalDepositAmt = detailsKitData.reduce((sum, row) => sum + Number(row.deposit || 0), 0);
     const totalWithdrawalAmt = detailsKitData.reduce((sum, row) => sum + Number(row.withdrawal || 0), 0);
@@ -478,7 +490,7 @@ const RetrievalIssueManifest = () => {
         {showForm ? (
           <>
             <div className="row d-flex ml">
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <TextField
                   label="Transaction No"
                   size="small"
@@ -491,6 +503,19 @@ const RetrievalIssueManifest = () => {
                   error={!!formDataErrors.docId}
                   helperText={formDataErrors.docId}
                 />
+              </div> */}
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Transaction No"
+                    size="small"
+                    disabled
+                    value={formData.docId}
+                    onChange={(e) => setFormData({ ...formData, docId: e.target.value })}
+                    error={!!formDataErrors.docId}
+                    helperText={formDataErrors.docId}
+                  />
+                </FormControl>
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled" size="small">

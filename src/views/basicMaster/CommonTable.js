@@ -62,13 +62,16 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
   };
   const chipPendingSX = {
     ...chipSX,
-    color: theme.palette.warning.dark,          
-    backgroundColor: theme.palette.warning.light, 
-    fontWeight: 'bold',
-    padding: '0 8px',
-    borderRadius: '8px',
+    color: '#007FFF',
+    backgroundColor: 'rgba(0, 191, 255, 0.2)', 
+    backdropFilter: 'blur(6px)',
+    WebkitBackdropFilter: 'blur(6px)',
+    padding: '0 12px',
+    borderRadius: '12px',
     fontSize: '0.75rem',
-    marginRight: '5px'
+    fontWeight: 500,
+    border: '1px solid rgba(0, 191, 255, 0.3)',
+    marginRight: '5px',
   };
 
   const handleEditClick = (row) => {

@@ -242,9 +242,7 @@ export const Designation = () => {
           </>
         )}
       </div>
-      <div>
         <ToastComponent />
-      </div>
     </>
   );
 };
