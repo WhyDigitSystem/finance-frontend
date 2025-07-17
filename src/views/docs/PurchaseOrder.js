@@ -452,7 +452,7 @@ CIN: U82920KA2023PTC181536`,
               </div>
 
               <div className="row mt-2">
-                <Box sx={{ width: '100%' }}>
+                {/* <Box sx={{ width: '100%' }}>
                   <Tabs
                     value={value}
                     onChange={handleChange}
@@ -462,188 +462,186 @@ CIN: U82920KA2023PTC181536`,
                   >
                     <Tab value={0} label="Details" />
                   </Tabs>
-                </Box>
+                </Box> */}
                 <Box sx={{ padding: 2 }}>
-                  {value === 0 && (
-                    <>
-                      <div className="row d-flex ml">
-                        <div className="mb-1">
-                          <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
-                        </div>
-                        <div className="row mt-2">
-                          <div className="col-lg-12">
-                            <div className="table-responsive">
-                              <table className="table table-bordered ">
-                                <thead>
-                                  <tr style={{ backgroundColor: '#673AB7' }}>
-                                    <th className="table-header" style={{ width: '5%' }}>
-                                      Action
-                                    </th>
-                                    <th className="table-header" style={{ width: '5%' }}>
-                                      S.No
-                                    </th>
-                                    <th className="table-header" style={{ width: '40%' }}>
-                                      Item
-                                    </th>
-                                    <th className="table-header" style={{ width: '10%' }}>
-                                      Qty
-                                    </th>
-                                    <th className="table-header" style={{ width: '75px' }}>
-                                      Rate
-                                    </th>
-                                    <th className="table-header" style={{ width: '10%' }}>
-                                      Tax %
-                                    </th>
-                                    <th className="table-header" style={{ width: '10%' }}>
-                                      Tax Amount
-                                    </th>
-                                    <th className="table-header" style={{ width: '75px' }}>
-                                      Amount
-                                    </th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {tableData &&
-                                    tableData.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="border px-2 py-2 text-center">
-                                          <ActionButton
-                                            title="Delete"
-                                            icon={DeleteIcon}
-                                            onClick={
-                                              () => handleDeleteRow(row.id)
-                                              // handleDeleteRow(row.id, tableData, setTableData, tableDataErrors, setTableDataErrors)
-                                            }
+                  {/* {value === 0 && ( */}
+                  <>
+                    <div className="row d-flex ml">
+                      <div className="mb-1">
+                        <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} />
+                      </div>
+                      <div className="row mt-2">
+                        <div className="col-lg-12">
+                          <div className="table-responsive">
+                            <table className="table table-bordered ">
+                              <thead>
+                                <tr style={{ backgroundColor: '#673AB7' }}>
+                                  <th className="table-header" style={{ width: '5%' }}>
+                                    Action
+                                  </th>
+                                  <th className="table-header" style={{ width: '5%' }}>
+                                    S.No
+                                  </th>
+                                  <th className="table-header" style={{ width: '40%' }}>
+                                    Item
+                                  </th>
+                                  <th className="table-header" style={{ width: '10%' }}>
+                                    Qty
+                                  </th>
+                                  <th className="table-header" style={{ width: '75px' }}>
+                                    Rate
+                                  </th>
+                                  <th className="table-header" style={{ width: '10%' }}>
+                                    Tax %
+                                  </th>
+                                  <th className="table-header" style={{ width: '10%' }}>
+                                    Tax Amount
+                                  </th>
+                                  <th className="table-header" style={{ width: '75px' }}>
+                                    Amount
+                                  </th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {tableData &&
+                                  tableData.map((row, index) => (
+                                    <tr key={row.id}>
+                                      <td className="border px-2 py-2 text-center">
+                                        <ActionButton
+                                          title="Delete"
+                                          icon={DeleteIcon}
+                                          onClick={
+                                            () => handleDeleteRow(row.id)
+                                            // handleDeleteRow(row.id, tableData, setTableData, tableDataErrors, setTableDataErrors)
+                                          }
+                                        />
+                                      </td>
+                                      <td className="text-center">
+                                        <div className="pt-2">{index + 1}</div>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <FormControl fullWidth variant="filled">
+                                          <TextField
+                                            size="small"
+                                            type="text"
+                                            value={row.item}
+                                            name="item"
+                                            error={!!tableDataErrors[index]?.item}
+                                            helperText={tableDataErrors[index]?.item}
+                                            onChange={(e) => {
+                                              const value = e.target.value.toUpperCase();
+                                              setTableData((prev) =>
+                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, item: value } : rowData))
+                                              );
+
+                                              setTableDataErrors((prev) => {
+                                                const newErrors = Array.isArray(prev) ? [...prev] : [];
+                                                if (newErrors[index]) {
+                                                  newErrors[index] = { ...newErrors[index], item: '' };
+                                                } else {
+                                                  newErrors[index] = { item: '' };
+                                                }
+                                                return newErrors;
+                                              });
+                                              //
+                                            }}
                                           />
-                                        </td>
-                                        <td className="text-center">
-                                          <div className="pt-2">{index + 1}</div>
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <FormControl fullWidth variant="filled">
-                                            <TextField
-                                              size="small"
-                                              type="text"
-                                              value={row.item}
-                                              name="item"
-                                              error={!!tableDataErrors[index]?.item}
-                                              helperText={tableDataErrors[index]?.item}
-                                              onChange={(e) => {
-                                                const value = e.target.value.toUpperCase();
-                                                setTableData((prev) =>
-                                                  prev.map((rowData) => (rowData.id === row.id ? { ...rowData, item: value } : rowData))
-                                                );
+                                        </FormControl>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <FormControl fullWidth variant="filled">
+                                          <TextField
+                                            size="small"
+                                            type="text"
+                                            value={row.quantity ? `${parseInt(row.quantity)}` : 0}
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setTableData((prev) =>
+                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, quantity: value } : rowData))
+                                              );
+                                            }}
+                                            name="quantity"
+                                          />
+                                        </FormControl>
+                                      </td>
 
-                                                setTableDataErrors((prev) => {
-                                                  const newErrors = Array.isArray(prev) ? [...prev] : [];
-                                                  if (newErrors[index]) {
-                                                    newErrors[index] = { ...newErrors[index], item: '' };
-                                                  } else {
-                                                    newErrors[index] = { item: '' };
-                                                  }
-                                                  return newErrors;
-                                                });
-                                                //
-                                              }}
-                                            />
-                                          </FormControl>
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <FormControl fullWidth variant="filled">
-                                            <TextField
-                                              size="small"
-                                              type="text"
-                                              value={row.quantity ? `${parseInt(row.quantity)}` : 0}
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                setTableData((prev) =>
-                                                  prev.map((rowData) => (rowData.id === row.id ? { ...rowData, quantity: value } : rowData))
-                                                );
-                                              }}
-                                              name="quantity"
-                                            />
-                                          </FormControl>
-                                        </td>
+                                      <td className="border px-2 py-2">
+                                        <FormControl fullWidth variant="filled">
+                                          <TextField
+                                            size="small"
+                                            type="text"
+                                            value={row.rate ? `${parseInt(row.rate)}` : 0}
+                                            name="rate"
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setTableData((prev) =>
+                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, rate: value } : rowData))
+                                              );
+                                            }}
+                                          />
+                                        </FormControl>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <FormControl fullWidth variant="filled">
+                                          <TextField
+                                            size="small"
+                                            type="text"
+                                            value={row.tax ? `${parseInt(row.tax)}` : 0}
+                                            name="tax"
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setTableData((prev) =>
+                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, tax: value } : rowData))
+                                              );
+                                            }}
+                                          />
+                                        </FormControl>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <FormControl fullWidth variant="filled">
+                                          <TextField
+                                            size="small"
+                                            type="text"
+                                            value={row.taxAmount ? `${parseInt(row.taxAmount)}` : 0}
+                                            name="taxAmount"
+                                            disabled
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setTableData((prev) =>
+                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, taxAmount: value } : rowData))
+                                              );
+                                            }}
+                                          />
+                                        </FormControl>
+                                      </td>
 
-                                        <td className="border px-2 py-2">
-                                          <FormControl fullWidth variant="filled">
-                                            <TextField
-                                              size="small"
-                                              type="text"
-                                              value={row.rate ? `${parseInt(row.rate)}` : 0}
-                                              name="rate"
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                setTableData((prev) =>
-                                                  prev.map((rowData) => (rowData.id === row.id ? { ...rowData, rate: value } : rowData))
-                                                );
-                                              }}
-                                            />
-                                          </FormControl>
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <FormControl fullWidth variant="filled">
-                                            <TextField
-                                              size="small"
-                                              type="text"
-                                              value={row.tax ? `${parseInt(row.tax)}` : 0}
-                                              name="tax"
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                setTableData((prev) =>
-                                                  prev.map((rowData) => (rowData.id === row.id ? { ...rowData, tax: value } : rowData))
-                                                );
-                                              }}
-                                            />
-                                          </FormControl>
-                                        </td>
-                                        <td className="border px-2 py-2">
-                                          <FormControl fullWidth variant="filled">
-                                            <TextField
-                                              size="small"
-                                              type="text"
-                                              value={row.taxAmount ? `${parseInt(row.taxAmount)}` : 0}
-                                              name="taxAmount"
-                                              disabled
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                setTableData((prev) =>
-                                                  prev.map((rowData) =>
-                                                    rowData.id === row.id ? { ...rowData, taxAmount: value } : rowData
-                                                  )
-                                                );
-                                              }}
-                                            />
-                                          </FormControl>
-                                        </td>
-
-                                        <td className="border px-2 py-2">
-                                          <FormControl fullWidth variant="filled">
-                                            <TextField
-                                              type="text"
-                                              size="small"
-                                              value={row.amount ? `${parseInt(row.amount)}` : 0}
-                                              name="amount"
-                                              disabled
-                                              onChange={(e) => {
-                                                const value = e.target.value;
-                                                setTableData((prev) =>
-                                                  prev.map((rowData) => (rowData.id === row.id ? { ...rowData, amount: value } : rowData))
-                                                );
-                                              }}
-                                            />
-                                          </FormControl>
-                                        </td>
-                                      </tr>
-                                    ))}
-                                </tbody>
-                              </table>
-                            </div>
+                                      <td className="border px-2 py-2">
+                                        <FormControl fullWidth variant="filled">
+                                          <TextField
+                                            type="text"
+                                            size="small"
+                                            value={row.amount ? `${parseInt(row.amount)}` : 0}
+                                            name="amount"
+                                            disabled
+                                            onChange={(e) => {
+                                              const value = e.target.value;
+                                              setTableData((prev) =>
+                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, amount: value } : rowData))
+                                              );
+                                            }}
+                                          />
+                                        </FormControl>
+                                      </td>
+                                    </tr>
+                                  ))}
+                              </tbody>
+                            </table>
                           </div>
                         </div>
                       </div>
-                    </>
-                  )}
+                    </div>
+                  </>
+                  {/* )} */}
                 </Box>
               </div>
             </>
