@@ -15,7 +15,8 @@ import {
   Dialog,
   DialogContent,
   IconButton,
-  DialogTitle
+  DialogTitle,
+  Autocomplete
 } from '@mui/material';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -48,13 +49,12 @@ function CostEstimateReport() {
   const [rowData, setRowData] = useState([]);
   const [headerFields, setHeaderFields] = useState([]);
   useEffect(() => {
-    getPartyName();
     getAllBranches();
   }, []);
   const [selectedSections, setSelectedSections] = useState({
     date: false,
     branchCode: false,
-    customer: false
+    category: false
   });
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
@@ -68,52 +68,31 @@ function CostEstimateReport() {
     fromDate: null,
     toDate: null,
     branchCode: 'All',
-    customer: 'All',
+    category: 'All',
     viewMode: 'details'
   });
   const [fieldErrors, setFieldErrors] = useState({
     fromDate: '',
     toDate: '',
     branchCode: '',
-    customer: ''
+    category: ''
   });
   const handleClear = () => {
     setFormData({
       fromDate: null,
       toDate: null,
       branchCode: 'All',
-      customer: 'All',
+      category: 'All',
       viewMode: 'details'
     });
     setFieldErrors({
       fromDate: '',
       toDate: '',
-      customer: '',
+      category: '',
       branchCode: ''
     });
     setSelectedSections({});
     setRowData([]);
-  };
-  const handleSelectPartyChange = (e) => {
-    const value = e.target.value;
-    console.log('Selected employeeCode value:', value);
-    const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
-    if (value === 'All') {
-      setFormData((prevData) => ({
-        ...prevData,
-        customer: 'All'
-      }));
-    } else {
-      if (selectedEmp) {
-        console.log('Selected party:', selectedEmp);
-        setFormData((prevData) => ({
-          ...prevData,
-          customer: selectedEmp.partyName
-        }));
-      } else {
-        console.log('No party found with the given code:', value);
-      }
-    }
   };
   const handleCloseModal = () => {
     setOpen(false);
@@ -152,6 +131,20 @@ function CostEstimateReport() {
       }, 0);
     }
   };
+  const categoryOptions = [
+    { category: 'All' },
+    { category: 'Wages' },
+    { category: 'Cleaning' },
+    { category: 'Repair & Maintanance' },
+    { category: 'Asset Purchase' },
+    { category: 'Transport' },
+    { category: 'Material Purchase' },
+    { category: 'Admin' },
+    { category: 'Insurance' },
+    { category: 'Professional Services' },
+    { category: 'Marketing & Advertising' },
+    { category: 'Miscellaneous' }
+  ];
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date).format('YYYY-MM-DD') || null;
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
@@ -167,14 +160,6 @@ function CostEstimateReport() {
       setBranchCodeList(branchData);
     } catch (error) {
       console.error('Error fetching country data:', error);
-    }
-  };
-  const getPartyName = async () => {
-    try {
-      const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=customer`);
-      setPartyNameList(response.paramObjectsMap.partyMasterVO);
-    } catch (error) {
-      console.error('Error fetching gate passes:', error);
     }
   };
   const getLogo = async () => {
@@ -201,9 +186,9 @@ function CostEstimateReport() {
         errors.branchCode = 'Branch is required';
       }
     }
-    if (selectedSections.customer) {
-      if (!formData.customer) {
-        errors.customer = 'Customer name is required';
+    if (selectedSections.category) {
+      if (!formData.category) {
+        errors.category = 'Category is required';
       }
     }
     console.log('go error', errors);
@@ -254,10 +239,10 @@ function CostEstimateReport() {
             value: formData.branchCode
           });
           // }
-          // if (selectedSections.customer) {
+          // if (selectedSections.category) {
           newHeaderFields.push({
-            label: 'Customer',
-            value: formData.customer
+            label: 'Category',
+            value: formData.category
           });
           // }
           setHeaderFields(newHeaderFields);
@@ -287,7 +272,7 @@ function CostEstimateReport() {
         { accessorKey: 'docdate', header: 'Date', size: 80 },
         { accessorKey: 'Vid', header: 'Invoice No', size: 80 },
         { accessorKey: 'Vdate', header: 'Invoice Date', size: 120 },
-        { accessorKey: 'partyname', header: 'Customer', size: 120 },
+        { accessorKey: 'partyname', header: 'Category', size: 120 },
         // { accessorKey: 'placeofsupply', header: 'Place Of Supply', size: 80 },
         // { accessorKey: 'gsttype', header: 'Tax Type', size: 80 },
         // { accessorKey: 'gstpercent', header: 'Tax %', size: 80 },
@@ -405,7 +390,7 @@ function CostEstimateReport() {
         { accessorKey: 'docDate', header: 'Date', size: 100 },
         { accessorKey: 'vId', header: 'Invoice No', size: 100 },
         { accessorKey: 'vDate', header: 'Date', size: 100 },
-        { accessorKey: 'partyName', header: 'Customer', size: 200 },
+        { accessorKey: 'partyName', header: 'Category', size: 200 },
         { accessorKey: 'placeofsupply', header: 'Place Of Supply', size: 100 },
         {
           accessorKey: 'totalchargeamountlc',
@@ -519,7 +504,7 @@ function CostEstimateReport() {
         parameters.push(`Date Range: ${formatDate(formData.fromDate)} to ${formatDate(formData.toDate)}`);
       }
       if (formData.branchCode) parameters.push(`Branch: ${formData.branchCode}`);
-      if (formData.customer) parameters.push(`Customer: ${formData.customer}`);
+      if (formData.category) parameters.push(`Category: ${formData.category}`);
 
       if (parameters.length > 0) {
         //  Parameters heading
@@ -564,7 +549,7 @@ function CostEstimateReport() {
           ? [
             'Doc ID',
             'Date',
-            'Customer',
+            'Category',
             'Invoice No',
             'Invoice Date',
             'Supply Place',
@@ -579,7 +564,7 @@ function CostEstimateReport() {
             'Tax',
             'Total'
           ]
-          : ['Doc ID', 'Date', 'Invoice No', 'Invoice Date', 'Tax Type', 'Customer', 'Supply Place', 'Amount', 'Tax', 'Total'];
+          : ['Doc ID', 'Date', 'Invoice No', 'Invoice Date', 'Tax Type', 'Category', 'Supply Place', 'Amount', 'Tax', 'Total'];
 
       const headerRow = sheet.addRow(headers);
       headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
@@ -831,7 +816,7 @@ function CostEstimateReport() {
       .text(title, pageW / 2, 25, { align: 'center' });
 
     // 3) FILTER METADATA
-    const { fromDate, toDate, branchCode, customer, viewMode } = formData;
+    const { fromDate, toDate, branchCode, category, viewMode } = formData;
     doc.setFontSize(9);
     doc.setTextColor('#000000');
     doc.setFillColor(231, 235, 235);
@@ -841,7 +826,7 @@ function CostEstimateReport() {
     doc.setFont(undefined, 'bold');
     doc.text('From Date', 8, 40);
     doc.text('To Date', 37, 40);
-    doc.text('Customer', 58, 40);
+    doc.text('Category', 58, 40);
     doc.text('Branch Code', 153, 40);
     doc.text('View Mode', 184, 40);
 
@@ -849,7 +834,7 @@ function CostEstimateReport() {
     doc.setFont(undefined, 'normal');
     doc.text(dayjs(fromDate).format('DD-MM-YYYY'), 8, 45);
     doc.text(dayjs(toDate).format('DD-MM-YYYY'), 37, 45);
-    doc.text(String(customer ?? '-'), 58, 45);
+    doc.text(String(category ?? '-'), 58, 45);
     doc.text(String(branchCode ?? '-'), 153, 45);
     doc.text(String(viewMode.toUpperCase() ?? '-'), 184, 45);
 
@@ -980,9 +965,9 @@ function CostEstimateReport() {
               <div className="col-md-2 mb-1">
                 <FormControlLabel
                   control={
-                    <Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />
+                    <Checkbox checked={selectedSections.category} onChange={handleCheckboxChange} name="category" color="secondary" />
                   }
-                  label="Customer"
+                  label="Category"
                 />
               </div>
               <div className="col-md-2 mb-1">
@@ -1087,27 +1072,43 @@ function CostEstimateReport() {
                 </FormControl>
               </div>
             )}
-            {selectedSections.customer && (
+            {selectedSections.category && (
               <div className="col-md-3 mb-2">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
-                  <InputLabel id="customer-label">Customer</InputLabel>
-                  <Select
-                    labelId="customer-label"
-                    label="customer"
-                    value={formData.customer}
-                    onChange={handleSelectPartyChange}
-                    name="customer"
-                  >
-                    <MenuItem value="All">All</MenuItem>
+                <Autocomplete
+                
+                  options={categoryOptions}
+                  getOptionLabel={(option) => option.category || ''}
+                  value={
+                    categoryOptions.find(
+                      (option) => option.category === formData.category
+                    ) || null
+                  }
+                  onChange={(event, newValue) => {
+                    const newCategory = newValue?.category || '';
 
-                    {partyNameList?.map((row) => (
-                      <MenuItem key={row.id} value={row.partyName}>
-                        {row.partyName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.customer && <FormHelperText>{fieldErrors.customer}</FormHelperText>}
-                </FormControl>
+                    // Update formData object
+                    setFormData({
+                      ...formData,
+                      category: newCategory,
+                    });
+
+                    // Update fieldErrors object
+                    setFieldErrors({
+                      ...fieldErrors,
+                      category: newCategory ? '' : 'Category is required',
+                    });
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      placeholder="Select Category"
+                      label="Category"
+                      size="small"
+                      error={!!fieldErrors?.category}
+                      helperText={fieldErrors?.category}
+                    />
+                  )}
+                />
               </div>
             )}
           </div>
@@ -1136,10 +1137,7 @@ function CostEstimateReport() {
             alignItems: 'center'
           }}
         >
-          {/* <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                        <Typography variant="h6"> */}
-          {formData.viewMode === 'details' ? 'Detailed Sales Report' : 'Summary Sales Report'}
-          {/* </Typography>*/}
+          {formData.viewMode === 'details' ? 'Detailed Cost Estimate Report' : 'Summary Cost Estimate Report'}
           <Box>
             <IconButton
               aria-label="close"
