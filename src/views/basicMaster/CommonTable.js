@@ -60,19 +60,6 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
     backgroundColor: theme.palette.orange.light,
     marginRight: '5px'
   };
-  const chipPendingSX = {
-    ...chipSX,
-    color: '#007FFF',
-    backgroundColor: 'rgba(0, 191, 255, 0.2)', 
-    backdropFilter: 'blur(6px)',
-    WebkitBackdropFilter: 'blur(6px)',
-    padding: '0 12px',
-    borderRadius: '12px',
-    fontSize: '0.75rem',
-    fontWeight: 500,
-    border: '1px solid rgba(0, 191, 255, 0.3)',
-    marginRight: '5px',
-  };
 
   const handleEditClick = (row) => {
     setEditingRow(row);
@@ -121,31 +108,20 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
       return {
         ...column,
         Cell: ({ cell }) => (
-          <Chip
-            label={cell.getValue() === true ? 'Active' : 'In-Active'}
-            sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX}
-          />
+          <Chip label={cell.getValue() === true ? 'Active' : 'In-Active'} sx={cell.getValue() === true ? chipSuccessSX : chipErrorSX} />
         )
       };
     }
     if (column.accessorKey === 'approveStatus') {
+      console.log('the columns are:', column);
       return {
         ...column,
-        Cell: ({ cell }) => {
-          const value = cell.getValue();
-          let label = 'Pending';
-          let sx = chipPendingSX
-
-          if (value === 'Approved') {
-            label = 'Approved';
-            sx = chipSuccessSX;
-          } else if (value === 'Rejected') {
-            label = 'Rejected';
-            sx = chipErrorSX;
-          }
-
-          return <Chip label={label} sx={sx} />;
-        }
+        Cell: ({ cell }) => (
+          <Chip
+            label={cell.getValue() === 'Approved' ? 'Approved' : 'Pending'}
+            sx={cell.getValue() === 'Approved' ? chipSuccessSX : chipErrorSX}
+          />
+        )
       };
     }
     return column;
@@ -205,90 +181,88 @@ const CommonTable = ({ data, columns, editCallback, countryVO, roleData, blockEd
   });
 
   const customLocalization = {
-    toggleDensity: "Wide View",
+    toggleDensity: 'Wide View'
   };
 
   return (
     <>
       <MaterialReactTable
         displayColumnDefOptions={{
-          "mrt-row-actions": {
+          'mrt-row-actions': {
             muiTableHeadCellProps: {
-              align: "center",
+              align: 'center',
               sx: {
-                backgroundColor: "#2d3e98",
-                color: "white",
-                fontWeight: "bold",
+                backgroundColor: '#2d3e98',
+                color: 'white',
+                fontWeight: 'bold',
                 // height: "40px",
-                borderBottom: "2px solid #D1D5DB",
-              },
+                borderBottom: '2px solid #D1D5DB'
+              }
             },
-            size: 100,
-          },
+            size: 100
+          }
         }}
-
         columns={customColumns.map((col) => ({
           ...col,
           muiTableHeadCellProps: {
             sx: {
-              backgroundColor: "#2d3e98",
-              color: "white",
-              fontWeight: "bold",
-              fontSize: "13px",
-              textAlign: "left",
-              borderBottom: "2px solid #D1D5DB",
-            },
+              backgroundColor: '#2d3e98',
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: '13px',
+              textAlign: 'left',
+              borderBottom: '2px solid #D1D5DB'
+            }
           },
           muiTableBodyCellProps: {
             sx: {
-              fontSize: "14px",
-              color: "#374151",
-              textAlign: "left",
-              borderBottom: "1px solid #E5E7EB",
-            },
-          },
+              fontSize: '14px',
+              color: '#374151',
+              textAlign: 'left',
+              borderBottom: '1px solid #E5E7EB'
+            }
+          }
         }))}
-
         data={tableData && tableData}
         enableColumnOrdering={false}
         enableColumnActions={false}
         enableEditing
         renderRowActions={renderRowActions}
-        initialState={{ density: "compact" }}
+        initialState={{ density: 'compact' }}
         localization={customLocalization}
         muiTableContainerProps={{
           sx: {
-            background: "#FFFFFF",
-            borderRadius: "10px",
-            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)",
-            border: "1px solid #E5E7EB",
-          },
+            background: '#FFFFFF',
+            borderRadius: '10px',
+            boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+            border: '1px solid #E5E7EB'
+          }
         }}
         muiTableProps={{
           sx: {
-            backgroundColor: "#FFFFFF",
-            borderRadius: "10px",
-            overflow: "hidden",
-            border: "1px solid #E5E7EB",
-          },
+            backgroundColor: '#FFFFFF',
+            borderRadius: '10px',
+            overflow: 'hidden',
+            border: '1px solid #E5E7EB'
+          }
         }}
         muiTableBodyRowProps={{
           sx: {
-            height: "42px",
-            "&:nth-of-type(even)": { backgroundColor: "#F9FAFB" },
-            "&:hover": {
-              backgroundColor: "#E5E7EB",
-              boxShadow: "0px 2px 6px rgba(0, 0, 0, 0.1)",
-              transition: "0.2s ease-in-out",
-            },
-          },
+            height: '42px',
+            '&:nth-of-type(even)': { backgroundColor: '#F9FAFB' },
+            '&:hover': {
+              backgroundColor: '#E5E7EB',
+              boxShadow: '0px 2px 6px rgba(0, 0, 0, 0.1)',
+              transition: '0.2s ease-in-out'
+            }
+          }
         }}
         renderTopToolbarCustomActions={() => (
           <Stack
             direction="row"
             spacing={2}
             sx={{
-              marginLeft: "20px",
+              marginLeft: '20px'
             }}
           ></Stack>
         )}
