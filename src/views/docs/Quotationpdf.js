@@ -430,7 +430,7 @@ const Quotationpdf = ({ row, callBackFunction, modalClose }) => {
 
                           <TableCell align="right">{item.quantity}</TableCell>
                           <TableCell align="right">{item.rate}</TableCell>
-                          <TableCell align="right">{item.baseAmount}</TableCell>
+                          <TableCell align="right">{item.amount}</TableCell>
                         </TableRow>
                       );
                     })}

@@ -20,6 +20,7 @@ import MenuItem from '@mui/material/MenuItem';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import Quotationpdf from './Quotationpdf';
+import { useMemo } from 'react';
 
 const Quotation = () => {
   const orgId = localStorage.getItem('orgId');
@@ -243,32 +244,42 @@ const Quotation = () => {
     }
   };
 
-  // const CNA = async () => {
-  //   try {
-  //     const res = await apiCalls('get', `/master/getCustomersAddressDetails?orgId=${orgId}`);
-  //     console.log('Fetching data for orgId:', orgId);
-  //     setCustomerList(res.paramObjectsMap.partyMasterVO.reverse());
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
   useEffect(() => {
-    // CNA();
     getAllData();
   }, []);
-  // useEffect(() => {
-  //   const selectedVendor = customerList.find((vendor) => vendor.partyName === formData.customerName);
 
-  //   const address = selectedVendor?.FullAddress || '';
+  // const calculateTotals = () => {
+  //   const updatedTableData = tableData.map((row) => {
+  //     const qty = parseInt(row.quantity) || 0;
+  //     const rate = parseInt(row.rate) || 0;
+  //     const tax = parseFloat(row.tax) || 0;
 
+  //     const baseAmount = qty * rate;
+  //     const taxAmount = (baseAmount * tax) / 100;
+  //     const amount = baseAmount + taxAmount;
+
+  //     return {
+  //       ...row,
+  //       baseAmount,
+  //       taxAmount,
+  //       amount
+  //     };
+  //   });
+  //   setTableData(updatedTableData);
+
+  //   const totalAmount = updatedTableData.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
   //   setFormData((prev) => ({
   //     ...prev,
-  //     billAddress: address
+  //     totalAmount: totalAmount
   //   }));
-  // }, [formData.customerName, customerList]);
+  // };
 
-  const calculateTotals = () => {
-    const updatedTableData = tableData.map((row) => {
+  // useEffect(() => {
+  //   calculateTotals();
+  // }, [tableData]);
+
+  const updatedTableData = useMemo(() => {
+    return tableData.map((row) => {
       const qty = parseInt(row.quantity) || 0;
       const rate = parseInt(row.rate) || 0;
       const tax = parseFloat(row.tax) || 0;
@@ -284,34 +295,29 @@ const Quotation = () => {
         amount
       };
     });
-    setTableData(updatedTableData);
+  }, [tableData]);
 
-    const totalAmount = updatedTableData.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
+  // 🧠 Memoized total amount
+  const totalAmount = useMemo(() => {
+    return updatedTableData.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
+  }, [updatedTableData]);
+
+  // 🧩 Apply the calculated data to state (optional side effect)
+  useEffect(() => {
+    setTableData(updatedTableData);
     setFormData((prev) => ({
       ...prev,
       totalAmount: totalAmount
     }));
-  };
+  }, [updatedTableData, totalAmount]);
 
-  useEffect(() => {
-    calculateTotals();
-  }, [tableData]);
-
+  //
   const listViewColumns = [
     { accessorKey: 'quotationNo', header: 'Quotation No', size: 140 },
     { accessorKey: 'quotationDate', header: 'Quotation Date', size: 140 },
     { accessorKey: 'customerName', header: 'Customer Name', size: 140 }
   ];
 
-  // useEffect(() => {
-  //   const totalAmount = updatedTableData.reduce((sum, row) => {
-  //     return sum + (parseFloat(row.amount) || 0);
-  //   }, 0);
-
-  //   console.log('Total Amount:', totalAmount);
-  // }, []);
-
-  //
   const generatePdf = async (row) => {
     try {
       const results = await apiCalls('get', `/reportController/getQutationById?id=${row.original.id}`);
