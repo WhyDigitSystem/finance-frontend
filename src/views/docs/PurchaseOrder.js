@@ -174,34 +174,50 @@ CIN: U82920KA2023PTC181536`,
   //   [qty, rate, igst]
   // );
 
-  const calculateTotals = () => {
-    const updatedTableData = tableData.map((row) => {
-      const qty = parseInt(row.quantity) || 0;
-      const rate = parseInt(row.rate) || 0;
-      const tax = parseFloat(row.tax) || 0;
+ const calculateRowTotal = (row) => {
+  const qty = parseInt(row.quantity) || 0;
+  const rate = parseInt(row.rate) || 0;
+  const tax = parseFloat(row.tax) || 0;
+  
+  const baseAmount = qty * rate;
+  const taxAmount = (baseAmount * tax) / 100;
+  const amount = baseAmount + taxAmount;
+  
+  return { ...row, baseAmount, taxAmount, amount };
+};
 
-      const baseAmount = qty * rate;
-      const taxAmount = (baseAmount * tax) / 100;
-      const amount = baseAmount + taxAmount;
+  const handleQuantityChange = (id, value) => {
+  setTableData(prev => 
+    prev.map(row => 
+      row.id === id 
+        ? calculateRowTotal({ ...row, quantity: value }) 
+        : row
+    )
+  );
+};
 
-      return {
-        ...row,
-        baseAmount,
-        taxAmount,
-        amount
-      };
-    });
-    setTableData(updatedTableData);
+const handleRateChange = (id, value) => {
+  setTableData(prev => 
+    prev.map(row => 
+      row.id === id 
+        ? calculateRowTotal({ ...row, rate: value }) 
+        : row
+    )
+  );
+};
 
-    const totalAmount = updatedTableData.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
-    setFormData((prev) => ({
-      ...prev,
-      totalAmount: totalAmount
-    }));
-  };
-  useEffect(() => {
-    calculateTotals();
-  }, [tableData]);
+const handleTaxChange = (id, value) => {
+  setTableData(prev => 
+    prev.map(row => 
+      row.id === id 
+        ? calculateRowTotal({ ...row, tax: value }) 
+        : row
+    )
+  );
+};
+  // useEffect(() => {
+  //   calculateTotals();
+  // }, [tableData]);
 
   const handleListView = () => {
     setListView(!listView);
@@ -554,12 +570,7 @@ CIN: U82920KA2023PTC181536`,
                                             size="small"
                                             type="text"
                                             value={row.quantity ? `${parseInt(row.quantity)}` : 0}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              setTableData((prev) =>
-                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, quantity: value } : rowData))
-                                              );
-                                            }}
+                                          onChange={(e) => handleQuantityChange(row.id, e.target.value)}
                                             name="quantity"
                                           />
                                         </FormControl>
@@ -572,12 +583,7 @@ CIN: U82920KA2023PTC181536`,
                                             type="text"
                                             value={row.rate ? `${parseInt(row.rate)}` : 0}
                                             name="rate"
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              setTableData((prev) =>
-                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, rate: value } : rowData))
-                                              );
-                                            }}
+                                            onChange={(e) => handleRateChange(row.id, e.target.value)}
                                           />
                                         </FormControl>
                                       </td>
@@ -588,12 +594,7 @@ CIN: U82920KA2023PTC181536`,
                                             type="text"
                                             value={row.tax ? `${parseInt(row.tax)}` : 0}
                                             name="tax"
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              setTableData((prev) =>
-                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, tax: value } : rowData))
-                                              );
-                                            }}
+                                         onChange={(e) => handleTaxChange(row.id, e.target.value)}
                                           />
                                         </FormControl>
                                       </td>

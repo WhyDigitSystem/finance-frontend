@@ -433,7 +433,7 @@ const POpdf = ({ row, callBackFunction, modalClose }) => {
                           <TableCell align="center">{item.cgst}</TableCell>
                           <TableCell align="center">{item.sgst}</TableCell> */}
                           <TableCell align="right">{item.rate}</TableCell>
-                          <TableCell align="right">{item.baseAmount}</TableCell>
+                          <TableCell align="right">{item.amount}</TableCell>
                         </TableRow>
                       );
                     })}
