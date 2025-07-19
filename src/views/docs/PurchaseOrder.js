@@ -2,7 +2,7 @@ import ActionButton from 'utils/ActionButton';
 import ClearIcon from '@mui/icons-material/Clear';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import SaveIcon from '@mui/icons-material/Save';
-import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField, InputLabel } from '@mui/material';
+import { Checkbox, FormControl, FormControlLabel, FormGroup, TextField, InputLabel, Autocomplete } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
@@ -26,6 +26,7 @@ const PurchaseOrder = () => {
   const [downloadPdf, setDownloadPdf] = useState(false);
   const orgId = localStorage.getItem('orgId');
   const createdBy = localStorage.getItem('userName');
+  const finYear = localStorage.getItem('finYear');
   const modifiedBy = createdBy;
   const [value, setValue] = useState(0);
   const [listViewData, setListViewData] = useState([]);
@@ -158,63 +159,29 @@ CIN: U82920KA2023PTC181536`,
     }));
   }, [formData.vendorName, vendorList]);
 
-  // useEffect(
-  //   (qty, rate, igst) => {
-  //     const qty = parseFloat(qty);
-  //     const rate = parseFloat(rate);
-  //     const igst = parseFloat(igst);
-  //     const amount = qty * rate;
-  //     const gstamount = (amount*igst/100)
-  //     const totalamount = gstamount+amount
-  //     setTableData((prev)=>{(
-  //       ...prev,
-  //       amount: totalamount
-  //     )})
-  //   },
-  //   [qty, rate, igst]
-  // );
+  const calculateRowTotal = (row) => {
+    const qty = parseInt(row.quantity) || 0;
+    const rate = parseInt(row.rate) || 0;
+    const tax = parseFloat(row.tax) || 0;
 
- const calculateRowTotal = (row) => {
-  const qty = parseInt(row.quantity) || 0;
-  const rate = parseInt(row.rate) || 0;
-  const tax = parseFloat(row.tax) || 0;
-  
-  const baseAmount = qty * rate;
-  const taxAmount = (baseAmount * tax) / 100;
-  const amount = baseAmount + taxAmount;
-  
-  return { ...row, baseAmount, taxAmount, amount };
-};
+    const baseAmount = qty * rate;
+    const taxAmount = (baseAmount * tax) / 100;
+    const amount = baseAmount + taxAmount;
+
+    return { ...row, baseAmount, taxAmount, amount };
+  };
 
   const handleQuantityChange = (id, value) => {
-  setTableData(prev => 
-    prev.map(row => 
-      row.id === id 
-        ? calculateRowTotal({ ...row, quantity: value }) 
-        : row
-    )
-  );
-};
+    setTableData((prev) => prev.map((row) => (row.id === id ? calculateRowTotal({ ...row, quantity: value }) : row)));
+  };
 
-const handleRateChange = (id, value) => {
-  setTableData(prev => 
-    prev.map(row => 
-      row.id === id 
-        ? calculateRowTotal({ ...row, rate: value }) 
-        : row
-    )
-  );
-};
+  const handleRateChange = (id, value) => {
+    setTableData((prev) => prev.map((row) => (row.id === id ? calculateRowTotal({ ...row, rate: value }) : row)));
+  };
 
-const handleTaxChange = (id, value) => {
-  setTableData(prev => 
-    prev.map(row => 
-      row.id === id 
-        ? calculateRowTotal({ ...row, tax: value }) 
-        : row
-    )
-  );
-};
+  const handleTaxChange = (id, value) => {
+    setTableData((prev) => prev.map((row) => (row.id === id ? calculateRowTotal({ ...row, tax: value }) : row)));
+  };
   // useEffect(() => {
   //   calculateTotals();
   // }, [tableData]);
@@ -286,6 +253,7 @@ const handleTaxChange = (id, value) => {
       deliveryAddress: formData.deliveryAddress,
       comapnayAddress: formData.companyAddress,
       subTotal: parseInt(formData.totalAmount),
+      finYear: finYear,
       items: detailsVo
     };
     try {
@@ -331,7 +299,8 @@ const handleTaxChange = (id, value) => {
           billAddress: item.vendorAddress,
           deliveryAddress: item.deliveryAddress,
           comapnayAddress: item.companyAddress,
-          totalAmount: item.subTotal
+          totalAmount: item.subTotal,
+          finYear: item.finYear
         });
         setTableData(
           item.productLines.map((data) => ({
@@ -413,7 +382,7 @@ const handleTaxChange = (id, value) => {
                     </LocalizationProvider>
                   </FormControl>
                 </div>
-                <div className="col-md-3 mb-3">
+                {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="outlined" size="small" error={!!formDataErrors.vendorName}>
                     <InputLabel htmlFor="type">Vendor Name</InputLabel>
                     <Select
@@ -432,7 +401,38 @@ const handleTaxChange = (id, value) => {
                     </Select>
                     {formDataErrors.vendorName && <FormHelperText>{formDataErrors.vendorName}</FormHelperText>}
                   </FormControl>
+                </div> */}
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small" error={!!formDataErrors.vendorName}>
+                    <Autocomplete
+                      size="small"
+                      options={vendorList || []}
+                      getOptionLabel={(option) => option?.partyName || ''}
+                      value={vendorList.find((v) => v.partyName === formData.vendorName) || null}
+                      onChange={(event, newValue) => {
+                        const value = newValue ? newValue.partyName : '';
+                        setFormData((prev) => ({
+                          ...prev,
+                          vendorName: value
+                        }));
+                        setFormDataErrors((prevErrors) => ({
+                          ...prevErrors,
+                          vendorName: ''
+                        }));
+                      }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Vendor Name"
+                          name="vendorName"
+                          error={!!formDataErrors.vendorName}
+                          helperText={formDataErrors.vendorName}
+                        />
+                      )}
+                    />
+                  </FormControl>
                 </div>
+
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField
@@ -570,7 +570,7 @@ const handleTaxChange = (id, value) => {
                                             size="small"
                                             type="text"
                                             value={row.quantity ? `${parseInt(row.quantity)}` : 0}
-                                          onChange={(e) => handleQuantityChange(row.id, e.target.value)}
+                                            onChange={(e) => handleQuantityChange(row.id, e.target.value)}
                                             name="quantity"
                                           />
                                         </FormControl>
@@ -594,7 +594,7 @@ const handleTaxChange = (id, value) => {
                                             type="text"
                                             value={row.tax ? `${parseInt(row.tax)}` : 0}
                                             name="tax"
-                                         onChange={(e) => handleTaxChange(row.id, e.target.value)}
+                                            onChange={(e) => handleTaxChange(row.id, e.target.value)}
                                           />
                                         </FormControl>
                                       </td>

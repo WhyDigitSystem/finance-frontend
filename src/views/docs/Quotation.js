@@ -20,7 +20,6 @@ import MenuItem from '@mui/material/MenuItem';
 import { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import Quotationpdf from './Quotationpdf';
-import { useMemo } from 'react';
 
 const Quotation = () => {
   const orgId = localStorage.getItem('orgId');
@@ -113,7 +112,10 @@ const Quotation = () => {
       billAddress: '',
       deliveryAddress: '',
       totalAmount: 0,
-      comapnayAddress: ''
+      companyAddress: `SCM AI PACKS PVT LTD
+    8 B KHATHA NO. 175/3, FIRST FLOOR, 3RD MAIN ROAD, 3RD CROSS, HOYSALA NAGAR, RAMAMURTHI NAGAR
+    BANGALORE - 560016
+    CIN: U82920KA2023PTC181536`
     });
     setFormDataErrors({});
     setTableData([{ id: Date.now(), item: '', quantity: 0, tax: 0, taxAmount: 0, rate: 0, amount: 0, baseAmount: 0, totalAmount: 0 }]);
@@ -174,7 +176,7 @@ const Quotation = () => {
       customerName: formData.customerName,
       customerAddress: formData.billAddress,
       deliveryAddress: formData.deliveryAddress,
-      comapnayAddress: formData.companyAddress,
+      companyAddress: formData.companyAddress,
       subTotal: parseInt(formData.totalAmount),
       quotationDetailsDTO: detailVO
     };
@@ -221,7 +223,7 @@ const Quotation = () => {
           customerName: item.customerName,
           billAddress: item.customerAddress,
           deliveryAddress: item.deliveryAddress,
-          comapnayAddress: item.companyAddress,
+          companyAddress: item.companyAddress,
           totalAmount: item.subTotal
         });
         setTableData(
@@ -277,40 +279,27 @@ const Quotation = () => {
   // useEffect(() => {
   //   calculateTotals();
   // }, [tableData]);
+  //
+  const calculateRowTotal = (row) => {
+    const qty = parseInt(row.quantity) || 0;
+    const rate = parseInt(row.rate) || 0;
+    const tax = parseFloat(row.tax) || 0;
 
-  const updatedTableData = useMemo(() => {
-    return tableData.map((row) => {
-      const qty = parseInt(row.quantity) || 0;
-      const rate = parseInt(row.rate) || 0;
-      const tax = parseFloat(row.tax) || 0;
+    const baseAmount = qty * rate;
+    const taxAmount = (baseAmount * tax) / 100;
+    const amount = baseAmount + taxAmount;
 
-      const baseAmount = qty * rate;
-      const taxAmount = (baseAmount * tax) / 100;
-      const amount = baseAmount + taxAmount;
-
-      return {
-        ...row,
-        baseAmount,
-        taxAmount,
-        amount
-      };
-    });
-  }, [tableData]);
-
-  // 🧠 Memoized total amount
-  const totalAmount = useMemo(() => {
-    return updatedTableData.reduce((sum, row) => sum + (parseFloat(row.amount) || 0), 0);
-  }, [updatedTableData]);
-
-  // 🧩 Apply the calculated data to state (optional side effect)
-  useEffect(() => {
-    setTableData(updatedTableData);
-    setFormData((prev) => ({
-      ...prev,
-      totalAmount: totalAmount
-    }));
-  }, [updatedTableData, totalAmount]);
-
+    return { ...row, baseAmount, taxAmount, amount };
+  };
+  const handleQuantityChange = (id, value) => {
+    setTableData((prev) => prev.map((row) => (row.id === id ? calculateRowTotal({ ...row, quantity: value }) : row)));
+  };
+  const handleRateChange = (id, value) => {
+    setTableData((prev) => prev.map((row) => (row.id === id ? calculateRowTotal({ ...row, rate: value }) : row)));
+  };
+  const handleTaxChange = (id, value) => {
+    setTableData((prev) => prev.map((row) => (row.id === id ? calculateRowTotal({ ...row, tax: value }) : row)));
+  };
   //
   const listViewColumns = [
     { accessorKey: 'quotationNo', header: 'Quotation No', size: 140 },
@@ -519,12 +508,7 @@ const Quotation = () => {
                                             size="small"
                                             type="text"
                                             value={row.quantity ? `${parseInt(row.quantity)}` : 0}
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              setTableData((prev) =>
-                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, quantity: value } : rowData))
-                                              );
-                                            }}
+                                            onChange={(e) => handleQuantityChange(row.id, e.target.value)}
                                             name="quantity"
                                           />
                                         </FormControl>
@@ -536,12 +520,7 @@ const Quotation = () => {
                                             type="text"
                                             value={row.rate ? `${parseInt(row.rate)}` : 0}
                                             name="rate"
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              setTableData((prev) =>
-                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, rate: value } : rowData))
-                                              );
-                                            }}
+                                            onChange={(e) => handleRateChange(row.id, e.target.value)}
                                           />
                                         </FormControl>
                                       </td>
@@ -552,12 +531,7 @@ const Quotation = () => {
                                             type="text"
                                             value={row.tax ? `${parseInt(row.tax)}` : 0}
                                             name="tax"
-                                            onChange={(e) => {
-                                              const value = e.target.value;
-                                              setTableData((prev) =>
-                                                prev.map((rowData) => (rowData.id === row.id ? { ...rowData, tax: value } : rowData))
-                                              );
-                                            }}
+                                            onChange={(e) => handleTaxChange(row.id, e.target.value)}
                                           />
                                         </FormControl>
                                       </td>
@@ -582,8 +556,8 @@ const Quotation = () => {
                                       <td className="border px-2 py-2">
                                         <FormControl fullWidth variant="filled">
                                           <TextField
-                                            size="small"
                                             type="text"
+                                            size="small"
                                             value={row.amount ? `${parseInt(row.amount)}` : 0}
                                             name="amount"
                                             disabled
@@ -626,5 +600,4 @@ const Quotation = () => {
     </>
   );
 };
-
 export default Quotation;
