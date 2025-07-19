@@ -15,7 +15,9 @@ import {
   Typography,
   Box,
   Avatar,
-  Tooltip
+  Tooltip,
+  Autocomplete,
+  TextField
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -279,12 +281,14 @@ function LedgerReport() {
       header: 'Particulars',
       size: 250,
       Cell: ({ cell }) => (
-        <div style={{
-          textAlign: 'left',
-          padding: '8px 10px',
-          whiteSpace: 'pre-wrap',
-          wordBreak: 'break-word'
-        }}>
+        <div
+          style={{
+            textAlign: 'left',
+            padding: '8px 10px',
+            whiteSpace: 'pre-wrap',
+            wordBreak: 'break-word'
+          }}
+        >
           {cell.getValue() || '-'}
         </div>
       ),
@@ -323,9 +327,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', color: '#d32f2f', fontWeight: '500', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -348,9 +352,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', color: '#2e7d32', fontWeight: '500', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -389,9 +393,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -414,9 +418,9 @@ function LedgerReport() {
         <div style={{ textAlign: 'right', paddingRight: '20px', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2
-            })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+              })
             : '-'}
         </div>
       ),
@@ -930,7 +934,7 @@ function LedgerReport() {
           </FormControl>
         </div>
 
-        {selectedSections.accountName && (
+        {/* {selectedSections.accountName && (
           <div className="col-md-3 mb-3">
             <FormControl size="small" variant="outlined" fullWidth>
               <InputLabel id="accountName-label">Account Name</InputLabel>
@@ -948,6 +952,29 @@ function LedgerReport() {
                   </MenuItem>
                 ))}
               </Select>
+            </FormControl>
+          </div>
+        )} */}
+        {selectedSections.accountName && (
+          <div className="col-md-3 mb-3">
+            <FormControl size="small" fullWidth>
+              <Autocomplete
+                size="small"
+                options={[{ accountGroupName: 'All' }, ...accountNameList]}
+                getOptionLabel={(option) => option?.accountGroupName || ''}
+                value={
+                  accountNameList.find((acc) => acc.accountGroupName === formData.accountName) ||
+                  (formData.accountName === 'All' ? { accountGroupName: 'All' } : null)
+                }
+                onChange={(event, newValue) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    accountName: newValue ? newValue.accountGroupName : ''
+                  }));
+                }}
+                renderInput={(params) => <TextField {...params} label="Account Name" name="accountName" variant="outlined" />}
+                isOptionEqualToValue={(option, value) => option.accountGroupName === value.accountGroupName}
+              />
             </FormControl>
           </div>
         )}

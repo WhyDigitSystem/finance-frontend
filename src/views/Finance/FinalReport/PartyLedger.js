@@ -11,7 +11,8 @@ import {
   IconButton,
   Dialog,
   DialogTitle,
-  DialogContent
+  DialogContent,
+  Autocomplete
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useEffect, useState } from 'react';
@@ -317,7 +318,7 @@ function PartyLedger() {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-2">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.partyName}>
+                {/* <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.partyName}>
                   <InputLabel id="partyName-label">Party Name</InputLabel>
                   <Select
                     labelId="partyName-label"
@@ -333,6 +334,30 @@ function PartyLedger() {
                     ))}
                   </Select>
                   {fieldErrors.partyName && <FormHelperText>{fieldErrors.partyName}</FormHelperText>}
+                </FormControl> */}
+                <FormControl size="small" fullWidth error={!!fieldErrors.partyName}>
+                  <Autocomplete
+                    size="small"
+                    options={partyNameList || []}
+                    getOptionLabel={(option) => option?.partyName || ''}
+                    value={partyNameList?.find((item) => item.partyName === formData.partyName) || null}
+                    onChange={(event, newValue) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        partyName: newValue ? newValue.partyName : ''
+                      }));
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Party Name"
+                        name="partyName"
+                        error={!!fieldErrors.partyName}
+                        helperText={fieldErrors.partyName}
+                      />
+                    )}
+                    isOptionEqualToValue={(option, value) => option.partyName === value.partyName}
+                  />
                 </FormControl>
               </div>
             </>

@@ -15,7 +15,8 @@ import {
   Dialog,
   DialogContent,
   IconButton,
-  DialogTitle
+  DialogTitle,
+  Autocomplete
 } from '@mui/material';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -1085,7 +1086,7 @@ function CostReport() {
                 </FormControl>
               </div>
             )}
-            {selectedSections.vendor && (
+            {/* {selectedSections.vendor && (
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.vendor}>
                   <InputLabel id="vendor-label">Vendor</InputLabel>
@@ -1101,7 +1102,35 @@ function CostReport() {
                   {fieldErrors.vendor && <FormHelperText>{fieldErrors.vendor}</FormHelperText>}
                 </FormControl>
               </div>
+            )} */}
+            {/*  */}
+            {selectedSections.vendor && (
+              <div className="col-md-3 mb-2">
+                <FormControl size="small" fullWidth error={!!fieldErrors.vendor}>
+                  <Autocomplete
+                    size="small"
+                    options={[{ partyName: 'All' }, ...(partyNameList || [])]}
+                    getOptionLabel={(option) => option?.partyName || ''}
+                    value={
+                      partyNameList?.find((item) => item.partyName === formData.vendor) ||
+                      (formData.vendor === 'All' ? { partyName: 'All' } : null)
+                    }
+                    onChange={(event, newValue) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        vendor: newValue ? newValue.partyName : ''
+                      }));
+                    }}
+                    renderInput={(params) => (
+                      <TextField {...params} label="Vendor" name="vendor" error={!!fieldErrors.vendor} helperText={fieldErrors.vendor} />
+                    )}
+                    isOptionEqualToValue={(option, value) => option.partyName === value.partyName}
+                  />
+                </FormControl>
+              </div>
             )}
+
+            {/*  */}
           </div>
         </>
       </div>

@@ -18,6 +18,7 @@ import { FormHelperText } from '@mui/material';
 import apiCalls from 'apicall';
 import MenuItem from '@mui/material/MenuItem';
 import { showToast } from 'utils/toast-component';
+import { ToastContainer } from 'react-toastify';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import Quotationpdf from './Quotationpdf';
 
@@ -325,6 +326,7 @@ const Quotation = () => {
 
   return (
     <>
+      <ToastContainer />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml" style={{ marginBottom: '20px' }}>
           <div className="d-flex flex-wrap justify-content-end mb-2 " style={{ marginBottom: '20px' }}>

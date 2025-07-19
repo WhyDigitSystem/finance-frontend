@@ -15,7 +15,8 @@ import {
   Dialog,
   DialogContent,
   IconButton,
-  DialogTitle
+  DialogTitle,
+  Autocomplete
 } from '@mui/material';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -96,27 +97,27 @@ function ReceiptReport() {
     setSelectedSections({});
     setRowData([]);
   };
-  const handleSelectPartyChange = (e) => {
-    const value = e.target.value;
-    console.log('Selected employeeCode value:', value);
-    const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
-    if (value === 'All') {
-      setFormData((prevData) => ({
-        ...prevData,
-        customer: 'All'
-      }));
-    } else {
-      if (selectedEmp) {
-        console.log('Selected party:', selectedEmp);
-        setFormData((prevData) => ({
-          ...prevData,
-          customer: selectedEmp.partyName
-        }));
-      } else {
-        console.log('No party found with the given code:', value);
-      }
-    }
-  };
+  // const handleSelectPartyChange = (e) => {
+  //   const value = e.target.value;
+  //   console.log('Selected employeeCode value:', value);
+  //   const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
+  //   if (value === 'All') {
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       customer: 'All'
+  //     }));
+  //   } else {
+  //     if (selectedEmp) {
+  //       console.log('Selected party:', selectedEmp);
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         customer: selectedEmp.partyName
+  //       }));
+  //     } else {
+  //       console.log('No party found with the given code:', value);
+  //     }
+  //   }
+  // };
   const handleCloseModal = () => {
     setOpenModal(false);
   };
@@ -947,7 +948,7 @@ function ReceiptReport() {
                 </FormControl>
               </div>
             )}
-            {selectedSections.customer && (
+            {/* {selectedSections.customer && (
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
                   <InputLabel id="customer-label">Customer</InputLabel>
@@ -969,7 +970,41 @@ function ReceiptReport() {
                   {fieldErrors.customer && <FormHelperText>{fieldErrors.customer}</FormHelperText>}
                 </FormControl>
               </div>
+            )} */}
+            {/*  */}
+            {selectedSections.customer && (
+              <div className="col-md-3 mb-2">
+                <FormControl size="small" fullWidth error={!!fieldErrors.customer}>
+                  <Autocomplete
+                    size="small"
+                    options={[{ partyName: 'All' }, ...(partyNameList || [])]}
+                    getOptionLabel={(option) => option?.partyName || ''}
+                    value={
+                      partyNameList?.find((item) => item.partyName === formData.customer) ||
+                      (formData.customer === 'All' ? { partyName: 'All' } : null)
+                    }
+                    onChange={(event, newValue) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        customer: newValue ? newValue.partyName : ''
+                      }));
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Customer"
+                        name="customer"
+                        error={!!fieldErrors.customer}
+                        helperText={fieldErrors.customer}
+                      />
+                    )}
+                    isOptionEqualToValue={(option, value) => option.partyName === value.partyName}
+                  />
+                </FormControl>
+              </div>
             )}
+
+            {/*  */}
           </div>
         </>
       </div>

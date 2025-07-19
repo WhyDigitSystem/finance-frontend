@@ -15,7 +15,8 @@ import {
   Dialog,
   DialogContent,
   IconButton,
-  DialogTitle
+  DialogTitle,
+  Autocomplete
 } from '@mui/material';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -94,27 +95,27 @@ function SalesReport() {
     setSelectedSections({});
     setRowData([]);
   };
-  const handleSelectPartyChange = (e) => {
-    const value = e.target.value;
-    console.log('Selected employeeCode value:', value);
-    const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
-    if (value === 'All') {
-      setFormData((prevData) => ({
-        ...prevData,
-        customer: 'All'
-      }));
-    } else {
-      if (selectedEmp) {
-        console.log('Selected party:', selectedEmp);
-        setFormData((prevData) => ({
-          ...prevData,
-          customer: selectedEmp.partyName
-        }));
-      } else {
-        console.log('No party found with the given code:', value);
-      }
-    }
-  };
+  // const handleSelectPartyChange = (e) => {
+  //   const value = e.target.value;
+  //   console.log('Selected employeeCode value:', value);
+  //   const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
+  //   if (value === 'All') {
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       customer: 'All'
+  //     }));
+  //   } else {
+  //     if (selectedEmp) {
+  //       console.log('Selected party:', selectedEmp);
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         customer: selectedEmp.partyName
+  //       }));
+  //     } else {
+  //       console.log('No party found with the given code:', value);
+  //     }
+  //   }
+  // };
   const handleCloseModal = () => {
     setOpen(false);
   };
@@ -283,170 +284,170 @@ function SalesReport() {
   const getColumns = () => {
     return formData.viewMode === 'details'
       ? [
-        { accessorKey: 'docid', header: 'Doc ID', size: 80 },
-        { accessorKey: 'docdate', header: 'Date', size: 80 },
-        { accessorKey: 'Vid', header: 'Invoice No', size: 80 },
-        { accessorKey: 'Vdate', header: 'Invoice Date', size: 120 },
-        { accessorKey: 'partyname', header: 'Customer', size: 120 },
-        // { accessorKey: 'placeofsupply', header: 'Place Of Supply', size: 80 },
-        // { accessorKey: 'gsttype', header: 'Tax Type', size: 80 },
-        // { accessorKey: 'gstpercent', header: 'Tax %', size: 80 },
-        { accessorKey: 'currency', header: 'Currency', size: 50 },
-        {
-          accessorKey: 'qty',
-          header: 'Qty',
-          size: 80,
-          Cell: ({ cell }) => (
-            <div style={{ textAlign: 'right', width: '100%' }}>
-              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-            </div>
-          ),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        },
-        {
-          accessorKey: 'rate',
-          header: 'Rate',
-          size: 80,
-          Cell: ({ cell }) => (
-            <div style={{ textAlign: 'right', width: '100%' }}>
-              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-            </div>
-          ),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        },
-        {
-          accessorKey: 'billAmount',
-          header: 'Bill Amt',
-          size: 80,
-          Cell: ({ cell }) => (
-            <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-            </div>
-          ),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        },
-        {
-          accessorKey: 'gstamount',
-          header: 'Tax Amt',
-          size: 80,
-          Cell: ({ cell }) => (
-            <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
-              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-            </div>
-          ),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        },
-        {
-          accessorKey: 'totalLcAmount',
-          header: 'Total Amt',
-          size: 80,
-          Cell: ({ cell }) => (
-            <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-            </div>
-          ),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        },
-        {
-          accessorKey: 'totalchargeamountlc',
-          header: 'Bill Amt(Base)',
-          size: 80,
-          Cell: ({ cell }) => (
-            <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-            </div>
-          ),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        },
-        {
-          accessorKey: 'totaltaxamountlc',
-          header: 'Tax Amt(Base)',
-          size: 80,
-          Cell: ({ cell }) => (
-            <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
-              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-            </div>
-          ),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        },
-        {
-          accessorKey: 'totalinvamountlc',
-          header: 'Total Amt(Base)',
-          size: 80,
-          Cell: ({ cell }) => (
-            <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-            </div>
-          ),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        },
-        { accessorKey: 'chargetype', header: 'Charge Type', size: 80 },
-        { accessorKey: 'chargename', header: 'Charge Name', size: 80 },
-        { accessorKey: 'chargecode', header: 'Charge Code', size: 80 },
-      ]
+          { accessorKey: 'docid', header: 'Doc ID', size: 80 },
+          { accessorKey: 'docdate', header: 'Date', size: 80 },
+          { accessorKey: 'Vid', header: 'Invoice No', size: 80 },
+          { accessorKey: 'Vdate', header: 'Invoice Date', size: 120 },
+          { accessorKey: 'partyname', header: 'Customer', size: 120 },
+          // { accessorKey: 'placeofsupply', header: 'Place Of Supply', size: 80 },
+          // { accessorKey: 'gsttype', header: 'Tax Type', size: 80 },
+          // { accessorKey: 'gstpercent', header: 'Tax %', size: 80 },
+          { accessorKey: 'currency', header: 'Currency', size: 50 },
+          {
+            accessorKey: 'qty',
+            header: 'Qty',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'rate',
+            header: 'Rate',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'billAmount',
+            header: 'Bill Amt',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'gstamount',
+            header: 'Tax Amt',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'totalLcAmount',
+            header: 'Total Amt',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'totalchargeamountlc',
+            header: 'Bill Amt(Base)',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'totaltaxamountlc',
+            header: 'Tax Amt(Base)',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'totalinvamountlc',
+            header: 'Total Amt(Base)',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          { accessorKey: 'chargetype', header: 'Charge Type', size: 80 },
+          { accessorKey: 'chargename', header: 'Charge Name', size: 80 },
+          { accessorKey: 'chargecode', header: 'Charge Code', size: 80 }
+        ]
       : [
-        { accessorKey: 'docId', header: 'Doc Id', size: 100 },
-        { accessorKey: 'docDate', header: 'Date', size: 100 },
-        { accessorKey: 'vId', header: 'Invoice No', size: 100 },
-        { accessorKey: 'vDate', header: 'Date', size: 100 },
-        { accessorKey: 'partyName', header: 'Customer', size: 200 },
-        { accessorKey: 'placeofsupply', header: 'Place Of Supply', size: 100 },
-        {
-          accessorKey: 'totalchargeamountlc',
-          header: 'Bill Amt',
-          size: 80,
-          Cell: ({ cell }) => (
-            <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-            </div>
-          ),
-          muiTableHeadCellProps: {
-            align: 'right'
+          { accessorKey: 'docId', header: 'Doc Id', size: 100 },
+          { accessorKey: 'docDate', header: 'Date', size: 100 },
+          { accessorKey: 'vId', header: 'Invoice No', size: 100 },
+          { accessorKey: 'vDate', header: 'Date', size: 100 },
+          { accessorKey: 'partyName', header: 'Customer', size: 200 },
+          { accessorKey: 'placeofsupply', header: 'Place Of Supply', size: 100 },
+          {
+            accessorKey: 'totalchargeamountlc',
+            header: 'Bill Amt',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'totaltaxamountlc',
+            header: 'Tax Amt',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
+          },
+          {
+            accessorKey: 'totalinvamountlc',
+            header: 'Total Amt',
+            size: 80,
+            Cell: ({ cell }) => (
+              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+              </div>
+            ),
+            muiTableHeadCellProps: {
+              align: 'right'
+            }
           }
-        },
-        {
-          accessorKey: 'totaltaxamountlc',
-          header: 'Tax Amt',
-          size: 80,
-          Cell: ({ cell }) => (
-            <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
-              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-            </div>
-          ),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        },
-        {
-          accessorKey: 'totalinvamountlc',
-          header: 'Total Amt',
-          size: 80,
-          Cell: ({ cell }) => (
-            <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-            </div>
-          ),
-          muiTableHeadCellProps: {
-            align: 'right'
-          }
-        }
-      ];
+        ];
   };
 
   const getSumFields = () => {
@@ -562,23 +563,23 @@ function SalesReport() {
       const headers =
         formData.viewMode === 'details'
           ? [
-            'Doc ID',
-            'Date',
-            'Customer',
-            'Invoice No',
-            'Invoice Date',
-            'Supply Place',
-            'Charge Type',
-            'Charge Code',
-            'Charge Name',
-            'Tax Type',
-            'Tax Percent',
-            'Qty',
-            'Rate',
-            'Amount',
-            'Tax',
-            'Total'
-          ]
+              'Doc ID',
+              'Date',
+              'Customer',
+              'Invoice No',
+              'Invoice Date',
+              'Supply Place',
+              'Charge Type',
+              'Charge Code',
+              'Charge Name',
+              'Tax Type',
+              'Tax Percent',
+              'Qty',
+              'Rate',
+              'Amount',
+              'Tax',
+              'Total'
+            ]
           : ['Doc ID', 'Date', 'Invoice No', 'Invoice Date', 'Tax Type', 'Customer', 'Supply Place', 'Amount', 'Tax', 'Total'];
 
       const headerRow = sheet.addRow(headers);
@@ -1087,7 +1088,7 @@ function SalesReport() {
                 </FormControl>
               </div>
             )}
-            {selectedSections.customer && (
+            {/* {selectedSections.customer && (
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
                   <InputLabel id="customer-label">Customer</InputLabel>
@@ -1109,7 +1110,41 @@ function SalesReport() {
                   {fieldErrors.customer && <FormHelperText>{fieldErrors.customer}</FormHelperText>}
                 </FormControl>
               </div>
+            )} */}
+            {/*  */}
+            {selectedSections.customer && (
+              <div className="col-md-3 mb-2">
+                <FormControl size="small" fullWidth error={!!fieldErrors.customer}>
+                  <Autocomplete
+                    size="small"
+                    options={[{ partyName: 'All' }, ...(partyNameList || [])]}
+                    getOptionLabel={(option) => option?.partyName || ''}
+                    value={
+                      partyNameList?.find((item) => item.partyName === formData.customer) ||
+                      (formData.customer === 'All' ? { partyName: 'All' } : null)
+                    }
+                    onChange={(event, newValue) => {
+                      setFormData((prev) => ({
+                        ...prev,
+                        customer: newValue ? newValue.partyName : ''
+                      }));
+                    }}
+                    renderInput={(params) => (
+                      <TextField
+                        {...params}
+                        label="Customer"
+                        name="customer"
+                        error={!!fieldErrors.customer}
+                        helperText={fieldErrors.customer}
+                      />
+                    )}
+                    isOptionEqualToValue={(option, value) => option.partyName === value.partyName}
+                  />
+                </FormControl>
+              </div>
             )}
+
+            {/*  */}
           </div>
         </>
       </div>

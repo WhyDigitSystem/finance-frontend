@@ -19,6 +19,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import apiCalls from 'apicall';
 import { showToast } from 'utils/toast-component';
+import { ToastContainer } from 'react-toastify';
 import { FormHelperText } from '@mui/material';
 import POpdf from './POpdf';
 const PurchaseOrder = () => {
@@ -339,6 +340,7 @@ CIN: U82920KA2023PTC181536`,
 
   return (
     <>
+      <ToastContainer />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml" style={{ marginBottom: '20px' }}>
           <div className="d-flex flex-wrap justify-content-end mb-2 " style={{ marginBottom: '20px' }}>
