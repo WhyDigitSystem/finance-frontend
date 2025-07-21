@@ -55,16 +55,16 @@ const CommonReportTable = ({
     download(csvConfig)(csv);
   };
 
-  // const sums = sumFields.reduce((acc, field) => {
-  //   acc[field] = data.reduce((total, row) => total + parseFloat(row[field] || 0), 0);
-  //   return acc;
-  // }, {});
+  const sums = sumFields.reduce((acc, field) => {
+    acc[field] = data.reduce((total, row) => total + parseFloat(row[field] || 0), 0);
+    return acc;
+  }, {});
 
   const sumFieldLabels = {
     TotalInvAmountLC: 'Total Amount',
-    TotalTaxAmountLC: 'Total Tax Amount',
+    TotalTaxAmountLC: 'Tax Amount',
     TotalAmount: 'Total Amount',
-    Tax: 'Total Tax Amount',
+    Tax: 'Tax Amount',
     BillAmount: 'Bill Amount',
     outstanding: 'OutStanding'
   };
@@ -297,10 +297,10 @@ const CommonReportTable = ({
             {sumFields.map((field) => (
               <Box key={field} sx={{ marginLeft: 3 }}>
                 {sumFieldLabels[field] || field}:{' '}
-                {/* {sums[field].toLocaleString('en-IN', {
+                {sums[field].toLocaleString('en-IN', {
                   minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })} */}
+                  maximumFractionDigits: 0
+                })}
               </Box>
             ))}
           </Box>
