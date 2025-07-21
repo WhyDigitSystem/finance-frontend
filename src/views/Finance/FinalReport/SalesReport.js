@@ -239,7 +239,7 @@ function SalesReport() {
         }
         if (response.status === true) {
           console.log('Response:', response);
-          setRowData(response.paramObjectsMap.mapp || []);
+          setRowData(response.paramObjectsMap.mapp.reverse() || []);
           setIsLoading(false);
           setOpen(true);
           const newHeaderFields = [];
