@@ -201,11 +201,36 @@ const ArAging = () => {
   };
 
   const reportColumns = [
+    // {
+    //   accessorKey: 'subledgerName',
+    //   header: 'Party Name',
+    //   size: 110,
+    //   Cell: ({ cell }) => <div style={{ textAlign: 'center', padding: '8px' }}>{cell.getValue() || ''}</div>,
+    //   muiTableHeadCellProps: {
+    //     align: 'center',
+    //     sx: {
+    //       backgroundColor: '#34449B',
+    //       color: 'white',
+    //       fontWeight: 'bold',
+    //       fontSize: '0.875rem',
+    //       padding: '12px 8px'
+    //     }
+    //   }
+    // },
     {
-      accessorKey: 'partyName',
+      accessorKey: 'subledgerName',
       header: 'Party Name',
       size: 110,
-      Cell: ({ cell }) => <div style={{ textAlign: 'center', padding: '8px' }}>{cell.getValue() || ''}</div>,
+      Cell: ({ cell, row, table }) => {
+        const currentValue = cell.getValue();
+        const rowIndex = row.index;
+
+        const allRows = table.getSortedRowModel().rows;
+
+        const isFirstOccurrence = rowIndex === 0 || allRows[rowIndex - 1]?.original?.subledgerName !== currentValue;
+
+        return <div style={{ textAlign: 'center', padding: '8px' }}>{isFirstOccurrence ? currentValue : ''}</div>;
+      },
       muiTableHeadCellProps: {
         align: 'center',
         sx: {
@@ -565,7 +590,9 @@ const ArAging = () => {
     }
 
     // Header Row
+
     const headers = [
+      'Party Name',
       'Invoice No',
       'Invoice Date',
       'Due Date',
@@ -580,12 +607,12 @@ const ArAging = () => {
       'Days 120+'
     ];
     const headerRow = sheet.addRow(headers);
-    headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-    headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF34449B' } };
-    headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
     headerRow.height = 20;
-
     headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF34449B' } };
+
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
       cell.border = {
         top: { style: 'thin' },
         left: { style: 'thin' },
@@ -595,8 +622,12 @@ const ArAging = () => {
     });
 
     // Data Rows
+    let previousPartyName = '';
     rowData.forEach((item) => {
+      const partyName = item.subledgerName === previousPartyName ? '' : item.subledgerName;
+      previousPartyName = item.subledgerName;
       const row = sheet.addRow([
+        partyName,
         item.docId || '-',
         item.docDate ? dayjs(item.docDate).format('DD-MM-YYYY') : '',
         item.dueDate ? dayjs(item.dueDate).format('DD-MM-YYYY') : '-',
@@ -611,7 +642,7 @@ const ArAging = () => {
         item.mSlab5 ?? 0
       ]);
 
-      for (let col = 4; col <= 12; col++) {
+      for (let col = 5; col <= 13; col++) {
         const cell = row.getCell(col);
         cell.numFmt = '#,##,##0.00';
         cell.alignment = { horizontal: 'right' };
@@ -627,9 +658,24 @@ const ArAging = () => {
       });
     });
 
+    sheet.columns = [
+      { width: 70 },
+      { width: 30 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 },
+      { width: 20 }
+    ];
+
     // Column Widths
-    sheet.columns = Array(12).fill({ width: 15 });
-    sheet.getColumn(1).width = 20;
+    // sheet.columns = Array(12).fill({ width: 15 });
+    // sheet.getColumn(1).width = 20;
 
     // Export
     const buffer = await workbook.xlsx.writeBuffer();
@@ -641,7 +687,7 @@ const ArAging = () => {
 
   // pdf downloaded
   const handleDownloadPdf = ({ logo, columns, data, fileName, userName, formData }) => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation: 'landscape' });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
 
@@ -675,7 +721,7 @@ const ArAging = () => {
     doc.setFontSize(9);
     doc.setTextColor('#000000');
     doc.setFillColor(231, 235, 235);
-    doc.roundedRect(2, 35, 206, 12, 2, 2, 'F');
+    doc.roundedRect(2, 35, 292, 12, 2, 2, 'F');
     // Row 1: Labels (bold)
     doc.setFont(undefined, 'bold');
     doc.text('Date', 8, 40);
@@ -695,10 +741,18 @@ const ArAging = () => {
     const numericFields = columns
       .map((c) => c.accessorKey)
       .filter((k) => k && /(totalDue|mSlab3|mSlab4|mSlab5|mSlab2|mSlab1|creditLimit|amount|outstanding|unAdjusted)/i.test(k));
-    const body = data.map((row) =>
-      columns.map((col) => {
+    let previousSubledger = '';
+    const body = data.map((row) => {
+      return columns.map((col, index) => {
         const key = col.accessorKey;
-        const raw = key ? row[key] : '';
+        let raw = key ? row[key] : '';
+        if (index === 0) {
+          if (raw === previousSubledger) {
+            raw = '';
+          } else {
+            previousSubledger = raw;
+          }
+        }
         if (key?.toLowerCase().includes('date')) {
           const d = dayjs(raw);
           return d.isValid() ? d.format('DD-MM-YYYY') : '-';
@@ -708,18 +762,34 @@ const ArAging = () => {
           return number === 0 ? '' : number.toLocaleString('en-IN');
         }
         return raw ?? '';
-      })
-    );
+      });
+    });
+
+    const columnStyles = {
+      0: { cellWidth: 68 }, // partyname
+      1: { cellWidth: 30 }, // Doc No
+      2: { cellWidth: 20 }, // Doc Date
+      3: { cellWidth: 20 }, // Due Date
+      4: { cellWidth: 20 }, // Inv Amount
+      5: { cellWidth: 20 }, // Outstanding
+      6: { cellWidth: 20 }, // Total Due
+      7: { cellWidth: 20 }, // Below 30 Days
+      8: { cellWidth: 20 }, // Days 31-60
+      9: { cellWidth: 20 }, // Days 61-90
+      10: { cellWidth: 20 }, // Days 91-120
+      11: { cellWidth: 20 } // Days 120+
+    };
 
     autoTable(doc, {
-      startY: 50, // replace Fifty with a number like 60
+      startY: 50,
       head: [headerLabels],
       body,
       styles: {
         fontSize: 8,
         cellPadding: 2,
         lineWidth: 0.1,
-        lineColor: [220, 220, 220]
+        lineColor: [220, 220, 220],
+        overflow: 'linebreak'
       },
       headStyles: {
         fillColor: [52, 68, 155],
@@ -729,13 +799,10 @@ const ArAging = () => {
       bodyStyles: {
         halign: 'left'
       },
-      bodyStyles: {
-        halign: 'left'
-      },
       theme: 'grid',
-      margin: { left: 5, right: 5 },
+      margin: { left: 0, right: 0 },
       tableWidth: 'auto',
-      columnStyles: generateFullWidthColumnStyles(columns, doc),
+      columnStyles: columnStyles,
       didDrawPage: (data) => {
         doc.setFontSize(8).setTextColor('#555555');
         doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
@@ -758,21 +825,7 @@ const ArAging = () => {
     // 6) SAVE
     doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
   };
-  const generateFullWidthColumnStyles = (columns, doc) => {
-    const totalColumns = columns.length;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 10; // left + right total margin (10 on each side)
-    const usableWidth = pageWidth - margin;
 
-    const colWidth = usableWidth / totalColumns;
-
-    const styles = {};
-    columns.forEach((_, index) => {
-      styles[index] = { cellWidth: colWidth };
-    });
-
-    return styles;
-  };
   return (
     <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px', borderRadius: '10px' }}>
       <div className="row">

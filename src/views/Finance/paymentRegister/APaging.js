@@ -163,7 +163,7 @@ const APaging = () => {
         asdate: formData.date,
         orgId,
         branch: formData.branchCode,
-        partyname: formData.partyName === 'All' ? 'ALL' : formData.partyName,
+        partyname: formData.partyName === 'All' ? 'All' : formData.partyName,
         baseType: formData.baseType
       });
 
@@ -232,11 +232,36 @@ const APaging = () => {
   };
 
   const reportColumns = [
+    // {
+    //   accessorKey: 'partyName',
+    //   header: 'Party Name',
+    //   size: 110,
+    //   Cell: ({ cell }) => <div style={{ textAlign: 'center', padding: '8px' }}>{cell.getValue() || ''}</div>,
+    //   muiTableHeadCellProps: {
+    //     align: 'center',
+    //     sx: {
+    //       backgroundColor: '#34449B',
+    //       color: 'white',
+    //       fontWeight: 'bold',
+    //       fontSize: '0.875rem',
+    //       padding: '12px 8px'
+    //     }
+    //   }
+    // },
     {
       accessorKey: 'partyName',
       header: 'Party Name',
       size: 110,
-      Cell: ({ cell }) => <div style={{ textAlign: 'center', padding: '8px' }}>{cell.getValue() || ''}</div>,
+      Cell: ({ cell, row, table }) => {
+        const currentValue = cell.getValue();
+        const rowIndex = row.index;
+
+        const allRows = table.getSortedRowModel().rows;
+
+        const isFirstOccurrence = rowIndex === 0 || allRows[rowIndex - 1]?.original?.partyName !== currentValue;
+
+        return <div style={{ textAlign: 'center', padding: '8px' }}>{isFirstOccurrence ? currentValue : ''}</div>;
+      },
       muiTableHeadCellProps: {
         align: 'center',
         sx: {
@@ -602,25 +627,31 @@ const APaging = () => {
 
     // ====== TABLE HEADER ======
     const headerRow = sheet.addRow(reportColumns.map((col) => col.header));
-    headerRow.font = {
-      bold: true,
-      color: { argb: 'FFFFFFFF' }
-    };
-    headerRow.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FF34449B' }
-    };
-    headerRow.alignment = {
-      horizontal: 'center',
-      vertical: 'middle'
-    };
     headerRow.height = 20;
 
+    headerRow.eachCell((cell) => {
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF34449B' } // Blue background
+      };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
     // ====== DATA ROWS ======
+    let previousPartyName = '';
     rowData.forEach((item) => {
+      const party = item.partyName === previousPartyName ? '' : item.partyName;
+      previousPartyName = item.partyName;
       const row = sheet.addRow([
-        item.partyName,
+        // item.partyName,
+        party,
         item.docid || '',
         item.docdate ? dayjs(item.docdate).format('DD-MM-YYYY') : '-',
         item.duedate ? dayjs(item.duedate).format('DD-MM-YYYY') : '-',
@@ -649,7 +680,7 @@ const APaging = () => {
 
     // ====== COLUMN WIDTHS ======
     sheet.columns = [
-      { width: 20 }, // Invoice/Ref No
+      { width: 70 }, // Invoice/Ref No
       { width: 15 }, // Invoice/Ref Date
       { width: 15 }, // Due Date
       { width: 15 }, // Amount
@@ -683,7 +714,7 @@ const APaging = () => {
   };
   // pdf download
   const handleDownloadPdf = ({ logo, columns, data, fileName = 'AP Ageing', userName, formData }) => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation: 'landscape' });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
 
@@ -722,30 +753,38 @@ const APaging = () => {
     doc.setFontSize(9);
     doc.setTextColor('#000000');
     doc.setFillColor(231, 235, 235);
-    doc.roundedRect(2, 35, 206, 12, 2, 2, 'F');
+    doc.roundedRect(2, 35, 292, 12, 2, 2, 'F');
     // Row 1: Labels (bold)
     doc.setFont(undefined, 'bold');
     doc.text('Date', 8, 40);
     doc.text('Party Name', 37, 40);
-    doc.text('Branch Name', 125, 40);
-    doc.text('Currency Type', 178, 40);
+    doc.text('Branch Name', 140, 40);
+    doc.text('Currency Type', 188, 40);
 
     // Row 2: Values (normal)
     doc.setFont(undefined, 'normal');
     doc.text(dayjs(date).format('DD-MM-YYYY'), 8, 45);
     doc.text(partyName, 37, 45);
-    doc.text(branchCode, 125, 45);
-    doc.text(baseType, 178, 45);
+    doc.text(branchCode, 140, 45);
+    doc.text(baseType, 188, 45);
 
     // 5) TABLE
     const headerLabels = columns.map((c) => c.header);
     const numericFields = columns
       .map((c) => c.accessorKey)
       .filter((k) => k && /(amount|outStanding|totalDue|msLab1|msLab2|msLab3|msLab4|msLab5)/i.test(k));
-    const body = data.map((row) =>
-      columns.map((col) => {
+    let previousSubledger = '';
+    const body = data.map((row) => {
+      return columns.map((col, index) => {
         const key = col.accessorKey;
-        const raw = key ? row[key] : '';
+        let raw = key ? row[key] : '';
+        if (index === 0) {
+          if (raw === previousSubledger) {
+            raw = '';
+          } else {
+            previousSubledger = raw;
+          }
+        }
         if (key?.toLowerCase().includes('date')) {
           const d = dayjs(raw);
           return d.isValid() ? d.format('DD-MM-YYYY') : '-';
@@ -754,8 +793,25 @@ const APaging = () => {
           return raw === 0 ? '' : raw.toLocaleString('en-IN');
         }
         return raw ?? '';
-      })
-    );
+      });
+    });
+
+    // 6) Define Column Widths (should match your table structure)
+    const columnStyles = {
+      0: { cellWidth: 67 }, // Cost Invoice No
+      1: { cellWidth: 30 }, // Date
+      2: { cellWidth: 20 }, // Doc Id
+      3: { cellWidth: 20 }, // Doc Date
+      4: { cellWidth: 20 }, // Party Name (made wider)
+      5: { cellWidth: 20 }, // Reg In
+      6: { cellWidth: 20 }, // GST Type
+      7: { cellWidth: 20 }, // Bill Amount
+      8: { cellWidth: 20 }, // TAX
+      9: { cellWidth: 20 },
+      10: { cellWidth: 20 },
+      11: { cellWidth: 20 },
+      12: { cellWidth: 20 } // Total Amount
+    };
 
     autoTable(doc, {
       startY: 50, // replace Fifty with a number like 60
@@ -774,6 +830,15 @@ const APaging = () => {
       },
       bodyStyles: {
         halign: 'left'
+      },
+      theme: 'grid',
+      margin: { left: 0, right: 0 },
+      tableWidth: 'auto',
+      columnStyles: columnStyles,
+      didDrawPage: () => {
+        doc.setFontSize(8).setTextColor('#555555');
+        doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
+        doc.text(`Generated By: ${userName}`, 15, pageH - 10, { align: 'left' });
       },
       didParseCell: (cellHookData) => {
         const { cell, column, section } = cellHookData;
