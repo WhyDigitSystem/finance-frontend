@@ -9,7 +9,7 @@ import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import 'react-tabs/style/react-tabs.css';
 import 'react-toastify/dist/ReactToastify.css';
-import { FaTrash } from "react-icons/fa";
+import { FaTrash } from 'react-icons/fa';
 import ActionButton from 'utils/ActionButton';
 import ToastComponent, { showToast } from 'utils/toast-component';
 import {
@@ -26,7 +26,7 @@ import {
   TableContainer,
   TableRow,
   TableHead,
-  Paper,
+  Paper
 } from '@mui/material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -78,7 +78,7 @@ export const MaterialIssueManifest = () => {
     amountInWords: '',
     transporterName: '',
     vehicleNo: '',
-    driverNo: '',
+    driverNo: ''
   });
   const [fieldErrors, setFieldErrors] = useState({
     transactionNo: '',
@@ -97,7 +97,7 @@ export const MaterialIssueManifest = () => {
     amountInWords: '',
     transporterName: '',
     vehicleNo: '',
-    driverNo: '',
+    driverNo: ''
   });
   const [detailsTableData, setDetailsTableData] = useState([]);
 
@@ -119,7 +119,7 @@ export const MaterialIssueManifest = () => {
     { accessorKey: 'transactionDate', header: 'Transaction Date', size: 140 },
     { accessorKey: 'dispatchDate', header: 'Dispatch Date', size: 140 },
     { accessorKey: 'receiver', header: 'Receiver', size: 140 },
-    { accessorKey: 'transporterName', header: 'Transporter Name', size: 140 },
+    { accessorKey: 'transporterName', header: 'Transporter Name', size: 140 }
   ];
   useEffect(() => {
     getAllServiceAccountCode();
@@ -149,7 +149,7 @@ export const MaterialIssueManifest = () => {
       amountInWords: '',
       transporterName: '',
       vehicleNo: '',
-      driverNo: '',
+      driverNo: ''
     });
     setFieldErrors({
       transactionNo: '',
@@ -168,19 +168,21 @@ export const MaterialIssueManifest = () => {
       amountInWords: '',
       transporterName: '',
       vehicleNo: '',
-      driverNo: '',
+      driverNo: ''
     });
     setDetailsTableData([]);
-    setDetailsTableErrors([{
-      kitNo: '',
-      kitName: '',
-      kitQty: '',
-      hsnsacCode: '',
-      productCode: '',
-      productName: '',
-      productQty: '',
-      actualQty: ''
-    }]);
+    setDetailsTableErrors([
+      {
+        kitNo: '',
+        kitName: '',
+        kitQty: '',
+        hsnsacCode: '',
+        productCode: '',
+        productName: '',
+        productQty: '',
+        actualQty: ''
+      }
+    ]);
     setEditId('');
     getMIMDocId();
   };
@@ -317,6 +319,9 @@ export const MaterialIssueManifest = () => {
           vehicleNo: MIMVO.vehicleNo,
           driverNo: MIMVO.driverPhoneNo,
           createdBy: MIMVO.createdBy,
+          finYear: finYear,
+          branch: branch,
+          branchCode: branchCode
         });
         setDetailsTableData(
           MIMVO.issueManifestProviderDetailsVOs.map((row) => ({
@@ -328,7 +333,7 @@ export const MaterialIssueManifest = () => {
             productCode: row.assetCode,
             productName: row.asset,
             productQty: row.assetQty,
-            actualQty: row.actualQty,
+            actualQty: row.actualQty
           }))
         );
       } else {
@@ -398,7 +403,7 @@ export const MaterialIssueManifest = () => {
         assetCode: row.productCode,
         asset: row.productName,
         assetQty: row.productQty,
-        actualQty: row.actualQty,
+        actualQty: row.actualQty
       }));
       const saveFormData = {
         ...(editId && { id: editId }),
@@ -476,7 +481,7 @@ export const MaterialIssueManifest = () => {
       productCode: asset.assetCodeId || '',
       productName: asset.assetName || '',
       productQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
-      actualQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
+      actualQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0)
     }));
     setDetailsTableData((prev) => [...prev, ...newKitRows]);
     setOpen(false);
@@ -495,9 +500,7 @@ export const MaterialIssueManifest = () => {
     const currentKitRows = groupedEntries[kitIndex]?.[1];
     if (currentKitRows && currentKitRows[rowIndex]) {
       const rowId = currentKitRows[rowIndex].id;
-      const updatedData = detailsTableData.map((item) =>
-        item.id === rowId ? { ...item, actualQty: Number(value) } : item
-      );
+      const updatedData = detailsTableData.map((item) => (item.id === rowId ? { ...item, actualQty: Number(value) } : item));
       setDetailsTableData(updatedData);
     }
   };
@@ -588,11 +591,7 @@ export const MaterialIssueManifest = () => {
                     isOptionEqualToValue={(option, value) => option.id === value.id} // ✅ Add this line
                     sx={{ width: '100%' }}
                     size="small"
-                    value={
-                      formData.fromWarehouse
-                        ? allWarehouse.find((c) => c.name === formData.fromWarehouse)
-                        : null
-                    }
+                    value={formData.fromWarehouse ? allWarehouse.find((c) => c.name === formData.fromWarehouse) : null}
                     onChange={(event, newValue) => {
                       handleInputChange({
                         target: {
@@ -636,16 +635,14 @@ export const MaterialIssueManifest = () => {
                     fullWidth
                     disabled
                     multiline={
-                      !!formData.warehouseAddress &&
-                      (formData.warehouseAddress.includes('\n') || formData.warehouseAddress.length > 50)
+                      !!formData.warehouseAddress && (formData.warehouseAddress.includes('\n') || formData.warehouseAddress.length > 50)
                     }
                     minRows={
-                      !!formData.warehouseAddress &&
-                        (formData.warehouseAddress.includes('\n') || formData.warehouseAddress.length > 50) ? 2 : 1
+                      !!formData.warehouseAddress && (formData.warehouseAddress.includes('\n') || formData.warehouseAddress.length > 50)
+                        ? 2
+                        : 1
                     }
-                    onChange={(e) =>
-                      setFormData({ ...formData, warehouseAddress: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, warehouseAddress: e.target.value })}
                   />
                 </div>
                 <div className="col-md-3 mb-3">
@@ -654,11 +651,7 @@ export const MaterialIssueManifest = () => {
                     options={allReceiver}
                     getOptionLabel={(option) => option.partyShortName || ''}
                     isOptionEqualToValue={(option, value) => option?.partyShortName === value?.customer}
-                    value={
-                      formData.customer
-                        ? allReceiver.find((c) => c.partyShortName === formData.customer)
-                        : null
-                    }
+                    value={formData.customer ? allReceiver.find((c) => c.partyShortName === formData.customer) : null}
                     onChange={(event, newValue) => {
                       handleInputChange({
                         target: {
@@ -750,7 +743,7 @@ export const MaterialIssueManifest = () => {
                 <div className="col-md-3 mb-3">
                   <TextField
                     id="amount"
-                    type='number'
+                    type="number"
                     label="Amount"
                     variant="outlined"
                     size="small"
@@ -781,11 +774,7 @@ export const MaterialIssueManifest = () => {
                     options={allTransporters}
                     getOptionLabel={(option) => option.partyName || ''}
                     isOptionEqualToValue={(option, value) => option?.transporterName === value?.transporterName}
-                    value={
-                      formData.transporterName
-                        ? allTransporters.find((c) => c.partyName === formData.transporterName)
-                        : null
-                    }
+                    value={formData.transporterName ? allTransporters.find((c) => c.partyName === formData.transporterName) : null}
                     onChange={(event, newValue) => {
                       handleInputChange({
                         target: {
@@ -828,7 +817,7 @@ export const MaterialIssueManifest = () => {
                   <TextField
                     id="driverNo"
                     label="Driver No"
-                    type='number'
+                    type="number"
                     variant="outlined"
                     size="small"
                     fullWidth
@@ -882,13 +871,7 @@ export const MaterialIssueManifest = () => {
                               onChange={(e, newValue) => setSelectedKit(newValue)}
                               renderInput={(params) => <TextField {...params} label="Kit No" margin="dense" fullWidth />}
                             />
-                            <TextField
-                              label="Kit Name"
-                              margin="dense"
-                              fullWidth
-                              value={selectedKit?.kitDesc || ''}
-                              disabled
-                            />
+                            <TextField label="Kit Name" margin="dense" fullWidth value={selectedKit?.kitDesc || ''} disabled />
                             <TextField
                               label="Kit Quantity"
                               margin="dense"
@@ -906,8 +889,12 @@ export const MaterialIssueManifest = () => {
                             />
                           </DialogContent>
                           <DialogActions>
-                            <Button onClick={() => setOpen(false)} color="secondary">Cancel</Button>
-                            <Button onClick={handleProceed} color="primary" variant="contained">Proceed</Button>
+                            <Button onClick={() => setOpen(false)} color="secondary">
+                              Cancel
+                            </Button>
+                            <Button onClick={handleProceed} color="primary" variant="contained">
+                              Proceed
+                            </Button>
                           </DialogActions>
                         </Dialog>
                         <TableContainer component={Paper} sx={{ mt: 2 }}>
@@ -937,7 +924,7 @@ export const MaterialIssueManifest = () => {
                                           <TableCell rowSpan={kitRows.length}>
                                             <FaTrash
                                               onClick={() => handleDeleteKit(kitNo)}
-                                              style={{ cursor: "pointer", color: "red" }}
+                                              style={{ cursor: 'pointer', color: 'red' }}
                                               className="ms-4"
                                             />
                                           </TableCell>
@@ -958,7 +945,7 @@ export const MaterialIssueManifest = () => {
                                           type="number"
                                           value={row.actualQty}
                                           onChange={(e) => handleProductQtyChange(e.target.value, kitIndex, rowIndex)}
-                                          style={{ width: "80px" }}
+                                          style={{ width: '80px' }}
                                           min={0}
                                         />
                                       </TableCell>
@@ -975,7 +962,6 @@ export const MaterialIssueManifest = () => {
                               ))}
                             </TableBody>
                           </Table>
-
                         </TableContainer>
                       </>
                     )}
@@ -984,7 +970,14 @@ export const MaterialIssueManifest = () => {
               </>
             </>
           ) : (
-            <CommonListViewTable data={data} columns={listViewColumns} blockEdit={true} toEdit={getAllMIMById} isPdf={true} GeneratePdf={GeneratePdf} />
+            <CommonListViewTable
+              data={data}
+              columns={listViewColumns}
+              blockEdit={true}
+              toEdit={getAllMIMById}
+              isPdf={true}
+              GeneratePdf={GeneratePdf}
+            />
           )}
           {downloadPdf && <MIMpdf row={pdfData} modalClose={() => setDownloadPdf(false)} />}
         </div>

@@ -47,13 +47,19 @@ const RetrievalIssueManifest = () => {
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
+  const [branchcode] = useState(localStorage.getItem('branchcode'));
+  const [finYear] = useState(localStorage.getItem('finYear'));
+  const [docId, setDocId] = useState('');
+  const [code, setCode] = useState('');
+  const [docDate, setDocDate] = useState(dayjs());
+  const [dispatchType, setDispatchType] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState();
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
-  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  // const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [bankName, setBankName] = useState([]);
   const [customerDetails, setCustomerDetails] = useState([]);
   const [selectedKit, setSelectedKit] = useState(null);
@@ -292,7 +298,7 @@ const RetrievalIssueManifest = () => {
         kitId: row.kitNo,
         kitName: row.kitName,
         kitQty: parseInt(row.kitQty),
-        actualQty: row.actualQty,
+        actualQty: row.actualQty
       }));
 
       const saveFormData = {
@@ -313,7 +319,10 @@ const RetrievalIssueManifest = () => {
         transactionType: formData.transactionType,
         transporterName: formData.transporterName,
         code: formData.code,
-        vechileNo: formData.vehicleNo
+        vechileNo: formData.vehicleNo,
+        finYear: finYear,
+        branch: branch,
+        branchcode: branchcode
       };
 
       try {
@@ -359,6 +368,9 @@ const RetrievalIssueManifest = () => {
           transporterName: listValueVO.transporterName || '',
           vehicleNo: listValueVO.vehicleeNo || '',
           driverNo: listValueVO.driverPhoneNo || '',
+          finYear: finYear,
+          branch: branch,
+          branchcode: branchcode,
           retrievalManifestProviderDetailsVOs: listValueVO.retrievalManifestProviderDetailsVOs
         });
         setDetailsKitData(
@@ -371,7 +383,7 @@ const RetrievalIssueManifest = () => {
             productCode: row.assetCode,
             productName: row.asset,
             productQty: row.assetQty,
-            actualQty: row.actualQty,
+            actualQty: row.actualQty
           }))
         );
         console.log('Edited', detailsKitData);
@@ -421,7 +433,7 @@ const RetrievalIssueManifest = () => {
       productCode: asset.assetCodeId || '',
       productName: asset.assetName || '',
       productQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
-      actualQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0),
+      actualQty: (asset.quantity || 0) * (parseFloat(kitQty) || 0)
     }));
     setDetailsKitData((prev) => [...prev, ...newKitRows]);
     setOpen(false);
@@ -435,9 +447,7 @@ const RetrievalIssueManifest = () => {
     const currentKitRows = groupedEntries[kitIndex]?.[1];
     if (currentKitRows && currentKitRows[rowIndex]) {
       const rowId = currentKitRows[rowIndex].id;
-      const updatedData = detailsKitData.map((item) =>
-        item.id === rowId ? { ...item, actualQty: Number(value) } : item
-      );
+      const updatedData = detailsKitData.map((item) => (item.id === rowId ? { ...item, actualQty: Number(value) } : item));
       setDetailsKitData(updatedData);
     }
   };
@@ -622,27 +632,16 @@ const RetrievalIssueManifest = () => {
                 />
               </div> */}
               <div className="col-md-3 mb-3">
-
                 <Autocomplete
-
                   disablePortal
-
                   options={customerDetails}
-
                   getOptionLabel={(option) => option.name || ''}
-
                   isOptionEqualToValue={(option, value) => option.name === value.name}
-
                   size="small"
-
                   fullWidth
-
                   value={formData.sender ? customerDetails.find((c) => c.name === formData.sender) : null}
-
                   onChange={(event, newValue) => {
-
                     setFormData((prev) => ({
-
                       ...prev,
 
                       sender: newValue?.name || '',
@@ -652,39 +651,23 @@ const RetrievalIssueManifest = () => {
                       senderAddress: newValue?.address || '',
 
                       senderGst: newValue?.gst || ''
-
                     }));
-
                   }}
-
                   renderInput={(params) => (
-
                     <TextField
-
                       {...params}
-
                       label="Sender"
-
                       name="sender"
-
                       InputProps={{
-
                         ...params.InputProps,
 
                         style: { height: 40 }
-
                       }}
-
                       error={!!formDataErrors.sender}
-
                       helperText={formDataErrors.sender}
-
                     />
-
                   )}
-
                 />
-
               </div>
               <div className="col-lg-3 col-md-6 mb-2">
                 <TextField
@@ -927,7 +910,7 @@ const RetrievalIssueManifest = () => {
                                         type="number"
                                         value={row.actualQty}
                                         onChange={(e) => handleProductQtyChange(e.target.value, kitIndex, rowIndex)}
-                                        style={{ width: "80px" }}
+                                        style={{ width: '80px' }}
                                         min={0}
                                       />
                                     </TableCell>
