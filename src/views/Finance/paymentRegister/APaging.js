@@ -672,8 +672,12 @@ const APaging = () => {
       [3, 4, 5, 6, 7, 8, 9, 10, 11, 12].forEach((colIdx) => {
         const cell = row.getCell(colIdx + 1);
         if (typeof cell.value === 'number') {
-          cell.numFmt = '#,##0.00'; // Indian comma format
-          cell.alignment = { horizontal: 'right' };
+          if (cell.value === 0) {
+            cell.value = ''; // Replace 0 with empty string
+          } else {
+            cell.numFmt = '#,##0.00'; // Format other numbers
+            cell.alignment = { horizontal: 'right' };
+          }
         }
       });
     });

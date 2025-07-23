@@ -188,11 +188,13 @@ const APOutstanding = () => {
       row.eachCell((cell, colIndex) => {
         const key = accessorKeys[colIndex - 1];
         const isNumeric = numericFields.includes(key);
+        const rawValue = item[key];
         if (isNumeric) {
-          const rawValue = item[key];
-          if (!isNaN(rawValue)) {
-            cell.value = Number(rawValue); // insert as number
-            cell.numFmt = '#,##0.00'; // Excel formatting with commas
+          if (!rawValue || Number(rawValue) === 0) {
+            cell.value = '';
+          } else {
+            cell.value = Number(rawValue);
+            cell.numFmt = '#,##0.00';
             cell.alignment = { horizontal: 'right' };
           }
         } else {
@@ -658,8 +660,12 @@ const APOutstanding = () => {
           return d.isValid() ? d.format('DD-MM-YYYY') : '-';
         }
 
-        if (typeof raw === 'number') {
-          return raw === 0 ? '' : raw.toLocaleString('en-IN');
+        // if (typeof raw === 'number') {
+        //   return raw === 0 ? '' : raw.toLocaleString('en-IN');
+        // }
+        if (numericFields.includes(key)) {
+          const val = Number(raw);
+          return isNaN(val) || val === 0 ? '' : val.toLocaleString('en-IN');
         }
 
         return raw ?? '';
