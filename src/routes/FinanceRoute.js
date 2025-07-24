@@ -5,6 +5,8 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import ArAging from 'views/Finance/taxInvoice/ArAging';
 import ArOutstanding from 'views/Finance/taxInvoice/ArOutstanding';
+const TDSRegister = Loadable(lazy(() => import('views/Finance/FinalReport/TDSRegister')));
+const GSTRegister = Loadable(lazy(() => import('views/Finance/FinalReport/GSTRegister')));
 const CostEstimateReport = Loadable(lazy(() => import('views/Finance/FinalReport/CostEstimateReport')));
 const CostEstimate = Loadable(lazy(() => import('views/Finance/CostEstimate')));
 const PendingRegister = Loadable(lazy(() => import('views/Finance/FinalReport/PendingRegister')));
@@ -494,6 +496,15 @@ const FinanceRoute = {
       path: '/finance/FinalReport/CostEstimateReport',
       element: <CostEstimateReport />
     },
+    {
+      path: '/finance/FinalReport/GSTRegister',
+      element: <GSTRegister />
+    },
+    {
+      path: '/finance/FinalReport/TDSRegister',
+      element: <TDSRegister />
+    },
+
     {
       path: '/Finance/FinalReport/LedgerReport',
       element: <LedgerReport />

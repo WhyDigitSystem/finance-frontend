@@ -106,6 +106,20 @@ const reportChildren = [
     type: 'item',
     url: '/finance/FinalReport/CostEstimateReport',
     visible: hasScreenAccess('CER')
+  },
+  {
+    id: 'GSTRegister',
+    title: 'GST Register',
+    type: 'item',
+    url: '/finance/FinalReport/GSTRegister',
+    visible: hasScreenAccess('GSTR')
+  },
+  {
+    id: 'TDSRegister',
+    title: 'TDS Register',
+    type: 'item',
+    url: '/finance/FinalReport/TDSRegister',
+    visible: hasScreenAccess('TDSR')
   }
 ].filter((item) => item.visible !== false);
 

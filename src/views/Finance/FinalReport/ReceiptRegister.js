@@ -22,6 +22,11 @@ import CommonReportTable from 'utils/CommonReportTable';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
 import Paper from '@mui/material/Paper';
 import Draggable from 'react-draggable';
+import Autocomplete from '@mui/material/Autocomplete';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import ExcelJS from 'exceljs';
+import { saveAs } from 'file-saver';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -30,6 +35,7 @@ function PaperComponent(props) {
   );
 }
 function ReceiptReport() {
+  const [listViewData, setListViewData] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
@@ -87,49 +93,51 @@ function ReceiptReport() {
     });
     setRowData([]);
   };
-  const handleSelectPartyChange = (e) => {
-    const value = e.target.value;
-    console.log('Selected employeeCode value:', value);
-    const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
-    if (value === 'All') {
-      setFormData((prevData) => ({
-        ...prevData,
-        customer: 'All'
-      }));
-    } else {
-      if (selectedEmp) {
-        console.log('Selected party:', selectedEmp);
-        setFormData((prevData) => ({
-          ...prevData,
-          customer: selectedEmp.partyName,
-          customerCode: selectedEmp.partyCode
-        }));
-      } else {
-        console.log('No party found with the given code:', value);
-      }
-    }
-  };
 
-  const handleInputChange = (e) => {
-    const { name, value, type, selectionStart, selectionEnd } = e.target;
+  // const handleSelectPartyChange = (e) => {
+  //   const value = e.target.value;
+  //   console.log('Selected employeeCode value:', value);
+  //   const selectedEmp = partyNameList.find((emp) => emp.partyName === value);
+  //   if (value === 'All') {
+  //     setFormData((prevData) => ({
+  //       ...prevData,
+  //       customer: 'All'
+  //     }));
+  //   } else {
+  //     if (selectedEmp) {
+  //       console.log('Selected party:', selectedEmp);
+  //       setFormData((prevData) => ({
+  //         ...prevData,
+  //         customer: selectedEmp.partyName,
+  //         branchCode: selectedEmp.partyCode
+  //       }));
+  //     } else {
+  //       console.log('No party found with the given code:', value);
+  //     }
+  //   }
+  // };
 
-    setFieldErrors((prevErrors) => ({
-      ...prevErrors,
-      [name]: ''
-    }));
-    let inputValue = value;
-    if (type === 'text' || type === 'textarea') {
-      inputValue = value.toUpperCase();
-    }
-    setFormData((prevData) => ({ ...prevData, [name]: inputValue }));
+  // const handleInputChange = (e) => {
+  //   const { name, value, type, selectionStart, selectionEnd } = e.target;
 
-    setTimeout(() => {
-      const inputElement = document.getElementsByName(name)[0];
-      if (inputElement && inputElement.setSelectionRange) {
-        inputElement.setSelectionRange(selectionStart, selectionEnd);
-      }
-    }, 0);
-  };
+  //   setFieldErrors((prevErrors) => ({
+  //     ...prevErrors,
+  //     [name]: ''
+  //   }));
+  //   let inputValue = value;
+  //   if (type === 'text' || type === 'textarea') {
+  //     inputValue = value.toUpperCase();
+  //   }
+  //   setFormData((prevData) => ({ ...prevData, [name]: inputValue }));
+
+  //   setTimeout(() => {
+  //     const inputElement = document.getElementsByName(name)[0];
+  //     if (inputElement && inputElement.setSelectionRange) {
+  //       inputElement.setSelectionRange(selectionStart, selectionEnd);
+  //     }
+  //   }, 0);
+  // };
+
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date).format('YYYY-MM-DD') || null;
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
@@ -137,6 +145,7 @@ function ReceiptReport() {
   useEffect(() => {
     getPartyName();
     getAllBranches();
+    getCompanyDetails();
   }, []);
   const getPartyName = async () => {
     try {
@@ -173,7 +182,7 @@ function ReceiptReport() {
               color: 'crimson',
               textDecoration: 'none',
               cursor: 'pointer',
-              transition: 'color 0.2s, text-shadow 0.2s',
+              transition: 'color 0.2s, text-shadow 0.2s'
             }}
             onMouseEnter={(e) => {
               e.target.style.color = 'red';
@@ -197,56 +206,56 @@ function ReceiptReport() {
       accessorKey: 'chargeAmount',
       header: 'Bill Amt',
       size: 70,
-      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
-        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%' }}>{cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
       )
     },
     {
       accessorKey: 'tdsAmt',
       header: 'TDS Amt',
       size: 70,
-      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
-        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%' }}>{cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
       )
     },
     {
       accessorKey: 'receivableAmount',
       header: 'Payable Amt',
       size: 70,
-      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
-        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%' }}>{cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
       )
     },
     {
       accessorKey: 'receiptAmount',
       header: 'Receipt Amt',
       size: 70,
-      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
-        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%' }}>{cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
       )
     },
     {
       accessorKey: 'arApOutstanding',
       header: 'OutStanding',
       size: 70,
-      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
-        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%' }}>{cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
       )
     },
     {
       accessorKey: 'arapSettled',
       header: 'Settled',
       size: 70,
-      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
-        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%' }}>{cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
       )
     },
     {
       accessorKey: 'onAccount',
       header: 'On Account',
       size: 70,
-      Cell: ({ cell }) => (<div style={{ textAlign: 'right', width: '100%' }}>
-        {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%' }}>{cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}</div>
       )
     }
   ];
@@ -277,8 +286,7 @@ function ReceiptReport() {
             'get',
             `reportController/getReceiptRegisterReport?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyName=${formData.customer}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
           );
-        }
-        else {
+        } else {
           response = await apiCalls(
             'get',
             `reportController/getReceiptRegisterReport?branchCode=${formData.branchCode}&finYear=${finYear}&orgId=${orgId}&partyName=${formData.customer}`
@@ -311,17 +319,408 @@ function ReceiptReport() {
   const handleDocClick = async (docId) => {
     setModalOpen(true);
     try {
-      const response = await apiCalls(
-        'get',
-        `/arreceivable/getReceiptByDocIdAndScreenCode?docId=${docId}`
-      );
+      const response = await apiCalls('get', `/arreceivable/getReceiptByDocIdAndScreenCode?docId=${docId}`);
       if (response.status === true) {
-        setFillGridData(response.paramObjectsMap.receiptVO)
+        setFillGridData(response.paramObjectsMap.receiptVO);
       } else {
         console.error('API Error:', response);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+    }
+  };
+  const handleSelectPartyChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  const getCompanyDetails = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+      console.log('API Response:', response);
+      setListViewData(response.paramObjectsMap.companyVO.reverse());
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+  // pdf download
+  const handleDownloadPdf = ({ logo, columns, data, fileName, loginUserName, formData }) => {
+    const doc = new jsPDF({ orientation: 'landscape' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const pageH = doc.internal.pageSize.getHeight();
+
+    // 1) COMPANY LOGO
+    const logoBase64 = logo;
+    const logoWidth = 30;
+    const logoHeight = 23;
+    const logoX = 10;
+    const logoY = 10;
+    if (logoBase64) {
+      doc.addImage(logoBase64, 'PNG', logoX, logoY, logoWidth, logoHeight);
+    }
+
+    // 2) TITLE BOX
+    const title = `${fileName}`;
+    const textW = doc.getTextWidth(title);
+    const padX = 10,
+      boxH = 10,
+      yTitle = 25;
+    const boxW = textW + padX * 2;
+    const boxX = (pageW - boxW) / 2;
+
+    doc
+      .setFillColor('#e7ebeb')
+      .roundedRect(boxX, yTitle - boxH + 3, boxW, boxH, 4, 4, 'F')
+      .setTextColor('#34449B')
+      .setFontSize(12)
+      .text(title, pageW / 2, yTitle, { align: 'center' });
+
+    // 3) FOOTER
+    doc.setFontSize(8).setTextColor('#555555');
+    doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
+    doc.text(`Generated By: ${loginUserName}`, 15, pageH - 10, { align: 'left' });
+
+    // 4) FILTER METADATA
+    const { fromDate, toDate, branchCode, customer } = formData;
+    doc.setFontSize(9);
+    doc.setTextColor('#000000');
+    doc.setFillColor(231, 235, 235);
+    doc.roundedRect(2, 35, 292, 12, 2, 2, 'F');
+
+    doc.setFont(undefined, 'bold');
+    doc.text('From Date', 8, 40);
+    doc.text('To Date', 32, 40);
+    doc.text('Branch Code', 56, 40);
+    doc.text('Customer', 90, 40);
+
+    doc.setFont(undefined, 'normal');
+    doc.text(dayjs(fromDate).format('DD-MM-YYYY'), 8, 45);
+    doc.text(dayjs(toDate).format('DD-MM-YYYY'), 32, 45);
+    doc.text(branchCode, 56, 45);
+    doc.text(customer, 90, 45);
+
+    // 5) Table Header & Body
+    const headerLabels = columns.map((c) => c.header);
+    const numericFields = columns
+      .map((c) => c.accessorKey)
+      .filter(
+        (k) =>
+          k &&
+          /(arapAmt|receiptAmount|chargeAmount|arapSettled|netAmount|receivableAmount|tdsAmt|totalAmount|arApOutstanding|onAccount|bankChargesAmt)/i.test(
+            k
+          )
+      );
+
+    const body = data.map((row) =>
+      columns.map((col) => {
+        const key = col.accessorKey;
+        const raw = key ? row[key] : '';
+        if (key?.toLowerCase().includes('date')) {
+          const d = dayjs(raw);
+          return d.isValid() ? d.format('DD-MM-YYYY') : '-';
+        }
+        if (typeof raw === 'number') {
+          return raw === 0 ? '' : raw.toLocaleString('en-IN');
+        }
+        return raw ?? '';
+      })
+    );
+
+    const totalFields = ['chargeAmount', 'tdsAmt', 'receivableAmount', 'receiptAmount', 'arApOutstanding', 'arapSettled', 'onAccount'];
+    const totals = totalFields.map((key) => data.reduce((sum, row) => sum + (parseFloat(row[key]) || 0), 0));
+
+    const totalRow = columns.map((col, idx) => {
+      const key = col.accessorKey;
+      if (idx === 0) return 'Total';
+      if (totalFields.includes(key)) {
+        const index = totalFields.indexOf(key);
+        return totals[index].toLocaleString('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+      return '';
+    });
+
+    body.push(totalRow);
+
+    // 6) Define Column Widths (should match your table structure)
+    const columnStyles = {
+      0: { cellWidth: 30 }, // Cost Invoice No
+      1: { cellWidth: 20 }, // Date
+      2: { cellWidth: 40 }, // Doc Id
+      3: { cellWidth: 40 }, // Doc Date
+      4: { cellWidth: 20 }, // Party Name (made wider)
+      5: { cellWidth: 20 }, // Reg In
+      6: { cellWidth: 20 }, // GST Type
+      7: { cellWidth: 20 }, // Bill Amount
+      8: { cellWidth: 20 }, // TAX
+      9: { cellWidth: 20 },
+      10: { cellWidth: 20 } // Total Amount
+    };
+
+    // 7) Draw Table
+    autoTable(doc, {
+      startY: 50,
+      head: [headerLabels],
+      body,
+      styles: {
+        fontSize: 8,
+        cellPadding: 2,
+        lineWidth: 0.1,
+        lineColor: [220, 220, 220],
+        overflow: 'linebreak'
+      },
+      headStyles: {
+        fillColor: [52, 68, 155],
+        textColor: 255,
+        halign: 'center'
+      },
+      bodyStyles: {
+        halign: 'left'
+      },
+      theme: 'grid',
+      margin: { left: 5, right: 5 },
+      tableWidth: 'auto',
+      columnStyles: columnStyles,
+      didDrawPage: () => {
+        doc.setFontSize(8).setTextColor('#555555');
+        doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
+        doc.text(`Generated By: ${loginUserName}`, 15, pageH - 10, { align: 'left' });
+      },
+      didParseCell: (cellHookData) => {
+        const { cell, column, section, row } = cellHookData;
+        const key = columns[column.index]?.accessorKey;
+
+        if (section === 'body' && numericFields.includes(key)) {
+          cell.styles.halign = 'right';
+        }
+
+        if (section === 'body' && row.index === body.length - 1) {
+          cell.styles.fontStyle = 'bold';
+          cell.styles.textColor = [0, 0, 0];
+          cell.styles.fillColor = [240, 240, 240];
+        }
+      }
+    });
+
+    // 8) Save File
+    doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
+  };
+  // excel download
+  const handleDownloadExcel = async ({ logo }) => {
+    try {
+      const workbook = new ExcelJS.Workbook();
+      workbook.created = new Date();
+      const sheet = workbook.addWorksheet('Receipt Register');
+      sheet.state = 'visible';
+
+      // ====== LOGO ======
+      sheet.mergeCells('A1:B5');
+      if (logo) {
+        try {
+          const base64Data = logo.split(',')[1] || logo;
+          if (base64Data.length >= 100) {
+            const extension = logo.includes('jpeg') ? 'jpeg' : 'png';
+            const imageId = workbook.addImage({ base64: base64Data, extension });
+            sheet.addImage(imageId, {
+              tl: { col: 0, row: 0 },
+              ext: { width: 120, height: 80 }
+            });
+          }
+        } catch (err) {
+          console.error('Error adding logo:', err);
+        }
+      }
+
+      // ====== TITLE ======
+      sheet.mergeCells('C1:I1');
+      const titleCell = sheet.getCell('C1');
+      titleCell.value = 'RECEIPT REGISTER';
+      titleCell.font = { size: 18, bold: true, color: { argb: 'FF34449B' } };
+      titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
+      // ====== METADATA ======
+      const metadata = [
+        { label: 'From Date', value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : 'N/A' },
+        { label: 'To Date', value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : 'N/A' },
+        { label: 'Branch Code', value: formData.branchCode !== 'All' ? formData.branchCode : 'All' },
+        { label: 'Customer', value: formData.customer },
+        { label: 'Generated By', value: localStorage.getItem('userName') || 'System' },
+        { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
+      ];
+
+      metadata.forEach((meta, index) => {
+        const rowIndex = (index % 4) + 2;
+        const colGroup = Math.floor(index / 4);
+        const colStart = 4 + colGroup * 2;
+        const row = sheet.getRow(rowIndex);
+        row.getCell(colStart).value = meta.label;
+        row.getCell(colStart).font = { bold: true };
+        row.getCell(colStart + 1).value = meta.value;
+      });
+
+      // ====== HEADERS ======
+      const headerRowIndex = 7;
+      const headerRow = sheet.getRow(headerRowIndex);
+      const headers = [
+        'Doc Id',
+        'Date',
+        'Customer Name',
+        'Cheque No',
+        // 'Screen',
+        'Cheque Date',
+        'Bill Amt',
+        'TDS Amt',
+        'Payable Amt',
+        'Receipt Amt',
+        'OutStanding',
+        'Settled',
+        'OnAccount'
+        // 'TDS',
+        // 'Party Paylable'
+      ];
+      headers.forEach((header, index) => {
+        const cell = headerRow.getCell(index + 1);
+        cell.value = header;
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF34449B' }
+        };
+        cell.alignment = { horizontal: 'center', vertical: 'middle' };
+        cell.border = {
+          top: { style: 'thin', color: { argb: 'FF000000' } },
+          left: { style: 'thin', color: { argb: 'FF000000' } },
+          bottom: { style: 'thin', color: { argb: 'FF000000' } },
+          right: { style: 'thin', color: { argb: 'FF000000' } }
+        };
+      });
+      headerRow.height = 20;
+
+      // ====== DATA ROWS ======
+      let chargeAmount = 0;
+      let tdsAmt = 0;
+      let receivableAmount = 0;
+      let receiptAmount = 0;
+      let arApOutstanding = 0;
+      let arapSettled = 0;
+      let onAccount = 0;
+      // let totalPayable = 0;
+
+      rowData.forEach((item) => {
+        const CA = parseFloat(item.chargeAmount || 0);
+        const TDSAmount = parseFloat(item.tdsAmt || 0);
+        const ReceivableAmount = parseFloat(item.receivableAmount || 0);
+        const ReceiptAmount = parseFloat(item.receiptAmount || 0);
+        const ArApOutStanding = parseFloat(item.arApOutstanding || 0);
+        const ArApSettled = parseFloat(item.arapSettled || 0);
+        const OnAccount = parseFloat(item.onAccount || 0);
+
+        chargeAmount += CA;
+        tdsAmt += TDSAmount;
+        receivableAmount += ReceivableAmount;
+        receiptAmount += ReceiptAmount;
+        arApOutstanding += ArApOutStanding;
+        arapSettled += ArApSettled;
+        onAccount += OnAccount;
+
+        const row = sheet.addRow([
+          item.docId || '',
+          item.docDate ? dayjs(item.docDate).format('DD-MM-YYYY') : '-',
+          item.shortName || '-',
+          item.chQnNumber,
+          item.chequeDate ? dayjs(item.chequeDate).format('DD-MM-YYYY') : '-',
+          CA,
+          TDSAmount,
+          ReceivableAmount,
+          ReceiptAmount,
+          ArApOutStanding,
+          ArApSettled,
+          OnAccount
+        ]);
+
+        [6, 7, 8, 9, 10, 11, 12].forEach((colIndex) => {
+          const cell = row.getCell(colIndex);
+          if (typeof cell.value === 'number') {
+            if (cell.value === 0) {
+              cell.value = '';
+            } else {
+              cell.numFmt = '#,##0.00';
+            }
+            cell.alignment = { horizontal: 'right' };
+          }
+        });
+
+        row.eachCell({ includeEmpty: true }, (cell) => {
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FF000000' } },
+            left: { style: 'thin', color: { argb: 'FF000000' } },
+            bottom: { style: 'thin', color: { argb: 'FF000000' } },
+            right: { style: 'thin', color: { argb: 'FF000000' } }
+          };
+        });
+      });
+
+      // ====== TOTAL ROW ======
+      const totalRow = sheet.addRow([
+        'Total',
+        '',
+        '',
+        '',
+        '',
+        chargeAmount,
+        tdsAmt,
+        receivableAmount,
+        receiptAmount,
+        arApOutstanding,
+        arapSettled,
+        onAccount
+      ]);
+
+      totalRow.eachCell((cell, colNumber) => {
+        cell.font = { bold: true };
+        cell.alignment = { horizontal: colNumber >= 6 ? 'right' : 'left' };
+        cell.border = {
+          top: { style: 'thin' },
+          bottom: { style: 'thin' },
+          left: { style: 'thin' },
+          right: { style: 'thin' }
+        };
+        if (colNumber >= 6) {
+          cell.numFmt = '#,##0.00';
+        }
+      });
+
+      // ====== COLUMN WIDTHS ======
+      sheet.columns = [
+        { width: 25 },
+        { width: 20 },
+        { width: 30 },
+        { width: 35 },
+        { width: 20 },
+        { width: 25 },
+        { width: 25 },
+        { width: 25 },
+        { width: 25 },
+        { width: 25 },
+        { width: 25 },
+        { width: 25 }
+      ];
+
+      // ====== EXPORT ======
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      });
+
+      saveAs(blob, `Receipt_Register_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
+    } catch (error) {
+      console.error('Error generating Excel:', error);
+      showToast('error', 'Failed to generate Excel file');
     }
   };
   return (
@@ -330,9 +729,7 @@ function ReceiptReport() {
         <>
           <div className="row">
             <div className="row">
-              <div
-                className="col-md-2 mb-3"
-              >
+              <div className="col-md-2 mb-3">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                   label="Date"
@@ -348,7 +745,9 @@ function ReceiptReport() {
               </div>
               <div className="col-md-2 mb-1">
                 <FormControlLabel
-                  control={<Checkbox checked={selectedSections.branchCode} onChange={handleCheckboxChange} name="branchCode" color="secondary" />}
+                  control={
+                    <Checkbox checked={selectedSections.branchCode} onChange={handleCheckboxChange} name="branchCode" color="secondary" />
+                  }
                   label="Branch Code"
                 />
               </div>
@@ -389,27 +788,25 @@ function ReceiptReport() {
             )}
             {selectedSections.customer && (
               <div className="col-md-3 mb-2">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
-                  <InputLabel id="customer-label">Customer</InputLabel>
-                  <Select
-                    labelId="customer-label"
-                    label="customer"
-                    value={formData.customer}
-                    onChange={handleSelectPartyChange}
-                    name="customer"
-                  >
-                    <MenuItem value="All">All</MenuItem>
-
-                    {partyNameList?.map((row) => (
-                      <MenuItem key={row.id} value={row.partyName}>
-                        {row.partyName}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                  {fieldErrors.customer && <FormHelperText>{fieldErrors.customer}</FormHelperText>}
-                </FormControl>
+                <Autocomplete
+                  size="small"
+                  options={['All', ...partyNameList.map((row) => row.partyName)]}
+                  value={formData.customer || ''}
+                  onChange={(event, newValue) => handleSelectPartyChange({ target: { name: 'customer', value: newValue } })}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Customer"
+                      variant="outlined"
+                      error={!!fieldErrors.customer}
+                      helperText={fieldErrors.customer}
+                      fullWidth
+                    />
+                  )}
+                />
               </div>
             )}
+
             {selectedSections.branchCode && (
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchCode}>
@@ -447,7 +844,24 @@ function ReceiptReport() {
         </>
         {listView && (
           <div>
-            <CommonReportTable data={rowData} columns={reportColumns} isListView={listView} fileName={"Receipt Register"} sumFields={['tdsAmt', 'receivableAmount', 'arapSettled', 'arApOutstanding', 'onAccount']} />
+            <CommonReportTable
+              data={rowData}
+              columns={reportColumns}
+              isListView={listView}
+              fileName={'Receipt Register'}
+              sumFields={['tdsAmt', 'receivableAmount', 'arapSettled', 'arApOutstanding', 'onAccount']}
+              handleDownloadPdf={() =>
+                handleDownloadPdf({
+                  logo: listViewData[0]?.companyLogo,
+                  columns: reportColumns,
+                  data: rowData,
+                  formData,
+                  fileName: 'Receipt Register',
+                  loginUserName
+                })
+              }
+              handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
+            />
           </div>
         )}
         <>
@@ -461,7 +875,7 @@ function ReceiptReport() {
           >
             <DialogTitle style={{ cursor: 'move' }} id="draggable-dialog-title">
               <Box display="flex" justifyContent="space-between" alignItems="center">
-                <h6 style={{ margin: 0, textAlign: "center" }}>Report Details</h6>
+                <h6 style={{ margin: 0, textAlign: 'center' }}>Report Details</h6>
                 <IconButton onClick={handleCloseModal} color="error">
                   <CloseIcon />
                 </IconButton>
@@ -469,15 +883,33 @@ function ReceiptReport() {
             </DialogTitle>
             <DialogContent className="pb-0">
               <div className="row mb-2 mb-1">
-                <div className="col-md-3 mb-1"><strong>Doc ID:</strong> {fillGridData.docId}</div>
-                <div className="col-md-3 mb-1"><strong>Date:</strong> {fillGridData.docDate ? dayjs(fillGridData.docDate).format('DD-MM-YYYY') : ''}</div>
-                <div className="col-md-3 mb-1"><strong>Receipt Type:</strong> {fillGridData.receiptType}</div>
-                <div className="col-md-3 mb-1"><strong>UTI No:</strong> {fillGridData.chequeUtiNo}</div>
-                <div className="col-md-3 mb-1"><strong>Date:</strong> {fillGridData.chequeUtiDate ? dayjs(fillGridData.chequeUtiDate).format('DD-MM-YYYY') : ''}</div>
-                <div className="col-md-3 mb-1"><strong>Receipt Amount:</strong> ₹{Number(fillGridData.receiptAmt || 0).toLocaleString('en-IN')}</div>
-                <div className="col-md-3 mb-1"><strong>Tds Amount:</strong> ₹{Number(fillGridData.tdsAmt || 0).toLocaleString('en-IN')}</div>
-                <div className="col-md-3 mb-1"><strong>On Account:</strong> ₹{Number(fillGridData.onAccount || 0).toLocaleString('en-IN')}</div>
-                <div className="col-md-3 mb-1"><strong>Settled Amount:</strong> ₹{Number(fillGridData.netAmount || 0).toLocaleString('en-IN')}</div>
+                <div className="col-md-3 mb-1">
+                  <strong>Doc ID:</strong> {fillGridData.docId}
+                </div>
+                <div className="col-md-3 mb-1">
+                  <strong>Date:</strong> {fillGridData.docDate ? dayjs(fillGridData.docDate).format('DD-MM-YYYY') : ''}
+                </div>
+                <div className="col-md-3 mb-1">
+                  <strong>Receipt Type:</strong> {fillGridData.receiptType}
+                </div>
+                <div className="col-md-3 mb-1">
+                  <strong>UTI No:</strong> {fillGridData.chequeUtiNo}
+                </div>
+                <div className="col-md-3 mb-1">
+                  <strong>Date:</strong> {fillGridData.chequeUtiDate ? dayjs(fillGridData.chequeUtiDate).format('DD-MM-YYYY') : ''}
+                </div>
+                <div className="col-md-3 mb-1">
+                  <strong>Receipt Amount:</strong> ₹{Number(fillGridData.receiptAmt || 0).toLocaleString('en-IN')}
+                </div>
+                <div className="col-md-3 mb-1">
+                  <strong>Tds Amount:</strong> ₹{Number(fillGridData.tdsAmt || 0).toLocaleString('en-IN')}
+                </div>
+                <div className="col-md-3 mb-1">
+                  <strong>On Account:</strong> ₹{Number(fillGridData.onAccount || 0).toLocaleString('en-IN')}
+                </div>
+                <div className="col-md-3 mb-1">
+                  <strong>Settled Amount:</strong> ₹{Number(fillGridData.netAmount || 0).toLocaleString('en-IN')}
+                </div>
                 {/* <div className="col-md-3 mb-1"><strong>Amount:</strong> ₹{Number(fillGridData.onAccount || 0).toLocaleString('en-IN')}</div> */}
               </div>
               <div className="card w-full p-6 bg-base-100 shadow-xl mb-3">
@@ -513,52 +945,49 @@ function ReceiptReport() {
                                 </tr>
                               </thead>
                               <tbody>
-                                {fillGridData.receiptInvDetailsVO && fillGridData.receiptInvDetailsVO.length > 0 ? (
-                                  fillGridData.receiptInvDetailsVO.map((row, index) => (
-                                    <tr key={row.id}>
-                                      <td className="text-center">{index + 1}</td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.invNo || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {formatDate(row.invDate)}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.refNo || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {formatDate(row.refDate)}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.currency || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {formatAmount(row.exRate)}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {formatAmount(row.amount)}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {formatAmount(row.gstAmt)}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {formatAmount(row.chargeAmt)}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {formatAmount(row.tdsAmount)}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {formatAmount(row.outstanding)}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {formatAmount(row.settled)}
-                                      </td>
-                                    </tr>
-
-                                  ))
-                                ) : (
-                                  "No Data"
-                                )}
+                                {fillGridData.receiptInvDetailsVO && fillGridData.receiptInvDetailsVO.length > 0
+                                  ? fillGridData.receiptInvDetailsVO.map((row, index) => (
+                                      <tr key={row.id}>
+                                        <td className="text-center">{index + 1}</td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.invNo || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {formatDate(row.invDate)}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.refNo || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {formatDate(row.refDate)}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.currency || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {formatAmount(row.exRate)}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {formatAmount(row.amount)}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {formatAmount(row.gstAmt)}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {formatAmount(row.chargeAmt)}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {formatAmount(row.tdsAmount)}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {formatAmount(row.outstanding)}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {formatAmount(row.settled)}
+                                        </td>
+                                      </tr>
+                                    ))
+                                  : 'No Data'}
                               </tbody>
                             </table>
                           </div>

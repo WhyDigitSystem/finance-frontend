@@ -199,7 +199,7 @@ const CommonReportTable = ({
               borderBottom: '1px solid #E5E7EB',
               borderRight: '1px solid #E5E7EB',
               borderLeft: '1px solid #E5E7EB',
-              padding: '0px 0px'
+              padding: '2px 4px'
             }
           }
         }))}

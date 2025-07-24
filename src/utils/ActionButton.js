@@ -4,13 +4,13 @@ import { Avatar, ButtonBase, Tooltip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import React from 'react';
 
-const ActionButton = ({ title, icon: Icon, onClick, placement = 'top', margin = '10px', isLoading }) => {
+const ActionButton = ({ title, icon: Icon, onClick, placement = 'top', margin = '10px', isLoading, type = 'button' }) => {
   const theme = useTheme();
   const anchorRef = React.useRef(null);
 
   return (
     <Tooltip title={title} placement={placement}>
-      <ButtonBase sx={{ borderRadius: '12px', marginRight: margin }} onClick={onClick} disabled={isLoading}>
+      <ButtonBase sx={{ borderRadius: '12px', marginRight: margin }} onClick={onClick} disabled={isLoading} type={type}>
         <Avatar
           variant="rounded"
           sx={{
