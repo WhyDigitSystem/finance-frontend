@@ -47,6 +47,7 @@ const TDSRegister = () => {
   const [branchCodeList, setBranchCodeList] = useState([]);
   const orgId = localStorage.getItem('orgId');
   const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
     const fetchDropdowns = async () => {
       try {
