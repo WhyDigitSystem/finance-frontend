@@ -25,6 +25,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonTable from 'views/basicMaster/CommonTable';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import { Row } from 'antd';
 
 const UrCostInvoicegna = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
@@ -41,6 +42,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
   const [currency, setCurrency] = useState([]);
   const [partyName, setPartyName] = useState([]);
   const [chargeLedgerList, setChargeLedgerList] = useState([]);
+  const [chargeAccountList, setChargeAccountList] = useState([]);
   const [cityList, setCityList] = useState([]);
   const [showChargeDetails, setShowChargeDetails] = useState(false);
   const [stateCodeList, setStateCodeList] = useState([]);
@@ -740,8 +742,8 @@ const UrCostInvoicegna = ({ selectedRow }) => {
           ? {
               ...row,
               ...defaultStateValues,
-              chargeLedger: selectedChargeCode,
-              chargeAccount: selectedChargeCode
+              chargeLedger: selectedChargeCode
+              // chargeAccount: selectedChargeCode
             }
           : row
       )
@@ -947,6 +949,24 @@ const UrCostInvoicegna = ({ selectedRow }) => {
       console.error('Error fetching gate passes:', error);
     }
   };
+  const getAccount = async (row) => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `UrCostInvoiceGna/getChargeAccountFromChargeLedger?chargeLedger=${row.chargeLedger}&orgId=${orgId}`
+      );
+      setChargeAccountList(response.paramObjectsMap.chargeCodeVO);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+
+  useEffect(() => {
+    if (chargerCostInvoice.length > 0 && chargerCostInvoice[0]?.chargeLedger) {
+      getAccount(chargerCostInvoice[0]);
+    }
+  }, [chargerCostInvoice[0]?.chargeLedger]);
+
   useEffect(() => {
     if (!editId) {
       calculateTotals();
@@ -1830,13 +1850,19 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                             <select
                                               value={row.chargeAccount}
                                               style={{ width: '150px' }}
-                                              onChange={(e) => handleChargeCodeChange(e, index)}
+                                              // onChange={(e) => handleChargeCodeChange(e, index)}
+                                              onChange={(e) => {
+                                                const value = e.target.value;
+                                                setChargerCostInvoice(
+                                                  chargerCostInvoice.map((row, i) => (i === index ? { ...row, chargeAccount: value } : row))
+                                                );
+                                              }}
                                               className={costInvoiceErrors[index]?.chargeAccount ? 'error form-control' : 'form-control'}
                                             >
                                               <option value="">--Select--</option>
-                                              {chargeLedgerList?.map((item, index) => (
-                                                <option key={index} value={item.chargeLedger}>
-                                                  {item.chargeLedger}
+                                              {chargeAccountList?.map((item, index) => (
+                                                <option key={index} value={item.chargeAccount}>
+                                                  {item.chargeAccount}
                                                 </option>
                                               ))}
                                             </select>

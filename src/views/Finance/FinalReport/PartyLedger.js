@@ -346,6 +346,10 @@ function PartyLedger() {
                         ...prev,
                         partyName: newValue ? newValue.partyName : ''
                       }));
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        partyName: ''
+                      }));
                     }}
                     renderInput={(params) => (
                       <TextField
