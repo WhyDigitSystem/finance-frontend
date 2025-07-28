@@ -187,16 +187,16 @@ const ArOutstanding = () => {
       const row = sheet.addRow([
         item.branch || '-',
         vendorDisplay || '-',
-        item.creditDays ?? '',
-        item.creditLimit ?? 0,
-        item.outstanding ?? 0,
-        item.unadjusted ?? 0,
-        item.totaldue ?? 0
+        typeof item.creditDays === 'number' ? item.creditDays : Number(item.creditDays) || 0,
+        typeof item.creditLimit === 'number' ? item.creditLimit : Number(item.creditLimit) || 0,
+        typeof item.outstanding === 'number' ? item.outstanding : Number(item.outstanding) || 0,
+        typeof item.unadjusted === 'number' ? item.unadjusted : Number(item.unadjusted) || 0,
+        typeof item.totaldue === 'number' ? item.totaldue : Number(item.totaldue) || 0
       ]);
 
       // Format numeric columns
-      [3, 4, 5, 6].forEach((colIdx) => {
-        const cell = row.getCell(colIdx + 1);
+      [4, 5, 6, 7].forEach((colIndex) => {
+        const cell = row.getCell(colIndex);
         if (typeof cell.value === 'number') {
           cell.numFmt = '#,##0.00';
           cell.alignment = { horizontal: 'right' };
