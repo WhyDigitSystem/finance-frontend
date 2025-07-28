@@ -596,7 +596,7 @@ const ArOutstanding = () => {
 
   // PDF download
   const handleDownloadPdf = ({ logo, columns, data, fileName, userName, formData }) => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation: 'landscape' });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
 
@@ -630,7 +630,7 @@ const ArOutstanding = () => {
     doc.setFontSize(9);
     doc.setTextColor('#000000');
     doc.setFillColor(231, 235, 235);
-    doc.roundedRect(2, 35, 206, 12, 2, 2, 'F');
+    doc.roundedRect(2, 35, 292, 12, 2, 2, 'F');
     // Row 1: Labels (bold)
     doc.setFont(undefined, 'bold');
     doc.text('As on Date', 8, 40);
@@ -670,6 +670,16 @@ const ArOutstanding = () => {
       })
     );
 
+    const columnStyles = {
+      0: { cellWidth: 30 },
+      1: { cellWidth: 100 },
+      2: { cellWidth: 25 },
+      3: { cellWidth: 25 },
+      4: { cellWidth: 25 },
+      5: { cellWidth: 25 },
+      6: { cellWidth: 25 }
+    };
+
     autoTable(doc, {
       startY: 50, // replace Fifty with a number like 60
       head: [headerLabels],
@@ -694,7 +704,7 @@ const ArOutstanding = () => {
       theme: 'grid',
       margin: { left: 5, right: 5 },
       tableWidth: 'auto',
-      columnStyles: generateFullWidthColumnStyles(columns, doc),
+      columnStyles: columnStyles,
       didDrawPage: (data) => {
         doc.setFontSize(8).setTextColor('#555555');
         doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
@@ -715,21 +725,6 @@ const ArOutstanding = () => {
     });
     // 6) SAVE
     doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
-  };
-  const generateFullWidthColumnStyles = (columns, doc) => {
-    const totalColumns = columns.length;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 10; // left + right total margin (10 on each side)
-    const usableWidth = pageWidth - margin;
-
-    const colWidth = usableWidth / totalColumns;
-
-    const styles = {};
-    columns.forEach((_, index) => {
-      styles[index] = { cellWidth: colWidth };
-    });
-
-    return styles;
   };
 
   return (
