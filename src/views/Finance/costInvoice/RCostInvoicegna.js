@@ -396,7 +396,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
       calculateTotals();
       // calculateSummary();
     }
-  }, [chargerCostInvoice, tdsCostInvoiceDTO]);
+  }, []);
 
   const calculateTotals = () => {
     let totalBillAmt = 0;
