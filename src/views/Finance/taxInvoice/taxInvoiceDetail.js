@@ -734,7 +734,9 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
 
   const GeneratePdf = (row) => {
     {
-      confirmData.approveStatus === 'Approved' || confirmData.status === 'TAX`' ? setPdfData(confirmData) : setPdfData(listViewData);
+      confirmData.approveStatus === 'Approved' || confirmData.status === 'TAX' || confirmData.status === 'PROFORMA'
+        ? setPdfData(confirmData)
+        : setPdfData(listViewData);
     }
     setDownloadPdf(!downloadPdf);
   };
@@ -1697,9 +1699,10 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                 <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
               )}
               {!listView &&
-                (listViewData.approveStatus === 'Approved' || formData.approveStatus === 'Approved' || listViewData.status === 'TAX') && (
-                  <ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />
-                )}
+                (listViewData.approveStatus === 'Approved' ||
+                  formData.approveStatus === 'Approved' ||
+                  listViewData.status === 'TAX' ||
+                  listViewData.status === 'PROFORMA') && <ActionButton title="Pdf" icon={PictureAsPdfIcon} onClick={GeneratePdf} />}
             </div>
           </div>
           {listView && !loading && (

@@ -122,14 +122,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       if (logoData) {
         const aspectRatio = 1; // Default aspect ratio
         logoHeight = logoWidth * aspectRatio;
-        doc.addImage(
-          logoData,
-          'JPEG',
-          padding,
-          headerY,
-          logoWidth,
-          logoHeight
-        );
+        doc.addImage(logoData, 'JPEG', padding, headerY, logoWidth, logoHeight);
       }
 
       // Company details
@@ -158,7 +151,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       // Invoice title
       doc.setFontSize(12);
       doc.setFont(undefined, 'bold');
-      doc.text('TAX INVOICE', pageWidth / 2, headerY + 5, { align: 'center' });
+      doc.text(row.status === 'PROFORMA' ? 'PROFORMA' : 'TAX INVOICE', pageWidth / 2, headerY + 5, { align: 'center' });
       doc.setFont(undefined, 'normal');
 
       const rightX = pageWidth - padding;
@@ -191,11 +184,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       doc.setLineWidth(0.1);
       doc.line(padding, footerY, pageWidth - padding, footerY);
       doc.setFontSize(6);
-      doc.text(
-        `${companyDetails.address} | ${currentDateTime} | System Generated Invoice`,
-        padding,
-        footerY + 3
-      );
+      doc.text(`${companyDetails.address} | ${currentDateTime} | System Generated Invoice`, padding, footerY + 3);
     };
 
     // Function to add a new page with header
@@ -238,14 +227,14 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     pdf.setFont(undefined, 'normal');
 
     // Calculate available width for address (half page)
-    const halfPageWidth = (pageWidth / 2) - valueX - padding;
+    const halfPageWidth = pageWidth / 2 - valueX - padding;
     currentY += 4;
 
     // Wrap the address into multiple lines that fit within half the page
     const addressLines = pdf.splitTextToSize(row.address || '', halfPageWidth);
 
     // Print wrapped lines
-    addressLines.forEach(line => {
+    addressLines.forEach((line) => {
       pdf.text(line, valueX, currentY);
       currentY += 4;
     });
@@ -265,17 +254,9 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     pdf.text(taxType, pageWidth / 2, currentY, { align: 'center' });
     currentY += 10;
     // Main table
-    const tableHeaders = [
-      'HSN/SAC',
-      'Description',
-      'Qty',
-      'Rate',
-      'Tax %',
-      'Tax Amount',
-      'Amount'
-    ];
+    const tableHeaders = ['HSN/SAC', 'Description', 'Qty', 'Rate', 'Tax %', 'Tax Amount', 'Amount'];
 
-    const tableData = row.taxInvoiceDetailsVO?.map(item => [
+    const tableData = row.taxInvoiceDetailsVO?.map((item) => [
       item.govChargeCode,
       item.description,
       item.qty,
@@ -292,16 +273,16 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       margin: { left: padding, right: padding },
       styles: {
         fontSize: 9,
-        lineWidth: 0.1,               // Thin border
-        lineColor: [0, 0, 0],         // Black border
-        halign: 'center',             // Optional: center align values
-        valign: 'middle',            // Optional: vertical centering
+        lineWidth: 0.1, // Thin border
+        lineColor: [0, 0, 0], // Black border
+        halign: 'center', // Optional: center align values
+        valign: 'middle' // Optional: vertical centering
       },
       headStyles: {
         fillColor: [103, 58, 183],
         textColor: 255,
         fontStyle: 'bold',
-        lineWidth: 0.1,               // Ensure header borders are also thin
+        lineWidth: 0.1, // Ensure header borders are also thin
         lineColor: [0, 0, 0]
       },
       didDrawPage: function (data) {
@@ -394,7 +375,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
 
     terms.forEach((term, index) => {
       const termLines = pdf.splitTextToSize(`${index + 1}. ${term}`, pageWidth - 2 * padding);
-      termLines.forEach(line => {
+      termLines.forEach((line) => {
         if (currentY > pageHeight - footerHeight - 10) {
           currentY = addNewPage();
         }
@@ -456,7 +437,9 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       // Annexure header
       pdf.setFontSize(10);
       pdf.text(`Invoice No: ${row.vid}`, padding, currentY);
-      pdf.text(`Invoice Date: ${row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}`, pageWidth - padding, currentY, { align: 'right' });
+      pdf.text(`Invoice Date: ${row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}`, pageWidth - padding, currentY, {
+        align: 'right'
+      });
       currentY += 10;
 
       pdf.setFontSize(12);
@@ -464,17 +447,9 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       currentY += 10;
 
       // Annexure table
-      const annexureHeaders = [
-        'Date',
-        'Transaction No',
-        'KIT Id',
-        'Kit Description',
-        'Kit Qty',
-        'Rate',
-        'Amount'
-      ];
+      const annexureHeaders = ['Date', 'Transaction No', 'KIT Id', 'Kit Description', 'Kit Qty', 'Rate', 'Amount'];
 
-      const annexureData = row.taxInvoiceAnnexureVO.map(item => [
+      const annexureData = row.taxInvoiceAnnexureVO.map((item) => [
         item.transDate ? dayjs(item.transDate).format('DD-MM-YYYY') : 'N/A',
         item.transNo,
         item.kitId,
@@ -503,16 +478,31 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
 
       // Annexure totals
       pdf.setFontSize(10);
-      pdf.text(`Sub Total: ${parseFloat(row.annexureSubTotal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, pageWidth - padding, currentY, { align: 'right' });
+      pdf.text(
+        `Sub Total: ${parseFloat(row.annexureSubTotal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+        pageWidth - padding,
+        currentY,
+        { align: 'right' }
+      );
       currentY += 5;
-      pdf.text(`Total Kit Qty: ${parseInt(row.totalQty).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`, pageWidth - padding, currentY, { align: 'right' });
+      pdf.text(
+        `Total Kit Qty: ${parseInt(row.totalQty).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`,
+        pageWidth - padding,
+        currentY,
+        { align: 'right' }
+      );
     }
 
     pdf.save(`${row.screenCode || 'TI'}_${row.partyShortName}_${row.vid}.pdf`);
   };
 
   useEffect(() => {
-    if ((row && row.approveStatus === 'Approved') || (row && row.approveStatus === 'Rejected') || (row && row.status === 'TAX')) {
+    if (
+      (row && row.approveStatus === 'Approved') ||
+      (row && row.approveStatus === 'Rejected') ||
+      (row && row.status === 'TAX') ||
+      (row && row.status === 'PROFORMA')
+    ) {
       handleOpen();
       getBankDetailsByOrgId();
       getCompanyDetails();
@@ -554,13 +544,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleClose}
-      maxWidth="md"
-      fullWidth
-      onEntered={handleDownloadPdf}
-    >
+    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth onEntered={handleDownloadPdf}>
       <DialogTitle>PDF Preview</DialogTitle>
       <DialogContent>
         <div
@@ -622,7 +606,11 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               </div>
             )}
             <div style={{ marginRight: '100px' }}>
-              {(row.status === 'PROFORMA') ? <strong style={{ fontSize: '20px' }}>PROFORMA</strong> : <strong style={{ fontSize: '20px' }}>TAX INVOICE</strong>}
+              {row.status === 'PROFORMA' ? (
+                <strong style={{ fontSize: '20px' }}>PROFORMA</strong>
+              ) : (
+                <strong style={{ fontSize: '20px' }}>TAX INVOICE</strong>
+              )}
             </div>
             <div>
               <div className="mb-2">
@@ -634,7 +622,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               </div>
             </div>
           </div>
-          <div id="main-content"
+          <div
+            id="main-content"
             style={{
               padding: '10px',
               width: '210mm',
@@ -642,7 +631,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               margin: 'auto',
               fontFamily: 'Roboto, Arial, sans-serif',
               position: 'relative'
-            }}>
+            }}
+          >
             {/* <!-- Details Section --> */}
             <div
               // id="main-content"
@@ -804,8 +794,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                   </p>
                 </div>
                 <div className="d-flex flex-column">
-                  <div
-                  >
+                  <div>
                     <span
                       style={{
                         fontStyle: 'normal',
@@ -844,7 +833,11 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                             marginLeft: 10
                           }}
                         >
-                          ₹{parseFloat(row.totalTaxAmountLc / 2).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ₹
+                          {parseFloat(row.totalTaxAmountLc / 2).toLocaleString('en-IN', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          })}
                         </span>
                       </div>
                       <div>
@@ -857,12 +850,15 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                             marginLeft: 10
                           }}
                         >
-                          ₹{parseFloat(row.totalTaxAmountLc / 2).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          ₹
+                          {parseFloat(row.totalTaxAmountLc / 2).toLocaleString('en-IN', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                          })}
                         </span>
                       </div>
                     </>
-                  )
-                  }
+                  )}
                   <div
                     className="mb-1"
                     style={{
@@ -955,7 +951,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 <col style={{ width: '15%' }} /> {/* Transaction No */}
                 <col style={{ width: '10%' }} /> {/* KIT Id */}
                 <col style={{ width: '35%' }} /> {/* Kit Description */}
-                <col style={{ width: '8%' }} />  {/* Kit Qty */}
+                <col style={{ width: '8%' }} /> {/* Kit Qty */}
                 <col style={{ width: '15%' }} /> {/* Rate */}
                 <col style={{ width: '15%' }} /> {/* Amount */}
               </colgroup>
@@ -993,7 +989,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             <div className="d-flex justify-content-end">
               <div style={{ marginRight: '15px' }}>
                 <strong>
-                  Sub Total: {parseFloat(row.annexureSubTotal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  Sub Total:{' '}
+                  {parseFloat(row.annexureSubTotal).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </strong>
               </div>
             </div>

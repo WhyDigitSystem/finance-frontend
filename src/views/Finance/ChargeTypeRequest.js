@@ -480,10 +480,10 @@ export const ChargeTypeRequest = () => {
     //   hasError = true;
     // }
 
-    if (!formData.govtSac) {
-      errors.govtSac = 'Govt Sac is required';
-      hasError = true;
-    }
+    // if (!formData.govtSac) {
+    //   errors.govtSac = 'Govt Sac is required';
+    //   hasError = true;
+    // }
     if (!formData.excempted) {
       errors.excempted = 'Excempted is required';
       hasError = true;
