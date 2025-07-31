@@ -47,7 +47,7 @@ const RetrievalIssueManifest = () => {
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
-  const [branchcode] = useState(localStorage.getItem('branchcode'));
+  const [branchCode] = useState(localStorage.getItem('branchcode'));
   const [finYear] = useState(localStorage.getItem('finYear'));
   const [docId, setDocId] = useState('');
   const [code, setCode] = useState('');
@@ -322,7 +322,7 @@ const RetrievalIssueManifest = () => {
         vechileNo: formData.vehicleNo,
         finYear: finYear,
         branch: branch,
-        branchcode: branchcode
+        branchCode: branchCode
       };
 
       try {
@@ -370,7 +370,7 @@ const RetrievalIssueManifest = () => {
           driverNo: listValueVO.driverPhoneNo || '',
           finYear: finYear,
           branch: branch,
-          branchcode: branchcode,
+          branchCode: branchCode,
           retrievalManifestProviderDetailsVOs: listValueVO.retrievalManifestProviderDetailsVOs
         });
         setDetailsKitData(
