@@ -339,52 +339,52 @@ const Receipt = ({ selectedRow }) => {
         const receiptVO = response.paramObjectsMap.receiptReceivableVO[0];
         setListViewbyId(response.paramObjectsMap.receiptReceivableVO[0]);
         setFormData({
-          paymentMode: receiptVO.receiptType,
-          bankChargeAcc: receiptVO.bankChargeAcc,
-          docId: receiptVO.docId,
-          shortName: receiptVO.shortName,
-          id: receiptVO.id,
+          paymentMode: receiptVO.receiptType || '',
+          bankChargeAcc: receiptVO.bankChargeAcc || '',
+          docId: receiptVO.docId || '',
+          shortName: receiptVO.shortName || '',
+          id: receiptVO.id || '',
           docDate: dayjs(receiptVO.docDate),
-          bankCharges: receiptVO.bankCharges,
-          inCurrencyBnkChargs: receiptVO.inCurrencyBnkChargs,
-          type: receiptVO.type,
-          tdsAmt: receiptVO.tdsAmt,
-          inCurrencyTdsAmt: receiptVO.inCurrencyTdsAmt,
-          chequeBank: receiptVO.chequeBank,
-          customerName: receiptVO.customerName,
-          customerCode: receiptVO.customerCode,
-          transactionMethod: receiptVO.receiptType1,
+          bankCharges: receiptVO.bankCharges || '',
+          inCurrencyBnkChargs: receiptVO.inCurrencyBnkChargs || '',
+          type: receiptVO.type || '',
+          tdsAmt: receiptVO.tdsAmt || '',
+          inCurrencyTdsAmt: receiptVO.inCurrencyTdsAmt || '',
+          chequeBank: receiptVO.chequeBank || '',
+          customerName: receiptVO.customerName || '',
+          customerCode: receiptVO.customerCode || '',
+          transactionMethod: receiptVO.receiptType1 || '',
           // bankCashAcc: receiptVO.bankCashAcc,
-          chequeUtiNo: receiptVO.chequeUtiNo,
+          chequeUtiNo: receiptVO.chequeUtiNo || '',
           chequeUtiDate: receiptVO.chequeUtiDate ? dayjs(receiptVO.chequeUtiDate) : null,
-          receiptAmt: receiptVO.receiptAmt,
-          currency: receiptVO.currency,
-          cashAccount: receiptVO.bankCashAcc,
-          status: receiptVO.status,
-          currencyAmount: receiptVO.currencyAmount,
-          receivedFrom: receiptVO.receivedFrom,
-          onAccount: receiptVO.onAccount,
-          netAmount: receiptVO.netAmount,
-          approveStatus: receiptVO.approveStatus,
-          approveBy: receiptVO.approveBy,
-          approveOn: receiptVO.approveOn,
+          receiptAmt: receiptVO.receiptAmt || '',
+          currency: receiptVO.currency || '',
+          cashAccount: receiptVO.bankCashAcc || '',
+          status: receiptVO.status || '',
+          currencyAmount: receiptVO.currencyAmount || '',
+          receivedFrom: receiptVO.receivedFrom || '',
+          onAccount: receiptVO.onAccount || '',
+          netAmount: receiptVO.netAmount || '',
+          approveStatus: receiptVO.approveStatus || '',
+          approveBy: receiptVO.approveBy || '',
+          approveOn: receiptVO.approveOn || '',
         });
-        console.log("Approve", listView, formData.status, listViewbyId.status)
+        // console.log("Approve", listView, formData.status, listViewbyId.status)
         setInVoiceDetailsData(
           receiptVO.receiptInvDetailsVO.map((invoiceData) => ({
-            id: invoiceData.id,
-            invNo: invoiceData.invNo,
+            id: invoiceData.id || '',
+            invNo: invoiceData.invNo || '',
             invDate: invoiceData.invDate ? dayjs(invoiceData.invDate, 'YYYY-MM-DD').format('YYYY-MM-DD') : null,
-            refNo: invoiceData.refNo,
+            refNo: invoiceData.refNo || '',
             refDate: invoiceData.refDate ? dayjs(invoiceData.refDate, 'YYYY-MM-DD').format('YYYY-MM-DD') : null,
-            currency: invoiceData.currency,
-            exRate: invoiceData.exRate,
-            gstAmt: invoiceData.gstAmt,
-            amount: invoiceData.amount,
-            chargeAmt: invoiceData.chargeAmt,
-            tds: invoiceData.tds,
-            outstanding: invoiceData.outstanding,
-            settled: invoiceData.settled,
+            currency: invoiceData.currency || '',
+            exRate: invoiceData.exRate || '',
+            gstAmt: invoiceData.gstAmt || '',
+            amount: invoiceData.amount || '',
+            chargeAmt: invoiceData.chargeAmt || '',
+            tds: invoiceData.tds || '',
+            outstanding: invoiceData.outstanding || '',
+            settled: invoiceData.settled || '',
           }))
         );
       } else {
@@ -403,23 +403,23 @@ const Receipt = ({ selectedRow }) => {
   };
   const handleSave = async () => {
     const errors = {};
-    const tableErrors = inVoiceDetailsData.map((row) => ({
-    }));
+    // const tableErrors = inVoiceDetailsData.map((row) => ({
+    // }));
 
-    let hasTableErrors = false;
-    tableErrors.forEach((err) => {
-      if (Object.values(err).some((error) => error)) {
-        hasTableErrors = true;
-      }
-    });
+    // let hasTableErrors = false;
+    // tableErrors.forEach((err) => {
+    //   if (Object.values(err).some((error) => error)) {
+    //     hasTableErrors = true;
+    //   }
+    // });
     if (!formData.customerName) {
       errors.customerName = 'Customer Name is required';
     }
     setFieldErrors(errors);
-    setInvoiceDetailsError(tableErrors);
+    // setInvoiceDetailsError(tableErrors);
 
     // Prevent saving if form or table errors exist
-    if (Object.keys(errors).length === 0 && !hasTableErrors) {
+    if (Object.keys(errors).length === 0) {
       setIsLoading(true);
 
       const receiptInvDetailVo = inVoiceDetailsData.map((row) => ({
@@ -631,7 +631,7 @@ const Receipt = ({ selectedRow }) => {
         'get',
         `/arreceivable/getReciptFillGrid?orgId=${orgId}&branchCode=${branchCode}&partyCode=${formData.customerCode}`
         );
-      if (response.status === true) {
+      if (response?.status === true) {
         setFillGridData(response.paramObjectsMap.reciptFillGrid);
       } else {
         console.error('API Error:', response);
@@ -646,7 +646,7 @@ const Receipt = ({ selectedRow }) => {
         <div className="row">
           <div className="d-flex flex-wrap justify-content-between mb-1" >
           <div className="justify-content-start mb-0">
-              {editId && !listView && (formData.status === 'SUBMIT' || listViewbyId.status === 'SUBMIT') && (
+              {editId && !listView && (formData?.status === 'SUBMIT' || listViewbyId?.status === 'SUBMIT') && (
                 <>
                   {formData.approveStatus === 'Approved' && (
                     <Stack direction="row" spacing={2}>
@@ -661,7 +661,7 @@ const Receipt = ({ selectedRow }) => {
                     </Stack>
                   )}
                   {/* {listViewData.status === 'SUBMIT' && (formData.approveStatus === 'Rejected' || formData.approveStatus === 'Approved') &&( */}
-                  {listViewbyId.status === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                  {listViewbyId?.status === 'SUBMIT' && formData?.approveStatus !== 'Approved' && formData?.approveStatus !== 'Rejected' && (
                     <div className="d-flex">
                       <Button
                         variant="outlined"
@@ -725,7 +725,7 @@ const Receipt = ({ selectedRow }) => {
                     id="paymentMode"
                     name="paymentMode"
                     required
-                    disabled = {editId}
+                    disabled = {!!editId}
                     value={formData.paymentMode}
                     label="Receipt Type"
                     onChange={handleInputChange}
@@ -747,7 +747,7 @@ const Receipt = ({ selectedRow }) => {
                     name="transactionMethod"
                     value={formData.transactionMethod}
                     label="Transaction Method"
-                    disabled = {editId}
+                    disabled = {!!editId}
                     onChange={handleInputChange}
                   >
                     <MenuItem value={'NEFT'}>NEFT</MenuItem>
@@ -817,7 +817,7 @@ const Receipt = ({ selectedRow }) => {
                     labelId="customerName"
                     id="customerName"
                     label="Customer Name"
-                    disabled = {editId}
+                    disabled = {!!editId}
                     onChange={handleInputChange}
                     name="customerName"
                     value={formData.customerName}
@@ -958,7 +958,7 @@ const Receipt = ({ selectedRow }) => {
                   <div className="mb-1">
                     {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
                     {/* <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} /> */}
-                    {formData.status !== 'SUBMIT' && <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />} 
+                    {formData?.status !== 'SUBMIT' && <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />} 
                   </div>
                   <div className="row mt-2">
                     <div className="col-lg-12">
@@ -1373,7 +1373,7 @@ const Receipt = ({ selectedRow }) => {
                                   <input
                                     type="text"
                                     value={row.outstanding}
-                                    disabled = {editId}
+                                    disabled = {!!editId}
                                     onChange={(e) => {
                                       const value = e.target.value;
                                       const isNumeric = /^[0-9]*$/;

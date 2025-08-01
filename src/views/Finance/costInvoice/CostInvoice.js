@@ -38,9 +38,10 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonTable from 'views/basicMaster/CommonTable';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
+import FancyLoader from 'utils/FancyLoader';
 
 const CostInvoice = ({ selectedRow }) => {
-  const [showForm, setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
   const [invoiceData, setInvoiceData] = useState(null);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
@@ -49,6 +50,7 @@ const CostInvoice = ({ selectedRow }) => {
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [value, setValue] = useState(0);
+  const [loading, setloading] = useState(true);
   const [editId, setEditId] = useState('');
   const [fieldErrors, setFieldErrors] = useState({});
   const [listViewData, setListViewData] = useState([]);
@@ -70,6 +72,7 @@ const CostInvoice = ({ selectedRow }) => {
   const [modalOpen, setModalOpen] = useState(false);
   useEffect(() => {
     if (selectedRow) {
+      setloading(true);
       getAllCostInvoiceById({ original: selectedRow });
     }
   }, [selectedRow]);
@@ -470,13 +473,15 @@ const CostInvoice = ({ selectedRow }) => {
   }, [formData.supplierType]);
 
   const getAllCostInvoiceByOrgId = async () => {
+    setloading(true);
     try {
       const result = await apiCalls(
         'get',
         `/costInvoice/getAllCostInvoiceByOrgId?orgId=${orgId}&branchCode=${branchCode}&finYear=${finYear}`
       );
       setData(result.paramObjectsMap.costInvoiceVO.reverse() || []);
-      setShowForm(!showForm);
+      // setShowForm(!showForm);
+      setloading(false);
       console.log('costInvoiceVO', result);
     } catch (err) {
       console.log('error', err);
@@ -623,14 +628,14 @@ const CostInvoice = ({ selectedRow }) => {
         setChargeDetails(
           listValueVO.gstLines
             ? listValueVO.gstLines.map((row) => ({
-                id: row.id,
-                chargeCode: row.chargeCode,
-                chargeDesc: row.chargeName,
-                gChargeCode: row.govChargeCode,
-                gstPercent: row.gstpercent,
-                sac: row.sac,
-                lcAmount: row.lcAmt
-              }))
+              id: row.id,
+              chargeCode: row.chargeCode,
+              chargeDesc: row.chargeName,
+              gChargeCode: row.govChargeCode,
+              gstPercent: row.gstpercent,
+              sac: row.sac,
+              lcAmount: row.lcAmt
+            }))
             : []
         );
         setShowChargeDetails(true);
@@ -647,8 +652,9 @@ const CostInvoice = ({ selectedRow }) => {
   };
 
   const getAllCostInvoiceById = async (row) => {
+    setloading(true);
     console.log('first', row);
-    setShowForm(!showForm);
+    setShowForm(false);
     try {
       const result = await apiCalls('get', `/costInvoice/getAllCostInvoiceById?id=${row.original.id}`);
 
@@ -741,12 +747,12 @@ const CostInvoice = ({ selectedRow }) => {
         setTdsCostInvoiceDTO(
           Array.isArray(costVO.tdsCostInvoiceVO)
             ? costVO.tdsCostInvoiceVO.map((row) => ({
-                id: row.id,
-                section: row.section,
-                tdsWithHolding: row.tdsWithHolding,
-                tdsWithHoldingPer: row.tdsWithHoldingPer,
-                totTdsWhAmnt: row.totTdsWhAmnt
-              }))
+              id: row.id,
+              section: row.section,
+              tdsWithHolding: row.tdsWithHolding,
+              tdsWithHoldingPer: row.tdsWithHoldingPer,
+              totTdsWhAmnt: row.totTdsWhAmnt
+            }))
             : []
         );
         // setTdsCostInvoiceDTO(
@@ -771,11 +777,14 @@ const CostInvoice = ({ selectedRow }) => {
         );
         getAllSectionName(costVO.tdsCostInvoiceVO[0].tdsWithHolding);
         setShowChargeDetails(true);
+        setloading(false);
         console.log('DataToEdit', costVO);
       } else {
         // Handle erro
+        setloading(false);
       }
     } catch (error) {
+      setloading(false);
       console.error('Error fetching data:', error);
     }
   };
@@ -1119,9 +1128,16 @@ const CostInvoice = ({ selectedRow }) => {
         'get',
         `/costInvoice/getPartyAddress?orgId=${orgId}&id=${partyId}&stateCode=${stateCode}&placeOfSupply=${place}`
       );
+      // setFormData((prevData) => ({
+      //   ...prevData,
+      //   address: response.paramObjectsMap.partyAddress[0].address
+      // }));
       setFormData((prevData) => ({
         ...prevData,
-        address: response.paramObjectsMap.partyAddress[0].address
+        address:
+          response?.paramObjectsMap?.partyAddress?.length > 0
+            ? response.paramObjectsMap.partyAddress[0].address
+            : ''
       }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -1483,9 +1499,7 @@ const CostInvoice = ({ selectedRow }) => {
   };
 
   const handleView = () => {
-    console.log('handle view b', showForm);
     setShowForm(!showForm);
-    console.log('handle view a', showForm);
     if (!showForm) {
       handleClear();
     }
@@ -1709,9 +1723,12 @@ const CostInvoice = ({ selectedRow }) => {
 
   return (
     <>
-      <div>
-        <ToastComponent />
-      </div>
+      {loading && (
+        <div style={{ position: 'fixed', top: '45%', left: '45%', zIndex: 9999 }}>
+          <FancyLoader />
+        </div>
+      )}
+      <ToastComponent />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
@@ -2763,7 +2780,7 @@ const CostInvoice = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.exRate && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2805,7 +2822,7 @@ const CostInvoice = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.fcAmount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2847,7 +2864,7 @@ const CostInvoice = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.lcAmount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2888,7 +2905,7 @@ const CostInvoice = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.billAmt ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.billAmt && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2929,7 +2946,7 @@ const CostInvoice = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.sac ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.sac && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2987,7 +3004,7 @@ const CostInvoice = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.gst ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.gst && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3252,14 +3269,14 @@ const CostInvoice = ({ selectedRow }) => {
               </div>
             </>
           )}
-          {showForm && (
+          {(showForm && !loading) && (
             <CommonListViewTable
               data={data && data}
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllCostInvoiceById}
-              // isPdf={true}
-              // GeneratePdf={GeneratePdf}
+            // isPdf={true}
+            // GeneratePdf={GeneratePdf}
             />
           )}
         </div>
@@ -3271,7 +3288,7 @@ const CostInvoice = ({ selectedRow }) => {
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={handleConfirmAction}
         onCancel={handleCloseModal}
-        // onCancel={() => setModalOpen(false)}
+      // onCancel={() => setModalOpen(false)}
       />
     </>
   );
