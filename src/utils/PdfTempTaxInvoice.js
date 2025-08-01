@@ -1203,7 +1203,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                         fontWeight: 'bold'
                       }}
                     >
-                      ₹{parseFloat(row.totalChargeAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      {parseFloat(row.totalChargeAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                   </div>
                   {row.gstType === 'INTER' ? (
@@ -1218,7 +1218,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                           fontWeight: 'bold'
                         }}
                       >
-                        ₹{parseFloat(row.totalTaxAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        {parseFloat(row.totalTaxAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                   ) : (
