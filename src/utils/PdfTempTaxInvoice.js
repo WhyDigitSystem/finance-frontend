@@ -551,19 +551,25 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       textY += 6;
 
       doc.setFontSize(7);
+      const labelWidth = 18;
       if (companyDetails?.cin) {
         doc.setFont(undefined, 'bold');
-        doc.text(`CIN: ${companyDetails.cin}`, textX, textY);
-        textY += 3;
+        doc.text('CIN', textX, textY);
+        doc.setFont(undefined, 'bold');
+        doc.text(companyDetails.cin, textX + labelWidth, textY);
+        textY += 3.5;
       }
       if (companyDetails?.gst) {
         doc.setFont(undefined, 'bold');
-        doc.text(`GST IN: ${companyDetails.gst}`, textX, textY);
-        textY += 3;
+        doc.text('GST IN', textX, textY);
+        doc.setFont(undefined, 'bold');
+        doc.text(companyDetails.gst, textX + labelWidth, textY);
+        textY += 3.5;
       }
       if (companyDetails?.city) {
+        doc.setFont(undefined, 'bold');
         doc.text(`${companyDetails.city} - ${companyDetails.zip}`, textX, textY);
-        textY += 3;
+        textY += 3.5;
       }
 
       doc.setFontSize(12);
@@ -575,14 +581,14 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       let detailY = headerY + 3;
       doc.setFontSize(10);
       doc.setFont(undefined, 'bold');
-      doc.text(`Invoice No:`, rightX - 40, detailY);
+      doc.text(`Invoice No`, rightX - 40, detailY);
       doc.setFont(undefined, 'normal');
       doc.text(`${row.vid}`, rightX, detailY, { align: 'right' });
       detailY += 4;
 
       const invoiceDate = row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A';
       doc.setFont(undefined, 'bold');
-      doc.text(`Date:`, rightX - 40, detailY);
+      doc.text(`Date`, rightX - 40, detailY);
       doc.setFont(undefined, 'normal');
       doc.text(`${invoiceDate}`, rightX, detailY, { align: 'right' });
 
@@ -604,46 +610,51 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       addHeader(pdf);
       return padding + headerHeight;
     };
-
     addHeader(pdf);
     pdf.setFontSize(8);
     const labelWidth = 28;
     const valueX = padding + labelWidth;
-
     pdf.setFont(undefined, 'bold');
-    pdf.text('Bill To:', padding, currentY);
-    pdf.setFont(undefined, 'normal');
+    pdf.text('Bill To', padding, currentY);
+    pdf.setFont(undefined, 'bold');
     pdf.text(`${row.partyName}`, valueX, currentY);
     currentY += 4;
+    // pdf.setFont(undefined, 'bold');
+    // pdf.text('Ship To', padding, currentY);
+    // pdf.setFont(undefined, 'normal');
+    // pdf.text(`${row.partyName}`, valueX, currentY);
+    // currentY += 4;
 
     pdf.setFont(undefined, 'bold');
-    pdf.text('GST IN:', padding, currentY);
+    pdf.text('GST IN', padding, currentY);
     pdf.setFont(undefined, 'normal');
     pdf.text(`${row.recipientGSTIN}`, valueX, currentY);
     currentY += 4;
 
     pdf.setFont(undefined, 'bold');
-    pdf.text('Place Of Supply:', padding, currentY);
+    pdf.text('Place Of Supply', padding, currentY);
     pdf.setFont(undefined, 'normal');
     pdf.text(`${row.stateNo}`, valueX, currentY);
     currentY += 4;
+    //
 
+    //
     pdf.setFont(undefined, 'bold');
-    pdf.text('Address:', padding, currentY);
+    pdf.text('Address', padding, currentY);
     pdf.setFont(undefined, 'normal');
-    const halfPageWidth = pageWidth / 2 - valueX - padding;
+    pdf.text(`${row.address}`, valueX, currentY);
     currentY += 4;
 
-    const addressLines = pdf.splitTextToSize(row.address || '', halfPageWidth);
-    addressLines.forEach((line) => {
-      pdf.text(line, valueX, currentY);
-      currentY += 4;
-    });
-    currentY += 2;
+    // const addressLines = pdf.splitTextToSize(row.address || '', halfPageWidth);
+    // addressLines.forEach((line) => {
+    //   pdf.text(line, valueX, currentY);
+    //   currentY += 4;
+    // });
+    // currentY += 2;
 
     const dueDate = row.dueDate ? dayjs(row.dueDate).format('DD-MM-YYYY') : 'Immediate';
     pdf.setFont(undefined, 'bold');
-    pdf.text('Due Date:', padding, currentY);
+    pdf.text('Due Date', padding, currentY);
     pdf.setFont(undefined, 'normal');
     pdf.text(`${dueDate}`, valueX, currentY);
     currentY += 5;
@@ -652,7 +663,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     pdf.setFont(undefined, 'bold');
     const taxType = row.gstType === 'INTRA' ? 'Intra State Tax' : 'Inter State Tax';
     pdf.text(taxType, pageWidth / 2, currentY, { align: 'center' });
-    currentY += 10;
+    currentY += 2;
 
     const tableHeaders = ['HSN/SAC', 'Description', 'Qty', 'Rate', 'Tax %', 'Tax Amount', 'Amount'];
 
@@ -705,14 +716,14 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
 
     let leftY = startY;
     pdf.setFont(undefined, 'bold');
-    pdf.text('Amount in words:', leftX, leftY);
+    pdf.text('Amount in words', leftX, leftY);
     pdf.setFont(undefined, 'normal');
     pdf.text((row.amountInWords || '').trim(), leftX + 30, leftY);
     leftY += lineHeight;
 
     if (row.remarks) {
       pdf.setFont(undefined, 'bold');
-      pdf.text('Remarks:', leftX, leftY);
+      pdf.text('Remarks', leftX, leftY);
       pdf.setFont(undefined, 'normal');
       pdf.text((row.remarks || '').trim(), leftX + 30, leftY);
       leftY += lineHeight;
@@ -721,21 +732,21 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     leftY += lineHeight;
 
     let rightY = currentY - (row.amountInWords ? 2 * lineHeight : lineHeight);
-    pdf.setFont(undefined, 'normal');
-    pdf.text('Sub Total:', rightX, rightY);
+    pdf.setFont(undefined, 'bold');
+    pdf.text('Sub Total', rightX, rightY);
     pdf.text(`${parseFloat(row.totalChargeAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, pageWidth - padding, rightY, {
       align: 'right'
     });
     rightY += lineHeight;
-
-    pdf.text('GST(IGST):', rightX, rightY);
+    pdf.setFont(undefined, 'bold');
+    pdf.text('GST(IGST)', rightX, rightY);
     pdf.text(`${parseFloat(row.totalTaxAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, pageWidth - padding, rightY, {
       align: 'right'
     });
     rightY += lineHeight;
 
     pdf.setFont(undefined, 'bold');
-    pdf.text('Total:', rightX, rightY);
+    pdf.text('Total', rightX, rightY);
     pdf.text(`${parseFloat(row.totalInvAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, pageWidth - padding, rightY, {
       align: 'right'
     });
@@ -776,18 +787,18 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     };
 
     pdf.setFontSize(9);
-    addBankLine('BANK NAME:', bankDetails.bankName);
-    addBankLine('BRANCH:', bankDetails.branch);
-    addBankLine('IFSC:', bankDetails.ifsc);
-    addBankLine('BENEFICIARY NAME:', bankDetails.beneficiaryName);
-    addBankLine('ACCOUNT NO:', bankDetails.accountNo);
+    addBankLine('BANK NAME', bankDetails.bankName);
+    addBankLine('BRANCH', bankDetails.branch);
+    addBankLine('IFSC', bankDetails.ifsc);
+    addBankLine('BENEFICIARY NAME', bankDetails.beneficiaryName);
+    addBankLine('ACCOUNT NO', bankDetails.accountNo);
 
     // ------- Authorized Signatory -------
     if (currentY + 20 > pageHeight - footerHeight) {
       currentY = addNewPage();
     }
 
-    pdf.setFont(undefined, '');
+    pdf.setFont(undefined, 'normal');
     pdf.setFontSize(10);
     currentY += 5;
     pdf.text('FOR WHY DIGIT SYSTEM PVT LTD', padding, currentY);
@@ -938,12 +949,14 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                   <strong>{localStorage.getItem('companyName')}</strong>
                   {companyDetails.cin && (
                     <div className="d-flex flex-row" style={{ fontSize: '13px', fontWeight: 'bold' }}>
-                      CIN: {companyDetails.cin}
+                      CIN
+                      <div style={{ marginLeft: '27px' }}>{companyDetails.cin}</div>
                     </div>
                   )}
                   {companyDetails.gst && (
                     <div className="d-flex flex-row" style={{ fontSize: '13px', fontWeight: 'bold' }}>
-                      GST IN: {companyDetails.gst}
+                      GST IN
+                      <div style={{ marginLeft: '8px' }}>{companyDetails.gst}</div>
                     </div>
                   )}
                   <div style={{ width: 198 }}>
@@ -968,11 +981,11 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             </div>
             <div>
               <div className="mb-2">
-                Invoice <strong className="">: {row.vid}</strong>
+                <strong>Invoice</strong> <span style={{ marginLeft: '8px', fontWeight: '' }}> {row.vid}</span>
               </div>
               <div>
-                Date
-                <strong> : {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}</strong>
+                <strong>Date</strong>
+                <span style={{ marginLeft: '25px', fontWeigh: '' }}> {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : ''}</span>
               </div>
             </div>
           </div>
@@ -999,12 +1012,18 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               }}
             >
               <div>
-                <div>Bill To</div>
                 <div>
-                  <strong>{row.partyName}</strong>
+                  <strong>Bill To</strong> <strong style={{ marginLeft: '62px' }}>{row.partyName}</strong>
                 </div>
-                <div>GST IN - {row.recipientGSTIN}</div>
-                <div>Place Of Supply - {row.stateNo}</div>
+                <div>
+                  <strong>GST IN</strong> <span style={{ marginLeft: '56px' }}>{row.recipientGSTIN}</span>
+                </div>
+                {/* <div>GST IN {row.recipientGSTIN}</div> */}
+                {/* <div>Place Of Supply {row.stateNo}</div> */}
+                <div>
+                  <strong>Place Of Supply</strong> <span>{row.stateNo}</span>
+                </div>
+
                 <div style={{ width: 300, marginBottom: 4 }}>
                   <p style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '12px', lineHeight: '1.6', marginBottom: 0 }}>
                     {row.address}
@@ -1012,9 +1031,13 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 </div>
               </div>
               <div>
+                {/* <div style={{ textAlign: 'left' }}>Ship To</div>
+                <div style={{ textAlign: 'right' }}>
+                  <strong>{row.partyName}</strong>
+                </div> */}
                 <div>
-                  Due Date
-                  <strong style={{ textAlign: 'right' }}> : {row.dueDate ? dayjs(row.dueDate).format('DD-MM-YYYY') : 'Immediate'}</strong>
+                  <strong>Due Date</strong>
+                  <span style={{ textAlign: 'right' }}> {row.dueDate ? dayjs(row.dueDate).format('DD-MM-YYYY') : 'Immediate'}</span>
                 </div>
               </div>
             </div>
@@ -1094,7 +1117,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 }}
               >
                 <div style={{ width: '500px', marginBottom: '3px', fontSize: '10px' }}>
-                  Amount in words :&nbsp;
+                  Amount in words &nbsp;
                   <span
                     style={{
                       fontWeight: 'normal',
@@ -1106,17 +1129,30 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                   </span>
                 </div>
                 {row.remarks ? (
-                  <div
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      fontSize: '10px',
-                      color: '#555'
-                    }}
-                  >
-                    <div style={{ width: '500px', fontWeight: 'normal' }}>
-                      <strong>Remarks :</strong> {row.remarks}
-                    </div>
+                  // <div
+                  //   style={{
+                  //     display: 'flex',
+                  //     justifyContent: 'space-between',
+                  //     fontSize: '10px',
+                  //     color: '#555'
+                  //   }}
+                  // >
+                  //   <div style={{ width: '500px', fontWeight: 'normal' }}>
+                  //     <strong>Remarks &nbsp; </strong> {row.remarks}
+                  //   </div>
+                  // </div>
+                  <div style={{ width: '500px', marginBottom: '3px', fontSize: '10px' }}>
+                    Remarks &nbsp;
+                    <span
+                      style={{
+                        fontWeight: 'normal',
+                        fontSize: '10px',
+                        color: '#333',
+                        marginLeft: '37px'
+                      }}
+                    >
+                      {row.remarks}
+                    </span>
                   </div>
                 ) : (
                   ''
@@ -1124,13 +1160,21 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               </div>
               <div className="d-flex justify-content-between">
                 <div className="d-flex flex-column me-2">
-                  <p className="mb-0">Sub Total:</p>
+                  <p className="mb-0" style={{ fontWeight: 'bold' }}>
+                    Sub Total:
+                  </p>
                   {row.gstType === 'INTER' ? (
-                    <p className="mb-0">GST(IGST):</p>
+                    <p className="mb-0" style={{ fontWeight: 'bold' }}>
+                      GST(IGST):
+                    </p>
                   ) : (
                     <>
-                      <p className="mb-0">GST(CGST):</p>
-                      <p className="mb-0">GST(SGST):</p>
+                      <p className="mb-0" style={{ fontWeight: 'bold' }}>
+                        GST(CGST):
+                      </p>
+                      <p className="mb-0" style={{ fontWeight: 'bold' }}>
+                        GST(SGST):
+                      </p>
                     </>
                   )}
                   {/* <p className="mb-0">{row.gstType === 'INTER' ? 'Total  IGST:' : 'Total CGST: Total SGST:'}</p> */}
@@ -1144,7 +1188,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                       marginBottom: 0
                     }}
                   >
-                    Total:
+                    Total
                   </p>
                 </div>
                 <div className="d-flex flex-column">
@@ -1155,7 +1199,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                         fontWeight: 'normal',
                         fontSize: '14px',
                         color: '#333',
-                        marginLeft: 3
+                        marginLeft: 3,
+                        fontWeight: 'bold'
                       }}
                     >
                       ₹{parseFloat(row.totalChargeAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -1169,7 +1214,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                           fontWeight: 'normal',
                           fontSize: '14px',
                           color: '#333',
-                          marginLeft: 10
+                          marginLeft: 10,
+                          fontWeight: 'bold'
                         }}
                       >
                         ₹{parseFloat(row.totalTaxAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -1184,7 +1230,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                             fontWeight: 'normal',
                             fontSize: '14px',
                             color: '#333',
-                            marginLeft: 10
+                            marginLeft: 10,
+                            fontWeight: 'bold'
                           }}
                         >
                           ₹
@@ -1200,6 +1247,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                             fontStyle: 'normal',
                             fontWeight: 'normal',
                             fontSize: '14px',
+                            fontWeight: 'bold',
                             color: '#333',
                             marginLeft: 10
                           }}
@@ -1236,7 +1284,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               </div>
             </div>
             <div style={{ fontSize: '12px' }}>
-              <strong>Terms & Conditions :</strong>
+              <strong>Terms & Conditions </strong>
               <ol style={{ lineHeight: '1.6' }}>
                 {companyDetails.termsAndConditions?.split('\n').map((term, index) => (
                   <li key={index}>{term}</li>
@@ -1244,21 +1292,26 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               </ol>
             </div>
             <div style={styles2.container}>
-              <h6 style={styles2.heading}>Bank Details:</h6>
+              <h6 style={styles2.heading}>Bank Details</h6>
               <p style={styles2.item}>
-                <span style={styles2.label}>BANK NAME:</span> {bankDetails.bankName ? bankDetails.bankName : ''}
+                <span style={(styles2.label, { marginRight: '49px', fontWeight: 'bold' })}>BANK NAME</span>{' '}
+                {bankDetails.bankName ? bankDetails.bankName : ''}
               </p>
               <p style={styles2.item}>
-                <span style={styles2.label}>BRANCH:</span> {bankDetails.branch ? bankDetails.branch : ''}
+                <span style={(styles2.label, { marginRight: '70px', fontWeight: 'bold' })}>BRANCH</span>{' '}
+                {bankDetails.branch ? bankDetails.branch : ''}
               </p>
               <p style={styles2.item}>
-                <span style={styles2.label}>IFSC:</span> {bankDetails.ifsc ? bankDetails.ifsc : ''}
+                <span style={(styles2.label, { marginRight: '92px', fontWeight: 'bold' })}>IFSC</span>{' '}
+                {bankDetails.ifsc ? bankDetails.ifsc : ''}
               </p>
               <p style={styles2.item}>
-                <span style={styles2.label}>BENEFICIARY NAME:</span> {bankDetails.beneficiaryName ? bankDetails.beneficiaryName : ''}
+                <span style={(styles2.label, { marginRight: '6px', fontWeight: 'bold' })}>BENEFICIARY NAME</span>{' '}
+                {bankDetails.beneficiaryName ? bankDetails.beneficiaryName : ''}
               </p>
               <p style={styles2.item}>
-                <span style={styles2.label}>ACCOUNT NO:</span> {bankDetails.accountNo ? bankDetails.accountNo : ''}
+                <span style={(styles2.label, { marginRight: '42px', fontWeight: 'bold' })}>ACCOUNT NO</span>{' '}
+                {bankDetails.accountNo ? bankDetails.accountNo : ''}
               </p>
             </div>
 
