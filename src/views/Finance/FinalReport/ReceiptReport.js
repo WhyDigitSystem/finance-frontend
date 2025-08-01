@@ -682,7 +682,7 @@ function ReceiptReport() {
     }
   };
   const handleDownloadPdf = ({ logo, columns, data, fileName, userName, formData }) => {
-    const doc = new jsPDF();
+    const doc = new jsPDF({ orientation: 'landscape' });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
 
@@ -709,7 +709,7 @@ function ReceiptReport() {
     doc.setFontSize(9);
     doc.setTextColor('#000000');
     doc.setFillColor(231, 235, 235);
-    doc.roundedRect(2, 35, 206, 12, 2, 2, 'F');
+    doc.roundedRect(2, 35, 292, 12, 2, 2, 'F');
 
     // Row 1: Labels
     doc.setFont(undefined, 'bold');
@@ -764,6 +764,26 @@ function ReceiptReport() {
 
     body.push(totalRow); // ✅ Append total row
 
+    const columnStyles = {
+      0: { cellWidth: 18 }, // partyname
+      1: { cellWidth: 18 }, // Doc No
+      2: { cellWidth: 20 }, // Doc Date
+      3: { cellWidth: 18 }, // Due Date
+      4: { cellWidth: 25 }, // Inv Amount
+      5: { cellWidth: 16 }, // Outstanding
+      6: { cellWidth: 16 }, // Total Due
+      7: { cellWidth: 15 }, // Below 30 Days
+      8: { cellWidth: 15 }, // Days 31-60
+      9: { cellWidth: 15 }, // Days 61-90
+      10: { cellWidth: 13 }, // Days 91-120
+      11: { cellWidth: 13 },
+      12: { cellWidth: 13 },
+      13: { cellWidth: 13 },
+      14: { cellWidth: 15 },
+      15: { cellWidth: 18 },
+      16: { cellWidth: 18 },
+      17: { cellWidth: 18 }
+    };
     // 6) Render Table
     autoTable(doc, {
       startY: 50,
@@ -785,9 +805,9 @@ function ReceiptReport() {
         halign: 'left'
       },
       theme: 'grid',
-      margin: { left: 5, right: 5 },
+      margin: { left: 0, right: 0 },
       tableWidth: 'auto',
-      columnStyles: generateFullWidthColumnStyles(columns, doc),
+      columnStyles: columnStyles,
       didDrawPage: (data) => {
         doc.setFontSize(8).setTextColor('#555555');
         doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
@@ -800,27 +820,17 @@ function ReceiptReport() {
         if (section === 'body' && numericFields.includes(key)) {
           cell.styles.halign = 'right';
         }
+        const isLastRow = row.index === body.length - 1;
+        if (isLastRow) {
+          cell.styles.fontStyle = 'bold';
+          cell.styles.fillColor = [230, 230, 230]; // Light gray background
+          cell.styles.textColor = 0; // black text
+        }
       }
     });
 
     // 7) Save
     doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
-  };
-
-  const generateFullWidthColumnStyles = (columns, doc) => {
-    const totalColumns = columns.length;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const margin = 10; // left + right total margin (10 on each side)
-    const usableWidth = pageWidth - margin;
-
-    const colWidth = usableWidth / totalColumns;
-
-    const styles = {};
-    columns.forEach((_, index) => {
-      styles[index] = { cellWidth: colWidth };
-    });
-
-    return styles;
   };
 
   return (

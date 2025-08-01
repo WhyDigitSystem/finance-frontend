@@ -184,6 +184,10 @@ const ArAging = () => {
           {
             label: 'Branch Name',
             value: formData.branchCode
+          },
+          {
+            label: 'Currency Type',
+            value: formData.base
           }
         ]);
 
@@ -734,7 +738,7 @@ const ArAging = () => {
     doc.text(dayjs(date).format('DD-MM-YYYY'), 8, 45);
     doc.text(partyName, 37, 45);
     doc.text(branchCode, 125, 45);
-    doc.text(base.toUpperCase(), 178, 45);
+    doc.text(base, 178, 45);
 
     // 5) TABLE
     const headerLabels = columns.map((c) => c.header);
@@ -766,12 +770,12 @@ const ArAging = () => {
     });
 
     const columnStyles = {
-      0: { cellWidth: 68 }, // partyname
+      0: { cellWidth: 66 }, // partyname
       1: { cellWidth: 30 }, // Doc No
       2: { cellWidth: 20 }, // Doc Date
       3: { cellWidth: 20 }, // Due Date
       4: { cellWidth: 20 }, // Inv Amount
-      5: { cellWidth: 20 }, // Outstanding
+      5: { cellWidth: 22 }, // Outstanding
       6: { cellWidth: 20 }, // Total Due
       7: { cellWidth: 20 }, // Below 30 Days
       8: { cellWidth: 20 }, // Days 31-60
