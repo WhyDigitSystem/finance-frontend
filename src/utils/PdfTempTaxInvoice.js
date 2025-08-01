@@ -1024,10 +1024,14 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                   <strong>Place Of Supply</strong> <span>{row.stateNo}</span>
                 </div>
 
-                <div style={{ width: 300, marginBottom: 4 }}>
+                {/* <div style={{ width: 300, marginBottom: 4 }}>
+                  <strong>Address</strong>
                   <p style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '12px', lineHeight: '1.6', marginBottom: 0 }}>
                     {row.address}
                   </p>
+                </div> */}
+                <div style={{ marginBottom: 4 }}>
+                  <strong style={{ marginRight: '48px' }}>Address </strong> <span>{row.address}</span>
                 </div>
               </div>
               <div>
