@@ -25,11 +25,12 @@ import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonTable from 'views/basicMaster/CommonTable';
+import FancyLoader from 'utils/FancyLoader';
 
 const RCostInvoicegna = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
   const [data, setData] = useState(true);
-  const [listViewRoute, setlistViewRoute] = useState(true);
+  // const [listViewRoute, setlistViewRoute] = useState(true);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -41,6 +42,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
   const [listViewData, setListViewData] = useState([]);
   const [exRates, setExRates] = useState([]);
   const [partyName, setPartyName] = useState([]);
+  const [loading, setloading] = useState(true);
   const [showChargeDetails, setShowChargeDetails] = useState(false);
   const [tdsList, setTDSList] = useState([]);
   const [stateCodeList, setStateCodeList] = useState([]);
@@ -50,13 +52,19 @@ const RCostInvoicegna = ({ selectedRow }) => {
   const [approveStatus, setApproveStatus] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const selectedRowCalledRef = useRef(false);
-  useEffect(() => {
-    if (selectedRow && !selectedRowCalledRef.current) {
-      selectedRowCalledRef.current = true;
-      setlistViewRoute(false);
-      getAllRCostInvoiceById({ original: selectedRow });
-    }
-  }, [selectedRow]);
+  // useEffect(() => {
+  //   if (selectedRow && !selectedRowCalledRef.current) {
+  //     selectedRowCalledRef.current = true;
+  //     setlistViewRoute(false);
+  //     getAllRCostInvoiceById({ original: selectedRow });
+  //   }
+  // }, [selectedRow]);
+    useEffect(() => {
+      if (selectedRow) {
+        setloading(true);
+        getAllRCostInvoiceById({ original: selectedRow });
+      }
+    }, [selectedRow]);
   const [chargeDetails, setChargeDetails] = useState([
     {
       id: 1,
@@ -300,13 +308,13 @@ const RCostInvoicegna = ({ selectedRow }) => {
       );
       console.log('API Response:==>', result);
       if (result.status === true) {
-        setFormData({ ...formData, approveStatus: result.paramObjectsMap.rCostInvoiceGnaVO.approveStatus });
+        setFormData({ ...formData, approveStatus: result.paramObjectsMap.rCostInvoiceGnaVO?.approveStatus });
         const rCostVO = result.paramObjectsMap.rCostInvoiceGnaVO;
         setFormData({
-          approveBy: rCostVO.approveBy,
-          approveOn: rCostVO.approveOn,
-          approveStatus: rCostVO.approveStatus,
-          id: rCostVO.id,
+          approveBy: rCostVO.approveBy || '',
+          approveOn: rCostVO.approveOn || '',
+          approveStatus: rCostVO.approveStatus || '',
+          id: rCostVO.id || '',
           docId: rCostVO.docId || '',
           docDate: rCostVO.docDate ? dayjs(rCostVO.docDate) : null,
           purVoucherNo: rCostVO.purVoucherNo || '',
@@ -373,8 +381,8 @@ const RCostInvoicegna = ({ selectedRow }) => {
           }))
         );
         showToast(
-          result.paramObjectsMap.rCostInvoiceGnaVO.approveStatus === 'Approved' ? 'success' : 'error',
-          result.paramObjectsMap.rCostInvoiceGnaVO.approveStatus === 'Approved'
+          result.paramObjectsMap.rCostInvoiceGnaVO?.approveStatus === 'Approved' ? 'success' : 'error',
+          result.paramObjectsMap.rCostInvoiceGnaVO?.approveStatus === 'Approved'
             ? 'Registered Cost Invoice Approved Successfully'
             : 'Registered Cost Invoice Rejected Successfully'
         );
@@ -475,7 +483,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
     getAllCostInvoiceByOrgId();
     getRCostInvoiceDocId();
     getChargeAC();
-  }, [listViewRoute]);
+  }, []);
 
   useEffect(() => {
     getPartyName(formData.partyType);
@@ -496,12 +504,14 @@ const RCostInvoicegna = ({ selectedRow }) => {
     }
   }, [stateCodeList]);
   const getAllCostInvoiceByOrgId = async () => {
+    setloading(true);
     try {
       const result = await apiCalls(
         'get',
         `/rCostInvoiceGna/getAllRCostInvoiceGnaByOrgId?orgId=${orgId}&finYear=${finYear}&branchCode=${branchCode}`
       );
       setData(result.paramObjectsMap.rCostInvoiceGnaVO.reverse() || []);
+      setloading(false);
       setShowForm(!showForm);
     } catch (err) {
       console.log('error', err);
@@ -537,9 +547,9 @@ const RCostInvoicegna = ({ selectedRow }) => {
         getAddressType(rCostVO.partyCode, rCostVO.state);
         // getSection(rCostVO.tdsRCostInvoiceGnaVO[0].tds);
         setFormData({
-          approveStatus: rCostVO.approveStatus,
-          approveBy: rCostVO.approveBy,
-          approveOn: rCostVO.approveOn,
+          approveStatus: rCostVO.approveStatus || '',
+          approveBy: rCostVO.approveBy || '',
+          approveOn: rCostVO.approveOn || '',
           docId: rCostVO.docId || '',
           docDate: rCostVO.docDate ? dayjs(rCostVO.docDate) : null,
           purVoucherNo: rCostVO.purVoucherNo || '',
@@ -547,7 +557,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
           partyType: rCostVO.partyType || '',
           partyName: rCostVO.partyName || '',
           partyCode: rCostVO.partyCode || '',
-          vid: rCostVO.vid,
+          vid: rCostVO.vid || '',
           vdate: rCostVO.vdate ? dayjs(rCostVO.vdate) : null,
           supplierGstIn: rCostVO.supplierGstIn || '',
           addressType: rCostVO.addressType || '',
@@ -613,12 +623,15 @@ const RCostInvoicegna = ({ selectedRow }) => {
             lcAmount: row.lcAmt
           }))
         );
+        setloading(false);
         setShowChargeDetails(true);
         console.log('DataToEdit', rCostVO);
       } else {
+        setloading(false);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      setloading(false);
     }
   };
 
@@ -1115,9 +1128,12 @@ const RCostInvoicegna = ({ selectedRow }) => {
 
   return (
     <>
-      <div>
-        <ToastComponent />
-      </div>
+      {loading && (
+        <div style={{ position: 'fixed', top: '45%', left: '45%', zIndex: 9999 }}>
+          <FancyLoader />
+        </div>
+      )}
+      <ToastComponent />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
@@ -1125,20 +1141,20 @@ const RCostInvoicegna = ({ selectedRow }) => {
               {editId && !showForm && formData.mode === 'SUBMIT' && (
                 //  || listViewData.mode === 'SUBMIT'
                 <>
-                  {formData.approveStatus === 'Approved' && (
+                  {formData?.approveStatus === 'Approved' && (
                     <Stack direction="row" spacing={2}>
-                      <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
-                      <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
+                      <Chip label={`Approved By: ${formData?.approveBy}`} variant="outlined" color="success" />
+                      <Chip label={`Approved On: ${formData?.approveOn}`} variant="outlined" color="success" />
                     </Stack>
                   )}
-                  {formData.approveStatus === 'Rejected' && (
+                  {formData?.approveStatus === 'Rejected' && (
                     <Stack direction="row" spacing={2}>
-                      <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
-                      <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
+                      <Chip label={`Rejected By: ${formData?.approveBy}`} variant="outlined" color="error" />
+                      <Chip label={`Rejected On: ${formData?.approveOn}`} variant="outlined" color="error" />
                     </Stack>
                   )}
                   {/* {formData.mode === 'SUBMIT' && formData.approveStatus === null && ( */}
-                  {listViewData.mode === 'SUBMIT' && formData.approveStatus !== 'Approved' && formData.approveStatus !== 'Rejected' && (
+                  {listViewData.mode === 'SUBMIT' && formData?.approveStatus !== 'Approved' && formData?.approveStatus !== 'Rejected' && (
                     <div className="d-flex" style={{ marginRight: '30px' }}>
                       <Button
                         variant="outlined"
@@ -1210,7 +1226,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
               )}
               {!showForm && <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />}
               {!showForm && <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />}
-              {listViewData.approveStatus === 'Approved' || showForm ? (
+              {listViewData?.approveStatus === 'Approved' || showForm ? (
                 ''
               ) : (
                 <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
@@ -1321,7 +1337,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
                       onChange={handleSelectPartyChange}
                       name="partyName"
                       value={formData.partyName}
-                      // (partyName.length === 1 ? partyName[0].partyName : '')
+                    // (partyName.length === 1 ? partyName[0].partyName : '')
                     >
                       {partyName &&
                         partyName.map((item) => (
@@ -1535,7 +1551,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
                       name="currency"
                       value={formData.currency}
                       disabled={formData.mode === 'SUBMIT'}
-                      // || (exRates.length === 1 ? exRates[0].currency : '')
+                    // || (exRates.length === 1 ? exRates[0].currency : '')
                     >
                       {exRates &&
                         exRates.map((item) => (
@@ -2345,8 +2361,8 @@ const RCostInvoicegna = ({ selectedRow }) => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllRCostInvoiceById}
-              // isPdf={false}
-              // GeneratePdf={GeneratePdf}
+            // isPdf={false}
+            // GeneratePdf={GeneratePdf}
             />
           )}
           {/* {downloadPdf && <GeneratePdfTemp row={pdfData} />} */}
@@ -2358,7 +2374,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={handleConfirmAction}
         onCancel={handleCloseModal}
-        // onCancel={() => setModalOpen(false)}
+      // onCancel={() => setModalOpen(false)}
       />
     </>
   );

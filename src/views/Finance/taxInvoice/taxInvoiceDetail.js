@@ -33,24 +33,11 @@ import FancyLoader from 'utils/FancyLoader';
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
-const MenuProps = {
-  PaperProps: {
-    style: {
-      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
-      width: 250
-    }
-  }
-};
-function getStyles(name, selectedTransactionNo, theme) {
-  return {
-    fontWeight: selectedTransactionNo.indexOf(name) === -1 ? theme.typography.fontWeightRegular : theme.typography.fontWeightMedium
-  };
-}
+
 const TaxInvoiceDetails = ({ selectedRow }) => {
   const theme = useTheme();
   const [selectedTransactionNo, setSelectedTransactionNo] = useState([]);
   const [partyCurrency, setPartyCurrency] = useState([]);
-  const [tabIndex, setTabIndex] = useState(0);
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
   const [downloadPdf, setDownloadPdf] = useState(false);
   const [pdfData, setPdfData] = useState([]);
@@ -86,42 +73,22 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
   });
 
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const selectedRowCalledRef = useRef(false);
+  // const selectedRowCalledRef = useRef(false);
 
-  // useEffect(() => {
-  //   console.log("Roles", role);
-  //   if (!selectedRow) {
-  //     getAllTaxInvoice();
-  //     getTaxInvoiceDocId();
-  //   }
-  //   getAllType();
-  //   getPartyName();
-  //   if (selectedRow && !selectedRowCalledRef.current) {
-  //     setloading(true);
-  //     selectedRowCalledRef.current = true;
-  //     setlistView(false);
-  //     // Handle both direct data and table row format
-  //   //   // const rowData = selectedRow.original ? selectedRow : { original: selectedRow };
-  //   //   // getTaxInvoiceById(rowData);
-  //   }
-  // }, [selectedRow]);
   useEffect(() => {
-    console.log('Roles', role);
+    if (selectedRow) {
+      setloading(true);
+      getTaxInvoiceById({ original: selectedRow });
+    }
+  }, [selectedRow]);
+  useEffect(() => {
     if (!selectedRow) {
       getAllTaxInvoice();
       getTaxInvoiceDocId();
     }
     getAllType();
     getPartyName();
-
-    // Also fetch if selectedRow changes
-    if (selectedRow && !selectedRowCalledRef.current) {
-      setloading(true);
-      selectedRowCalledRef.current = true;
-      setlistView(false);
-      getTaxInvoiceById({ original: selectedRow });
-    }
-  }, [selectedRow]);
+  }, []);
   const [formData, setFormData] = useState({
     address: '',
     addressType: '',
@@ -1108,7 +1075,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
 
   const getTaxInvoiceById = async (row) => {
     setErrors({});
-    setlistView(!listView);
+    setlistView(false);
     try {
       const result = await apiCalls('get', `/taxInvoice/getTaxInvoiceById?id=${row.original.id}`);
       setListViewData(result.paramObjectsMap.taxInvoiceVO);

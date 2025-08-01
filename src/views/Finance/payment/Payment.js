@@ -46,7 +46,7 @@ const Payment = ({ selectedRow }) => {
   const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
   const [validationErrors, setValidationErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
-  const [editId, setEditId] = useState();
+  const [editId, setEditId] = useState('');
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
@@ -468,10 +468,10 @@ const Payment = ({ selectedRow }) => {
   };
 
   const columns = [
-    { accessorKey: 'paymentType', header: 'Payment Type', size: 140 },
+    // { accessorKey: 'paymentType', header: 'Payment Type', size: 140 },
     { accessorKey: 'docId', header: 'Doc Id', size: 140 },
     { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
-    { accessorKey: 'type', header: 'Type', size: 140 },
+    // { accessorKey: 'type', header: 'Type', size: 140 },
     { accessorKey: 'partyCode', header: 'Party Code', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 },
     { accessorKey: 'gstState', header: 'Reg State', size: 140 },
@@ -898,7 +898,7 @@ const Payment = ({ selectedRow }) => {
                       id="demo-simple-select-party"
                       label="Party Name"
                       name="partyName"
-                      disabled={editId && formData.status === 'SUBMIT'}
+                      disabled={!!editId && formData.status === 'SUBMIT'}
                       required
                       value={formData.partyName || (partyName.length === 1 ? partyName[0].partyName : '')}
                       onChange={handleSelectChange}

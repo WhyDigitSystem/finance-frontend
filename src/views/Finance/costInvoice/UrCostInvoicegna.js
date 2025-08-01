@@ -26,6 +26,7 @@ import { getAllActiveCurrency } from 'utils/CommonFunctions';
 import CommonTable from 'views/basicMaster/CommonTable';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 import { Row } from 'antd';
+import FancyLoader from 'utils/FancyLoader';
 
 const UrCostInvoicegna = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
@@ -37,6 +38,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [value, setValue] = useState(0);
   const [editId, setEditId] = useState('');
+  const [loading, setloading] = useState(true);
   const [fieldErrors, setFieldErrors] = useState({});
   const [listViewData, setListViewData] = useState([]);
   const [currency, setCurrency] = useState([]);
@@ -52,6 +54,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
   const [modalOpen, setModalOpen] = useState(false);
   useEffect(() => {
     if (selectedRow) {
+      setloading(true);
       getAllUrCostInvoiceById({ original: selectedRow });
     }
   }, [selectedRow]);
@@ -412,13 +415,15 @@ const UrCostInvoicegna = ({ selectedRow }) => {
     getStateCode(formData.supplierCode);
   }, [formData.supplierCode]);
   const getAllUrCostInvoiceByOrgId = async () => {
+    setloading(true);
     try {
       const result = await apiCalls(
         'get',
         `/UrCostInvoiceGna/getAllUrCostInvoiceGnaByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
       setData(result.paramObjectsMap.urCostInvoiceGnaVO || []);
-      setShowForm(true);
+      // setShowForm(true);
+      setloading(false);
     } catch (err) {
       console.log('error', err);
     }
@@ -606,10 +611,10 @@ const UrCostInvoicegna = ({ selectedRow }) => {
             prevData.map((item, index) =>
               index === 0
                 ? {
-                    ...item,
-                    section: selectedTDS.sectionName,
-                    tdsPer: selectedTDS.tcsPercentage
-                  }
+                  ...item,
+                  section: selectedTDS.sectionName,
+                  tdsPer: selectedTDS.tcsPercentage
+                }
                 : item
             )
           );
@@ -740,11 +745,11 @@ const UrCostInvoicegna = ({ selectedRow }) => {
       prev.map((row, idx) =>
         idx === index
           ? {
-              ...row,
-              ...defaultStateValues,
-              chargeLedger: selectedChargeCode
-              // chargeAccount: selectedChargeCode
-            }
+            ...row,
+            ...defaultStateValues,
+            chargeLedger: selectedChargeCode
+            // chargeAccount: selectedChargeCode
+          }
           : row
       )
     );
@@ -1163,9 +1168,12 @@ const UrCostInvoicegna = ({ selectedRow }) => {
 
   return (
     <>
-      <div>
-        <ToastComponent />
-      </div>
+      {loading && (
+        <div style={{ position: 'fixed', top: '45%', left: '45%', zIndex: 9999 }}>
+          <FancyLoader />
+        </div>
+      )}
+      <ToastComponent />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex ml">
           <div className="d-flex flex-wrap justify-content-between mb-4" style={{ marginBottom: '20px' }}>
@@ -1620,7 +1628,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                       disabled={formData.mode === 'SUBMIT'}
                       // value={formData.currency}
                       value={formData.currency}
-                      // || (currency.length === 1 ? currency[0].currency : '')
+                    // || (currency.length === 1 ? currency[0].currency : '')
                     >
                       {currency &&
                         currency.map((item) => (
@@ -1921,7 +1929,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.exRate && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1987,7 +1995,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.gstPercent ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.gstPercent && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2029,7 +2037,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.fcAmount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2071,7 +2079,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.lcAmount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2112,7 +2120,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.billAmt ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.billAmt && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2380,8 +2388,8 @@ const UrCostInvoicegna = ({ selectedRow }) => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllUrCostInvoiceById}
-              // isPdf={true}
-              // GeneratePdf={GeneratePdf}
+            // isPdf={true}
+            // GeneratePdf={GeneratePdf}
             />
           )}
           {/* {downloadPdf && <GeneratePdfTemp row={pdfData} />} */}
@@ -2393,7 +2401,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={handleConfirmAction}
         onCancel={handleCloseModal}
-        // onCancel={() => setModalOpen(false)}
+      // onCancel={() => setModalOpen(false)}
       />
     </>
   );
