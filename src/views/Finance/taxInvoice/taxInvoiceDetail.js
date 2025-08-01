@@ -2331,7 +2331,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                       className={withdrawalsTableErrors[index]?.description ? 'error form-control' : 'form-control'}
                                       onChange={(e) => {
                                         const newValue = e.target.value;
-                                        if (newValue.length <= 250) {
+                                        if (newValue.length <= 500) {
                                           handleDescriptionChange(index, newValue);
                                         } else {
                                           const updatedErrors = [...withdrawalsTableErrors];
