@@ -1344,15 +1344,15 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
     const annexureVO = isAnnexureEmpty
       ? null
       : taxInvoiceAnnexure.map((row) => ({
-          ...(editId && { id: row.id }),
-          skuType: row.skuType || '',
-          rate: parseFloat(row.rate),
-          qty: parseFloat(row.kitqty),
-          dsec: row.kitname,
-          kitId: row.kitid,
-          transDate: row.transactiondate ? dayjs(row.transactiondate).format('YYYY-MM-DD') : null,
-          transNo: row.transactionno
-        }));
+        ...(editId && { id: row.id }),
+        skuType: row.skuType || '',
+        rate: parseFloat(row.rate),
+        qty: parseFloat(row.kitqty),
+        dsec: row.kitname,
+        kitId: row.kitid,
+        transDate: row.transactiondate ? dayjs(row.transactiondate).format('YYYY-MM-DD') : null,
+        transNo: row.transactionno
+      }));
 
     const saveFormData = {
       ...(editId && { id: editId }),
@@ -2331,16 +2331,30 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                       className={withdrawalsTableErrors[index]?.description ? 'error form-control' : 'form-control'}
                                       onChange={(e) => {
                                         const newValue = e.target.value;
-                                        if (newValue.length <= 500) {
-                                          handleDescriptionChange(index, newValue);
-                                        } else {
-                                          const updatedErrors = [...withdrawalsTableErrors];
-                                          updatedErrors[index] = {
-                                            ...updatedErrors[index],
-                                            description: 'Description cannot exceed 250 characters.'
-                                          };
-                                          setWithdrawalsTableErrors(updatedErrors);
-                                        }
+
+                                        // Always update the value
+                                        handleDescriptionChange(index, newValue);
+
+                                        // Clone the existing errors array
+                                        const updatedErrors = [...withdrawalsTableErrors];
+
+                                        // Validate and update error state
+                                        // if (newValue.length > 500) {
+                                        //   updatedErrors[index] = {
+                                        //     ...updatedErrors[index],
+                                        //     description: 'Description cannot exceed 500 characters.'
+                                        //   };
+                                        // } else {
+                                        //   // Clear the error if it exists
+                                        //   if (updatedErrors[index]) {
+                                        //     updatedErrors[index] = {
+                                        //       ...updatedErrors[index],
+                                        //       description: ''
+                                        //     };
+                                        //   }
+                                        // }
+
+                                        setWithdrawalsTableErrors(updatedErrors);
                                       }}
                                     />
                                     {withdrawalsTableErrors[index]?.description && (
@@ -2349,7 +2363,6 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                       </div>
                                     )}
                                   </td>
-
                                   <td className="border px-2 py-2">
                                     <input
                                       type="number"
@@ -2375,7 +2388,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                       style={{ width: '100px' }}
                                       onChange={(e) => handleTableInputChange(index, 'rate', e.target.value)}
                                       className={withdrawalsTableErrors[index]?.rate ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.rate && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2478,7 +2491,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.exRate && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2517,7 +2530,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.fcAmount && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2559,7 +2572,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.lcAmount && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2597,7 +2610,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.billAmount ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.billAmount && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2636,7 +2649,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.sac ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.sac && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2678,7 +2691,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.GSTPercent ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.GSTPercent && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2717,7 +2730,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.gst ? 'error form-control' : 'form-control'}
-                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.gst && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
