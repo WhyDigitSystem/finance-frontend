@@ -701,7 +701,7 @@ const Receipt = ({ selectedRow }) => {
                 </>
               )}
           </div>
-          <div className="d-flex flex-wrap justify-content-end mb-4 " style={{ marginBottom: '20px' }}>
+          <div className="d-flex flex-wrap justify-content-end mb-2 " style={{ marginBottom: '10px' }}>
             <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
             <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
             <ActionButton title="Save" icon={SaveIcon} isLoading={isLoading} onClick={handleSave} />
@@ -947,6 +947,7 @@ const Receipt = ({ selectedRow }) => {
               textColor="secondary"
               indicatorColor="secondary"
               aria-label="secondary tabs example"
+              style={{ marginTop: '-30px' }}
             >
               <Tab value={0} label="Invoice Details" />
               <Tab value={1} label="Summary" />

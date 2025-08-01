@@ -94,22 +94,56 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     setOpen(false);
   };
 
-  // Function to generate and download the PDF
   const handleDownloadPdf = async () => {
     const input = document.getElementById('pdf-content');
+    // Add PDF styles
+    document.getElementById('bill-to-header')?.classList.add('pdf-bold-black');
+    document.getElementById('gst-in-header')?.classList.add('pdf-bold-black');
+
     if (input) {
-      const canvas = await html2canvas(input);
+      const canvas = await html2canvas(input, { scale: 2 });
       const imgData = canvas.toDataURL('image/png');
 
-      const pdf = new jsPDF();
-      pdf.addImage(imgData, 'PNG', 0, 0);
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+
+      const margin = 2;
+      const imgProps = pdf.getImageProperties(imgData);
+      let pdfWidth = pageWidth - margin * 2;
+      let pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+      if (pdfHeight > pageHeight - margin * 2) {
+        pdfHeight = pageHeight - margin * 2;
+        pdfWidth = (imgProps.width * pdfHeight) / imgProps.height;
+      }
+
+      pdf.addImage(
+        imgData,
+        'PNG',
+        margin,
+        margin,
+        pdfWidth,
+        pdfHeight,
+        undefined,
+        'FAST'
+      );
+
       pdf.save(`Cost-Invoice_${row.vid}.pdf`);
-      modalClose();
-      // handleClose();
     } else {
       console.error("Element not found: 'pdf-content'");
     }
+
+    // Remove PDF styles
+    document.getElementById('bill-to-header')?.classList.remove('pdf-bold-black');
+    document.getElementById('gst-in-header')?.classList.remove('pdf-bold-black');
   };
+
 
   // Automatically open the dialog when the component is rendered
   useEffect(() => {
@@ -162,7 +196,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
           style={{
             padding: '20px',
             // backgroundColor: '#f9f9f9',
-            width: '210mm',
+            width: '215mm',
             height: 'auto',
             margin: 'auto',
             fontFamily: 'Roboto, Arial, sans-serif',
@@ -194,13 +228,15 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 <div className="ms-2">
                   <strong>{localStorage.getItem('companyName')}</strong>
                   {companyDetails.cin && (
-                    <div className="d-flex flex-row" style={{ fontSize: '13px' }}>
-                      CIN: {companyDetails.cin}
+                    <div className="d-flex flex-row" style={{ fontSize: '13px', fontWeight: 'bold' }}>
+                      <strong>CIN</strong>
+                      <div style={{ marginLeft: '27px' }}>{companyDetails.cin}</div>
                     </div>
                   )}
                   {companyDetails.gst && (
-                    <div className="d-flex flex-row" style={{ fontSize: '13px' }}>
-                      GST IN: {companyDetails.gst}
+                    <div className="d-flex flex-row" style={{ fontSize: '13px', fontWeight: 'bold' }}>
+                      GST IN
+                      <div style={{ marginLeft: '8px' }}>{companyDetails.gst}</div>
                     </div>
                   )}
                   <div style={{ width: 198 }}>
@@ -222,11 +258,11 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             {/* <div>{localStorage.getItem('branch')}</div> */}
             <div>
               <div className="mb-2">
-                Invoice <strong className="">: {row.vid}</strong>
+                <strong>Invoice</strong> <span style={{ marginLeft: '8px', fontWeight: '' }}> {row.vid}</span>
               </div>
               <div>
-                Date
-                <strong> : {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}</strong>
+                <strong>Date</strong>
+                <span style={{ marginLeft: '25px', fontWeigh: '' }}> {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : ''}</span>
               </div>
             </div>
           </div>
@@ -293,15 +329,15 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               display: 'flex',
               justifyContent: 'space-between',
               fontSize: '14px',
-              color: '#555'
             }}
           >
             <div>
-              <div>Bill To</div>
               <div>
-                <strong>{row.supplierName}</strong>
+                <strong>Bill To</strong> <strong style={{ marginLeft: '20px' }}>{row.supplierName}</strong>
               </div>
-              <div>GST IN- {row.supplierGstIn}</div>
+              <div>
+                <strong>GST IN</strong> <span style={{ marginLeft: '15px' }}>{row.supplierGstIn}</span>
+              </div>
               {/* <div>Place Of Supply - {row.stateNo}</div> */}
               <div style={{ width: 300, marginBottom: 4 }}>
                 <p style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '12px', lineHeight: '1.6', marginBottom: 0 }}>
@@ -440,21 +476,20 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               style={{
                 textAlign: 'left',
                 fontWeight: 'bold',
-                fontSize: '14px',
+                fontSize: '18px',
                 color: '#333'
               }}
             >
-              <div style={{ width: '500px', marginBottom: '3px' }}>
-                Amount in words:{' '}
+              <div style={{ width: '500px', marginBottom: '3px', fontSize: '12px' }}>
+                Amount in words &nbsp;
                 <span
                   style={{
                     fontWeight: 'normal',
-                    fontSize: '14px',
-                    fontStyle: 'italic',
+                    fontSize: '12px',
                     color: '#333'
                   }}
                 >
-                  {row.currency} {row.amountInWords ? row.amountInWords.toUpperCase() : ''}
+                  {row.amountInWords}
                 </span>
               </div>
               {row.remarks ? (
@@ -479,14 +514,13 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
             </div>
             <div className="d-flex justify-content-between">
               <div className="d-flex flex-column me-2">
-                <p className="mb-0">Total Charges:</p>
-                <p className="mb-0">Total Tax:</p>
-                <p className="mb-1">Total TDS:</p>
+                <p className="mb-0" style={{ fontSize: '13px', fontWeight: 'normal', color: '#555' }}>Total Charges:</p>
+                <p className="mb-0" style={{ fontSize: '13px', fontWeight: 'normal', color: '#555' }}>Total Tax:</p>
+                <p className="mb-1" style={{ fontSize: '13px', fontWeight: 'normal', color: '#555' }}>Total TDS:</p>
                 <p
                   style={{
-                    // textAlign: 'right',
-                    fontWeight: 'bold',
-                    fontSize: '14px',
+                    fontWeight: '600',
+                    fontSize: '13px',
                     color: '#333',
                     marginBottom: 0
                   }}
@@ -495,11 +529,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 </p>
               </div>
               <div className="d-flex flex-column">
-                <div
-                // style={{
-                //   fontStyle: 'italic'
-                // }}
-                >
+                <div>
                   <span
                     style={{
                       fontStyle: 'normal',
@@ -508,14 +538,10 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                       color: '#333'
                     }}
                   >
-                    ₹{parseFloat(row.totChargesBillCurrAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {parseFloat(row.totChargesBillCurrAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div
-                // style={{
-                //   fontStyle: 'italic'
-                // }}
-                >
+                <div>
                   <span
                     style={{
                       fontStyle: 'normal',
@@ -524,15 +550,10 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                       color: '#333'
                     }}
                   >
-                    ₹{parseFloat(row.gstInputLcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    {parseFloat(row.gstInputLcAmt).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </span>
                 </div>
-                <div
-                  className="mb-1"
-                  // style={{
-                  //   fontStyle: 'italic'
-                  // }}
-                >
+                <div className="mb-1">
                   <span
                     style={{
                       fontStyle: 'normal',
@@ -541,7 +562,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                       color: '#333'
                     }}
                   >
-                    ₹
+                    
                     {parseFloat(
                       (Number(row.actBillCurrAmt) - Number(row.actBillLcAmt)).toFixed(2)
                     ).toLocaleString('en-IN', {
@@ -563,6 +584,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 </div>
               </div>
             </div>
+
           </div>
           {/* <div
             style={{

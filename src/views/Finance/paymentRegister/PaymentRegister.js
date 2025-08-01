@@ -61,7 +61,7 @@ const APOutstanding = () => {
     }));
 
     if (name === 'date' && checked) {
-      const today = dayjs().format('YYYY-MM-DD');
+      const today = dayjs().format('DD-MM-YYYY');
       setFormData((prev) => ({
         ...prev,
         date: today
@@ -75,7 +75,7 @@ const APOutstanding = () => {
 
   const [formData, setFormData] = useState({
     partyName: 'All',
-    date: dayjs().format('YYYY-MM-DD'),
+    date: dayjs().format('DD-MM-YYYY'),
     branch: 'All',
     slab1: '',
     slab2: '',
@@ -224,13 +224,13 @@ const APOutstanding = () => {
   };
 
   const handleDateChange = (field, date) => {
-    const formattedDate = date ? dayjs(date).format('YYYY-MM-DD') : null;
+    const formattedDate = date ? dayjs(date).format('DD-MM-YYYY') : null;
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
     setFieldErrors((prev) => ({ ...prev, date: '' }));
   };
 
   const allClearData = () => {
-    setFormData({ partyName: 'All', date: dayjs().format('YYYY-MM-DD'), branch: 'All' });
+    setFormData({ partyName: 'All', date: dayjs().format('DD-MM-YYYY'), branch: 'All' });
     setSelectedSections({ partyName: false, date: true });
     setFieldErrors({});
     setListView(false);
@@ -506,7 +506,7 @@ const APOutstanding = () => {
       try {
         const response = await apiCalls(
           'get',
-          `/payable/getAPOutstanding?Asondate=${formData.date}&orgId=${orgId}&partyname=${formData.partyName}&branch=${formData.branch}&finyear=${finYear}`
+          `/payable/getAPOutstanding?Asondate=${dayjs(formData.date).format('YYYY-DD-MM')}&orgId=${orgId}&partyname=${formData.partyName}&branch=${formData.branch}&finyear=${finYear}`
         );
         if (response.status === true) {
           setRowData(response.paramObjectsMap.APOutstanding);
@@ -756,7 +756,7 @@ const APOutstanding = () => {
                     label="As on Date"
                     format="DD-MM-YYYY"
                     onChange={(date) => handleDateChange('date', date)}
-                    value={formData.date ? dayjs(formData.date, 'YYYY-MM-DD') : null}
+                    value={formData.date ? dayjs(formData.date, 'DD-MM-YYYY') : null}
                     slotProps={{
                       textField: {
                         size: 'small',
