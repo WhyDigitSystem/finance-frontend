@@ -581,14 +581,14 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       let detailY = headerY + 3;
       doc.setFontSize(10);
       doc.setFont(undefined, 'bold');
-      doc.text(`Invoice No`, rightX - 40, detailY);
+      doc.text(`Invoice No`, rightX - 45, detailY);
       doc.setFont(undefined, 'normal');
       doc.text(`${row.vid}`, rightX, detailY, { align: 'right' });
       detailY += 4;
 
       const invoiceDate = row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A';
       doc.setFont(undefined, 'bold');
-      doc.text(`Date`, rightX - 40, detailY);
+      doc.text(`Date`, rightX - 45, detailY);
       doc.setFont(undefined, 'normal');
       doc.text(`${invoiceDate}`, rightX, detailY, { align: 'right' });
 
@@ -801,7 +801,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     pdf.setFont(undefined, 'normal');
     pdf.setFontSize(10);
     currentY += 5;
-    pdf.text('FOR WHY DIGIT SYSTEM PVT LTD', padding, currentY);
+    pdf.text(`FOR ${bankDetails.beneficiaryName}`, padding, currentY);
     currentY += 20;
     pdf.text('Authorized Signatory', padding, currentY);
 
@@ -1328,7 +1328,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                 marginTop: '5%'
               }}
             >
-              FOR WHY DIGIT SYSTEM PVT LTD
+              FOR {bankDetails.beneficiaryName ? bankDetails.beneficiaryName : ''}
             </div>
             <div
               style={{
