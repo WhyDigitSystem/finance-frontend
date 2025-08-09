@@ -636,6 +636,9 @@ function TaxRegister() {
         };
       });
       headerRow.height = 20;
+      sheet.views = [
+        { state: 'frozen', ySplit: sheet.rowCount } // This will freeze everything above this row
+      ];
 
       // ====== DATA ROWS ======
       let totalLcAmount = 0;
@@ -691,6 +694,11 @@ function TaxRegister() {
           bottom: { style: 'thin' },
           left: { style: 'thin' },
           right: { style: 'thin' }
+        };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFD9D9D9' } // Light gray
         };
 
         if ([7, 8, 9].includes(colNumber)) {
@@ -976,99 +984,99 @@ function TaxRegister() {
                               <tbody>
                                 {fillGridData.taxInvoiceDetailsVO && fillGridData.taxInvoiceDetailsVO.length > 0
                                   ? fillGridData.taxInvoiceDetailsVO.map((row, index) => (
-                                    <tr key={row.id}>
-                                      <td className="text-center">{index + 1}</td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeType || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeCode || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.govChargeCode || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.ledger || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeName || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.qty || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.rate || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.currency || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.exRate || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstpercent || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstAmount || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.fcAmount || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.lcAmount || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.billAmount || 0}
-                                      </td>
-                                    </tr>
-                                  ))
+                                      <tr key={row.id}>
+                                        <td className="text-center">{index + 1}</td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.chargeType || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.chargeCode || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.govChargeCode || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.ledger || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.chargeName || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.qty || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.rate || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.currency || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.exRate || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstpercent || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstAmount || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.fcAmount || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.lcAmount || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.billAmount || 0}
+                                        </td>
+                                      </tr>
+                                    ))
                                   : fillGridData.irnCreditNoteDetailsVO?.map((row, index) => (
-                                    <tr key={row.id}>
-                                      <td className="text-center">{index + 1}</td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeType || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeCode || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.govChargeCode || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.ledger || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeName || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.qty || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.rate || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.currency || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.exRate || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstpercent || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstAmount || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.fcAmount || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.lcAmount || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.billAmount || 0}
-                                      </td>
-                                    </tr>
-                                  ))}
+                                      <tr key={row.id}>
+                                        <td className="text-center">{index + 1}</td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.chargeType || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.chargeCode || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.govChargeCode || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.ledger || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.chargeName || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.qty || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.rate || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.currency || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.exRate || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstpercent || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstAmount || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.fcAmount || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.lcAmount || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.billAmount || 0}
+                                        </td>
+                                      </tr>
+                                    ))}
                               </tbody>
                             </table>
                           </div>
@@ -1096,51 +1104,51 @@ function TaxRegister() {
                               <tbody>
                                 {fillGridData.irnCreditNoteGstVO && fillGridData.irnCreditNoteGstVO.length > 0
                                   ? fillGridData.irnCreditNoteGstVO.map((row, index) => (
-                                    <tr key={row.id}>
-                                      <td className="text-center">{index + 1}</td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstChargeAcc || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstSubledgerCode || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstDbBillAmount || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstCrBillAmount || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstDbLcAmount || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstCrLcAmount || 0}
-                                      </td>
-                                    </tr>
-                                  ))
+                                      <tr key={row.id}>
+                                        <td className="text-center">{index + 1}</td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstChargeAcc || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstSubledgerCode || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstDbBillAmount || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstCrBillAmount || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstDbLcAmount || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstCrLcAmount || 0}
+                                        </td>
+                                      </tr>
+                                    ))
                                   : fillGridData.taxInvoiceGstVO?.map((row, index) => (
-                                    <tr key={row.id}>
-                                      <td className="text-center">{index + 1}</td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstChargeAcc || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstSubledgerCode || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstDbBillAmount || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstCrBillAmount || ''}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstDbLcAmount || 0}
-                                      </td>
-                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.gstCrLcAmount || 0}
-                                      </td>
-                                    </tr>
-                                  ))}
+                                      <tr key={row.id}>
+                                        <td className="text-center">{index + 1}</td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstChargeAcc || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstSubledgerCode || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstDbBillAmount || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstCrBillAmount || ''}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstDbLcAmount || 0}
+                                        </td>
+                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                          {row.gstCrLcAmount || 0}
+                                        </td>
+                                      </tr>
+                                    ))}
                               </tbody>
                             </table>
                           </div>
