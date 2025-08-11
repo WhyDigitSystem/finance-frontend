@@ -124,7 +124,7 @@ const formatNumberWithCommas = (value) => {
   if (isNaN(num)) return value;
   return num.toLocaleString('en-IN', {
     maximumFractionDigits: 2,
-    minimumFractionDigits: 0
+    minimumFractionDigits: 2
   });
 };
 
@@ -274,7 +274,10 @@ const CommonFilePL = ({
           if (value === 0) {
             value = '';
           } else {
-            value = value.toLocaleString('en-IN');
+            value = value.toLocaleString('en-IN', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            });
           }
         }
         return value ?? '';
