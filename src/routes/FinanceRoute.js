@@ -117,6 +117,12 @@ const Quotation = Loadable(lazy(() => import('views/docs/Quotation')));
 const APaging = Loadable(lazy(() => import('views/Finance/paymentRegister/APaging')));
 const ItemMaster = Loadable(lazy(() => import('views/Finance/ItemMaster')));
 const Unit = Loadable(lazy(() => import('views/Finance/Unit')));
+const Sendemail = Loadable(lazy(() => import('views/Finance/Tools/Sendemail')));
+const OCR = Loadable(lazy(() => import('views/Finance/Tools/OCR')));
+const BarcodeSingle = Loadable(lazy(() => import('views/Finance/BarCode/QRbarsingle')));
+const QRbargroup = Loadable(lazy(() => import('views/Finance/BarCode/QRbargroup')));
+const Invoice = Loadable(lazy(() => import('views/Finance/Invoice/Invoice')));
+const InvoicePDF = Loadable(lazy(() => import('views/Finance/Invoice/InvoicePDF')));
 
 // const AuthRegister3 = Loadable(lazy(() => import('views/pages/authentication/authentication3/Register3')));
 
@@ -556,6 +562,30 @@ const FinanceRoute = {
     {
       path: '/docs/warehouse',
       element: <Warehouse />
+    },
+    {
+      path: '/Finance/Tools/Sendemail',
+      element: <Sendemail />
+    },
+    {
+      path: '/Finance/Tools/OCR',
+      element: <OCR />
+    },
+    {
+      path: '/Finance/BarCode/QRbarsingle',
+      element: <BarcodeSingle />
+    },
+    {
+      path: '/Finance/BarCode/QRbargroup',
+      element: <QRbargroup />
+    },
+    {
+      path: '/Finance/Invoice/Invoice',
+      element: <Invoice />
+    },
+    {
+      path: '/Finance/Invoice/InvoicePDF',
+      element: <InvoicePDF />
     }
   ]
 };

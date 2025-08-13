@@ -4,7 +4,7 @@ import { refreshToken } from 'utils/authUtils';
 
 const api = axios.create({
   baseURL: `${process.env.REACT_APP_API_URL}/api`,
-  timeout: 60000,
+  timeout: 100000,
   headers: {
     'Content-Type': 'application/json'
   }

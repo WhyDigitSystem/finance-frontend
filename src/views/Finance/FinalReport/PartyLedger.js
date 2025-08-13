@@ -138,6 +138,11 @@ function PartyLedger() {
   //
   const handleClear = () => {
     setListView(false);
+    // setSelectedSections({
+    //   date: false,
+    //   branch: false,
+    //   customer: false
+    // });
 
     setFormData({
       fromDate: dayjs().startOf('month').format('YYYY-MM-DD'),

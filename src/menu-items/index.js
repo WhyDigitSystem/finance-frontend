@@ -10,6 +10,10 @@ import finance from './finance';
 import genTransaction from './GenTransaction';
 import BankCash from './BankCash';
 import Hidden from './Hidden';
+// import Tools from './Tools';
+import BarCode from './barcode';
+import Invoices from './Invoices';
+
 // import { Hidden } from '@material-ui/core';
 
 // Function to get menu items based on localStorage value
@@ -18,7 +22,21 @@ const getMenuItems = () => {
 
   // Define default menu items
   const defaultMenuItems = {
-    items: [dashboard, basicMaster, genTransaction, ar, ap, BankCash, finalReport, companySetup,docs, Hidden].filter(Boolean)
+    items: [
+      dashboard,
+      basicMaster,
+      genTransaction,
+      ar,
+      ap,
+      BankCash,
+      finalReport,
+      companySetup,
+      docs,
+      BarCode,
+      Invoices,
+      // Tools,
+      Hidden
+    ].filter(Boolean)
   };
 
   // Define menu items based on localStorage value
