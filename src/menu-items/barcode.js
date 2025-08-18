@@ -25,7 +25,7 @@ const BarcodeChildren = [
     type: 'item',
     url: '/finance/BarCode/QRbarsingle',
     icon: icons.IconQrCode2Outlined,
-    visible: hasScreenAccess('BC')
+    visible: hasScreenAccess('BCS')
   },
   {
     id: 'QRbargroup',
@@ -33,7 +33,7 @@ const BarcodeChildren = [
     type: 'item',
     url: '/finance/BarCode/QRbargroup',
     icon: icons.IconQrCodeOutlined,
-    visible: hasScreenAccess('BG')
+    visible: hasScreenAccess('BCG')
   }
 ].filter((item) => item.visible !== false);
 
