@@ -1,10 +1,107 @@
+// import React, { useState, useRef } from 'react';
+// import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
+// import ActionButton from 'utils/ActionButton';
+// import Transitions from 'ui-component/extended/Transitions';
+// import { useTheme } from '@mui/material/styles';
+// import { Box, Paper, Popper, useMediaQuery, Grid, IconButton, Tooltip, ClickAwayListener } from '@mui/material';
+// // import { FiFileText } from 'react-icons/fi';
+// import OCR from '../../../../assets/images/ocr.png';
+// // import { IoMdMail } from 'react-icons/io';
+// import Email from '../../../../assets/images/email.png';
+// import { useNavigate } from 'react-router-dom';
+
+// const apps = [
+//   {
+//     id: 'ocr',
+//     title: 'OCR',
+//     type: 'group',
+//     url: '/Finance/Tools/OCR',
+//     icon: OCR
+//   },
+//   {
+//     id: 'sendemail',
+//     title: 'Email',
+//     type: 'group',
+//     url: '/Finance/Tools/SendEmail',
+//     icon: Email
+//   }
+// ];
+
+// const MenuBar = () => {
+//   const theme = useTheme();
+//   const matchesXs = useMediaQuery(theme.breakpoints.down('md'));
+//   const [showMenu, setShowMenu] = useState(false);
+//   const anchorRef = useRef(null);
+//   const navigate = useNavigate();
+
+//   return (
+//     <Box>
+//       {/* Action Button */}
+//       {/* <Box ref={anchorRef} display="inline-block">
+//         <ActionButton title="Menu List" icon={MenuOutlinedIcon} onClick={handleMenuList} />
+//       </Box> */}
+
+//       <Box ref={anchorRef} display="inline-block">
+//         <ActionButton title="Menu List" icon={MenuOutlinedIcon} />
+//       </Box>
+
+//       {/* Popper Dropdown */}
+//       <Popper
+//         open={showMenu}
+//         anchorEl={anchorRef.current}
+//         placement={matchesXs ? 'bottom' : 'bottom-end'}
+//         transition
+//         disablePortal
+//         popperOptions={{
+//           modifiers: [{ name: 'offset', options: { offset: [0, 10] } }]
+//         }}
+//       >
+//         {({ TransitionProps }) => (
+//           <Transitions in={showMenu} {...TransitionProps} position={matchesXs ? 'top' : 'top-right'}>
+//             <Paper sx={{ width: 360, p: 1, borderRadius: 2, boxShadow: 3 }}>
+//               <Grid container spacing={2}>
+//                 {apps.map((app) => {
+//                   const Icon = app.icon;
+//                   return (
+//                     <Grid item xs={2} key={app.id} textAlign="center">
+//                       <Tooltip title={app.title} arrow>
+//                         <IconButton
+//                           onClick={() => {
+//                             navigate(app.url);
+//                             setShowMenu(false);
+//                           }}
+//                           sx={{ display: 'flex', flexDirection: 'column', p: 1 }}
+//                         >
+//                           {/* <Icon size={30} color="green" /> */}
+//                           {typeof Icon === 'string' ? (
+//                             <img src={Icon} alt={app.title} width={30} height={30} />
+//                           ) : (
+//                             <Icon size={30} color="green" />
+//                           )}
+//                         </IconButton>
+//                       </Tooltip>
+//                     </Grid>
+//                   );
+//                 })}
+//               </Grid>
+//             </Paper>
+//           </Transitions>
+//         )}
+//       </Popper>
+//     </Box>
+//   );
+// };
+
+// export default MenuBar;
+
 import React, { useState, useRef } from 'react';
 import MenuOutlinedIcon from '@mui/icons-material/MenuOutlined';
 import ActionButton from 'utils/ActionButton';
 import Transitions from 'ui-component/extended/Transitions';
 import { useTheme } from '@mui/material/styles';
-import { Box, Paper, Popper, useMediaQuery, Grid, IconButton, Tooltip, Dialog } from '@mui/material';
-import { FiFileText } from 'react-icons/fi';
+import { Box, Paper, Popper, useMediaQuery, Grid, IconButton, Tooltip, ClickAwayListener } from '@mui/material';
+import OCR from '../../../../assets/images/ocr.png';
+import Email from '../../../../assets/images/email.png';
 import { useNavigate } from 'react-router-dom';
 
 const apps = [
@@ -13,31 +110,47 @@ const apps = [
     title: 'OCR',
     type: 'group',
     url: '/Finance/Tools/OCR',
-    icon: FiFileText
+    icon: OCR
+  },
+  {
+    id: 'sendemail',
+    title: 'Email',
+    type: 'group',
+    url: '/Finance/Tools/SendEmail',
+    icon: Email
   }
 ];
 
 const MenuBar = () => {
   const theme = useTheme();
   const matchesXs = useMediaQuery(theme.breakpoints.down('md'));
-  const [showMenu, setShowMenu] = useState(false);
+  const [open, setOpen] = useState(false);
   const anchorRef = useRef(null);
   const navigate = useNavigate();
 
-  const handleMenuList = () => {
-    setShowMenu((prev) => !prev);
+  const handleToggle = () => {
+    setOpen((prev) => !prev);
+  };
+
+  const handleClose = (event) => {
+    if (anchorRef.current && anchorRef.current.contains(event.target)) {
+      return;
+    }
+    setOpen(false);
   };
 
   return (
     <Box>
       {/* Action Button */}
-      <Box ref={anchorRef} display="inline-block">
-        <ActionButton title="Menu List" icon={MenuOutlinedIcon} onClick={handleMenuList} />
-      </Box>
+      <ClickAwayListener onClickAway={handleClose}>
+        <Box ref={anchorRef} display="inline-block">
+          <ActionButton title="Menu List" icon={MenuOutlinedIcon} onClick={handleToggle} />
+        </Box>
+      </ClickAwayListener>
 
       {/* Popper Dropdown */}
       <Popper
-        open={showMenu}
+        open={open}
         anchorEl={anchorRef.current}
         placement={matchesXs ? 'bottom' : 'bottom-end'}
         transition
@@ -47,22 +160,38 @@ const MenuBar = () => {
         }}
       >
         {({ TransitionProps }) => (
-          <Transitions in={showMenu} {...TransitionProps} position={matchesXs ? 'top' : 'top-right'}>
-            <Paper sx={{ width: 360, p: 2, borderRadius: 2, boxShadow: 3 }}>
+          <Transitions in={open} {...TransitionProps} position={matchesXs ? 'top' : 'top-right'}>
+            <Paper
+              sx={{
+                width: 325,
+                p: 1,
+                borderRadius: 2,
+                boxShadow: 3
+              }}
+              onMouseLeave={() => setOpen(false)} // leave-ல் close
+            >
               <Grid container spacing={2}>
                 {apps.map((app) => {
                   const Icon = app.icon;
                   return (
-                    <Grid item xs={3} key={app.id} textAlign="center">
+                    <Grid item xs={2} key={app.id} textAlign="center">
                       <Tooltip title={app.title} arrow>
                         <IconButton
                           onClick={() => {
                             navigate(app.url);
-                            setShowMenu(false);
+                            setOpen(false);
                           }}
-                          sx={{ display: 'flex', flexDirection: 'column', p: 1 }}
+                          sx={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            p: 1
+                          }}
                         >
-                          <Icon size={30} color="green" />
+                          {typeof Icon === 'string' ? (
+                            <img src={Icon} alt={app.title} width={30} height={30} />
+                          ) : (
+                            <Icon size={30} color="green" />
+                          )}
                         </IconButton>
                       </Tooltip>
                     </Grid>

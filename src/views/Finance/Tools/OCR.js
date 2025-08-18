@@ -6,7 +6,6 @@ import {
   Card,
   CardActions,
   CardContent,
-  CardMedia,
   CircularProgress,
   Grid,
   TextField,
@@ -39,6 +38,7 @@ import {
 } from '@mui/icons-material';
 
 const OCR = () => {
+  const [open, setOpen] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
   const [ocrResult, setOcrResult] = useState('');
   const [loading, setLoading] = useState(false);
@@ -49,6 +49,8 @@ const OCR = () => {
   const [enhanceMode, setEnhanceMode] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
+
+  const handleClose = () => setOpen(false);
 
   const [notification, setNotification] = useState({
     open: false,
@@ -203,16 +205,19 @@ const OCR = () => {
       >
         <Box
           sx={{
-            backgroundColor: 'primary.main',
+            backgroundColor: '#673ab7',
             color: 'primary.contrastText',
-            p: 0.5,
+            pl: 2,
+            pt: 0.5,
+            pb: 0.5,
+            pr: 1.5,
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center'
           }}
         >
-          <Typography variant="h5" component="h1">
-            <ImageSearchIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
+          <Typography variant="h5" component="h1" color="white">
+            <ImageSearchIcon sx={{ mr: 1, verticalAlign: 'middle', color: 'white' }} />
             OCR Text Extractor
           </Typography>
           <Tooltip title="Settings">
@@ -407,7 +412,7 @@ const OCR = () => {
               >
                 <Box
                   sx={{
-                    backgroundColor: 'primary.main',
+                    backgroundColor: '#673ab7',
                     color: 'primary.contrastText',
                     p: 1,
                     display: 'flex',
@@ -415,7 +420,9 @@ const OCR = () => {
                     alignItems: 'center'
                   }}
                 >
-                  <Typography variant="subtitle1">Extracted Text</Typography>
+                  <Typography variant="subtitle1" color="white">
+                    Extracted Text
+                  </Typography>
                   {ocrResult && (
                     <Box>
                       <Tooltip title="Copy Text">
@@ -504,7 +511,6 @@ const OCR = () => {
       </Snackbar>
       {/* </Box> */}
     </div>
-    // </Dialog>
   );
 };
 

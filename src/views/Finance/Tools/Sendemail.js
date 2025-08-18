@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { ToastContainer } from 'react-toastify';
 import { FormControl, TextField, InputAdornment } from '@mui/material';
 import { Search } from '@mui/icons-material';
 import {
@@ -20,11 +19,12 @@ import {
   Button,
   Tooltip
 } from '@mui/material';
-
+import CircularProgress from '@mui/material/CircularProgress';
 import apiCalls from 'apicall';
+import { showToast } from 'utils/toast-component';
+import { ToastContainer } from 'react-toastify';
 import PictureAsPdfOutlinedIcon from '@mui/icons-material/PictureAsPdfOutlined';
 import RemoveRedEyeOutlinedIcon from '@mui/icons-material/RemoveRedEyeOutlined';
-import { showToast } from 'utils/toast-component';
 
 const Sendemail = () => {
   const API_URL = process.env.REACT_APP_API_URL || 'http://192.168.68.119:8053';
@@ -44,21 +44,40 @@ const Sendemail = () => {
   const allSelected = selected.length === rows.length && rows.length > 0;
   const someSelected = selected.length > 0 && !allSelected;
 
+  // useEffect(() => {
+  //   const getAllData = async () => {
+  //     try {
+  //       const res = await apiCalls('get', '/mail');
+  //       const rowsWithId = (Array.isArray(res) ? res : []).map((row, idx) => ({
+  //         ...row,
+  //         id: row.id ?? `row-${idx}`
+  //       }));
+  //       setRows(rowsWithId);
+  //     } catch (error) {
+  //       console.error('Error fetching data:', error);
+  //       setRows([]);
+  //       showToast('Error fetching mail data');
+  //     }
+  //   };
+  //   getAllData();
+  // }, []);
+
+  const getAllData = async () => {
+    try {
+      const res = await apiCalls('get', '/mail');
+      const rowsWithId = (Array.isArray(res) ? res : []).map((row, idx) => ({
+        ...row,
+        id: row.id ?? `row-${idx}`
+      }));
+      setRows(rowsWithId);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setRows([]);
+      showToast('error', 'Error fetching mail data');
+    }
+  };
+
   useEffect(() => {
-    const getAllData = async () => {
-      try {
-        const res = await apiCalls('get', '/mail');
-        const rowsWithId = (Array.isArray(res) ? res : []).map((row, idx) => ({
-          ...row,
-          id: row.id ?? `row-${idx}`
-        }));
-        setRows(rowsWithId);
-      } catch (error) {
-        console.error('Error fetching data:', error);
-        setRows([]);
-        showToast('Error fetching mail data');
-      }
-    };
     getAllData();
   }, []);
 
@@ -109,7 +128,7 @@ const Sendemail = () => {
 
   const getPDF = (pdfFileName) => {
     if (!pdfFileName) {
-      showToast('PDF filename is missing');
+      showToast('error', 'PDF filename is missing');
       return;
     }
     window.open(`${API_URL}/api/mail/download/${pdfFileName}`, '_blank');
@@ -117,7 +136,7 @@ const Sendemail = () => {
 
   const getView = async (filename) => {
     if (!filename) {
-      showToast('Filename missing for preview');
+      showToast('error', 'Filename missing for preview');
       return;
     }
     try {
@@ -128,9 +147,36 @@ const Sendemail = () => {
       setIsModalVisible(true);
     } catch (error) {
       console.error('Error previewing file:', error);
-      showToast('Failed to load document content');
+      showToast('error', 'Failed to load document content');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendEmail = async () => {
+    const selectedEmployeeCodes = rows.filter((row) => selected.includes(row.id)).map((row) => row.employeeCode);
+
+    if (selectedEmployeeCodes.length === 0) {
+      showToast('warning', 'Please select at least one employee');
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await axios.post(`${API_URL}/api/mail/send-emails`, {
+        bccAddress: formData.bccEmail,
+        employeeCodes: selectedEmployeeCodes
+      });
+      showToast('success', 'Email sent successfully');
+    } catch (error) {
+      console.error('Error sending email:', error);
+      showToast('error', 'Failed to send email');
+    } finally {
+      setLoading(false);
+      setSelected([]);
+      setFormData({ bccEmail: '' });
+      setSearchText('');
+      getAllData();
     }
   };
 
@@ -171,6 +217,11 @@ const Sendemail = () => {
               />
             </FormControl>
           </div>
+          <div className="col-md-3 mb-3">
+            <Button variant="contained" color="primary" onClick={handleSendEmail}>
+              Send<span>{selected.length > 0 ? `(${selected.length})` : ''}</span>
+            </Button>
+          </div>
         </div>
         <TableContainer
           component={Paper}
@@ -192,7 +243,7 @@ const Sendemail = () => {
               </TableRow>
             </TableHead>
 
-            <TableBody>
+            {/* <TableBody>
               {filteredRows.map((row, index) => (
                 <TableRow key={row.id}>
                   <TableCell padding="checkbox">
@@ -235,6 +286,58 @@ const Sendemail = () => {
                   </TableCell>
                 </TableRow>
               ))}
+            </TableBody> */}
+            <TableBody>
+              {filteredRows.length > 0 ? (
+                filteredRows.map((row, index) => (
+                  <TableRow key={row.id}>
+                    <TableCell padding="checkbox">
+                      <Checkbox checked={selected.includes(row.id)} onChange={() => handleSelectOne(row.id)} />
+                    </TableCell>
+                    <TableCell>{index + 1}</TableCell>
+                    <TableCell>{row.employeeCode}</TableCell>
+                    <TableCell>{row.email}</TableCell>
+                    <TableCell>
+                      <Tooltip title="View Details" arrow>
+                        <IconButton
+                          sx={{
+                            '&:hover': { backgroundColor: 'black' },
+                            color: '#673AB7',
+                            fontSize: 25,
+                            '&:hover': { color: 'black' },
+                            transform: 'scale(1.2)',
+                            transition: 'transform 0.2s ease-in-out'
+                          }}
+                          onClick={() => getView(row.textFileName)}
+                        >
+                          <RemoveRedEyeOutlinedIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Download PDF" arrow>
+                        <IconButton
+                          sx={{
+                            '&:hover': { backgroundColor: 'black' },
+                            color: '#673AB7',
+                            fontSize: 25,
+                            '&:hover': { color: 'black' },
+                            transform: 'scale(1.2)',
+                            transition: 'transform 0.2s ease-in-out'
+                          }}
+                          onClick={() => getPDF(row.pdfFileName)}
+                        >
+                          <PictureAsPdfOutlinedIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} align="center" sx={{ py: 3 }}>
+                    No data found
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -250,6 +353,19 @@ const Sendemail = () => {
             </Button>
           </DialogActions>
         </Dialog>
+        {loading && (
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              marginTop: '20px',
+              width: '100%'
+            }}
+          >
+            <CircularProgress size={40} />
+          </div>
+        )}
       </div>
     </>
   );

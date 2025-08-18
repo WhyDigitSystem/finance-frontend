@@ -30,6 +30,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
 });
 const QRBarSingle = () => {
   const [orgId] = useState(localStorage.getItem('orgId'));
+  const [createdBy] = useState(localStorage.getItem('userName'));
   const [formData, setFormData] = useState({ barCode: '', count: '' });
   const [open, setOpen] = useState(false);
   const [error, setError] = useState({});
@@ -58,8 +59,8 @@ const QRBarSingle = () => {
 
   const getAllQrBarCode = async () => {
     try {
-      const response = await apiCalls('get', `/qrbarcode/getAllSingleQrBarCode`);
-      setListViewData(response.data.paramObjectsMap.SingleQrBarCodeVO.reverse());
+      const response = await apiCalls('get', `/qrbarcode/getAllSingleQrBarCode?orgId=${orgId}`);
+      setListViewData(response.paramObjectsMap.SingleQrBarCodeVO.reverse());
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -80,7 +81,9 @@ const QRBarSingle = () => {
     const sendData = {
       ...(editId && { id: editId }),
       qrBarCodeValue: formData.barCode,
-      count: formData.count
+      count: parseInt(formData.count),
+      orgId: orgId,
+      createdBy: createdBy
     };
 
     try {
@@ -88,6 +91,7 @@ const QRBarSingle = () => {
       if (result.status) {
         showToast('success', editId ? 'Updated Successfully' : 'Created Successfully');
         handleClear();
+        getAllQrBarCode();
       } else {
         showToast('error', result.paramObjectsMap?.errorMessage || 'Creation failed');
       }
@@ -100,9 +104,9 @@ const QRBarSingle = () => {
     setEditId(row.original.id);
     setListView(false);
     try {
-      const response = await apiCalls('get', `/api/qrbarcode/getSingleQrBarCodeById?id=${row.original.id}`);
+      const response = await apiCalls('get', `/qrbarcode/getSingleQrBarCodeById?id=${row.original.id}`);
       if (response.status === true) {
-        const item = response.data.paramObjectsMap.SingleQrBarCodeVO;
+        const item = response.paramObjectsMap.SingleQrBarCodeVO;
         setFormData({ barCode: item.qrBarCodeValue, count: item.count });
       }
     } catch (error) {
