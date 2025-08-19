@@ -103,6 +103,7 @@ import { Box, Paper, Popper, useMediaQuery, Grid, IconButton, Tooltip, ClickAway
 import OCR from '../../../../assets/images/ocr.png';
 import Email from '../../../../assets/images/email.png';
 import { useNavigate } from 'react-router-dom';
+import { LinearGradient } from '@react-pdf/renderer';
 
 const apps = [
   {
@@ -144,7 +145,7 @@ const MenuBar = () => {
       {/* Action Button */}
       <ClickAwayListener onClickAway={handleClose}>
         <Box ref={anchorRef} display="inline-block">
-          <ActionButton title="Menu List" icon={MenuOutlinedIcon} onClick={handleToggle} />
+          <ActionButton title="" icon={MenuOutlinedIcon} onClick={handleToggle} />
         </Box>
       </ClickAwayListener>
 
@@ -161,39 +162,55 @@ const MenuBar = () => {
       >
         {({ TransitionProps }) => (
           <Transitions in={open} {...TransitionProps} position={matchesXs ? 'top' : 'top-right'}>
+            {/* <Paper
+              sx={{
+                width: 325,
+                p: 1,
+                // background: 'linear-gradient(to  right, #3C3B3F ,#605C3C)',
+                borderRadius: 2,
+                boxShadow: 3
+              }}
+              onMouseLeave={() => setOpen(false)} // leave-ல் close
+            > */}
             <Paper
               sx={{
                 width: 325,
                 p: 1,
                 borderRadius: 2,
-                boxShadow: 3
+                boxShadow: 3,
+                background: `
+      linear-gradient(#fff, #fff) padding-box,
+      linear-gradient(to bottom, #743ad5, #d53a9d) left/3px 100% no-repeat border-box,
+      linear-gradient(to right,  #743ad5, #d53a9d) top/100% 3px no-repeat border-box
+    `,
+                border: '3px solid transparent'
               }}
-              onMouseLeave={() => setOpen(false)} // leave-ல் close
             >
               <Grid container spacing={2}>
                 {apps.map((app) => {
                   const Icon = app.icon;
                   return (
                     <Grid item xs={2} key={app.id} textAlign="center">
-                      <Tooltip title={app.title} arrow>
-                        <IconButton
-                          onClick={() => {
-                            navigate(app.url);
-                            setOpen(false);
-                          }}
-                          sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            p: 1
-                          }}
-                        >
-                          {typeof Icon === 'string' ? (
-                            <img src={Icon} alt={app.title} width={30} height={30} />
-                          ) : (
-                            <Icon size={30} color="green" />
-                          )}
-                        </IconButton>
-                      </Tooltip>
+                      {/* <Tooltip title={app.title} arrow> */}
+                      <IconButton
+                        onClick={() => {
+                          navigate(app.url);
+                          setOpen(false);
+                        }}
+                        sx={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          p: 1
+                        }}
+                      >
+                        {typeof Icon === 'string' ? (
+                          <img src={Icon} alt={app.title} width={30} height={30} />
+                        ) : (
+                          <Icon size={30} color="green" />
+                        )}
+                        <span style={{ fontSize: '12px', color: '#4D4A4A' }}>{app.title}</span>
+                      </IconButton>
+                      {/* </Tooltip> */}
                     </Grid>
                   );
                 })}

@@ -343,12 +343,14 @@ const Sendemail = () => {
         </TableContainer>
 
         <Dialog open={isModalVisible} onClose={() => setIsModalVisible(false)} maxWidth="md" fullWidth>
-          <DialogTitle>Preview{previewFile}</DialogTitle>
+          <DialogTitle sx={{ fontWeight: 'bold', backgroundColor: '#673AB7', color: 'white', fontSize: '20px', padding: '10px' }}>
+            Preview
+          </DialogTitle>
           <DialogContent dividers style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace', maxHeight: 400, overflowY: 'auto' }}>
             {loading ? 'Loading...' : previewContent || 'No content to display'}
           </DialogContent>
           <DialogActions>
-            <Button onClick={() => setIsModalVisible(false)} color="primary">
+            <Button variant="contained" color="primary" onClick={() => setIsModalVisible(false)}>
               Close
             </Button>
           </DialogActions>

@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import Tesseract from 'tesseract.js';
+import * as pdfjsLib from 'pdfjs-dist';
 import {
   Box,
   Button,
@@ -30,16 +31,19 @@ import {
   ContentCopy as CopyIcon,
   Download as DownloadIcon,
   Language as LanguageIcon,
+  ImageSearch as ImageSearchIcon,
+  Settings as SettingsIcon,
   ZoomIn as ZoomInIcon,
   ZoomOut as ZoomOutIcon,
   RotateRight as RotateIcon,
-  Settings as SettingsIcon,
-  ImageSearch as ImageSearchIcon
+  PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 
+// PDF worker
+pdfjsLib.GlobalWorkerOptions.workerSrc = `${process.env.PUBLIC_URL}/pdf.worker.min.js`;
+
 const OCR = () => {
-  const [open, setOpen] = useState(true);
-  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedFile, setSelectedFile] = useState(null); // image or PDF
   const [ocrResult, setOcrResult] = useState('');
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -49,17 +53,7 @@ const OCR = () => {
   const [enhanceMode, setEnhanceMode] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
-
-  const handleClose = () => setOpen(false);
-
-  const [notification, setNotification] = useState({
-    open: false,
-    message: '',
-    severity: 'info'
-  });
   const fileInputRef = useRef(null);
-  const imageRef = useRef(null);
-  const resultRef = useRef(null);
 
   const languages = [
     { code: 'eng', name: 'English' },
@@ -74,69 +68,52 @@ const OCR = () => {
     { code: 'kor', name: 'Korean' }
   ];
 
-  const handleImageChange = (event) => {
+  const [notification, setNotification] = useState({
+    open: false,
+    message: '',
+    severity: 'info'
+  });
+
+  const showNotification = (message, severity) => {
+    setNotification({ open: true, message, severity });
+  };
+
+  const handleCloseNotification = () => {
+    setNotification({ ...notification, open: false });
+  };
+
+  const handleFileChange = (event) => {
     const file = event.target.files[0];
-    if (file && file.type.startsWith('image/')) {
-      setSelectedImage(file);
+    if (file && (file.type.startsWith('image/') || file.type === 'application/pdf')) {
+      setSelectedFile(file);
       setOcrResult('');
       setZoom(1);
       setRotation(0);
     } else {
-      showNotification('Please upload a valid image file!', 'error');
+      showNotification('Please upload a valid image or PDF file!', 'error');
     }
-  };
-
-  const handleExtractText = () => {
-    if (!selectedImage) {
-      showNotification('Please upload an image first!', 'warning');
-      return;
-    }
-
-    setLoading(true);
-    setProgress(0);
-    setStatus('Initializing OCR...');
-
-    const reader = new FileReader();
-    reader.onload = () => {
-      Tesseract.recognize(reader.result, language, {
-        logger: (m) => {
-          if (m.status === 'recognizing text') {
-            setProgress(Math.round(m.progress * 100));
-          }
-          setStatus(m.status);
-        },
-        // Add more options for enhanced mode
-        ...(enhanceMode && {
-          tessedit_pageseg_mode: 6, // Assume a single uniform block of text
-          tessedit_ocr_engine_mode: 1, // LSTM only
-          preserve_interword_spaces: 1 // Preserve spaces
-        })
-      })
-        .then(({ data: { text } }) => {
-          setOcrResult(text.trim());
-          showNotification('Text extracted successfully!', 'success');
-        })
-        .catch((err) => {
-          console.error(err);
-          showNotification('Error processing the image. Please try again.', 'error');
-        })
-        .finally(() => {
-          setLoading(false);
-          setProgress(0);
-          setStatus('');
-        });
-    };
-    reader.readAsDataURL(selectedImage);
   };
 
   const handleClearResult = () => {
     setOcrResult('');
-    setSelectedImage(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    setSelectedFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+    setProgress(0);
+    setStatus('');
     setZoom(1);
     setRotation(0);
+  };
+
+  const handleZoomIn = () => {
+    setZoom((prev) => Math.min(prev + 0.1, 2));
+  };
+
+  const handleZoomOut = () => {
+    setZoom((prev) => Math.max(prev - 0.1, 0.5));
+  };
+
+  const handleRotate = () => {
+    setRotation((prev) => (prev + 90) % 360);
   };
 
   const handleCopyText = () => {
@@ -156,53 +133,154 @@ const OCR = () => {
     document.body.removeChild(element);
   };
 
-  const showNotification = (message, severity) => {
-    setNotification({ open: true, message, severity });
+  const handleExtractText = async () => {
+    if (!selectedFile) {
+      showNotification('Please upload a file first!', 'warning');
+      return;
+    }
+
+    setLoading(true);
+    setProgress(0);
+    setStatus('Initializing OCR...');
+    let extractedText = '';
+
+    try {
+      if (selectedFile.type.startsWith('image/')) {
+        // Image OCR
+        const reader = new FileReader();
+        reader.onload = async () => {
+          const {
+            data: { text }
+          } = await Tesseract.recognize(reader.result, language, {
+            logger: (m) => {
+              if (m.status === 'recognizing text') setProgress(Math.round(m.progress * 100));
+              setStatus(m.status);
+            },
+            ...(enhanceMode && { tessedit_pageseg_mode: 6, tessedit_ocr_engine_mode: 1, preserve_interword_spaces: 1 })
+          });
+          setOcrResult(text.trim());
+          showNotification('Text extracted successfully!', 'success');
+          setLoading(false);
+        };
+        reader.readAsDataURL(selectedFile);
+      } else if (selectedFile.type === 'application/pdf') {
+        // PDF OCR
+        const arrayBuffer = await selectedFile.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i);
+          const viewport = page.getViewport({ scale: 2 });
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
+          await page.render({ canvasContext: context, viewport }).promise;
+
+          const imgData = canvas.toDataURL('image/png');
+          const {
+            data: { text }
+          } = await Tesseract.recognize(imgData, language, {
+            logger: (m) => {
+              if (m.status === 'recognizing text') {
+                const pageProgress = Math.round((m.progress / pdf.numPages + (i - 1) / pdf.numPages) * 100);
+                setProgress(pageProgress);
+              }
+              setStatus(`Page ${i}/${pdf.numPages}: ${m.status}`);
+            },
+            ...(enhanceMode && { tessedit_pageseg_mode: 6, tessedit_ocr_engine_mode: 1, preserve_interword_spaces: 1 })
+          });
+          extractedText += text + '\n\n';
+        }
+        setOcrResult(extractedText.trim());
+        showNotification('Text extracted from PDF successfully!', 'success');
+        setLoading(false);
+        setProgress(100);
+        setStatus('Completed');
+      }
+    } catch (error) {
+      console.error(error);
+      showNotification('Error extracting text. Please try again.', 'error');
+      setLoading(false);
+    }
   };
 
-  const handleCloseNotification = () => {
-    setNotification({ ...notification, open: false });
-  };
+  const renderFilePreview = () => {
+    if (!selectedFile) return null;
 
-  const handleZoomIn = () => {
-    setZoom((prev) => Math.min(prev + 0.1, 2));
-  };
-
-  const handleZoomOut = () => {
-    setZoom((prev) => Math.max(prev - 0.1, 0.5));
-  };
-
-  const handleRotate = () => {
-    setRotation((prev) => (prev + 90) % 360);
-  };
-
-  const triggerFileInput = () => {
-    fileInputRef.current.click();
+    if (selectedFile.type === 'application/pdf') {
+      return (
+        <Box sx={{ textAlign: 'center', p: 2 }}>
+          <PdfIcon sx={{ fontSize: 48, color: 'error.main' }} />
+          <Typography variant="h6" sx={{ mt: 1 }}>
+            {selectedFile.name}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            PDF Document
+          </Typography>
+        </Box>
+      );
+    } else if (selectedFile.type.startsWith('image/')) {
+      return (
+        <>
+          <Box
+            sx={{
+              transform: `scale(${zoom}) rotate(${rotation}deg)`,
+              transition: 'transform 0.3s ease',
+              maxWidth: '100%',
+              maxHeight: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          >
+            <img
+              src={URL.createObjectURL(selectedFile)}
+              alt="Uploaded"
+              style={{
+                maxWidth: '100%',
+                maxHeight: '250px',
+                objectFit: 'contain',
+                cursor: 'zoom-in'
+              }}
+              onClick={() => window.open(URL.createObjectURL(selectedFile), '_blank')}
+            />
+          </Box>
+          <Box
+            sx={{
+              position: 'absolute',
+              bottom: 8,
+              right: 8,
+              display: 'flex',
+              gap: 1,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              borderRadius: 2,
+              p: 1
+            }}
+          >
+            <Tooltip title="Zoom In">
+              <IconButton onClick={handleZoomIn} color="inherit" size="small">
+                <ZoomInIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Zoom Out">
+              <IconButton onClick={handleZoomOut} color="inherit" size="small">
+                <ZoomOutIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Rotate">
+              <IconButton onClick={handleRotate} color="inherit" size="small">
+                <RotateIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </>
+      );
+    }
   };
 
   return (
-    // <Box
-    //   sx={{
-    //     minHeight: '100vh',
-    //     display: 'flex',
-    //     justifyContent: 'center',
-    //     alignItems: 'center',
-    //     backgroundColor: 'background.default',
-    //     p: 2,
-    //     background: 'linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)'
-    //   }}
-    // >
-    // <Dialog open={open} onClose={handleClose}>
     <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
-      <Card
-        sx={{
-          width: '100%',
-          maxWidth: '1200px',
-          borderRadius: 4,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
-          overflow: 'hidden'
-        }}
-      >
+      <Card sx={{ width: '100%', maxWidth: '1200px', borderRadius: 4, boxShadow: '0 8px 32px rgba(0,0,0,0.1)', overflow: 'hidden' }}>
         <Box
           sx={{
             backgroundColor: '#673ab7',
@@ -217,8 +295,7 @@ const OCR = () => {
           }}
         >
           <Typography variant="h5" component="h1" color="white">
-            <ImageSearchIcon sx={{ mr: 1, verticalAlign: 'middle', color: 'white' }} />
-            OCR Text Extractor
+            <ImageSearchIcon sx={{ mr: 1, verticalAlign: 'middle', color: 'white' }} /> OCR Text Extractor
           </Typography>
           <Tooltip title="Settings">
             <IconButton color="inherit" onClick={() => setShowSettings(!showSettings)}>
@@ -236,12 +313,7 @@ const OCR = () => {
               <Grid item xs={12} sm={6}>
                 <FormControl fullWidth>
                   <InputLabel>Language</InputLabel>
-                  <Select
-                    value={language}
-                    label="Language"
-                    onChange={(e) => setLanguage(e.target.value)}
-                    startAdornment={<LanguageIcon sx={{ mr: 1 }} />}
-                  >
+                  <Select value={language} label="Language" onChange={(e) => setLanguage(e.target.value)}>
                     {languages.map((lang) => (
                       <MenuItem key={lang.code} value={lang.code}>
                         {lang.name}
@@ -254,13 +326,7 @@ const OCR = () => {
                 <FormControlLabel
                   control={<Switch checked={enhanceMode} onChange={(e) => setEnhanceMode(e.target.checked)} color="primary" />}
                   label="Enhanced Mode"
-                  sx={{ mt: 1 }}
                 />
-                <Tooltip title="Enhances accuracy for clear documents but may be slower">
-                  <IconButton size="small" sx={{ ml: 1 }}>
-                    <Typography variant="caption">?</Typography>
-                  </IconButton>
-                </Tooltip>
               </Grid>
             </Grid>
           </Paper>
@@ -268,7 +334,6 @@ const OCR = () => {
 
         <CardContent>
           <Grid container spacing={3}>
-            {/* Image Upload Section */}
             <Grid item xs={12} md={6}>
               <Box
                 sx={{
@@ -286,73 +351,20 @@ const OCR = () => {
                   overflow: 'hidden'
                 }}
               >
-                {selectedImage ? (
-                  <>
-                    <Box
-                      ref={imageRef}
-                      sx={{
-                        transform: `scale(${zoom}) rotate(${rotation}deg)`,
-                        transition: 'transform 0.3s ease',
-                        maxWidth: '100%',
-                        maxHeight: '100%',
-                        display: 'flex',
-                        justifyContent: 'center',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <img
-                        src={URL.createObjectURL(selectedImage)}
-                        alt="Uploaded"
-                        style={{
-                          maxWidth: '100%',
-                          maxHeight: '250px',
-                          objectFit: 'contain',
-                          cursor: 'zoom-in'
-                        }}
-                        onClick={() => window.open(URL.createObjectURL(selectedImage), '_blank')}
-                      />
-                    </Box>
-                    <Box
-                      sx={{
-                        position: 'absolute',
-                        bottom: 8,
-                        right: 8,
-                        display: 'flex',
-                        gap: 1,
-                        backgroundColor: 'rgba(0,0,0,0.5)',
-                        borderRadius: 2,
-                        p: 1
-                      }}
-                    >
-                      <Tooltip title="Zoom In">
-                        <IconButton onClick={handleZoomIn} color="inherit" size="small">
-                          <ZoomInIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Zoom Out">
-                        <IconButton onClick={handleZoomOut} color="inherit" size="small">
-                          <ZoomOutIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                      <Tooltip title="Rotate">
-                        <IconButton onClick={handleRotate} color="inherit" size="small">
-                          <RotateIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </>
+                {selectedFile ? (
+                  renderFilePreview()
                 ) : (
                   <>
                     <UploadIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
                     <Typography color="textSecondary" align="center" gutterBottom>
-                      Drag & drop an image here, or click to browse
+                      Drag & drop an image or PDF here, or click to browse
                     </Typography>
                     <Button variant="contained" component="label" startIcon={<UploadIcon />}>
-                      Select Image
-                      <input type="file" hidden onChange={handleImageChange} accept="image/*" ref={fileInputRef} />
+                      Select File
+                      <input type="file" hidden onChange={handleFileChange} ref={fileInputRef} accept="image/*,application/pdf" />
                     </Button>
                     <Typography variant="caption" color="textSecondary" sx={{ mt: 1 }}>
-                      Supports JPG, PNG, BMP, TIFF
+                      Supports JPG, PNG, PDF
                     </Typography>
                   </>
                 )}
@@ -363,7 +375,7 @@ const OCR = () => {
                   variant="contained"
                   color="primary"
                   onClick={handleExtractText}
-                  disabled={loading || !selectedImage}
+                  disabled={loading || !selectedFile}
                   startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                   sx={{ flex: 1 }}
                 >
@@ -373,7 +385,7 @@ const OCR = () => {
                   variant="outlined"
                   color="secondary"
                   onClick={handleClearResult}
-                  disabled={!selectedImage && !ocrResult}
+                  disabled={!selectedFile && !ocrResult}
                   startIcon={<ClearIcon />}
                 >
                   Clear
@@ -395,7 +407,6 @@ const OCR = () => {
               )}
             </Grid>
 
-            {/* OCR Results Section */}
             <Grid item xs={12} md={6}>
               <Box
                 sx={{
@@ -438,28 +449,32 @@ const OCR = () => {
                     </Box>
                   )}
                 </Box>
-                <Box sx={{ p: 2, flex: 1, overflow: 'auto' }} ref={resultRef}>
+                <Box
+                  sx={{
+                    p: 2,
+                    flex: 1,
+                    overflow: 'auto'
+                  }}
+                >
                   {ocrResult ? (
                     <TextField
                       multiline
                       fullWidth
                       value={ocrResult}
                       variant="outlined"
-                      InputProps={{
-                        readOnly: true,
-                        style: {
-                          fontFamily: "'Roboto Mono', monospace",
-                          fontSize: '0.875rem'
-                        }
-                      }}
+                      InputProps={{ readOnly: true, style: { fontFamily: "'Roboto Mono', monospace", fontSize: '0.875rem' } }}
                       sx={{
                         '& .MuiOutlinedInput-root': {
-                          height: '100%',
-                          alignItems: 'flex-start'
+                          alignItems: 'flex-start',
+                          overflow: 'auto',
+                          '& fieldset': {
+                            border: 'none' // remove the actual outline
+                          }
                         },
-                        height: '100%'
+                        height: '400px',
+                        overflow: 'auto'
                       }}
-                      minRows={10}
+                      // minRows={10}
                     />
                   ) : (
                     <Box
@@ -474,14 +489,16 @@ const OCR = () => {
                       }}
                     >
                       <Typography variant="body1" gutterBottom>
-                        {selectedImage ? "Click 'Extract Text' to process the image" : 'Upload an image to extract text'}
+                        {selectedFile ? "Click 'Extract Text' to process the file" : 'Upload a file to extract text'}
                       </Typography>
-                      <Chip
-                        icon={<LanguageIcon />}
-                        label={`Selected Language: ${languages.find((l) => l.code === language)?.name || language}`}
-                        variant="outlined"
-                        sx={{ mt: 1 }}
-                      />
+                      {selectedFile?.type === 'image' && (
+                        <Chip
+                          icon={<LanguageIcon />}
+                          label={`Selected Language: ${languages.find((l) => l.code === language)?.name || language}`}
+                          variant="outlined"
+                          sx={{ mt: 1 }}
+                        />
+                      )}
                     </Box>
                   )}
                 </Box>
@@ -491,7 +508,6 @@ const OCR = () => {
         </CardContent>
 
         <Divider sx={{ my: 1 }} />
-
         <CardActions sx={{ justifyContent: 'flex-end', p: 2 }}>
           <Typography variant="caption" color="text.secondary">
             Powered by Tesseract.js v{Tesseract.version}
@@ -509,7 +525,6 @@ const OCR = () => {
           {notification.message}
         </Alert>
       </Snackbar>
-      {/* </Box> */}
     </div>
   );
 };
