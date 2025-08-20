@@ -611,10 +611,10 @@ const UrCostInvoicegna = ({ selectedRow }) => {
             prevData.map((item, index) =>
               index === 0
                 ? {
-                  ...item,
-                  section: selectedTDS.sectionName,
-                  tdsPer: selectedTDS.tcsPercentage
-                }
+                    ...item,
+                    section: selectedTDS.sectionName,
+                    tdsPer: selectedTDS.tcsPercentage
+                  }
                 : item
             )
           );
@@ -745,11 +745,11 @@ const UrCostInvoicegna = ({ selectedRow }) => {
       prev.map((row, idx) =>
         idx === index
           ? {
-            ...row,
-            ...defaultStateValues,
-            chargeLedger: selectedChargeCode
-            // chargeAccount: selectedChargeCode
-          }
+              ...row,
+              ...defaultStateValues,
+              chargeLedger: selectedChargeCode
+              // chargeAccount: selectedChargeCode
+            }
           : row
       )
     );
@@ -1318,6 +1318,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                       value={formData.purVoucherNo}
                       onChange={handleInputChange}
                       disabled
+                      InputLabelProps={{ shrink: true }}
                       error={!!fieldErrors.purVoucherNo}
                       helperText={fieldErrors.purVoucherNo}
                     />
@@ -1335,6 +1336,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                         slotProps={{
                           textField: { size: 'small', clearable: true }
                         }}
+                        InputLabelProps={{ shrink: true }}
                         format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>
@@ -1400,6 +1402,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                       name="supplierCode"
                       disabled
                       inputProps={{ maxLength: 30 }}
+                      InputLabelProps={{ shrink: true }}
                       value={formData.supplierCode}
                       onChange={handleInputChange}
                       error={!!fieldErrors.supplierCode}
@@ -1628,7 +1631,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                       disabled={formData.mode === 'SUBMIT'}
                       // value={formData.currency}
                       value={formData.currency}
-                    // || (currency.length === 1 ? currency[0].currency : '')
+                      // || (currency.length === 1 ? currency[0].currency : '')
                     >
                       {currency &&
                         currency.map((item) => (
@@ -1929,7 +1932,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.exRate && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -1995,7 +1998,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.gstPercent ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.gstPercent && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2037,7 +2040,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.fcAmount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2079,7 +2082,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.lcAmount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2120,7 +2123,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.billAmt ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.billAmt && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2388,8 +2391,8 @@ const UrCostInvoicegna = ({ selectedRow }) => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllUrCostInvoiceById}
-            // isPdf={true}
-            // GeneratePdf={GeneratePdf}
+              // isPdf={true}
+              // GeneratePdf={GeneratePdf}
             />
           )}
           {/* {downloadPdf && <GeneratePdfTemp row={pdfData} />} */}
@@ -2401,7 +2404,7 @@ const UrCostInvoicegna = ({ selectedRow }) => {
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={handleConfirmAction}
         onCancel={handleCloseModal}
-      // onCancel={() => setModalOpen(false)}
+        // onCancel={() => setModalOpen(false)}
       />
     </>
   );
