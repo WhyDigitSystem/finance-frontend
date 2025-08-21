@@ -38,11 +38,14 @@ import {
   RotateRight as RotateIcon,
   PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
+import VolumeUpIcon from '@mui/icons-material/VolumeUp';
+import { color } from '@mui/system';
 
 // PDF worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `${process.env.PUBLIC_URL}/pdf.worker.min.js`;
 
 const OCR = () => {
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null); // image or PDF
   const [ocrResult, setOcrResult] = useState('');
   const [loading, setLoading] = useState(false);
@@ -97,6 +100,7 @@ const OCR = () => {
   const handleClearResult = () => {
     setOcrResult('');
     setSelectedFile(null);
+    window.speechSynthesis.cancel();
     if (fileInputRef.current) fileInputRef.current.value = '';
     setProgress(0);
     setStatus('');
@@ -132,6 +136,50 @@ const OCR = () => {
     element.click();
     document.body.removeChild(element);
   };
+
+  //
+  // const handleSpeakText = () => {
+  //   if (!ocrResult) {
+  //     showNotification('No text available to speak', 'warning');
+  //     return;
+  //   }
+
+  //   // Stop any ongoing speech before starting
+  //   window.speechSynthesis.cancel();
+
+  //   const utterance = new SpeechSynthesisUtterance(ocrResult);
+  //   utterance.lang = 'en-US'; // You can change to 'ta-IN' for Tamil, etc.
+  //   utterance.rate = 1; // Speed (0.5 - 2)
+  //   utterance.pitch = 1; // Voice pitch
+  //   utterance.volume = 1; // Volume (0 - 1)
+
+  //   window.speechSynthesis.speak(utterance);
+  //   handleClearResult();
+  // };
+  const handleSpeakText = () => {
+    if (!ocrResult) {
+      showNotification('No text available to read', 'error');
+      return;
+    }
+
+    // If already speaking → stop it
+    if (window.speechSynthesis.speaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      showNotification('Stopped', 'info');
+      return;
+    }
+
+    // Otherwise → start speaking
+    const speech = new SpeechSynthesisUtterance(ocrResult);
+    speech.lang = 'en-US'; // use "ta-IN" for Tamil
+    speech.onend = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(speech);
+    setIsSpeaking(true);
+    showNotification('Reading Text', 'success');
+  };
+
+  //
 
   const handleExtractText = async () => {
     if (!selectedFile) {
@@ -444,6 +492,11 @@ const OCR = () => {
                       <Tooltip title="Download Text">
                         <IconButton size="small" color="inherit" onClick={handleDownloadText}>
                           <DownloadIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Voice">
+                        <IconButton size="small" color="inherit" onClick={handleSpeakText}>
+                          <VolumeUpIcon fontSize="small" style={{ color: isSpeaking ? 'red' : 'white' }} />
                         </IconButton>
                       </Tooltip>
                     </Box>
