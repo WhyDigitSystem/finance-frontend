@@ -1395,7 +1395,7 @@ function CostEstimateReport() {
           </Box>
           {/* </Box> */}
         </DialogTitle>
-        <DialogContent>
+        {/* <DialogContent>
           {rowData.length > 0 && (
             <CommonReportTableGrouped
               columns={getColumns()}
@@ -1417,7 +1417,35 @@ function CostEstimateReport() {
               }}
             />
           )}
-        </DialogContent>
+        </DialogContent> */}
+        <DialogContent>
+  {rowData.length > 0 ? (
+    <CommonReportTableGrouped
+      columns={getColumns()}
+      data={rowData}
+      fileName={`${formData.viewMode === 'details' ? 'Detailed' : 'Summary'} Cost Estimate Report`}
+      handleDownloadExcel={handleDownloadExcel}
+      // sumFields={getSumFields()}
+      headerFields={headerFields}
+      handleDownloadPDF={async () => {
+        const logoBase64 = await getLogo();
+        handleDownloadPdf({
+          logo: logoBase64,
+          columns: getColumns(),
+          data: rowData,
+          fileName: 'Cost Estimate Report',
+          userName,
+          formData
+        });
+      }}
+    />
+  ) : (
+    <div style={{ textAlign: 'center', padding: '20px' }}>
+      No data found
+    </div>
+  )}
+</DialogContent>
+
       </Dialog>
     </>
   );
