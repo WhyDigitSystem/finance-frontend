@@ -39,7 +39,6 @@ import {
   PictureAsPdf as PdfIcon
 } from '@mui/icons-material';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
-import { color } from '@mui/system';
 
 // PDF worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `${process.env.PUBLIC_URL}/pdf.worker.min.js`;
@@ -137,32 +136,51 @@ const OCR = () => {
     document.body.removeChild(element);
   };
 
-  //
   // const handleSpeakText = () => {
   //   if (!ocrResult) {
-  //     showNotification('No text available to speak', 'warning');
+  //     showNotification('No text available to read', 'error');
   //     return;
   //   }
 
-  //   // Stop any ongoing speech before starting
-  //   window.speechSynthesis.cancel();
+  //   // If already speaking → stop it
+  //   if (window.speechSynthesis.speaking) {
+  //     window.speechSynthesis.cancel();
+  //     setIsSpeaking(false);
+  //     showNotification('Stopped', 'info');
+  //     return;
+  //   }
 
-  //   const utterance = new SpeechSynthesisUtterance(ocrResult);
-  //   utterance.lang = 'en-US'; // You can change to 'ta-IN' for Tamil, etc.
-  //   utterance.rate = 1; // Speed (0.5 - 2)
-  //   utterance.pitch = 1; // Voice pitch
-  //   utterance.volume = 1; // Volume (0 - 1)
-
-  //   window.speechSynthesis.speak(utterance);
-  //   handleClearResult();
+  //   // Otherwise → start speaking
+  //   const speech = new SpeechSynthesisUtterance(ocrResult);
+  //   speech.lang = 'en-US'; // use "ta-IN" for Tamil
+  //   speech.onend = () => setIsSpeaking(false);
+  //   window.speechSynthesis.speak(speech);
+  //   setIsSpeaking(true);
+  //   showNotification('Reading Text', 'success');
   // };
+
+  // handleSpeakText
+  // Map OCR language codes to SpeechSynthesis language codes
+  const speechLangMap = {
+    eng: 'en-US', // English
+    fra: 'fr-FR', // French
+    spa: 'es-ES', // Spanish
+    deu: 'de-DE', // German
+    ita: 'it-IT', // Italian
+    por: 'pt-PT', // Portuguese
+    rus: 'ru-RU', // Russian
+    chi_sim: 'zh-CN', // Chinese Simplified
+    jpn: 'ja-JP', // Japanese
+    kor: 'ko-KR' // Korean
+  };
+
   const handleSpeakText = () => {
     if (!ocrResult) {
       showNotification('No text available to read', 'error');
       return;
     }
 
-    // If already speaking → stop it
+    // Stop ongoing speech
     if (window.speechSynthesis.speaking) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
@@ -170,13 +188,27 @@ const OCR = () => {
       return;
     }
 
-    // Otherwise → start speaking
+    const speechLang = speechLangMap[language] || 'en-US';
     const speech = new SpeechSynthesisUtterance(ocrResult);
-    speech.lang = 'en-US'; // use "ta-IN" for Tamil
+    speech.lang = speechLang;
+    speech.rate = 1;
+    speech.pitch = 1;
+    speech.volume = 1;
+
+    // ✅ Find a voice that matches the language
+    const voices = window.speechSynthesis.getVoices();
+    const matchedVoice = voices.find((v) => v.lang === speechLang);
+
+    if (matchedVoice) {
+      speech.voice = matchedVoice;
+    } else {
+      showNotification(`No voice found for ${speechLang}. Using default.`, 'warning');
+    }
+
     speech.onend = () => setIsSpeaking(false);
     window.speechSynthesis.speak(speech);
     setIsSpeaking(true);
-    showNotification('Reading Text', 'success');
+    showNotification(`Reading text in ${speechLang}`, 'success');
   };
 
   //

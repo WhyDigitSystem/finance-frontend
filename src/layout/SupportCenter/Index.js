@@ -226,7 +226,7 @@ const SupportTickets = () => {
             bottom: 16,
             right: 16,
             zIndex: 1500,
-            backgroundColor: '#FF421B',
+            // backgroundColor: '#FF421B',
             '&:hover': { backgroundColor: '#E03B16' }
           }}
         >

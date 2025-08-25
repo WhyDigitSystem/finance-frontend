@@ -69,7 +69,7 @@ const QRbargroup = () => {
             </FormControl>
           </div>
           <div className="col-md-3 mb-3">
-            <FormControl fullWidth>
+            <FormControl fullWidth variant="filled">
               <LocalizationProvider dateAdapter={AdapterDayjs}>
                 <Controller
                   name="docDate"

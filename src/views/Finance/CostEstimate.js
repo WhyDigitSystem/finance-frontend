@@ -455,6 +455,7 @@ const CostEstimate = () => {
                 createdBy: loginUserName,
                 // department: formData.department,
                 employeeCode: formData.empCode,
+                approvalRemarks:formData.approvalRemarks,
                 employeeName: formData.empName,
                 status: formData.status,
                 fromDate: formData.fromDate?.format('YYYY-MM-DD'),

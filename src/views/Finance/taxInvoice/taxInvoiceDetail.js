@@ -1232,6 +1232,9 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
     if (!formData.vdate) {
       errors.vdate = 'V Date is required';
     }
+    if (!formData.billCurr) {
+      errors.billCurr = 'Currency is required';
+    }
 
     let detailTableDataValid = true;
     const newTableErrors = withdrawalsTableData.map((row) => {
@@ -1311,15 +1314,15 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
     const annexureVO = isAnnexureEmpty
       ? null
       : taxInvoiceAnnexure.map((row) => ({
-        ...(editId && { id: row.id }),
-        skuType: row.skuType || '',
-        rate: parseFloat(row.rate),
-        qty: parseFloat(row.kitqty),
-        dsec: row.kitname,
-        kitId: row.kitid,
-        transDate: row.transactiondate ? dayjs(row.transactiondate).format('YYYY-MM-DD') : null,
-        transNo: row.transactionno
-      }));
+          ...(editId && { id: row.id }),
+          skuType: row.skuType || '',
+          rate: parseFloat(row.rate),
+          qty: parseFloat(row.kitqty),
+          dsec: row.kitname,
+          kitId: row.kitid,
+          transDate: row.transactiondate ? dayjs(row.transactiondate).format('YYYY-MM-DD') : null,
+          transNo: row.transactionno
+        }));
 
     const saveFormData = {
       ...(editId && { id: editId }),
@@ -1805,15 +1808,17 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                 </FormControl>
               </div>
               <div className="col-md-3 mb-3">
-                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.billCurr}>
-                  <InputLabel id="billCurrency">Bill Currency</InputLabel>
+                <FormControl size="small" variant="outlined" fullWidth error={!!errors.billCurr}>
+                  <InputLabel id="billCurrency">
+                    Bill Currency <span style={{ color: 'red', fontSize: '20px' }}>*</span>
+                  </InputLabel>
                   <Select
                     labelId="billCurrency"
                     id="billCurrency"
                     disabled={formData.status === 'TAX'}
                     label="Bill Currency"
-                    name="billCurrency"
-                    value={formData.billCurr}
+                    name="billCurr"
+                    value={formData.billCurr || ''}
                     onChange={(e) => {
                       const selectedCurrency = e.target.value;
                       const matched = partyCurrency.find((item) => item.currency === selectedCurrency);
@@ -1824,6 +1829,13 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                         billCurr: selectedCurrency,
                         billCurrRate: exRate
                       });
+                      //
+                      setErrors((prev) => ({
+                        ...prev,
+                        billCurr: ''
+                      }));
+
+                      //
                     }}
                   >
                     {partyCurrency.map((billCurrency) => (
@@ -1832,9 +1844,10 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                       </MenuItem>
                     ))}
                   </Select>
-                  {fieldErrors.billCurr && <FormHelperText>{fieldErrors.billCurr}</FormHelperText>}
+                  {errors.billCurr && <FormHelperText>{errors.billCurr}</FormHelperText>}
                 </FormControl>
               </div>
+
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField id="exRate" name="exRate" label="Ex. rate" size="small" value={formData.billCurrRate} disabled />
@@ -2355,7 +2368,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                       style={{ width: '100px' }}
                                       onChange={(e) => handleTableInputChange(index, 'rate', e.target.value)}
                                       className={withdrawalsTableErrors[index]?.rate ? 'error form-control' : 'form-control'}
-                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.rate && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2458,7 +2471,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.exRate && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2497,7 +2510,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.fcAmount && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2539,7 +2552,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
-                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.lcAmount && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2577,7 +2590,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.billAmount ? 'error form-control' : 'form-control'}
-                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.billAmount && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2616,7 +2629,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.sac ? 'error form-control' : 'form-control'}
-                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.sac && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2658,7 +2671,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.GSTPercent ? 'error form-control' : 'form-control'}
-                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.GSTPercent && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2697,7 +2710,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                         }
                                       }}
                                       className={withdrawalsTableErrors[index]?.gst ? 'error form-control' : 'form-control'}
-                                    // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
+                                      // onKeyDown={(e) => handleKeyDown(e, row, withdrawalsTableData)}
                                     />
                                     {withdrawalsTableErrors[index]?.gst && (
                                       <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
