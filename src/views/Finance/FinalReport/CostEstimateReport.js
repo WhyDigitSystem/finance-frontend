@@ -35,10 +35,10 @@ import CommonReportTableGrouped from '../../../utils/CommonReportTableGrouped';
 import ActionButton from 'utils/ActionButton';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { useNavigate } from 'react-router-dom';
+// import { useNavigate } from 'react-router-dom';
 import { Scale } from '@mui/icons-material';
 function CostEstimateReport() {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
   const [userName] = useState(localStorage.getItem('userName'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
@@ -297,32 +297,32 @@ function CostEstimateReport() {
   const getColumns = () => {
     return formData.viewMode === 'details'
       ? [
-          // { accessorKey: 'docId', header: 'Doc ID', size: 80 },
-          {
-            accessorKey: 'docId',
-            header: 'Doc ID',
-            size: 80,
-            Cell: ({ row }) => {
-              const [hovered, setHovered] = React.useState(false);
+          { accessorKey: 'docId', header: 'Doc ID', size: 80 },
+          // {
+          //   accessorKey: 'docId',
+          //   header: 'Doc ID',
+          //   size: 80,
+          //   Cell: ({ row }) => {
+          //     const [hovered, setHovered] = React.useState(false);
 
-              return (
-                <span
-                  style={{
-                    color: 'red',
-                    cursor: 'pointer',
-                    display: 'inline-block',
-                    transform: hovered ? 'scale(1.1)' : 'scale(1)',
-                    transition: 'transform 0.2s ease-in-out'
-                  }}
-                  onMouseEnter={() => setHovered(true)}
-                  onMouseLeave={() => setHovered(false)}
-                  onClick={() => navigate(`/finance/CostEstimate`)}
-                >
-                  {row.original.docId}
-                </span>
-              );
-            }
-          },
+          //     return (
+          //       <span
+          //         style={{
+          //           color: 'red',
+          //           cursor: 'pointer',
+          //           display: 'inline-block',
+          //           transform: hovered ? 'scale(1.1)' : 'scale(1)',
+          //           transition: 'transform 0.2s ease-in-out'
+          //         }}
+          //         onMouseEnter={() => setHovered(true)}
+          //         onMouseLeave={() => setHovered(false)}
+          //         onClick={() => navigate(`/finance/CostEstimate`)}
+          //       >
+          //         {row.original.docId}
+          //       </span>
+          //     );
+          //   }
+          // },
           { accessorKey: 'docdate', header: 'Doc Date', size: 80 },
           // { accessorKey: 'Vid', header: 'Invoice No', size: 80 },
           // { accessorKey: 'Vdate', header: 'Invoice Date', size: 120 },
@@ -338,7 +338,7 @@ function CostEstimateReport() {
             header: 'Amount',
             size: 50,
             Cell: ({ cell }) => (
-              <div style={{ textAlign: 'right', width: '100%' }}>
+              <div style={{ textAlign: 'right', width: '100%',color: 'red'}}>
                 {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
               </div>
             ),
