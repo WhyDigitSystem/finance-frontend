@@ -20,6 +20,9 @@ const CommonReportTable = ({
   handleDownloadPdf,
   sumFields = [],
   headerFields = [],
+ showDownloadButtonsPdf = true,
+ showDownloadButtonsExcel = true, // <- add this line
+
   filters = [], // [{ label, value, options, onChange }]
   onFilterDone = () => {}
 }) => {
@@ -241,6 +244,7 @@ const CommonReportTable = ({
         }}
         renderTopToolbarCustomActions={({ table }) => (
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
+               {showDownloadButtonsExcel && (
             <Box>
               <ActionButton
                 title="Download Excel"
@@ -248,8 +252,13 @@ const CommonReportTable = ({
                 onClick={handleDownloadExcel}
                 isLoading={isLoading}
                 margin="0 8px 0 8px"
+
               />
             </Box>
+            
+               )}
+            {showDownloadButtonsPdf && (
+               
             <Box>
               <ActionButton
                 title="Download PDF"
@@ -259,6 +268,8 @@ const CommonReportTable = ({
                 margin="0 8px 0 8px"
               />
             </Box>
+            
+                )}
 
             <Box
               sx={{

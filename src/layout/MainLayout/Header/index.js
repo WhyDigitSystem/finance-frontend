@@ -11,6 +11,7 @@ import ProfileSection from './ProfileSection';
 import SearchSection from './SearchSection';
 import HAISection from './HAISection/haisection';
 import MenuBar from './GlobalSection/MenuBar';
+import FullScreen from './GlobalSection/FullScreen';
 
 // assets
 import { IconMenu2 } from '@tabler/icons-react';
@@ -155,6 +156,7 @@ const Header = ({ handleLeftDrawerToggle }) => {
       <GlobalSection />
       <MenuBar />
       {/* <SiteMapSection /> */}
+      <FullScreen />
       <ProfileSection />
     </>
   );

@@ -35,6 +35,8 @@ import CommonReportTableGrouped from '../../../utils/CommonReportTableGrouped';
 import ActionButton from 'utils/ActionButton';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { ToastContainer } from 'react-toastify';
+
 // import { useNavigate } from 'react-router-dom';
 import { Scale } from '@mui/icons-material';
 function CostEstimateReport() {
@@ -224,7 +226,7 @@ function CostEstimateReport() {
           if (selectedSections.date) {
             response = await apiCalls(
               'get',
-              `/costEstimation/getCostEstimationDetails?branchCode=${formData.branchCode}&employeeName=${formData.employeeName}&finYear=${finYear}&orgId=${orgId}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
+              `/costEstimation/getCostEstimationDetails?branchCode=${formData.branchCode}&category=${formData.category}&employeeName=${formData.employeeName}&finYear=${finYear}&orgId=${orgId}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
             );
           } else {
             response = await apiCalls(
@@ -236,7 +238,7 @@ function CostEstimateReport() {
           if (selectedSections.date) {
             response = await apiCalls(
               'get',
-              `/costEstimation/getCostEstimationSummary?branchCode=${formData.branchCode}&employeeName=${formData.employeeName}&finYear=${finYear}&orgId=${orgId}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
+              `/costEstimation/getCostEstimationSummary?branchCode=${formData.branchCode}&category=${formData.category}&employeeName=${formData.employeeName}&finYear=${finYear}&orgId=${orgId}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
             );
           } else {
             response = await apiCalls(
@@ -1143,6 +1145,7 @@ function CostEstimateReport() {
 
   return (
     <>
+     <ToastContainer />
       <div className="card w-full bg-base-100 shadow-xl" style={{ padding: '10px', borderRadius: '10px' }}>
         <>
           <div className="row">
@@ -1166,7 +1169,7 @@ function CostEstimateReport() {
                       color="secondary"
                     />
                   }
-                  label="Employee Name"
+                  label="Emp Name"
                 />
               </div>
               <div className="col-md-2 mb-1">
