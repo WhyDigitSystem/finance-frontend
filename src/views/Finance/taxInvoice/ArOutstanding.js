@@ -539,15 +539,15 @@ const ArOutstanding = () => {
       setIsLoading(true);
       try {
         let response;
-        if (formData.dueDate) {
+         if (formData.dueDate) {
           response = await apiCalls(
             'get',
-            `/arapAdjustments/GetArapAdjustments?Asondate=${dayjs(formData.date).format('YYYY-DD-MM')}&branch=${formData.branch}&orgId=${orgId}&partyname=${formData.partyName}&pdate=${dayjs(formData.dueDate).format('YYYY-DD-MM')}`
+            `/arapAdjustments/GetArapAdjustments?Asondate=${formData.date}&branch=${formData.branch}&orgId=${orgId}&partyname=${formData.partyName}&pdate=${formData.dueDate}`
           );
         } else {
           response = await apiCalls(
             'get',
-            `/arapAdjustments/GetArapAdjustments?Asondate=${dayjs(formData.date).format('YYYY-DD-MM')}&partyname=${formData.partyName}&orgId=${orgId}&branch=${formData.branch}`
+            `/arapAdjustments/GetArapAdjustments?Asondate=${formData.date}&branch=${formData.branch}&orgId=${orgId}&partyname=${formData.partyName}`
           );
         }
         if (response.status === true) {
