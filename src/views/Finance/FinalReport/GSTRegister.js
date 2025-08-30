@@ -1,17 +1,7 @@
-
-import React, { useState, useEffect,useMemo  } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { Button, ButtonGroup } from '@mui/material'; // ← missing imports
-import {
-  Autocomplete,
-  FormControl,
-  TextField,
-  CircularProgress,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  IconButton
-} from '@mui/material';
+import { Autocomplete, FormControl, TextField, CircularProgress, Dialog, DialogTitle, DialogContent, IconButton } from '@mui/material';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -27,7 +17,7 @@ import dayjs from 'dayjs';
 import apiCalls from 'apicall';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
- // only import once
+// only import once
 const GSTRegister = () => {
   const {
     control,
@@ -42,7 +32,7 @@ const GSTRegister = () => {
       fromDate: null,
       toDate: null,
       partyName: null,
-      viewMode:'Revenue'
+      viewMode: 'Revenue'
     }
   });
   const viewMode = watch('viewMode');
@@ -56,9 +46,8 @@ const GSTRegister = () => {
   const orgId = localStorage.getItem('orgId');
   const finYear = localStorage.getItem('finYear');
   const [listViewData, setListViewData] = useState([]);
-    
 
-    const revenueColumns = [
+  const revenueColumns = [
     {
       accessorKey: 'docId',
       header: 'Doc Id',
@@ -91,7 +80,7 @@ const GSTRegister = () => {
         }
       }
     },
-     {
+    {
       accessorKey: 'refNo',
       header: 'Ref No',
       size: 110,
@@ -107,7 +96,7 @@ const GSTRegister = () => {
         }
       }
     },
-     {
+    {
       accessorKey: 'refDate',
       header: 'Ref Date',
       size: 110,
@@ -139,8 +128,8 @@ const GSTRegister = () => {
     //     }
     //   }
     // },
-    
-     {
+
+    {
       accessorKey: 'partyName',
       header: 'Party Name',
       size: 110,
@@ -188,7 +177,7 @@ const GSTRegister = () => {
     //     }
     //   }
     // },
-     {
+    {
       accessorKey: 'currency',
       header: 'Currency',
       size: 110,
@@ -220,7 +209,7 @@ const GSTRegister = () => {
         }
       }
     },
-   
+
     {
       accessorKey: 'billAmount',
       header: 'Bill Amt',
@@ -247,8 +236,7 @@ const GSTRegister = () => {
       }
     },
 
-    
-     {
+    {
       accessorKey: 'chargeAmount',
       header: 'Charge Amt',
       size: 90,
@@ -273,7 +261,7 @@ const GSTRegister = () => {
         }
       }
     },
-     {
+    {
       accessorKey: 'gstPercent',
       header: 'Gst %',
       size: 110,
@@ -289,8 +277,8 @@ const GSTRegister = () => {
         }
       }
     },
-    
-      {
+
+    {
       accessorKey: 'gstAmount',
       header: 'Gst Amt',
       size: 90,
@@ -315,8 +303,8 @@ const GSTRegister = () => {
         }
       }
     },
-    
-     {
+
+    {
       accessorKey: 'totalAmountLc',
       header: 'Total Amt',
       size: 90,
@@ -340,12 +328,10 @@ const GSTRegister = () => {
           padding: '12px 8px'
         }
       }
-    },
-  ]
+    }
+  ];
 
   const costColumns = [
-    
-   
     {
       accessorKey: 'docId',
       header: 'Doc Id',
@@ -379,7 +365,7 @@ const GSTRegister = () => {
         }
       }
     },
-     {
+    {
       accessorKey: 'refNo',
       header: 'Ref No',
       size: 110,
@@ -395,7 +381,7 @@ const GSTRegister = () => {
         }
       }
     },
-     {
+    {
       accessorKey: 'refDate',
       header: 'Ref Date',
       size: 110,
@@ -491,7 +477,7 @@ const GSTRegister = () => {
         }
       }
     },
-     {
+    {
       accessorKey: 'exRate',
       header: 'Ex Rate',
       size: 110,
@@ -507,7 +493,7 @@ const GSTRegister = () => {
         }
       }
     },
-      {
+    {
       accessorKey: 'billAmount',
       header: 'Bill Amt',
       size: 90,
@@ -532,8 +518,8 @@ const GSTRegister = () => {
         }
       }
     },
-   
-      {
+
+    {
       accessorKey: 'chargeAmount',
       header: 'Charge Amt',
       size: 90,
@@ -558,7 +544,7 @@ const GSTRegister = () => {
         }
       }
     },
-     {
+    {
       accessorKey: 'gstPercent',
       header: 'Gst %',
       size: 110,
@@ -574,7 +560,7 @@ const GSTRegister = () => {
         }
       }
     },
-     {
+    {
       accessorKey: 'gstAmount',
       header: 'Gst Amt',
       size: 90,
@@ -599,8 +585,8 @@ const GSTRegister = () => {
         }
       }
     },
-    
-     {
+
+    {
       accessorKey: 'totalAmountLc',
       header: 'Total Amt',
       size: 90,
@@ -624,12 +610,12 @@ const GSTRegister = () => {
           padding: '12px 8px'
         }
       }
-    },
-  ]
+    }
+  ];
 
   const reportColumns = useMemo(() => {
-  return viewMode === 'Revenue' ? revenueColumns : costColumns;
-}, [viewMode]);
+    return viewMode === 'Revenue' ? revenueColumns : costColumns;
+  }, [viewMode]);
 
   // useEffect(() => {
   //   const fetchDropdowns = async () => {
@@ -651,40 +637,37 @@ const GSTRegister = () => {
   //   };
   //   fetchDropdowns();
   // }, [orgId, setValue]);
-  
-useEffect(() => {
-  const fetchDropdowns = async () => {
-    try {
-      const branches = await getAllActiveBranches(orgId);
-      setBranchCodeList(branches);
 
-      const partyType = viewMode === 'Revenue' ? 'customer' : 'vendor';
+  useEffect(() => {
+    const fetchDropdowns = async () => {
+      try {
+        const branches = await getAllActiveBranches(orgId);
+        setBranchCodeList(branches);
 
-      const response = await apiCalls(
-        'get',
-        `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=${partyType}`
-      );
+        const partyType = viewMode === 'Revenue' ? 'customer' : 'vendor';
 
-      const allOption = { partyName: 'All' };
-      const parties = [allOption, ...(response?.paramObjectsMap?.partyMasterVO || [])];
+        const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=${partyType}`);
 
-      setPartyNameList(parties);
-      setValue('partyName', allOption);
-    } catch (error) {
-      console.error('Error fetching dropdowns:', error);
+        const allOption = { partyName: 'All' };
+        const parties = [allOption, ...(response?.paramObjectsMap?.partyMasterVO || [])];
+
+        setPartyNameList(parties);
+        setValue('partyName', allOption);
+      } catch (error) {
+        console.error('Error fetching dropdowns:', error);
+      }
+    };
+
+    if (orgId && viewMode) {
+      fetchDropdowns();
     }
-  };
-
-  if (orgId && viewMode) {
-    fetchDropdowns();
-  }
-}, [orgId, viewMode, setValue]);
+  }, [orgId, viewMode, setValue]);
 
   const ClearForm = () => {
     setValue('partyName', { partyName: 'All' });
     setValue('fromDate', null);
     setValue('toDate', null);
-    setValue('viewMode','Revenue')
+    setValue('viewMode', 'Revenue');
     clearErrors();
     setIsLoading(false);
     setListView(false);
@@ -692,45 +675,45 @@ useEffect(() => {
     setHeaderFields([]);
   };
 
-const onSubmit = async (formData) => {
-  setIsLoading(true);
-  const { partyName, fromDate, toDate, viewMode } = formData;
+  const onSubmit = async (formData) => {
+    setIsLoading(true);
+    const { partyName, fromDate, toDate, viewMode } = formData;
 
-  const formattedFromDate = dayjs(fromDate).format('YYYY-MM-DD');
-  const formattedToDate = dayjs(toDate).format('YYYY-MM-DD');
+    const formattedFromDate = dayjs(fromDate).format('YYYY-MM-DD');
+    const formattedToDate = dayjs(toDate).format('YYYY-MM-DD');
 
-  try {
-    let response;
+    try {
+      let response;
 
-    if (viewMode === 'Revenue') {
-      response = await apiCalls(
-        'get',
-        `/taxInvoice/getRevenueGstReport?finYear=${finYear}&fromDate=${formattedFromDate}&orgId=${orgId}&partyName=${partyName?.partyName || ''}&toDate=${formattedToDate}`
-      );
-    } else {
-      response = await apiCalls(
-        'get',
-        `/costInvoice/getCostGstReport?finYear=${finYear}&fromDate=${formattedFromDate}&orgId=${orgId}&partyName=${partyName?.partyName || ''}&toDate=${formattedToDate}`
-      );
+      if (viewMode === 'Revenue') {
+        response = await apiCalls(
+          'get',
+          `/taxInvoice/getRevenueGstReport?finYear=${finYear}&fromDate=${formattedFromDate}&orgId=${orgId}&partyName=${partyName?.partyName || ''}&toDate=${formattedToDate}`
+        );
+      } else {
+        response = await apiCalls(
+          'get',
+          `/costInvoice/getCostGstReport?finYear=${finYear}&fromDate=${formattedFromDate}&orgId=${orgId}&partyName=${partyName?.partyName || ''}&toDate=${formattedToDate}`
+        );
+      }
+
+      setGetData(response?.paramObjectsMap?.mapp);
+      setOpenModal(true);
+      setListView(true);
+
+      const headers = [
+        { label: 'Range', value: `${dayjs(fromDate).format('DD-MM-YYYY')} to ${dayjs(toDate).format('DD-MM-YYYY')}` },
+        { label: 'Party Name', value: partyName?.partyName || 'All' },
+        { label: 'View Mode', value: viewMode }
+      ];
+      setHeaderFields(headers);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      showToast('error', 'Report Fetch Failed');
+    } finally {
+      setIsLoading(false);
     }
-
-    setGetData(response?.paramObjectsMap?.mapp);
-    setOpenModal(true);
-    setListView(true);
-
-    const headers = [
-      { label: 'Range', value: `${dayjs(fromDate).format('DD-MM-YYYY')} to ${dayjs(toDate).format('DD-MM-YYYY')}` },
-      { label: 'Party Name', value: partyName?.partyName || 'All' },
-      { label: 'View Mode', value: viewMode }
-    ];
-    setHeaderFields(headers);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    showToast('error', 'Report Fetch Failed');
-  } finally {
-    setIsLoading(false);
-  }
-};
+  };
 
   const handleCloseModal = () => {
     setOpenModal(false);
@@ -765,145 +748,144 @@ const onSubmit = async (formData) => {
     }
   };
 
-  // 
-   const getCompanyDetails = async () => {
-      try {
-        const response = await apiCalls('get', `commonmaster/company/${orgId}`);
-        console.log('API Response:', response);
-        setListViewData(response.paramObjectsMap.companyVO.reverse());
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      }
-    };
+  //
+  const getCompanyDetails = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+      console.log('API Response:', response);
+      setListViewData(response.paramObjectsMap.companyVO.reverse());
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
 
-    useEffect(() => {
-      getCompanyDetails();
-    }, []);
-  // 
+  useEffect(() => {
+    getCompanyDetails();
+  }, []);
+  //
 
   // excel download
 
- const handleDownloadExcel = async ({ logo }) => {
-  const workbook = new ExcelJS.Workbook();
-  const worksheet = workbook.addWorksheet('GST Register');
+  const handleDownloadExcel = async ({ logo }) => {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('GST Register');
 
-  // ====== LOGO (A1:B4) ======
-  worksheet.mergeCells('A1:B4');
-  if (logo) {
-    try {
-      const base64Data = logo.split(',')[1] || logo;
-      if (base64Data.length >= 100) {
-        const extension = logo.includes('jpeg') ? 'jpeg' : 'png';
-        const imageId = workbook.addImage({
-          base64: base64Data,
-          extension,
-        });
-        worksheet.addImage(imageId, {
-          tl: { col: 0, row: 0 }, // A1
-          ext: { width: 140, height: 100 },
-        });
+    // ====== LOGO (A1:B4) ======
+    worksheet.mergeCells('A1:B4');
+    if (logo) {
+      try {
+        const base64Data = logo.split(',')[1] || logo;
+        if (base64Data.length >= 100) {
+          const extension = logo.includes('jpeg') ? 'jpeg' : 'png';
+          const imageId = workbook.addImage({
+            base64: base64Data,
+            extension
+          });
+          worksheet.addImage(imageId, {
+            tl: { col: 0, row: 0 }, // A1
+            ext: { width: 140, height: 100 }
+          });
+        }
+      } catch (err) {
+        console.error('Error adding logo:', err);
       }
-    } catch (err) {
-      console.error('Error adding logo:', err);
     }
-  }
+    const titleRow = worksheet.getRow(2);
+    worksheet.mergeCells('C2:E3');
+    const titleCell = worksheet.getCell('C2');
+    titleCell.value = 'GST Register';
+    titleCell.font = { size: 16, bold: true };
+    titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    // ====== HEADER FIELDS (ROW 5) ======
+    const headerRowNumber = 5;
 
-  // ====== HEADER FIELDS (ROW 5) ======
-  const headerRowNumber = 5;
+    const excelHeaderFields = [
+      ...headerFields,
+      { label: 'Generated By', value: localStorage.getItem('userName') || 'System' },
+      { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
+    ];
 
-  const excelHeaderFields = [
-  ...headerFields,
-  { label: 'Generated By', value: localStorage.getItem('userName') || 'System' },
-  { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
-];
+    excelHeaderFields.forEach(({ label, value }, index) => {
+      const colLetter = String.fromCharCode(65 + index); // A, B, C...
+      const cellAddress = `${colLetter}${headerRowNumber}`;
+      const cell = worksheet.getCell(cellAddress);
 
-excelHeaderFields.forEach(({ label, value }, index) => {
-  const colLetter = String.fromCharCode(65 + index); // A, B, C...
-  const cellAddress = `${colLetter}${headerRowNumber}`;
-  const cell = worksheet.getCell(cellAddress);
-
-  cell.value = `${label}: ${value}`;
-  cell.font = {
-    bold: true,
-    color: { argb: 'FFFFFFFF' } // White text
-  };
-  cell.alignment = {
-    vertical: 'middle',
-    horizontal: 'center'
-  };
-  cell.fill = {
-    type: 'pattern',
-    pattern: 'solid',
-    fgColor: { argb: 'FF593C8F' } // Purple background
-  };
-});
-
-
-  // ====== COLUMN HEADERS (ROW 6) ======
-  const headers = reportColumns.map((col) => col.header);
-  const headerRow = worksheet.addRow(headers);
-  headerRow.height = 20;
-
-  headerRow.eachCell((cell) => {
-    cell.fill = {
-      type: 'pattern',
-      pattern: 'solid',
-      fgColor: { argb: 'FF3B76E2' } // Blue background
-    };
-    cell.font = {
-      color: { argb: 'FFFFFFFF' }, // White text
-      bold: true
-    };
-    cell.alignment = { vertical: 'middle', horizontal: 'center' };
-    cell.border = {
-      top: { style: 'thin' },
-      left: { style: 'thin' },
-      bottom: { style: 'thin' },
-      right: { style: 'thin' }
-    };
-  });
-
-  // ====== FREEZE HEADER ROW ======
-  worksheet.views = [{ state: 'frozen', ySplit: worksheet.rowCount }];
-    const numberFields = [ 'gstAmount', 'totalAmountLc', 'billAmount','chargeAmount'];
-
-  // ====== DATA ROWS (Excludes Total) ======
-  const dataWithoutTotal = getData.filter((row) => row?.docId !== 'Total');
-  dataWithoutTotal.forEach((row) => {
-    const rowData = reportColumns.map((col) => row[col.accessorKey]);
-    const addedRow = worksheet.addRow(rowData);
-  reportColumns.forEach((col, colIndex) => {
-    const fieldKey = col.accessorKey;
-    const cell = addedRow.getCell(colIndex + 1); // +1 because ExcelJS is 1-based index
-
-    if (numberFields.includes(fieldKey)) {
-      cell.numFmt = '#,##0.00'; // or use '#,##0' if you want no decimals
-    }
-  });
-    
-  });
-
-  // ====== AUTO WIDTH ======
-  worksheet.columns.forEach((column) => {
-    let maxLength = 10;
-    column.eachCell({ includeEmpty: true }, (cell) => {
-      const value = cell.value ? cell.value.toString() : '';
-      maxLength = Math.max(maxLength, value.length);
+      cell.value = `${label}: ${value}`;
+      cell.font = {
+        bold: true,
+        color: { argb: 'FFFFFFFF' } // White text
+      };
+      cell.alignment = {
+        vertical: 'middle',
+        horizontal: 'center'
+      };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF593C8F' } // Purple background
+      };
     });
-    column.width = maxLength + 2;
-  });
 
-  // ====== EXPORT FILE ======
-  const buffer = await workbook.xlsx.writeBuffer();
-  const blob = new Blob([buffer], {
-    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-  });
-  saveAs(blob, `GST_Register_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
-};
+    // ====== COLUMN HEADERS (ROW 6) ======
+    const headers = reportColumns.map((col) => col.header);
+    const headerRow = worksheet.addRow(headers);
+    headerRow.height = 20;
 
+    headerRow.eachCell((cell) => {
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: { argb: 'FF3B76E2' } // Blue background
+      };
+      cell.font = {
+        color: { argb: 'FFFFFFFF' }, // White text
+        bold: true
+      };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.border = {
+        top: { style: 'thin' },
+        left: { style: 'thin' },
+        bottom: { style: 'thin' },
+        right: { style: 'thin' }
+      };
+    });
 
+    // ====== FREEZE HEADER ROW ======
+    worksheet.views = [{ state: 'frozen', ySplit: worksheet.rowCount }];
+    const numberFields = ['gstAmount', 'totalAmountLc', 'billAmount', 'chargeAmount'];
 
+    // ====== DATA ROWS (Excludes Total) ======
+    const dataWithoutTotal = getData.filter((row) => row?.docId !== 'Total');
+    dataWithoutTotal.forEach((row) => {
+      const rowData = reportColumns.map((col) => row[col.accessorKey]);
+      const addedRow = worksheet.addRow(rowData);
+      reportColumns.forEach((col, colIndex) => {
+        const fieldKey = col.accessorKey;
+        const cell = addedRow.getCell(colIndex + 1); // +1 because ExcelJS is 1-based index
 
+        if (numberFields.includes(fieldKey)) {
+          cell.numFmt = '#,##0.00'; // or use '#,##0' if you want no decimals
+        }
+      });
+    });
+
+    // ====== AUTO WIDTH ======
+    worksheet.columns.forEach((column) => {
+      let maxLength = 10;
+      column.eachCell({ includeEmpty: true }, (cell) => {
+        const value = cell.value ? cell.value.toString() : '';
+        maxLength = Math.max(maxLength, value.length);
+      });
+      column.width = maxLength + 2;
+    });
+
+    // ====== EXPORT FILE ======
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+    saveAs(blob, `GST_Register_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
+  };
 
   return (
     <>
@@ -985,12 +967,7 @@ excelHeaderFields.forEach(({ label, value }, index) => {
                       onChange={(_, data) => field.onChange(data)}
                       value={field.value || null}
                       renderInput={(params) => (
-                        <TextField
-                          {...params}
-                          label="Party"
-                          error={!!errors.partyName}
-                          helperText={errors.partyName?.message}
-                        />
+                        <TextField {...params} label="Party" error={!!errors.partyName} helperText={errors.partyName?.message} />
                       )}
                     />
                   )}
@@ -998,31 +975,30 @@ excelHeaderFields.forEach(({ label, value }, index) => {
               </FormControl>
             </div>
 
-<div className="col-md-2 mb-4 d-flex align-items-center">
-<Controller
-  name="viewMode"
-  control={control}
-  render={({ field }) => (
-    <ButtonGroup variant="outlined" size="small">
-      <Button
-        variant={field.value === 'Revenue' ? 'contained' : 'outlined'}
-        color="primary"
-        onClick={() => field.onChange('Revenue')}
-      >
-        Revenue
-      </Button>
-      <Button
-        variant={field.value === 'Cost' ? 'contained' : 'outlined'}
-        color="primary"
-        onClick={() => field.onChange('Cost')}
-      >
-        Cost
-      </Button>
-    </ButtonGroup>
-  )}
-/>
-
-    </div>
+            <div className="col-md-2 mb-4 d-flex align-items-center">
+              <Controller
+                name="viewMode"
+                control={control}
+                render={({ field }) => (
+                  <ButtonGroup variant="outlined" size="small">
+                    <Button
+                      variant={field.value === 'Revenue' ? 'contained' : 'outlined'}
+                      color="primary"
+                      onClick={() => field.onChange('Revenue')}
+                    >
+                      Revenue
+                    </Button>
+                    <Button
+                      variant={field.value === 'Cost' ? 'contained' : 'outlined'}
+                      color="primary"
+                      onClick={() => field.onChange('Cost')}
+                    >
+                      Cost
+                    </Button>
+                  </ButtonGroup>
+                )}
+              />
+            </div>
 
             {/* Buttons */}
             <div className="col-md-3 mb-2">
@@ -1034,7 +1010,7 @@ excelHeaderFields.forEach(({ label, value }, index) => {
               </div>
             </div>
           </div>
-           {isLoading && (
+          {isLoading && (
             <div className="d-flex justify-content-center items-center">
               <CircularProgress />
             </div>
@@ -1046,7 +1022,7 @@ excelHeaderFields.forEach(({ label, value }, index) => {
       <Dialog
         open={openModal}
         onClose={handleCloseModal}
-      //  handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
+        //  handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
         fullWidth
         maxWidth="xl"
         sx={{
@@ -1087,23 +1063,20 @@ excelHeaderFields.forEach(({ label, value }, index) => {
           )}
         </DialogContent> */}
         <DialogContent sx={{ padding: 0 }}>
-  {getData && getData.length > 0 ? (
-    <CommonReportTable
-      data={getData}
-      columns={reportColumns}
-      fileName={'GST Register'}
-      tableOptions={tableOptions}
-      headerFields={headerFields}
-      handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
-      showDownloadButtonsPdf = {false}
-    />
-  ) : (
-    <div style={{ textAlign: 'center', padding: '20px' }}>
-      No data found
-    </div>
-  )}
-</DialogContent>
-
+          {getData && getData.length > 0 ? (
+            <CommonReportTable
+              data={getData}
+              columns={reportColumns}
+              fileName={'GST Register'}
+              tableOptions={tableOptions}
+              headerFields={headerFields}
+              handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
+              showDownloadButtonsPdf={false}
+            />
+          ) : (
+            <div style={{ textAlign: 'center', padding: '20px' }}>No data found</div>
+          )}
+        </DialogContent>
       </Dialog>
 
       {/* Optional list view */}
@@ -1114,9 +1087,9 @@ excelHeaderFields.forEach(({ label, value }, index) => {
             columns={reportColumns}
             fileName={'GST Register'}
             headerFields={headerFields}
-             handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
+            handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
             isListView={true}
-            showDownloadButtonsPdf = {false}
+            showDownloadButtonsPdf={false}
             tableOptions={{
               ...tableOptions,
               muiTableContainerProps: { sx: { maxHeight: '60vh' } }
@@ -1129,4 +1102,3 @@ excelHeaderFields.forEach(({ label, value }, index) => {
 };
 
 export default GSTRegister;
-
