@@ -337,7 +337,7 @@ const RIMpdf = ({ row, callBackFunction, modalClose }) => {
           >
             <div>
               {/* <strong style={{fontSize: '10px'}} className="">Sender: {localStorage.getItem('companyName')}</strong> */}
-              <strong style={{ fontSize: '10px' }} className="">Sender: {row.sender}</strong>
+              <strong style={{ fontSize: '10px' }} className="">Sender: C/O {row.sender}</strong>
               <div style={{ width: 250, marginBottom: 3, display: 'flex', alignItems: 'flex-start' }}>
                 <strong style={{ marginRight: 3, whiteSpace: 'nowrap', fontSize: '10px' }}>Address:</strong>
                 <p style={{ margin: 0, fontSize: '8px', lineHeight: '1.6', wordBreak: 'break-word', flex: 1 }}>
