@@ -81,6 +81,7 @@ const RetrievalIssueManifest = () => {
     transactionType: 'RETRIEVAL',
     sender: '',
     senderAddress: '',
+    receiverGst: '',
     senderGst: '',
     receiverWarehouse: '',
     receiverAddress: '',
@@ -97,6 +98,7 @@ const RetrievalIssueManifest = () => {
     transactionType: '',
     sender: '',
     senderAddress: '',
+    receiverGst: '',
     senderGst: '',
     receiverWarehouse: '',
     transporterName: '',
@@ -192,6 +194,7 @@ const RetrievalIssueManifest = () => {
       transactionType: 'RETRIEVAL',
       sender: '',
       senderAddress: '',
+      receiverGst: '',
       senderGst: '',
       receiverWarehouse: '',
       receiverAddress: '',
@@ -258,6 +261,7 @@ const RetrievalIssueManifest = () => {
     if (!formData.sender) errors.sender = 'Sender is required';
     if (!formData.senderAddress) errors.senderAddress = 'Sender Address is required';
     if (!formData.senderGst) errors.senderGst = 'Sender GST is required';
+    if (!formData.receiverGst) errors.receiverGst = 'Receiver GST is required';
     if (!formData.receiverWarehouse) errors.receiverWarehouse = 'Receiver Warehouse is required';
     if (!formData.receiverAddress) errors.receiverAddress = 'Receiver Address is required';
     if (!formData.transporterName) errors.transporterName = 'Transporter Name is required';
@@ -314,6 +318,7 @@ const RetrievalIssueManifest = () => {
         sender: formData.sender,
         senderAddress: formData.senderAddress,
         senderGst: formData.senderGst,
+        receiverGst: formData.receiverGst,
         transactionDate: formData.docDate ? dayjs(formData.docDate).format('YYYY-MM-DD') : null,
         transactionNo: formData.docId,
         transactionType: formData.transactionType,
@@ -363,6 +368,7 @@ const RetrievalIssueManifest = () => {
           sender: listValueVO.sender || '',
           senderAddress: listValueVO.senderAddress || '',
           senderGst: listValueVO.senderGst || '',
+          receiverGst: listValueVO.receiverGst || '',
           receiverWarehouse: listValueVO.receiver || '',
           receiverAddress: listValueVO.receiverAddress || '',
           transporterName: listValueVO.transporterName || '',
@@ -574,82 +580,21 @@ const RetrievalIssueManifest = () => {
                   onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                 />
               </div>
-              {/* <div className="col-md-3 mb-3">
-                <Autocomplete
-                  disablePortal
-                  options={customerDetails}
-                  getOptionLabel={(option) => option.name || ''}
-                  sx={{ width: '100%' }}
-                  isOptionEqualToValue={(option, value) => option.name === value.name}
-                  size="small"
-                  value={formData.sender ? customerDetails.find((c) => c.name === formData.sender) : null}
-                  onChange={(event, newValue) => {
-                    handleInputChange({
-                      target: {
-                        name: 'sender',
-                        value: newValue ? newValue.name : ''
-                      }
-                    });
-                    // const address = newValue?.partyAddressVO?.[0];
-                    // const fullAddress = address
-                    //   ? [address.addressLine1, address.addressLine2, address.addressLine3]
-                    //     .filter(Boolean)
-                    //     .join(', ')
-                    //   : '';
-                    handleInputChange({
-                      target: {
-                        name: 'senderAddress',
-                        value: newValue ? newValue.address : ''
-                      }
-                    });
-                    handleInputChange({
-                      target: {
-                        name: 'senderCode',
-                        value: newValue ? newValue.code : ''
-                      }
-                    });
-                    handleInputChange({
-
-                      target: {
-                        name: 'senderGst',
-                        value: newValue ? newValue.gst : ''
-                      }
-                    });
-                  }}
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Sender"
-                      name="sender"
-                      InputProps={{
-                        ...params.InputProps,
-                        style: { height: 40 }
-                      }}
-                      error={!!formDataErrors.sender}
-                      helperText={formDataErrors.sender}
-                    />
-                  )}
-                />
-              </div> */}
               <div className="col-md-3 mb-3">
                 <Autocomplete
                   disablePortal
-                  options={customerDetails}
+                  options={customerDetails || []}
                   getOptionLabel={(option) => option.name || ''}
-                  isOptionEqualToValue={(option, value) => option.name === value.name}
+                  isOptionEqualToValue={(option, value) => option?.name === value?.name}
                   size="small"
                   fullWidth
                   value={formData.sender ? customerDetails.find((c) => c.name === formData.sender) : null}
                   onChange={(event, newValue) => {
                     setFormData((prev) => ({
                       ...prev,
-
                       sender: newValue?.name || '',
-
                       code: newValue?.code || '',
-
                       senderAddress: newValue?.address || '',
-
                       senderGst: newValue?.gst || ''
                     }));
                   }}
@@ -701,19 +646,34 @@ const RetrievalIssueManifest = () => {
                   size="small"
                   value={formData.receiverWarehouse ? receiverDetails.find((c) => c.name === formData.receiverWarehouse) : null}
                   onChange={(event, newValue) => {
-                    handleInputChange({
-                      target: {
-                        name: 'receiverWarehouse',
-                        value: newValue ? newValue.name : ''
-                      }
-                    });
-                    handleInputChange({
-                      target: {
-                        name: 'receiverAddress',
-                        value: newValue ? newValue.address : ''
-                      }
-                    });
+                    setFormData((prev) => ({
+                      ...prev,
+                      receiverWarehouse: newValue?.name || '',
+                      // code: newValue?.code || '',
+                      receiverAddress: newValue?.address || '',
+                      receiverGst: newValue?.gst || ''
+                    }));
                   }}
+                  // onChange={(event, newValue) => {
+                  //   handleInputChange({
+                  //     target: {
+                  //       name: 'receiverWarehouse',
+                  //       value: newValue ? newValue.name : ''
+                  //     }
+                  //   });
+                  //   handleInputChange({
+                  //     target: {
+                  //       name: 'receiverAddress',
+                  //       value: newValue ? newValue.address : ''
+                  //     }
+                  //   });
+                  //   handleInputChange({
+                  //     target: {
+                  //       name: 'receiverGst',
+                  //       value: newValue ? newValue.receiverGst : ''
+                  //     }
+                  //   });
+                  // }}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -744,6 +704,16 @@ const RetrievalIssueManifest = () => {
                   minRows={
                     !!formData.receiverAddress && (formData.receiverAddress.includes('\n') || formData.receiverAddress.length > 50) ? 2 : 1
                   }
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  label="Receiver's GST"
+                  value={formData.receiverGst}
+                  size="small"
+                  fullWidth
+                  disabled
+                  onChange={(e) => setFormData({ ...formData, receiverGst: e.target.value })}
                 />
               </div>
               <div className="col-md-3 mb-3">
@@ -793,8 +763,8 @@ const RetrievalIssueManifest = () => {
                   fullWidth
                   inputProps={{
                     maxLength: 10,
-                    inputMode: 'numeric', // mobile-friendly numeric keypad
-                    pattern: '[0-9]*' // enforce digits only
+                    inputMode: 'numeric', 
+                    pattern: '[0-9]*' 
                   }}
                   onChange={(e) => {
                     const value = e.target.value;
