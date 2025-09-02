@@ -50,7 +50,7 @@ const ArOutstanding = () => {
     dueDate: false
   });
   const [headerFields, setHeaderFields] = useState([]);
-  const capitalizeHeader = (text) => text.replace(/\b\w/g, (char) => char.toUpperCase());
+  // const capitalizeHeader = (text) => text.replace(/\b\w/g, (char) => char.toUpperCase());
 
   const handleChange = (e) => {
     const { name, checked } = e.target;
@@ -59,22 +59,22 @@ const ArOutstanding = () => {
       [name]: checked
     }));
 
-    if (name === 'date' && checked) {
-      const today = dayjs().format('DD-MM-YYYY');
-      setFormData((prev) => ({
-        ...prev,
-        date: today
-      }));
-      setFieldErrors((prev) => ({
-        ...prev,
-        date: ''
-      }));
-    }
+    //   if (name === 'date' && checked) {
+    //     const today = dayjs().format('DD-MM-YYYY');
+    //     setFormData((prev) => ({
+    //       ...prev,
+    //       date: today
+    //     }));
+    //     setFieldErrors((prev) => ({
+    //       ...prev,
+    //       date: ''
+    //     }));
+    //   }
   };
 
   const [formData, setFormData] = useState({
     partyName: 'All',
-    date: dayjs().format('DD-MM-YYYY'),
+    date: dayjs(),
     dueDate: null,
     branch: 'All',
     slab1: '',
@@ -268,14 +268,18 @@ const ArOutstanding = () => {
     saveAs(blob, `AR_Outstanding_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
   };
 
+  // const handleDateChange = (field, date) => {
+  //   const formattedDate = date ? dayjs(date).format('DD-MM-YYYY') : null;
+  //   setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+  //   setFieldErrors((prev) => ({ ...prev, date: '' }));
+  // };
   const handleDateChange = (field, date) => {
-    const formattedDate = date ? dayjs(date).format('DD-MM-YYYY') : null;
-    setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
-    setFieldErrors((prev) => ({ ...prev, date: '' }));
+    setFormData((prevData) => ({ ...prevData, [field]: date }));
+    setFieldErrors((prev) => ({ ...prev, [field]: '' }));
   };
 
   const allClearData = () => {
-    setFormData({ partyName: 'All', date: dayjs().format('DD-MM-YYYY'), branch: 'All' });
+    setFormData({ partyName: 'All', date: dayjs(), branch: 'All' });
     setSelectedSections({ partyName: false, date: true });
     setFieldErrors({});
     setListView(false);
@@ -539,15 +543,17 @@ const ArOutstanding = () => {
       setIsLoading(true);
       try {
         let response;
-         if (formData.dueDate) {
+        const formattedDate = formData.date ? formData.date.format('YYYY-MM-DD') : '';
+        const formattedDueDate = formData.dueDate ? formData.dueDate.format('YYYY-MM-DD') : '';
+        if (formData.dueDate) {
           response = await apiCalls(
             'get',
-            `/arapAdjustments/GetArapAdjustments?Asondate=${formData.date}&branch=${formData.branch}&orgId=${orgId}&partyname=${formData.partyName}&pdate=${formData.dueDate}`
+            `/arapAdjustments/GetArapAdjustments?Asondate=${formattedDate}&branch=${formData.branch}&orgId=${orgId}&partyname=${formData.partyName}&pdate=${formattedDueDate}`
           );
         } else {
           response = await apiCalls(
             'get',
-            `/arapAdjustments/GetArapAdjustments?Asondate=${formData.date}&branch=${formData.branch}&orgId=${orgId}&partyname=${formData.partyName}`
+            `/arapAdjustments/GetArapAdjustments?Asondate=${formattedDate}&branch=${formData.branch}&orgId=${orgId}&partyname=${formData.partyName}`
           );
         }
         if (response.status === true) {
@@ -562,7 +568,7 @@ const ArOutstanding = () => {
             // },
             {
               label: 'As On Date',
-              value: formData.date
+              value: formData.date ? formData.date.format('DD-MM-YYYY') : ''
             },
             {
               label: 'Party Name',
@@ -572,7 +578,7 @@ const ArOutstanding = () => {
               label: 'Branch',
               value: formData.branch !== 'All' ? formData.branch : 'All'
             },
-            { label: 'Due Date', value: formData.dueDate }
+            { label: 'Due Date', value: formData.dueDate ? formData.dueDate.format('DD-MM-YYYY') : '' }
           ];
 
           setHeaderFields(headers);
