@@ -41,14 +41,14 @@ const reportChildren = [
     id: 'profit',
     title: 'Profit & Loss',
     type: 'item',
-    url: '/finance/FinalReport/TrailBalance',
+    url: '/finance/FinalReport/ProfitLoss',
     visible: hasScreenAccess('PF')
   },
   {
     id: 'balanceSheet',
     title: 'Balance Sheet',
     type: 'item',
-    url: '/finance/FinalReport/TrailBalance',
+    url: '/finance/FinalReport/BalanceSheet',
     visible: hasScreenAccess('BLS')
   },
   {

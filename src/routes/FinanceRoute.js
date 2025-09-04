@@ -106,6 +106,8 @@ const CreatePartyMaster = Loadable(lazy(() => import('views/Finance/CreatePartyM
 const PartyLedger = Loadable(lazy(() => import('views/Finance/FinalReport/PartyLedger')));
 const LedgerReport = Loadable(lazy(() => import('views/Finance/FinalReport/LedgerReport')));
 const TrailBalance = Loadable(lazy(() => import('views/Finance/FinalReport/TrailBalance')));
+const ProfitLoss = Loadable(lazy(() => import('views/Finance/FinalReport/ProfitLoss')));
+const BalanceSheet = Loadable(lazy(() => import('views/Finance/FinalReport/BalanceSheet')));
 const PaymentReportN = Loadable(lazy(() => import('views/Finance/FinalReport/PaymentRegister')));
 const ReceiptReportN = Loadable(lazy(() => import('views/Finance/FinalReport/ReceiptRegister')));
 const PaymentReportDS = Loadable(lazy(() => import('views/Finance/FinalReport/PaymentReport')));
@@ -485,6 +487,14 @@ const FinanceRoute = {
     {
       path: '/Finance/FinalReport/TrailBalance',
       element: <TrailBalance />
+    },
+    {
+      path: '/Finance/FinalReport/BalanceSheet',
+      element: <BalanceSheet />
+    },
+    {
+      path: '/Finance/FinalReport/ProfitLoss',
+      element: <ProfitLoss />
     },
     {
       path: '/Finance/FinalReport/PartyLedger',
