@@ -1903,6 +1903,29 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
               </div>
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
+                  <TextField
+                    label={
+                      <span>
+                        Ref No
+                      </span>
+                    }
+                    disabled={formData.status === 'TAX'}
+                    size="small"
+                    inputProps={{ maxLength: 30 }}
+                    value={formData.supplierBillNo}
+                    onChange={(e) => {
+                      setFormData({ ...formData, supplierBillNo: e.target.value });
+                      if (e.target.value) {
+                        setErrors((prev) => ({ ...prev, supplierBillNo: '' }));
+                      }
+                    }}
+                    error={!!errors.supplierBillNo}
+                    helperText={errors.supplierBillNo}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label" error={!!errors.stateCode}>
                     State Code <span style={{ color: 'red', fontSize: '20px' }}>*</span>
                   </InputLabel>

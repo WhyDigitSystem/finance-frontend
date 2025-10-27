@@ -956,13 +956,14 @@ const UrCostInvoicegna = ({ selectedRow }) => {
   };
   const getAccount = async (row) => {
     try {
+      const encodedLedger = encodeURIComponent(row.chargeLedger);
       const response = await apiCalls(
         'get',
-        `UrCostInvoiceGna/getChargeAccountFromChargeLedger?chargeLedger=${row.chargeLedger}&orgId=${orgId}`
+        `UrCostInvoiceGna/getChargeAccountFromChargeLedger?chargeLedger=${encodedLedger}&orgId=${orgId}`
       );
       setChargeAccountList(response.paramObjectsMap.chargeCodeVO);
     } catch (error) {
-      console.error('Error fetching gate passes:', error);
+      console.error('Error fetching charge accounts:', error);
     }
   };
 

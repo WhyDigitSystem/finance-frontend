@@ -82,8 +82,8 @@ export const MaterialIssueManifest = () => {
   });
   const [fieldErrors, setFieldErrors] = useState({
     transactionNo: '',
-    transactionDate: dayjs(),
-    dispatchDate: dayjs(),
+    transactionDate: '',
+    dispatchDate: '',
     transactionType: '',
     fromWarehouse: '',
     warehouseAddress: '',
@@ -153,8 +153,8 @@ export const MaterialIssueManifest = () => {
     });
     setFieldErrors({
       transactionNo: '',
-      transactionDate: dayjs(),
-      dispatchDate: dayjs(),
+      transactionDate: '',
+      dispatchDate: '',
       transactionType: '',
       fromWarehouse: '',
       warehouseAddress: '',
@@ -199,11 +199,18 @@ export const MaterialIssueManifest = () => {
     setKitQty('');
     setOpen(true);
   };
+  // const handleDateChange = (field, date) => {
+  //   const formattedDate = dayjs(date);
+  //   console.log('formattedDate', formattedDate);
+  //   setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+  // };
   const handleDateChange = (field, date) => {
-    const formattedDate = dayjs(date);
-    console.log('formattedDate', formattedDate);
-    setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
+    setFormData((prevData) => ({
+      ...prevData,
+      [field]: date ? dayjs(date) : null // always store as Dayjs
+    }));
   };
+
   const handleInputChange = (e) => {
     const { name, value, selectionStart, selectionEnd, type } = e.target;
     let errorMessage = '';
@@ -543,10 +550,7 @@ export const MaterialIssueManifest = () => {
                         label="Transaction Date"
                         value={formData.transactionDate}
                         onChange={(date) => handleDateChange('transactionDate', date)}
-                        // disabled
-                        slotProps={{
-                          textField: { size: 'small', clearable: true }
-                        }}
+                        slotProps={{ textField: { size: 'small', clearable: true } }}
                         format="DD-MM-YYYY"
                       />
                     </LocalizationProvider>

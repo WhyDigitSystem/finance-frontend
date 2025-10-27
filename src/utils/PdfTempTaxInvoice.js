@@ -581,17 +581,23 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       let detailY = headerY + 3;
       doc.setFontSize(10);
       doc.setFont(undefined, 'bold');
-      doc.text(`Invoice No`, rightX - 45, detailY);
+      doc.text(`Invoice No`, rightX - 60, detailY);
       doc.setFont(undefined, 'normal');
       doc.text(`${row.vid}`, rightX, detailY, { align: 'right' });
       detailY += 4;
 
       const invoiceDate = row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A';
       doc.setFont(undefined, 'bold');
-      doc.text(`Date`, rightX - 45, detailY);
+      doc.text(`Date`, rightX - 60, detailY);
       doc.setFont(undefined, 'normal');
       doc.text(`${invoiceDate}`, rightX, detailY, { align: 'right' });
-
+      detailY += 4;
+      
+      doc.setFont(undefined, 'bold');
+      doc.text(`Ref No`, rightX - 60, detailY);
+      doc.setFont(undefined, 'normal');
+      doc.text(`${row.supplierBillNo}`, rightX, detailY, { align: 'right' });
+      detailY += 4;
       const lineY = headerY + Math.max(logoHeight, 20);
       doc.setLineWidth(0.2);
       doc.line(padding, lineY, pageWidth - padding, lineY);
@@ -983,10 +989,15 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
               <div className="mb-2">
                 <strong>Invoice</strong> <span style={{ marginLeft: '8px', fontWeight: '' }}> {row.vid}</span>
               </div>
-              <div>
+              <div className="mb-2">
                 <strong>Date</strong>
                 <span style={{ marginLeft: '25px', fontWeigh: '' }}> {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : ''}</span>
               </div>
+              {row.supplierBillNo && (
+                <div className="mb-2">
+                  <strong>Ref No</strong> <span style={{ marginLeft: '8px', fontWeight: '' }}> {row.supplierBillNo}</span>
+                </div>
+              )}
             </div>
           </div>
           <div
