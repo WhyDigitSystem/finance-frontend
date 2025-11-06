@@ -78,6 +78,7 @@ export const MaterialIssueManifest = () => {
     amountInWords: '',
     transporterName: '',
     vehicleNo: '',
+     refNo:'',
     driverNo: ''
   });
   const [fieldErrors, setFieldErrors] = useState({
@@ -97,6 +98,7 @@ export const MaterialIssueManifest = () => {
     amountInWords: '',
     transporterName: '',
     vehicleNo: '',
+     refNo:'',
     driverNo: ''
   });
   const [detailsTableData, setDetailsTableData] = useState([]);
@@ -149,6 +151,7 @@ export const MaterialIssueManifest = () => {
       amountInWords: '',
       transporterName: '',
       vehicleNo: '',
+       refNo:'',
       driverNo: ''
     });
     setFieldErrors({
@@ -168,6 +171,7 @@ export const MaterialIssueManifest = () => {
       amountInWords: '',
       transporterName: '',
       vehicleNo: '',
+      refNo:'',
       driverNo: ''
     });
     setDetailsTableData([]);
@@ -324,6 +328,7 @@ export const MaterialIssueManifest = () => {
           transporterName: MIMVO.transporterName,
           orgId: MIMVO.orgId,
           vehicleNo: MIMVO.vehicleNo,
+          refNo: MIMVO.refNo,
           driverNo: MIMVO.driverPhoneNo,
           createdBy: MIMVO.createdBy,
           finYear: finYear,
@@ -438,6 +443,7 @@ export const MaterialIssueManifest = () => {
         amountInWords: formData.amountInWords,
         transporterName: formData.transporterName,
         vehicleNo: formData.vehicleNo,
+        refNo: formData.refNo,
         driverPhoneNo: formData.driverNo
       };
       console.log('DATA TO SAVE IS:', saveFormData);
@@ -467,7 +473,8 @@ export const MaterialIssueManifest = () => {
       );
       setFormData((prevData) => ({
         ...prevData,
-        transactionNo: response.paramObjectsMap.issueManifestProviderDocId
+        transactionNo: response.paramObjectsMap.issueManifestProviderDocId,
+        refNo : response.paramObjectsMap.issueManifestProviderDocId
       }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -535,11 +542,22 @@ export const MaterialIssueManifest = () => {
                     <TextField
                       label="Transaction No"
                       size="small"
-                      disabled
                       value={formData.transactionNo}
                       onChange={(e) => setFormData({ ...formData, transactionNo: e.target.value })}
                       error={!!fieldErrors.transactionNo}
                       helperText={fieldErrors.transactionNo}
+                    />
+                  </FormControl>
+                </div>
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth size="small">
+                    <TextField
+                      label="Ref No"
+                      size="small"
+                      value={formData.refNo}
+                      onChange={(e) => setFormData({ ...formData, refNo: e.target.value })}
+                      error={!!fieldErrors.refNo}
+                      helperText={fieldErrors.refNo}
                     />
                   </FormControl>
                 </div>

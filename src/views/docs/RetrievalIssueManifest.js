@@ -87,7 +87,8 @@ const RetrievalIssueManifest = () => {
     receiverAddress: '',
     transporterName: '',
     vehicleNo: '',
-    driverNo: ''
+    driverNo: '',
+    refNo: ''
   });
 
   const [formDataErrors, setFormDataErrors] = useState({
@@ -102,7 +103,8 @@ const RetrievalIssueManifest = () => {
     senderGst: '',
     receiverWarehouse: '',
     transporterName: '',
-    vehicleNo: ''
+    vehicleNo: '',
+    refNo: ''
   });
 
   const [detailsKitData, setDetailsKitData] = useState([]);
@@ -200,7 +202,8 @@ const RetrievalIssueManifest = () => {
       receiverAddress: '',
       transporterName: '',
       vehicleNo: '',
-      driverNo: ''
+      driverNo: '',
+      refNo: ''
     });
 
     setFormDataErrors([]);
@@ -325,6 +328,7 @@ const RetrievalIssueManifest = () => {
         transporterName: formData.transporterName,
         code: formData.code,
         vechileNo: formData.vehicleNo,
+        refNo: formData.refNo,
         finYear: finYear,
         branch: branch,
         branchCode: branchCode
@@ -374,6 +378,7 @@ const RetrievalIssueManifest = () => {
           transporterName: listValueVO.transporterName || '',
           vehicleNo: listValueVO.vehicleeNo || '',
           driverNo: listValueVO.driverPhoneNo || '',
+          refNo: listValueVO.refNo || '',
           finYear: finYear,
           branch: branch,
           branchCode: branchCode,
@@ -408,7 +413,8 @@ const RetrievalIssueManifest = () => {
       );
       setFormData((prevData) => ({
         ...prevData,
-        docId: response.paramObjectsMap.retrievalManifestProviderDocId
+        docId: response.paramObjectsMap.retrievalManifestProviderDocId,
+        refNo: response.paramObjectsMap.retrievalManifestProviderDocId,
       }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -530,6 +536,19 @@ const RetrievalIssueManifest = () => {
                     onChange={(e) => setFormData({ ...formData, docId: e.target.value })}
                     error={!!formDataErrors.docId}
                     helperText={formDataErrors.docId}
+                  />
+                </FormControl>
+              </div>
+              <div className="col-md-3 mb-3">
+                <FormControl fullWidth size="small">
+                  <TextField
+                    label="Ref No"
+                    size="small"
+                    disabled
+                    value={formData.refNo}
+                    onChange={(e) => setFormData({ ...formData, refNo: e.target.value })}
+                    error={!!formDataErrors.refNo}
+                    helperText={formDataErrors.refNo}
                   />
                 </FormControl>
               </div>
@@ -763,8 +782,8 @@ const RetrievalIssueManifest = () => {
                   fullWidth
                   inputProps={{
                     maxLength: 10,
-                    inputMode: 'numeric', 
-                    pattern: '[0-9]*' 
+                    inputMode: 'numeric',
+                    pattern: '[0-9]*'
                   }}
                   onChange={(e) => {
                     const value = e.target.value;

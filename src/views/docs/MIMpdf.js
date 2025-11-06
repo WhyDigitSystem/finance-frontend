@@ -225,7 +225,7 @@ const handleDownloadPdf = async () => {
     position -= pdfHeight;
   }
 
-  pdf.save(`${row.transactionNo || 'MIM'}_${row.receiver}_${row.locationUnit}_${selectedCopy}.pdf`);
+  pdf.save(`${row.refNo || 'MIM'}_${row.receiver}_${row.locationUnit}_${selectedCopy}.pdf`);
   setSelectedCopy('');
 };
   useEffect(() => {
@@ -356,7 +356,7 @@ const groupedData = (row.issueManifestProviderDetailsVOs || []).reduce((acc, row
             </div>
             <div>
               <div className="mb-0" style={{fontSize: '10px'}}>
-                Docket No<strong className="">: {row.transactionNo}</strong>
+                Docket No<strong className="">: {row.refNo}</strong>
               </div>
               <div className="mb-0" style={{fontSize: '10px'}}>
                 Date<strong> : {row.transactionDate ? dayjs(row.transactionDate).format('DD-MM-YYYY') : 'N/A'}</strong>
