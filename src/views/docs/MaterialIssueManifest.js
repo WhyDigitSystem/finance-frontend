@@ -542,6 +542,7 @@ export const MaterialIssueManifest = () => {
                     <TextField
                       label="Transaction No"
                       size="small"
+                      disabled
                       value={formData.transactionNo}
                       onChange={(e) => setFormData({ ...formData, transactionNo: e.target.value })}
                       error={!!fieldErrors.transactionNo}

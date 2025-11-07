@@ -257,11 +257,29 @@ function CostRegister() {
       Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
     },
     {
-      accessorKey: 'Tax',
-      header: 'TAX',
+      accessorKey: 'OutputIgst',
+      header: 'IGST',
       size: 80,
       Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
     },
+    {
+      accessorKey: 'OutputCgst',
+      header: 'CGST',
+      size: 80,
+      Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
+    },
+    {
+      accessorKey: 'OutputSgst',
+      header: 'SGST',
+      size: 80,
+      Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
+    },
+    // {
+    //   accessorKey: 'Tax',
+    //   header: 'TAX',
+    //   size: 80,
+    //   Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
+    // },
     {
       accessorKey: 'TotalAmount',
       header: 'Total Amount',
@@ -380,7 +398,7 @@ function CostRegister() {
       const sheet = workbook.addWorksheet('Cost Register');
       sheet.state = 'visible';
 
-      // ====== LOGO ======
+      // ===== LOGO =====
       sheet.mergeCells('A1:B5');
       if (logo) {
         try {
@@ -398,14 +416,14 @@ function CostRegister() {
         }
       }
 
-      // ====== TITLE ======
+      // ===== TITLE =====
       sheet.mergeCells('C1:I1');
       const titleCell = sheet.getCell('C1');
       titleCell.value = 'COST REGISTER';
       titleCell.font = { size: 18, bold: true, color: { argb: 'FF34449B' } };
       titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
-      // ====== METADATA ======
+      // ===== METADATA =====
       const metadata = [
         { label: 'From Date', value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : '' },
         { label: 'To Date', value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : '' },
@@ -425,78 +443,66 @@ function CostRegister() {
         row.getCell(colStart + 1).value = meta.value;
       });
 
-      // ====== HEADERS ======
+      // ===== HEADERS =====
       const headerRowIndex = 7;
-      const headerRow = sheet.getRow(headerRowIndex);
       const headers = [
         'Cost Invoice No',
         'Date',
         'Doc Id',
         'Doc Date',
-        // 'Screen',
         'Party Name',
         'Reg In',
         'GST Type',
         'Bill Amount',
-        'Tax Amount',
+        'IGST',
+        'CGST',
+        'SGST',
         'Total Amount'
-        // 'TDS',
-        // 'Party Paylable'
       ];
+
+      const headerRow = sheet.getRow(headerRowIndex);
       headers.forEach((header, index) => {
         const cell = headerRow.getCell(index + 1);
         cell.value = header;
         cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FF34449B' }
-        };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF34449B' } };
         cell.alignment = { horizontal: 'center', vertical: 'middle' };
-        cell.border = {
-          top: { style: 'thin', color: { argb: 'FF000000' } },
-          left: { style: 'thin', color: { argb: 'FF000000' } },
-          bottom: { style: 'thin', color: { argb: 'FF000000' } },
-          right: { style: 'thin', color: { argb: 'FF000000' } }
-        };
+        cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
       });
-      headerRow.height = 20;
-      sheet.views = [{ state: 'frozen', ySplit: sheet.rowCount }];
 
-      // ====== DATA ROWS ======
-      let BillAmount = 0;
-      let Tax = 0;
-      let TotalAmount = 0;
-      // let totalPayable = 0;
+      // ===== DATA ROWS =====
+      let totalBill = 0, totalIgst = 0, totalCgst = 0, totalSgst = 0, totalAmount = 0;
 
       rowData.forEach((item) => {
-        const bl = parseFloat(item.BillAmount || 0);
-        const tax = parseFloat(item.Tax || 0);
+        const bill = parseFloat(item.BillAmount || 0);
+        const igst = parseFloat(item.OutputIgst || 0);
+        const cgst = parseFloat(item.OutputCgst || 0);
+        const sgst = parseFloat(item.OutputSgst || 0);
         const total = parseFloat(item.TotalAmount || 0);
-        // const totalP = parseFloat(item.PartyPayable || 0);
 
-        BillAmount += bl;
-        Tax += tax;
-        TotalAmount += total;
-        // totalPayable += totalP;
+        totalBill += bill;
+        totalIgst += igst;
+        totalCgst += cgst;
+        totalSgst += sgst;
+        totalAmount += total;
 
         const row = sheet.addRow([
           item.Vid || '',
           item.Vdate ? dayjs(item.Vdate).format('DD-MM-YYYY') : '-',
           item.DocId || '-',
           item.DocDate ? dayjs(item.DocDate).format('DD-MM-YYYY') : '-',
-          // item.screenCode,
-          item.SupplierName,
-          item.SupplierGstin,
-          item.GstType,
-          bl,
-          tax,
+          item.SupplierName || '',
+          item.SupplierGstin || '',
+          item.GstType || '',
+          bill,
+          igst,
+          cgst,
+          sgst,
           total
-          // item.Tds || '',
-          // totalP
         ]);
 
-        [8, 9, 10].forEach((colIndex) => {
+        // numeric formatting
+        [8, 9, 10, 11, 12].forEach((colIndex) => {
           const cell = row.getCell(colIndex);
           if (typeof cell.value === 'number') {
             cell.numFmt = '#,##0.00';
@@ -505,227 +511,147 @@ function CostRegister() {
         });
 
         row.eachCell({ includeEmpty: true }, (cell) => {
-          cell.border = {
-            top: { style: 'thin', color: { argb: 'FF000000' } },
-            left: { style: 'thin', color: { argb: 'FF000000' } },
-            bottom: { style: 'thin', color: { argb: 'FF000000' } },
-            right: { style: 'thin', color: { argb: 'FF000000' } }
-          };
+          cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
         });
       });
 
-      // ====== TOTAL ROW ======
-      const totalRow = sheet.addRow(['Total', '', '', '', '', '', '', BillAmount, Tax, TotalAmount]);
-
+      // ===== TOTAL ROW =====
+      const totalRow = sheet.addRow(['Total', '', '', '', '', '', '', totalBill, totalIgst, totalCgst, totalSgst, totalAmount]);
       totalRow.eachCell((cell, colNumber) => {
         cell.font = { bold: true };
         cell.alignment = { horizontal: colNumber >= 8 ? 'right' : 'left' };
-        cell.border = {
-          top: { style: 'thin' },
-          bottom: { style: 'thin' },
-          left: { style: 'thin' },
-          right: { style: 'thin' }
-        };
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FFD9D9D9' } // Light gray
-        };
-
-        if (colNumber >= 8) {
-          cell.numFmt = '#,##0.00';
-        }
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D9D9' } };
+        if (colNumber >= 8) cell.numFmt = '#,##0.00';
       });
 
-      // ====== COLUMN WIDTHS ======
+      // ===== COLUMN WIDTHS =====
       sheet.columns = [
-        { width: 18 },
-        { width: 12 },
-        { width: 17 },
-        { width: 12 },
-        { width: 35 },
-        { width: 18 },
-        { width: 15 },
-        { width: 15 },
-        { width: 15 },
-        { width: 15 }
+        { width: 18 }, { width: 12 }, { width: 17 }, { width: 12 },
+        { width: 35 }, { width: 18 }, { width: 12 },
+        { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }
       ];
 
-      // ====== EXPORT ======
+      // ===== EXPORT =====
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       });
-
       saveAs(blob, `Cost_Register_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
     } catch (error) {
       console.error('Error generating Excel:', error);
       showToast('error', 'Failed to generate Excel file');
     }
   };
-  // pdf download
   const handleDownloadPdf = ({ logo, columns, data, fileName = 'Cost Register', loginUserName, formData }) => {
     const doc = new jsPDF({ orientation: 'landscape' });
     const pageW = doc.internal.pageSize.getWidth();
     const pageH = doc.internal.pageSize.getHeight();
 
-    // 1) COMPANY LOGO
-    const logoBase64 = logo;
-    const logoWidth = 30;
-    const logoHeight = 23;
-    const logoX = 10;
-    const logoY = 10;
-    if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', logoX, logoY, logoWidth, logoHeight);
-    }
+    // LOGO
+    if (logo) doc.addImage(logo, 'PNG', 10, 10, 30, 23);
 
-    // 2) TITLE BOX
+    // TITLE
     const title = `${fileName}`;
-    const textW = doc.getTextWidth(title);
-    const padX = 10,
-      boxH = 10,
-      yTitle = 25;
-    const boxW = textW + padX * 2;
+    const boxW = doc.getTextWidth(title) + 20;
     const boxX = (pageW - boxW) / 2;
-
-    doc
-      .setFillColor('#e7ebeb')
-      .roundedRect(boxX, yTitle - boxH + 3, boxW, boxH, 4, 4, 'F')
+    doc.setFillColor('#e7ebeb')
+      .roundedRect(boxX, 15, boxW, 10, 3, 3, 'F')
       .setTextColor('#34449B')
       .setFontSize(12)
-      .text(title, pageW / 2, yTitle, { align: 'center' });
+      .text(title, pageW / 2, 22, { align: 'center' });
 
-    // 3) FOOTER
-    doc.setFontSize(8).setTextColor('#555555');
-    doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
-    doc.text(`Generated By: ${loginUserName}`, 15, pageH - 10, { align: 'left' });
-
-    // 4) FILTER METADATA (DYNAMIC FIELDS)
-    const { fromDate, toDate, branchCode, customer } = formData;
-    doc.setFontSize(9);
-    doc.setTextColor('#000000');
-    doc.setFillColor(231, 235, 235);
-
-    // Build metadata fields dynamically
-    let metaFields = [];
-    if (fromDate) metaFields.push({ label: 'From Date', value: dayjs(fromDate).format('DD-MM-YYYY') });
-    if (toDate) metaFields.push({ label: 'To Date', value: dayjs(toDate).format('DD-MM-YYYY') });
-    if (branchCode) metaFields.push({ label: 'Branch Code', value: branchCode });
-    if (customer) metaFields.push({ label: 'Vendor', value: customer });
-
-    // Draw metadata box only if there are fields
-    if (metaFields.length > 0) {
-      const metaBoxHeight = 12;
-      doc.roundedRect(2, 35, 292, metaBoxHeight, 2, 2, 'F');
-      let x = 8;
-      metaFields.forEach((meta, idx) => {
-        doc.setFont(undefined, 'bold');
-        doc.text(meta.label, x, 40);
-        doc.setFont(undefined, 'normal');
-        doc.text(meta.value, x, 45);
-        x += 24; // space between fields
-      });
-    }
-
-    // 5) Table Header & Body
-    const headerLabels = columns.map((c) => c.header);
-    const numericFields = columns.map((c) => c.accessorKey).filter((k) => k && /(BillAmount|PartyPayable|Tax|TotalAmount)/i.test(k));
-
-    const body = data.map((row) =>
-      columns.map((col) => {
-        const key = col.accessorKey;
-        const raw = key ? row[key] : '';
-        if (key?.toLowerCase().includes('date')) {
-          const d = dayjs(raw);
-          return d.isValid() ? d.format('DD-MM-YYYY') : '-';
-        }
-        if (typeof raw === 'number') {
-          return raw === 0 ? '' : raw.toLocaleString('en-IN');
-        }
-        return raw ?? '';
-      })
-    );
-
-    const totalFields = ['BillAmount', 'Tax', 'TotalAmount'];
-    const totals = totalFields.map((key) => data.reduce((sum, row) => sum + (parseFloat(row[key]) || 0), 0));
-
-    const totalRow = columns.map((col, idx) => {
-      const key = col.accessorKey;
-      if (idx === 0) return 'Total';
-      if (totalFields.includes(key)) {
-        const index = totalFields.indexOf(key);
-        return totals[index].toLocaleString('en-IN', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        });
-      }
-      return '';
-    });
-
-    body.push(totalRow);
-
-    // 6) Define Column Widths (should match your table structure)
-    const columnStyles = {
-      0: { cellWidth: 27 }, // Cost Invoice No
-      1: { cellWidth: 23 }, // Date
-      2: { cellWidth: 25 }, // Doc Id
-      3: { cellWidth: 23 }, // Doc Date
-      4: { cellWidth: 60 }, // Party Name (made wider)
-      5: { cellWidth: 33 }, // Reg In
-      6: { cellWidth: 18 }, // GST Type
-      7: { cellWidth: 25 }, // Bill Amount
-      8: { cellWidth: 25 }, // TAX
-      9: { cellWidth: 25 } // Total Amount
+    // FOOTER
+    const footer = () => {
+      doc.setFontSize(8).setTextColor('#555555');
+      doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
+      doc.text(`Generated By: ${loginUserName}`, 15, pageH - 10, { align: 'left' });
     };
 
-    // 7) Draw Table
+    // METADATA
+    const { fromDate, toDate, branchCode, customer } = formData;
+    const meta = [];
+    if (fromDate) meta.push(`From: ${dayjs(fromDate).format('DD-MM-YYYY')}`);
+    if (toDate) meta.push(`To: ${dayjs(toDate).format('DD-MM-YYYY')}`);
+    if (branchCode) meta.push(`Branch: ${branchCode}`);
+    if (customer) meta.push(`Vendor: ${customer}`);
+    doc.setFontSize(9).setTextColor('#000');
+    if (meta.length > 0) {
+      doc.roundedRect(5, 30, pageW - 10, 10, 2, 2, 'S');
+      doc.text(meta.join('   |   '), 10, 37);
+    }
+
+    // HEADERS
+    const headerLabels = [
+      'Cost Invoice No', 'Date', 'Doc Id', 'Doc Date', 'Party Name',
+      'Reg In', 'GST Type', 'Bill Amount', 'IGST', 'CGST', 'SGST', 'Total Amount'
+    ];
+
+    // BODY
+    const body = data.map((item) => [
+      item.Vid || '',
+      item.Vdate ? dayjs(item.Vdate).format('DD-MM-YYYY') : '-',
+      item.DocId || '-',
+      item.DocDate ? dayjs(item.DocDate).format('DD-MM-YYYY') : '-',
+      item.SupplierName || '',
+      item.SupplierGstin || '',
+      item.GstType || '',
+      (item.BillAmount || 0).toLocaleString('en-IN'),
+      (item.OutputIgst || 0).toLocaleString('en-IN'),
+      (item.OutputCgst || 0).toLocaleString('en-IN'),
+      (item.OutputSgst || 0).toLocaleString('en-IN'),
+      (item.TotalAmount || 0).toLocaleString('en-IN')
+    ]);
+
+    // TOTAL ROW
+    const totalBill = data.reduce((a, b) => a + (b.BillAmount || 0), 0);
+    const totalIgst = data.reduce((a, b) => a + (b.OutputIgst || 0), 0);
+    const totalCgst = data.reduce((a, b) => a + (b.OutputCgst || 0), 0);
+    const totalSgst = data.reduce((a, b) => a + (b.OutputSgst || 0), 0);
+    const totalAmount = data.reduce((a, b) => a + (b.TotalAmount || 0), 0);
+
+    const totalRow = ['Total', '', '', '', '', '', '',
+      totalBill.toLocaleString('en-IN'),
+      totalIgst.toLocaleString('en-IN'),
+      totalCgst.toLocaleString('en-IN'),
+      totalSgst.toLocaleString('en-IN'),
+      totalAmount.toLocaleString('en-IN')
+    ];
+    body.push(totalRow);
+
+    // TABLE
     autoTable(doc, {
-      startY: 50,
+      startY: 45,
       head: [headerLabels],
       body,
-      styles: {
-        fontSize: 8,
-        cellPadding: 2,
-        lineWidth: 0.1,
-        lineColor: [220, 220, 220],
-        overflow: 'linebreak'
-      },
-      headStyles: {
-        fillColor: [52, 68, 155],
-        textColor: 255,
-        halign: 'center'
-      },
-      bodyStyles: {
-        halign: 'left'
-      },
       theme: 'grid',
-      margin: { left: 5, right: 5 },
-      tableWidth: 'auto',
-      columnStyles: columnStyles,
-      didDrawPage: () => {
-        doc.setFontSize(8).setTextColor('#555555');
-        doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
-        doc.text(`Generated By: ${loginUserName}`, 15, pageH - 10, { align: 'left' });
+      styles: { fontSize: 8, cellPadding: 2, lineColor: [220, 220, 220], lineWidth: 0.1 },
+      headStyles: { fillColor: [52, 68, 155], textColor: 255, halign: 'center' },
+      columnStyles: {
+        0: { cellWidth: 25 },
+        1: { cellWidth: 20 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 22 },
+        4: { cellWidth: 55 },
+        5: { cellWidth: 30 },
+        6: { cellWidth: 20 },
+        7: { halign: 'right' },
+        8: { halign: 'right' },
+        9: { halign: 'right' },
+        10: { halign: 'right' },
+        11: { halign: 'right' }
       },
-      didParseCell: (cellHookData) => {
-        const { cell, column, section, row } = cellHookData;
-        const key = columns[column.index]?.accessorKey;
-
-        if (section === 'body' && numericFields.includes(key)) {
-          cell.styles.halign = 'right';
-        }
-
-        if (section === 'body' && row.index === body.length - 1) {
-          cell.styles.fontStyle = 'bold';
-          cell.styles.textColor = [0, 0, 0];
-          cell.styles.fillColor = [240, 240, 240];
+      didDrawPage: footer,
+      didParseCell: (data) => {
+        if (data.row.index === body.length - 1) {
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.fillColor = [240, 240, 240];
         }
       }
     });
 
-    // 8) Save File
     doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
   };
+
 
   return (
     <>
@@ -860,7 +786,7 @@ function CostRegister() {
               columns={reportColumns}
               isListView={listView}
               fileName={'Cost Register'}
-              sumFields={['TotalAmount', 'Tax', 'BillAmount']}
+              // sumFields={['TotalAmount', 'BillAmount']}
               handleDownloadPdf={() =>
                 handleDownloadPdf({
                   logo: listViewData[0]?.companyLogo,
@@ -962,93 +888,93 @@ function CostRegister() {
                               <tbody>
                                 {fillGridData.chargerCostInvoiceVO && fillGridData.chargerCostInvoiceVO.length > 0
                                   ? fillGridData.chargerCostInvoiceVO.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="text-center">{index + 1}</td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.jobNo || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.chargeName || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.chargeCode || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.govChargeCode || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.party || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.qty || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.rate || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.currency || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.exRate || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstAmount || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.fcAmt || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.lcAmt || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.billAmt || 0}
-                                        </td>
-                                      </tr>
-                                    ))
+                                    <tr key={row.id}>
+                                      <td className="text-center">{index + 1}</td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.jobNo || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.chargeName || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.chargeCode || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.govChargeCode || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.party || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.qty || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.rate || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.currency || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.exRate || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstAmount || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.fcAmt || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.lcAmt || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.billAmt || 0}
+                                      </td>
+                                    </tr>
+                                  ))
                                   : fillGridData.chargerCostDebitNoteVO?.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="text-center">{index + 1}</td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.jobNo || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.chargeName || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.chargeCode || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.govChargeCode || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.party || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.qty || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.rate || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.currency || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.exRate || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstpercent || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.fcAmt || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.lcAmt || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.billAmt || 0}
-                                        </td>
-                                      </tr>
-                                    ))}
+                                    <tr key={row.id}>
+                                      <td className="text-center">{index + 1}</td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.jobNo || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.chargeName || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.chargeCode || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.govChargeCode || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.party || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.qty || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.rate || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.currency || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.exRate || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstpercent || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.fcAmt || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.lcAmt || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.billAmt || 0}
+                                      </td>
+                                    </tr>
+                                  ))}
                               </tbody>
                             </table>
                           </div>
@@ -1074,39 +1000,39 @@ function CostRegister() {
                               <tbody>
                                 {fillGridData.tdsCostInvoiceVO && fillGridData.tdsCostInvoiceVO.length > 0
                                   ? fillGridData.tdsCostInvoiceVO.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="text-center">{index + 1}</td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.section || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.totTdsWhAmnt || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.tdsWithHoldingPer || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.tdsWithHolding || ''}
-                                        </td>
-                                      </tr>
-                                    ))
+                                    <tr key={row.id}>
+                                      <td className="text-center">{index + 1}</td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.section || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.totTdsWhAmnt || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.tdsWithHoldingPer || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.tdsWithHolding || ''}
+                                      </td>
+                                    </tr>
+                                  ))
                                   : fillGridData.taxInvoiceGstVO?.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="text-center">{index + 1}</td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.tdsWithHolding || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.tdsWithHoldingPer || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.section || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.totTdsWhAmnt || ''}
-                                        </td>
-                                      </tr>
-                                    ))}
+                                    <tr key={row.id}>
+                                      <td className="text-center">{index + 1}</td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.tdsWithHolding || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.tdsWithHoldingPer || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.section || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.totTdsWhAmnt || ''}
+                                      </td>
+                                    </tr>
+                                  ))}
                               </tbody>
                             </table>
                           </div>

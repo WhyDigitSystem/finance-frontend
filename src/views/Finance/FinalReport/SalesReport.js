@@ -284,170 +284,209 @@ function SalesReport() {
   const getColumns = () => {
     return formData.viewMode === 'details'
       ? [
-          { accessorKey: 'docid', header: 'Doc ID', size: 80 },
-          { accessorKey: 'docdate', header: 'Date', size: 80 },
-          { accessorKey: 'Vid', header: 'Invoice No', size: 80 },
-          { accessorKey: 'Vdate', header: 'Invoice Date', size: 120 },
-          { accessorKey: 'partyname', header: 'Customer', size: 120 },
-          // { accessorKey: 'placeofsupply', header: 'Place Of Supply', size: 80 },
-          // { accessorKey: 'gsttype', header: 'Tax Type', size: 80 },
-          // { accessorKey: 'gstpercent', header: 'Tax %', size: 80 },
-          { accessorKey: 'currency', header: 'Currency', size: 50 },
-          {
-            accessorKey: 'qty',
-            header: 'Qty',
-            size: 80,
-            Cell: ({ cell }) => (
-              <div style={{ textAlign: 'right', width: '100%' }}>
-                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-              </div>
-            ),
-            muiTableHeadCellProps: {
-              align: 'right'
-            }
-          },
-          {
-            accessorKey: 'rate',
-            header: 'Rate',
-            size: 80,
-            Cell: ({ cell }) => (
-              <div style={{ textAlign: 'right', width: '100%' }}>
-                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-              </div>
-            ),
-            muiTableHeadCellProps: {
-              align: 'right'
-            }
-          },
-          {
-            accessorKey: 'billAmount',
-            header: 'Bill Amt',
-            size: 80,
-            Cell: ({ cell }) => (
-              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-              </div>
-            ),
-            muiTableHeadCellProps: {
-              align: 'right'
-            }
-          },
-          {
-            accessorKey: 'gstamount',
-            header: 'Tax Amt',
-            size: 80,
-            Cell: ({ cell }) => (
-              <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
-                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-              </div>
-            ),
-            muiTableHeadCellProps: {
-              align: 'right'
-            }
-          },
-          {
-            accessorKey: 'totalLcAmount',
-            header: 'Total Amt',
-            size: 80,
-            Cell: ({ cell }) => (
-              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-              </div>
-            ),
-            muiTableHeadCellProps: {
-              align: 'right'
-            }
-          },
-          {
-            accessorKey: 'totalchargeamountlc',
-            header: 'Bill Amt(Base)',
-            size: 80,
-            Cell: ({ cell }) => (
-              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-              </div>
-            ),
-            muiTableHeadCellProps: {
-              align: 'right'
-            }
-          },
-          {
-            accessorKey: 'totaltaxamountlc',
-            header: 'Tax Amt(Base)',
-            size: 80,
-            Cell: ({ cell }) => (
-              <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
-                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-              </div>
-            ),
-            muiTableHeadCellProps: {
-              align: 'right'
-            }
-          },
-          {
-            accessorKey: 'totalinvamountlc',
-            header: 'Total Amt(Base)',
-            size: 80,
-            Cell: ({ cell }) => (
-              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-              </div>
-            ),
-            muiTableHeadCellProps: {
-              align: 'right'
-            }
-          },
-          { accessorKey: 'chargetype', header: 'Charge Type', size: 80 },
-          { accessorKey: 'chargename', header: 'Charge Name', size: 80 },
-          { accessorKey: 'chargecode', header: 'Charge Code', size: 80 }
-        ]
-      : [
-          { accessorKey: 'docId', header: 'Doc Id', size: 100 },
-          { accessorKey: 'docDate', header: 'Date', size: 100 },
-          { accessorKey: 'vId', header: 'Invoice No', size: 100 },
-          { accessorKey: 'vDate', header: 'Date', size: 100 },
-          { accessorKey: 'partyName', header: 'Customer', size: 200 },
-          { accessorKey: 'placeofsupply', header: 'Place Of Supply', size: 100 },
-          {
-            accessorKey: 'totalchargeamountlc',
-            header: 'Bill Amt',
-            size: 80,
-            Cell: ({ cell }) => (
-              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-              </div>
-            ),
-            muiTableHeadCellProps: {
-              align: 'right'
-            }
-          },
-          {
-            accessorKey: 'totaltaxamountlc',
-            header: 'Tax Amt',
-            size: 80,
-            Cell: ({ cell }) => (
-              <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
-                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-              </div>
-            ),
-            muiTableHeadCellProps: {
-              align: 'right'
-            }
-          },
-          {
-            accessorKey: 'totalinvamountlc',
-            header: 'Total Amt',
-            size: 80,
-            Cell: ({ cell }) => (
-              <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
-                {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-              </div>
-            ),
-            muiTableHeadCellProps: {
-              align: 'right'
-            }
+        { accessorKey: 'docid', header: 'Doc ID', size: 80 },
+        { accessorKey: 'docdate', header: 'Date', size: 80 },
+        { accessorKey: 'Vid', header: 'Invoice No', size: 80 },
+        { accessorKey: 'Vdate', header: 'Invoice Date', size: 120 },
+        { accessorKey: 'partyname', header: 'Customer', size: 120 },
+        // { accessorKey: 'placeofsupply', header: 'Place Of Supply', size: 80 },
+        // { accessorKey: 'gsttype', header: 'Tax Type', size: 80 },
+        // { accessorKey: 'gstpercent', header: 'Tax %', size: 80 },
+        { accessorKey: 'currency', header: 'Currency', size: 50 },
+        {
+          accessorKey: 'qty',
+          header: 'Qty',
+          size: 80,
+          Cell: ({ cell }) => (
+            <div style={{ textAlign: 'right', width: '100%' }}>
+              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+            </div>
+          ),
+          muiTableHeadCellProps: {
+            align: 'right'
           }
-        ];
+        },
+        {
+          accessorKey: 'rate',
+          header: 'Rate',
+          size: 80,
+          Cell: ({ cell }) => (
+            <div style={{ textAlign: 'right', width: '100%' }}>
+              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+            </div>
+          ),
+          muiTableHeadCellProps: {
+            align: 'right'
+          }
+        },
+        {
+          accessorKey: 'billAmount',
+          header: 'Bill Amt',
+          size: 80,
+          Cell: ({ cell }) => (
+            <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+            </div>
+          ),
+          muiTableHeadCellProps: {
+            align: 'right'
+          }
+        },
+        {
+          accessorKey: 'gstamount',
+          header: 'Tax Amt',
+          size: 80,
+          Cell: ({ cell }) => (
+            <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
+              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+            </div>
+          ),
+          muiTableHeadCellProps: {
+            align: 'right'
+          }
+        },
+        {
+          accessorKey: 'totalLcAmount',
+          header: 'Total Amt',
+          size: 80,
+          Cell: ({ cell }) => (
+            <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+            </div>
+          ),
+          muiTableHeadCellProps: {
+            align: 'right'
+          }
+        },
+        {
+          accessorKey: 'totalchargeamountlc',
+          header: 'Bill Amt(Base)',
+          size: 80,
+          Cell: ({ cell }) => (
+            <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+            </div>
+          ),
+          muiTableHeadCellProps: {
+            align: 'right'
+          }
+        },
+        {
+          accessorKey: 'totaltaxamountlc',
+          header: 'Tax Amt(Base)',
+          size: 80,
+          Cell: ({ cell }) => (
+            <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
+              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+            </div>
+          ),
+          muiTableHeadCellProps: {
+            align: 'right'
+          }
+        },
+        {
+          accessorKey: 'totalinvamountlc',
+          header: 'Total Amt(Base)',
+          size: 80,
+          Cell: ({ cell }) => (
+            <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+            </div>
+          ),
+          muiTableHeadCellProps: {
+            align: 'right'
+          }
+        },
+        { accessorKey: 'chargetype', header: 'Charge Type', size: 80 },
+        { accessorKey: 'chargename', header: 'Charge Name', size: 80 },
+        { accessorKey: 'chargecode', header: 'Charge Code', size: 80 }
+      ]
+      : [
+        { accessorKey: 'docId', header: 'Doc Id', size: 100 },
+        { accessorKey: 'docDate', header: 'Date', size: 100 },
+        { accessorKey: 'vId', header: 'Invoice No', size: 90 },
+        { accessorKey: 'vDate', header: 'Date', size: 90 },
+        { accessorKey: 'partyName', header: 'Customer', size: 100 },
+        { accessorKey: 'placeofsupply', header: 'Place Of Supply', size: 70 },
+        {
+          accessorKey: 'totalchargeamountlc',
+          header: 'Bill Amt',
+          size: 60,
+          Cell: ({ cell }) => (
+            <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+            </div>
+          ),
+          muiTableHeadCellProps: {
+            align: 'right'
+          }
+        },
+        // {
+        //   accessorKey: 'totaltaxamountlc',
+        //   header: 'Tax Amt',
+        //   size: 60,
+        //   Cell: ({ cell }) => (
+        //     <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
+        //       {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+        //     </div>
+        //   ),
+        //   muiTableHeadCellProps: {
+        //     align: 'right'
+        //   }
+        // },
+        {
+          accessorKey: 'igst',
+          header: 'IGST',
+          size: 60,
+          Cell: ({ cell }) => (
+            <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
+              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+            </div>
+          ),
+          muiTableHeadCellProps: {
+            align: 'right'
+          }
+        },
+        {
+          accessorKey: 'cgst',
+          header: 'CGST',
+          size: 60,
+          Cell: ({ cell }) => (
+            <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
+              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+            </div>
+          ),
+          muiTableHeadCellProps: {
+            align: 'right'
+          }
+        },
+        {
+          accessorKey: 'sgst',
+          header: 'SGST',
+          size: 60,
+          Cell: ({ cell }) => (
+            <div style={{ textAlign: 'right', width: '100%', color: 'red' }}>
+              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+            </div>
+          ),
+          muiTableHeadCellProps: {
+            align: 'right'
+          }
+        },
+        {
+          accessorKey: 'totalinvamountlc',
+          header: 'Total Amt',
+          size: 60,
+          Cell: ({ cell }) => (
+            <div style={{ textAlign: 'right', width: '100%', color: 'green' }}>
+              {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+            </div>
+          ),
+          muiTableHeadCellProps: {
+            align: 'right'
+          }
+        }
+      ];
   };
 
   const getSumFields = () => {
@@ -460,214 +499,148 @@ function SalesReport() {
       const logoBase64 = await getLogo();
       const workbook = new ExcelJS.Workbook();
       const reportType = formData.viewMode === 'details' ? 'Detailed Sales Report' : 'Summary Sales Report';
-
       const sheet = workbook.addWorksheet(reportType);
       let currentRow = 1;
 
-      // Add logo if available
+      // ======= HEADER + LOGO =======
       if (logoBase64) {
         try {
           const logoId = workbook.addImage({
             base64: logoBase64,
             extension: 'png'
           });
-          sheet.mergeCells('A1:A2');
-          // No merging — place and size logo in A1 neatly
           sheet.addImage(logoId, {
-            tl: { col: 0, row: 0 }, // top-left corner
-            ext: { width: 90, height: 50 } // Logo size: adjust to your needs
+            tl: { col: 0, row: 0 },
+            ext: { width: 90, height: 50 }
           });
-
-          // Optional: set row height and column width for better fit
-          sheet.getRow(1).height = 28; // 20-30 is good
-          sheet.getColumn(1).width = 18; // Only Column A (index 1)
+          sheet.getRow(1).height = 28;
+          sheet.getColumn(1).width = 18;
         } catch (logoError) {
           console.error('Error adding logo:', logoError);
         }
       }
+
       sheet.mergeCells('B1:P1');
-      // Company Name (Row 1, centered)
       const companyCell = sheet.getCell('B1');
       companyCell.value = companyName;
       companyCell.font = { bold: true, size: 14, color: { argb: '1F4E78' } };
-      companyCell.alignment = {
-        horizontal: 'center',
-        vertical: 'middle',
-        wrapText: true
-      };
+      companyCell.alignment = { horizontal: 'center', vertical: 'middle' };
+
       sheet.mergeCells('B2:P2');
-      // Report Title (Row 2, centered)
       const titleCell = sheet.getCell('B2');
       titleCell.value = reportType;
       titleCell.font = { size: 14, bold: true };
-      titleCell.alignment = {
-        horizontal: 'center',
-        vertical: 'middle',
-        wrapText: true
-      };
+      titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
       currentRow = 3;
-      const formatDate = (dateString) => {
-        if (!dateString) return '';
-        const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are 0-based
-        const year = date.getFullYear();
-        return `${day}-${month}-${year}`;
-      };
-      // New parameters section
+
+      // ======= PARAMETERS & TIMESTAMP =======
       const parameters = [];
       if (selectedSections.date) {
+        const formatDate = (d) => (d ? dayjs(d).format('DD-MM-YYYY') : '');
         parameters.push(`Date Range: ${formatDate(formData.fromDate)} to ${formatDate(formData.toDate)}`);
       }
       if (formData.branchCode) parameters.push(`Branch: ${formData.branchCode}`);
       if (formData.customer) parameters.push(`Customer: ${formData.customer}`);
-
       if (parameters.length > 0) {
-        //  Parameters heading
-        // const paramHeading = sheet.addRow(['Report Parameters']);
-        // paramHeading.font = { bold: true, color: { argb: '1F4E78' } };
+        const paramRow = sheet.addRow([parameters.join(' | ')]);
+        paramRow.font = { bold: true, color: { argb: '000000' } };
         sheet.mergeCells(`A${currentRow}:P${currentRow}`);
         currentRow++;
-
-        // Parameters values
-        const paramsRow = sheet.addRow([parameters.join(' | ')]);
-        paramsRow.font = { bold: true, color: { argb: 'black' } };
-        sheet.mergeCells(`A${currentRow}:P${currentRow}`);
-        currentRow++;
-
-        // Empty row for spacing
         sheet.addRow([]);
         currentRow++;
       }
 
-      // Timestamp
       const timestamp = `Generated on: ${dayjs().format('DD-MM-YYYY HH:mm:ss')}`;
       const timeRow = sheet.addRow([timestamp]);
       timeRow.font = { color: { argb: '7F7F7F' } };
       timeRow.alignment = { horizontal: 'right' };
       sheet.mergeCells(`A${currentRow}:P${currentRow}`);
       currentRow++;
-      sheet.eachRow((row, currentRow) => {
-        if (currentRow <= 6) return;
-        row.eachCell((cell) => {
-          cell.border = {
-            top: { style: 'thin' },
-            left: { style: 'thin' },
-            bottom: { style: 'thin' },
-            right: { style: 'thin' }
-          };
-        });
-      });
 
-      // Headers
+      // ======= HEADERS =======
       const headers =
         formData.viewMode === 'details'
           ? [
-              'Doc ID',
-              'Date',
-              'Customer',
-              'Invoice No',
-              'Invoice Date',
-              'Supply Place',
-              'Charge Type',
-              'Charge Code',
-              'Charge Name',
-              'Tax Type',
-              'Tax Percent',
-              'Qty',
-              'Rate',
-              'Amount',
-              'Tax',
-              'Total'
-            ]
-          : ['Doc ID', 'Date', 'Invoice No', 'Invoice Date', 'Tax Type', 'Customer', 'Supply Place', 'Amount', 'Tax', 'Total'];
+            'Doc ID',
+            'Date',
+            'Customer',
+            'Invoice No',
+            'Invoice Date',
+            'Supply Place',
+            'Charge Type',
+            'Charge Code',
+            'Charge Name',
+            'Tax Type',
+            'Tax Percent',
+            'Qty',
+            'Rate',
+            'Amount',
+            'Tax',
+            'Total'
+          ]
+          : [
+            'Doc ID',
+            'Date',
+            'Invoice No',
+            'Invoice Date',
+            'Tax Type',
+            'Customer',
+            'Supply Place',
+            'Amount',
+            'IGST',
+            'CGST',
+            'SGST',
+            'Total'
+          ];
 
       const headerRow = sheet.addRow(headers);
       headerRow.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      headerRow.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: '1F4E78' }
-      };
+      headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '1F4E78' } };
       headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
       headerRow.height = 25;
       currentRow++;
 
-      // Data Rows
-      let dataStartRow = currentRow; // Remember where data starts
-
-      // Details Report
+      // ======= DATA ROWS =======
       if (formData.viewMode === 'details') {
-        const groups = rowData.reduce((acc, item) => {
-          const key = item.docid;
-          if (!acc[key]) acc[key] = [];
-          acc[key].push(item);
-          return acc;
-        }, {});
-
-        Object.entries(groups).forEach(([docid, items], groupIndex) => {
-          const startRow = currentRow;
-
-          items.forEach((item, idx) => {
-            const row = [
-              // groupIndex + 1,
-              item.docid,
-              dayjs(item.docdate).format('DD-MM-YYYY'),
-              item.partyname,
-              item.Vid || '-',
-              dayjs(item.Vdate).format('DD-MM-YYYY'),
-              item.placeofsupply,
-              item.chargetype,
-              item.chargecode,
-              item.chargename,
-              item.gsttype,
-              item.gstpercent,
-              item.qty,
-              item.rate,
-              item.billAmount,
-              item.gstamount,
-              item.totalLcAmount
-            ];
-            const dataRow = sheet.addRow(row);
-
-            // Apply zebra striping
-            dataRow.fill = {
-              type: 'pattern',
-              pattern: 'solid',
-              fgColor: { argb: groupIndex % 2 === 0 ? 'F2F2F2' : 'FFFFFF' }
-            };
-
-            // Color coding
-            dataRow.getCell('O').font = { color: { argb: 'FFFF0000' } }; // Tax - Red
-            dataRow.getCell('P').font = { color: { argb: 'FF00B050' } }; // Total - Green
-
-            // Format numbers
-            dataRow.getCell('L').numFmt = '#,##0';
-            dataRow.getCell('M').numFmt = '#,##0.00';
-            dataRow.getCell('N').numFmt = '#,##0.00';
-            dataRow.getCell('O').numFmt = '#,##0.00';
-            dataRow.getCell('P').numFmt = '#,##0';
-
-            currentRow++;
-          });
-
-          // Only merge if group has >1 row
-          if (items.length > 1) {
-            const endRow = currentRow - 1;
-            for (let col = 1; col <= 6; col++) {
-              const colChar = String.fromCharCode(64 + col);
-              sheet.mergeCells(`${colChar}${startRow}:${colChar}${endRow}`);
-              const cell = sheet.getCell(`${colChar}${startRow}`);
-              cell.alignment = { vertical: 'middle', horizontal: 'center' };
-            }
-          }
-        });
-      }
-      // Summary Report
-      else {
         rowData.forEach((item, index) => {
           const row = sheet.addRow([
-            // index + 1,
+            item.docid,
+            dayjs(item.docdate).format('DD-MM-YYYY'),
+            item.partyname,
+            item.Vid || '-',
+            dayjs(item.Vdate).format('DD-MM-YYYY'),
+            item.placeofsupply,
+            item.chargetype,
+            item.chargecode,
+            item.chargename,
+            item.gsttype,
+            item.gstpercent,
+            item.qty,
+            item.rate,
+            item.billAmount,
+            item.gstamount,
+            item.totalLcAmount
+          ]);
+
+          // Zebra striping
+          row.fill = {
+            type: 'pattern',
+            pattern: 'solid',
+            fgColor: { argb: index % 2 === 0 ? 'F2F2F2' : 'FFFFFF' }
+          };
+
+          // ✅ Numeric formatting + color highlight
+          ['M', 'N', 'O', 'P'].forEach((col, i) => {
+            const cell = row.getCell(col);
+            cell.numFmt = '#,##0.00';
+            cell.alignment = { horizontal: 'right' };
+            if (col === 'O') cell.font = { color: { argb: 'FFFF0000' } }; // Tax - Red
+            if (col === 'P') cell.font = { color: { argb: 'FF00B050' } }; // Total - Green
+          });
+        });
+      } else {
+        rowData.forEach((item, index) => {
+          const row = sheet.addRow([
             item.docId,
             dayjs(item.docdate).format('DD-MM-YYYY'),
             item.vId || '-',
@@ -676,129 +649,100 @@ function SalesReport() {
             item.partyName,
             item.placeofsupply,
             item.totalchargeamountlc,
-            item.totaltaxamountlc,
+            item.igst,
+            item.cgst,
+            item.sgst,
             item.totalinvamountlc
           ]);
 
-          // Apply zebra striping
+          // Zebra striping
           row.fill = {
             type: 'pattern',
             pattern: 'solid',
-            fgColor: { argb: index % 2 === 0 ? 'F2F2F2' : 'FFFFFF' }
+            fgColor: { argb: index % 2 === 0 ? 'F9F9F9' : 'FFFFFF' }
           };
 
-          // Color coding
-          row.getCell('I').font = { color: { argb: 'FFFF0000' } }; // Tax - Red
-          row.getCell('J').font = { color: { argb: 'FF00B050' } }; // Total - Green
-
-          // Format numbers
-          row.getCell('H').numFmt = '#,##0.00'; // Amount
-          row.getCell('I').numFmt = '#,##0.00'; // Total
-          row.getCell('J').numFmt = '#,##0.00'; // Tax
-
-          currentRow++;
+          // ✅ Numeric formatting + color highlight
+          ['H', 'I', 'J', 'K', 'L'].forEach((col) => {
+            const cell = row.getCell(col);
+            cell.numFmt = '#,##0.00';
+            cell.alignment = { horizontal: 'right' };
+            if (['I', 'J', 'K'].includes(col)) cell.font = { color: { argb: 'FFFF0000' } }; // Tax fields - Red
+            if (col === 'L') cell.font = { color: { argb: 'FF00B050' } }; // Total - Green
+          });
         });
       }
 
-      // Add totals
-      const totals = rowData.reduce(
-        (acc, item) => {
-          acc.qty += Number(item.qty || 0);
-          acc.rate += Number(item.rate || 0);
-          acc.totalCharge += Number(item.billAmount || 0);
-          acc.totalTax += Number(item.gstamount || 0);
-          acc.totalInvoice += Number(item.totalLcAmount || 0);
-          return acc;
-        },
-        { qty: 0, rate: 0, totalCharge: 0, totalTax: 0, totalInvoice: 0 }
-      );
-      const totalSummary = rowData.reduce(
-        (acc, item) => {
-          acc.totalchargeamountlc += Number(item.totalchargeamountlc || 0);
-          acc.totaltaxamountlc += Number(item.totaltaxamountlc || 0);
-          acc.totalinvamountlc += Number(item.totalinvamountlc || 0);
-          return acc;
-        },
-        { totalchargeamountlc: 0, totaltaxamountlc: 0, totalinvamountlc: 0 }
-      );
+      // ======= GRAND TOTAL =======
       const totalRow = sheet.addRow([]);
-
-      if (formData.viewMode === 'details') {
-        totalRow.values = [
-          'Grand Total',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          totals.qty,
-          totals.rate,
-          totals.totalCharge,
-          totals.totalTax,
-          totals.totalInvoice
-        ];
-        sheet.mergeCells(`A${currentRow}:J${currentRow}`);
-      } else {
-        totalRow.values = [
-          'Grand Total',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          totalSummary.totalchargeamountlc,
-          totalSummary.totaltaxamountlc,
-          totalSummary.totalinvamountlc
-        ];
-        sheet.mergeCells(`A${currentRow}:H${currentRow}`);
-      }
-
-      // Style totals row
       totalRow.font = { bold: true };
-      totalRow.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'DDEBF7' } // Light blue background
-      };
-      totalRow.getCell(1).alignment = { horizontal: 'right' };
+      totalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'DDEBF7' } };
 
-      // Format totals numbers
       if (formData.viewMode === 'details') {
-        totalRow.getCell('K').numFmt = '#,##0';
-        totalRow.getCell('K').alignment = { horizontal: 'right' };
-        ['P', 'L', 'M', 'N', 'O'].forEach((col) => {
-          const cell = totalRow.getCell(col);
-          cell.numFmt = '#,##0.00';
-          cell.alignment = { horizontal: 'right' };
-        });
-        totalRow.getCell('L').font = { color: { argb: 'FFFF0000' } };
-        totalRow.getCell('M').font = { color: { argb: 'FFFF0000' } };
-        totalRow.getCell('N').font = { color: { argb: 'FFFF0000' } };
-        totalRow.getCell('O').font = { color: { argb: 'FFFF0000' } };
-        totalRow.getCell('P').font = { color: { argb: 'FF00B050' } };
+        totalRow.values = [
+          'Grand Total',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          rowData.reduce((a, b) => a + (b.billAmount || 0), 0),
+          rowData.reduce((a, b) => a + (b.gstamount || 0), 0),
+          rowData.reduce((a, b) => a + (b.totalLcAmount || 0), 0)
+        ];
+        sheet.mergeCells(`A${totalRow.number}:M${totalRow.number}`);
       } else {
-        ['I', 'J', 'H'].forEach((col) => {
-          const cell = totalRow.getCell(col);
-          cell.numFmt = '#,##0.00';
-          cell.alignment = { horizontal: 'right' };
-        });
-        totalRow.getCell('I').font = { color: { argb: 'FFFF0000' } };
-        totalRow.getCell('J').font = { color: { argb: 'FF00B050' } };
-        // totalRow.getCell('L').font = { color: { argb: 'FF00B050' } };
+        totalRow.values = [
+          'Grand Total',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          rowData.reduce((a, b) => a + (b.igst || 0), 0),
+          rowData.reduce((a, b) => a + (b.cgst || 0), 0),
+          rowData.reduce((a, b) => a + (b.sgst || 0), 0),
+          rowData.reduce((a, b) => a + (b.totalinvamountlc || 0), 0)
+        ];
+        sheet.mergeCells(`A${totalRow.number}:H${totalRow.number}`);
       }
-      currentRow++;
 
-      // Set column widths and borders
-      sheet.columns.forEach((column) => {
-        column.width = 18;
-        column.alignment = { vertical: 'middle' };
+      // Style numeric columns in total
+      totalRow.eachCell((cell) => {
+        cell.numFmt = '#,##0.00';
+        cell.alignment = { horizontal: 'right' };
       });
+
+      totalRow.getCell(1).alignment = { horizontal: 'right' };
+      totalRow.getCell(1).font = { bold: true, color: { argb: '1F4E78' } };
+
+      // ======= BORDERS + LAYOUT =======
+      sheet.eachRow((row) => {
+        row.eachCell((cell) => {
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'BFBFBF' } },
+            left: { style: 'thin', color: { argb: 'BFBFBF' } },
+            bottom: { style: 'thin', color: { argb: 'BFBFBF' } },
+            right: { style: 'thin', color: { argb: 'BFBFBF' } }
+          };
+        });
+      });
+
+      // Auto column width
+      sheet.columns.forEach((col) => {
+        col.width = 18;
+        col.alignment = { vertical: 'middle' };
+      });
+
       const buffer = await workbook.xlsx.writeBuffer();
       saveAs(new Blob([buffer]), `${reportType.replace(/\s+/g, '_')}.xlsx`);
     } catch (error) {
@@ -879,7 +823,7 @@ function SalesReport() {
     const totalFields =
       viewMode === 'details'
         ? ['billAmount', 'gstamount', 'totalLcAmount']
-        : ['totalchargeamountlc', 'totaltaxamountlc', 'totalinvamountlc'];
+        : ['totalchargeamountlc', 'igst', 'cgst', 'sgst', 'totalinvamountlc'];
 
     const totalRow = columns.map((col, index) => {
       const key = col.accessorKey;
