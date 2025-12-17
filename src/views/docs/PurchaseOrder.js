@@ -39,6 +39,7 @@ const PurchaseOrder = () => {
     vendorName: '',
     billAddress: '',
     deliveryAddress: '',
+    gstIn: '',
     companyAddress: `SCM AI PACKS PVT LTD
 8 B KHATHA NO. 175/3, FIRST FLOOR, 3RD MAIN ROAD, 3RD CROSS, HOYSALA NAGAR, RAMAMURTHI NAGAR
 BANGALORE - 560016
@@ -115,7 +116,8 @@ CIN: U82920KA2023PTC181536`,
       billAddress: '',
       deliveryAddress: '',
       totalAmount: 0,
-      comapnayAddress: ''
+      comapnayAddress: '',
+      gstIn: ''
     });
 
     setFormDataErrors({});
@@ -153,10 +155,12 @@ CIN: U82920KA2023PTC181536`,
     const selectedVendor = vendorList.find((vendor) => vendor.partyName === formData.vendorName);
 
     const address = selectedVendor?.FullAddress || '';
+    const gstIn = selectedVendor?.gstin || '';
 
     setFormData((prev) => ({
       ...prev,
-      billAddress: address
+      billAddress: address,
+      gstIn: gstIn
     }));
   }, [formData.vendorName, vendorList]);
 
@@ -255,7 +259,8 @@ CIN: U82920KA2023PTC181536`,
       comapnayAddress: formData.companyAddress,
       subTotal: parseInt(formData.totalAmount),
       finYear: finYear,
-      items: detailsVo
+      items: detailsVo,
+      gstIn:formData.gstIn
     };
     try {
       const result = await apiCalls('put', '/reportController/createUpdateInvoice', sendData);
@@ -301,7 +306,8 @@ CIN: U82920KA2023PTC181536`,
           deliveryAddress: item.deliveryAddress,
           comapnayAddress: item.companyAddress,
           totalAmount: item.subTotal,
-          finYear: item.finYear
+          finYear: item.finYear,
+          gstIn:item.gstIn
         });
         setTableData(
           item.productLines.map((data) => ({

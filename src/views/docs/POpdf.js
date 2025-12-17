@@ -219,6 +219,16 @@ const POpdf = ({ row, callBackFunction, modalClose }) => {
                 />
                 <div className="ms-2">
                   <strong style={{ fontSize: '13px' }}>{localStorage.getItem('companyName')}</strong>
+                  {companyDetails.gst && (
+                    <div className="d-flex flex-row" style={{ fontSize: '12px', margin: '0px' }}>
+                     <strong style={{ fontSize: '11px' }}> GSTIN: {companyDetails.gst} </strong>
+                    </div>
+                  )}
+                  {companyDetails.cin && (
+                    <div className="d-flex flex-row" style={{ fontSize: '12px', margin: '0px' }}>
+                      <strong style={{ fontSize: '11px' }}> CIN: {companyDetails.cin} </strong>
+                    </div>
+                  )}
                   <div style={{ width: 198 }}>
                     <p style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '8px', lineHeight: '1.6', marginBottom: 0 }}>
                       {companyDetails.address}
@@ -227,11 +237,6 @@ const POpdf = ({ row, callBackFunction, modalClose }) => {
                   {companyDetails.city && (
                     <div className="d-flex flex-row" style={{ fontSize: '10px' }}>
                       {companyDetails.city} - {companyDetails.zip}
-                    </div>
-                  )}
-                  {companyDetails.cin && (
-                    <div className="d-flex flex-row" style={{ fontSize: '12px', margin: '0px' }}>
-                      CIN: {companyDetails.cin}
                     </div>
                   )}
                 </div>
@@ -308,10 +313,32 @@ const POpdf = ({ row, callBackFunction, modalClose }) => {
                     fontSize: '8px',
                     lineHeight: '1.6',
                     wordBreak: 'break-word',
-                    flex: 1
+                    flex: 1,
+                    marginTop: '3px'
                   }}
                 >
                   {row.vendorAddress}
+                </p>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  marginTop: 3
+                }}
+              >
+                <strong style={{ marginRight: 3, whiteSpace: 'nowrap', fontSize: '10px' }}>GSTIN:</strong>
+                <p
+                  style={{
+                    margin: '2px',
+                    fontSize: '8px',
+                    lineHeight: '1.6',
+                    wordBreak: 'break-word',
+                    flex: 1,
+                     marginTop: '3px'
+                  }}
+                >
+                  {row.gstIn}
                 </p>
               </div>
             </div>
@@ -494,8 +521,9 @@ const POpdf = ({ row, callBackFunction, modalClose }) => {
               fontSize: '10px',
               textAlign: 'left',
               borderTop: '1px solid #000',
-              paddingTop: '10px',
-              position: 'relative'
+              paddingTop: '100px',
+              position: 'relative',
+
             }}
           >
             <strong>Authorized Signature:</strong>
