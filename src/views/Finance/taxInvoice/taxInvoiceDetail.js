@@ -1560,6 +1560,10 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
     }
   };
 
+  const totalKitQty = taxInvoiceAnnexure.reduce((sum, row) => sum + Number(row.kitqty || 0), 0);
+
+  const totalAmount = taxInvoiceAnnexure.reduce((sum, row) => sum + Number(row.kitqty || 0) * Number(row.rate || 0), 0);
+
   return (
     <>
       {loading && (
@@ -1904,11 +1908,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
               <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <TextField
-                    label={
-                      <span>
-                        Ref No
-                      </span>
-                    }
+                    label={<span>Ref No</span>}
                     disabled={formData.status === 'TAX'}
                     size="small"
                     inputProps={{ maxLength: 30 }}
@@ -2763,10 +2763,10 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                 <th className="table-header">Transaction Date</th>
                                 <th className="table-header">Kit Id</th>
                                 <th className="table-header">Kit Name</th>
-                                <th className="table-header">Kit Qty</th>
                                 <th className="table-header" style={{ width: '100px' }}>
                                   Rate
                                 </th>
+                                <th className="table-header">Kit Qty</th>
                                 <th className="table-header">Amount</th>
                               </tr>
                             </thead>
@@ -2779,8 +2779,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                   <td className="text-center">{row.transactionno}</td>
                                   <td className="text-center">{dayjs(row.transactiondate).format('DD-MM-YYYY')}</td>
                                   <td className="text-center">{row.kitid}</td>
-                                  <td className="text-center">{row.kitname}</td>
-                                  <td className="text-center">{row.kitqty}</td>
+                                  <td className="text-left">{row.kitname}</td>
                                   <td className="border px-0 py-0">
                                     <input
                                       type="number"
@@ -2788,6 +2787,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                       disabled={formData.status === 'TAX'}
                                       onChange={(e) => handleAnnexureInputChange(index, 'rate', e.target.value)}
                                       className={taxInvoiceAnnexureErrors[index]?.rate ? 'error form-control' : 'form-control'}
+                                      style={{ textAlign: 'right' }}
                                     />
                                     {taxInvoiceAnnexureErrors[index]?.rate && (
                                       <div className="mt-1" style={{ color: 'red', fontSize: '12px' }}>
@@ -2795,10 +2795,18 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
                                       </div>
                                     )}
                                   </td>
-                                  <td className="text-center">{row.kitqty * row.rate}</td>
+                                  <td className="text-center">{row.kitqty}</td>
+                                  <td style={{ textAlign: 'right' }}>{row.kitqty * row.rate}</td>
                                 </tr>
                               ))}
                             </tbody>
+                            <tr style={{ fontWeight: 'bold', backgroundColor: '#f5f5f5' }}>
+                              <td colSpan={6} className="text-right" style={{ textAlign: 'right' }}>
+                                Total
+                              </td>
+                              <td className="text-center">{totalKitQty}</td>
+                              <td style={{ textAlign: 'right' }}>{totalAmount.toFixed(2)}</td>
+                            </tr>
                           </table>
                         </div>
                       </div>
