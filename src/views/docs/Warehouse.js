@@ -312,6 +312,7 @@ const Warehouse = () => {
   };
   const listViewColumns = [
     { accessorKey: 'name', header: 'Warehouse Name', size: 140 },
+    { accessorKey: 'code', header: 'Warehouse Code', size: 140 },
     { accessorKey: 'stockBranch', header: 'Stock Branch', size: 140 },
     { accessorKey: 'country', header: 'Country', size: 140 },
     { accessorKey: 'state', header: 'State', size: 140 },

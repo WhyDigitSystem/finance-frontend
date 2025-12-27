@@ -7,6 +7,7 @@ import Tabs from '@mui/material/Tabs';
 import 'react-tabs/style/react-tabs.css';
 import { FaTrash } from 'react-icons/fa';
 import React from 'react';
+import { toWords } from 'number-to-words';
 import {
   Button,
   Tab,
@@ -88,7 +89,9 @@ const RetrievalIssueManifest = () => {
     transporterName: '',
     vehicleNo: '',
     driverNo: '',
-    refNo: ''
+    refNo: '',
+    amountInWords: '',
+    amount: ''
   });
 
   const [formDataErrors, setFormDataErrors] = useState({
@@ -104,7 +107,9 @@ const RetrievalIssueManifest = () => {
     receiverWarehouse: '',
     transporterName: '',
     vehicleNo: '',
-    refNo: ''
+    refNo: '',
+    amountInWords: '',
+    amount: ''
   });
 
   const [detailsKitData, setDetailsKitData] = useState([]);
@@ -173,7 +178,7 @@ const RetrievalIssueManifest = () => {
 
   const getAllReceiverDetails = async () => {
     try {
-      const response = await apiCalls('get', `/warehouser/getAllWarehouseByOrgId?orgId=${orgId}`);
+      const response = await apiCalls('get', `/warehouser/getAllWarehouseNames?orgId=${orgId}`);
       setReceiverDetails(response.paramObjectsMap.warehouseVO);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -203,7 +208,9 @@ const RetrievalIssueManifest = () => {
       transporterName: '',
       vehicleNo: '',
       driverNo: '',
-      refNo: ''
+      refNo: '',
+      amountInWords: '',
+      amount: ''
     });
 
     setFormDataErrors([]);
@@ -228,7 +235,14 @@ const RetrievalIssueManifest = () => {
 
     // Uppercase only for free text input types
     const newValue = type === 'text' || type === 'textarea' || typeof type === 'undefined' ? value.toUpperCase() : value;
-
+    if (name === 'amount') {
+      const numericValue = parseFloat(value);
+      if (!isNaN(numericValue)) {
+        formData.amountInWords = toWords(numericValue).replace(/,/g, '').toLocaleUpperCase();
+      } else {
+        formData.amountInWords = '';
+      }
+    }
     setFormData((prevData) => ({
       ...prevData,
       [name]: newValue
@@ -305,7 +319,8 @@ const RetrievalIssueManifest = () => {
         kitId: row.kitNo,
         kitName: row.kitName,
         kitQty: parseInt(row.kitQty),
-        actualQty: row.actualQty
+        actualQty: row.actualQty,
+
       }));
 
       const saveFormData = {
@@ -329,6 +344,8 @@ const RetrievalIssueManifest = () => {
         code: formData.code,
         vechileNo: formData.vehicleNo,
         refNo: formData.refNo,
+        amountInWords: formData.amountInWords || '',
+        amount: formData.amount || '',
         finYear: finYear,
         branch: branch,
         branchCode: branchCode
@@ -379,6 +396,8 @@ const RetrievalIssueManifest = () => {
           vehicleNo: listValueVO.vehicleeNo || '',
           driverNo: listValueVO.driverPhoneNo || '',
           refNo: listValueVO.refNo || '',
+          amountInWords: listValueVO.amountInWords || '',
+          amount: listValueVO.amount || '',
           finYear: finYear,
           branch: branch,
           branchCode: branchCode,
@@ -544,7 +563,6 @@ const RetrievalIssueManifest = () => {
                   <TextField
                     label="Ref No"
                     size="small"
-                    disabled
                     value={formData.refNo}
                     onChange={(e) => setFormData({ ...formData, refNo: e.target.value })}
                     error={!!formDataErrors.refNo}
@@ -660,7 +678,7 @@ const RetrievalIssueManifest = () => {
                   disablePortal
                   options={receiverDetails}
                   getOptionLabel={(option) => option.name || ''}
-                  isOptionEqualToValue={(option, value) => option.id === value.id} // ✅ Add this line
+                  isOptionEqualToValue={(option, value) => option.id === value.id}
                   sx={{ width: '100%' }}
                   size="small"
                   value={formData.receiverWarehouse ? receiverDetails.find((c) => c.name === formData.receiverWarehouse) : null}
@@ -670,29 +688,9 @@ const RetrievalIssueManifest = () => {
                       receiverWarehouse: newValue?.name || '',
                       // code: newValue?.code || '',
                       receiverAddress: newValue?.address || '',
-                      receiverGst: newValue?.gst || ''
+                      receiverGst: newValue?.gstIn || ''
                     }));
                   }}
-                  // onChange={(event, newValue) => {
-                  //   handleInputChange({
-                  //     target: {
-                  //       name: 'receiverWarehouse',
-                  //       value: newValue ? newValue.name : ''
-                  //     }
-                  //   });
-                  //   handleInputChange({
-                  //     target: {
-                  //       name: 'receiverAddress',
-                  //       value: newValue ? newValue.address : ''
-                  //     }
-                  //   });
-                  //   handleInputChange({
-                  //     target: {
-                  //       name: 'receiverGst',
-                  //       value: newValue ? newValue.receiverGst : ''
-                  //     }
-                  //   });
-                  // }}
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -794,6 +792,35 @@ const RetrievalIssueManifest = () => {
                       setFormDataErrors({ ...formDataErrors, driverNo: 'Enter up to 10 digits only' });
                     }
                   }}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="amount"
+                  type="number"
+                  label="Amount"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="amount"
+                  value={formData.amount}
+                  onChange={handleInputChange}
+                  helperText={<span style={{ color: 'red' }}>{formDataErrors.amount ? formDataErrors.amount : ''}</span>}
+                  inputProps={{ maxLength: 40 }}
+                  error={!!formDataErrors.amount}
+                />
+              </div>
+              <div className="col-md-3 mb-3">
+                <TextField
+                  id="amountInWords"
+                  label="Amount In Words"
+                  variant="outlined"
+                  size="small"
+                  fullWidth
+                  name="amountInWords"
+                  value={formData.amountInWords}
+                  onChange={handleInputChange}
+                  disabled
                 />
               </div>
             </div>

@@ -1139,7 +1139,7 @@ function SalesReport() {
               data={rowData}
               fileName={`${formData.viewMode === 'details' ? 'Detailed' : 'Summary'} Sales Report`}
               handleDownloadExcel={handleDownloadExcel}
-              sumFields={getSumFields()}
+              // sumFields={getSumFields()}
               headerFields={headerFields}
               handleDownloadPDF={async () => {
                 const logoBase64 = await getLogo();

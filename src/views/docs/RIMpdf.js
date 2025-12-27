@@ -449,6 +449,19 @@ const RIMpdf = ({ row, callBackFunction, modalClose }) => {
               }}
             >
               <div style={{ width: '500px', marginBottom: '2px' }}>
+                Amount in words:{' '}
+                <span
+                  style={{
+                    fontWeight: 'normal',
+                    fontStyle: 'italic',
+                    color: '#333',
+                    fontSize: '10px'
+                  }}
+                >
+                  {row.amountInWords}
+                </span>
+              </div>
+              <div style={{ width: '500px', marginBottom: '2px' }}>
                 Transporter:{' '}
                 <span
                   style={{
@@ -487,6 +500,36 @@ const RIMpdf = ({ row, callBackFunction, modalClose }) => {
                 </span>
               </div>
               {/* } */}
+            </div>
+            <div className="d-flex justify-content-between">
+              <div className="d-flex flex-column me-2">
+                <p
+                  className="mb-1"
+                  style={{
+                    fontWeight: 'bold',
+                    fontSize: '10px',
+                    color: '#333',
+                    marginBottom: 0
+                  }}
+                >
+                  Amount:
+                </p>
+              </div>
+              <div className="d-flex flex-column">
+                <div>
+                  <span
+                    style={{
+                      fontStyle: 'normal',
+                      fontWeight: 'normal',
+                      fontSize: '8px',
+                      color: '#333',
+                      marginLeft: 3
+                    }}
+                  >
+                    ₹{parseFloat(row.amount).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
           <hr style={{ margin: 0 }} />
