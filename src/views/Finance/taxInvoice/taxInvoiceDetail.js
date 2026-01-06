@@ -64,6 +64,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [stateName, setStateName] = useState([]);
   const [transactionNoList, setTransactionNoList] = useState([]);
+  const [finYearDetails, setFinYearDetails] = useState([]);
   const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
@@ -88,6 +89,7 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
     }
     getAllType();
     getPartyName();
+    getFinyearDetails();
   }, []);
   const [formData, setFormData] = useState({
     address: '',
@@ -1270,14 +1272,8 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
     }
     const entryDate = dayjs(formData.vdate);
     if (entryDate.isValid()) {
-      const today = dayjs();
-      const currentYear = today.year();
-      const currentMonth = today.month();
-
-      const finYearStart = currentMonth >= 3 ? dayjs(`${finYear}-04-01`) : dayjs(`${finYear - 1}-04-01`);
-
-      const finYearEnd = finYearStart.add(1, 'year').subtract(1, 'day');
-
+      const finYearStart = finYearDetails.startdate;
+      const finYearEnd = finYearDetails.enddate;
       if (entryDate.isBefore(finYearStart) || entryDate.isAfter(finYearEnd)) {
         const confirmProceed = showToast(
           'error',
@@ -1502,6 +1498,14 @@ const TaxInvoiceDetails = ({ selectedRow }) => {
     try {
       const response = await apiCalls('get', `/reportController/getMimFillGridgettransaction?orgId=${orgId}&Receiver=${shortName}`);
       setTransactionNoList(response.paramObjectsMap.TransactionNo);
+    } catch (error) {
+      console.error('Error fetching gate passes:', error);
+    }
+  };
+  const getFinyearDetails = async () => {
+    try {
+      const response = await apiCalls('get', `/taxInvoice/getFinYearDetails?finYear=${finYear}&orgId=${orgId}`);
+      setFinYearDetails(response.paramObjectsMap.mapp[0]);
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }
