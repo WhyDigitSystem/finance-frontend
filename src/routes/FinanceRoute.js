@@ -116,6 +116,7 @@ const MaterialIssueManifest = Loadable(lazy(() => import('views/docs/MaterialIss
 const PurchaseOrder = Loadable(lazy(() => import('views/docs/PurchaseOrder')));
 const RetrievalIssueManifest = Loadable(lazy(() => import('views/docs/RetrievalIssueManifest')));
 const Quotation = Loadable(lazy(() => import('views/docs/Quotation')));
+const Allotment = Loadable(lazy(() => import('views/docs/Allotment')));
 const APaging = Loadable(lazy(() => import('views/Finance/paymentRegister/APaging')));
 const ItemMaster = Loadable(lazy(() => import('views/Finance/ItemMaster')));
 const Unit = Loadable(lazy(() => import('views/Finance/Unit')));
@@ -552,6 +553,10 @@ const FinanceRoute = {
     {
       path: '/docs/Quotation',
       element: <Quotation />
+    },
+    {
+      path: '/docs/allotment',
+      element: <Allotment />
     },
     {
       path: '/docs/MimRimRegister',

@@ -92,7 +92,14 @@ const docsChildren = [
     type: 'item',
     url: '/docs/MimRimRegister',
     visible: hasScreenAccess('MATREG')
-  }
+  },
+  {
+    id: 'allotment',
+    title: 'Allotment',
+    type: 'item',
+    url: '/docs/allotment',
+    visible: hasScreenAccess('AL')
+  },
 ].filter((item) => item.visible !== false);
 
 // Return null if no children allowed
