@@ -913,9 +913,9 @@ const Allotment = () => {
                                             Clear
                                         </Button>
 
-                                        <IconButton onClick={handleExport}>
+                                        {/* <IconButton onClick={handleExport}>
                                             <DownloadIcon />
-                                        </IconButton>
+                                        </IconButton> */}
                                     </Stack>
                                 </Grid>
                             </Grid>
