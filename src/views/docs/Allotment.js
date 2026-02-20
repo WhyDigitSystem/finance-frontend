@@ -2,13 +2,16 @@ import AddIcon from '@mui/icons-material/Add';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
-import DownloadIcon from '@mui/icons-material/Download';
-import GridOnIcon from '@mui/icons-material/GridOn'; // For FillGrid
+import GridOnIcon from '@mui/icons-material/GridOn';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import SaveIcon from '@mui/icons-material/Save';
+import ViewListIcon from '@mui/icons-material/ViewList';
+import EditIcon from "@mui/icons-material/Edit";
+import AddCircleIcon from '@mui/icons-material/AddCircle';
 import {
     Alert,
     alpha,
+    Autocomplete,
     Avatar,
     Box,
     Button,
@@ -26,7 +29,6 @@ import {
     InputLabel,
     MenuItem,
     Paper,
-    Radio,
     Select,
     Snackbar,
     Stack,
@@ -40,9 +42,9 @@ import {
     Tooltip,
     Typography,
     useTheme,
-    Zoom
+    Zoom,
+    TablePagination
 } from '@mui/material';
-import EditIcon from "@mui/icons-material/Edit";
 import { styled } from '@mui/material/styles';
 import apiCalls from 'apicall';
 import { useEffect, useMemo, useState } from 'react';
@@ -59,7 +61,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
 
 const StyledTableContainer = styled(TableContainer)(({ theme }) => ({
     borderRadius: 12,
-    maxHeight: 400,
+    maxHeight: 500,
     '&::-webkit-scrollbar': {
         width: 8,
         height: 8
@@ -119,7 +121,6 @@ const emptyRow = {
     allot: ''
 };
 
-// Custom DateRangePicker component using react-datepicker
 const DateRangePicker = ({
     startDate,
     endDate,
@@ -232,7 +233,6 @@ export const KitDetailsPopup = ({ open, onClose, onSelect, kitList }) => {
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-
             <DialogTitle>
                 <Stack direction="row" justifyContent="space-between">
                     <Typography fontWeight={600}>Select Kit</Typography>
@@ -241,15 +241,11 @@ export const KitDetailsPopup = ({ open, onClose, onSelect, kitList }) => {
                     </IconButton>
                 </Stack>
             </DialogTitle>
-
             <DialogContent>
                 <TableContainer component={Paper} variant="outlined">
                     <Table size="small">
-
                         <TableHead>
                             <TableRow>
-
-                                {/* Select All */}
                                 <TableCell padding="checkbox">
                                     <Checkbox
                                         checked={isAllSelected}
@@ -260,46 +256,34 @@ export const KitDetailsPopup = ({ open, onClose, onSelect, kitList }) => {
                                         onChange={handleSelectAll}
                                     />
                                 </TableCell>
-
                                 <TableCell>S.No</TableCell>
                                 <TableCell>Kit No</TableCell>
                                 <TableCell>Description</TableCell>
-
                             </TableRow>
                         </TableHead>
-
                         <TableBody>
                             {kitList.map((kit, index) => {
-
                                 const isChecked = selectedKits.some(k => k.id === kit.id);
-
                                 return (
                                     <TableRow key={kit.id} hover>
-
                                         <TableCell padding="checkbox">
                                             <Checkbox
                                                 checked={isChecked}
                                                 onChange={() => handleSelectKit(kit)}
                                             />
                                         </TableCell>
-
                                         <TableCell>{index + 1}</TableCell>
                                         <TableCell>{kit.kitNo}</TableCell>
                                         <TableCell>{kit.kitDesc}</TableCell>
-
                                     </TableRow>
                                 );
                             })}
                         </TableBody>
-
-
                     </Table>
                 </TableContainer>
             </DialogContent>
-
             <DialogActions>
                 <Button onClick={onClose}>Cancel</Button>
-
                 <Button
                     variant="contained"
                     disabled={!selectedKits.length}
@@ -308,43 +292,34 @@ export const KitDetailsPopup = ({ open, onClose, onSelect, kitList }) => {
                     Apply Kit ({selectedKits.length})
                 </Button>
             </DialogActions>
-
         </Dialog>
     );
 };
 
 const Allotment = () => {
     const theme = useTheme();
+    const [view, setView] = useState('form'); // 'list' or 'form'
     const [supplier, setSupplier] = useState('');
     const [customer, setCustomer] = useState('');
     const [mode, setMode] = useState('');
     const [selectedDate, setSelectedDate] = useState(null);
     const [dateRange, setDateRange] = useState([null, null]);
-    const [open, setOpen] = useState(false);
-    const [kitPopupOpen, setKitPopupOpen] = useState(false);
     const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
-    const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
     const [kitList, setKitList] = useState([]);
+    const [oemList, setOemList] = useState([]);
+    const [customerList, setCustomerList] = useState([]);
     const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
     const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
     const [branch, setBranch] = useState(localStorage.getItem('branch'));
     const [loginBranchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
     const [rows, setRows] = useState([{ ...emptyRow }]);
-    const [popupRows, setPopupRows] = useState([]);
     const [editId, setEditId] = useState(null);
-
-    const supplierList = [
-        { id: 1, name: 'Supplier A', code: 'SUP001', category: 'Premium' },
-        { id: 2, name: 'Supplier B', code: 'SUP002', category: 'Standard' },
-        { id: 3, name: 'Supplier C', code: 'SUP003', category: 'Premium' }
-    ];
-
-    const customerList = [
-        { id: 1, name: 'Customer X', code: 'CUST001', tier: 'Gold' },
-        { id: 2, name: 'Customer Y', code: 'CUST002', tier: 'Silver' },
-        { id: 3, name: 'Customer Z', code: 'CUST003', tier: 'Platinum' }
-    ];
+    const [kitPopupOpen, setKitPopupOpen] = useState(false);
+    const [isEditing, setIsEditing] = useState(false);
+    const [allAllotments, setAllAllotments] = useState([]);
+    const [page, setPage] = useState(0);
+    const [rowsPerPage, setRowsPerPage] = useState(10);
 
     const modeList = [
         { value: 'Daily', icon: '📅', color: '#2196f3' },
@@ -354,10 +329,27 @@ const Allotment = () => {
 
     useEffect(() => {
         getAllKitDetails();
-        getAllAllotmentByOrgId();
+        getCustomerDetails();
+        fetchAllAllotments();
+        getOemDetails();
     }, []);
 
-    // Generate dynamic columns based on mode and date selection
+    useEffect(() => {
+        setPage(0);
+    }, [searchTerm]);
+
+    const fetchAllAllotments = async () => {
+        try {
+            const result = await apiCalls(
+                "get",
+                `/allotment/getAllAllotmentByOrgId?orgId=${orgId}`
+            );
+            setAllAllotments(result?.paramObjectsMap?.allotment || []);
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
     const dynamicColumns = useMemo(() => {
         if (!mode || (!selectedDate && !dateRange[0])) return [];
 
@@ -389,7 +381,6 @@ const Allotment = () => {
                 });
                 currentDate.setDate(currentDate.getDate() + 1);
             }
-            return columns;
         }
 
         if (mode === 'Monthly' && dateRange[0] && dateRange[1]) {
@@ -406,13 +397,11 @@ const Allotment = () => {
                 });
                 currentDate.setDate(currentDate.getDate() + 1);
             }
-            return columns;
         }
 
         return columns;
     }, [mode, selectedDate, dateRange]);
 
-    // Update empty row to include dynamic fields
     const getEmptyRowWithDynamicFields = () => {
         const baseRow = { ...emptyRow };
         dynamicColumns.forEach(col => {
@@ -421,29 +410,24 @@ const Allotment = () => {
         return baseRow;
     };
 
-    // Initialize rows with dynamic fields when mode or dates change
-    useMemo(() => {
-        setRows(prevRows => {
-            return prevRows.map(row => {
-                const newRow = { ...row };
-                dynamicColumns.forEach(col => {
-                    if (!newRow[col.field]) {
-                        newRow[col.field] = '';
-                    }
+    useEffect(() => {
+        if (view === 'form') {
+            setRows(prevRows => {
+                return prevRows.map(row => {
+                    const newRow = { ...row };
+                    dynamicColumns.forEach(col => {
+                        if (!newRow[col.field]) {
+                            newRow[col.field] = '';
+                        }
+                    });
+                    return newRow;
                 });
-                return newRow;
             });
-        });
-    }, [dynamicColumns]);
-
-    // Filter rows based on search term
-    const filteredRows = useMemo(() => {
-        if (!searchTerm) return rows;
-        return rows.filter((row) => Object.values(row).some((value) => value.toString().toLowerCase().includes(searchTerm.toLowerCase())));
-    }, [rows, searchTerm]);
+        }
+    }, [dynamicColumns, view]);
 
     const handleAddRow = () => {
-        setRows([...rows, { ...emptyRow }]);
+        setRows([...rows, getEmptyRowWithDynamicFields()]);
         showSnackbar('New row added', 'success');
     };
 
@@ -463,54 +447,20 @@ const Allotment = () => {
     };
 
     const handleKitSelect = (kits) => {
-
         const newRows = kits.map(k => ({
             ...getEmptyRowWithDynamicFields(),
             kitNo: k.kitNo,
             kitDesc: k.kitDesc
         }));
 
-        setPopupRows(newRows);
+        setRows(prevRows => {
+            if (prevRows.length === 1 && Object.values(prevRows[0]).every(val => !val)) {
+                return newRows;
+            }
+            return [...prevRows, ...newRows];
+        });
+
         showSnackbar(`${kits.length} Kit(s) loaded`, 'success');
-    };
-
-    const handlePopupChange = (index, field, value) => {
-        const updatedRows = [...popupRows];
-        updatedRows[index][field] = value;
-        setPopupRows(updatedRows);
-    };
-
-    const handlePopupAddRow = () => {
-        setPopupRows([...popupRows, getEmptyRowWithDynamicFields()]);
-    };
-
-    const handlePopupRemoveRow = (index) => {
-        if (popupRows.length === 1) return;
-
-        setPopupRows(popupRows.filter((_, i) => i !== index));
-    };
-
-    const handleAllotment = async () => {
-        if (customer && mode) {
-            if (mode === 'Daily' && !selectedDate) {
-                showSnackbar('Please select a date', 'error');
-                return;
-            }
-            if (mode === 'Weekly' && (!dateRange[0] || !dateRange[1])) {
-                showSnackbar('Please select a date range (7 days)', 'error');
-                return;
-            }
-            if (mode === 'Monthly' && (!dateRange[0] || !dateRange[1])) {
-                showSnackbar('Please select a date range (max 31 days)', 'error');
-                return;
-            }
-
-            setLoading(true);
-            await new Promise((resolve) => setTimeout(resolve, 1000));
-            setLoading(false);
-            setOpen(true);
-            showSnackbar('Allotment generated successfully', 'success');
-        }
     };
 
     const handleClear = () => {
@@ -519,8 +469,9 @@ const Allotment = () => {
         setMode('');
         setSelectedDate(null);
         setDateRange([null, null]);
-        setPopupRows([]);
+        setRows([getEmptyRowWithDynamicFields()]);
         setEditId(null);
+        setIsEditing(false);
         setSearchTerm('');
         showSnackbar('Form cleared', 'info');
     };
@@ -528,111 +479,99 @@ const Allotment = () => {
     const getAllKitDetails = async () => {
         try {
             const result = await apiCalls('get', `/kitController/getKitByOrgId?orgid=${orgId}`);
-
             setKitList(result.paramObjectsMap.kitVO || []);
         } catch (err) {
             console.log(err);
         }
     };
 
-    const getAllAllotmentByOrgId = async () => {
+    const getCustomerDetails = async () => {
         try {
             const result = await apiCalls(
                 "get",
-                `/allotment/getAllAllotmentByOrgId?orgId=${orgId}`
+                `/allotment/getCustomer?orgId=${orgId}`
+            );
+            setCustomerList(result?.paramObjectsMap?.customer || []);
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    const getOemDetails = async () => {
+        try {
+            const result = await apiCalls(
+                "get",
+                `/allotment/getOemDetails?orgId=${orgId}`
             );
 
-            const allotments = result?.paramObjectsMap?.allotment || [];
+            const oem =
+                result?.paramObjectsMap?.listOfValuesVO?.[0]?.listOfValues1VO || [];
 
-            if (!allotments.length) return;
-
-            // Flatten allotmentDetailsVO
-            const mappedRows = allotments.flatMap(allot =>
-                (allot.allotmentDetailsVO || []).map(detail => ({
-                    id: allot.id,
-                    ...emptyRow,
-                    kitNo: detail.kitNo,
-                    kitDesc: detail.kitDesc,
-                    projectCode: detail.projectCode,
-                    partBox: detail.part,
-                    inventoryBoxes: detail.inventory,
-                    scheduleQty: detail.schedule,
-                    nov25: detail.month,
-                    boxReqDay: detail.day,
-                    boxesRequired: detail.boxesReq,
-                    shortageMonth: detail.shortage,
-                    short: detail.shorted,
-                    adherence: detail.adherence,
-                    allot: detail.allot
-                }))
-            );
-
-            setRows(mappedRows);
+            setOemList(oem);
 
         } catch (err) {
             console.log(err);
         }
     };
 
-    const handleEditAllotment = async (row) => {
-        try {
-            const res = await apiCalls(
-                "get",
-                `/allotment/getAllotmentById?id=${row.id}`
-            );
+    const handleEditFromList = (allotment) => {
+        setIsEditing(true);
+        setEditId(allotment.id);
+        setCustomer(allotment.customer);
+        setSupplier(allotment.supplier);
+        setMode(allotment.mode);
 
-            const allotment = res?.paramObjectsMap?.allotment;
-
-            if (!allotment) return;
-
-            setEditId(allotment.id)
-
-            // Fill header fields
-            setCustomer(allotment.customer);
-            setSupplier(allotment.supplier);
-            setMode(allotment.mode);
-
+        if (allotment.startDate) {
             setSelectedDate(new Date(allotment.startDate));
             setDateRange([
                 new Date(allotment.startDate),
-                new Date(allotment.endDate)
+                new Date(allotment.endDate || allotment.startDate)
             ]);
-
-            // Fill popup rows
-            const details = allotment.allotmentDetailsResponseDTO || [];
-
-            setPopupRows(
-                details.map(d => ({
-                    ...emptyRow,
-                    kitNo: d.kitNo,
-                    kitDesc: d.kitDesc,
-                    projectCode: d.projectCode,
-                    partBox: d.part,
-                    inventoryBoxes: d.inventory,
-                    scheduleQty: d.schedule,
-                    boxesRequired: d.boxesReq,
-                    shortageMonth: d.shortage,
-                    short: d.shorted,
-                    adherence: d.adherence,
-                    allot: d.allot
-                }))
-            );
-
-            setOpen(true);
-
-        } catch (err) {
-            console.error(err);
-            showSnackbar("Failed to load allotment", "error");
         }
+
+        const details = allotment.allotmentDetailsVO || [];
+        setRows(
+            details.map(d => ({
+                ...emptyRow,
+                kitNo: d.kitNo,
+                kitDesc: d.kitDesc,
+                projectCode: d.projectCode,
+                partBox: d.part,
+                inventoryBoxes: d.inventory,
+                scheduleQty: d.schedule,
+                boxesRequired: d.boxesReq,
+                shortageMonth: d.shortage,
+                short: d.shorted,
+                adherence: d.adherence,
+                allot: d.allot
+            }))
+        );
+
+        setView('form');
     };
 
     const handleSave = async () => {
-        if (!popupRows.length) {
+        if (!rows.length) {
             showSnackbar("No allotment data", "warning");
             return;
         }
 
-        const allotmentDetailsDTO = popupRows.map(row => ({
+        if (!customer || !mode) {
+            showSnackbar("Please select customer and mode", "warning");
+            return;
+        }
+
+        if (mode === 'Daily' && !selectedDate) {
+            showSnackbar('Please select a date', 'error');
+            return;
+        }
+
+        if ((mode === 'Weekly' || mode === 'Monthly') && (!dateRange[0] || !dateRange[1])) {
+            showSnackbar('Please select a date range', 'error');
+            return;
+        }
+
+        const allotmentDetailsDTO = rows.map(row => ({
             kitNo: row.kitNo || "",
             kitDesc: row.kitDesc || "",
             projectCode: row.projectCode || "",
@@ -644,16 +583,10 @@ const Allotment = () => {
             shorted: Number(row.short || 0),
             adherence: row.adherence || "",
             allot: Number(row.allot || 0),
-            day:
-                mode === "Daily" && selectedDate
-                    ? selectedDate.getDate()
-                    : 0,
-
-            month:
-                (mode === "Daily" && selectedDate) ||
-                    (mode !== "Daily" && dateRange[0])
-                    ? ((mode === "Daily" ? selectedDate : dateRange[0]).getMonth() + 1)
-                    : 0
+            day: mode === "Daily" && selectedDate ? selectedDate.getDate() : 0,
+            month: (mode === "Daily" && selectedDate) || (mode !== "Daily" && dateRange[0])
+                ? ((mode === "Daily" ? selectedDate : dateRange[0]).getMonth() + 1)
+                : 0
         }));
 
         const payload = {
@@ -664,21 +597,16 @@ const Allotment = () => {
             customer,
             supplier,
             mode,
-            startDate:
-                mode === "Daily"
-                    ? selectedDate?.toISOString().split("T")[0]
-                    : dateRange[0]?.toISOString().split("T")[0],
-
-            endDate:
-                mode === "Daily"
-                    ? selectedDate?.toISOString().split("T")[0]
-                    : dateRange[1]?.toISOString().split("T")[0],
-
+            startDate: mode === "Daily"
+                ? selectedDate?.toISOString().split("T")[0]
+                : dateRange[0]?.toISOString().split("T")[0],
+            endDate: mode === "Daily"
+                ? selectedDate?.toISOString().split("T")[0]
+                : dateRange[1]?.toISOString().split("T")[0],
             createdBy: loginUserName,
             updatedBy: loginUserName,
             branchCode: loginBranchCode,
             branchName: branch,
-
             allotmentDetailsDTO
         };
 
@@ -686,10 +614,13 @@ const Allotment = () => {
             const res = await apiCalls("put", "/allotment/createUpdateAllotment", payload);
 
             if (res.status === true) {
-                setEditId(null);
                 showSnackbar("Allotment saved successfully", "success");
-                setOpen(false);
-                getAllAllotmentByOrgId();
+
+                // Clear the form and switch to list view
+                handleClear();
+                await fetchAllAllotments();
+                setView('list');
+                setIsEditing(false);
             } else {
                 showSnackbar(res.paramObjectsMap?.message || "Save failed", "error");
             }
@@ -701,13 +632,6 @@ const Allotment = () => {
 
     const showSnackbar = (message, severity) => {
         setSnackbar({ open: true, message, severity });
-    };
-
-    const handleExport = () => {
-        showSnackbar('Preparing export...', 'info');
-        setTimeout(() => {
-            showSnackbar('Data exported successfully', 'success');
-        }, 1500);
     };
 
     const getSelectedModeDetails = () => {
@@ -739,7 +663,6 @@ const Allotment = () => {
         }
     };
 
-    // Get all table headers with S.No at the beginning
     const tableHeaders = useMemo(() => [
         { label: 'S.No', tooltip: 'Serial Number', field: 'sno', width: 60 },
         { label: 'Kit No', field: 'kitNo' },
@@ -754,10 +677,9 @@ const Allotment = () => {
         { label: 'Shortage', tooltip: 'Monthly shortage', field: 'shortageMonth' },
         { label: 'Short', tooltip: 'Shortage status', field: 'short' },
         { label: 'Adherence', tooltip: 'Adherence percentage', field: 'adherence' },
-        { label: 'Allot', tooltip: 'Allot', field: 'allot' },
+        { label: 'Available', tooltip: 'Available', field: 'allot' },
     ], []);
 
-    // Custom styles for react-datepicker
     const datePickerStyles = `
     .react-datepicker {
       font-family: inherit;
@@ -780,6 +702,20 @@ const Allotment = () => {
     }
   `;
 
+    const filteredAllotments = useMemo(() => {
+        return allAllotments.filter(a =>
+            !searchTerm ||
+            a.customer?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            a.supplier?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            a.mode?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+    }, [allAllotments, searchTerm]);
+
+    const paginatedAllotments = useMemo(() => {
+        const start = page * rowsPerPage;
+        return filteredAllotments.slice(start, start + rowsPerPage);
+    }, [filteredAllotments, page, rowsPerPage]);
+
     return (
         <>
             <style>{datePickerStyles}</style>
@@ -789,6 +725,7 @@ const Allotment = () => {
                 onSelect={handleKitSelect}
                 kitList={kitList}
             />
+
             <Box sx={{ p: { xs: 1, sm: 2, md: 3 } }}>
                 <Fade in={true} timeout={800}>
                     <StyledPaper elevation={0}>
@@ -804,402 +741,470 @@ const Allotment = () => {
                                             Allotment Configuration
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                                            Manage and allocate resources efficiently
+                                            {view === 'list' ? 'View all allotments' : 'Create/Edit allotment'}
                                         </Typography>
                                     </Box>
+                                </Stack>
+
+                                <Stack direction="row" spacing={1}>
+
+                                    {view === "form" && (
+                                        <Button
+                                            variant="outlined"
+                                            startIcon={<ViewListIcon />}
+                                            onClick={() => {
+                                                handleClear();
+                                                setView("list");
+                                            }}
+                                            sx={{
+                                                borderRadius: 2,
+                                                px: 3,
+                                                fontWeight: 600
+                                            }}
+                                        >
+                                            List View
+                                        </Button>
+                                    )}
+
+                                    {view === "list" && (
+                                        <Button
+                                            variant="contained"
+                                            startIcon={<AddCircleIcon />}
+                                            onClick={() => setView("form")}
+                                            sx={{
+                                                borderRadius: 2,
+                                                px: 3,
+                                                fontWeight: 600
+                                            }}
+                                        >
+                                            Add New
+                                        </Button>
+                                    )}
+
                                 </Stack>
                             </Stack>
                         </Box>
 
                         <Divider sx={{ mx: 3 }} />
 
-                        {/* Main Controls */}
-                        <Box sx={{ p: 3 }}>
-                            <Grid container spacing={2} alignItems="center">
-                                {/* Customer */}
-                                <Grid item xs={12} sm={6} md={3}>
-                                    <FormControl fullWidth size="small">
-                                        <InputLabel>Customer</InputLabel>
-                                        <Select
-                                            value={customer}
-                                            label="Customer"
-                                            onChange={(e) => setCustomer(e.target.value)}
-                                            sx={{ borderRadius: 2 }}
-                                        >
-                                            {customerList.map((item) => (
-                                                <MenuItem key={item.id} value={item.name}>
-                                                    <Stack direction="row" alignItems="center" spacing={1}>
-                                                        <span>{item.name}</span>
-                                                        <Chip label={item.tier} size="small" color="primary" variant="outlined" />
-                                                    </Stack>
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                </Grid>
+                        {view === 'form' ? (
+                            // Form View
+                            <>
+                                {/* Main Controls */}
+                                <Box sx={{ p: 3 }}>
+                                    <Grid container spacing={2} alignItems="center">
+                                        <Grid item xs={12} sm={6} md={2}>
+                                            <Autocomplete
+                                                size="small"
+                                                options={customerList}
+                                                getOptionLabel={(option) => option.customer || ""}
+                                                value={customerList.find(c => c.customer === customer) || null}
+                                                onChange={(event, newValue) => {
+                                                    if (isEditing && !newValue) return;
+                                                    setCustomer(newValue?.customer || "");
+                                                }}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="Customer"
+                                                        placeholder="Search customer"
+                                                    />
+                                                )}
+                                                renderOption={(props, option) => (
+                                                    <Box {...props} key={option.customerCode}>
+                                                        <Typography variant="body2">{option.customer}</Typography>
+                                                    </Box>
+                                                )}
+                                                sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                                            />
+                                        </Grid>
 
-                                {/* Mode */}
-                                <Grid item xs={12} sm={6} md={2}>
-                                    <FormControl fullWidth size="small">
-                                        <InputLabel>Mode</InputLabel>
-                                        <Select
-                                            value={mode}
-                                            label="Mode"
-                                            onChange={(e) => {
-                                                setMode(e.target.value);
-                                                setSelectedDate(null);
-                                                setDateRange([null, null]);
-                                            }}
-                                            sx={{ borderRadius: 2 }}
-                                        >
-                                            {modeList.map((item) => (
-                                                <MenuItem key={item.value} value={item.value}>
-                                                    <Stack direction="row" spacing={1} alignItems="center">
-                                                        <span>{item.icon}</span>
-                                                        <span>{item.value}</span>
-                                                    </Stack>
-                                                </MenuItem>
-                                            ))}
-                                        </Select>
-                                    </FormControl>
-                                </Grid>
+                                        <Grid item xs={12} sm={6} md={2}>
+                                            <Autocomplete
+                                                size="small"
+                                                options={oemList}
+                                                getOptionLabel={(option) => option.valueDescription || ""}
+                                                value={
+                                                    oemList.find(o => o.valueDescription === supplier) || null
+                                                }
+                                                onChange={(event, newValue) => {
+                                                    setSupplier(newValue?.valueDescription || "");
+                                                }}
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="OEM"
+                                                        placeholder="Search OEM"
+                                                    />
+                                                )}
+                                                sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                                            />
+                                        </Grid>
 
-                                {/* Date */}
-                                <Grid item xs={12} sm={6} md={3}>
-                                    {mode === "Daily" && (
-                                        <DatePicker
-                                            selected={selectedDate}
-                                            onChange={handleDateChange}
-                                            minDate={new Date()}
-                                            popperPlacement="bottom-start"
-                                            popperProps={{ strategy: "fixed" }}
-                                            portalId="root-portal"
-                                            customInput={<TextField size="small" fullWidth label="Select Date" />}
-                                        />
-                                    )}
+                                        <Grid item xs={12} sm={6} md={2}>
+                                            <FormControl fullWidth size="small">
+                                                <InputLabel>Mode</InputLabel>
+                                                <Select
+                                                    value={mode}
+                                                    label="Mode"
+                                                    onChange={(e) => {
+                                                        setMode(e.target.value);
+                                                        setSelectedDate(null);
+                                                        setDateRange([null, null]);
+                                                    }}
+                                                    sx={{ borderRadius: 2 }}
+                                                >
+                                                    {modeList.map((item) => (
+                                                        <MenuItem key={item.value} value={item.value}>
+                                                            <Stack direction="row" spacing={1} alignItems="center">
+                                                                <span>{item.icon}</span>
+                                                                <span>{item.value}</span>
+                                                            </Stack>
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        </Grid>
 
-                                    {(mode === "Weekly" || mode === "Monthly") && (
-                                        <DateRangePicker
-                                            startDate={dateRange[0]}
-                                            endDate={dateRange[1]}
-                                            onChange={handleDateChange}
-                                            minDate={new Date()}
-                                            popperPlacement="bottom-start"
-                                            popperProps={{ strategy: "fixed" }}
-                                            portalId="root-portal"
-                                        />
-                                    )}
-                                </Grid>
+                                        <Grid item xs={12} sm={6} md={3}>
+                                            {mode === "Daily" && (
+                                                <DatePicker
+                                                    selected={selectedDate}
+                                                    onChange={handleDateChange}
+                                                    minDate={new Date()}
+                                                    popperPlacement="bottom-start"
+                                                    popperProps={{ strategy: "fixed" }}
+                                                    portalId="root-portal"
+                                                    customInput={<TextField size="small" fullWidth label="Select Date" />}
+                                                />
+                                            )}
 
-                                {/* Buttons */}
-                                <Grid item xs={12} sm={6} md={4}>
-                                    <Stack direction="row" spacing={1} justifyContent="flex-end" alignItems="center">
-                                        <Button
-                                            variant="contained"
-                                            onClick={handleAllotment}
-                                            disabled={!customer || !mode || loading}
-                                            startIcon={<AutoAwesomeIcon />}
-                                            sx={{ borderRadius: 2, px: 3 }}
-                                        >
-                                            Generate
-                                        </Button>
+                                            {(mode === "Weekly" || mode === "Monthly") && (
+                                                <DateRangePicker
+                                                    startDate={dateRange[0]}
+                                                    endDate={dateRange[1]}
+                                                    onChange={handleDateChange}
+                                                    minDate={new Date()}
+                                                    popperPlacement="bottom-start"
+                                                    popperProps={{ strategy: "fixed" }}
+                                                    portalId="root-portal"
+                                                />
+                                            )}
+                                        </Grid>
 
-                                        <Button
-                                            variant="outlined"
-                                            onClick={handleClear}
-                                            startIcon={<RefreshIcon />}
-                                            sx={{ borderRadius: 2 }}
-                                        >
-                                            Clear
-                                        </Button>
-
-                                        {/* <IconButton onClick={handleExport}>
-                                            <DownloadIcon />
-                                        </IconButton> */}
-                                    </Stack>
-                                </Grid>
-                            </Grid>
-                        </Box>
-
-                        {/* Allotment Details Header */}
-                        <Box sx={{ px: 3, pb: 2 }}>
-                            <Stack direction="row" justifyContent="space-between" alignItems="center">
-                                <Box>
-                                    <Typography variant="h6" fontWeight={700}>
-                                        Allotment Details
-                                    </Typography>
-                                    <Typography variant="caption" color="text.secondary">
-                                        {customerList.find((c) => c.id === customer)?.name || 'Customer'} •{' '}
-                                        {getSelectedModeDetails()?.icon} {mode || 'Mode'}
-                                        {mode === 'Daily' && selectedDate && ` • ${selectedDate.toLocaleDateString()}`}
-                                        {mode === 'Weekly' && dateRange[0] && dateRange[1] &&
-                                            ` • ${dateRange[0].toLocaleDateString()} - ${dateRange[1].toLocaleDateString()}`}
-                                        {mode === 'Monthly' && dateRange[0] && dateRange[1] &&
-                                            ` • ${dateRange[0].toLocaleDateString()} - ${dateRange[1].toLocaleDateString()}`}
-                                    </Typography>
+                                        <Grid item xs={12} sm={6} md={3}>
+                                            <Stack direction="row" spacing={1} justifyContent="flex-end">
+                                                <Button
+                                                    variant="outlined"
+                                                    onClick={handleClear}
+                                                    startIcon={<RefreshIcon />}
+                                                    sx={{ borderRadius: 2 }}
+                                                >
+                                                    Clear
+                                                </Button>
+                                                <Button
+                                                    variant="contained"
+                                                    onClick={handleSave}
+                                                    startIcon={<SaveIcon />}
+                                                    sx={{ borderRadius: 2 }}
+                                                >
+                                                    {editId ? 'Update' : 'Save'}
+                                                </Button>
+                                            </Stack>
+                                        </Grid>
+                                    </Grid>
                                 </Box>
 
-                                {/* FillGrid Icon Button */}
-                                <Tooltip title="Fill Grid with Kit Details" arrow>
-                                    <IconButton
-                                        onClick={() => setKitPopupOpen(true)}
+                                {/* Allotment Details Header */}
+                                <Box sx={{ px: 3, pb: 2 }}>
+                                    <Stack direction="row" justifyContent="space-between" alignItems="center">
+                                        <Box>
+                                            <Typography variant="h6" fontWeight={700}>
+                                                Allotment Details
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                {customer || 'No customer selected'} •{' '}
+                                                {getSelectedModeDetails()?.icon} {mode || 'No mode'}
+                                                {mode === 'Daily' && selectedDate && ` • ${selectedDate.toLocaleDateString()}`}
+                                                {mode === 'Weekly' && dateRange[0] && dateRange[1] &&
+                                                    ` • ${dateRange[0].toLocaleDateString()} - ${dateRange[1].toLocaleDateString()}`}
+                                                {mode === 'Monthly' && dateRange[0] && dateRange[1] &&
+                                                    ` • ${dateRange[0].toLocaleDateString()} - ${dateRange[1].toLocaleDateString()}`}
+                                            </Typography>
+                                        </Box>
+
+                                        <Stack direction="row" spacing={1}>
+                                            <Tooltip title="Fill Grid with Kit Details" arrow>
+                                                <IconButton
+                                                    onClick={() => setKitPopupOpen(true)}
+                                                    sx={{
+                                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                                        color: theme.palette.primary.main,
+                                                        '&:hover': { bgcolor: alpha(theme.palette.primary.main, 0.2) }
+                                                    }}
+                                                >
+                                                    <GridOnIcon />
+                                                </IconButton>
+                                            </Tooltip>
+
+                                            <Tooltip title="Add New Row" arrow>
+                                                <IconButton
+                                                    onClick={handleAddRow}
+                                                    sx={{
+                                                        bgcolor: alpha(theme.palette.success.main, 0.1),
+                                                        color: theme.palette.success.main,
+                                                        '&:hover': { bgcolor: alpha(theme.palette.success.main, 0.2) }
+                                                    }}
+                                                >
+                                                    <AddIcon />
+                                                </IconButton>
+                                            </Tooltip>
+                                        </Stack>
+                                    </Stack>
+                                </Box>
+
+                                {/* Form Table Section */}
+                                <Box sx={{ px: 3, pb: 3 }}>
+                                    <StyledTableContainer>
+                                        <Table stickyHeader size="small">
+                                            <TableHead>
+                                                <TableRow>
+                                                    {tableHeaders.map((header) => (
+                                                        <StyledTableCell key={header.label} sx={header.width ? { minWidth: header.width } : {}}>
+                                                            <Tooltip title={header.tooltip} arrow>
+                                                                <span>{header.label}</span>
+                                                            </Tooltip>
+                                                        </StyledTableCell>
+                                                    ))}
+                                                    <StyledTableCell>
+                                                        <Tooltip title="Row operations" arrow>
+                                                            <span>Actions</span>
+                                                        </Tooltip>
+                                                    </StyledTableCell>
+                                                </TableRow>
+                                            </TableHead>
+
+                                            <TableBody>
+                                                {rows.length > 0 ? (
+                                                    rows.map((row, index) => (
+                                                        <StyledTableRow key={index}>
+                                                            <TableCell sx={{ py: 1, px: 1, fontWeight: 500, textAlign: 'center' }}>
+                                                                {index + 1}
+                                                            </TableCell>
+
+                                                            {tableHeaders.slice(1).map((header) => (
+                                                                <TableCell key={header.field} sx={{ py: 1, px: 1 }}>
+                                                                    <TextField
+                                                                        size="small"
+                                                                        variant="outlined"
+                                                                        value={row[header.field] || ''}
+                                                                        onChange={(e) => handleChange(index, header.field, e.target.value)}
+                                                                        placeholder={header.label}
+                                                                        fullWidth
+                                                                        type={header.field === 'kitNo' || header.field === 'kitDesc' ? 'text' : 'text'}
+                                                                        InputProps={{
+                                                                            sx: {
+                                                                                height: 36,
+                                                                                width: 100,
+                                                                                fontSize: '0.85rem',
+                                                                                borderRadius: 2,
+                                                                            }
+                                                                        }}
+                                                                    />
+                                                                </TableCell>
+                                                            ))}
+
+                                                            <TableCell align="center">
+                                                                <IconButton
+                                                                    size="small"
+                                                                    onClick={() => handleRemoveRow(index)}
+                                                                    disabled={rows.length === 1}
+                                                                    sx={{
+                                                                        color: theme.palette.error.main,
+                                                                        '&:disabled': { color: theme.palette.action.disabled }
+                                                                    }}
+                                                                >
+                                                                    <DeleteIcon fontSize="small" />
+                                                                </IconButton>
+                                                            </TableCell>
+                                                        </StyledTableRow>
+                                                    ))
+                                                ) : (
+                                                    <TableRow>
+                                                        <TableCell colSpan={tableHeaders.length + 1} align="center" sx={{ py: 3 }}>
+                                                            <Typography color="text.secondary">No records found</Typography>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                    </StyledTableContainer>
+                                </Box>
+                            </>
+                        ) : (
+                            // List View
+                            <Box sx={{ p: 3 }}>
+                                {/* Search + Title Bar */}
+                                <Stack
+                                    direction="row"
+                                    justifyContent="space-between"
+                                    alignItems="center"
+                                    mb={2}
+                                >
+                                    <Typography variant="h6" fontWeight={700}>
+                                        All Allotments
+                                    </Typography>
+
+                                    <TextField
+                                        size="small"
+                                        placeholder="Search customer / supplier / mode..."
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
                                         sx={{
-                                            bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                            color: theme.palette.primary.main,
-                                            '&:hover': {
-                                                bgcolor: alpha(theme.palette.primary.main, 0.2),
+                                            width: 260,
+                                            "& .MuiOutlinedInput-root": {
+                                                borderRadius: 3
                                             }
                                         }}
-                                    >
-                                        <GridOnIcon />
-                                    </IconButton>
-                                </Tooltip>
-                            </Stack>
-                        </Box>
+                                    />
+                                </Stack>
 
-                        {/* Table Section */}
-                        <Box sx={{ px: 3, pb: 3 }}>
-                            <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
-                                <Table stickyHeader size="small">
-                                    <TableHead>
-                                        <TableRow>
-                                            {tableHeaders.map((header) => (
-                                                <StyledTableCell
-                                                    key={header.label}
-                                                    sx={header.width ? { minWidth: header.width } : {}}
-                                                >
-                                                    <Tooltip title={header.tooltip} arrow>
-                                                        <span>{header.label}</span>
-                                                    </Tooltip>
-                                                </StyledTableCell>
-                                            ))}
-                                            <StyledTableCell>
-                                                <Tooltip title="Row operations" arrow>
-                                                    <span>Actions</span>
-                                                </Tooltip>
-                                            </StyledTableCell>
-                                        </TableRow>
-                                    </TableHead>
+                                <Paper
+                                    elevation={0}
+                                    sx={{
+                                        borderRadius: 3,
+                                        border: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`,
+                                        overflow: "hidden"
+                                    }}
+                                >
+                                    <StyledTableContainer>
+                                        <Table stickyHeader size="small">
 
-                                    <TableBody>
-                                        {filteredRows.length > 0 ? (
-                                            filteredRows.map((row, index) => (
-                                                <StyledTableRow key={index}>
-                                                    {/* S.No Column */}
-                                                    <TableCell sx={{ py: 1, px: 1, fontWeight: 500, textAlign: 'center' }}>
-                                                        {index + 1}
-                                                    </TableCell>
-
-                                                    {/* Other Columns (Read Only) */}
-                                                    {tableHeaders.slice(1).map((header) => (
-                                                        <TableCell
-                                                            key={header.field}
-                                                            sx={{ py: 1, px: 1, textAlign: "center" }}
-                                                        >
-                                                            {row[header.field] || "-"}
-                                                        </TableCell>
+                                            <TableHead>
+                                                <TableRow>
+                                                    {[
+                                                        "S.No",
+                                                        "Customer",
+                                                        "Supplier",
+                                                        "Mode",
+                                                        "Start",
+                                                        "End",
+                                                        "Items",
+                                                        "Action"
+                                                    ].map(h => (
+                                                        <StyledTableCell key={h}>{h}</StyledTableCell>
                                                     ))}
+                                                </TableRow>
+                                            </TableHead>
 
-                                                    <TableCell align="center">
-                                                        <Stack direction="row" spacing={1} justifyContent="center">
+                                            <TableBody>
+                                                {paginatedAllotments.map((a, i) => (
+                                                    <StyledTableRow key={a.id} hover>
 
-                                                            {/* EDIT */}
-                                                            <IconButton
+                                                        <TableCell align="center">{page * rowsPerPage + i + 1}</TableCell>
+
+                                                        <TableCell>
+                                                            <Typography fontWeight={600} fontSize="0.85rem">
+                                                                {a.customer}
+                                                            </Typography>
+                                                        </TableCell>
+
+                                                        <TableCell>{a.supplier}</TableCell>
+
+                                                        <TableCell>
+                                                            <Chip
                                                                 size="small"
-                                                                onClick={() => handleEditAllotment(row)}
-                                                                sx={{ color: theme.palette.primary.main }}
-                                                            >
-                                                                <EditIcon fontSize="small" />
-                                                            </IconButton>
-
-                                                        </Stack>
-                                                    </TableCell>
-                                                </StyledTableRow>
-                                            ))
-                                        ) : (
-                                            <TableRow>
-                                                <TableCell colSpan={tableHeaders.length + 1} align="center" sx={{ py: 3 }}>
-                                                    <Typography color="text.secondary">No matching records found</Typography>
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        </Box>
-                    </StyledPaper>
-                </Fade>
-
-                {/* Dialog */}
-                <Dialog
-                    open={open}
-                    onClose={() => setOpen(false)}
-                    maxWidth={false}
-                    fullWidth
-                    scroll="body"
-                    PaperProps={{
-                        sx: {
-                            width: "95vw",
-                            maxHeight: "90vh",
-                            borderRadius: 4,
-                            overflow: "visible"
-                        }
-                    }}
-                >
-                    <DialogTitle
-                        sx={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                            pb: 2
-                        }}
-                    >
-                        <Stack direction="row" alignItems="center" spacing={1}>
-                            <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.main }}>
-                                <AutoAwesomeIcon />
-                            </Avatar>
-                            <Box>
-                                <Typography variant="h6" fontWeight={700}>
-                                    Allotment Details
-                                </Typography>
-                                <Typography variant="caption" color="text.secondary">
-                                    {customerList.find((c) => c.id === customer)?.name || 'Customer'} •{' '}
-                                    {getSelectedModeDetails()?.icon} {mode}
-                                    {mode === 'Daily' && selectedDate && ` • ${selectedDate.toLocaleDateString()}`}
-                                    {mode === 'Weekly' && dateRange[0] && dateRange[1] &&
-                                        ` • ${dateRange[0].toLocaleDateString()} - ${dateRange[1].toLocaleDateString()}`}
-                                    {mode === 'Monthly' && dateRange[0] && dateRange[1] &&
-                                        ` • ${dateRange[0].toLocaleDateString()} - ${dateRange[1].toLocaleDateString()}`}
-                                </Typography>
-                            </Box>
-                        </Stack>
-                        <IconButton onClick={() => setOpen(false)} size="small" sx={{ borderRadius: 2 }}>
-                            <CloseIcon />
-                        </IconButton>
-                    </DialogTitle>
-
-                    <DialogContent sx={{ p: 3 }}>
-                        <StyledTableContainer>
-                            <Table stickyHeader size="small">
-                                <TableHead>
-                                    <TableRow>
-                                        {tableHeaders.map((header) => (
-                                            <StyledTableCell key={header.label}>
-                                                <Tooltip title={header.tooltip} arrow>
-                                                    <span>{header.label}</span>
-                                                </Tooltip>
-                                            </StyledTableCell>
-                                        ))}
-                                        <StyledTableCell>
-                                            <Tooltip title="Row operations" arrow>
-                                                <span>Actions</span>
-                                            </Tooltip>
-                                        </StyledTableCell>
-                                    </TableRow>
-                                </TableHead>
-
-                                <TableBody>
-                                    {popupRows.length > 0 ? (
-                                        popupRows.map((row, index) => (
-                                            <StyledTableRow key={index}>
-                                                <TableCell sx={{ py: 1, px: 1, fontWeight: 500, textAlign: 'center' }}>
-                                                    {index + 1}
-                                                </TableCell>
-
-                                                {tableHeaders.slice(1).map((header) => (
-                                                    <TableCell key={header.field} sx={{ py: 1, px: 1 }}>
-                                                        <TextField
-                                                            size="small"
-                                                            variant="outlined"
-                                                            value={popupRows[index][header.field] || ''}
-                                                            onChange={(e) =>
-                                                                handlePopupChange(index, header.field, e.target.value)
-                                                            }
-                                                            placeholder={header.label}
-                                                            fullWidth
-                                                            InputProps={{
-                                                                sx: {
-                                                                    height: 36,
-                                                                    fontSize: '0.85rem',
-                                                                    borderRadius: 2,
-                                                                    '&:hover': {
-                                                                        borderColor: theme.palette.primary.main
-                                                                    }
-                                                                }
-                                                            }}
-                                                        />
-                                                    </TableCell>
-                                                ))}
-
-                                                <TableCell align="center" sx={{ py: 1 }}>
-                                                    <Tooltip title="Delete Row" arrow>
-                                                        <span>
-                                                            <IconButton
-                                                                onClick={() => handlePopupRemoveRow(index)}
-                                                                disabled={popupRows.length === 1}
-                                                                size="small"
+                                                                label={a.mode}
                                                                 sx={{
-                                                                    color: theme.palette.error.main,
-                                                                    '&:hover': {
-                                                                        bgcolor: alpha(theme.palette.error.main, 0.1)
+                                                                    fontWeight: 600,
+                                                                    bgcolor:
+                                                                        a.mode === "Daily"
+                                                                            ? alpha(theme.palette.info.main, .15)
+                                                                            : a.mode === "Weekly"
+                                                                                ? alpha(theme.palette.secondary.main, .15)
+                                                                                : alpha(theme.palette.success.main, .15),
+                                                                    color:
+                                                                        a.mode === "Daily"
+                                                                            ? theme.palette.info.main
+                                                                            : a.mode === "Weekly"
+                                                                                ? theme.palette.secondary.main
+                                                                                : theme.palette.success.main
+                                                                }}
+                                                            />
+                                                        </TableCell>
+
+                                                        <TableCell>
+                                                            {new Date(a.startDate).toLocaleDateString()}
+                                                        </TableCell>
+
+                                                        <TableCell>
+                                                            {new Date(a.endDate).toLocaleDateString()}
+                                                        </TableCell>
+
+                                                        <TableCell align="center">
+                                                            <Chip
+                                                                size="small"
+                                                                label={a.allotmentDetailsVO?.length || 0}
+                                                                sx={{
+                                                                    bgcolor: alpha(theme.palette.primary.main, .15),
+                                                                    color: theme.palette.primary.main,
+                                                                    fontWeight: 600
+                                                                }}
+                                                            />
+                                                        </TableCell>
+
+                                                        <TableCell align="center">
+                                                            <IconButton
+                                                                size="small"
+                                                                onClick={() => handleEditFromList(a)}
+                                                                sx={{
+                                                                    bgcolor: alpha(theme.palette.primary.main, .12),
+                                                                    "&:hover": {
+                                                                        bgcolor: alpha(theme.palette.primary.main, .25)
                                                                     }
                                                                 }}
                                                             >
-                                                                <DeleteIcon fontSize="small" />
+                                                                <EditIcon fontSize="small" />
                                                             </IconButton>
-                                                        </span>
-                                                    </Tooltip>
-                                                </TableCell>
-                                            </StyledTableRow>
-                                        ))
-                                    ) : (
-                                        <TableRow>
-                                            <TableCell colSpan={tableHeaders.length + 1} align="center" sx={{ py: 3 }}>
-                                                <Typography color="text.secondary">
-                                                    No matching records found
-                                                </Typography>
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
-                        </StyledTableContainer>
+                                                        </TableCell>
 
-                        <Box mt={3} display="flex" justifyContent="space-between" alignItems="center">
-                            <Button
-                                startIcon={<AddIcon />}
-                                variant="outlined"
-                                onClick={handlePopupAddRow}
-                                sx={{
-                                    borderRadius: 2,
-                                    borderStyle: 'dashed',
-                                    borderWidth: 2,
-                                    '&:hover': { borderWidth: 2 }
-                                }}
-                            >
-                                Add New Row
-                            </Button>
-                        </Box>
-                    </DialogContent>
+                                                    </StyledTableRow>
+                                                ))}
 
-                    <DialogActions sx={{ p: 3, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
-                        <Button variant="outlined" onClick={() => setOpen(false)} startIcon={<CloseIcon />} sx={{ borderRadius: 2 }}>
-                            Cancel
-                        </Button>
-                        <Button
-                            variant="contained"
-                            onClick={handleSave}
-                            startIcon={<SaveIcon />}
-                            sx={{
-                                borderRadius: 2,
-                                background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.primary.dark} 90%)`
-                            }}
-                        >
-                            Save Changes
-                        </Button>
-                    </DialogActions>
-                </Dialog>
+                                                {!allAllotments.length && (
+                                                    <TableRow>
+                                                        <TableCell colSpan={8} align="center" sx={{ py: 4 }}>
+                                                            <Typography color="text.secondary">
+                                                                No allotments found
+                                                            </Typography>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+
+                                            </TableBody>
+                                        </Table>
+                                    </StyledTableContainer>
+                                </Paper>
+                            </Box>
+                        )}
+                    </StyledPaper>
+                </Fade>
+
+                <TablePagination
+                    component="div"
+                    count={filteredAllotments.length}
+                    page={page}
+                    onPageChange={(e, newPage) => setPage(newPage)}
+                    rowsPerPage={rowsPerPage}
+                    onRowsPerPageChange={(e) => {
+                        setRowsPerPage(parseInt(e.target.value, 10));
+                        setPage(0);
+                    }}
+                    rowsPerPageOptions={[5, 10, 25, 50]}
+                    sx={{
+                        borderTop: `1px solid ${alpha(theme.palette.primary.main, 0.15)}`
+                    }}
+                />
 
                 {/* Snackbar for notifications */}
                 <Snackbar
@@ -1213,11 +1218,7 @@ const Allotment = () => {
                         onClose={() => setSnackbar({ ...snackbar, open: false })}
                         severity={snackbar.severity}
                         variant="filled"
-                        sx={{
-                            width: '100%',
-                            borderRadius: 2,
-                            boxShadow: theme.shadows[8]
-                        }}
+                        sx={{ width: '100%', borderRadius: 2, boxShadow: theme.shadows[8] }}
                     >
                         {snackbar.message}
                     </Alert>
