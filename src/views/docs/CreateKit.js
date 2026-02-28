@@ -34,12 +34,14 @@ const CreateKit = () => {
   const [formData, setFormData] = useState({
     kitId: '',
     kitDesc: '',
+    partNo: '',
     partQty: '',
     active: true
   });
   const [fieldErrors, setFieldErrors] = useState({
     kitId: '',
     kitDesc: '',
+    partNo: '',
     partQty: ''
   });
   const [detailsTableData, setDetailsTableData] = useState([
@@ -72,12 +74,14 @@ const CreateKit = () => {
     setFormData({
       kitId: '',
       kitDesc: '',
+      partNo: '',
       partQty: '',
       active: true
     });
     setFieldErrors({
       kitId: '',
       kitDesc: '',
+      partNo: '',
       partQty: ''
     });
     setDetailsTableData([{ id: 1, assetType: '', category: '', categoryCode: '', assetCode: '', assetDesc: '', assetQty: '' }]);
@@ -91,6 +95,7 @@ const CreateKit = () => {
   const listViewColumns = [
     { accessorKey: 'kitNo', header: 'Kit Id', size: 140 },
     { accessorKey: 'kitDesc', header: 'Description', size: 140 },
+    { accessorKey: 'partNo', header: 'Part No', size: 140 },
     { accessorKey: 'partQty', header: 'Part Qty', size: 140 },
     { accessorKey: 'active', header: 'Active', size: 140 }
   ];
@@ -270,6 +275,7 @@ const CreateKit = () => {
           finYear: assetTypeVO.finyr,
           kitId: assetTypeVO.kitNo,
           kitDesc: assetTypeVO.kitDesc,
+          partNo: assetTypeVO.partNo,
           partQty: assetTypeVO.partQty,
           active: assetTypeVO.active === 'Active' ? true : false
         });
@@ -336,6 +342,9 @@ const CreateKit = () => {
     if (!formData.kitDesc) {
       errors.kitDesc = 'Kit Desc is required';
     }
+    if (!formData.partNo) {
+      errors.partNo = 'Part No is required';
+    }
     if (!formData.partQty) {
       errors.partQty = 'Part Qty is required';
     }
@@ -384,6 +393,7 @@ const CreateKit = () => {
         finyr: finYear,
         kitNo: formData.kitId,
         kitDesc: formData.kitDesc,
+        partNo: formData.partNo,
         partQty: parseInt(formData.partQty)
       };
       try {
@@ -511,6 +521,20 @@ const CreateKit = () => {
                     onChange={handleInputChange}
                     helperText={<span style={{ color: 'red' }}>{fieldErrors.kitDesc ? fieldErrors.kitDesc : ''}</span>}
                     error={!!fieldErrors.kitDesc}
+                  />
+                </div>
+                <div className="col-md-3 mb-3">
+                  <TextField
+                    id="partNo"
+                    label="Part No"
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    name="partNo"
+                    value={formData.partNo}
+                    onChange={handleInputChange}
+                    helperText={<span style={{ color: 'red' }}>{fieldErrors.partNo ? fieldErrors.partNo : ''}</span>}
+                    error={!!fieldErrors.partNo}
                   />
                 </div>
                 <div className="col-md-3 mb-3">

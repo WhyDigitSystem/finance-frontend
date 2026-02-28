@@ -112,7 +112,7 @@ const emptyRow = {
     partBox: '',
     inventoryBoxes: '',
     scheduleQty: '',
-    nov25: '',
+    dateProjection: '',
     boxReqDay: '',
     boxesRequired: '',
     shortageMonth: '',
@@ -258,6 +258,7 @@ export const KitDetailsPopup = ({ open, onClose, onSelect, kitList }) => {
                                 </TableCell>
                                 <TableCell>S.No</TableCell>
                                 <TableCell>Kit No</TableCell>
+                                <TableCell>Part No</TableCell>
                                 <TableCell>Description</TableCell>
                             </TableRow>
                         </TableHead>
@@ -274,6 +275,7 @@ export const KitDetailsPopup = ({ open, onClose, onSelect, kitList }) => {
                                         </TableCell>
                                         <TableCell>{index + 1}</TableCell>
                                         <TableCell>{kit.kitNo}</TableCell>
+                                        <TableCell>{kit.partNo}</TableCell>
                                         <TableCell>{kit.kitDesc}</TableCell>
                                     </TableRow>
                                 );
@@ -450,7 +452,8 @@ const Allotment = () => {
         const newRows = kits.map(k => ({
             ...getEmptyRowWithDynamicFields(),
             kitNo: k.kitNo,
-            kitDesc: k.kitDesc
+            kitDesc: k.kitDesc,
+            partNo: k.partNo,
         }));
 
         setRows(prevRows => {
@@ -521,24 +524,37 @@ const Allotment = () => {
         setSupplier(allotment.supplier);
         setMode(allotment.mode);
 
+        const parseLocalDate = (dateStr) => {
+            const [year, month, day] = dateStr.split("-");
+            return new Date(year, month - 1, day);
+        };
+
         if (allotment.startDate) {
-            setSelectedDate(new Date(allotment.startDate));
-            setDateRange([
-                new Date(allotment.startDate),
-                new Date(allotment.endDate || allotment.startDate)
-            ]);
+            const start = parseLocalDate(allotment.startDate);
+            const end = allotment.endDate
+                ? parseLocalDate(allotment.endDate)
+                : start;
+
+            setSelectedDate(start);
+            setDateRange([start, end]);
         }
 
-        const details = allotment.allotmentDetailsVO || [];
+        const details =
+            allotment.allotmentDetailsResponseDTO ||
+            allotment.allotmentDetailsVO ||
+            [];
         setRows(
             details.map(d => ({
                 ...emptyRow,
                 kitNo: d.kitNo,
                 kitDesc: d.kitDesc,
+                partNo: d.partNo || "",
                 projectCode: d.projectCode,
                 partBox: d.part,
                 inventoryBoxes: d.inventory,
+                dateProjection: d.month,
                 scheduleQty: d.schedule,
+                boxReqDay: d.boxesReq,
                 boxesRequired: d.boxesReq,
                 shortageMonth: d.shortage,
                 short: d.shorted,
@@ -575,18 +591,20 @@ const Allotment = () => {
             kitNo: row.kitNo || "",
             kitDesc: row.kitDesc || "",
             projectCode: row.projectCode || "",
+            partNo: row.partNo || "",
             part: Number(row.partBox || 0),
             inventory: row.inventoryBoxes || "",
             schedule: row.scheduleQty || "",
+            month: row.dateProjection || "",
             boxesReq: Number(row.boxesRequired || 0),
             shortage: Number(row.shortageMonth || 0),
             shorted: Number(row.short || 0),
             adherence: row.adherence || "",
             allot: Number(row.allot || 0),
             day: mode === "Daily" && selectedDate ? selectedDate.getDate() : 0,
-            month: (mode === "Daily" && selectedDate) || (mode !== "Daily" && dateRange[0])
-                ? ((mode === "Daily" ? selectedDate : dateRange[0]).getMonth() + 1)
-                : 0
+            // month: (mode === "Daily" && selectedDate) || (mode !== "Daily" && dateRange[0])
+            //     ? ((mode === "Daily" ? selectedDate : dateRange[0]).getMonth() + 1)
+            //     : 0
         }));
 
         const payload = {
@@ -663,22 +681,61 @@ const Allotment = () => {
         }
     };
 
+    const dynamicMonthLabel = useMemo(() => {
+        if (!mode) return "Date";
+
+        // 🔹 DAILY → Mar 28
+        if (mode === "Daily" && selectedDate) {
+            return selectedDate.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+                year: "numeric"
+            });
+        }
+
+        // 🔹 WEEKLY → Mar 20 - 27
+        if (mode === "Weekly" && dateRange[0] && dateRange[1]) {
+            const start = dateRange[0];
+            const end = dateRange[1];
+
+            const startMonth = start.toLocaleDateString("en-US", { month: "short" });
+            const startDay = start.getDate();
+            const endDay = end.getDate();
+            const year = start.getFullYear();
+
+            return `${startMonth} ${startDay} - ${endDay}, ${year}`;
+        }
+
+        // 🔹 MONTHLY → Mar 2026
+        if (mode === "Monthly" && dateRange[0]) {
+            return dateRange[0].toLocaleDateString("en-US", {
+                month: "short",
+                year: "numeric"
+            });
+        }
+
+        return "Date";
+    }, [mode, selectedDate, dateRange]);
+
     const tableHeaders = useMemo(() => [
         { label: 'S.No', tooltip: 'Serial Number', field: 'sno', width: 60 },
         { label: 'Kit No', field: 'kitNo' },
-        { label: 'Kit Description', field: 'kitDesc' },
-        { label: 'Project Code', tooltip: 'Unique project identifier', field: 'projectCode' },
+        { label: 'Part No', field: 'partNo' },
         { label: 'Part/Box', tooltip: 'Part or box number', field: 'partBox' },
         { label: 'Inventory', tooltip: 'Current inventory count', field: 'inventoryBoxes' },
         { label: 'Schedule', tooltip: 'Scheduled quantity', field: 'scheduleQty' },
-        { label: 'Nov-25', tooltip: 'November 2025 projection', field: 'nov25' },
+        {
+            label: dynamicMonthLabel,
+            tooltip: `${dynamicMonthLabel} projection`,
+            field: 'dateProjection'
+        },
         { label: 'Box/Day', tooltip: 'Boxes per day', field: 'boxReqDay' },
         { label: 'Boxes Req', tooltip: 'Total boxes required', field: 'boxesRequired' },
         { label: 'Shortage', tooltip: 'Monthly shortage', field: 'shortageMonth' },
         { label: 'Short', tooltip: 'Shortage status', field: 'short' },
         { label: 'Adherence', tooltip: 'Adherence percentage', field: 'adherence' },
         { label: 'Available', tooltip: 'Available', field: 'allot' },
-    ], []);
+    ], [dynamicMonthLabel]);   // 👈 IMPORTANT
 
     const datePickerStyles = `
     .react-datepicker {
@@ -738,7 +795,7 @@ const Allotment = () => {
                                     </Avatar>
                                     <Box>
                                         <Typography variant="h5" fontWeight={700} color="text.primary">
-                                            Allotment Configuration
+                                            Allotment Request
                                         </Typography>
                                         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                                             {view === 'list' ? 'View all allotments' : 'Create/Edit allotment'}
@@ -1085,7 +1142,7 @@ const Allotment = () => {
                                                     {[
                                                         "S.No",
                                                         "Customer",
-                                                        "Supplier",
+                                                        "OEM",
                                                         "Mode",
                                                         "Start",
                                                         "End",
