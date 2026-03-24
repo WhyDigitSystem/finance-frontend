@@ -531,6 +531,7 @@ const Payment = ({ selectedRow }) => {
     // { accessorKey: 'type', header: 'Type', size: 140 },
     { accessorKey: 'partyCode', header: 'Party Code', size: 140 },
     { accessorKey: 'partyName', header: 'Party Name', size: 140 },
+    { accessorKey: 'ledgerName', header: 'Ledger Name', size: 140 },
     { accessorKey: 'gstState', header: 'Reg State', size: 140 },
     { accessorKey: 'gstIn', header: 'Reg In', size: 140 },
     { accessorKey: 'status', header: 'Status', size: 100 },
@@ -966,7 +967,26 @@ const Payment = ({ selectedRow }) => {
                     </LocalizationProvider>
                   </FormControl>
                 </div>
-                {formData.type === "PARTY" ? (
+                {formData.type === "OTHERS" ? (
+                  <div className="col-md-3 mb-3">
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Ledger Name</InputLabel>
+                      <Select
+                        label="Ledger Name"
+                        value={formData.ledgerName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, ledgerName: e.target.value })
+                        }
+                      >
+                        {ledgerNameList.map((ledger, index) => (
+                          <MenuItem key={index} value={ledger.accountGroupName}>
+                            {ledger.accountGroupName}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </div>
+                ) : (
                   <div className="col-md-3 mb-3">
                     <FormControl fullWidth size="small" error={!!formDataErrors.partyName}>
                       <InputLabel required id="demo-simple-select-label-party">
@@ -994,25 +1014,6 @@ const Payment = ({ selectedRow }) => {
                           {formDataErrors.partyName}
                         </FormHelperText>
                       )}
-                    </FormControl>
-                  </div>
-                ) : (
-                  <div className="col-md-3 mb-3">
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Ledger Name</InputLabel>
-                      <Select
-                        label="Ledger Name"
-                        value={formData.ledgerName}
-                        onChange={(e) =>
-                          setFormData({ ...formData, ledgerName: e.target.value })
-                        }
-                      >
-                        {ledgerNameList.map((ledger, index) => (
-                          <MenuItem key={index} value={ledger.accountGroupName}>
-                            {ledger.accountGroupName}
-                          </MenuItem>
-                        ))}
-                      </Select>
                     </FormControl>
                   </div>
                 )}
