@@ -392,6 +392,7 @@ const Receipt = ({ selectedRow }) => {
           chequeBank: receiptVO.chequeBank || '',
           customerName: receiptVO.customerName || '',
           customerCode: receiptVO.customerCode || '',
+          remarks: receiptVO.remarks || '',
           transactionMethod: receiptVO.receiptType1 || '',
           // bankCashAcc: receiptVO.bankCashAcc,
           chequeUtiNo: receiptVO.chequeUtiNo || '',
@@ -1023,6 +1024,22 @@ const Receipt = ({ selectedRow }) => {
                   {fieldErrors.cashAccount && <FormHelperText>{fieldErrors.cashAccount}</FormHelperText>}
                 </FormControl>
               </div>
+              {
+                formData.type === 'OTHERS' ?
+                  <div className="col-md-6 mb-3">
+                    <FormControl fullWidth size="small">
+                      <TextField
+                        label="Remarks"
+                        size="small"
+                        multiline
+                        disabled={formData.status === 'SUBMIT'}
+                        value={formData.remarks}
+                        onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                      />
+                    </FormControl>
+                  </div>
+                  : null
+              }
             </div>
 
             {/* <div className="card w-full p-6 bg-base-100 shadow-xl mt-2" style={{ padding: '20px' }}> */}

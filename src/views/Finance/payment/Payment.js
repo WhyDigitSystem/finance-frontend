@@ -478,6 +478,7 @@ const Payment = ({ selectedRow }) => {
           partyCode: listValueVO.partyCode || '',
           partyName: listValueVO.partyName || '',
           ledgerName: listValueVO.ledgerName || '',
+          remarks: listValueVO.remarks || '',
           gstState: listValueVO.gstState || '',
           gstIn: listValueVO.gstIn || '',
           bankCashAcc: listValueVO.bankCashAcc || '',
@@ -1099,7 +1100,7 @@ const Payment = ({ selectedRow }) => {
                     />
                   </FormControl>
                 </div>
-                <div className="col-md-6 mb-3">
+                <div className="col-md-3 mb-3">
                   <FormControl fullWidth variant="filled">
                     <TextField
                       id="chequeNo"
@@ -1197,6 +1198,22 @@ const Payment = ({ selectedRow }) => {
                     {formDataErrors.bankCashAcc && <FormHelperText>{formDataErrors.bankCashAcc}</FormHelperText>}
                   </FormControl>
                 </div>
+                {
+                  formData.type === 'OTHERS' ?
+                    <div className="col-md-6 mb-3">
+                      <FormControl fullWidth size="small">
+                        <TextField
+                          label="Remarks"
+                          size="small"
+                          multiline
+                          disabled={formData.status === 'SUBMIT'}
+                          value={formData.remarks}
+                          onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                        />
+                      </FormControl>
+                    </div>
+                    : null
+                }
                 {/*  */}
               </div>
 
@@ -1758,16 +1775,11 @@ const Payment = ({ selectedRow }) => {
                               <div className="col-md-3 mb-3">
                                 <FormControl fullWidth variant="filled">
                                   <TextField
-                                    id="remarks"
-                                    name="remarks"
                                     label="Remarks"
                                     size="small"
                                     disabled={formData.status === 'SUBMIT'}
                                     value={formData.remarks}
-                                    onChange={(newValue) => setFormData({ ...formData, remarks: newValue })}
-                                    inputProps={{ maxLength: 30 }}
-                                    error={!!formDataErrors.remarks}
-                                    helperText={formDataErrors.remarks}
+                                    onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                                   />
                                 </FormControl>
                               </div>
