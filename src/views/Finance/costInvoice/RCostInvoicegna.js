@@ -30,7 +30,7 @@ import FancyLoader from 'utils/FancyLoader';
 const RCostInvoicegna = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
   const [data, setData] = useState(true);
-  // const [listViewRoute, setlistViewRoute] = useState(true);
+  const [listViewRoute, setlistViewRoute] = useState(true);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -42,7 +42,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
   const [listViewData, setListViewData] = useState([]);
   const [exRates, setExRates] = useState([]);
   const [partyName, setPartyName] = useState([]);
-  const [loading, setloading] = useState(true);
+  const [loading, setloading] = useState(false);
   const [showChargeDetails, setShowChargeDetails] = useState(false);
   const [tdsList, setTDSList] = useState([]);
   const [stateCodeList, setStateCodeList] = useState([]);
@@ -515,6 +515,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
       setShowForm(!showForm);
     } catch (err) {
       console.log('error', err);
+      setloading(false);
     }
   };
 
@@ -1128,7 +1129,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
 
   return (
     <>
-      {loading && (
+      {loading &&(
         <div style={{ position: 'fixed', top: '45%', left: '45%', zIndex: 9999 }}>
           <FancyLoader />
         </div>
@@ -2380,3 +2381,4 @@ const RCostInvoicegna = ({ selectedRow }) => {
   );
 };
 export default RCostInvoicegna;
+

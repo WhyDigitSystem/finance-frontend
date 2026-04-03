@@ -20,6 +20,7 @@ import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } 
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import CommonReportTable from 'utils/CommonReportTable';
+// import CMRT from 'utils/CMRT';
 import Paper from '@mui/material/Paper';
 import Draggable from 'react-draggable';
 import jsPDF from 'jspdf';
@@ -221,6 +222,15 @@ function TaxRegister() {
       console.error('Error fetching gate passes:', error);
     }
   };
+
+  const formatNumber = (value) => {
+    if (value === undefined || value === null) return '-';
+
+    return Number(value).toLocaleString('en-IN', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2
+    });
+  };
   const reportColumns = [
     { accessorKey: 'JobOrderNo', header: 'Job No', size: 100 },
     {
@@ -258,6 +268,29 @@ function TaxRegister() {
         );
       }
     },
+//     {
+//   accessorKey: 'docId',
+//   header: 'Doc Id',
+//   size: 100,
+//   Cell: ({ row }) => {
+//     const { docId, screenCode } = row.original;
+
+//     return (
+//       <span
+//         onClick={() => handleDocClick(docId, screenCode)}
+//         style={{
+//           color: 'crimson',
+//           cursor: 'pointer',
+//           fontWeight: 500
+//         }}
+//         onMouseEnter={(e) => (e.target.style.color = 'red')}
+//         onMouseLeave={(e) => (e.target.style.color = 'crimson')}
+//       >
+//         {docId}
+//       </span>
+//     );
+//   }
+// },
     { accessorKey: 'docDate', header: 'Doc Date', size: 100 },
     // { accessorKey: 'screenCode', header: 'Screen', size: 100 },
     { accessorKey: 'Vid', header: '# Invoice', size: 100 },
@@ -270,6 +303,7 @@ function TaxRegister() {
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', width: '100%' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+          {/* {formatNumber(cell.getValue())} */}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -283,6 +317,7 @@ function TaxRegister() {
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', width: '100%' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+          {/* {formatNumber(cell.getValue())} */}
         </div>
       )
     },
@@ -293,6 +328,7 @@ function TaxRegister() {
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', width: '100%' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+          {/* {formatNumber(cell.getValue())} */}
         </div>
       )
     }
@@ -647,11 +683,11 @@ function TaxRegister() {
 
       rowData.forEach((item) => {
         const lcAmt = parseFloat(item.LcAmount || 0);
-        const taxAmt = parseFloat(item.TotalTaxAmountBC || 0);
+        // const taxAmt = parseFloat(item.TotalTaxAmountBC || 0);
         const invAmt = parseFloat(item.TotalInvAmountLC || 0);
 
         totalLcAmount += lcAmt;
-        totalTaxAmount += taxAmt;
+        // totalTaxAmount += taxAmt;
         totalInvAmount += invAmt;
 
         const row = sheet.addRow([
@@ -662,7 +698,7 @@ function TaxRegister() {
           item.Vdate ? dayjs(item.Vdate).format('DD-MM-YYYY') : '-',
           item.BillToParty,
           lcAmt,
-          taxAmt,
+          item.TotalTaxAmountLC,
           invAmt
         ]);
 
