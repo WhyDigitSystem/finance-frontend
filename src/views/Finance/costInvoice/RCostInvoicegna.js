@@ -30,7 +30,7 @@ import FancyLoader from 'utils/FancyLoader';
 const RCostInvoicegna = ({ selectedRow }) => {
   const [showForm, setShowForm] = useState(false);
   const [data, setData] = useState(true);
-  const [listViewRoute, setlistViewRoute] = useState(true);
+  // const [listViewRoute, setlistViewRoute] = useState(true);
   const [branch, setBranch] = useState(localStorage.getItem('branch'));
   const [branchCode, setBranchCode] = useState(localStorage.getItem('branchcode'));
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -42,7 +42,7 @@ const RCostInvoicegna = ({ selectedRow }) => {
   const [listViewData, setListViewData] = useState([]);
   const [exRates, setExRates] = useState([]);
   const [partyName, setPartyName] = useState([]);
-  const [loading, setloading] = useState(false);
+  const [loading, setloading] = useState(true);
   const [showChargeDetails, setShowChargeDetails] = useState(false);
   const [tdsList, setTDSList] = useState([]);
   const [stateCodeList, setStateCodeList] = useState([]);
