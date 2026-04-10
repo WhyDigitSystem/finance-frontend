@@ -131,6 +131,7 @@ const CostInvoice = ({ selectedRow }) => {
     roundOff: '',
     shipperRefNo: '',
     supplierBillNo: '',
+    supplierBillDate: null,
     vid: '',
     vdate: null,
     supplierCode: '',
@@ -248,6 +249,7 @@ const CostInvoice = ({ selectedRow }) => {
       roundOff: '',
       shipperRefNo: '',
       supplierBillNo: '',
+      supplierBillDate: null,
       supplierCode: '',
       supplierGstIn: '',
       supplierGstInCode: '',
@@ -494,11 +496,15 @@ const CostInvoice = ({ selectedRow }) => {
         'get',
         `/costInvoice/getCostInvoiceDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
-      setDocId(response.paramObjectsMap.taxInvoiceDocId);
-      // setDocId((prevData) => ({
-      //   ...prevData,
-      //   docId: response.paramObjectsMap.taxInvoiceDocId
-      // }));
+
+      const { costInvoiceDocId, docDate } = response.paramObjectsMap;
+
+      setDocId(costInvoiceDocId);
+
+      setFormData((prevData) => ({
+        ...prevData,
+        docDate: docDate ? dayjs(docDate) : null
+      }));
     } catch (error) {
       console.error('Error fetching invoice:', error);
     }
@@ -707,6 +713,9 @@ const CostInvoice = ({ selectedRow }) => {
           roundOff: costVO.roundOff,
           shipperRefNo: costVO.shipperRefNo,
           supplierBillNo: costVO.supplierBillNo,
+          supplierBillDate: costVO.supplierBillDate
+            ? dayjs(costVO.supplierBillDate)
+            : null,
           supplierCode: costVO.supplierCode,
           supplierGstIn: costVO.supplierGstIn,
           supplierId: costVO.supplierId,
@@ -1688,6 +1697,9 @@ const CostInvoice = ({ selectedRow }) => {
         remarks: formData.remarks,
         shipperRefNo: formData.shipperRefNo,
         supplierBillNo: formData.supplierBillNo,
+        supplierBillDate: formData.supplierBillDate
+          ? dayjs(formData.supplierBillDate).format('YYYY-MM-DD')
+          : null,
         supplierCode: formData.supplierCode,
         supplierGstIn: formData.supplierGstIn,
         supplierGstInCode: formData.supplierGstInCode,
@@ -1696,7 +1708,9 @@ const CostInvoice = ({ selectedRow }) => {
         supplierPlace: formData.supplierPlace,
         supplierType: formData.supplierType,
         vid: formData.vid,
-        vdate: dayjs(formData.vdate).format('YYYY-MM-DD'),
+        vdate: formData.vdate
+          ? dayjs(formData.vdate).format('YYYY-MM-DD')
+          : null,
         tdsCostInvoiceDTO: tdsVO,
         utrRef: formData.utrRef
       };
@@ -2082,7 +2096,21 @@ const CostInvoice = ({ selectedRow }) => {
                     />
                   </FormControl>
                 </div>
-
+                <div className="col-md-3 mb-3">
+                  <FormControl fullWidth>
+                    <LocalizationProvider dateAdapter={AdapterDayjs}>
+                      <DatePicker
+                        label="Supplier Bill Date"
+                        value={formData.supplierBillDate || null}
+                        onChange={(date) => handleDateChange('supplierBillDate', date)}
+                        slotProps={{
+                          textField: { size: 'small', clearable: true }
+                        }}
+                        format="DD-MM-YYYY"
+                      />
+                    </LocalizationProvider>
+                  </FormControl>
+                </div>
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField

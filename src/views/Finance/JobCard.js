@@ -433,9 +433,18 @@ export const JobCard = () => {
         'get',
         `transaction/getTmsJobCardDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
-      if (response.paramObjectsMap?.tmsJobCardDocId) {
-        console.log('Fetched docId:', response.paramObjectsMap.tmsJobCardDocId);
-        setDocId(response.paramObjectsMap.tmsJobCardDocId);
+
+      const data = response.paramObjectsMap;
+
+      if (data?.tmsJobCardDocId) {
+        setDocId(data.tmsJobCardDocId);
+
+        if (data?.docDate) {
+          setFormData((prev) => ({
+            ...prev,
+            date: dayjs(data.docDate, 'YYYY-MM-DD')
+          }));
+        }
       } else {
         console.error('No docId found in response');
       }
@@ -673,7 +682,7 @@ export const JobCard = () => {
                     value={formData.refNo}
                     onChange={(e) => setFormData({ ...formData, refNo: e.target.value })}
                     error={!!fieldErrors.refNo}
-                    // helperText={fieldErrors.pincode}
+                  // helperText={fieldErrors.pincode}
                   />
                 </FormControl>
               </div>
@@ -840,7 +849,7 @@ export const JobCard = () => {
                         checked={formData.closed}
                         onChange={handleInputChange}
                         name="closed"
-                        // sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
+                      // sx={{ '& .MuiSvgIcon-root': { color: '#5e35b1' } }}
                       />
                     }
                     label="Closed"

@@ -525,9 +525,13 @@ const RCostInvoicegna = ({ selectedRow }) => {
         'get',
         `/rCostInvoiceGna/getRCostInvoiceGnaDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
+
+      const { rcostInvoiceGnaDocId, docDate } = response.paramObjectsMap;
+
       setFormData((prevData) => ({
         ...prevData,
-        docId: response.paramObjectsMap.rcostInvoiceGnaDocId
+        docId: rcostInvoiceGnaDocId,
+        docDate: docDate ? dayjs(docDate) : null
       }));
     } catch (error) {
       console.error('Error fetching invoice:', error);

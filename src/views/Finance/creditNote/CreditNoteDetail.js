@@ -859,13 +859,14 @@ const IrnCreditNote = ({ selectedRow }) => {
         `irnCreditNote/getIrnCreditNoteDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
       console.log('API Response:', response);
+      
+      const { irnCreditNoteDocId, docDate } = response.paramObjectsMap;
 
-      if (response.status === true) {
-        setFormData((prev) => ({
-          ...prev,
-          docId: response.paramObjectsMap.irnCreditVO
-        }));
-      }
+      setFormData((prevData) => ({
+        ...prevData,
+        docId: irnCreditNoteDocId,
+        docDate: docDate ? dayjs(docDate) : null // ✅ use API date
+      }));
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -1602,7 +1603,7 @@ const IrnCreditNote = ({ selectedRow }) => {
                     <DatePicker
                       label="Doc Date"
                       disabled
-                      value={dayjs()}
+                      value={formData.docDate}
                       slotProps={{
                         textField: { size: 'small', clearable: true }
                       }}

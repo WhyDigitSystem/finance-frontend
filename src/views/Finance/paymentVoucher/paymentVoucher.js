@@ -240,10 +240,13 @@ const PaymentVoucher = () => {
         'get',
         `/transaction/getpaymentVoucherDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
+
+      const { paymentVoucherDocId, docDate } = response.paramObjectsMap;
+
       setFormData((prevData) => ({
         ...prevData,
-        docId: response.paramObjectsMap.paymentVoucherDocId,
-        docDate: dayjs()
+        docId: paymentVoucherDocId,
+        docDate: docDate ? dayjs(docDate) : null
       }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);

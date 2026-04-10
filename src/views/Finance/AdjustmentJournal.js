@@ -98,19 +98,19 @@ const AdjustmentJournal = () => {
     }
   ]);
   const getCurrencyandExRate = async () => {
-  try {
-    const response = await apiCalls('get', `transaction/getCurrencyAndExrateDetails?orgId=${orgId}`);
-    if (response.status === true) {
-      setCurrencies(response.paramObjectsMap.currencyVO);
-    } else {
-      console.error('API Error:', response);
-      return response;
+    try {
+      const response = await apiCalls('get', `transaction/getCurrencyAndExrateDetails?orgId=${orgId}`);
+      if (response.status === true) {
+        setCurrencies(response.paramObjectsMap.currencyVO);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
     }
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    return error;
-  }
-};
+  };
   useEffect(() => {
     getCurrencyandExRate();
     getAdjustmentJournalDocId();
@@ -118,7 +118,7 @@ const AdjustmentJournal = () => {
     getAccountNameFromGroup();
   }, []);
   const handleSelectCurrency = (e) => {
-    const value = e.target.value;  
+    const value = e.target.value;
     console.log('Selected Currency value:', value);
     currencies.forEach((curr, index) => {
       console.log(`Currency ${index}:`, curr);
@@ -134,8 +134,8 @@ const AdjustmentJournal = () => {
       }));
       setFieldErrors((prevErrors) => ({
         ...prevErrors,
-        currency:'',
-        exRate:''
+        currency: '',
+        exRate: ''
       }));
     } else {
       console.log('No Currency found', value);
@@ -159,7 +159,7 @@ const AdjustmentJournal = () => {
     try {
       const response = await apiCalls('get', `/transaction/getSubLedgerNameFromPartyMaster?accountName=${accountName}&OrgId=${orgId}`);
       console.log('API Response:', response);
-  
+
       if (response.status === true) {
         const updatedData = [...detailsTableData];
         updatedData[rowIndex].subledgerNameOptions = response.paramObjectsMap.GeneralJournalVO || [];
@@ -423,7 +423,7 @@ const AdjustmentJournal = () => {
       }
       if (row.creditAmount === '' || row.creditAmount === null || row.creditAmount === undefined) {
         rowErrors.creditAmount = 'Credit Amount is required';
-      }      
+      }
       if (row.creditBase === '' || row.creditBase === null || row.creditBase === undefined) {
         rowErrors.creditBase = 'Credit Base is required';
         detailTableDataValid = false;
@@ -490,9 +490,24 @@ const AdjustmentJournal = () => {
         'get',
         `/transaction/getAdjustmentJournalDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
-      setDocId(response.paramObjectsMap.adjustmentJournalDocId);
+
+      const data = response.paramObjectsMap;
+
+      if (data?.adjustmentJournalDocId) {
+        setDocId(data.adjustmentJournalDocId);
+
+        // ✅ FIX HERE (docDate instead of date)
+        if (data?.docDate) {
+          setFormData((prev) => ({
+            ...prev,
+            docDate: dayjs(data.docDate, 'YYYY-MM-DD')
+          }));
+        }
+      } else {
+        console.error('No docId found in response');
+      }
     } catch (error) {
-      console.error('Error fetching gate passes:', error);
+      console.error('Error fetching adjustment journal doc:', error);
     }
   };
 
@@ -572,10 +587,10 @@ const AdjustmentJournal = () => {
     updatedData[rowIndex].subledgerNameOptions = [];
     setDetailsTableData(updatedData);
     getSubledgerName(selectedAccountName, rowIndex);
-  };  
+  };
   const handleSubLedgerNameChange = (selectedOption, rowIndex) => {
     const updatedData = [...detailsTableData];
-  
+
     if (selectedOption) {
       updatedData[rowIndex].subledgerName = selectedOption.subLedgerName;
       updatedData[rowIndex].subLedgerCode = selectedOption.subLedgerCode;
@@ -583,13 +598,13 @@ const AdjustmentJournal = () => {
       updatedData[rowIndex].subledgerName = '';
       updatedData[rowIndex].subLedgerCode = '';
     }
-  
+
     setDetailsTableData(updatedData);
   };
-  
+
   // const handleSubLedgerNameChange = (event, newValue, rowId) => {
   //   const value = newValue || {};
-  
+
   //   setDetailsTableData((prev) =>
   //     prev.map((row) =>
   //       row.id === rowId
@@ -872,49 +887,49 @@ const AdjustmentJournal = () => {
                                       </td>
                                       <td>
                                         <select
-                                        value={row.accountName}
-                                        style={{ width: '150px' }}
-                                        // disabled={formData.status === 'TAX'}
-                                        onChange={(e) => handleAccountNameChange(e, index)}
-                                        className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">--Select--</option>
-                                        {allAccountName &&
-                                          allAccountName.map((currency) => (
-                                            <option key={currency.id} value={currency.accountName}>
-                                              {currency.accountName}
-                                            </option>
-                                          ))}
+                                          value={row.accountName}
+                                          style={{ width: '150px' }}
+                                          // disabled={formData.status === 'TAX'}
+                                          onChange={(e) => handleAccountNameChange(e, index)}
+                                          className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
+                                        >
+                                          <option value="">--Select--</option>
+                                          {allAccountName &&
+                                            allAccountName.map((currency) => (
+                                              <option key={currency.id} value={currency.accountName}>
+                                                {currency.accountName}
+                                              </option>
+                                            ))}
                                         </select>
-                                    {detailsTableErrors[index]?.accountName && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {detailsTableErrors[index].accountName}
-                                      </div>
-                                    )}
-                                      </td>
-                                     <td className="border px-2 py-2">
-                                      <Autocomplete
-                                        options={row.subledgerNameOptions || []}
-                                        getOptionLabel={(option) => option.subLedgerName || ''}
-                                        value={
-                                          row.subledgerNameOptions?.find(
-                                            (option) => option.subLedgerName === row.subledgerName
-                                          ) || null
-                                        }
-                                        onChange={(event, newValue) => {
-                                          handleSubLedgerNameChange(newValue, index);
-                                        }}
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            placeholder="Select Subledger"
-                                            size="small"
-                                            error={!!detailsTableErrors[index]?.subledgerName}
-                                            helperText={detailsTableErrors[index]?.subledgerName}
-                                          />
+                                        {detailsTableErrors[index]?.accountName && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].accountName}
+                                          </div>
                                         )}
-                                      />
-                                    </td>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <Autocomplete
+                                          options={row.subledgerNameOptions || []}
+                                          getOptionLabel={(option) => option.subLedgerName || ''}
+                                          value={
+                                            row.subledgerNameOptions?.find(
+                                              (option) => option.subLedgerName === row.subledgerName
+                                            ) || null
+                                          }
+                                          onChange={(event, newValue) => {
+                                            handleSubLedgerNameChange(newValue, index);
+                                          }}
+                                          renderInput={(params) => (
+                                            <TextField
+                                              {...params}
+                                              placeholder="Select Subledger"
+                                              size="small"
+                                              error={!!detailsTableErrors[index]?.subledgerName}
+                                              helperText={detailsTableErrors[index]?.subledgerName}
+                                            />
+                                          )}
+                                        />
+                                      </td>
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"

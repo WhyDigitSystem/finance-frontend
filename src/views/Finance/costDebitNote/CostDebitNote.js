@@ -463,11 +463,20 @@ const CostDebitNote = ({ selectedRow }) => {
         `/costdebitnote/getCostDebitNoteDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
       // setDocId(response.paramObjectsMap.costDebitNoteDocId);
-      const newDocId = response.paramObjectsMap.costDebitNoteDocId;
+
+      const { costDebitNoteDocId, docDate } = response.paramObjectsMap;
+
       setFormData((prevData) => ({
         ...prevData,
-        docId: newDocId
+        docId: costDebitNoteDocId,
+        docDate: docDate ? dayjs(docDate) : null // ✅ use API date
       }));
+
+      // const newDocId = response.paramObjectsMap.costDebitNoteDocId;
+      // setFormData((prevData) => ({
+      //   ...prevData,
+      //   docId: newDocId
+      // }));
     } catch (error) {
       console.error('Error fetching invoice:', error);
     }
@@ -570,14 +579,14 @@ const CostDebitNote = ({ selectedRow }) => {
         setChargeDetails(
           listValueVO.gstLines
             ? listValueVO.gstLines.map((row) => ({
-                id: row.id,
-                chargeCode: row.chargeCode,
-                chargeDesc: row.chargeName,
-                gChargeCode: row.govChargeCode,
-                gstPercent: row.gstpercent,
-                sac: row.sac,
-                lcAmt: row.lcAmt
-              }))
+              id: row.id,
+              chargeCode: row.chargeCode,
+              chargeDesc: row.chargeName,
+              gChargeCode: row.govChargeCode,
+              gstPercent: row.gstpercent,
+              sac: row.sac,
+              lcAmt: row.lcAmt
+            }))
             : []
         );
 
@@ -1024,12 +1033,12 @@ const CostDebitNote = ({ selectedRow }) => {
       setTdsCostInvoice(
         Array.isArray(selectedBill.tdsCostInvoiceVO)
           ? selectedBill.tdsCostInvoiceVO.map((row) => ({
-              id: row.id,
-              section: row.section,
-              tdsWithHolding: row.tdsWithHolding,
-              tdsWithHoldingPer: row.tdsWithHoldingPer,
-              totTdsWhAmnt: row.totTdsWhAmnt
-            }))
+            id: row.id,
+            section: row.section,
+            tdsWithHolding: row.tdsWithHolding,
+            tdsWithHoldingPer: row.tdsWithHoldingPer,
+            totTdsWhAmnt: row.totTdsWhAmnt
+          }))
           : []
       );
       // setTdsCostInvoice(
@@ -2673,20 +2682,20 @@ const CostDebitNote = ({ selectedRow }) => {
                                                 (charge) => charge.chargeName === row.chargeName && charge.taxable === null
                                               )
                                             ) && (
-                                              <ActionButton
-                                                title="Delete"
-                                                icon={DeleteIcon}
-                                                onClick={() =>
-                                                  handleDeleteRow(
-                                                    row.id,
-                                                    chargerCostInvoice,
-                                                    setChargerCostInvoice,
-                                                    costInvoiceErrors,
-                                                    setCostInvoiceErrors
-                                                  )
-                                                }
-                                              />
-                                            )}
+                                                <ActionButton
+                                                  title="Delete"
+                                                  icon={DeleteIcon}
+                                                  onClick={() =>
+                                                    handleDeleteRow(
+                                                      row.id,
+                                                      chargerCostInvoice,
+                                                      setChargerCostInvoice,
+                                                      costInvoiceErrors,
+                                                      setCostInvoiceErrors
+                                                    )
+                                                  }
+                                                />
+                                              )}
                                           </td>
 
                                           <td className="text-center">
@@ -2782,7 +2791,7 @@ const CostDebitNote = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.description ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.description && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3030,7 +3039,7 @@ const CostDebitNote = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.exRate && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3072,7 +3081,7 @@ const CostDebitNote = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.fcAmount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3161,7 +3170,7 @@ const CostDebitNote = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.billAmt ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.billAmt && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3202,7 +3211,7 @@ const CostDebitNote = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.sac ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.sac && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3245,7 +3254,7 @@ const CostDebitNote = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.gstPercent ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.gstPercent && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3287,7 +3296,7 @@ const CostDebitNote = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.gst ? 'error form-control' : 'form-control'}
-                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {/* {costInvoiceErrors[index]?.gst && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3583,8 +3592,8 @@ const CostDebitNote = ({ selectedRow }) => {
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllCostDebitNoteById}
-              // isPdf={true}
-              // GeneratePdf={GeneratePdf}
+            // isPdf={true}
+            // GeneratePdf={GeneratePdf}
             />
           )}
           {downloadPdf && <GeneratePdfTempDN row={pdfData} modalClose={() => setDownloadPdf(false)} />}

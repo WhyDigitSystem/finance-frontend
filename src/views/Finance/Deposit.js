@@ -274,11 +274,24 @@ const Deposit = () => {
         'get',
         `/transaction/getBankingDepositDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
-      console.log('docid working');
 
-      setDocId(response.paramObjectsMap.bankingDepositDocId);
+      const data = response.paramObjectsMap;
+
+      if (data?.bankingDepositDocId) {
+        setDocId(data.bankingDepositDocId);
+
+        // ✅ SET docDate FROM API
+        if (data?.docDate) {
+          setFormData((prev) => ({
+            ...prev,
+            docDate: dayjs(data.docDate, 'YYYY-MM-DD') // ✅ correct key
+          }));
+        }
+      } else {
+        console.error('No docId found in response');
+      }
     } catch (error) {
-      console.error('Error fetching gate passes:', error);
+      console.error('Error fetching deposit doc:', error);
     }
   };
 

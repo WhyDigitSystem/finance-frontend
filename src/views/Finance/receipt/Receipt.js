@@ -487,7 +487,7 @@ const Receipt = ({ selectedRow }) => {
         createdBy: loginUserName,
         finYear: finYear,
         orgId: parseInt(orgId),
-        type: formData.type,
+        type: 'PARTY',
         ledgerName: formData.ledgerName,
         receiptType: formData.paymentMode,
         receiptType1: formData.transactionMethod,
@@ -531,7 +531,7 @@ const Receipt = ({ selectedRow }) => {
     // { accessorKey: 'bankChargeAcc', header: 'Bank Charges Account', size: 140 },
     { accessorKey: 'docId', header: 'Doc Id', size: 140 },
     { accessorKey: 'customerName', header: 'Customer Name', size: 140 },
-    { accessorKey: 'ledgerName', header: 'Ledger Name', size: 140 },
+    // { accessorKey: 'ledgerName', header: 'Ledger Name', size: 140 },
     { accessorKey: 'chequeUtiNo', header: 'Chq/ UTI No', size: 140 },
     { accessorKey: 'chequeUtiDate', header: 'Chq/ UTI Dt', size: 140 },
     { accessorKey: 'receiptAmt', header: 'Receipt Amount', size: 140 },
@@ -557,9 +557,13 @@ const Receipt = ({ selectedRow }) => {
         'get',
         `/arreceivable/getReceiptDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
+
+      const { receiptDocId, docDate } = response.paramObjectsMap;
+
       setFormData((prevData) => ({
         ...prevData,
-        docId: response.paramObjectsMap.receiptDocId,
+        docId: receiptDocId,
+        docDate: docDate ? dayjs(docDate) : null
       }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -759,7 +763,7 @@ const Receipt = ({ selectedRow }) => {
         ) : (
           <>
             <div className="row d-flex ml" style={{ marginBottom: '20px' }}>
-              <div className="col-md-3 mb-3">
+              {/* <div className="col-md-3 mb-3">
                 <FormControl fullWidth size="small">
                   <InputLabel id="demo-simple-select-label">Type</InputLabel>
                   <Select
@@ -779,7 +783,7 @@ const Receipt = ({ selectedRow }) => {
                     </FormHelperText>
                   )}
                 </FormControl>
-              </div>
+              </div> */}
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.paymentMode}>
                   <InputLabel id="paymentMode">
@@ -875,7 +879,7 @@ const Receipt = ({ selectedRow }) => {
                   </Select>
                 </FormControl>
               </div>
-              {formData.type === "OTHERS" ? (
+              {/* {formData.type === "OTHERS" ? (
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <InputLabel>Ledger Name</InputLabel>
@@ -894,29 +898,29 @@ const Receipt = ({ selectedRow }) => {
                     </Select>
                   </FormControl>
                 </div>
-              ) : (
-                <div className="col-md-3 mb-3">
-                  <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customerName}>
-                    <InputLabel id="demo-simple-select-label">Customer Name<span style={{ color: 'red', fontSize: '20px' }}>*</span></InputLabel>
-                    <Select
-                      labelId="customerName"
-                      id="customerName"
-                      label="Customer Name"
-                      disabled={!!editId}
-                      onChange={handleInputChange}
-                      name="customerName"
-                      value={formData.customerName}
-                    >
-                      {allCustomerName.map((customer) => (
-                        <MenuItem key={customer.id} value={customer.customerName}>
-                          {customer.customerName}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {fieldErrors.customerName && <FormHelperText>{fieldErrors.customerName}</FormHelperText>}{' '}
-                  </FormControl>
-                </div>
-              )}
+              ) : ( */}
+              <div className="col-md-3 mb-3">
+                <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customerName}>
+                  <InputLabel id="demo-simple-select-label">Customer Name<span style={{ color: 'red', fontSize: '20px' }}>*</span></InputLabel>
+                  <Select
+                    labelId="customerName"
+                    id="customerName"
+                    label="Customer Name"
+                    disabled={!!editId}
+                    onChange={handleInputChange}
+                    name="customerName"
+                    value={formData.customerName}
+                  >
+                    {allCustomerName.map((customer) => (
+                      <MenuItem key={customer.id} value={customer.customerName}>
+                        {customer.customerName}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {fieldErrors.customerName && <FormHelperText>{fieldErrors.customerName}</FormHelperText>}{' '}
+                </FormControl>
+              </div>
+              {/* )} */}
               < div className="col-md-3 mb-3">
                 <FormControl fullWidth variant="filled">
                   <TextField
@@ -1024,7 +1028,7 @@ const Receipt = ({ selectedRow }) => {
                   {fieldErrors.cashAccount && <FormHelperText>{fieldErrors.cashAccount}</FormHelperText>}
                 </FormControl>
               </div>
-              {
+              {/* {
                 formData.type === 'OTHERS' ?
                   <div className="col-md-6 mb-3">
                     <FormControl fullWidth size="small">
@@ -1039,230 +1043,230 @@ const Receipt = ({ selectedRow }) => {
                     </FormControl>
                   </div>
                   : null
-              }
+              } */}
             </div>
 
             {/* <div className="card w-full p-6 bg-base-100 shadow-xl mt-2" style={{ padding: '20px' }}> */}
-            {
+            {/* {
               formData.type === 'OTHERS' ?
-                '' :
-                <>
-                  <Tabs
-                    value={value}
-                    onChange={handleChange}
-                    textColor="secondary"
-                    indicatorColor="secondary"
-                    aria-label="secondary tabs example"
-                    style={{ marginTop: '-30px' }}
-                  >
-                    <Tab value={0} label="Invoice Details" />
-                    <Tab value={1} label="Summary" />
-                  </Tabs>
+                '' : */}
+            <>
+              <Tabs
+                value={value}
+                onChange={handleChange}
+                textColor="secondary"
+                indicatorColor="secondary"
+                aria-label="secondary tabs example"
+                style={{ marginTop: '-30px' }}
+              >
+                <Tab value={0} label="Invoice Details" />
+                <Tab value={1} label="Summary" />
+              </Tabs>
 
-                  <Box sx={{ padding: 2 }}>
-                    {value === 0 && (
-                      <div className="row d-flex ml" style={{ marginTop: '5px' }}>
-                        <div className="mb-1">
-                          {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
-                          {/* <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} /> */}
-                          {formData?.status !== 'SUBMIT' && <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />}
-                        </div>
-                        <div className="row mt-2">
-                          <div className="col-lg-12">
-                            <div className="table-responsive">
-                              <table className="table table-bordered">
-                                <thead>
-                                  <tr style={{ backgroundColor: '#673AB7' }}>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                      Action
-                                    </th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                      S.No
-                                    </th>
-                                    <th className="px-2 py-2 text-white text-center"># Invoice</th>
-                                    <th className="px-2 py-2 text-white text-center" style={{ border: 'none' }}>Date</th>
-                                    <th className="px-2 py-2 text-white text-center">Ref No</th>
-                                    <th className="px-2 py-2 text-white text-center">Ref Date</th>
-                                    {/* <th className="px-2 py-2 text-white text-center">Curr.</th>
+              <Box sx={{ padding: 2 }}>
+                {value === 0 && (
+                  <div className="row d-flex ml" style={{ marginTop: '5px' }}>
+                    <div className="mb-1">
+                      {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
+                      {/* <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} /> */}
+                      {formData?.status !== 'SUBMIT' && <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />}
+                    </div>
+                    <div className="row mt-2">
+                      <div className="col-lg-12">
+                        <div className="table-responsive">
+                          <table className="table table-bordered">
+                            <thead>
+                              <tr style={{ backgroundColor: '#673AB7' }}>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                  Action
+                                </th>
+                                <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                  S.No
+                                </th>
+                                <th className="px-2 py-2 text-white text-center"># Invoice</th>
+                                <th className="px-2 py-2 text-white text-center" style={{ border: 'none' }}>Date</th>
+                                <th className="px-2 py-2 text-white text-center">Ref No</th>
+                                <th className="px-2 py-2 text-white text-center">Ref Date</th>
+                                {/* <th className="px-2 py-2 text-white text-center">Curr.</th>
                               <th className="px-2 py-2 text-white text-center">Ex. Rate</th> */}
-                                    <th className="px-2 py-2 text-white text-center">Bill Amount</th>
-                                    <th className="px-2 py-2 text-white text-center">TAX</th>
-                                    <th className="px-2 py-2 text-white text-center">TDS %</th>
-                                    <th className="px-2 py-2 text-white text-center">Net Receivable</th>
-                                    <th className="px-2 py-2 text-white text-center">Outstanding Bal</th>
-                                    <th className="px-2 py-2 text-white text-center">Settled Amt</th>
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {inVoiceDetailsData.map((row, index) => (
-                                    <tr key={row.id}>
-                                      <td className="border px-2 py-2 text-center">
-                                        <ActionButton
-                                          title="Delete"
-                                          icon={DeleteIcon}
-                                          onClick={() =>
-                                            handleDeleteRow(
-                                              row.id,
-                                              inVoiceDetailsData,
-                                              setInVoiceDetailsData,
-                                              invoiceDetailsError,
-                                              setInvoiceDetailsError
+                                <th className="px-2 py-2 text-white text-center">Bill Amount</th>
+                                <th className="px-2 py-2 text-white text-center">TAX</th>
+                                <th className="px-2 py-2 text-white text-center">TDS %</th>
+                                <th className="px-2 py-2 text-white text-center">Net Receivable</th>
+                                <th className="px-2 py-2 text-white text-center">Outstanding Bal</th>
+                                <th className="px-2 py-2 text-white text-center">Settled Amt</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {inVoiceDetailsData.map((row, index) => (
+                                <tr key={row.id}>
+                                  <td className="border px-2 py-2 text-center">
+                                    <ActionButton
+                                      title="Delete"
+                                      icon={DeleteIcon}
+                                      onClick={() =>
+                                        handleDeleteRow(
+                                          row.id,
+                                          inVoiceDetailsData,
+                                          setInVoiceDetailsData,
+                                          invoiceDetailsError,
+                                          setInvoiceDetailsError
+                                        )
+                                      }
+                                    />
+                                  </td>
+                                  <td className="text-center">
+                                    <div className="pt-2">{index + 1}</div>
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.invNo}
+                                      disabled
+                                      onChange={(e) => {
+                                        const value = e.target.value;
+                                        const regex = /^[a-zA-Z0-9\s/-]*$/;
+                                        if (regex.test(value)) {
+                                          setInVoiceDetailsData((prev) => prev.map((r) => (r.id === row.id ? { ...r, invNo: value } : r)));
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], invNo: !value ? 'Invoice No is required' : '' };
+                                            return newErrors;
+                                          });
+                                        } else {
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], invNo: 'Only alphabets and numbers are allowed' }; // Clear the error instead
+                                            return newErrors;
+                                          });
+                                        }
+                                      }}
+                                      className={invoiceDetailsError[index]?.invNo ? 'error form-control' : 'form-control'}
+                                      style={{ width: '150px' }}
+                                    />
+                                    {invoiceDetailsError[index]?.invNo && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {invoiceDetailsError[index].invNo}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td style={{ border: 'none', padding: '1px 2px' }}>
+                                    <LocalizationProvider dateAdapter={AdapterDayjs} >
+                                      <DatePicker
+                                        value={
+                                          row.invDate
+                                            ? dayjs(row.invDate, 'YYYY-MM-DD').isValid()
+                                              ? dayjs(row.invDate, 'YYYY-MM-DD')
+                                              : null
+                                            : null
+                                        }
+                                        disabled
+                                        format="DD-MM-YYYY"
+                                        onChange={(newValue) => {
+                                          setInVoiceDetailsData((prev) =>
+                                            prev.map((r) =>
+                                              r.id === row.id
+                                                ? { ...r, invDate: newValue ? newValue.format('YYYY-MM-DD') : null }
+                                                : r
                                             )
-                                          }
-                                        />
-                                      </td>
-                                      <td className="text-center">
-                                        <div className="pt-2">{index + 1}</div>
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.invNo}
-                                          disabled
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const regex = /^[a-zA-Z0-9\s/-]*$/;
-                                            if (regex.test(value)) {
-                                              setInVoiceDetailsData((prev) => prev.map((r) => (r.id === row.id ? { ...r, invNo: value } : r)));
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], invNo: !value ? 'Invoice No is required' : '' };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], invNo: 'Only alphabets and numbers are allowed' }; // Clear the error instead
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={invoiceDetailsError[index]?.invNo ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {invoiceDetailsError[index]?.invNo && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {invoiceDetailsError[index].invNo}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td style={{ border: 'none', padding: '1px 2px' }}>
-                                        <LocalizationProvider dateAdapter={AdapterDayjs} >
-                                          <DatePicker
-                                            value={
-                                              row.invDate
-                                                ? dayjs(row.invDate, 'YYYY-MM-DD').isValid()
-                                                  ? dayjs(row.invDate, 'YYYY-MM-DD')
-                                                  : null
-                                                : null
-                                            }
-                                            disabled
-                                            format="DD-MM-YYYY"
-                                            onChange={(newValue) => {
-                                              setInVoiceDetailsData((prev) =>
-                                                prev.map((r) =>
-                                                  r.id === row.id
-                                                    ? { ...r, invDate: newValue ? newValue.format('YYYY-MM-DD') : null }
-                                                    : r
-                                                )
-                                              );
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  invDate: !newValue ? 'Inv Date is required' : '',
-                                                };
-                                                return newErrors;
-                                              });
-                                            }}
-                                            slotProps={{
-                                              textField: {
-                                                InputProps: {
-                                                  sx: {
-                                                    '& input': {
-                                                      padding: '9px 8px',
-                                                      fontSize: '14px',
-                                                    },
-                                                  },
-                                                },
-                                                sx: {
-                                                  width: '200px',
-                                                  padding: '8px',
+                                          );
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              invDate: !newValue ? 'Inv Date is required' : '',
+                                            };
+                                            return newErrors;
+                                          });
+                                        }}
+                                        slotProps={{
+                                          textField: {
+                                            InputProps: {
+                                              sx: {
+                                                '& input': {
+                                                  padding: '9px 8px',
+                                                  fontSize: '14px',
                                                 },
                                               },
-                                            }}
-                                          />
-                                          {invoiceDetailsError[index]?.invDate && (
-                                            <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                              {invoiceDetailsError[index].invDate}
-                                            </div>
-                                          )}
-                                        </LocalizationProvider>
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.refNo}
-                                          disabled
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const regex = /^[a-zA-Z0-9\s-]*$/;
-                                            if (regex.test(value)) {
-                                              setInVoiceDetailsData((prev) => prev.map((r) => (r.id === row.id ? { ...r, refNo: value } : r)));
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], refNo: !value ? 'Ref No is required' : '' };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], refNo: 'Only alphabets and numbers are allowed' };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={invoiceDetailsError[index]?.refNo ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {invoiceDetailsError[index]?.refNo && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {invoiceDetailsError[index].refNo}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="date"
-                                          disabled
-                                          value={row.refDate}
-                                          onChange={(e) => {
-                                            const date = e.target.value;
+                                            },
+                                            sx: {
+                                              width: '200px',
+                                              padding: '8px',
+                                            },
+                                          },
+                                        }}
+                                      />
+                                      {invoiceDetailsError[index]?.invDate && (
+                                        <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                          {invoiceDetailsError[index].invDate}
+                                        </div>
+                                      )}
+                                    </LocalizationProvider>
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.refNo}
+                                      disabled
+                                      onChange={(e) => {
+                                        const value = e.target.value;
+                                        const regex = /^[a-zA-Z0-9\s-]*$/;
+                                        if (regex.test(value)) {
+                                          setInVoiceDetailsData((prev) => prev.map((r) => (r.id === row.id ? { ...r, refNo: value } : r)));
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], refNo: !value ? 'Ref No is required' : '' };
+                                            return newErrors;
+                                          });
+                                        } else {
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], refNo: 'Only alphabets and numbers are allowed' };
+                                            return newErrors;
+                                          });
+                                        }
+                                      }}
+                                      className={invoiceDetailsError[index]?.refNo ? 'error form-control' : 'form-control'}
+                                      style={{ width: '150px' }}
+                                    />
+                                    {invoiceDetailsError[index]?.refNo && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {invoiceDetailsError[index].refNo}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="date"
+                                      disabled
+                                      value={row.refDate}
+                                      onChange={(e) => {
+                                        const date = e.target.value;
 
-                                            setInVoiceDetailsData((prev) =>
-                                              prev.map((r) =>
-                                                r.id === row.id ? { ...r, refDate: date, refDate: date > r.refDate ? '' : r.refDate } : r
-                                              )
-                                            );
+                                        setInVoiceDetailsData((prev) =>
+                                          prev.map((r) =>
+                                            r.id === row.id ? { ...r, refDate: date, refDate: date > r.refDate ? '' : r.refDate } : r
+                                          )
+                                        );
 
-                                            setInvoiceDetailsError((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = {
-                                                ...newErrors[index],
-                                                refDate: !date ? 'Ref Date is required' : ''
-                                              };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={invoiceDetailsError[index]?.refDate ? 'error form-control' : 'form-control'}
-                                        />
-                                        {invoiceDetailsError[index]?.refDate && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {invoiceDetailsError[index].refDate}
-                                          </div>
-                                        )}
-                                      </td>
-                                      {/*  <td className="border px-2 py-2">
+                                        setInvoiceDetailsError((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = {
+                                            ...newErrors[index],
+                                            refDate: !date ? 'Ref Date is required' : ''
+                                          };
+                                          return newErrors;
+                                        });
+                                      }}
+                                      className={invoiceDetailsError[index]?.refDate ? 'error form-control' : 'form-control'}
+                                    />
+                                    {invoiceDetailsError[index]?.refDate && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {invoiceDetailsError[index].refDate}
+                                      </div>
+                                    )}
+                                  </td>
+                                  {/*  <td className="border px-2 py-2">
                                     <input
                                       type="text"
                                       value={row.currency}
@@ -1330,410 +1334,410 @@ const Receipt = ({ selectedRow }) => {
                                       </div>
                                     )}
                                   </td>*/}
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.amount}
-                                          disabled
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9.]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setInVoiceDetailsData((prev) => prev.map((r) => (r.id === row.id ? { ...r, amount: value } : r)));
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], amount: !value ? 'Bill Amount is required' : '' };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], amount: 'Only numbers are allowed' };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={invoiceDetailsError[index]?.amount ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {invoiceDetailsError[index]?.amount && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {invoiceDetailsError[index].amount}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.gstAmt}
-                                          disabled
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setInVoiceDetailsData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, gstAmt: value } : r))
-                                              );
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], gstAmt: !value ? 'Tax Amt is required' : '' };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  gstAmt: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={invoiceDetailsError[index]?.gstAmt ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {invoiceDetailsError[index]?.gstAmt && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {invoiceDetailsError[index].gstAmt}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.tds}
-                                          disabled={formData.status === 'SUBMIT'}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setInVoiceDetailsData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, tds: value } : r))
-                                              );
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  tds: !value ? 'TDS is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  tds: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={invoiceDetailsError[index]?.tds ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {invoiceDetailsError[index]?.tds && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {invoiceDetailsError[index].tds}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.chargeAmt}
-                                          disabled
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setInVoiceDetailsData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, chargeAmt: value } : r))
-                                              );
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], chargeAmt: 'Only numbers are allowed' };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  chargeAmt: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={invoiceDetailsError[index]?.chargeAmt ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {invoiceDetailsError[index]?.chargeAmt && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {invoiceDetailsError[index].chargeAmt}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.outstanding}
-                                          disabled={!!editId}
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9]*$/;
-                                            if (isNumeric.test(value)) {
-                                              setInVoiceDetailsData((prev) =>
-                                                prev.map((r) => (r.id === row.id ? { ...r, outstanding: value } : r))
-                                              );
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  outstanding: !value ? 'Outstanding is required' : ''
-                                                };
-                                                return newErrors;
-                                              });
-                                            } else {
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = {
-                                                  ...newErrors[index],
-                                                  outstanding: 'Only numbers are allowed'
-                                                };
-                                                return newErrors;
-                                              });
-                                            }
-                                          }}
-                                          className={invoiceDetailsError[index]?.outstanding ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {invoiceDetailsError[index]?.outstanding && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {invoiceDetailsError[index].outstanding}
-                                          </div>
-                                        )}
-                                      </td>
-                                      <td className="border px-2 py-2">
-                                        <input
-                                          type="text"
-                                          value={row.settled}
-                                          disabled={formData.status === 'SUBMIT' || (!formData.receiptAmt || parseFloat(formData.receiptAmt) === 0)}
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.amount}
+                                      disabled
+                                      onChange={(e) => {
+                                        const value = e.target.value;
+                                        const isNumeric = /^[0-9.]*$/;
+                                        if (isNumeric.test(value)) {
+                                          setInVoiceDetailsData((prev) => prev.map((r) => (r.id === row.id ? { ...r, amount: value } : r)));
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], amount: !value ? 'Bill Amount is required' : '' };
+                                            return newErrors;
+                                          });
+                                        } else {
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], amount: 'Only numbers are allowed' };
+                                            return newErrors;
+                                          });
+                                        }
+                                      }}
+                                      className={invoiceDetailsError[index]?.amount ? 'error form-control' : 'form-control'}
+                                      style={{ width: '150px' }}
+                                    />
+                                    {invoiceDetailsError[index]?.amount && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {invoiceDetailsError[index].amount}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.gstAmt}
+                                      disabled
+                                      onChange={(e) => {
+                                        const value = e.target.value;
+                                        const isNumeric = /^[0-9]*$/;
+                                        if (isNumeric.test(value)) {
+                                          setInVoiceDetailsData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, gstAmt: value } : r))
+                                          );
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], gstAmt: !value ? 'Tax Amt is required' : '' };
+                                            return newErrors;
+                                          });
+                                        } else {
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              gstAmt: 'Only numbers are allowed'
+                                            };
+                                            return newErrors;
+                                          });
+                                        }
+                                      }}
+                                      className={invoiceDetailsError[index]?.gstAmt ? 'error form-control' : 'form-control'}
+                                      style={{ width: '150px' }}
+                                    />
+                                    {invoiceDetailsError[index]?.gstAmt && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {invoiceDetailsError[index].gstAmt}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.tds}
+                                      disabled={formData.status === 'SUBMIT'}
+                                      onChange={(e) => {
+                                        const value = e.target.value;
+                                        const isNumeric = /^[0-9]*$/;
+                                        if (isNumeric.test(value)) {
+                                          setInVoiceDetailsData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, tds: value } : r))
+                                          );
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              tds: !value ? 'TDS is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        } else {
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              tds: 'Only numbers are allowed'
+                                            };
+                                            return newErrors;
+                                          });
+                                        }
+                                      }}
+                                      className={invoiceDetailsError[index]?.tds ? 'error form-control' : 'form-control'}
+                                      style={{ width: '150px' }}
+                                    />
+                                    {invoiceDetailsError[index]?.tds && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {invoiceDetailsError[index].tds}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.chargeAmt}
+                                      disabled
+                                      onChange={(e) => {
+                                        const value = e.target.value;
+                                        const isNumeric = /^[0-9]*$/;
+                                        if (isNumeric.test(value)) {
+                                          setInVoiceDetailsData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, chargeAmt: value } : r))
+                                          );
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], chargeAmt: 'Only numbers are allowed' };
+                                            return newErrors;
+                                          });
+                                        } else {
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              chargeAmt: 'Only numbers are allowed'
+                                            };
+                                            return newErrors;
+                                          });
+                                        }
+                                      }}
+                                      className={invoiceDetailsError[index]?.chargeAmt ? 'error form-control' : 'form-control'}
+                                      style={{ width: '150px' }}
+                                    />
+                                    {invoiceDetailsError[index]?.chargeAmt && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {invoiceDetailsError[index].chargeAmt}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.outstanding}
+                                      disabled={!!editId}
+                                      onChange={(e) => {
+                                        const value = e.target.value;
+                                        const isNumeric = /^[0-9]*$/;
+                                        if (isNumeric.test(value)) {
+                                          setInVoiceDetailsData((prev) =>
+                                            prev.map((r) => (r.id === row.id ? { ...r, outstanding: value } : r))
+                                          );
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              outstanding: !value ? 'Outstanding is required' : ''
+                                            };
+                                            return newErrors;
+                                          });
+                                        } else {
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = {
+                                              ...newErrors[index],
+                                              outstanding: 'Only numbers are allowed'
+                                            };
+                                            return newErrors;
+                                          });
+                                        }
+                                      }}
+                                      className={invoiceDetailsError[index]?.outstanding ? 'error form-control' : 'form-control'}
+                                      style={{ width: '150px' }}
+                                    />
+                                    {invoiceDetailsError[index]?.outstanding && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {invoiceDetailsError[index].outstanding}
+                                      </div>
+                                    )}
+                                  </td>
+                                  <td className="border px-2 py-2">
+                                    <input
+                                      type="text"
+                                      value={row.settled}
+                                      disabled={formData.status === 'SUBMIT' || (!formData.receiptAmt || parseFloat(formData.receiptAmt) === 0)}
 
-                                          onChange={(e) => {
-                                            const value = e.target.value;
-                                            const isNumeric = /^[0-9.]*$/;
-                                            if (!isNumeric.test(value)) {
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], settled: 'Only numbers are allowed' };
-                                                return newErrors;
-                                              });
-                                              return;
-                                            }
+                                      onChange={(e) => {
+                                        const value = e.target.value;
+                                        const isNumeric = /^[0-9.]*$/;
+                                        if (!isNumeric.test(value)) {
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], settled: 'Only numbers are allowed' };
+                                            return newErrors;
+                                          });
+                                          return;
+                                        }
 
-                                            const newValue = parseFloat(value || 0);
-                                            const totalOtherSettled = inVoiceDetailsData.reduce((sum, r) =>
-                                              r.id !== row.id ? sum + parseFloat(r.settled || 0) : sum, 0
-                                            );
-                                            const totalSettledAfterChange = totalOtherSettled + newValue;
-                                            const maxReceiptAmt = parseFloat(formData.receiptAmt || 0);
-                                            const maxChargeAmt = parseFloat(row.chargeAmt || 0);
+                                        const newValue = parseFloat(value || 0);
+                                        const totalOtherSettled = inVoiceDetailsData.reduce((sum, r) =>
+                                          r.id !== row.id ? sum + parseFloat(r.settled || 0) : sum, 0
+                                        );
+                                        const totalSettledAfterChange = totalOtherSettled + newValue;
+                                        const maxReceiptAmt = parseFloat(formData.receiptAmt || 0);
+                                        const maxChargeAmt = parseFloat(row.chargeAmt || 0);
 
-                                            let errorMsg = '';
-                                            if (newValue > maxChargeAmt) {
-                                              errorMsg = `Settled cannot exceed Net Receivable (${maxChargeAmt})`;
-                                            } else if (totalSettledAfterChange > maxReceiptAmt) {
-                                              errorMsg = `Total settled exceeds Receipt Amount (${maxReceiptAmt})`;
-                                            }
-                                            if (errorMsg) {
-                                              setInvoiceDetailsError((prev) => {
-                                                const newErrors = [...prev];
-                                                newErrors[index] = { ...newErrors[index], settled: errorMsg };
-                                                return newErrors;
-                                              });
-                                              return;
-                                            }
-                                            setInVoiceDetailsData((prev) =>
-                                              prev.map((r) => (r.id === row.id ? { ...r, settled: value } : r))
-                                            );
-                                            setInvoiceDetailsError((prev) => {
-                                              const newErrors = [...prev];
-                                              newErrors[index] = { ...newErrors[index], settled: '' };
-                                              return newErrors;
-                                            });
-                                          }}
-                                          className={invoiceDetailsError[index]?.settled ? 'error form-control' : 'form-control'}
-                                          style={{ width: '150px' }}
-                                        />
-                                        {invoiceDetailsError[index]?.settled && (
-                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                            {invoiceDetailsError[index].settled}
-                                          </div>
-                                        )}
-                                      </td>
-                                    </tr>
-                                  ))}
-                                </tbody>
-                              </table>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </Box>
-                  <Box>
-                    {value === 1 && (
-                      <div>
-                        <div className="row d-flex mt-4">
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="netAmount"
-                                name="netAmount"
-                                label="Net Amount"
-                                disabled
-                                size="small"
-                                value={formData.netAmount}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                                error={!!fieldErrors.netAmount}
-                                helperText={fieldErrors.netAmount}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="onAccount"
-                                name="onAccount"
-                                label="On Account"
-                                disabled
-                                size="small"
-                                value={formData.onAccount}
-                                onChange={(newValue) => setFormData({ ...formData, onAccount: newValue })}
-                                inputProps={{ maxLength: 30 }}
-                                error={!!fieldErrors.onAccount}
-                                helperText={fieldErrors.onAccount}
-                              />
-                            </FormControl>
-                          </div>
-                          <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
-                              <TextField
-                                id="remarks"
-                                name="remarks"
-                                label="Remarks"
-                                size="small"
-                                disabled={formData.status === 'SUBMIT'}
-                                value={formData.remarks}
-                                onChange={handleInputChange}
-                                inputProps={{ maxLength: 30 }}
-                                error={!!fieldErrors.remarks}
-                                helperText={fieldErrors.remarks}
-                              />
-                            </FormControl>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </Box>
-                  <Dialog
-                    open={modalOpen}
-                    maxWidth={'md'}
-                    fullWidth={true}
-                    onClose={handleCloseModal}
-                    PaperComponent={PaperComponent}
-                    aria-labelledby="draggable-dialog-title"
-                  >
-                    <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
-                      <h6>Grid Details</h6>
-                    </DialogTitle>
-                    <DialogContent className="pb-0">
-                      <div className="row">
-                        <div className="col-lg-12">
-                          <div className="table-responsive">
-                            <table className="table table-bordered">
-                              <thead>
-                                <tr style={{ backgroundColor: '#673AB7' }}>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
-                                    <Checkbox sx={{
-                                      color: 'white',
-                                      '&.Mui-checked': {
-                                        color: 'white',
-                                      },
-                                    }}
-                                      checked={selectAll} onChange={handleSelectAll} />
-                                  </th>
-                                  <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
-                                    S.No
-                                  </th>
-                                  <th className="table-header"># Invoice</th>
-                                  <th className="table-header">Date</th>
-                                  <th className="table-header">Bill Amount</th>
-                                  <th className="table-header">Tax</th>
-                                  <th className="table-header">Net Receivable</th>
+                                        let errorMsg = '';
+                                        if (newValue > maxChargeAmt) {
+                                          errorMsg = `Settled cannot exceed Net Receivable (${maxChargeAmt})`;
+                                        } else if (totalSettledAfterChange > maxReceiptAmt) {
+                                          errorMsg = `Total settled exceeds Receipt Amount (${maxReceiptAmt})`;
+                                        }
+                                        if (errorMsg) {
+                                          setInvoiceDetailsError((prev) => {
+                                            const newErrors = [...prev];
+                                            newErrors[index] = { ...newErrors[index], settled: errorMsg };
+                                            return newErrors;
+                                          });
+                                          return;
+                                        }
+                                        setInVoiceDetailsData((prev) =>
+                                          prev.map((r) => (r.id === row.id ? { ...r, settled: value } : r))
+                                        );
+                                        setInvoiceDetailsError((prev) => {
+                                          const newErrors = [...prev];
+                                          newErrors[index] = { ...newErrors[index], settled: '' };
+                                          return newErrors;
+                                        });
+                                      }}
+                                      className={invoiceDetailsError[index]?.settled ? 'error form-control' : 'form-control'}
+                                      style={{ width: '150px' }}
+                                    />
+                                    {invoiceDetailsError[index]?.settled && (
+                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                        {invoiceDetailsError[index].settled}
+                                      </div>
+                                    )}
+                                  </td>
                                 </tr>
-                              </thead>
-                              <tbody>
-                                {fillGridData?.map((row, index) => (
-                                  <tr key={row.id}>
-                                    <td className="border p-0 text-center">
-                                      <Checkbox
-                                        sx={{
-                                          // borderColor: 'white',
-                                          // color: 'white'
-                                          backgroundColor: 'white'
-                                        }}
-                                        checked={selectedRows.includes(index)}
-                                        onChange={(e) => {
-                                          const isChecked = e.target.checked;
-                                          setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
-                                        }}
-                                      />
-                                    </td>
-                                    <td className="text-center">{index + 1}</td>
-                                    <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                      {row.vid || ''}
-                                    </td>
-                                    <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                      {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : ''}
-                                    </td>
-                                    <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                      {row.billamount || ''}
-                                    </td>
-                                    <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                      {row.gstamount || ''}
-                                    </td>
-                                    <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                      {row.chargeAmt || 0}
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
+                              ))}
+                            </tbody>
+                          </table>
                         </div>
                       </div>
-                    </DialogContent>
-                    <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
-                      <Button onClick={handleCloseModal} sx={{ color: '#673AB7' }}>
-                        Cancel
-                      </Button>
-                      <Button
-                        color="secondary"
-                        onClick={handleSubmitSelectedRows}
-                        variant="contained"
-                        sx={{ backgroundColor: '#673AB7' }}
-                      >
-                        Proceed
-                      </Button>
-                    </DialogActions>
-                  </Dialog>
-                </>
-            }
+                    </div>
+                  </div>
+                )}
+              </Box>
+              <Box>
+                {value === 1 && (
+                  <div>
+                    <div className="row d-flex mt-4">
+                      <div className="col-md-3 mb-3">
+                        <FormControl fullWidth variant="filled">
+                          <TextField
+                            id="netAmount"
+                            name="netAmount"
+                            label="Net Amount"
+                            disabled
+                            size="small"
+                            value={formData.netAmount}
+                            onChange={handleInputChange}
+                            inputProps={{ maxLength: 30 }}
+                            error={!!fieldErrors.netAmount}
+                            helperText={fieldErrors.netAmount}
+                          />
+                        </FormControl>
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <FormControl fullWidth variant="filled">
+                          <TextField
+                            id="onAccount"
+                            name="onAccount"
+                            label="On Account"
+                            disabled
+                            size="small"
+                            value={formData.onAccount}
+                            onChange={(newValue) => setFormData({ ...formData, onAccount: newValue })}
+                            inputProps={{ maxLength: 30 }}
+                            error={!!fieldErrors.onAccount}
+                            helperText={fieldErrors.onAccount}
+                          />
+                        </FormControl>
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <FormControl fullWidth variant="filled">
+                          <TextField
+                            id="remarks"
+                            name="remarks"
+                            label="Remarks"
+                            size="small"
+                            disabled={formData.status === 'SUBMIT'}
+                            value={formData.remarks}
+                            onChange={handleInputChange}
+                            inputProps={{ maxLength: 30 }}
+                            error={!!fieldErrors.remarks}
+                            helperText={fieldErrors.remarks}
+                          />
+                        </FormControl>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </Box>
+              <Dialog
+                open={modalOpen}
+                maxWidth={'md'}
+                fullWidth={true}
+                onClose={handleCloseModal}
+                PaperComponent={PaperComponent}
+                aria-labelledby="draggable-dialog-title"
+              >
+                <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
+                  <h6>Grid Details</h6>
+                </DialogTitle>
+                <DialogContent className="pb-0">
+                  <div className="row">
+                    <div className="col-lg-12">
+                      <div className="table-responsive">
+                        <table className="table table-bordered">
+                          <thead>
+                            <tr style={{ backgroundColor: '#673AB7' }}>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
+                                <Checkbox sx={{
+                                  color: 'white',
+                                  '&.Mui-checked': {
+                                    color: 'white',
+                                  },
+                                }}
+                                  checked={selectAll} onChange={handleSelectAll} />
+                              </th>
+                              <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
+                                S.No
+                              </th>
+                              <th className="table-header"># Invoice</th>
+                              <th className="table-header">Date</th>
+                              <th className="table-header">Bill Amount</th>
+                              <th className="table-header">Tax</th>
+                              <th className="table-header">Net Receivable</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {fillGridData?.map((row, index) => (
+                              <tr key={row.id}>
+                                <td className="border p-0 text-center">
+                                  <Checkbox
+                                    sx={{
+                                      // borderColor: 'white',
+                                      // color: 'white'
+                                      backgroundColor: 'white'
+                                    }}
+                                    checked={selectedRows.includes(index)}
+                                    onChange={(e) => {
+                                      const isChecked = e.target.checked;
+                                      setSelectedRows((prev) => (isChecked ? [...prev, index] : prev.filter((i) => i !== index)));
+                                    }}
+                                  />
+                                </td>
+                                <td className="text-center">{index + 1}</td>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                  {row.vid || ''}
+                                </td>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                  {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : ''}
+                                </td>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                  {row.billamount || ''}
+                                </td>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                  {row.gstamount || ''}
+                                </td>
+                                <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                  {row.chargeAmt || 0}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </DialogContent>
+                <DialogActions sx={{ p: '1.25rem' }} className="pt-0">
+                  <Button onClick={handleCloseModal} sx={{ color: '#673AB7' }}>
+                    Cancel
+                  </Button>
+                  <Button
+                    color="secondary"
+                    onClick={handleSubmitSelectedRows}
+                    variant="contained"
+                    sx={{ backgroundColor: '#673AB7' }}
+                  >
+                    Proceed
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </>
+            {/* } */}
           </>
         )}
       </div >

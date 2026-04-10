@@ -269,9 +269,13 @@ const ARadjustmentOffset = () => {
         'get',
         `/aradjustmentoffset/getArAdjustmentOffSetDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
+
+      const { arAdjustmentOffSetDocId, docDate } = response.paramObjectsMap;
+
       setFormData((prevData) => ({
         ...prevData,
-        docNo: response.paramObjectsMap.arAdjustmentOffSetDocId
+        docNo: arAdjustmentOffSetDocId,
+        docDate: docDate ? dayjs(docDate) : null
       }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);

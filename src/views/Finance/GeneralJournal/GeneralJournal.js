@@ -95,19 +95,19 @@ const GeneralJournal = () => {
     }
   ]);
   const getCurrencyandExRate = async () => {
-  try {
-    const response = await apiCalls('get', `transaction/getCurrencyAndExrateDetails?orgId=${orgId}`);
-    if (response.status === true) {
-      setCurrencies(response.paramObjectsMap.currencyVO);
-    } else {
-      console.error('API Error:', response);
-      return response;
+    try {
+      const response = await apiCalls('get', `transaction/getCurrencyAndExrateDetails?orgId=${orgId}`);
+      if (response.status === true) {
+        setCurrencies(response.paramObjectsMap.currencyVO);
+      } else {
+        console.error('API Error:', response);
+        return response;
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      return error;
     }
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    return error;
-  }
-};
+  };
   useEffect(() => {
     getCurrencyandExRate();
     getGeneralJournalDocId();
@@ -132,10 +132,13 @@ const GeneralJournal = () => {
         'get',
         `/transaction/getGeneralJournalDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
+
+      const { generalJournalDocId, docDate } = response.paramObjectsMap;
+
       setFormData((prevData) => ({
         ...prevData,
-        docId: response.paramObjectsMap.generalJournalDocId,
-        docDate: dayjs()
+        docId: generalJournalDocId,
+        docDate: docDate ? dayjs(docDate) : null
       }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -212,7 +215,7 @@ const GeneralJournal = () => {
     try {
       const response = await apiCalls('get', `/transaction/getSubLedgerNameFromPartyMaster?accountName=${accountName}&OrgId=${orgId}`);
       console.log('API Response:', response);
-  
+
       if (response.status === true) {
         const updatedData = [...detailsTableData];
         updatedData[rowIndex].subledgerNameOptions = response.paramObjectsMap.GeneralJournalVO || [];
@@ -235,7 +238,7 @@ const GeneralJournal = () => {
     updatedData[rowIndex].subledgerNameOptions = [];
     setDetailsTableData(updatedData);
     getSubledgerName(selectedAccountName, rowIndex);
-  }; 
+  };
   // const handleSubledgerChange = (e, rowIndex) => {
   //   const selectedSubledgerName = e.target.value;
   //   const updatedData = [...detailsTableData];
@@ -244,15 +247,15 @@ const GeneralJournal = () => {
   //     (option) => option.subLedgerName === selectedSubledgerName
   //   );
   // console.log("Subledger",selectedSubledgerName);
-  
+
   //   updatedData[rowIndex].subledgerName = selectedSubledgerName;
   //   updatedData[rowIndex].subLedgerCode = selectedOption?.subLedgerCode || '';
-  
+
   //   setDetailsTableData(updatedData);
   // };
   const handleSubledgerChange = (selectedOption, rowIndex) => {
     const updatedData = [...detailsTableData];
-  
+
     if (selectedOption) {
       updatedData[rowIndex].subledgerName = selectedOption.subLedgerName;
       updatedData[rowIndex].subLedgerCode = selectedOption.subLedgerCode;
@@ -260,7 +263,7 @@ const GeneralJournal = () => {
       updatedData[rowIndex].subledgerName = '';
       updatedData[rowIndex].subLedgerCode = '';
     }
-  
+
     setDetailsTableData(updatedData);
   };
   const handleDebitChange = (e, row, index) => {
@@ -280,7 +283,7 @@ const GeneralJournal = () => {
   };
   const handleCreditChange = (e, row, index) => {
     const value = e.target.value;
-console.log("Creditamt", value);
+    console.log("Creditamt", value);
     if (/^\d{0,20}$/.test(value)) {
       setDetailsTableData((prev) => prev.map((r) => (r.id === row.id ? { ...r, creditAmount: value, debitAmount: value ? 0 : '' } : r)));
 
@@ -295,7 +298,7 @@ console.log("Creditamt", value);
     }
   };
   const handleSelectCurrency = (e) => {
-    const value = e.target.value;  
+    const value = e.target.value;
     console.log('Selected Currency value:', value);
     currencies.forEach((curr, index) => {
       console.log(`Currency ${index}:`, curr);
@@ -311,8 +314,8 @@ console.log("Creditamt", value);
       }));
       setFieldErrors((prevErrors) => ({
         ...prevErrors,
-        currency:'',
-        exRate:''
+        currency: '',
+        exRate: ''
       }));
     } else {
       console.log('No Currency found', value);
@@ -389,7 +392,7 @@ console.log("Creditamt", value);
       creditAmount: '',
       narration: '',
       subledgerName: '',
-    subledgerNameOptions: []
+      subledgerNameOptions: []
     };
     setDetailsTableData([...detailsTableData, newRow]);
     setDetailsTableErrors([...detailsTableErrors, { accountName: '', subLedgerCode: '', subledgerName: '' }]);
@@ -760,49 +763,49 @@ console.log("Creditamt", value);
                                       </td>
                                       <td>
                                         <select
-                                        value={row.accountName}
-                                        style={{ width: '150px' }}
-                                        // disabled={formData.status === 'TAX'}
-                                        onChange={(e) => handleAccountNameChange(e, index)}
-                                        className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
-                                      >
-                                        <option value="">--Select--</option>
-                                        {allAccountName &&
-                                          allAccountName.map((currency) => (
-                                            <option key={currency.id} value={currency.accountName}>
-                                              {currency.accountName}
-                                            </option>
-                                          ))}
+                                          value={row.accountName}
+                                          style={{ width: '150px' }}
+                                          // disabled={formData.status === 'TAX'}
+                                          onChange={(e) => handleAccountNameChange(e, index)}
+                                          className={detailsTableErrors[index]?.accountName ? 'error form-control' : 'form-control'}
+                                        >
+                                          <option value="">--Select--</option>
+                                          {allAccountName &&
+                                            allAccountName.map((currency) => (
+                                              <option key={currency.id} value={currency.accountName}>
+                                                {currency.accountName}
+                                              </option>
+                                            ))}
                                         </select>
-                                    {detailsTableErrors[index]?.accountName && (
-                                      <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                        {detailsTableErrors[index].accountName}
-                                      </div>
-                                    )}
-                                      </td>
-                                     <td className="border px-2 py-2">
-                                      <Autocomplete
-                                        options={row.subledgerNameOptions || []}
-                                        getOptionLabel={(option) => option.subLedgerName || ''}
-                                        value={
-                                          row.subledgerNameOptions?.find(
-                                            (option) => option.subLedgerName === row.subledgerName
-                                          ) || null
-                                        }
-                                        onChange={(event, newValue) => {
-                                          handleSubledgerChange(newValue, index);
-                                        }}
-                                        renderInput={(params) => (
-                                          <TextField
-                                            {...params}
-                                            placeholder="Select Subledger"
-                                            size="small"
-                                            error={!!detailsTableErrors[index]?.subledgerName}
-                                            helperText={detailsTableErrors[index]?.subledgerName}
-                                          />
+                                        {detailsTableErrors[index]?.accountName && (
+                                          <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                            {detailsTableErrors[index].accountName}
+                                          </div>
                                         )}
-                                      />
-                                    </td>
+                                      </td>
+                                      <td className="border px-2 py-2">
+                                        <Autocomplete
+                                          options={row.subledgerNameOptions || []}
+                                          getOptionLabel={(option) => option.subLedgerName || ''}
+                                          value={
+                                            row.subledgerNameOptions?.find(
+                                              (option) => option.subLedgerName === row.subledgerName
+                                            ) || null
+                                          }
+                                          onChange={(event, newValue) => {
+                                            handleSubledgerChange(newValue, index);
+                                          }}
+                                          renderInput={(params) => (
+                                            <TextField
+                                              {...params}
+                                              placeholder="Select Subledger"
+                                              size="small"
+                                              error={!!detailsTableErrors[index]?.subledgerName}
+                                              helperText={detailsTableErrors[index]?.subledgerName}
+                                            />
+                                          )}
+                                        />
+                                      </td>
                                       <td className="border px-2 py-2">
                                         <input
                                           type="text"

@@ -435,9 +435,13 @@ const UrCostInvoicegna = ({ selectedRow }) => {
         'get',
         `/UrCostInvoiceGna/getUrCostInvoiceGnaDocId?branch=${branch}&branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`
       );
+
+      const { urCostInvoiceGnaDocId, docDate } = response.paramObjectsMap;
+
       setFormData((prevData) => ({
         ...prevData,
-        docId: response.paramObjectsMap.urCostInvoiceGnaDocId
+        docId: urCostInvoiceGnaDocId,
+        docDate: docDate ? dayjs(docDate) : null
       }));
     } catch (error) {
       console.error('Error fetching Doc No:', error);
