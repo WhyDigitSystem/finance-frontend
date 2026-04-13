@@ -15,7 +15,7 @@ import dayjs from 'dayjs';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Button, ButtonGroup } from '@mui/material';
 import { showToast } from 'utils/toast-component';
-import CommonReportTable from 'utils/CommonReportTable';
+import CMRT2 from 'utils/CMRT2';
 import CloseIcon from '@mui/icons-material/Close';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -70,7 +70,7 @@ const TDSRegister = () => {
     },
     {
       accessorKey: 'docDate',
-      header: 'Doc Date',
+      header: 'Date',
       size: 110,
       Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
       muiTableHeadCellProps: {
@@ -84,46 +84,96 @@ const TDSRegister = () => {
         }
       }
     },
-    {
-      accessorKey: 'refNo',
-      header: 'Ref No',
-      size: 110,
-      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
-      muiTableHeadCellProps: {
-        align: 'center',
-        sx: {
-          backgroundColor: '#34449B',
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: '0.875rem',
-          padding: '12px 8px'
-        }
-      }
-    },
-    {
-      accessorKey: 'refDate',
-      header: 'Ref Date',
-      size: 110,
-      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
-      muiTableHeadCellProps: {
-        align: 'center',
-        sx: {
-          backgroundColor: '#34449B',
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: '0.875rem',
-          padding: '12px 8px'
-        }
-      }
-    },
+    // {
+    //   accessorKey: 'refNo',
+    //   header: 'Ref No',
+    //   size: 110,
+    //   Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
+    //   muiTableHeadCellProps: {
+    //     align: 'center',
+    //     sx: {
+    //       backgroundColor: '#34449B',
+    //       color: 'white',
+    //       fontWeight: 'bold',
+    //       fontSize: '0.875rem',
+    //       padding: '12px 8px'
+    //     }
+    //   }
+    // },
+    // {
+    //   accessorKey: 'refDate',
+    //   header: 'Ref Date',
+    //   size: 110,
+    //   Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
+    //   muiTableHeadCellProps: {
+    //     align: 'center',
+    //     sx: {
+    //       backgroundColor: '#34449B',
+    //       color: 'white',
+    //       fontWeight: 'bold',
+    //       fontSize: '0.875rem',
+    //       padding: '12px 8px'
+    //     }
+    //   }
+    // },
 
     {
       accessorKey: 'customerName',
       header: 'Customer Name',
       size: 110,
-      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
+      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || ''}</div>,
       muiTableHeadCellProps: {
         align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+     {
+      accessorKey: 'billAmount',
+      header: 'Bill Amt',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null && cell.getValue() !== 0
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+              })
+            : ''}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+     {
+      accessorKey: 'tdsPercentage',
+      header: 'TDS %',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null && cell.getValue() !== 0
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+              })
+            : ''}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
         sx: {
           backgroundColor: '#34449B',
           color: 'white',
@@ -139,12 +189,12 @@ const TDSRegister = () => {
       size: 90,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', padding: '8px' }}>
-          {cell.getValue() !== undefined && cell.getValue() !== null
+          {cell.getValue() !== undefined && cell.getValue() !== null && cell.getValue() !== 0
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
+                minimumFractionDigits: 0,
                 maximumFractionDigits: 2
               })
-            : '-'}
+            : ''}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -938,7 +988,7 @@ const TDSRegister = () => {
         </DialogTitle>
         <DialogContent sx={{ padding: 0 }}>
           {getData && getData.length > 0 ? (
-            <CommonReportTable
+            <CMRT2
               data={getData}
               columns={reportColumns}
               fileName={'TDS Register'}
@@ -954,7 +1004,7 @@ const TDSRegister = () => {
       </Dialog>
       {listView && (
         <div className="mt-4">
-          <CommonReportTable
+          <CMRT2
             data={getData}
             columns={reportColumns}
             fileName={'TDS Register'}

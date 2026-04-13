@@ -11,7 +11,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import ClearIcon from '@mui/icons-material/Clear';
 import SearchIcon from '@mui/icons-material/Search';
 import ActionButton from 'utils/ActionButton';
-import CommonReportTable from 'utils/CommonReportTable';
+import CMRT2 from 'utils/CMRT2';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
 import dayjs from 'dayjs';
 import apiCalls from 'apicall';
@@ -66,7 +66,7 @@ const GSTRegister = () => {
     },
     {
       accessorKey: 'docDate',
-      header: 'Doc Date',
+      header: 'Date',
       size: 110,
       Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
       muiTableHeadCellProps: {
@@ -177,38 +177,38 @@ const GSTRegister = () => {
     //     }
     //   }
     // },
-    {
-      accessorKey: 'currency',
-      header: 'Currency',
-      size: 110,
-      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
-      muiTableHeadCellProps: {
-        align: 'center',
-        sx: {
-          backgroundColor: '#34449B',
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: '0.875rem',
-          padding: '12px 8px'
-        }
-      }
-    },
-    {
-      accessorKey: 'exRate',
-      header: 'Ex Rate',
-      size: 110,
-      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
-      muiTableHeadCellProps: {
-        align: 'center',
-        sx: {
-          backgroundColor: '#34449B',
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: '0.875rem',
-          padding: '12px 8px'
-        }
-      }
-    },
+    // {
+    //   accessorKey: 'currency',
+    //   header: 'Currency',
+    //   size: 110,
+    //   Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
+    //   muiTableHeadCellProps: {
+    //     align: 'center',
+    //     sx: {
+    //       backgroundColor: '#34449B',
+    //       color: 'white',
+    //       fontWeight: 'bold',
+    //       fontSize: '0.875rem',
+    //       padding: '12px 8px'
+    //     }
+    //   }
+    // },
+    // {
+    //   accessorKey: 'exRate',
+    //   header: 'Ex Rate',
+    //   size: 110,
+    //   Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
+    //   muiTableHeadCellProps: {
+    //     align: 'center',
+    //     sx: {
+    //       backgroundColor: '#34449B',
+    //       color: 'white',
+    //       fontWeight: 'bold',
+    //       fontSize: '0.875rem',
+    //       padding: '12px 8px'
+    //     }
+    //   }
+    // },
 
     {
       accessorKey: 'billAmount',
@@ -216,12 +216,37 @@ const GSTRegister = () => {
       size: 90,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', padding: '8px' }}>
-          {cell.getValue() !== undefined && cell.getValue() !== null
+          {cell.getValue() !== undefined && cell.getValue() !== null &&  cell.getValue() !== 0
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
+                minimumFractionDigits: 0,
                 maximumFractionDigits: 2
               })
-            : '-'}
+            : ''}
+        </div>
+      ),
+      muiTableHeadCellProps: {
+        align: 'right',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'totalAmountLc',
+      header: 'Total Amt',
+      size: 90,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', padding: '8px' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null && cell.getValue() !== 0
+            ? Number(cell.getValue()).toLocaleString('en-IN', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 2
+              })
+            : ''}
         </div>
       ),
       muiTableHeadCellProps: {
@@ -238,7 +263,7 @@ const GSTRegister = () => {
 
     {
       accessorKey: 'chargeAmount',
-      header: 'Charge Amt',
+      header: 'Taxable Amt',
       size: 90,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', padding: '8px' }}>
@@ -265,7 +290,7 @@ const GSTRegister = () => {
       accessorKey: 'gstPercent',
       header: 'Gst %',
       size: 110,
-      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
+      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || ''}</div>,
       muiTableHeadCellProps: {
         align: 'center',
         sx: {
@@ -284,9 +309,9 @@ const GSTRegister = () => {
       size: 90,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', padding: '8px' }}>
-          {cell.getValue() !== undefined && cell.getValue() !== null
+          {cell.getValue() !== undefined && cell.getValue() !== null && cell.getValue() !== 0
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
+                minimumFractionDigits: 0,
                 maximumFractionDigits: 2
               })
             : '-'}
@@ -304,31 +329,7 @@ const GSTRegister = () => {
       }
     },
 
-    {
-      accessorKey: 'totalAmountLc',
-      header: 'Total Amt',
-      size: 90,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'right', padding: '8px' }}>
-          {cell.getValue() !== undefined && cell.getValue() !== null
-            ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
-            : '-'}
-        </div>
-      ),
-      muiTableHeadCellProps: {
-        align: 'right',
-        sx: {
-          backgroundColor: '#34449B',
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: '0.875rem',
-          padding: '12px 8px'
-        }
-      }
-    }
+    
   ];
 
   const costColumns = [
@@ -1064,7 +1065,7 @@ const GSTRegister = () => {
         </DialogContent> */}
         <DialogContent sx={{ padding: 0 }}>
           {getData && getData.length > 0 ? (
-            <CommonReportTable
+            <CMRT2
               data={getData}
               columns={reportColumns}
               fileName={'GST Register'}
@@ -1082,7 +1083,7 @@ const GSTRegister = () => {
       {/* Optional list view */}
       {listView && (
         <div className="mt-4">
-          <CommonReportTable
+          <CMRT2
             data={getData}
             columns={reportColumns}
             fileName={'GST Register'}
