@@ -276,6 +276,12 @@ const Withdrawal = () => {
       console.log('docid working');
 
       setDocId(response.paramObjectsMap.bankingWithdrawalDocId);
+       setFormData((prevData) => ({
+              ...prevData,
+              docDate: dayjs(response.paramObjectsMap.docDate)
+            }));
+
+
     } catch (error) {
       console.error('Error fetching gate passes:', error);
     }

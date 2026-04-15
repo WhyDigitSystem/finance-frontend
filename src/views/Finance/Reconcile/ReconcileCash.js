@@ -167,8 +167,8 @@ const ReconcileCash = () => {
     console.log('FormData=>', formData);
 
     const newFormdata = {
-      docId: formData.docId,
-      docDate: formData.docDate ? dayjs(formData.docDate).format('YYYY-MM-DD') : null,
+      // docId: formData.docId,
+      // docDate: formData.docDate ? dayjs(formData.docDate).format('YYYY-MM-DD') : null,
       ...(editId && { id: editId }),
       active: true,
       balanceAsPerBooks: formData.balanceAsPerBooks,
@@ -359,7 +359,7 @@ const ReconcileCash = () => {
       setFormData((prevData) => ({
         ...prevData,
         docId: response.paramObjectsMap.reconcileCashDocId,
-        docDate: dayjs()
+        docDate: dayjs(response.paramObjectsMap.docDate)
       }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);

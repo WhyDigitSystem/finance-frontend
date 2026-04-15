@@ -96,7 +96,7 @@ const Reconcile = () => {
       setFormData((prevData) => ({
         ...prevData,
         docId: response.paramObjectsMap.reconcileBankDocId,
-        docDate: dayjs()
+        docDate: dayjs(response.paramObjectsMap.docDate)
       }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -367,6 +367,7 @@ const Reconcile = () => {
   // };
 
   // Delete row handler
+  
   const handleDeleteRow = (rowId) => {
     setWithdrawalsTableData((prev) => prev.filter((row) => row.id !== rowId));
   };
@@ -437,10 +438,10 @@ const Reconcile = () => {
           detailsTableDataValid = false;
         }
 
-        if (row.active === undefined || row.active === null) {
-          rowErrors.active = 'Active is required';
-          detailsTableDataValid = false;
-        }
+        // if (row.active === undefined || row.active === null) {
+        //   rowErrors.active = 'Active is required';
+        //   detailsTableDataValid = false;
+        // }
 
         return rowErrors;
       });
@@ -513,7 +514,7 @@ const Reconcile = () => {
       const result = await apiCalls('get', `/transaction/getAllReconcileBankById?id=${row.original.id}`);
 
       if (result) {
-        const listValueVO = result.paramObjectsMap.reconcileBankVO[0];
+        const listValueVO = result.paramObjectsMap.reconcileBankVO;
         setEditId(row.original.id);
 
         setFormData({

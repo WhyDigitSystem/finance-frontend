@@ -39,6 +39,7 @@ const FundTransfer = () => {
   const [formData, setFormData] = useState({
     mode: '',
     docNo: '',
+    docDate: dayjs(),
     corpAccount: '',
     currency: '',
     exRate: '',
@@ -55,12 +56,17 @@ const FundTransfer = () => {
     corpAccount: '',
     currency: '',
     exRate: '',
+    corpAccount: '',
+    currency: '',
+    exRate: '',
     transferTo: '',
     branchAcc: '',
     amount: '',
     amtBase: '',
     narration: ''
   });
+
+ 
 
   const listViewColumns = [
     { accessorKey: 'mode', header: 'Mode', size: 140 },
@@ -275,7 +281,11 @@ const FundTransfer = () => {
       console.log('API Response:', response);
 
       if (response.status === true) {
-        setDocId(response.paramObjectsMap.fundTransferDocId);
+        setDocId(response.paramObjectsMap.fundTranferDocId);
+        setFormData((prevData) => ({
+          ...prevData,
+          docDate: dayjs(response.paramObjectsMap.docDate)
+        }));
       } else {
         console.error('API Error:', response);
       }
@@ -448,8 +458,8 @@ const FundTransfer = () => {
                 <FormControl fullWidth>
                   <LocalizationProvider dateAdapter={AdapterDayjs}>
                     <DatePicker
-                      label="Date"
-                      value={dayjs()}
+                      label="Doc Date"
+                      value={formData.docDate ? dayjs(formData.docDate) : null}
                       disabled
                       slotProps={{
                         textField: { size: 'small', clearable: true }
