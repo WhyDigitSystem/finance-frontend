@@ -533,7 +533,6 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       const logoWidth = 18;
       let logoHeight = 0;
 
-      // doc.setFont('timesnewroman', 'normal');
       doc.setFontSize(10);
 
       if (logoData) {
@@ -544,13 +543,15 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
 
       const textX = padding + (logoData ? logoWidth + 5 : padding);
       let textY = headerY + 3;
+
       doc.setFontSize(9);
       doc.setFont(undefined, 'bold');
       doc.text(localStorage.getItem('companyName') || '', textX, textY);
+
       doc.setFont(undefined, 'normal');
       textY += 6;
-
       doc.setFontSize(7);
+
       const labelWidth = 18;
       if (companyDetails?.cin) {
         doc.setFont(undefined, 'bold');
@@ -559,6 +560,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
         doc.text(companyDetails.cin, textX + labelWidth, textY);
         textY += 3.5;
       }
+
       if (companyDetails?.gst) {
         doc.setFont(undefined, 'bold');
         doc.text('GST IN', textX, textY);
@@ -566,6 +568,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
         doc.text(companyDetails.gst, textX + labelWidth, textY);
         textY += 3.5;
       }
+
       if (companyDetails?.city) {
         doc.setFont(undefined, 'bold');
         doc.text(`${companyDetails.city} - ${companyDetails.zip}`, textX, textY);
@@ -574,11 +577,16 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
 
       doc.setFontSize(12);
       doc.setFont(undefined, 'bold');
-      doc.text(row.status === 'PROFORMA' ? 'PROFORMA' : 'TAX INVOICE', pageWidth / 2, headerY + 5, { align: 'center' });
-      doc.setFont(undefined, 'normal');
+      doc.text(
+        row.status === 'PROFORMA' ? 'PROFORMA' : 'TAX INVOICE',
+        pageWidth / 2,
+        headerY + 5,
+        { align: 'center' }
+      );
 
       const rightX = pageWidth - padding;
       let detailY = headerY + 3;
+
       doc.setFontSize(10);
       doc.setFont(undefined, 'bold');
       doc.text(`Invoice No`, rightX - 60, detailY);
@@ -592,12 +600,15 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       doc.setFont(undefined, 'normal');
       doc.text(`${invoiceDate}`, rightX, detailY, { align: 'right' });
       detailY += 4;
-      
-      doc.setFont(undefined, 'bold');
-      doc.text(`Ref No`, rightX - 60, detailY);
-      doc.setFont(undefined, 'normal');
-      doc.text(`${row.supplierBillNo}`, rightX, detailY, { align: 'right' });
-      detailY += 4;
+
+      if (row.supplierBillNo) {
+        doc.setFont(undefined, 'bold');
+        doc.text(`Ref No`, rightX - 60, detailY);
+        doc.setFont(undefined, 'normal');
+        doc.text(`${row.supplierBillNo}`, rightX, detailY, { align: 'right' });
+        detailY += 4;
+      }
+
       const lineY = headerY + Math.max(logoHeight, 20);
       doc.setLineWidth(0.2);
       doc.line(padding, lineY, pageWidth - padding, lineY);
@@ -608,7 +619,11 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       doc.setLineWidth(0.1);
       doc.line(padding, footerY, pageWidth - padding, footerY);
       doc.setFontSize(6);
-      doc.text(`${companyDetails.address} | ${currentDateTime} | System Generated Invoice`, padding, footerY + 3);
+      doc.text(
+        `${companyDetails.address} | ${currentDateTime} | System Generated Invoice`,
+        padding,
+        footerY + 3
+      );
     };
 
     const addNewPage = () => {
@@ -616,48 +631,42 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
       addHeader(pdf);
       return padding + headerHeight;
     };
+
     addHeader(pdf);
     pdf.setFontSize(8);
+
     const labelWidth = 28;
     const valueX = padding + labelWidth;
+
+    // Bill To
     pdf.setFont(undefined, 'bold');
     pdf.text('Bill To', padding, currentY);
     pdf.setFont(undefined, 'bold');
     pdf.text(`${row.partyName}`, valueX, currentY);
     currentY += 4;
-    // pdf.setFont(undefined, 'bold');
-    // pdf.text('Ship To', padding, currentY);
-    // pdf.setFont(undefined, 'normal');
-    // pdf.text(`${row.partyName}`, valueX, currentY);
-    // currentY += 4;
 
+    // GST IN
     pdf.setFont(undefined, 'bold');
     pdf.text('GST IN', padding, currentY);
     pdf.setFont(undefined, 'normal');
-    pdf.text(`${row.recipientGSTIN}`, valueX, currentY);
+    pdf.text(`${row.recipientGSTIN || ''}`, valueX, currentY);
     currentY += 4;
 
+    // Place Of Supply
     pdf.setFont(undefined, 'bold');
     pdf.text('Place Of Supply', padding, currentY);
     pdf.setFont(undefined, 'normal');
-    pdf.text(`${row.stateNo}`, valueX, currentY);
+    pdf.text(`${row.stateNo || ''}`, valueX, currentY);
     currentY += 4;
-    //
 
-    //
+    // Address
     pdf.setFont(undefined, 'bold');
     pdf.text('Address', padding, currentY);
     pdf.setFont(undefined, 'normal');
-    pdf.text(`${row.address}`, valueX, currentY);
+    pdf.text(`${row.address || ''}`, valueX, currentY);
     currentY += 4;
 
-    // const addressLines = pdf.splitTextToSize(row.address || '', halfPageWidth);
-    // addressLines.forEach((line) => {
-    //   pdf.text(line, valueX, currentY);
-    //   currentY += 4;
-    // });
-    // currentY += 2;
-
+    // Due Date
     const dueDate = row.dueDate ? dayjs(row.dueDate).format('DD-MM-YYYY') : 'Immediate';
     pdf.setFont(undefined, 'bold');
     pdf.text('Due Date', padding, currentY);
@@ -665,23 +674,25 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     pdf.text(`${dueDate}`, valueX, currentY);
     currentY += 5;
 
+    // Tax Type
     pdf.setFontSize(10);
     pdf.setFont(undefined, 'bold');
     const taxType = row.gstType === 'INTRA' ? 'Intra State Tax' : 'Inter State Tax';
     pdf.text(taxType, pageWidth / 2, currentY, { align: 'center' });
     currentY += 2;
 
+    // Table Headers
     const tableHeaders = ['HSN/SAC', 'Description', 'Qty', 'Rate', 'Tax %', 'Tax Amount', 'Amount'];
 
     const tableData = row.taxInvoiceDetailsVO?.map((item) => [
       item.govChargeCode,
       item.description,
       item.qty,
-      parseFloat(item.rate).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+      parseFloat(item.rate || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
       item.gstpercent,
-      parseFloat(item.gstAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
-      parseFloat(item.lcAmount).toLocaleString('en-IN', { minimumFractionDigits: 2 })
-    ]);
+      parseFloat(item.gstAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+      parseFloat(item.lcAmount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })
+    ]) || [];
 
     pdf.autoTable({
       startY: currentY,
@@ -714,6 +725,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     currentY += 7;
     pdf.setFontSize(8);
 
+    // Amount in words and Remarks
     const leftX = padding;
     const rightX = pageWidth / 2 + 70;
     const lineHeight = 5;
@@ -721,6 +733,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     currentY += 10;
 
     let leftY = startY;
+
     pdf.setFont(undefined, 'bold');
     pdf.text('Amount in words', leftX, leftY);
     pdf.setFont(undefined, 'normal');
@@ -738,68 +751,117 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     leftY += lineHeight;
 
     let rightY = currentY - (row.amountInWords ? 2 * lineHeight : lineHeight);
+
+    // Sub Total
     pdf.setFont(undefined, 'bold');
     pdf.text('Sub Total', rightX, rightY);
-    pdf.text(`${parseFloat(row.totalChargeAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, pageWidth - padding, rightY, {
-      align: 'right'
-    });
-    rightY += lineHeight;
-    pdf.setFont(undefined, 'bold');
-    pdf.text('GST(IGST)', rightX, rightY);
-    pdf.text(`${parseFloat(row.totalTaxAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, pageWidth - padding, rightY, {
-      align: 'right'
-    });
+    pdf.text(
+      parseFloat(row.totalChargeAmountLc || 0).toLocaleString('en-IN', {
+        minimumFractionDigits: 2
+      }),
+      pageWidth - padding,
+      rightY,
+      { align: 'right' }
+    );
     rightY += lineHeight;
 
+    // GST Section
+    if (row.gstType === 'INTER') {
+      pdf.text('GST(IGST)', rightX, rightY);
+      pdf.text(
+        parseFloat(row.totalTaxAmountLc || 0).toLocaleString('en-IN', {
+          minimumFractionDigits: 2
+        }),
+        pageWidth - padding,
+        rightY,
+        { align: 'right' }
+      );
+      rightY += lineHeight;
+    } else {
+      const halfTax = parseFloat(row.totalTaxAmountLc || 0) / 2;
+
+      pdf.text('GST(CGST)', rightX, rightY);
+      pdf.text(
+        halfTax.toLocaleString('en-IN', {
+          minimumFractionDigits: 2
+        }),
+        pageWidth - padding,
+        rightY,
+        { align: 'right' }
+      );
+      rightY += lineHeight;
+
+      pdf.text('GST(SGST)', rightX, rightY);
+      pdf.text(
+        halfTax.toLocaleString('en-IN', {
+          minimumFractionDigits: 2
+        }),
+        pageWidth - padding,
+        rightY,
+        { align: 'right' }
+      );
+      rightY += lineHeight;
+    }
+
+    // Total
     pdf.setFont(undefined, 'bold');
     pdf.text('Total', rightX, rightY);
-    pdf.text(`${parseFloat(row.totalInvAmountLc).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`, pageWidth - padding, rightY, {
-      align: 'right'
-    });
+    pdf.text(
+      parseFloat(row.totalInvAmountLc || 0).toLocaleString('en-IN', {
+        minimumFractionDigits: 2
+      }),
+      pageWidth - padding,
+      rightY,
+      { align: 'right' }
+    );
 
     currentY = Math.max(leftY, rightY);
 
-    // ------- Terms & Conditions -------
-    pdf.setFont(undefined, 'bold');
-    pdf.setFontSize(10);
-    pdf.text('Terms & Conditions :', padding, currentY);
-    currentY += 6;
-
-    pdf.setFont(undefined, 'normal');
-    pdf.setFontSize(9);
-    const terms = companyDetails.termsAndConditions?.split('\n') || [];
-
-    terms.forEach((term, index) => {
-      const termLines = pdf.splitTextToSize(`${index + 1}. ${term}`, pageWidth - 2 * padding);
-      termLines.forEach((line) => {
-        if (currentY > pageHeight - footerHeight - 10) currentY = addNewPage();
-        pdf.text(line, padding, currentY);
-        currentY += 5;
-      });
-    });
-
-    // ------- Bank Details -------
-    pdf.setFont(undefined, 'bold');
-    pdf.setFontSize(10);
-    pdf.text('Bank Details:', padding, currentY);
-    currentY += 6;
-
-    const addBankLine = (label, value) => {
+    // Terms & Conditions
+    if (companyDetails?.termsAndConditions) {
       pdf.setFont(undefined, 'bold');
-      pdf.text(label, padding, currentY);
+      pdf.setFontSize(10);
+      pdf.text('Terms & Conditions :', padding, currentY);
+      currentY += 6;
+
       pdf.setFont(undefined, 'normal');
-      pdf.text(value || '', padding + 40, currentY);
-      currentY += 5;
-    };
+      pdf.setFontSize(9);
+      const terms = companyDetails.termsAndConditions.split('\n') || [];
 
-    pdf.setFontSize(9);
-    addBankLine('BANK NAME', bankDetails.bankName);
-    addBankLine('BRANCH', bankDetails.branch);
-    addBankLine('IFSC', bankDetails.ifsc);
-    addBankLine('BENEFICIARY NAME', bankDetails.beneficiaryName);
-    addBankLine('ACCOUNT NO', bankDetails.accountNo);
+      terms.forEach((term, index) => {
+        const termLines = pdf.splitTextToSize(`${index + 1}. ${term}`, pageWidth - 2 * padding);
+        termLines.forEach((line) => {
+          if (currentY > pageHeight - footerHeight - 10) currentY = addNewPage();
+          pdf.text(line, padding, currentY);
+          currentY += 5;
+        });
+      });
+    }
 
-    // ------- Authorized Signatory -------
+    // Bank Details
+    if (bankDetails) {
+      pdf.setFont(undefined, 'bold');
+      pdf.setFontSize(10);
+      pdf.text('Bank Details:', padding, currentY);
+      currentY += 6;
+
+      const addBankLine = (label, value) => {
+        pdf.setFont(undefined, 'bold');
+        pdf.text(label, padding, currentY);
+        pdf.setFont(undefined, 'normal');
+        pdf.text(value || '', padding + 40, currentY);
+        currentY += 5;
+      };
+
+      pdf.setFontSize(9);
+      addBankLine('BANK NAME', bankDetails.bankName);
+      addBankLine('BRANCH', bankDetails.branch);
+      addBankLine('IFSC', bankDetails.ifsc);
+      addBankLine('BENEFICIARY NAME', bankDetails.beneficiaryName);
+      addBankLine('ACCOUNT NO', bankDetails.accountNo);
+    }
+
+    // Authorized Signatory
     if (currentY + 20 > pageHeight - footerHeight) {
       currentY = addNewPage();
     }
@@ -807,20 +869,23 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
     pdf.setFont(undefined, 'normal');
     pdf.setFontSize(10);
     currentY += 5;
-    pdf.text(`FOR ${bankDetails.beneficiaryName}`, padding, currentY);
+    pdf.text(`FOR ${bankDetails?.beneficiaryName || companyDetails?.companyName || ''}`, padding, currentY);
     currentY += 20;
     pdf.text('Authorized Signatory', padding, currentY);
 
     addFooter(pdf);
 
-    // ------- Annexure -------
+    // Annexure
     if (row.taxInvoiceAnnexureVO?.length > 0) {
       currentY = addNewPage();
       pdf.setFontSize(10);
       pdf.text(`Invoice No: ${row.vid}`, padding, currentY);
-      pdf.text(`Invoice Date: ${row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}`, pageWidth - padding, currentY, {
-        align: 'right'
-      });
+      pdf.text(
+        `Invoice Date: ${row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : 'N/A'}`,
+        pageWidth - padding,
+        currentY,
+        { align: 'right' }
+      );
       currentY += 10;
 
       pdf.setFontSize(12);
@@ -835,8 +900,8 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
         item.kitId,
         item.dsec,
         item.qty,
-        parseFloat(item.rate).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
-        parseFloat(item.amount).toLocaleString('en-IN', { minimumFractionDigits: 2 })
+        parseFloat(item.rate || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 }),
+        parseFloat(item.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })
       ]);
 
       pdf.autoTable({
@@ -855,13 +920,18 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
 
       pdf.setFontSize(10);
       pdf.text(
-        `Sub Total: ${parseFloat(row.annexureSubTotal).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
+        `Sub Total: ${parseFloat(row.annexureSubTotal || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`,
         pageWidth - padding,
         currentY,
         { align: 'right' }
       );
       currentY += 5;
-      pdf.text(`Total Kit Qty: ${parseInt(row.totalQty).toLocaleString('en-IN')}`, pageWidth - padding, currentY, { align: 'right' });
+      pdf.text(
+        `Total Kit Qty: ${parseInt(row.totalQty || 0).toLocaleString('en-IN')}`,
+        pageWidth - padding,
+        currentY,
+        { align: 'right' }
+      );
     }
 
     pdf.save(`${row.screenCode || 'TI'}_${row.partyShortName}_${row.vid}.pdf`);
