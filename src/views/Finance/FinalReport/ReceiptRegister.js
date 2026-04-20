@@ -18,7 +18,7 @@ import apiCalls from 'apicall';
 import { Box, Button, Chip, Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
-import CommonReportTable from 'utils/CommonReportTable';
+// import CommonReportTable from 'utils/CommonReportTable';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
 import Paper from '@mui/material/Paper';
 import Draggable from 'react-draggable';
@@ -27,6 +27,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import CMRT2 from 'utils/CMRT2';
+
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -428,23 +430,23 @@ function ReceiptReport() {
       })
     );
 
-    const totalFields = ['chargeAmount', 'tdsAmt', 'receivableAmount', 'receiptAmount', 'arApOutstanding', 'arapSettled', 'onAccount'];
-    const totals = totalFields.map((key) => data.reduce((sum, row) => sum + (parseFloat(row[key]) || 0), 0));
+    // const totalFields = ['chargeAmount', 'tdsAmt', 'receivableAmount', 'receiptAmount', 'arApOutstanding', 'arapSettled', 'onAccount'];
+    // const totals = totalFields.map((key) => data.reduce((sum, row) => sum + (parseFloat(row[key]) || 0), 0));
 
-    const totalRow = columns.map((col, idx) => {
-      const key = col.accessorKey;
-      if (idx === 0) return 'Total';
-      if (totalFields.includes(key)) {
-        const index = totalFields.indexOf(key);
-        return totals[index].toLocaleString('en-IN', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        });
-      }
-      return '';
-    });
+    // const totalRow = columns.map((col, idx) => {
+    //   const key = col.accessorKey;
+    //   if (idx === 0) return 'Total';
+    //   if (totalFields.includes(key)) {
+    //     const index = totalFields.indexOf(key);
+    //     return totals[index].toLocaleString('en-IN', {
+    //       minimumFractionDigits: 2,
+    //       maximumFractionDigits: 2
+    //     });
+    //   }
+    //   return '';
+    // });
 
-    body.push(totalRow);
+    // body.push(totalRow);
 
     // 6) Define Column Widths (should match your table structure)
     const columnStyles = {
@@ -602,31 +604,31 @@ function ReceiptReport() {
       headerRow.height = 20;
 
       // ====== DATA ROWS ======
-      let chargeAmount = 0;
-      let tdsAmt = 0;
-      let receivableAmount = 0;
-      let receiptAmount = 0;
-      let arApOutstanding = 0;
-      let arapSettled = 0;
-      let onAccount = 0;
+      // let chargeAmount = 0;
+      // let tdsAmt = 0;
+      // let receivableAmount = 0;
+      // let receiptAmount = 0;
+      // let arApOutstanding = 0;
+      // let arapSettled = 0;
+      // let onAccount = 0;
       // let totalPayable = 0;
 
       rowData.forEach((item) => {
-        const CA = parseFloat(item.chargeAmount || 0);
-        const TDSAmount = parseFloat(item.tdsAmt || 0);
-        const ReceivableAmount = parseFloat(item.receivableAmount || 0);
-        const ReceiptAmount = parseFloat(item.receiptAmount || 0);
-        const ArApOutStanding = parseFloat(item.arApOutstanding || 0);
-        const ArApSettled = parseFloat(item.arapSettled || 0);
-        const OnAccount = parseFloat(item.onAccount || 0);
+        // const CA = parseFloat(item.chargeAmount || 0);
+        // const TDSAmount = parseFloat(item.tdsAmt || 0);
+        // const ReceivableAmount = parseFloat(item.receivableAmount || 0);
+        // const ReceiptAmount = parseFloat(item.receiptAmount || 0);
+        // const ArApOutStanding = parseFloat(item.arApOutstanding || 0);
+        // const ArApSettled = parseFloat(item.arapSettled || 0);
+        // const OnAccount = parseFloat(item.onAccount || 0);
 
-        chargeAmount += CA;
-        tdsAmt += TDSAmount;
-        receivableAmount += ReceivableAmount;
-        receiptAmount += ReceiptAmount;
-        arApOutstanding += ArApOutStanding;
-        arapSettled += ArApSettled;
-        onAccount += OnAccount;
+        // chargeAmount += CA;
+        // tdsAmt += TDSAmount;
+        // receivableAmount += ReceivableAmount;
+        // receiptAmount += ReceiptAmount;
+        // arApOutstanding += ArApOutStanding;
+        // arapSettled += ArApSettled;
+        // onAccount += OnAccount;
 
         const row = sheet.addRow([
           item.docId || '',
@@ -634,13 +636,13 @@ function ReceiptReport() {
           item.shortName || '-',
           item.chQnNumber,
           item.chequeDate ? dayjs(item.chequeDate).format('DD-MM-YYYY') : '-',
-          CA,
-          TDSAmount,
-          ReceivableAmount,
-          ReceiptAmount,
-          ArApOutStanding,
-          ArApSettled,
-          OnAccount
+          item.chargeAmount,
+          // item.TDSAmount,
+          item.tdsAmt,
+          item.receivableAmount,
+          item.ArApOutStanding,
+          item.arapSettled,
+          item.onAccount
         ]);
 
         [6, 7, 8, 9, 10, 11, 12].forEach((colIndex) => {
@@ -666,34 +668,34 @@ function ReceiptReport() {
       });
 
       // ====== TOTAL ROW ======
-      const totalRow = sheet.addRow([
-        'Total',
-        '',
-        '',
-        '',
-        '',
-        chargeAmount,
-        tdsAmt,
-        receivableAmount,
-        receiptAmount,
-        arApOutstanding,
-        arapSettled,
-        onAccount
-      ]);
+      // const totalRow = sheet.addRow([
+      //   'Total',
+      //   '',
+      //   '',
+      //   '',
+      //   '',
+      //   chargeAmount,
+      //   tdsAmt,
+      //   receivableAmount,
+      //   receiptAmount,
+      //   arApOutstanding,
+      //   arapSettled,
+      //   onAccount
+      // ]);
 
-      totalRow.eachCell((cell, colNumber) => {
-        cell.font = { bold: true };
-        cell.alignment = { horizontal: colNumber >= 6 ? 'right' : 'left' };
-        cell.border = {
-          top: { style: 'thin' },
-          bottom: { style: 'thin' },
-          left: { style: 'thin' },
-          right: { style: 'thin' }
-        };
-        if (colNumber >= 6) {
-          cell.numFmt = '#,##0.00';
-        }
-      });
+      // totalRow.eachCell((cell, colNumber) => {
+      //   cell.font = { bold: true };
+      //   cell.alignment = { horizontal: colNumber >= 6 ? 'right' : 'left' };
+      //   cell.border = {
+      //     top: { style: 'thin' },
+      //     bottom: { style: 'thin' },
+      //     left: { style: 'thin' },
+      //     right: { style: 'thin' }
+      //   };
+      //   if (colNumber >= 6) {
+      //     cell.numFmt = '#,##0.00';
+      //   }
+      // });
 
       // ====== COLUMN WIDTHS ======
       sheet.columns = [
@@ -844,12 +846,12 @@ function ReceiptReport() {
         </>
         {listView && (
           <div>
-            <CommonReportTable
+            <CMRT2
               data={rowData}
               columns={reportColumns}
               isListView={listView}
               fileName={'Receipt Register'}
-              sumFields={['tdsAmt', 'receivableAmount', 'arapSettled', 'arApOutstanding', 'onAccount']}
+              // sumFields={['tdsAmt', 'receivableAmount', 'arapSettled', 'arApOutstanding', 'onAccount']}
               handleDownloadPdf={() =>
                 handleDownloadPdf({
                   logo: listViewData[0]?.companyLogo,

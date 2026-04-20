@@ -31,7 +31,8 @@ import dayjs from 'dayjs';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
 import { showToast } from 'utils/toast-component';
-import CommonReportTableGrouped from '../../../utils/CommonReportTableGrouped';
+// import CommonReportTableGrouped from '../../../utils/CommonReportTableGrouped';
+import CMRT2 from 'utils/CMRT2';
 import ActionButton from 'utils/ActionButton';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -239,7 +240,7 @@ function SalesReport() {
         }
         if (response.status === true) {
           console.log('Response:', response);
-          setRowData(response.paramObjectsMap.mapp.reverse() || []);
+          setRowData(response.paramObjectsMap.mapp || []);
           setIsLoading(false);
           setOpen(true);
           const newHeaderFields = [];
@@ -494,6 +495,7 @@ function SalesReport() {
       ? ['totalchargeamountlc', 'totaltaxamountlc', 'totalinvamountlc']
       : ['totalchargeamountlc', 'totaltaxamountlc', 'totalinvamountlc'];
   };
+
   const handleDownloadExcel = async () => {
     try {
       const logoBase64 = await getLogo();
@@ -605,10 +607,10 @@ function SalesReport() {
         rowData.forEach((item, index) => {
           const row = sheet.addRow([
             item.docid,
-            dayjs(item.docdate).format('DD-MM-YYYY'),
+            item.docdate ? dayjs(item.docdate).format('DD-MM-YYYY') : '',
             item.partyname,
             item.Vid || '-',
-            dayjs(item.Vdate).format('DD-MM-YYYY'),
+            item.Vdate ? dayjs(item.Vdate).format('DD-MM-YYYY') : '',
             item.placeofsupply,
             item.chargetype,
             item.chargecode,
@@ -642,9 +644,9 @@ function SalesReport() {
         rowData.forEach((item, index) => {
           const row = sheet.addRow([
             item.docId,
-            dayjs(item.docdate).format('DD-MM-YYYY'),
+            item.docdate ? dayjs(item.docdate).format('DD-MM-YYYY') : '',
             item.vId || '-',
-            dayjs(item.vDate).format('DD-MM-YYYY'),
+            item.vDate ? dayjs(item.vDate).format('DD-MM-YYYY') : '',
             item.gstType,
             item.partyName,
             item.placeofsupply,
@@ -674,56 +676,56 @@ function SalesReport() {
       }
 
       // ======= GRAND TOTAL =======
-      const totalRow = sheet.addRow([]);
-      totalRow.font = { bold: true };
-      totalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'DDEBF7' } };
+      // const totalRow = sheet.addRow([]);
+      // totalRow.font = { bold: true };
+      // totalRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'DDEBF7' } };
 
-      if (formData.viewMode === 'details') {
-        totalRow.values = [
-          'Grand Total',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          rowData.reduce((a, b) => a + (b.billAmount || 0), 0),
-          rowData.reduce((a, b) => a + (b.gstamount || 0), 0),
-          rowData.reduce((a, b) => a + (b.totalLcAmount || 0), 0)
-        ];
-        sheet.mergeCells(`A${totalRow.number}:M${totalRow.number}`);
-      } else {
-        totalRow.values = [
-          'Grand Total',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          rowData.reduce((a, b) => a + (b.igst || 0), 0),
-          rowData.reduce((a, b) => a + (b.cgst || 0), 0),
-          rowData.reduce((a, b) => a + (b.sgst || 0), 0),
-          rowData.reduce((a, b) => a + (b.totalinvamountlc || 0), 0)
-        ];
-        sheet.mergeCells(`A${totalRow.number}:H${totalRow.number}`);
-      }
+      // if (formData.viewMode === 'details') {
+      //   totalRow.values = [
+      //     'Grand Total',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     rowData.reduce((a, b) => a + (b.billAmount || 0), 0),
+      //     rowData.reduce((a, b) => a + (b.gstamount || 0), 0),
+      //     rowData.reduce((a, b) => a + (b.totalLcAmount || 0), 0)
+      //   ];
+      //   sheet.mergeCells(`A${totalRow.number}:M${totalRow.number}`);
+      // } else {
+      //   totalRow.values = [
+      //     'Grand Total',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     rowData.reduce((a, b) => a + (b.igst || 0), 0),
+      //     rowData.reduce((a, b) => a + (b.cgst || 0), 0),
+      //     rowData.reduce((a, b) => a + (b.sgst || 0), 0),
+      //     rowData.reduce((a, b) => a + (b.totalinvamountlc || 0), 0)
+      //   ];
+      //   sheet.mergeCells(`A${totalRow.number}:H${totalRow.number}`);
+      // }
 
       // Style numeric columns in total
-      totalRow.eachCell((cell) => {
-        cell.numFmt = '#,##0.00';
-        cell.alignment = { horizontal: 'right' };
-      });
+      // totalRow.eachCell((cell) => {
+      //   cell.numFmt = '#,##0.00';
+      //   cell.alignment = { horizontal: 'right' };
+      // });
 
-      totalRow.getCell(1).alignment = { horizontal: 'right' };
-      totalRow.getCell(1).font = { bold: true, color: { argb: '1F4E78' } };
+      // totalRow.getCell(1).alignment = { horizontal: 'right' };
+      // totalRow.getCell(1).font = { bold: true, color: { argb: '1F4E78' } };
 
       // ======= BORDERS + LAYOUT =======
       sheet.eachRow((row) => {
@@ -752,144 +754,314 @@ function SalesReport() {
   };
 
   // handleDownoadPdf
+  // const handleDownloadPdf = ({ logo, columns, data, fileName, userName, formData }) => {
+  //   const doc = new jsPDF();
+  //   const pageW = doc.internal.pageSize.getWidth();
+  //   const pageH = doc.internal.pageSize.getHeight();
+
+  //   // 1) COMPANY LOGO (top-left)
+  //   const logoBase64 = logo;
+  //   if (logoBase64) {
+  //     doc.addImage(logoBase64, 'PNG', 10, 10, 30, 23);
+  //   }
+
+  //   // 2) TITLE BOX
+  //   const title = `${fileName}`;
+  //   const textW = doc.getTextWidth(title);
+  //   const boxW = textW + 20;
+  //   const boxX = (pageW - boxW) / 2;
+  //   doc
+  //     .setFillColor('#e7ebeb')
+  //     .roundedRect(boxX, 18, boxW, 10, 4, 4, 'F')
+  //     .setTextColor('#34449B')
+  //     .setFontSize(12)
+  //     .text(title, pageW / 2, 25, { align: 'center' });
+
+  //   // 3) FILTER METADATA
+  //   const { fromDate, toDate, branchCode, customer, viewMode } = formData;
+  //   doc.setFontSize(9);
+  //   doc.setTextColor('#000000');
+  //   doc.setFillColor(231, 235, 235);
+  //   doc.roundedRect(2, 35, 206, 12, 2, 2, 'F');
+
+  //   // Row 1: Labels
+  //   doc.setFont(undefined, 'bold');
+  //   doc.text('From Date', 8, 40);
+  //   doc.text('To Date', 37, 40);
+  //   doc.text('Customer', 58, 40);
+  //   doc.text('Branch Code', 153, 40);
+  //   doc.text('View Mode', 184, 40);
+
+  //   // Row 2: Values
+  //   doc.setFont(undefined, 'normal');
+  //   doc.text(dayjs(fromDate).format('DD-MM-YYYY'), 8, 45);
+  //   doc.text(dayjs(toDate).format('DD-MM-YYYY'), 37, 45);
+  //   doc.text(String(customer ?? '-'), 58, 45);
+  //   doc.text(String(branchCode ?? '-'), 153, 45);
+  //   doc.text(String(viewMode.toUpperCase() ?? '-'), 184, 45);
+
+  //   // 4) Build Table Body
+  //   const headerLabels = columns.map((c) => c.header);
+  //   const numericFields = columns
+  //     .map((c) => c.accessorKey)
+  //     .filter((k) => k && /(billAmount|totalchargeamountlc|gstamount|totaltaxamountlc|totalLcAmount|totalinvamountlc)/i.test(k));
+
+  //   const body = data.map((row) =>
+  //     columns.map((col) => {
+  //       const key = col.accessorKey;
+  //       const raw = key ? row[key] : '';
+  //       if (key?.toLowerCase().includes('date')) {
+  //         const d = dayjs(raw);
+  //         return d.isValid() ? d.format('DD-MM-YYYY') : '-';
+  //       }
+  //       if (typeof raw === 'number') {
+  //         return raw === 0 ? '' : raw.toLocaleString('en-IN');
+  //       }
+  //       return raw ?? '';
+  //     })
+  //   );
+
+  //   // 5) Add Total Row
+  //   const totalFields =
+  //     viewMode === 'details'
+  //       ? ['billAmount', 'gstamount', 'totalLcAmount']
+  //       : ['totalchargeamountlc', 'igst', 'cgst', 'sgst', 'totalinvamountlc'];
+
+  //   const totalRow = columns.map((col, index) => {
+  //     const key = col.accessorKey;
+  //     if (index === 0) return 'Total';
+  //     if (totalFields.includes(key)) {
+  //       const sum = data.reduce((acc, row) => acc + (parseFloat(row[key]) || 0), 0);
+  //       return sum.toLocaleString('en-IN');
+  //     }
+  //     return '';
+  //   });
+
+  //   body.push(totalRow); // ✅ Append total row
+
+  //   // 6) Render Table
+  //   autoTable(doc, {
+  //     startY: 50,
+  //     head: [headerLabels],
+  //     body,
+  //     styles: {
+  //       fontSize: 8,
+  //       cellPadding: 2,
+  //       lineWidth: 0.1,
+  //       lineColor: [220, 220, 220],
+  //       overflow: 'linebreak'
+  //     },
+  //     headStyles: {
+  //       fillColor: [52, 68, 155],
+  //       textColor: 255,
+  //       halign: 'center'
+  //     },
+  //     bodyStyles: {
+  //       halign: 'left'
+  //     },
+  //     theme: 'grid',
+  //     margin: { left: 5, right: 5 },
+  //     tableWidth: 'auto',
+  //     columnStyles: generateFullWidthColumnStyles(columns, doc),
+  //     didDrawPage: (data) => {
+  //       doc.setFontSize(8).setTextColor('#555555');
+  //       doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
+  //       doc.text(`Generated By: ${userName}`, 15, pageH - 10, { align: 'left' });
+  //     },
+  //     didParseCell: (cellHookData) => {
+  //       const { cell, column, section, row } = cellHookData;
+  //       const key = columns[column.index]?.accessorKey;
+
+  //       // Skip color change for total row
+  //       if (section === 'body' && row.raw !== totalRow) {
+  //         if (['billAmount', 'totalchargeamountlc'].includes(key)) {
+  //           cell.styles.textColor = [0, 128, 0];
+  //         } else if (['gstamount', 'totaltaxamountlc'].includes(key)) {
+  //           cell.styles.textColor = [255, 0, 0];
+  //         } else if (['totalLcAmount', 'totalinvamountlc'].includes(key)) {
+  //           cell.styles.textColor = [0, 128, 0];
+  //         }
+  //       }
+
+  //       if (section === 'body' && numericFields.includes(key)) {
+  //         cell.styles.halign = 'right';
+  //       }
+  //     }
+  //   });
+
+  //   // 7) Save
+  //   doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
+  // };
+
+  // 
   const handleDownloadPdf = ({ logo, columns, data, fileName, userName, formData }) => {
-    const doc = new jsPDF();
-    const pageW = doc.internal.pageSize.getWidth();
-    const pageH = doc.internal.pageSize.getHeight();
+ 
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: 'a4'
+  });
 
-    // 1) COMPANY LOGO (top-left)
-    const logoBase64 = logo;
-    if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', 10, 10, 30, 23);
-    }
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
 
-    // 2) TITLE BOX
-    const title = `${fileName}`;
-    const textW = doc.getTextWidth(title);
-    const boxW = textW + 20;
-    const boxX = (pageW - boxW) / 2;
-    doc
-      .setFillColor('#e7ebeb')
-      .roundedRect(boxX, 18, boxW, 10, 4, 4, 'F')
-      .setTextColor('#34449B')
-      .setFontSize(12)
-      .text(title, pageW / 2, 25, { align: 'center' });
 
-    // 3) FILTER METADATA
-    const { fromDate, toDate, branchCode, customer, viewMode } = formData;
-    doc.setFontSize(9);
-    doc.setTextColor('#000000');
-    doc.setFillColor(231, 235, 235);
-    doc.roundedRect(2, 35, 206, 12, 2, 2, 'F');
+  const formatDate = (date) => {
+    return date ? dayjs(date).format('DD-MM-YYYY') : '';
+  };
 
-    // Row 1: Labels
-    doc.setFont(undefined, 'bold');
-    doc.text('From Date', 8, 40);
-    doc.text('To Date', 37, 40);
-    doc.text('Customer', 58, 40);
-    doc.text('Branch Code', 153, 40);
-    doc.text('View Mode', 184, 40);
+  // 1) COMPANY LOGO
+  if (logo) {
+    doc.addImage(logo, 'PNG', 10, 10, 30, 23);
+  }
 
-    // Row 2: Values
-    doc.setFont(undefined, 'normal');
-    doc.text(dayjs(fromDate).format('DD-MM-YYYY'), 8, 45);
-    doc.text(dayjs(toDate).format('DD-MM-YYYY'), 37, 45);
-    doc.text(String(customer ?? '-'), 58, 45);
-    doc.text(String(branchCode ?? '-'), 153, 45);
-    doc.text(String(viewMode.toUpperCase() ?? '-'), 184, 45);
+  // 2) TITLE
+  const title = `${fileName}`;
+  const textW = doc.getTextWidth(title);
+  const boxW = textW + 20;
+  const boxX = (pageW - boxW) / 2;
 
-    // 4) Build Table Body
-    const headerLabels = columns.map((c) => c.header);
-    const numericFields = columns
-      .map((c) => c.accessorKey)
-      .filter((k) => k && /(billAmount|totalchargeamountlc|gstamount|totaltaxamountlc|totalLcAmount|totalinvamountlc)/i.test(k));
+  doc
+    .setFillColor('#e7ebeb')
+    .roundedRect(boxX, 18, boxW, 10, 4, 4, 'F')
+    .setTextColor('#34449B')
+    .setFontSize(12)
+    .text(title, pageW / 2, 25, { align: 'center' });
 
-    const body = data.map((row) =>
-      columns.map((col) => {
-        const key = col.accessorKey;
-        const raw = key ? row[key] : '';
-        if (key?.toLowerCase().includes('date')) {
-          const d = dayjs(raw);
-          return d.isValid() ? d.format('DD-MM-YYYY') : '-';
-        }
-        if (typeof raw === 'number') {
-          return raw === 0 ? '' : raw.toLocaleString('en-IN');
-        }
-        return raw ?? '';
-      })
+  // 3) FILTER SECTION (Dynamic width)
+  const { fromDate, toDate, branchCode, customer, viewMode } = formData;
+
+  doc.setFontSize(9);
+  doc.setTextColor('#000');
+  doc.setFillColor(231, 235, 235);
+
+  // ✅ Full width box
+  doc.roundedRect(5, 35, pageW - 10, 12, 2, 2, 'F');
+
+  // Labels
+  doc.setFont(undefined, 'bold');
+  doc.text('From Date', 8, 40);
+  doc.text('To Date', pageW * 0.18, 40);
+  doc.text('Customer', pageW * 0.32, 40);
+  doc.text('Branch Code', pageW * 0.70, 40);
+  doc.text('View Mode', pageW * 0.85, 40);
+
+  // Values
+  doc.setFont(undefined, 'normal');
+  doc.text(formatDate(fromDate), 8, 45);
+  doc.text(formatDate(toDate), pageW * 0.18, 45);
+  doc.text(String(customer ?? '-'), pageW * 0.32, 45);
+  doc.text(String(branchCode ?? '-'), pageW * 0.70, 45);
+  doc.text(String(viewMode?.toUpperCase() ?? '-'), pageW * 0.85, 45);
+
+  // 4) TABLE HEADERS
+  const headerLabels = columns.map((c) => c.header);
+
+  const numericFields = columns
+    .map((c) => c.accessorKey)
+    .filter((k) =>
+      /(billAmount|totalchargeamountlc|gstamount|totaltaxamountlc|totalLcAmount|totalinvamountlc|igst|cgst|sgst)/i.test(k)
     );
 
-    // 5) Add Total Row
-    const totalFields =
-      viewMode === 'details'
-        ? ['billAmount', 'gstamount', 'totalLcAmount']
-        : ['totalchargeamountlc', 'igst', 'cgst', 'sgst', 'totalinvamountlc'];
-
-    const totalRow = columns.map((col, index) => {
+  // 5) TABLE BODY
+  const body = data.map((row) =>
+    columns.map((col) => {
       const key = col.accessorKey;
-      if (index === 0) return 'Total';
-      if (totalFields.includes(key)) {
-        const sum = data.reduce((acc, row) => acc + (parseFloat(row[key]) || 0), 0);
-        return sum.toLocaleString('en-IN');
+      const raw = key ? row[key] : '';
+
+      
+      if (key?.toLowerCase().includes('date')) {
+        return formatDate(raw);
       }
-      return '';
-    });
 
-    body.push(totalRow); // ✅ Append total row
+     
+      if (typeof raw === 'number') {
+        return raw === 0 ? '' : raw.toLocaleString('en-IN');
+      }
 
-    // 6) Render Table
-    autoTable(doc, {
-      startY: 50,
-      head: [headerLabels],
-      body,
-      styles: {
-        fontSize: 8,
-        cellPadding: 2,
-        lineWidth: 0.1,
-        lineColor: [220, 220, 220],
-        overflow: 'linebreak'
-      },
-      headStyles: {
-        fillColor: [52, 68, 155],
-        textColor: 255,
-        halign: 'center'
-      },
-      bodyStyles: {
-        halign: 'left'
-      },
-      theme: 'grid',
-      margin: { left: 5, right: 5 },
-      tableWidth: 'auto',
-      columnStyles: generateFullWidthColumnStyles(columns, doc),
-      didDrawPage: (data) => {
-        doc.setFontSize(8).setTextColor('#555555');
-        doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
-        doc.text(`Generated By: ${userName}`, 15, pageH - 10, { align: 'left' });
-      },
-      didParseCell: (cellHookData) => {
-        const { cell, column, section, row } = cellHookData;
-        const key = columns[column.index]?.accessorKey;
+      return raw ?? '';
+    })
+  );
 
-        // Skip color change for total row
-        if (section === 'body' && row.raw !== totalRow) {
-          if (['billAmount', 'totalchargeamountlc'].includes(key)) {
-            cell.styles.textColor = [0, 128, 0];
-          } else if (['gstamount', 'totaltaxamountlc'].includes(key)) {
-            cell.styles.textColor = [255, 0, 0];
-          } else if (['totalLcAmount', 'totalinvamountlc'].includes(key)) {
-            cell.styles.textColor = [0, 128, 0];
-          }
-        }
+  // // 6) TOTAL ROW
+  // const totalFields =
+  //   viewMode === 'details'
+  //     ? ['billAmount', 'gstamount', 'totalLcAmount']
+  //     : ['totalchargeamountlc', 'igst', 'cgst', 'sgst', 'totalinvamountlc'];
 
-        if (section === 'body' && numericFields.includes(key)) {
-          cell.styles.halign = 'right';
+  // const totalRow = columns.map((col, index) => {
+  //   const key = col.accessorKey;
+
+  //   if (index === 0) return 'Total';
+
+  //   if (totalFields.includes(key)) {
+  //     const sum = data.reduce((acc, row) => acc + (parseFloat(row[key]) || 0), 0);
+  //     return sum.toLocaleString('en-IN');
+  //   }
+
+  //   return '';
+  // });
+
+  // body.push(totalRow);
+
+  // 7) TABLE RENDER
+  autoTable(doc, {
+    startY: 50,
+    head: [headerLabels],
+    body,
+    styles: {
+      fontSize: 8,
+      cellPadding: 2,
+      lineWidth: 0.1,
+      lineColor: [220, 220, 220],
+      overflow: 'linebreak'
+    },
+    headStyles: {
+      fillColor: [52, 68, 155],
+      textColor: 255,
+      halign: 'center'
+    },
+    theme: 'grid',
+    margin: { left: 5, right: 5 },
+    tableWidth: 'auto',
+
+    didDrawPage: () => {
+      doc.setFontSize(8).setTextColor('#555');
+
+      doc.text(
+        `Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`,
+        pageW - 15,
+        pageH - 10,
+        { align: 'right' }
+      );
+
+      doc.text(`Generated By: ${userName}`, 15, pageH - 10);
+    },
+
+    didParseCell: (hookData) => {
+      const { cell, column, section, row } = hookData;
+      const key = columns[column.index]?.accessorKey;
+
+      // Skip total row styling
+      if (section === 'body') {
+        if (['billAmount', 'totalchargeamountlc'].includes(key)) {
+          cell.styles.textColor = [0, 128, 0];
+        } else if (['gstamount', 'totaltaxamountlc', 'igst', 'cgst', 'sgst'].includes(key)) {
+          cell.styles.textColor = [255, 0, 0];
+        } else if (['totalLcAmount', 'totalinvamountlc'].includes(key)) {
+          cell.styles.textColor = [0, 128, 0];
         }
       }
-    });
 
-    // 7) Save
-    doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
-  };
+      if (section === 'body' && numericFields.includes(key)) {
+        cell.styles.halign = 'right';
+      }
+    }
+  });
+
+  // 8) SAVE FILE
+  doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
+};
 
   const generateFullWidthColumnStyles = (columns, doc) => {
     const totalColumns = columns.length;
@@ -1134,14 +1306,14 @@ function SalesReport() {
         </DialogTitle>
         <DialogContent>
           {rowData.length > 0 && (
-            <CommonReportTableGrouped
+            <CMRT2
               columns={getColumns()}
               data={rowData}
               fileName={`${formData.viewMode === 'details' ? 'Detailed' : 'Summary'} Sales Report`}
               handleDownloadExcel={handleDownloadExcel}
               // sumFields={getSumFields()}
               headerFields={headerFields}
-              handleDownloadPDF={async () => {
+              handleDownloadPdf={async () => {
                 const logoBase64 = await getLogo();
                 handleDownloadPdf({
                   logo: logoBase64,

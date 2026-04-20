@@ -30,7 +30,8 @@ import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
-import CommonReportTable from 'utils/CommonReportTable';
+// import CommonReportTable from 'utils/CommonReportTable';
+import CMRT2 from 'utils/CMRT2';
 import CloseIcon from '@mui/icons-material/Close';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
@@ -642,7 +643,7 @@ function LedgerReport() {
         const row = sheet.addRow([
           item.Vid || '',
           item.Vdate ? dayjs(item.Vdate).format('DD-MM-YYYY') : '-',
-          item.PartyName || '-',
+          item.Particulars || '-',
           item.ndAmount,
           item.NcAmount,
           item.Currency || '',
@@ -1039,7 +1040,7 @@ function LedgerReport() {
           </IconButton>
         </DialogTitle>
         <DialogContent sx={{ padding: 0 }}>
-          <CommonReportTable
+          <CMRT2
             data={rowData}
             columns={reportColumns}
             fileName={'Ledger Report'}
@@ -1062,7 +1063,7 @@ function LedgerReport() {
 
       {listView && (
         <div className="mt-4">
-          <CommonReportTable
+          <CMRT2
             data={rowData}
             columns={reportColumns}
             fileName={'Ledger Report'}

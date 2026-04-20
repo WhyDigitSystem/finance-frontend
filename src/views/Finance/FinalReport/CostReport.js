@@ -31,7 +31,8 @@ import dayjs from 'dayjs';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
 import { showToast } from 'utils/toast-component';
-import CommonReportTableGrouped from '../../../utils/CommonReportTableGrouped';
+// import CommonReportTableGrouped from '../../../utils/CommonReportTableGrouped';
+import CMRT2 from 'utils/CMRT2';
 import ActionButton from 'utils/ActionButton';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -599,11 +600,12 @@ function CostReport() {
           items.forEach((item, idx) => {
             const row = [
               item.docId,
-              dayjs(item.docDate).format('DD-MM-YYYY'),
+              item.docDate ? dayjs(item.docdate).format('DD-MM-YYYY') : '',
+
               item.jobNo,
               item.supplierName,
               item.vId || '-',
-              dayjs(item.vDate).format('DD-MM-YYYY'),
+              item.vDate ? dayjs(item.vDate).format('DD-MM-YYYY') : '',
               item.chargeCode,
               item.chargerName,
               item.ledger,
@@ -657,9 +659,9 @@ function CostReport() {
         rowData.forEach((item, index) => {
           const row = sheet.addRow([
             item.docId,
-            dayjs(item.docdate).format('DD-MM-YYYY'),
+            item.docdate ? dayjs(item.docdate).format('DD-MM-YYYY') : '',
             item.vId || '-',
-            dayjs(item.vDate).format('DD-MM-YYYY'),
+            item.vDate ? dayjs(item.vDate).format('DD-MM-YYYY') : '',
             item.gstType,
             item.supplierName,
             item.supplierPlace,
@@ -692,101 +694,101 @@ function CostReport() {
       }
 
       // Add totals
-      const totals = rowData.reduce(
-        (acc, item) => {
-          acc.totalCharge += Number(item.lcAmt || 0);
-          acc.totalTax += Number(item.gst || 0);
-          acc.totalTds += Number(item.totalTds || 0);
-          acc.totalInvoice += Number(item.netAmount || 0);
-          return acc;
-        },
-        { totalCharge: 0, totalTax: 0, totalInvoice: 0, totalTds: 0 }
-      );
+      // const totals = rowData.reduce(
+      //   (acc, item) => {
+      //     acc.totalCharge += Number(item.lcAmt || 0);
+      //     acc.totalTax += Number(item.gst || 0);
+      //     acc.totalTds += Number(item.totalTds || 0);
+      //     acc.totalInvoice += Number(item.netAmount || 0);
+      //     return acc;
+      //   },
+      //   { totalCharge: 0, totalTax: 0, totalInvoice: 0, totalTds: 0 }
+      // );
 
-      const totalSummary = rowData.reduce(
-        (acc, item) => {
-          acc.totChargeLcAmt += Number(item.totChargeLcAmt || 0);
-          acc.gstAmount += Number(item.gstAmount || 0);
-          acc.tdsAmount += Number(item.tdsAmount || 0);
-          acc.totalLcAmount += Number(item.totalLcAmount || 0);
-          return acc;
-        },
-        { totChargeLcAmt: 0, gstAmount: 0, tdsAmount: 0, totalLcAmount: 0 }
-      );
-      const totalRow = sheet.addRow([]);
+      // const totalSummary = rowData.reduce(
+      //   (acc, item) => {
+      //     acc.totChargeLcAmt += Number(item.totChargeLcAmt || 0);
+      //     acc.gstAmount += Number(item.gstAmount || 0);
+      //     acc.tdsAmount += Number(item.tdsAmount || 0);
+      //     acc.totalLcAmount += Number(item.totalLcAmount || 0);
+      //     return acc;
+      //   },
+      //   { totChargeLcAmt: 0, gstAmount: 0, tdsAmount: 0, totalLcAmount: 0 }
+      // );
+      // const totalRow = sheet.addRow([]);
 
-      if (formData.viewMode === 'details') {
-        totalRow.values = [
-          'Grand Total',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          totals.totalCharge,
-          totals.totalTax,
-          totals.totalTds,
-          totals.totalInvoice
-        ];
-        sheet.mergeCells(`A${currentRow}:J${currentRow}`);
-      } else {
-        totalRow.values = [
-          'Grand Total',
-          '',
-          '',
-          '',
-          '',
-          '',
-          '',
-          totalSummary.totChargeLcAmt,
-          totalSummary.gstAmount,
-          totalSummary.tdsAmount,
-          totalSummary.totalLcAmount
-        ];
-        sheet.mergeCells(`A${currentRow}:G${currentRow}`);
-      }
+      // if (formData.viewMode === 'details') {
+      //   totalRow.values = [
+      //     'Grand Total',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     totals.totalCharge,
+      //     totals.totalTax,
+      //     totals.totalTds,
+      //     totals.totalInvoice
+      //   ];
+      //   sheet.mergeCells(`A${currentRow}:J${currentRow}`);
+      // } else {
+      //   totalRow.values = [
+      //     'Grand Total',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     '',
+      //     totalSummary.totChargeLcAmt,
+      //     totalSummary.gstAmount,
+      //     totalSummary.tdsAmount,
+      //     totalSummary.totalLcAmount
+      //   ];
+      //   sheet.mergeCells(`A${currentRow}:G${currentRow}`);
+      // }
 
       // Style totals row
-      totalRow.font = { bold: true };
-      totalRow.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'DDEBF7' } // Light blue background
-      };
-      totalRow.getCell(1).alignment = { horizontal: 'right' };
+      // totalRow.font = { bold: true };
+      // totalRow.fill = {
+      //   type: 'pattern',
+      //   pattern: 'solid',
+      //   fgColor: { argb: 'DDEBF7' } // Light blue background
+      // };
+      // totalRow.getCell(1).alignment = { horizontal: 'right' };
 
       // Format totals numbers
-      if (formData.viewMode === 'details') {
-        totalRow.getCell('K').numFmt = '#,##0';
-        totalRow.getCell('K').alignment = { horizontal: 'right' };
-        ['O', 'P', 'Q', 'N'].forEach((col) => {
-          const cell = totalRow.getCell(col);
-          cell.numFmt = '#,##0.00';
-          cell.alignment = { horizontal: 'right' };
-        });
-        totalRow.getCell('N').font = { color: { argb: 'FFFF0000' } };
-        totalRow.getCell('O').font = { color: { argb: 'FF00B050' } };
-        totalRow.getCell('P').font = { color: { argb: 'FF00B050' } };
-        totalRow.getCell('Q').font = { color: { argb: 'FFFF0000' } };
-      } else {
-        ['I', 'J', 'K', 'H'].forEach((col) => {
-          const cell = totalRow.getCell(col);
-          cell.numFmt = '#,##0.00';
-          cell.alignment = { horizontal: 'right' };
-        });
-        totalRow.getCell('H').font = { color: { argb: 'FFFF0000' } };
-        totalRow.getCell('I').font = { color: { argb: 'FFFF0000' } };
-        totalRow.getCell('J').font = { color: { argb: 'FF00B050' } };
-        totalRow.getCell('K').font = { color: { argb: 'FF00B050' } };
-      }
-      currentRow++;
+      // if (formData.viewMode === 'details') {
+      //   totalRow.getCell('K').numFmt = '#,##0';
+      //   totalRow.getCell('K').alignment = { horizontal: 'right' };
+      //   ['O', 'P', 'Q', 'N'].forEach((col) => {
+      //     const cell = totalRow.getCell(col);
+      //     cell.numFmt = '#,##0.00';
+      //     cell.alignment = { horizontal: 'right' };
+      //   });
+      //   totalRow.getCell('N').font = { color: { argb: 'FFFF0000' } };
+      //   totalRow.getCell('O').font = { color: { argb: 'FF00B050' } };
+      //   totalRow.getCell('P').font = { color: { argb: 'FF00B050' } };
+      //   totalRow.getCell('Q').font = { color: { argb: 'FFFF0000' } };
+      // } else {
+      //   ['I', 'J', 'K', 'H'].forEach((col) => {
+      //     const cell = totalRow.getCell(col);
+      //     cell.numFmt = '#,##0.00';
+      //     cell.alignment = { horizontal: 'right' };
+      //   });
+      //   totalRow.getCell('H').font = { color: { argb: 'FFFF0000' } };
+      //   totalRow.getCell('I').font = { color: { argb: 'FFFF0000' } };
+      //   totalRow.getCell('J').font = { color: { argb: 'FF00B050' } };
+      //   totalRow.getCell('K').font = { color: { argb: 'FF00B050' } };
+      // }
+      // currentRow++;
 
       // Set column widths and borders
       sheet.columns.forEach((column) => {
@@ -812,142 +814,308 @@ function CostReport() {
       showToast('error', 'Failed to generate Excel file');
     }
   };
-  const handleDownloadPdf = ({ logo, columns, data, fileName, userName, formData }) => {
-    const doc = new jsPDF();
-    const pageW = doc.internal.pageSize.getWidth();
-    const pageH = doc.internal.pageSize.getHeight();
+  // const handleDownloadPdf = ({ logo, columns, data, fileName, userName, formData }) => {
+  //   const doc = new jsPDF();
+  //   const pageW = doc.internal.pageSize.getWidth();
+  //   const pageH = doc.internal.pageSize.getHeight();
 
-    // 1) COMPANY LOGO (top-left)
-    const logoBase64 = logo;
-    if (logoBase64) {
-      doc.addImage(logoBase64, 'PNG', 10, 10, 30, 23);
-    }
+  //   // 1) COMPANY LOGO (top-left)
+  //   const logoBase64 = logo;
+  //   if (logoBase64) {
+  //     doc.addImage(logoBase64, 'PNG', 10, 10, 30, 23);
+  //   }
 
-    // 2) TITLE BOX
-    const title = `${fileName}`;
-    const textW = doc.getTextWidth(title);
-    const boxW = textW + 20;
-    const boxX = (pageW - boxW) / 2;
-    doc
-      .setFillColor('#e7ebeb')
-      .roundedRect(boxX, 18, boxW, 10, 4, 4, 'F')
-      .setTextColor('#34449B')
-      .setFontSize(12)
-      .text(title, pageW / 2, 25, { align: 'center' });
+  //   // 2) TITLE BOX
+  //   const title = `${fileName}`;
+  //   const textW = doc.getTextWidth(title);
+  //   const boxW = textW + 20;
+  //   const boxX = (pageW - boxW) / 2;
+  //   doc
+  //     .setFillColor('#e7ebeb')
+  //     .roundedRect(boxX, 18, boxW, 10, 4, 4, 'F')
+  //     .setTextColor('#34449B')
+  //     .setFontSize(12)
+  //     .text(title, pageW / 2, 25, { align: 'center' });
 
-    // 3) FILTER METADATA
-    const { fromDate, toDate, branchCode, vendor, viewMode } = formData;
-    doc.setFontSize(9);
-    doc.setTextColor('#000000');
-    doc.setFillColor(231, 235, 235);
-    doc.roundedRect(2, 35, 206, 12, 2, 2, 'F');
+  //   // 3) FILTER METADATA
+  //   const { fromDate, toDate, branchCode, vendor, viewMode } = formData;
+  //   doc.setFontSize(9);
+  //   doc.setTextColor('#000000');
+  //   doc.setFillColor(231, 235, 235);
+  //   doc.roundedRect(2, 35, 206, 12, 2, 2, 'F');
 
-    // Row 1: Labels
-    doc.setFont(undefined, 'bold');
-    doc.text('From Date', 8, 40);
-    doc.text('To Date', 37, 40);
-    doc.text('Vendor', 58, 40);
-    doc.text('Branch Code', 153, 40);
-    doc.text('View Mode', 184, 40);
+  //   // Row 1: Labels
+  //   doc.setFont(undefined, 'bold');
+  //   doc.text('From Date', 8, 40);
+  //   doc.text('To Date', 37, 40);
+  //   doc.text('Vendor', 58, 40);
+  //   doc.text('Branch Code', 153, 40);
+  //   doc.text('View Mode', 184, 40);
 
-    // Row 2: Values
-    doc.setFont(undefined, 'normal');
-    doc.text(dayjs(fromDate).format('DD-MM-YYYY'), 8, 45);
-    doc.text(dayjs(toDate).format('DD-MM-YYYY'), 37, 45);
-    doc.text(String(vendor ?? '-'), 58, 45);
-    doc.text(String(branchCode ?? '-'), 153, 45);
-    doc.text(String(viewMode.toUpperCase() ?? '-'), 184, 45);
+  //   // Row 2: Values
+  //   doc.setFont(undefined, 'normal');
+  //   doc.text(dayjs(fromDate).format('DD-MM-YYYY'), 8, 45);
+  //   doc.text(dayjs(toDate).format('DD-MM-YYYY'), 37, 45);
+  //   doc.text(String(vendor ?? '-'), 58, 45);
+  //   doc.text(String(branchCode ?? '-'), 153, 45);
+  //   doc.text(String(viewMode.toUpperCase() ?? '-'), 184, 45);
 
-    // 4) Build Table Body
-    const headerLabels = columns.map((c) => c.header);
-    const numericFields = columns
-      .map((c) => c.accessorKey)
-      .filter((k) => k && /(gstPercentage|totalTds|gst|lcAmt|rate|netAmount|toalLcAmount|totChargesLcAmt|gstAmount|totalAmount)/i.test(k));
+  //   // 4) Build Table Body
+  //   const headerLabels = columns.map((c) => c.header);
+  //   const numericFields = columns
+  //     .map((c) => c.accessorKey)
+  //     .filter((k) => k && /(gstPercentage|totalTds|gst|lcAmt|rate|netAmount|toalLcAmount|totChargesLcAmt|gstAmount|totalAmount)/i.test(k));
 
-    const body = data.map((row) =>
-      columns.map((col) => {
-        const key = col.accessorKey;
-        const raw = key ? row[key] : '';
-        if (key?.toLowerCase().includes('date')) {
-          const d = dayjs(raw);
-          return d.isValid() ? d.format('DD-MM-YYYY') : '-';
-        }
-        if (typeof raw === 'number') {
-          return raw === 0 ? '' : raw.toLocaleString('en-IN');
-        }
-        return raw ?? '';
-      })
+  //   const body = data.map((row) =>
+  //     columns.map((col) => {
+  //       const key = col.accessorKey;
+  //       const raw = key ? row[key] : '';
+  //       if (key?.toLowerCase().includes('date')) {
+  //         const d = dayjs(raw);
+  //         return d.isValid() ? d.format('DD-MM-YYYY') : '-';
+  //       }
+  //       if (typeof raw === 'number') {
+  //         return raw === 0 ? '' : raw.toLocaleString('en-IN');
+  //       }
+  //       return raw ?? '';
+  //     })
+  //   );
+
+  //   // 5) Add Total Row
+  //   const totalFields =
+  //     viewMode === 'details' ? ['lcAmt', 'gst', 'totalTds', 'netAmount'] : ['totChargeLcAmt', 'gstAmount', 'tdsAmount', 'totalAmount'];
+
+  //   const totalRow = columns.map((col, index) => {
+  //     const key = col.accessorKey;
+  //     if (index === 0) return 'Total';
+  //     if (totalFields.includes(key)) {
+  //       const sum = data.reduce((acc, row) => acc + (parseFloat(row[key]) || 0), 0);
+  //       return Math.round(sum).toLocaleString('en-IN');
+  //     }
+  //     return '';
+  //   });
+
+  //   body.push(totalRow);
+
+  //   // 6) Render Table
+  //   autoTable(doc, {
+  //     startY: 50,
+  //     head: [headerLabels],
+  //     body,
+  //     styles: {
+  //       fontSize: 8,
+  //       cellPadding: 2,
+  //       lineWidth: 0.1,
+  //       lineColor: [220, 220, 220],
+  //       overflow: 'linebreak'
+  //     },
+  //     headStyles: {
+  //       fillColor: [52, 68, 155],
+  //       textColor: 255,
+  //       halign: 'center'
+  //     },
+  //     bodyStyles: {
+  //       halign: 'left'
+  //     },
+  //     theme: 'grid',
+  //     margin: { left: 5, right: 5 },
+  //     tableWidth: 'auto',
+  //     columnStyles: generateFullWidthColumnStyles(columns, doc),
+  //     didDrawPage: (data) => {
+  //       doc.setFontSize(8).setTextColor('#555555');
+  //       doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
+  //       doc.text(`Generated By: ${userName}`, 15, pageH - 10, { align: 'left' });
+  //     },
+  //     didParseCell: (cellHookData) => {
+  //       const { cell, column, section, row } = cellHookData;
+  //       const key = columns[column.index]?.accessorKey;
+
+  //       // Skip color change for total row
+  //       if (section === 'body' && row.raw !== totalRow) {
+  //         if (['lcAmt', 'totChargeLcAmt'].includes(key)) {
+  //           cell.styles.textColor = [0, 128, 0];
+  //         } else if (['gst', 'gstAmount'].includes(key)) {
+  //           cell.styles.textColor = [255, 0, 0];
+  //         } else if (['totalTds', 'tdsAmount'].includes(key)) {
+  //           cell.styles.textColor = [0, 128, 0];
+  //         } else if (['netAmount', 'totalAmount'].includes(key)) {
+  //           cell.styles.textColor = [0, 128, 0];
+  //         }
+  //       }
+
+  //       if (section === 'body' && numericFields.includes(key)) {
+  //         cell.styles.halign = 'right';
+  //       }
+  //     }
+  //   });
+  //   doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
+  // };
+ 
+ const handleDownloadPdf = ({ logo, columns, data, fileName, userName, formData }) => {
+  
+  const doc = new jsPDF({
+    orientation: 'landscape',
+    unit: 'mm',
+    format: 'a4'
+  });
+
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+
+ 
+  const formatDate = (date) => (date ? dayjs(date).format('DD-MM-YYYY') : '');
+
+
+  if (logo) {
+    doc.addImage(logo, 'PNG', 10, 10, 30, 23);
+  }
+
+  const title = `${fileName}`;
+  const textW = doc.getTextWidth(title);
+  const boxW = textW + 20;
+  const boxX = (pageW - boxW) / 2;
+
+  doc
+    .setFillColor('#e7ebeb')
+    .roundedRect(boxX, 18, boxW, 10, 4, 4, 'F')
+    .setTextColor('#34449B')
+    .setFontSize(12)
+    .text(title, pageW / 2, 25, { align: 'center' });
+
+
+  const { fromDate, toDate, branchCode, vendor, viewMode } = formData;
+
+  doc.setFontSize(9);
+  doc.setTextColor('#000');
+  doc.setFillColor(231, 235, 235);
+
+
+  doc.roundedRect(5, 35, pageW - 10, 12, 2, 2, 'F');
+
+ 
+  doc.setFont(undefined, 'bold');
+  doc.text('From Date', 8, 40);
+  doc.text('To Date', pageW * 0.18, 40);
+  doc.text('Vendor', pageW * 0.32, 40);
+  doc.text('Branch Code', pageW * 0.70, 40);
+  doc.text('View Mode', pageW * 0.85, 40);
+
+  doc.setFont(undefined, 'normal');
+  doc.text(formatDate(fromDate), 8, 45);
+  doc.text(formatDate(toDate), pageW * 0.18, 45);
+  doc.text(String(vendor ?? '-'), pageW * 0.32, 45);
+  doc.text(String(branchCode ?? '-'), pageW * 0.70, 45);
+  doc.text(String(viewMode?.toUpperCase() ?? '-'), pageW * 0.85, 45);
+
+ 
+  const headerLabels = columns.map((c) => c.header);
+
+  const numericFields = columns
+    .map((c) => c.accessorKey)
+    .filter((k) =>
+      /(gstPercentage|totalTds|gst|lcAmt|rate|netAmount|toalLcAmount|totChargesLcAmt|gstAmount|totalAmount)/i.test(k)
     );
 
-    // 5) Add Total Row
-    const totalFields =
-      viewMode === 'details' ? ['lcAmt', 'gst', 'totalTds', 'netAmount'] : ['totChargeLcAmt', 'gstAmount', 'tdsAmount', 'totalAmount'];
 
-    const totalRow = columns.map((col, index) => {
+  const body = data.map((row) =>
+    columns.map((col) => {
       const key = col.accessorKey;
-      if (index === 0) return 'Total';
-      if (totalFields.includes(key)) {
-        const sum = data.reduce((acc, row) => acc + (parseFloat(row[key]) || 0), 0);
-        return Math.round(sum).toLocaleString('en-IN');
+      const raw = key ? row[key] : '';
+
+      // ✅ date fix (no Invalid Date)
+      if (key?.toLowerCase().includes('date')) {
+        return formatDate(raw);
       }
-      return '';
-    });
 
-    body.push(totalRow);
+    
+      if (typeof raw === 'number') {
+        return raw === 0 ? '' : raw.toLocaleString('en-IN');
+      }
 
-    // 6) Render Table
-    autoTable(doc, {
-      startY: 50,
-      head: [headerLabels],
-      body,
-      styles: {
-        fontSize: 8,
-        cellPadding: 2,
-        lineWidth: 0.1,
-        lineColor: [220, 220, 220],
-        overflow: 'linebreak'
-      },
-      headStyles: {
-        fillColor: [52, 68, 155],
-        textColor: 255,
-        halign: 'center'
-      },
-      bodyStyles: {
-        halign: 'left'
-      },
-      theme: 'grid',
-      margin: { left: 5, right: 5 },
-      tableWidth: 'auto',
-      columnStyles: generateFullWidthColumnStyles(columns, doc),
-      didDrawPage: (data) => {
-        doc.setFontSize(8).setTextColor('#555555');
-        doc.text(`Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`, pageW - 15, pageH - 10, { align: 'right' });
-        doc.text(`Generated By: ${userName}`, 15, pageH - 10, { align: 'left' });
-      },
-      didParseCell: (cellHookData) => {
-        const { cell, column, section, row } = cellHookData;
-        const key = columns[column.index]?.accessorKey;
+      return raw ?? '';
+    })
+  );
 
-        // Skip color change for total row
-        if (section === 'body' && row.raw !== totalRow) {
-          if (['lcAmt', 'totChargeLcAmt'].includes(key)) {
-            cell.styles.textColor = [0, 128, 0];
-          } else if (['gst', 'gstAmount'].includes(key)) {
-            cell.styles.textColor = [255, 0, 0];
-          } else if (['totalTds', 'tdsAmount'].includes(key)) {
-            cell.styles.textColor = [0, 128, 0];
-          } else if (['netAmount', 'totalAmount'].includes(key)) {
-            cell.styles.textColor = [0, 128, 0];
-          }
-        }
+  // const totalFields =
+  //   viewMode === 'details'
+  //     ? ['lcAmt', 'gst', 'totalTds', 'netAmount']
+  //     : ['totChargeLcAmt', 'gstAmount', 'tdsAmount', 'totalAmount'];
 
-        if (section === 'body' && numericFields.includes(key)) {
-          cell.styles.halign = 'right';
+  // const totalRow = columns.map((col, index) => {
+  //   const key = col.accessorKey;
+
+  //   if (index === 0) return 'Total';
+
+  //   if (totalFields.includes(key)) {
+  //     const sum = data.reduce((acc, row) => acc + (parseFloat(row[key]) || 0), 0);
+  //     return Math.round(sum).toLocaleString('en-IN');
+  //   }
+
+  //   return '';
+  // });
+
+  // body.push(totalRow);
+
+  // 7) TABLE
+  autoTable(doc, {
+    startY: 50,
+    head: [headerLabels],
+    body,
+    styles: {
+      fontSize: 8,
+      cellPadding: 2,
+      lineWidth: 0.1,
+      lineColor: [220, 220, 220],
+      overflow: 'linebreak'
+    },
+    headStyles: {
+      fillColor: [52, 68, 155],
+      textColor: 255,
+      halign: 'center'
+    },
+    theme: 'grid',
+    margin: { left: 5, right: 5 },
+    tableWidth: 'auto',
+    columnStyles: generateFullWidthColumnStyles(columns, doc),
+
+    didDrawPage: () => {
+      doc.setFontSize(8).setTextColor('#555');
+
+      doc.text(
+        `Generated On: ${dayjs().format('DD-MM-YYYY hh:mm A')}`,
+        pageW - 15,
+        pageH - 10,
+        { align: 'right' }
+      );
+
+      doc.text(`Generated By: ${userName}`, 15, pageH - 10);
+    },
+
+    didParseCell: (hookData) => {
+      const { cell, column, section, row } = hookData;
+      const key = columns[column.index]?.accessorKey;
+
+      if (section === 'body') {
+        if (['lcAmt', 'totChargeLcAmt'].includes(key)) {
+          cell.styles.textColor = [0, 128, 0];
+        } else if (['gst', 'gstAmount'].includes(key)) {
+          cell.styles.textColor = [255, 0, 0];
+        } else if (['totalTds', 'tdsAmount'].includes(key)) {
+          cell.styles.textColor = [0, 128, 0];
+        } else if (['netAmount', 'totalAmount'].includes(key)) {
+          cell.styles.textColor = [0, 128, 0];
         }
       }
-    });
-    doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
-  };
+
+      if (section === 'body' && numericFields.includes(key)) {
+        cell.styles.halign = 'right';
+      }
+    }
+  });
+
+  // 8) SAVE
+  doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
+};
   const generateFullWidthColumnStyles = (columns, doc) => {
     const totalColumns = columns.length;
     const pageWidth = doc.internal.pageSize.getWidth();
@@ -1016,7 +1184,7 @@ function CostReport() {
                       }))
                     }
                   >
-                    Summary
+                    Summary                                                                                                       
                   </Button>
                 </ButtonGroup>
               </div>
@@ -1176,14 +1344,14 @@ function CostReport() {
         </DialogTitle>
         <DialogContent>
           {rowData.length > 0 && (
-            <CommonReportTableGrouped
+            <CMRT2
               columns={getColumns()}
               data={rowData}
               fileName={`${formData.viewMode === 'details' ? 'Detailed' : 'Summary'} Cost Report`}
               handleDownloadExcel={handleDownloadExcel}
-              sumFields={getSumFields()}
+              // sumFields={getSumFields()}
               headerFields={headerFields}
-              handleDownloadPDF={async () => {
+              handleDownloadPdf={async () => {
                 const logoBase64 = await getLogo();
                 handleDownloadPdf({
                   logo: logoBase64,

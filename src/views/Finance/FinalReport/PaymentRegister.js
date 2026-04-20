@@ -11,7 +11,7 @@ import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
-import CommonReportTable from 'utils/CommonReportTable';
+// import CommonReportTable from 'utils/CommonReportTable';
 import CloseIcon from '@mui/icons-material/Close';
 import { TabContext } from '@mui/lab';
 import TabList from '@mui/lab/TabList';
@@ -26,6 +26,7 @@ import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
+import CMRT2 from 'utils/CMRT2';
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -414,23 +415,23 @@ function PaymentReport() {
       })
     );
 
-    const totalFields = ['PaymentAmount', 'chargeamt', 'arApOutstanding', 'arapSettled', 'onaccount'];
-    const totals = totalFields.map((key) => data.reduce((sum, row) => sum + (parseFloat(row[key]) || 0), 0));
+    // const totalFields = ['PaymentAmount', 'chargeamt', 'arApOutstanding', 'arapSettled', 'onaccount'];
+    // const totals = totalFields.map((key) => data.reduce((sum, row) => sum + (parseFloat(row[key]) || 0), 0));
 
-    const totalRow = columns.map((col, idx) => {
-      const key = col.accessorKey;
-      if (idx === 0) return 'Total';
-      if (totalFields.includes(key)) {
-        const index = totalFields.indexOf(key);
-        return totals[index].toLocaleString('en-IN', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        });
-      }
-      return '';
-    });
+    // const totalRow = columns.map((col, idx) => {
+    //   const key = col.accessorKey;
+    //   if (idx === 0) return 'Total';
+    //   if (totalFields.includes(key)) {
+    //     const index = totalFields.indexOf(key);
+    //     return totals[index].toLocaleString('en-IN', {
+    //       minimumFractionDigits: 2,
+    //       maximumFractionDigits: 2
+    //     });
+    //   }
+    //   return '';
+    // });
 
-    body.push(totalRow);
+    // body.push(totalRow);
 
     // 6) Define Column Widths (should match your table structure)
     const columnStyles = {
@@ -592,17 +593,17 @@ function PaymentReport() {
       // let totalPayable = 0;
 
       rowData.forEach((item) => {
-        const PA = parseFloat(item.PaymentAmount || 0);
-        const CA = parseFloat(item.chargeamt || 0);
-        const ARAPO = parseFloat(item.arApOutstanding || 0);
-        const ARAPS = parseFloat(item.arapSettled || 0);
-        const OA = parseFloat(item.onaccount || 0);
+        // const PA = parseFloat(item.PaymentAmount || 0);
+        // const CA = parseFloat(item.chargeamt || 0);
+        // const ARAPO = parseFloat(item.arApOutstanding || 0);
+        // const ARAPS = parseFloat(item.arapSettled || 0);
+        // const OA = parseFloat(item.onaccount || 0);
 
-        PaymentAmount += PA;
-        chargeamt += CA;
-        arApOutstanding += ARAPO;
-        arapSettled += ARAPS;
-        onaccount += OA;
+        // PaymentAmount += PA;
+        // chargeamt += CA;
+        // arApOutstanding += ARAPO;
+        // arapSettled += ARAPS;
+        // onaccount += OA;
         const row = sheet.addRow([
           item.docId || '',
           item.docDate ? dayjs(item.docDate).format('DD-MM-YYYY') : '-',
@@ -610,11 +611,16 @@ function PaymentReport() {
           item.chequeNo,
           item.chequeDate ? dayjs(item.chequeDate).format('DD-MM-YYYY') : '-',
           item.bankCashAcc || '',
-          PA,
-          CA,
-          ARAPO,
-          ARAPS,
-          OA
+          item.PaymentAmount || '',
+           item.chargeamt || '',
+            item.arApOutstanding || '',
+             item.arapSettled || '',
+             item.onaccount || '',
+          // PA,
+          // CA,
+          // ARAPO,
+          // ARAPS,
+          // OA
         ]);
 
         [7, 8, 9, 10, 11].forEach((colIndex) => {
@@ -640,21 +646,21 @@ function PaymentReport() {
       });
 
       // ====== TOTAL ROW ======
-      const totalRow = sheet.addRow(['Total', '', '', '', '', '', PaymentAmount, chargeamt, arApOutstanding, arapSettled, onaccount]);
+      // const totalRow = sheet.addRow(['Total', '', '', '', '', '', PaymentAmount, chargeamt, arApOutstanding, arapSettled, onaccount]);
 
-      totalRow.eachCell((cell, colNumber) => {
-        cell.font = { bold: true };
-        cell.alignment = { horizontal: colNumber >= 6 ? 'right' : 'left' };
-        cell.border = {
-          top: { style: 'thin' },
-          bottom: { style: 'thin' },
-          left: { style: 'thin' },
-          right: { style: 'thin' }
-        };
-        if (colNumber >= 6) {
-          cell.numFmt = '#,##0.00';
-        }
-      });
+      // totalRow.eachCell((cell, colNumber) => {
+      //   cell.font = { bold: true };
+      //   cell.alignment = { horizontal: colNumber >= 6 ? 'right' : 'left' };
+      //   cell.border = {
+      //     top: { style: 'thin' },
+      //     bottom: { style: 'thin' },
+      //     left: { style: 'thin' },
+      //     right: { style: 'thin' }
+      //   };
+      //   if (colNumber >= 6) {
+      //     cell.numFmt = '#,##0.00';
+      //   }
+      // });
 
       // ====== COLUMN WIDTHS ======
       sheet.columns = [
@@ -677,7 +683,7 @@ function PaymentReport() {
         type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
       });
 
-      saveAs(blob, `Receipt_Register_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
+      saveAs(blob, `Payment_Register_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
     } catch (error) {
       console.error('Error generating Excel:', error);
       showToast('error', 'Failed to generate Excel file');
@@ -801,12 +807,12 @@ function PaymentReport() {
         </>
         {listView && (
           <div>
-            <CommonReportTable
+            <CMRT2
               data={rowData}
               columns={reportColumns}
               isListView={listView}
               fileName={'Payment Register'}
-              sumFields={['PaymentAmount', 'chargeamt', 'arApOutstanding', 'arapSettled', 'onaccount']}
+              // sumFields={['PaymentAmount', 'chargeamt', 'arApOutstanding', 'arapSettled', 'onaccount']}
               handleDownloadPdf={() =>
                 handleDownloadPdf({
                   logo: listViewData[0]?.companyLogo,
