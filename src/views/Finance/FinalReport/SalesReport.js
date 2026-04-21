@@ -53,11 +53,13 @@ function SalesReport() {
     getPartyName();
     getAllBranches();
   }, []);
+
   const [selectedSections, setSelectedSections] = useState({
     date: false,
     branchCode: false,
     customer: false
   });
+
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
     setSelectedSections((prevState) => ({
@@ -73,12 +75,14 @@ function SalesReport() {
     customer: 'All',
     viewMode: 'details'
   });
+
   const [fieldErrors, setFieldErrors] = useState({
     fromDate: '',
     toDate: '',
     branchCode: '',
     customer: ''
   });
+
   const handleClear = () => {
     setFormData({
       fromDate: null,
@@ -87,12 +91,14 @@ function SalesReport() {
       customer: 'All',
       viewMode: 'details'
     });
+
     setFieldErrors({
       fromDate: '',
       toDate: '',
       customer: '',
       branchCode: ''
     });
+    
     setSelectedSections({});
     setRowData([]);
   };

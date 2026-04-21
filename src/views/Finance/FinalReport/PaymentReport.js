@@ -30,7 +30,8 @@ import dayjs from 'dayjs';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
 import { showToast } from 'utils/toast-component';
-import CommonReportTableGrouped from '../../../utils/CommonReportTableGrouped';
+// import CommonReportTableGrouped from '../../../utils/CommonReportTableGrouped';
+import CMRT2 from 'utils/CMRT2';
 import ActionButton from 'utils/ActionButton';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
@@ -690,22 +691,22 @@ function PaymentReport() {
     );
 
     // 5) Add Total Row
-    const totalFields =
-      viewMode === 'details'
-        ? ['tdsamt', 'chargeamt', 'settled', 'outstanding']
-        : ['paymentamt', 'tdsamt', 'onaccount', 'netamount'];
+    // const totalFields =
+    //   viewMode === 'details'
+    //     ? ['tdsamt', 'chargeamt', 'settled', 'outstanding']
+    //     : ['paymentamt', 'tdsamt', 'onaccount', 'netamount'];
 
-    const totalRow = columns.map((col, index) => {
-      const key = col.accessorKey;
-      if (index === 0) return 'Total';
-      if (totalFields.includes(key)) {
-        const sum = data.reduce((acc, row) => acc + (parseFloat(row[key]) || 0), 0);
-        return sum.toLocaleString('en-IN');
-      }
-      return '';
-    });
+    // const totalRow = columns.map((col, index) => {
+    //   const key = col.accessorKey;
+    //   if (index === 0) return 'Total';
+    //   if (totalFields.includes(key)) {
+    //     const sum = data.reduce((acc, row) => acc + (parseFloat(row[key]) || 0), 0);
+    //     return sum.toLocaleString('en-IN');
+    //   }
+    //   return '';
+    // });
 
-    body.push(totalRow);
+    // body.push(totalRow);
 
     // 6) Render Table
     autoTable(doc, {
@@ -973,14 +974,14 @@ function PaymentReport() {
         </DialogTitle>
         <DialogContent>
           {rowData.length > 0 && (
-            <CommonReportTableGrouped
+            <CMRT2
               columns={getColumns()}
               data={rowData}
               fileName={`${formData.viewMode === 'details' ? 'Detailed' : 'Summary'} Payment Report`}
               handleDownloadExcel={handleDownloadExcel}
-              sumFields={getSumFields()}
+              // sumFields={getSumFields()}
               headerFields={headerFields}
-              handleDownloadPDF={async () => {
+              handleDownloadPdf={async () => {
                 const logoBase64 = await getLogo();
                 handleDownloadPdf({
                   logo: logoBase64,

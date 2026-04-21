@@ -31,7 +31,9 @@ import dayjs from 'dayjs';
 import { getAllActiveBranches } from 'utils/CommonFunctions';
 import apiCalls from 'apicall';
 import { showToast } from 'utils/toast-component';
-import CommonReportTableGrouped from '../../../utils/CommonReportTableGrouped';
+// import CommonReportTableGrouped from '../../../utils/CommonReportTableGrouped';
+import CMRT2 from 'utils/CMRT2';
+
 import ActionButton from 'utils/ActionButton';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -1423,14 +1425,14 @@ function CostEstimateReport() {
         </DialogContent> */}
         <DialogContent>
   {rowData.length > 0 ? (
-    <CommonReportTableGrouped
+    <CMRT2
       columns={getColumns()}
       data={rowData}
       fileName={`${formData.viewMode === 'details' ? 'Detailed' : 'Summary'} Cost Estimate Report`}
       handleDownloadExcel={handleDownloadExcel}
       // sumFields={getSumFields()}
       headerFields={headerFields}
-      handleDownloadPDF={async () => {
+      handleDownloadPdf={async () => {
         const logoBase64 = await getLogo();
         handleDownloadPdf({
           logo: logoBase64,
