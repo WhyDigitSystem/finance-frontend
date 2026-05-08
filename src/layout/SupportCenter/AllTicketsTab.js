@@ -4,11 +4,12 @@ import {
   Box,
   Button,
   Chip,
+  CircularProgress,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
+ FormControl,
   IconButton,
   InputLabel,
   MenuItem,
@@ -19,7 +20,6 @@ import {
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import { useState } from 'react';
-
 import FilterListIcon from '@mui/icons-material/FilterList';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
@@ -63,9 +63,9 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
   const [isLoading, setIsLoading] = useState(false);
   const [comments, setComments] = useState([]);
-  const [comment, setComment] = useState([]);
+  const [comment, setComment] = useState('');
   const [statusFilter, setStatusFilter] = useState('All'); // Default to Open & InProgress
-
+  const [statusLoadingId, setStatusLoadingId] = useState(null);
   const [isSearchExpanded, setSearchExpanded] = useState(false);
 
   const handleOpenDialog = (ticket) => {
@@ -86,110 +86,226 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
     setComment('');
   };
 
-  const getComments = async (id) => {
-    try {
-      setIsLoading(true);
+  const getComments = async (ticketId) => {
+  try {
+    setIsLoading(true);
 
-      const response = await apiCalls('get', `ticketcontroller/getCommentsByTicketId?orgId=${orgId}&ticketId=${id}`);
+    const [myRes, otherRes] = await Promise.all([
+      apiCalls(
+        'get',
+        `ticketcontroller/getAllCommentsMyServer?ticketId=${ticketId}`
+      ),
+      apiCalls(
+        'get',
+        `ticketcontroller/getAllCommentsAnotherServer?ticketId=${ticketId}`
+      )
+    ]);
 
-      if (response.status === true && Array.isArray(response.paramObjectsMap?.commentsVO)) {
-        const transformedComments = response.paramObjectsMap.commentsVO;
+    const myComments =
+      myRes?.status &&
+      Array.isArray(myRes.paramObjectsMap?.commentsVO)
+        ? myRes.paramObjectsMap.commentsVO
+        : [];
 
-        setComments(transformedComments);
-      } else {
-        showToast('error', 'No comments found or error in response');
-      }
-    } catch (error) {
-      console.error('Error fetching comments:', error);
-      showToast('error', 'Failed to fetch comments');
-    } finally {
-      setIsLoading(false);
+    const otherComments =
+      otherRes?.status &&
+      Array.isArray(otherRes.paramObjectsMap?.commentsVO)
+        ? otherRes.paramObjectsMap.commentsVO
+        : [];
+
+    const normalizedMy = myComments.map((c) => ({
+      ...c,
+      displayName: c.createdBy || c.userName,
+      source: 'MY'
+    }));
+
+    const normalizedOther = otherComments.map((c) => ({
+      ...c,
+      displayName: c.sourceUserName
+        ? c.sourceUserName.split('@')[0]
+        : 'External',
+      source: 'OTHER'
+    }));
+
+    const merged = [...normalizedMy, ...normalizedOther].sort((a, b) => {
+      const dateA = dayjs(
+        a.commonDate?.createdon,
+        'DD-MM-YYYY hh:mm:ss A'
+      );
+
+      const dateB = dayjs(
+        b.commonDate?.createdon,
+        'DD-MM-YYYY hh:mm:ss A'
+      );
+
+      return dateB.valueOf() - dateA.valueOf();
+    });
+
+    setComments(merged);
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+
+    setComments([]);
+
+    showToast('error', 'Failed to fetch comments');
+  } finally {
+    setIsLoading(false);
+  }
+};
+const handleSubmitComment = async (commentText, editingId) => {
+  if (!commentText.trim()) {
+    showToast('error', 'Please enter a comment');
+    return;
+  }
+
+  try {
+    setIsLoading(true);
+
+    let response;
+
+    if (editingId) {
+      const updatePayload = {
+        id: editingId,
+        comments: commentText,
+        createdBy: loginUserName,
+        updatedBy: loginUserName,
+        orgId: Number(orgId),
+        ticketId: selectedTicket?.id,
+        userName: loginUserName
+      };
+
+      response = await apiCalls(
+        'put',
+        'ticketcontroller/updateComments',
+        updatePayload
+      );
     }
-  };
 
-  const handleSubmitComment = async (comment, editingId) => {
-    if (!comment.trim()) {
-      showToast('error', 'Please enter a comment');
-      return;
+    // CREATE COMMENT
+    else {
+      const createPayload = {
+        comments: commentText,
+        createdBy: loginUserName,
+        orgId: Number(orgId),
+        ticketId: selectedTicket?.id,
+        userName: loginUserName
+      };
+
+      response = await apiCalls(
+        'post',
+        'ticketcontroller/createComments',
+        createPayload
+      );
     }
 
-    console.log('Testing==<<', selectedTicket);
+    if (response?.status === true) {
+      showToast(
+        'success',
+        editingId
+          ? 'Comment updated successfully'
+          : 'Comment added successfully'
+      );
 
-    const payload = {
-      comments: comment,
-      ticketId: selectedTicket?.id,
-      createdBy: loginUserName,
-      ...(editingId && { id: editingId }),
-      orgId: orgId,
-      userName: loginUserName
-    };
+      // Refresh comments
+      await getComments(selectedTicket?.id);
 
-    try {
-      setIsLoading(true);
-
-      const response = await apiCalls('put', 'ticketcontroller/updateCreateComments', payload);
-
-      if (response.status === true) {
-        showToast('success', editingId ? 'Comment updated' : 'Comment added');
-        getComments(selectedTicket?.id);
-        setComment('');
-      } else {
-        showToast('error', response.paramObjectsMap?.errorMessage || 'Failed to save comment');
-      }
-    } catch (error) {
-      console.error('Comment submit error:', error);
-      // showToast('error', 'Something went wrong while submitting the comment');
-    } finally {
-      setIsLoading(false);
+      // Clear input
+      setComment('');
+    } else {
+      showToast(
+        'error',
+        response?.paramObjectsMap?.message ||
+          'Failed to save comment'
+      );
     }
-  };
+  } catch (error) {
+    console.error('Comment submit error:', error);
+
+    showToast(
+      'error',
+      error?.response?.data?.message ||
+        'Something went wrong while saving comment'
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleStatusChange = async (newStatus, rowData) => {
     console.log('Testing==>', rowData);
+
+    setStatusLoadingId(rowData.id);
+
     try {
       const response = await apiCalls(
-        'put',
-        `ticketcontroller/updateTicketStatus?orgId=${parseInt(orgId)}&userName=${loginUserName}&status=${newStatus}&ticketId=${rowData.id}`
-      );
+  'put',
+  `ticketcontroller/updateTicketStatus?orgId=${parseInt(orgId)}&userName=${loginUserName}&status=${newStatus}&ticketId=${rowData.id}`
+);
 
       if (response.status === true) {
         showToast('success', 'Ticket status updated');
-        // Optional: refresh ticket list
+
         getAllTickets();
       } else {
-        showToast('error', response.paramObjectsMap?.errorMessage || 'Update failed');
+        showToast(
+          'error',
+          response.paramObjectsMap?.errorMessage || 'Update failed'
+        );
       }
     } catch (error) {
       console.error('Status update error:', error);
-      // showToast('error', 'Something went wrong');
+      showToast('error', 'Something went wrong');
+    } finally {
+      setStatusLoadingId(null);
     }
   };
 
   const handleDeleteComment = async (id) => {
-    try {
-      setIsLoading(true);
+  try {
+    setIsLoading(true);
 
-      const response = await apiCalls('delete', `ticketcontroller/deleteCommentsById?id=${id}`);
+    const response = await apiCalls(
+      'delete',
+      `ticketcontroller/deleteComments?id=${id}&sourceId=1`
+    );
 
-      if (response.status) {
-        getComments(selectedTicket?.id);
-      } else {
-        showToast('error', 'error in response');
-      }
-    } catch (error) {
-      showToast('error', 'Failed to fetch comments');
-    } finally {
-      setIsLoading(false);
+    if (response?.status === true) {
+      setComments((prev) =>
+        prev.filter((comment) => comment.id !== id)
+      );
+
+      showToast('success', 'Comment deleted successfully');
+    } else {
+      showToast(
+        'error',
+        response?.paramObjectsMap?.errorMessage ||
+          'Failed to delete comment'
+      );
     }
-  };
+  } catch (error) {
+    console.error('Delete comment error:', error);
 
-  const transformedTickets = tickets.map((t) => ({
+    showToast(
+      'error',
+      error?.response?.data?.message ||
+        'Something went wrong while deleting'
+    );
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+  const transformedTickets = (tickets || []).map((t) => ({
     ...t,
-    createdonFormatted: dayjs(t.commonDate.createdon, 'DD-MM-YYYY hh:mm:ss a').format('DD MMM YYYY')
+    createdonFormatted: t.commonDate?.createdon
+      ? dayjs(t.commonDate.createdon, 'DD-MM-YYYY hh:mm:ss a').format('DD MMM YYYY')
+      : '-'
   }));
 
   const filteredTickets = transformedTickets.filter(
-    (ticket) => ticket.subject.toLowerCase().includes(search.toLowerCase()) || ticket.status.toLowerCase().includes(search.toLowerCase())
+    (ticket) =>
+      ticket.subject?.toLowerCase().includes(search.toLowerCase()) ||
+      ticket.status?.toLowerCase().includes(search.toLowerCase())
   );
 
   const filteredTicketsNew = filteredTickets.filter((ticket) =>
@@ -240,18 +356,19 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               sx={{ width: 250 }}
-              //   InputProps={{
-              //     startAdornment: (
-              //       <InputAdornment position="start">
-              //         <SearchIcon fontSize="small" />
-              //       </InputAdornment>
-              //     )
-              //   }}
+            //   InputProps={{
+            //     startAdornment: (
+            //       <InputAdornment position="start">
+            //         <SearchIcon fontSize="small" />
+            //       </InputAdornment>
+            //     )
+            //   }}
             />
           )}
         </Stack>
       </Stack>
       <DataGrid
+        loading={isLoading}
         rows={filteredTicketsNew}
         columns={[
           {
@@ -280,21 +397,27 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
             width: 160,
             renderCell: (params) => {
               if (loginUserName === 'AIP001') {
-                return (
+                return statusLoadingId === params.row.id ? (
+                  <Box display="flex" justifyContent="center" width="100%">
+                    <CircularProgress size={20} />
+                  </Box>
+                ) : (
                   <Select
                     value={params.value}
-                    onChange={(e) => handleStatusChange(e.target.value, params.row)}
+                    onChange={(e) =>
+                      handleStatusChange(e.target.value, params.row)
+                    }
                     size="small"
                     fullWidth
                     sx={{
                       '& .MuiSelect-select': {
-                        padding: '4px 8px', // Adjust padding to make the input smaller
-                        fontSize: '0.875rem' // Smaller font size
+                        padding: '4px 8px',
+                        fontSize: '0.875rem'
                       },
                       '& .MuiMenuItem-root': {
-                        fontSize: '0.875rem' // Smaller font size for the menu items
+                        fontSize: '0.875rem'
                       },
-                      height: '32px' // Adjust the height of the dropdown
+                      height: '32px'
                     }}
                   >
                     <MenuItem value="Open">Open</MenuItem>
@@ -302,19 +425,19 @@ const AllTicketsTab = ({ tickets, onRowClick, getAllTickets }) => {
                     <MenuItem value="Closed">Closed</MenuItem>
                   </Select>
                 );
-              } else {
-                return getStatusChip(params.value);
               }
+
+              return getStatusChip(params.value);
             }
           },
           ...(loginUserName === 'EBSPL/ITADMIN'
             ? [
-                {
-                  field: 'userName',
-                  headerName: 'User',
-                  width: 160
-                }
-              ]
+              {
+                field: 'userName',
+                headerName: 'User',
+                width: 160
+              }
+            ]
             : []),
 
           {
