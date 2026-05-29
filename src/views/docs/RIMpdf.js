@@ -2,7 +2,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import dayjs from 'dayjs';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import companySeal from '../../assets/images/icons/CompanySign.png'
+import companySeal from '../../assets/images/users/aipta.png'
 import accountantSign from '../../assets/images/icons/Sign.png'
 import apiCalls from 'apicall';
 import React, { useRef, useEffect, useState } from "react";
