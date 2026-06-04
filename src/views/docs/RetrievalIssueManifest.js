@@ -139,8 +139,8 @@ const RetrievalIssueManifest = () => {
 
   const getAllRetrievalManifestProvider = async () => {
     try {
-      const result = await apiCalls('get', `/reportController/getAllRetrievalManifestProvider`);
-      setData(result.paramObjectsMap.retrievalManifestProviderVOs.reverse() || []);
+      const result = await apiCalls('get', `/reportController/getAllRetrievalManifestProvider?orgId=${orgId}&finYear=${finYear}`);
+      setData(result.paramObjectsMap.retrievalManifestProviderVOs || []);
       console.log('Test', result);
     } catch (err) {
       console.log('error', err);
@@ -678,7 +678,10 @@ const RetrievalIssueManifest = () => {
                   disablePortal
                   options={receiverDetails}
                   getOptionLabel={(option) => option.name || ''}
-                  isOptionEqualToValue={(option, value) => option.id === value.id}
+                  // isOptionEqualToValue={(option, value) => option.id === value.id}
+                  isOptionEqualToValue={(option, value) =>
+                    option?.id === value?.id
+                  }
                   sx={{ width: '100%' }}
                   size="small"
                   value={formData.receiverWarehouse ? receiverDetails.find((c) => c.name === formData.receiverWarehouse) : null}
