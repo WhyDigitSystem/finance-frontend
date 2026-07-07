@@ -102,7 +102,7 @@ const FirebaseLogin = ({ ...others }) => {
 
         // Format and store in localStorage
         const screenAccessMap = {};
-        rolePermissions.forEach(screen => {
+        rolePermissions.forEach((screen) => {
           screenAccessMap[screen.screenId] = {
             screenName: screen.screenName,
             canRead: screen.canRead,
@@ -144,8 +144,7 @@ const FirebaseLogin = ({ ...others }) => {
         localStorage.setItem('userType', userVO.userType);
         localStorage.setItem('finYear', userVO.finYear);
         localStorage.setItem('LoginMessage', true);
-
-
+        localStorage.setItem('email', userVO.email);
 
         const userType = response.data?.paramObjectsMap?.userVO?.userType;
         const role = response.data?.paramObjectsMap?.userVO?.roleVO?.[0]?.role;

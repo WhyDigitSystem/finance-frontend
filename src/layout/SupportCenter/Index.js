@@ -40,13 +40,12 @@ const SupportTickets = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-
+const [email, setEmail] = useState(localStorage.getItem('email'));
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [detailDialog, setDetailDialog] = useState(false);
   const [tickets, setTickets] = useState([]);
 
   const [adminTickets, setAdminTickets] = useState([]);
-
   useEffect(() => {
     getTicketsByUser();
     getTicketsByOrgId();
@@ -133,14 +132,15 @@ const SupportTickets = () => {
       return;
     }
 
-    const payload = {
-      subject: ticket.subject,
-      description: ticket.description,
-      status: ticket.status,
-      userName: loginUserName,
-      orgId: orgId,
-      createdBy: loginUserName
-    };
+   const payload = {
+  subject: ticket.subject,
+  description: ticket.description,
+  status: ticket.status,
+  userName: loginUserName,
+  orgId: orgId,
+  createdBy: loginUserName,
+  email: email
+};
 
     try {
       setIsLoading(true);
