@@ -61,6 +61,7 @@ function MimRimRegister() {
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [open, setOpen] = useState(false);
   const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
+  const [userType, setUserType] = useState(localStorage.getItem('userType'));
   const [isLoading, setIsLoading] = useState(false);
   const [branchCodeList, setBranchCodeList] = useState([]);
   const [partyNameList, setPartyNameList] = useState([]);
@@ -923,50 +924,58 @@ function MimRimRegister() {
                   Report
                 </Typography>
                 <Box display="flex" alignItems="center">
-                  <ActionButton
-                    title="Download Excel"
-                    icon={FileDownloadIcon}
-                    onClick={() =>
-                      handleDownloadExcel({
-                        logo: listViewData[0]?.companyLogo,
-                        headerFields: [
-                          {
-                            label: 'From Date',
-                            value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : '-'
-                          },
-                          {
-                            label: 'To Date',
-                            value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : '-'
-                          },
-                          { label: 'Customer', value: formData.customer },
-                          { label: 'View Mode', value: formData.viewMode.toUpperCase() }
-                        ]
-                      })
-                    }
-                  />
-                  <ActionButton
-                    title="Download PDF"
-                    icon={PictureAsPdfIcon}
-                    onClick={() =>
-                      handleExportToPDF({
-                        logo: listViewData[0]?.companyLogo,
-                        headerFields: [
-                          {
-                            label: 'From Date',
-                            value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : '-'
-                          },
-                          {
-                            label: 'To Date',
-                            value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : '-'
-                          },
-                          { label: 'Customer', value: formData.customer },
-                          { label: 'View Mode', value: formData.viewMode.toUpperCase() }
-                        ],
-                        rowData, // ✅ This line is correct
-                        formData
-                      })
-                    }
-                  />
+                  {
+                    userType === 'OPERATIONS' || userType === 'FINANCE MANAGER' ?
+                      '' :
+                      <ActionButton
+                        title="Download Excel"
+                        icon={FileDownloadIcon}
+                        onClick={() =>
+                          handleDownloadExcel({
+                            logo: listViewData[0]?.companyLogo,
+                            headerFields: [
+                              {
+                                label: 'From Date',
+                                value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : '-'
+                              },
+                              {
+                                label: 'To Date',
+                                value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : '-'
+                              },
+                              { label: 'Customer', value: formData.customer },
+                              { label: 'View Mode', value: formData.viewMode.toUpperCase() }
+                            ]
+                          })
+                        }
+                      />
+                  }
+                  {
+                    userType === 'OPERATIONS' || userType === 'FINANCE MANAGER' ?
+                      '' :
+                      <ActionButton
+                        title="Download PDF"
+                        icon={PictureAsPdfIcon}
+                        onClick={() =>
+                          handleExportToPDF({
+                            logo: listViewData[0]?.companyLogo,
+                            headerFields: [
+                              {
+                                label: 'From Date',
+                                value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : '-'
+                              },
+                              {
+                                label: 'To Date',
+                                value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : '-'
+                              },
+                              { label: 'Customer', value: formData.customer },
+                              { label: 'View Mode', value: formData.viewMode.toUpperCase() }
+                            ],
+                            rowData, // ✅ This line is correct
+                            formData
+                          })
+                        }
+                      />
+                  }
                   <ActionButton onClick={handleClose} icon={CloseIcon} title="Close"></ActionButton>
                 </Box>
               </DialogTitle>
@@ -1057,107 +1066,107 @@ function MimRimRegister() {
                     <TableBody>
                       {formData.viewMode === 'details'
                         ? rowData.map((transaction, trxIndex) => {
-                            const details =
-                              formData.type === 'MIM'
-                                ? transaction.issueManifestProviderDetailsVOs
-                                : transaction.retrievalManifestProviderDetailsVOs;
+                          const details =
+                            formData.type === 'MIM'
+                              ? transaction.issueManifestProviderDetailsVOs
+                              : transaction.retrievalManifestProviderDetailsVOs;
 
-                            if (!details) return null;
+                          if (!details) return null;
 
-                            const kitGroups = details.reduce((groups, item) => {
-                              const kitId = item.kitId;
-                              if (!groups[kitId]) {
-                                groups[kitId] = {
-                                  kitId,
-                                  kitName: item.kitName,
-                                  kitQty: item.kitQty,
-                                  assets: []
-                                };
-                              }
-                              groups[kitId].assets.push(item);
-                              return groups;
-                            }, {});
+                          const kitGroups = details.reduce((groups, item) => {
+                            const kitId = item.kitId;
+                            if (!groups[kitId]) {
+                              groups[kitId] = {
+                                kitId,
+                                kitName: item.kitName,
+                                kitQty: item.kitQty,
+                                assets: []
+                              };
+                            }
+                            groups[kitId].assets.push(item);
+                            return groups;
+                          }, {});
 
-                            const kitGroupsArray = Object.values(kitGroups);
-                            const totalAssetsInTransaction = details.length;
+                          const kitGroupsArray = Object.values(kitGroups);
+                          const totalAssetsInTransaction = details.length;
 
-                            return (
-                              <React.Fragment key={transaction.id}>
-                                {kitGroupsArray.map((kitGroup, kitIndex) =>
-                                  kitGroup.assets.map((asset, assetIndex) => (
-                                    <TableRow key={`${transaction.id}-${kitGroup.kitId}-${asset.id}`}>
-                                      {/* Transaction-level data */}
-                                      {kitIndex === 0 && assetIndex === 0 && (
-                                        <>
-                                          <TableCell rowSpan={totalAssetsInTransaction} align="center">
-                                            {trxIndex + 1}
-                                          </TableCell>
-                                          <TableCell rowSpan={totalAssetsInTransaction} align="center">
-                                            {transaction.transactionNo}
-                                          </TableCell>
-                                          <TableCell rowSpan={totalAssetsInTransaction} align="center">
-                                            {dayjs(transaction.transactionDate).format('DD-MM-YYYY')}
-                                          </TableCell>
-                                          <TableCell rowSpan={totalAssetsInTransaction}>
-                                            {transaction.sender}
-                                            {/* {transaction.fromWarehouse} */}
-                                          </TableCell>
-                                          <TableCell rowSpan={totalAssetsInTransaction}>{transaction.receiver}</TableCell>
-                                        </>
-                                      )}
+                          return (
+                            <React.Fragment key={transaction.id}>
+                              {kitGroupsArray.map((kitGroup, kitIndex) =>
+                                kitGroup.assets.map((asset, assetIndex) => (
+                                  <TableRow key={`${transaction.id}-${kitGroup.kitId}-${asset.id}`}>
+                                    {/* Transaction-level data */}
+                                    {kitIndex === 0 && assetIndex === 0 && (
+                                      <>
+                                        <TableCell rowSpan={totalAssetsInTransaction} align="center">
+                                          {trxIndex + 1}
+                                        </TableCell>
+                                        <TableCell rowSpan={totalAssetsInTransaction} align="center">
+                                          {transaction.transactionNo}
+                                        </TableCell>
+                                        <TableCell rowSpan={totalAssetsInTransaction} align="center">
+                                          {dayjs(transaction.transactionDate).format('DD-MM-YYYY')}
+                                        </TableCell>
+                                        <TableCell rowSpan={totalAssetsInTransaction}>
+                                          {transaction.sender}
+                                          {/* {transaction.fromWarehouse} */}
+                                        </TableCell>
+                                        <TableCell rowSpan={totalAssetsInTransaction}>{transaction.receiver}</TableCell>
+                                      </>
+                                    )}
 
-                                      {/* Kit-level data */}
-                                      {assetIndex === 0 && (
-                                        <>
-                                          <TableCell rowSpan={kitGroup.assets.length} align="center">
-                                            {kitGroup.kitId}
-                                          </TableCell>
-                                          <TableCell rowSpan={kitGroup.assets.length}>{kitGroup.kitName}</TableCell>
-                                          <TableCell rowSpan={kitGroup.assets.length} align="center">
-                                            {kitGroup.kitQty}
-                                          </TableCell>
-                                        </>
-                                      )}
+                                    {/* Kit-level data */}
+                                    {assetIndex === 0 && (
+                                      <>
+                                        <TableCell rowSpan={kitGroup.assets.length} align="center">
+                                          {kitGroup.kitId}
+                                        </TableCell>
+                                        <TableCell rowSpan={kitGroup.assets.length}>{kitGroup.kitName}</TableCell>
+                                        <TableCell rowSpan={kitGroup.assets.length} align="center">
+                                          {kitGroup.kitQty}
+                                        </TableCell>
+                                      </>
+                                    )}
 
-                                      {/* Asset-level data */}
-                                      <TableCell align="center">{asset.assetCode}</TableCell>
-                                      <TableCell>{asset.asset}</TableCell>
-                                      <TableCell align="center">{asset.assetQty}</TableCell>
-                                    </TableRow>
-                                  ))
-                                )}
-
-                                {/* Separator */}
-                                {trxIndex < rowData.length - 1 && (
-                                  <TableRow>
-                                    <TableCell colSpan={11} sx={{ padding: 0 }}>
-                                      <Divider />
-                                    </TableCell>
+                                    {/* Asset-level data */}
+                                    <TableCell align="center">{asset.assetCode}</TableCell>
+                                    <TableCell>{asset.asset}</TableCell>
+                                    <TableCell align="center">{asset.assetQty}</TableCell>
                                   </TableRow>
-                                )}
-                              </React.Fragment>
-                            );
-                          })
+                                ))
+                              )}
+
+                              {/* Separator */}
+                              {trxIndex < rowData.length - 1 && (
+                                <TableRow>
+                                  <TableCell colSpan={11} sx={{ padding: 0 }}>
+                                    <Divider />
+                                  </TableCell>
+                                </TableRow>
+                              )}
+                            </React.Fragment>
+                          );
+                        })
                         : rowData.map((transaction, index) => (
-                            <TableRow key={index}>
-                              <TableCell align="center">{index + 1}</TableCell>
-                              <TableCell align="center">{transaction.transactionNo}</TableCell>
-                              <TableCell align="center">{dayjs(transaction.transactionDate).format('DD-MM-YYYY')}</TableCell>
-                              <TableCell>
-                                {/* {transaction.sender} */}
-                                {transaction.wareHouse}
-                              </TableCell>
-                              <TableCell>{transaction.receiver}</TableCell>
-                              {/* <TableCell align="center">{transaction.hsnCode}</TableCell> */}
-                              <TableCell>{transaction.transporterName || '-'}</TableCell>
-                              <TableCell align="center">{transaction.kitQty}</TableCell>
-                              {/* {formData.mim && (
+                          <TableRow key={index}>
+                            <TableCell align="center">{index + 1}</TableCell>
+                            <TableCell align="center">{transaction.transactionNo}</TableCell>
+                            <TableCell align="center">{dayjs(transaction.transactionDate).format('DD-MM-YYYY')}</TableCell>
+                            <TableCell>
+                              {/* {transaction.sender} */}
+                              {transaction.wareHouse}
+                            </TableCell>
+                            <TableCell>{transaction.receiver}</TableCell>
+                            {/* <TableCell align="center">{transaction.hsnCode}</TableCell> */}
+                            <TableCell>{transaction.transporterName || '-'}</TableCell>
+                            <TableCell align="center">{transaction.kitQty}</TableCell>
+                            {/* {formData.mim && (
                                 <TableCell align="right">
                                   ₹{transaction.amount ? Number(transaction.amount).toLocaleString('en-IN') : '0'}
                                 </TableCell>
                               )} */}
-                            </TableRow>
-                          ))}
+                          </TableRow>
+                        ))}
                     </TableBody>
                   </Table>
                 </TableContainer>

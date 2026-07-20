@@ -28,6 +28,7 @@ const POpdf = ({ row, callBackFunction, modalClose }) => {
   const [currentDateTime, setCurrentDateTime] = useState('');
   const [companyDetails, setCompanyDetails] = useState({});
   const orgId = localStorage.getItem('orgId');
+  const [userType, setUserType] = useState(localStorage.getItem('userType'));
   const componentRef = useRef();
 
   const styles = {
@@ -221,7 +222,7 @@ const POpdf = ({ row, callBackFunction, modalClose }) => {
                   <strong style={{ fontSize: '13px' }}>{localStorage.getItem('companyName')}</strong>
                   {companyDetails.gst && (
                     <div className="d-flex flex-row" style={{ fontSize: '12px', margin: '0px' }}>
-                     <strong style={{ fontSize: '11px' }}> GSTIN: {companyDetails.gst} </strong>
+                      <strong style={{ fontSize: '11px' }}> GSTIN: {companyDetails.gst} </strong>
                     </div>
                   )}
                   {companyDetails.cin && (
@@ -335,7 +336,7 @@ const POpdf = ({ row, callBackFunction, modalClose }) => {
                     lineHeight: '1.6',
                     wordBreak: 'break-word',
                     flex: 1,
-                     marginTop: '3px'
+                    marginTop: '3px'
                   }}
                 >
                   {row.gstIn}
@@ -533,9 +534,13 @@ const POpdf = ({ row, callBackFunction, modalClose }) => {
       </DialogContent>
 
       <DialogActions>
-        <Button variant="contained" color="primary" onClick={handleDownloadPdf} startIcon={<DownloadIcon />} disabled={loading}>
-          {loading ? <CircularProgress size={20} /> : 'PDF'}
-        </Button>
+        {
+          userType === 'OPERATIONS' || userType === 'FINANCE MANAGER' ?
+            '' :
+            <Button variant="contained" color="primary" onClick={handleDownloadPdf} startIcon={<DownloadIcon />} disabled={loading}>
+              {loading ? <CircularProgress size={20} /> : 'PDF'}
+            </Button>
+        }
         <Button variant="contained" color="error" onClick={handleClose}>
           Close
         </Button>

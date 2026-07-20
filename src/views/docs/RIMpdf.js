@@ -31,6 +31,7 @@ const RIMpdf = ({ row, callBackFunction, modalClose }) => {
   const [bankDetails, setBankDetails] = useState([]);
   const [companyDetails, setCompanyDetails] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [userType, setUserType] = useState(localStorage.getItem('userType'));
   const [selectedCopy, setSelectedCopy] = useState('');
   const [copyDialogOpen, setCopyDialogOpen] = useState(false);
   const componentRef = useRef();
@@ -649,9 +650,13 @@ const RIMpdf = ({ row, callBackFunction, modalClose }) => {
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => setCopyDialogOpen(true)} color="primary" variant="contained" startIcon={<DownloadIcon />}>
-          PDF
-        </Button>
+        {
+          userType === 'FINANCE MANAGER' ?
+            '' :
+            <Button onClick={() => setCopyDialogOpen(true)} color="primary" variant="contained" startIcon={<DownloadIcon />}>
+              PDF
+            </Button>
+        }
         <Button onClick={modalClose} color="secondary">
           Close
         </Button>

@@ -147,6 +147,7 @@ const CommonFilePL = ({
   //
   const [orgId] = useState(localStorage.getItem('orgId'));
   const [userName] = useState(localStorage.getItem('userName'));
+  const [userType, setUserType] = useState(localStorage.getItem('userType'));
   const [listViewData, setListViewData] = useState([]);
   const getCompanyDetails = async () => {
     try {
@@ -696,16 +697,24 @@ const CommonFilePL = ({
       )}
       renderTopToolbarCustomActions={() => (
         <Box sx={{ marginLeft: '20px' }}>
-          <ActionButton
-            title="Download Excel"
-            icon={FileDownloadIcon}
-            onClick={() => handleExportToExcel({ columns, data, fileName, filters, logo: listViewData[0]?.companyLogo, userName })}
-          />
-          <ActionButton
-            title="Download PDF"
-            icon={PictureAsPdfIcon}
-            onClick={() => handleExportToPDF({ columns, data, fileName, filters, logo: listViewData[0]?.companyLogo })}
-          />
+          {
+            userType === 'OPERATIONS' || userType === 'FINANCE MANAGER' ?
+              '' :
+              <ActionButton
+                title="Download Excel"
+                icon={FileDownloadIcon}
+                onClick={() => handleExportToExcel({ columns, data, fileName, filters, logo: listViewData[0]?.companyLogo, userName })}
+              />
+          }
+          {
+            userType === 'OPERATIONS' || userType === 'FINANCE MANAGER' ?
+              '' :
+              <ActionButton
+                title="Download PDF"
+                icon={PictureAsPdfIcon}
+                onClick={() => handleExportToPDF({ columns, data, fileName, filters, logo: listViewData[0]?.companyLogo })}
+              />
+          }
           <Box
             sx={{
               display: 'inline-flex',

@@ -14,6 +14,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   const [bankDetails, setBankDetails] = useState([]);
   const [companyDetails, setCompanyDetails] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [userType, setUserType] = useState(localStorage.getItem('userType'));
 
   const styles = {
     container: {
@@ -1506,9 +1507,13 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleDownloadPdf} color="primary" variant="contained" startIcon={<DownloadIcon />}>
-          PDF
-        </Button>
+        {
+          userType === 'OPERATIONS' || userType === 'FINANCE MANAGER' ?
+            '' :
+            <Button onClick={handleDownloadPdf} color="primary" variant="contained" startIcon={<DownloadIcon />}>
+              PDF
+            </Button>
+        }
         <Button onClick={modalClose} color="secondary">
           Close
         </Button>

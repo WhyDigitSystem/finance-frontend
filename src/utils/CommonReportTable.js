@@ -20,13 +20,14 @@ const CommonReportTable = ({
   handleDownloadPdf,
   sumFields = [],
   headerFields = [],
- showDownloadButtonsPdf = true,
- showDownloadButtonsExcel = true, // <- add this line
+  showDownloadButtonsPdf = true,
+  showDownloadButtonsExcel = true, // <- add this line
 
   filters = [], // [{ label, value, options, onChange }]
-  onFilterDone = () => {}
+  onFilterDone = () => { }
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [userType, setUserType] = useState(localStorage.getItem('userType'));
   const theme = useTheme();
 
   const chipSX = { height: 24, padding: '0 6px' };
@@ -244,32 +245,36 @@ const CommonReportTable = ({
         }}
         renderTopToolbarCustomActions={({ table }) => (
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
-               {showDownloadButtonsExcel && (
-            <Box>
-              <ActionButton
-                title="Download Excel"
-                icon={FileDownloadIcon}
-                onClick={handleDownloadExcel}
-                isLoading={isLoading}
-                margin="0 8px 0 8px"
-
-              />
-            </Box>
-            
-               )}
-            {showDownloadButtonsPdf && (
-               
-            <Box>
-              <ActionButton
-                title="Download PDF"
-                icon={PictureAsPdfIcon}
-                onClick={handleDownloadPdf}
-                isLoading={isLoading}
-                margin="0 8px 0 8px"
-              />
-            </Box>
-            
-                )}
+            {
+              userType !== 'OPERATIONS' &&
+              userType !== 'FINANCE MANAGER' &&
+              showDownloadButtonsExcel && (
+                <Box>
+                  <ActionButton
+                    title="Download Excel"
+                    icon={FileDownloadIcon}
+                    onClick={handleDownloadExcel}
+                    isLoading={isLoading}
+                    margin="0 8px 0 8px"
+                  />
+                </Box>
+              )
+            }
+            {
+              userType !== 'OPERATIONS' &&
+              userType !== 'FINANCE MANAGER' &&
+              showDownloadButtonsPdf && (
+                <Box>
+                  <ActionButton
+                    title="Download PDF"
+                    icon={PictureAsPdfIcon}
+                    onClick={handleDownloadPdf}
+                    isLoading={isLoading}
+                    margin="0 8px 0 8px"
+                  />
+                </Box>
+              )
+            }
 
             <Box
               sx={{

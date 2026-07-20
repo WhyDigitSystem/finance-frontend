@@ -28,6 +28,7 @@ const Quotationpdf = ({ row, callBackFunction, modalClose }) => {
   const [currentDateTime, setCurrentDateTime] = useState('');
   const [companyDetails, setCompanyDetails] = useState({});
   const orgId = localStorage.getItem('orgId');
+  const [userType, setUserType] = useState(localStorage.getItem('userType'));
   // const componentRef = useRef();
 
   const styles = {
@@ -502,9 +503,13 @@ const Quotationpdf = ({ row, callBackFunction, modalClose }) => {
       </DialogContent>
 
       <DialogActions>
-        <Button variant="contained" color="primary" onClick={handleDownloadPdf} startIcon={<DownloadIcon />} disabled={loading}>
-          {loading ? <CircularProgress size={20} /> : 'PDF'}
-        </Button>
+        {
+          userType === 'OPERATIONS' || userType === 'FINANCE MANAGER' ?
+            '' :
+            <Button variant="contained" color="primary" onClick={handleDownloadPdf} startIcon={<DownloadIcon />} disabled={loading}>
+              {loading ? <CircularProgress size={20} /> : 'PDF'}
+            </Button>
+        }
         <Button variant="contained" color="error" onClick={handleClose}>
           Close
         </Button>

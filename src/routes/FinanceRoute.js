@@ -5,6 +5,7 @@ import MainLayout from 'layout/MainLayout';
 import Loadable from 'ui-component/Loadable';
 import ArAging from 'views/Finance/taxInvoice/ArAging';
 import ArOutstanding from 'views/Finance/taxInvoice/ArOutstanding';
+import Dashboard2 from 'views/dashboardNew/dashboard2';
 const TDSRegister = Loadable(lazy(() => import('views/Finance/FinalReport/TDSRegister')));
 const GSTRegister = Loadable(lazy(() => import('views/Finance/FinalReport/GSTRegister')));
 const CostEstimateReport = Loadable(lazy(() => import('views/Finance/FinalReport/CostEstimateReport')));
@@ -142,6 +143,10 @@ const FinanceRoute = {
     {
       path: '/dashboard/Dashboard',
       element: <Dashboard />
+    },
+    {
+      path: '/dashboard2',
+      element: <Dashboard2 />
     },
     {
       path: '/companysetup/createcompany',

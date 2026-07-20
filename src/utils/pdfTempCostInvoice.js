@@ -14,6 +14,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
   const [companyDetails, setCompanyDetails] = useState([]);
   const [currentDateTime, setCurrentDateTime] = useState('');
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [userType, setUserType] = useState(localStorage.getItem('userType'));
 
   const styles = {
     container: {
@@ -562,7 +563,7 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
                       color: '#333'
                     }}
                   >
-                    
+
                     {parseFloat(
                       (Number(row.actBillCurrAmt) - Number(row.actBillLcAmt)).toFixed(2)
                     ).toLocaleString('en-IN', {
@@ -692,9 +693,13 @@ const GeneratePdfTemp = ({ row, callBackFunction, modalClose }) => {
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleDownloadPdf} color="primary" variant="contained" startIcon={<DownloadIcon />}>
-          PDF
-        </Button>
+        {
+          userType === 'OPERATIONS' || userType === 'FINANCE MANAGER' ?
+            '' :
+            <Button onClick={handleDownloadPdf} color="primary" variant="contained" startIcon={<DownloadIcon />}>
+              PDF
+            </Button>
+        }
         <Button onClick={modalClose} color="secondary">
           Close
         </Button>

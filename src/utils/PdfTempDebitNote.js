@@ -13,6 +13,7 @@ const GeneratePdfTempDN = ({ row, callBackFunction, modalClose }) => {
   const [currentDateTime, setCurrentDateTime] = useState('');
   const [bankDetails, setBankDetails] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [userType, setUserType] = useState(localStorage.getItem('userType'));
 
   const styles = {
     container: {
@@ -441,10 +442,10 @@ const GeneratePdfTempDN = ({ row, callBackFunction, modalClose }) => {
 
           <div className="d-flex flex-column">
             <div
-            style={{
-              // fontStyle: 'italic',
-              textAlign: 'right'
-            }}
+              style={{
+                // fontStyle: 'italic',
+                textAlign: 'right'
+              }}
             >
               Total Charges Amount:{' '}
               <span
@@ -460,10 +461,10 @@ const GeneratePdfTempDN = ({ row, callBackFunction, modalClose }) => {
               </span>
             </div>
             <div
-            style={{
-              // fontStyle: 'italic',
-              textAlign: 'right'
-            }}
+              style={{
+                // fontStyle: 'italic',
+                textAlign: 'right'
+              }}
             >
               Total Tax Amount:{' '}
               <span
@@ -479,10 +480,10 @@ const GeneratePdfTempDN = ({ row, callBackFunction, modalClose }) => {
               </span>
             </div>
             <div
-            style={{
-              // fontStyle: 'italic',
-              textAlign: 'right'
-            }}
+              style={{
+                // fontStyle: 'italic',
+                textAlign: 'right'
+              }}
             >
               Total TDS Amount:{' '}
               <span
@@ -669,9 +670,13 @@ const GeneratePdfTempDN = ({ row, callBackFunction, modalClose }) => {
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleDownloadPdf} color="primary" variant="contained" startIcon={<DownloadIcon />}>
-          PDF
-        </Button>
+        {
+          userType === 'OPERATIONS' || userType === 'FINANCE MANAGER' ?
+            '' :
+            <Button onClick={handleDownloadPdf} color="primary" variant="contained" startIcon={<DownloadIcon />}>
+              PDF
+            </Button>
+        }
         <Button onClick={modalClose} color="secondary">
           Close
         </Button>

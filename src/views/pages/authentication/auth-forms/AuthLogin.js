@@ -188,6 +188,11 @@ const FirebaseLogin = ({ ...others }) => {
           console.error('Error fetching data in Company Name:', error);
         }
         navigate('/dashboard/dashboard');
+        {
+          userType === 'ADMIN' ?
+          navigate('/dashboard/dashboard') :
+          navigate('/dashboard2')
+        }
 
         setTimeout(() => {
           window.location.reload();

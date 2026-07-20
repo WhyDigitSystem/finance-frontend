@@ -14,6 +14,7 @@ const GeneratePdfTempIRN = ({ row, callBackFunction, modalClose }) => {
   const [bankDetails, setBankDetails] = useState([]);
   const [companyDetails, setCompanyDetails] = useState([]);
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
+  const [userType, setUserType] = useState(localStorage.getItem('userType'));
   const styles = {
     container: {
       textAlign: 'center',
@@ -501,36 +502,36 @@ const GeneratePdfTempIRN = ({ row, callBackFunction, modalClose }) => {
             Authorized Signatory
           </div>
 
-          
+
         </div>
         {/* <!-- Footer Section --> */}
+        <div
+          style={{
+            borderTop: '2px solid #000000',
+            paddingTop: '10px',
+            fontSize: '12px',
+            color: '#777',
+            textAlign: 'center',
+            // position: 'absolute',
+            bottom: '0',
+            width: '100%',
+            marginTop: '5%'
+          }}
+        >
+          {/* <!-- Footer Section --> */}
           <div
             style={{
-              borderTop: '2px solid #000000',
-              paddingTop: '10px',
+              marginBottom: '20px',
+              marginLeft: '50px',
+              textAlign: 'left',
               fontSize: '12px',
-              color: '#777',
-              textAlign: 'center',
-              // position: 'absolute',
-              bottom: '0',
-              width: '100%',
-              marginTop: '5%'
+              color: '#777'
             }}
           >
-            {/* <!-- Footer Section --> */}
-            <div
-              style={{
-                marginBottom: '20px',
-                marginLeft: '50px',
-                textAlign: 'left',
-                fontSize: '12px',
-                color: '#777'
-              }}
-            >
-              <div>{currentDateTime}</div>
-              <div>Printed By: {localStorage.getItem('userName')}</div>
-            </div>
+            <div>{currentDateTime}</div>
+            <div>Printed By: {localStorage.getItem('userName')}</div>
           </div>
+        </div>
         {row.irnCreditNoteAnnexureVO?.length > 0 && (
           <div
             id="annexure-content"
@@ -611,9 +612,13 @@ const GeneratePdfTempIRN = ({ row, callBackFunction, modalClose }) => {
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleDownloadPdf} color="primary" variant="contained" startIcon={<DownloadIcon />}>
-          PDF
-        </Button>
+        {
+          userType === 'OPERATIONS' || userType === 'FINANCE MANAGER' ?
+            '' :
+            <Button onClick={handleDownloadPdf} color="primary" variant="contained" startIcon={<DownloadIcon />}>
+              PDF
+            </Button>
+        }
         <Button onClick={modalClose} color="secondary">
           Close
         </Button>
