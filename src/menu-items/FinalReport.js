@@ -17,6 +17,13 @@ const hasScreenAccess = (screenId) => {
 // Child items with access check
 const reportChildren = [
   {
+    id: 'console',
+    title: 'Console',
+    type: 'item',
+    url: '/finance/FinalReport/Console',
+    visible: hasScreenAccess('CONR')
+  },
+  {
     id: 'partyLedger',
     title: 'Party Ledger',
     type: 'item',
