@@ -498,7 +498,7 @@ const Receipt = ({ selectedRow }) => {
         customerName: formData.customerName,
         customerCode: formData.customerCode,
         tdsAmt: parseInt(formData.tdsAmt),
-        receiptAmt: parseInt(formData.receiptAmt),
+        receiptAmt: parseFloat(formData.receiptAmt),
         // currency: formData.currency,
         chequeUtiNo: formData.chequeUtiNo,
         chequeUtiDate: formData.chequeUtiDate ? dayjs(formData.chequeUtiDate).format('YYYY-MM-DD') : null,
