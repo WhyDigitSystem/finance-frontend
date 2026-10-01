@@ -740,6 +740,39 @@ function MimRimRegister() {
     }
   };
 
+  // ===== Totals for on-screen report =====
+  const calculateTotals = () => {
+    let totalKitQty = 0;
+    let totalProductQty = 0;
+
+    rowData.forEach((transaction) => {
+      if (!transaction) return;
+
+      if (formData.viewMode === 'summary') {
+        totalKitQty += Number(transaction.kitQty) || 0;
+        return;
+      }
+
+      const details =
+        formData.type === 'MIM' ? transaction.issueManifestProviderDetailsVOs : transaction.retrievalManifestProviderDetailsVOs;
+      if (!details) return;
+
+      // count each kit only once per transaction (same grouping as the table)
+      const seenKits = {};
+      details.forEach((item) => {
+        if (!seenKits[item.kitId]) {
+          seenKits[item.kitId] = true;
+          totalKitQty += Number(item.kitQty) || 0;
+        }
+        totalProductQty += Number(item.assetQty) || 0;
+      });
+    });
+
+    return { totalKitQty, totalProductQty };
+  };
+
+  const { totalKitQty, totalProductQty } = calculateTotals();
+
   return (
     <>
       <div className="card w-full bg-base-100 shadow-xl" style={{ padding: '10px', borderRadius: '10px' }}>
@@ -924,58 +957,58 @@ function MimRimRegister() {
                   Report
                 </Typography>
                 <Box display="flex" alignItems="center">
-                  {
-                    userType === 'OPERATIONS' || userType === 'FINANCE MANAGER' ?
-                      '' :
-                      <ActionButton
-                        title="Download Excel"
-                        icon={FileDownloadIcon}
-                        onClick={() =>
-                          handleDownloadExcel({
-                            logo: listViewData[0]?.companyLogo,
-                            headerFields: [
-                              {
-                                label: 'From Date',
-                                value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : '-'
-                              },
-                              {
-                                label: 'To Date',
-                                value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : '-'
-                              },
-                              { label: 'Customer', value: formData.customer },
-                              { label: 'View Mode', value: formData.viewMode.toUpperCase() }
-                            ]
-                          })
-                        }
-                      />
-                  }
-                  {
-                    userType === 'OPERATIONS' || userType === 'FINANCE MANAGER' ?
-                      '' :
-                      <ActionButton
-                        title="Download PDF"
-                        icon={PictureAsPdfIcon}
-                        onClick={() =>
-                          handleExportToPDF({
-                            logo: listViewData[0]?.companyLogo,
-                            headerFields: [
-                              {
-                                label: 'From Date',
-                                value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : '-'
-                              },
-                              {
-                                label: 'To Date',
-                                value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : '-'
-                              },
-                              { label: 'Customer', value: formData.customer },
-                              { label: 'View Mode', value: formData.viewMode.toUpperCase() }
-                            ],
-                            rowData, // ✅ This line is correct
-                            formData
-                          })
-                        }
-                      />
-                  }
+                  {userType === 'OPERATIONS' || userType === 'FINANCE MANAGER' ? (
+                    ''
+                  ) : (
+                    <ActionButton
+                      title="Download Excel"
+                      icon={FileDownloadIcon}
+                      onClick={() =>
+                        handleDownloadExcel({
+                          logo: listViewData[0]?.companyLogo,
+                          headerFields: [
+                            {
+                              label: 'From Date',
+                              value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : '-'
+                            },
+                            {
+                              label: 'To Date',
+                              value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : '-'
+                            },
+                            { label: 'Customer', value: formData.customer },
+                            { label: 'View Mode', value: formData.viewMode.toUpperCase() }
+                          ]
+                        })
+                      }
+                    />
+                  )}
+                  {userType === 'OPERATIONS' || userType === 'FINANCE MANAGER' ? (
+                    ''
+                  ) : (
+                    <ActionButton
+                      title="Download PDF"
+                      icon={PictureAsPdfIcon}
+                      onClick={() =>
+                        handleExportToPDF({
+                          logo: listViewData[0]?.companyLogo,
+                          headerFields: [
+                            {
+                              label: 'From Date',
+                              value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : '-'
+                            },
+                            {
+                              label: 'To Date',
+                              value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : '-'
+                            },
+                            { label: 'Customer', value: formData.customer },
+                            { label: 'View Mode', value: formData.viewMode.toUpperCase() }
+                          ],
+                          rowData, // ✅ This line is correct
+                          formData
+                        })
+                      }
+                    />
+                  )}
                   <ActionButton onClick={handleClose} icon={CloseIcon} title="Close"></ActionButton>
                 </Box>
               </DialogTitle>
@@ -1066,105 +1099,131 @@ function MimRimRegister() {
                     <TableBody>
                       {formData.viewMode === 'details'
                         ? rowData.map((transaction, trxIndex) => {
-                          const details =
-                            formData.type === 'MIM'
-                              ? transaction.issueManifestProviderDetailsVOs
-                              : transaction.retrievalManifestProviderDetailsVOs;
+                            const details =
+                              formData.type === 'MIM'
+                                ? transaction.issueManifestProviderDetailsVOs
+                                : transaction.retrievalManifestProviderDetailsVOs;
 
-                          if (!details) return null;
+                            if (!details) return null;
 
-                          const kitGroups = details.reduce((groups, item) => {
-                            const kitId = item.kitId;
-                            if (!groups[kitId]) {
-                              groups[kitId] = {
-                                kitId,
-                                kitName: item.kitName,
-                                kitQty: item.kitQty,
-                                assets: []
-                              };
-                            }
-                            groups[kitId].assets.push(item);
-                            return groups;
-                          }, {});
+                            const kitGroups = details.reduce((groups, item) => {
+                              const kitId = item.kitId;
+                              if (!groups[kitId]) {
+                                groups[kitId] = {
+                                  kitId,
+                                  kitName: item.kitName,
+                                  kitQty: item.kitQty,
+                                  assets: []
+                                };
+                              }
+                              groups[kitId].assets.push(item);
+                              return groups;
+                            }, {});
 
-                          const kitGroupsArray = Object.values(kitGroups);
-                          const totalAssetsInTransaction = details.length;
+                            const kitGroupsArray = Object.values(kitGroups);
+                            const totalAssetsInTransaction = details.length;
 
-                          return (
-                            <React.Fragment key={transaction.id}>
-                              {kitGroupsArray.map((kitGroup, kitIndex) =>
-                                kitGroup.assets.map((asset, assetIndex) => (
-                                  <TableRow key={`${transaction.id}-${kitGroup.kitId}-${asset.id}`}>
-                                    {/* Transaction-level data */}
-                                    {kitIndex === 0 && assetIndex === 0 && (
-                                      <>
-                                        <TableCell rowSpan={totalAssetsInTransaction} align="center">
-                                          {trxIndex + 1}
-                                        </TableCell>
-                                        <TableCell rowSpan={totalAssetsInTransaction} align="center">
-                                          {transaction.transactionNo}
-                                        </TableCell>
-                                        <TableCell rowSpan={totalAssetsInTransaction} align="center">
-                                          {dayjs(transaction.transactionDate).format('DD-MM-YYYY')}
-                                        </TableCell>
-                                        <TableCell rowSpan={totalAssetsInTransaction}>
-                                          {transaction.sender}
-                                          {/* {transaction.fromWarehouse} */}
-                                        </TableCell>
-                                        <TableCell rowSpan={totalAssetsInTransaction}>{transaction.receiver}</TableCell>
-                                      </>
-                                    )}
+                            return (
+                              <React.Fragment key={transaction.id}>
+                                {kitGroupsArray.map((kitGroup, kitIndex) =>
+                                  kitGroup.assets.map((asset, assetIndex) => (
+                                    <TableRow key={`${transaction.id}-${kitGroup.kitId}-${asset.id}`}>
+                                      {/* Transaction-level data */}
+                                      {kitIndex === 0 && assetIndex === 0 && (
+                                        <>
+                                          <TableCell rowSpan={totalAssetsInTransaction} align="center">
+                                            {trxIndex + 1}
+                                          </TableCell>
+                                          <TableCell rowSpan={totalAssetsInTransaction} align="center">
+                                            {transaction.transactionNo}
+                                          </TableCell>
+                                          <TableCell rowSpan={totalAssetsInTransaction} align="center">
+                                            {dayjs(transaction.transactionDate).format('DD-MM-YYYY')}
+                                          </TableCell>
+                                          <TableCell rowSpan={totalAssetsInTransaction}>
+                                            {transaction.sender}
+                                            {/* {transaction.fromWarehouse} */}
+                                          </TableCell>
+                                          <TableCell rowSpan={totalAssetsInTransaction}>{transaction.receiver}</TableCell>
+                                        </>
+                                      )}
 
-                                    {/* Kit-level data */}
-                                    {assetIndex === 0 && (
-                                      <>
-                                        <TableCell rowSpan={kitGroup.assets.length} align="center">
-                                          {kitGroup.kitId}
-                                        </TableCell>
-                                        <TableCell rowSpan={kitGroup.assets.length}>{kitGroup.kitName}</TableCell>
-                                        <TableCell rowSpan={kitGroup.assets.length} align="center">
-                                          {kitGroup.kitQty}
-                                        </TableCell>
-                                      </>
-                                    )}
+                                      {/* Kit-level data */}
+                                      {assetIndex === 0 && (
+                                        <>
+                                          <TableCell rowSpan={kitGroup.assets.length} align="center">
+                                            {kitGroup.kitId}
+                                          </TableCell>
+                                          <TableCell rowSpan={kitGroup.assets.length}>{kitGroup.kitName}</TableCell>
+                                          <TableCell rowSpan={kitGroup.assets.length} align="center">
+                                            {kitGroup.kitQty}
+                                          </TableCell>
+                                        </>
+                                      )}
 
-                                    {/* Asset-level data */}
-                                    <TableCell align="center">{asset.assetCode}</TableCell>
-                                    <TableCell>{asset.asset}</TableCell>
-                                    <TableCell align="center">{asset.assetQty}</TableCell>
+                                      {/* Asset-level data */}
+                                      <TableCell align="center">{asset.assetCode}</TableCell>
+                                      <TableCell>{asset.asset}</TableCell>
+                                      <TableCell align="center">{asset.assetQty}</TableCell>
+                                    </TableRow>
+                                  ))
+                                )}
+
+                                {/* Separator */}
+                                {trxIndex < rowData.length - 1 && (
+                                  <TableRow>
+                                    <TableCell colSpan={11} sx={{ padding: 0 }}>
+                                      <Divider />
+                                    </TableCell>
                                   </TableRow>
-                                ))
-                              )}
-
-                              {/* Separator */}
-                              {trxIndex < rowData.length - 1 && (
-                                <TableRow>
-                                  <TableCell colSpan={11} sx={{ padding: 0 }}>
-                                    <Divider />
-                                  </TableCell>
-                                </TableRow>
-                              )}
-                            </React.Fragment>
-                          );
-                        })
+                                )}
+                              </React.Fragment>
+                            );
+                          })
                         : rowData.map((transaction, index) => (
-                          <TableRow key={index}>
-                            <TableCell align="center">{index + 1}</TableCell>
-                            <TableCell align="center">{transaction.transactionNo}</TableCell>
-                            <TableCell align="center">{dayjs(transaction.transactionDate).format('DD-MM-YYYY')}</TableCell>
-                            <TableCell>
-                              {/* {transaction.sender} */}
-                              {transaction.wareHouse}
-                            </TableCell>
-                            <TableCell>{transaction.receiver}</TableCell>
-                            {/* <TableCell align="center">{transaction.hsnCode}</TableCell> */}
-                            <TableCell>{transaction.transporterName || '-'}</TableCell>
-                            <TableCell align="center">{transaction.kitQty}</TableCell>
-                            {/* {formData.mim && (
+                            <TableRow key={index}>
+                              <TableCell align="center">{index + 1}</TableCell>
+                              <TableCell align="center">{transaction.transactionNo}</TableCell>
+                              <TableCell align="center">{dayjs(transaction.transactionDate).format('DD-MM-YYYY')}</TableCell>
+                              <TableCell>
+                                {/* {transaction.sender} */}
+                                {transaction.wareHouse}
+                              </TableCell>
+                              <TableCell>{transaction.receiver}</TableCell>
+                              {/* <TableCell align="center">{transaction.hsnCode}</TableCell> */}
+                              <TableCell>{transaction.transporterName || '-'}</TableCell>
+                              <TableCell align="center">{transaction.kitQty}</TableCell>
+                              {/* {formData.mim && (
                                 <TableCell align="right">
                                   ₹{transaction.amount ? Number(transaction.amount).toLocaleString('en-IN') : '0'}
                                 </TableCell>
                               )} */}
+                            </TableRow>
+                          ))}
+
+                      {/* ===== TOTAL ROW ===== */}
+                      {rowData.length > 0 &&
+                        (formData.viewMode === 'details' ? (
+                          <TableRow>
+                            <TableCell colSpan={7} align="right" sx={{ fontWeight: 700 }}>
+                              Total
+                            </TableCell>
+                            <TableCell align="center" sx={{ fontWeight: 700 }}>
+                              {totalKitQty}
+                            </TableCell>
+                            <TableCell colSpan={2} />
+                            <TableCell align="center" sx={{ fontWeight: 700 }}>
+                              {totalProductQty}
+                            </TableCell>
+                          </TableRow>
+                        ) : (
+                          <TableRow>
+                            <TableCell colSpan={6} align="right" sx={{ fontWeight: 700 }}>
+                              Total
+                            </TableCell>
+                            <TableCell align="center" sx={{ fontWeight: 700 }}>
+                              {totalKitQty}
+                            </TableCell>
                           </TableRow>
                         ))}
                     </TableBody>
