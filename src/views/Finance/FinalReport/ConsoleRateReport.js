@@ -105,7 +105,7 @@ const ConsolidationCostInvoiceReport = () => {
         },
         {
           accessorKey: 'gstInputLcAmt',
-          header: 'GST Input',
+          header: 'GST',
           size: 120,
           Cell: ({ cell }) => <div style={{ textAlign: 'right', padding: 8 }}>{formatAmount(cell.getValue())}</div>
         },
@@ -305,7 +305,7 @@ const ConsolidationCostInvoiceReport = () => {
   // ====== EXCEL DOWNLOAD ======
   const handleDownloadExcel = async () => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Consolidation Cost Invoice');
+    const worksheet = workbook.addWorksheet('Console Cost Invoice');
 
     worksheet.mergeCells('A1:B4');
 
@@ -330,7 +330,7 @@ const ConsolidationCostInvoiceReport = () => {
     }
 
     worksheet.mergeCells('C2:G3');
-    worksheet.getCell('C2').value = 'Consolidation Cost Invoice Report';
+    worksheet.getCell('C2').value = 'Consolidation Cost';
     worksheet.getCell('C2').font = { size: 16, bold: true };
     worksheet.getCell('C2').alignment = { horizontal: 'center', vertical: 'middle' };
 
@@ -518,7 +518,7 @@ const ConsolidationCostInvoiceReport = () => {
             alignItems: 'center'
           }}
         >
-          <span>Consolidation Cost Invoice Report</span>
+          <span>Console Cost</span>
 
           <IconButton aria-label="close" onClick={handleCloseModal} sx={{ color: '#fff' }}>
             <CloseIcon />
@@ -530,7 +530,7 @@ const ConsolidationCostInvoiceReport = () => {
             <CMRT2
               data={getData}
               columns={columns}
-              fileName="Consolidation Cost Invoice Report"
+              fileName="Console Cost"
               tableOptions={tableOptions}
               headerFields={headerFields}
               handleDownloadExcel={handleDownloadExcel}

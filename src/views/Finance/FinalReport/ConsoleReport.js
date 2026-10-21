@@ -439,7 +439,7 @@ const ConsoleReport = () => {
     // TITLE
     worksheet.mergeCells('C2:E3');
     const titleCell = worksheet.getCell('C2');
-    titleCell.value = 'Console Report';
+    titleCell.value = 'Console Receipt';
     titleCell.font = { size: 16, bold: true };
     titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
 
@@ -631,7 +631,7 @@ const ConsoleReport = () => {
             alignItems: 'center'
           }}
         >
-          <span>Console Report — Receivable</span>
+          <span>Console Receipt</span>
           <IconButton aria-label="close" onClick={handleCloseModal} sx={{ color: 'white' }}>
             <CloseIcon />
           </IconButton>
@@ -642,7 +642,7 @@ const ConsoleReport = () => {
             <CMRT2
               data={getData}
               columns={consoleColumns}
-              fileName={'Console Report'}
+              fileName={'Console Receipt'}
               tableOptions={tableOptions}
               headerFields={headerFields}
               handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
@@ -664,7 +664,7 @@ const ConsoleReport = () => {
           <CMRT2
             data={getData}
             columns={consoleColumns}
-            fileName={'Console Report'}
+            fileName={'Console Receipt'}
             headerFields={headerFields}
             handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
             isListView={true}

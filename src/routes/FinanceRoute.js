@@ -529,12 +529,12 @@ const FinanceRoute = {
       element: <TDSRegister />
     },
     {
-      path: '/finance/FinalReport/Console',
+      path: '/finance/FinalReport/ConsoleReceipt',
       element: <ConsoleReport />
     },
 
     {
-      path: '/finance/FinalReport/ConsoleRate',
+      path: '/finance/FinalReport/ConsoleCost',
       element: <ConsoleRateReport />
     },
 
