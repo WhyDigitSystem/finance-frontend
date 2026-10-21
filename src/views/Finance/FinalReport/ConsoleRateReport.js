@@ -26,7 +26,37 @@ import apiCalls from 'apicall';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
-const ConsoleRateReport = () => {
+// The report API returns each row as an array. Index -> field name.
+const mapReportRow = (r) => ({
+  supplierName: r[0],
+  docId: r[1],
+  docDate: r[2],
+  vid: r[3],
+  vdate: r[4],
+  totChargesLcAmt: r[5],
+  gstInputLcAmt: r[6],
+  netBillCurrAmt: r[7],
+  status: r[8],
+  purVoucherNo: r[9],
+  purVoucherDate: r[10],
+  entity: r[11],
+  finYear: r[12],
+  billedMonthYear: r[13],
+  businessCate: r[14],
+  reportTime: r[15]
+});
+
+const formatAmount = (value) =>
+  value != null
+    ? Number(value).toLocaleString('en-IN', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      })
+    : '-';
+
+const formatDate = (value) => (value ? dayjs(value).format('DD-MM-YYYY') : '-');
+
+const ConsolidationCostInvoiceReport = () => {
   const {
     control,
     handleSubmit,
@@ -37,11 +67,11 @@ const ConsoleRateReport = () => {
     mode: 'onChange',
     defaultValues: {
       asOnDate: dayjs(),
-      customer: null
+      supplier: { partyName: 'All' }
     }
   });
 
-  const [customerList, setCustomerList] = useState([]);
+  const [supplierList, setSupplierList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [getData, setGetData] = useState([]);
   const [openModal, setOpenModal] = useState(false);
@@ -51,81 +81,39 @@ const ConsoleRateReport = () => {
   const orgId = localStorage.getItem('orgId');
 
   // ====== TABLE COLUMNS ======
-  const consoleRateColumns = useMemo(
+  const columns = useMemo(
     () =>
       [
         {
-          accessorKey: 'customerName',
-          header: 'Customer',
-          size: 200,
+          accessorKey: 'supplierName',
+          header: 'Supplier',
+          size: 220,
           Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: 8 }}>{cell.getValue() || '-'}</div>
         },
+        { accessorKey: 'vid', header: 'Invoice No', size: 150 },
         {
-          accessorKey: 'billedMonthYear',
-          header: 'Billed Month',
-          size: 130
-        },
-        {
-          accessorKey: 'chequeUtiNo',
-          header: 'UTI',
-          size: 180
-        },
-        {
-          accessorKey: 'chequeUtiDate',
-          header: 'UTI Date',
-          size: 130,
-          Cell: ({ cell }) => <div style={{ padding: 8 }}>{cell.getValue() ? dayjs(cell.getValue()).format('DD-MM-YYYY') : '-'}</div>
-        },
-        {
-          accessorKey: 'receiptAmount',
-          header: 'Receipt Amt',
+          accessorKey: 'vdate',
+          header: 'Invoice Date',
           size: 120,
-          Cell: ({ cell }) => (
-            <div style={{ textAlign: 'right', padding: 8, color: '#1b5e20' }}>
-              {cell.getValue() != null
-                ? Number(cell.getValue()).toLocaleString('en-IN', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                  })
-                : '-'}
-            </div>
-          )
+          Cell: ({ cell }) => <div style={{ padding: 8 }}>{formatDate(cell.getValue())}</div>
         },
         {
-          accessorKey: 'onAccount',
-          header: 'On Account',
-          size: 110,
-          Cell: ({ cell }) => (
-            <div style={{ textAlign: 'right', padding: 8, color: '#b26a00' }}>
-              {cell.getValue() != null
-                ? Number(cell.getValue()).toLocaleString('en-IN', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                  })
-                : '-'}
-            </div>
-          )
+          accessorKey: 'totChargesLcAmt',
+          header: 'Total Amt',
+          size: 130,
+          Cell: ({ cell }) => <div style={{ textAlign: 'right', padding: 8 }}>{formatAmount(cell.getValue())}</div>
         },
         {
-          accessorKey: 'entity',
-          header: 'Entity',
-          size: 130
+          accessorKey: 'gstInputLcAmt',
+          header: 'GST Input',
+          size: 120,
+          Cell: ({ cell }) => <div style={{ textAlign: 'right', padding: 8 }}>{formatAmount(cell.getValue())}</div>
         },
         {
-          accessorKey: 'businessCategory',
-          header: 'Category',
-          size: 130
-        },
-        {
-          accessorKey: 'docId',
-          header: 'Doc Id',
-          size: 130
-        },
-        {
-          accessorKey: 'docDate',
-          header: 'Doc Date',
-          size: 110,
-          Cell: ({ cell }) => <div style={{ padding: 8 }}>{cell.getValue() ? dayjs(cell.getValue()).format('DD-MM-YYYY') : '-'}</div>
+          accessorKey: 'netBillCurrAmt',
+          header: 'Net Amt',
+          size: 130,
+          Cell: ({ cell }) => <div style={{ textAlign: 'right', padding: 8, fontWeight: 600 }}>{formatAmount(cell.getValue())}</div>
         },
         {
           accessorKey: 'statusDisplay',
@@ -135,33 +123,44 @@ const ConsoleRateReport = () => {
           enableColumnActions: false,
           Cell: ({ row }) => {
             const status = row.original?.status;
-
             const colors = {
               Approved: { bg: '#e8f5e9', color: '#1b5e20' },
               Pending: { bg: '#fff8e1', color: '#b26a00' },
               Rejected: { bg: '#ffebee', color: '#b71c1c' }
             };
-
-            const scheme = colors[status] || {
-              bg: '#eeeeee',
-              color: '#424242'
-            };
+            const scheme = colors[status] || { bg: '#eeeeee', color: '#424242' };
 
             return (
               <div style={{ textAlign: 'center', padding: 8 }}>
                 <Chip
                   label={status || '-'}
                   size="small"
-                  sx={{
-                    backgroundColor: scheme.bg,
-                    color: scheme.color,
-                    fontWeight: 600,
-                    fontSize: '0.72rem'
-                  }}
+                  sx={{ backgroundColor: scheme.bg, color: scheme.color, fontWeight: 600, fontSize: '0.72rem' }}
                 />
               </div>
             );
           }
+        },
+        {
+          accessorKey: 'purVoucherNo',
+          header: 'Pur Voucher No',
+          size: 170,
+          Cell: ({ cell }) => <div style={{ padding: 8 }}>{cell.getValue() || '-'}</div>
+        },
+        {
+          accessorKey: 'purVoucherDate',
+          header: 'Pur Voucher Date',
+          size: 140,
+          Cell: ({ cell }) => <div style={{ padding: 8 }}>{formatDate(cell.getValue())}</div>
+        },
+        { accessorKey: 'entity', header: 'Entity', size: 130 },
+        { accessorKey: 'billedMonthYear', header: 'Billed Month', size: 140 },
+        { accessorKey: 'docId', header: 'Doc Id', size: 130 },
+        {
+          accessorKey: 'docDate',
+          header: 'Doc Date',
+          size: 110,
+          Cell: ({ cell }) => <div style={{ padding: 8 }}>{formatDate(cell.getValue())}</div>
         }
       ].map((column) => ({
         ...column,
@@ -179,32 +178,35 @@ const ConsoleRateReport = () => {
     []
   );
 
-  // ====== CUSTOMER DROPDOWN ======
+  // ====== SUPPLIER DROPDOWN (getPartyNameByPartyType, partyType=vendor) ======
   useEffect(() => {
-    const fetchCustomers = async () => {
+    const fetchSuppliers = async () => {
       try {
-        const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=customer`);
+        const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=vendor`);
+
+        const vendors = response?.paramObjectsMap?.partyMasterVO || [];
+
+        // Vendor master also holds expense heads (STAFF SALARY, FUEL EXPENSES...).
+        // Keep only real suppliers / transporters. Remove this filter to list everything.
+        const suppliers = vendors.filter((v) => ['SUPPLIER', 'TRANSPORTER'].includes(v.bussinessCate));
 
         const allOption = { partyName: 'All' };
-        const customers = response?.paramObjectsMap?.partyMasterVO || [];
-
-        setCustomerList([allOption, ...customers]);
-        setValue('customer', allOption);
+        setSupplierList([allOption, ...suppliers]);
+        setValue('supplier', allOption);
       } catch (error) {
-        console.error('Error fetching customers:', error);
-        showToast('error', 'Failed to load customers');
+        console.error('Error fetching suppliers:', error);
+        showToast('error', 'Failed to load suppliers');
       }
     };
 
-    if (orgId) fetchCustomers();
+    if (orgId) fetchSuppliers();
   }, [orgId, setValue]);
 
-  // ====== COMPANY DETAILS ======
+  // ====== COMPANY DETAILS (for Excel logo) ======
   useEffect(() => {
     const fetchCompanyDetails = async () => {
       try {
         const response = await apiCalls('get', `commonmaster/company/${orgId}`);
-
         setCompanyList(response?.paramObjectsMap?.companyVO || []);
       } catch (error) {
         console.error('Error fetching company details:', error);
@@ -216,7 +218,7 @@ const ConsoleRateReport = () => {
 
   // ====== CLEAR FORM ======
   const ClearForm = () => {
-    setValue('customer', { partyName: 'All' });
+    setValue('supplier', { partyName: 'All' });
     setValue('asOnDate', dayjs());
     clearErrors();
     setGetData([]);
@@ -225,7 +227,7 @@ const ConsoleRateReport = () => {
     setIsLoading(false);
   };
 
-  // ====== FETCH CONSOLE RATE REPORT ======
+  // ====== FETCH REPORT (findConsolidationCostInvoiceReports) ======
   const onSubmit = async (formData) => {
     if (!formData.asOnDate || !dayjs(formData.asOnDate).isValid()) {
       showToast('error', 'Please select a valid As On Date');
@@ -234,32 +236,27 @@ const ConsoleRateReport = () => {
 
     setIsLoading(true);
 
-    const formattedDate = dayjs(formData.asOnDate).format('YYYY-MM-DD');
-    const partyName = formData.customer?.partyName || 'All';
+    // API expects asondate as YYYY/MM/DD and supplier as "all" or a supplier name
+    const formattedDate = dayjs(formData.asOnDate).format('YYYY/MM/DD');
+    const partyName = formData.supplier?.partyName || 'All';
+    const supplierParam = partyName === 'All' ? 'all' : partyName;
 
     try {
-      // Same API and data as Console Report
       const response = await apiCalls(
         'get',
-        `/arreceivable/getConsoleReport?asOnDate=${formattedDate}&partyName=${encodeURIComponent(partyName)}`
+        `/reportController/findConsolidationCostInvoiceReports?asondate=${encodeURIComponent(
+          formattedDate
+        )}&orgId=${orgId}&supplier=${encodeURIComponent(supplierParam)}`
       );
 
-      const data = response?.paramObjectsMap?.mapp || [];
+      const rows = response?.paramObjectsMap?.costInvoiceReportList || [];
+      const data = rows.map(mapReportRow);
 
       setGetData(data);
       setHeaderFields([
-        {
-          label: 'As On Date',
-          value: dayjs(formData.asOnDate).format('DD-MM-YYYY')
-        },
-        {
-          label: 'Customer',
-          value: partyName
-        },
-        {
-          label: 'Total Records',
-          value: data.length
-        }
+        { label: 'As On Date', value: dayjs(formData.asOnDate).format('DD-MM-YYYY') },
+        { label: 'Supplier', value: partyName },
+        { label: 'Total Records', value: data.length }
       ]);
 
       setOpenModal(true);
@@ -268,7 +265,7 @@ const ConsoleRateReport = () => {
         showToast('info', 'No records found for selected filters');
       }
     } catch (error) {
-      console.error('Error fetching Console Rate Report:', error);
+      console.error('Error fetching Consolidation Cost Invoice Report:', error);
       showToast('error', 'Report Fetch Failed');
     } finally {
       setIsLoading(false);
@@ -287,9 +284,7 @@ const ConsoleRateReport = () => {
         overflow: 'hidden'
       }
     },
-    muiTableContainerProps: {
-      sx: { maxHeight: '70vh' }
-    },
+    muiTableContainerProps: { sx: { maxHeight: '70vh' } },
     muiTableBodyRowProps: ({ row }) => ({
       sx: {
         backgroundColor: row.index % 2 ? '#f9f9f9' : '#fff',
@@ -302,9 +297,7 @@ const ConsoleRateReport = () => {
     muiTableProps: {
       sx: {
         borderCollapse: 'collapse',
-        '& .MuiTableCell-root': {
-          border: '1px solid #e0e0e0 !important'
-        }
+        '& .MuiTableCell-root': { border: '1px solid #e0e0e0 !important' }
       }
     }
   };
@@ -312,9 +305,8 @@ const ConsoleRateReport = () => {
   // ====== EXCEL DOWNLOAD ======
   const handleDownloadExcel = async () => {
     const workbook = new ExcelJS.Workbook();
-    const worksheet = workbook.addWorksheet('Console Rate Report');
+    const worksheet = workbook.addWorksheet('Consolidation Cost Invoice');
 
-    // Company logo
     worksheet.mergeCells('A1:B4');
 
     const logo = companyList[0]?.companyLogo;
@@ -325,10 +317,7 @@ const ConsoleRateReport = () => {
 
         if (base64Data.length >= 100) {
           const extension = logo.includes('jpeg') ? 'jpeg' : 'png';
-          const imageId = workbook.addImage({
-            base64: base64Data,
-            extension
-          });
+          const imageId = workbook.addImage({ base64: base64Data, extension });
 
           worksheet.addImage(imageId, {
             tl: { col: 0, row: 0 },
@@ -340,68 +329,32 @@ const ConsoleRateReport = () => {
       }
     }
 
-    // Report title
-    worksheet.mergeCells('C2:E3');
-    worksheet.getCell('C2').value = 'Console Rate Report';
-    worksheet.getCell('C2').font = {
-      size: 16,
-      bold: true
-    };
-    worksheet.getCell('C2').alignment = {
-      horizontal: 'center',
-      vertical: 'middle'
-    };
+    worksheet.mergeCells('C2:G3');
+    worksheet.getCell('C2').value = 'Consolidation Cost Invoice Report';
+    worksheet.getCell('C2').font = { size: 16, bold: true };
+    worksheet.getCell('C2').alignment = { horizontal: 'center', vertical: 'middle' };
 
-    // Report information
     const excelHeaderFields = [
       ...headerFields,
-      {
-        label: 'Generated By',
-        value: localStorage.getItem('userName') || 'System'
-      },
-      {
-        label: 'Generated On',
-        value: dayjs().format('DD-MM-YYYY HH:mm')
-      }
+      { label: 'Generated By', value: localStorage.getItem('userName') || 'System' },
+      { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
     ];
 
     excelHeaderFields.forEach(({ label, value }, index) => {
       const cell = worksheet.getCell(5, index + 1);
       cell.value = `${label}: ${value}`;
-      cell.font = {
-        bold: true,
-        color: { argb: 'FFFFFFFF' }
-      };
-      cell.alignment = {
-        vertical: 'middle',
-        horizontal: 'center'
-      };
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FF593C8F' }
-      };
+      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF593C8F' } };
     });
 
-    // Column headers
-    const headerRow = worksheet.addRow(consoleRateColumns.map((column) => column.header));
-
+    const headerRow = worksheet.addRow(columns.map((column) => column.header));
     headerRow.height = 20;
 
     headerRow.eachCell((cell) => {
-      cell.fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FF3B76E2' }
-      };
-      cell.font = {
-        color: { argb: 'FFFFFFFF' },
-        bold: true
-      };
-      cell.alignment = {
-        vertical: 'middle',
-        horizontal: 'center'
-      };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3B76E2' } };
+      cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+      cell.alignment = { vertical: 'middle', horizontal: 'center' };
       cell.border = {
         top: { style: 'thin' },
         left: { style: 'thin' },
@@ -410,53 +363,61 @@ const ConsoleRateReport = () => {
       };
     });
 
-    const numberFields = ['receiptAmount', 'onAccount'];
+    const numberFields = ['totChargesLcAmt', 'gstInputLcAmt', 'netBillCurrAmt'];
+    const dateFields = ['docDate', 'vdate', 'purVoucherDate'];
 
-    // Report data
     getData.forEach((row) => {
-      const rowData = consoleRateColumns.map((column) => {
+      const rowData = columns.map((column) => {
         const key = column.accessorKey;
 
-        if (key === 'statusDisplay') {
-          return row.status || '';
-        }
-
-        if (key === 'docDate' || key === 'chequeUtiDate') {
-          return row[key] ? dayjs(row[key]).format('DD-MM-YYYY') : '';
-        }
+        if (key === 'statusDisplay') return row.status || '';
+        if (dateFields.includes(key)) return row[key] ? dayjs(row[key]).format('DD-MM-YYYY') : '';
+        if (numberFields.includes(key)) return row[key] != null ? Number(row[key]) : '';
 
         return row[key] ?? '';
       });
 
       const addedRow = worksheet.addRow(rowData);
 
-      consoleRateColumns.forEach((column, index) => {
+      columns.forEach((column, index) => {
         if (numberFields.includes(column.accessorKey)) {
           addedRow.getCell(index + 1).numFmt = '#,##0.00';
         }
       });
     });
 
-    // Auto column width
+    // Total row
+    const totalRowData = columns.map((column) => {
+      if (column.accessorKey === 'supplierName') return 'Total';
+      if (numberFields.includes(column.accessorKey)) {
+        return getData.reduce((sum, row) => sum + (Number(row[column.accessorKey]) || 0), 0);
+      }
+      return '';
+    });
+    const totalRow = worksheet.addRow(totalRowData);
+    totalRow.font = { bold: true };
+    columns.forEach((column, index) => {
+      if (numberFields.includes(column.accessorKey)) {
+        totalRow.getCell(index + 1).numFmt = '#,##0.00';
+      }
+    });
+
     worksheet.columns.forEach((column) => {
       let maxLength = 10;
-
       column.eachCell({ includeEmpty: true }, (cell) => {
         maxLength = Math.max(maxLength, String(cell.value ?? '').length);
       });
-
-      column.width = maxLength + 2;
+      column.width = Math.min(maxLength + 2, 45);
     });
 
     worksheet.views = [{ state: 'frozen', ySplit: 6 }];
 
     const buffer = await workbook.xlsx.writeBuffer();
-
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     });
 
-    saveAs(blob, `Console_Rate_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
+    saveAs(blob, `Consolidation_Cost_Invoice_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
   };
 
   return (
@@ -473,9 +434,7 @@ const ConsoleRateReport = () => {
                   <Controller
                     name="asOnDate"
                     control={control}
-                    rules={{
-                      required: 'As On Date is required'
-                    }}
+                    rules={{ required: 'As On Date is required' }}
                     render={({ field }) => (
                       <DatePicker
                         label="As On Date"
@@ -496,27 +455,25 @@ const ConsoleRateReport = () => {
               </FormControl>
             </div>
 
-            {/* Customer */}
+            {/* Supplier */}
             <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <Controller
-                  name="customer"
+                  name="supplier"
                   control={control}
-                  rules={{
-                    required: 'Customer is required'
-                  }}
+                  rules={{ required: 'Supplier is required' }}
                   render={({ field }) => (
                     <Autocomplete
                       {...field}
                       disableClearable
                       size="small"
-                      options={customerList}
+                      options={supplierList}
                       getOptionLabel={(option) => option?.partyName || ''}
                       isOptionEqualToValue={(option, value) => option?.partyName === value?.partyName}
                       value={field.value || null}
                       onChange={(_, value) => field.onChange(value)}
                       renderInput={(params) => (
-                        <TextField {...params} label="Customer" error={!!errors.customer} helperText={errors.customer?.message} />
+                        <TextField {...params} label="Supplier" error={!!errors.supplier} helperText={errors.supplier?.message} />
                       )}
                     />
                   )}
@@ -541,18 +498,13 @@ const ConsoleRateReport = () => {
         </div>
       </form>
 
-      {/* Console Rate Report Modal */}
+      {/* Report Modal */}
       <Dialog
         open={openModal}
         onClose={handleCloseModal}
         fullWidth
         maxWidth="xl"
-        sx={{
-          '& .MuiDialog-paper': {
-            borderRadius: '12px',
-            overflow: 'hidden'
-          }
-        }}
+        sx={{ '& .MuiDialog-paper': { borderRadius: '12px', overflow: 'hidden' } }}
       >
         <DialogTitle
           sx={{
@@ -566,7 +518,7 @@ const ConsoleRateReport = () => {
             alignItems: 'center'
           }}
         >
-          <span>Console Rate Report</span>
+          <span>Consolidation Cost Invoice Report</span>
 
           <IconButton aria-label="close" onClick={handleCloseModal} sx={{ color: '#fff' }}>
             <CloseIcon />
@@ -577,24 +529,18 @@ const ConsoleRateReport = () => {
           {getData.length > 0 ? (
             <CMRT2
               data={getData}
-              columns={consoleRateColumns}
-              fileName="Console Rate Report"
+              columns={columns}
+              fileName="Consolidation Cost Invoice Report"
               tableOptions={tableOptions}
               headerFields={headerFields}
               handleDownloadExcel={handleDownloadExcel}
               showDownloadButtonsPdf={false}
             />
           ) : (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: 40,
-                color: '#666'
-              }}
-            >
+            <div style={{ textAlign: 'center', padding: 40, color: '#666' }}>
               <div style={{ fontSize: 48, marginBottom: 8 }}>📭</div>
               <div style={{ fontWeight: 600, fontSize: 16 }}>No data found</div>
-              <div style={{ fontSize: 13, marginTop: 4 }}>Try adjusting the As On Date or Customer filter.</div>
+              <div style={{ fontSize: 13, marginTop: 4 }}>Try adjusting the As On Date or Supplier filter.</div>
             </div>
           )}
         </DialogContent>
@@ -603,4 +549,4 @@ const ConsoleRateReport = () => {
   );
 };
 
-export default ConsoleRateReport;
+export default ConsolidationCostInvoiceReport;
