@@ -24,6 +24,13 @@ const reportChildren = [
     visible: hasScreenAccess('CONR')
   },
   {
+    id: 'consoleRate',
+    title: 'Console Rate',
+    type: 'item',
+    url: '/finance/FinalReport/ConsoleRate',
+    visible: hasScreenAccess('CORR')
+  },
+  {
     id: 'partyLedger',
     title: 'Party Ledger',
     type: 'item',
