@@ -8,6 +8,7 @@ import ArOutstanding from 'views/Finance/taxInvoice/ArOutstanding';
 import Dashboard2 from 'views/dashboardNew/dashboard2';
 import ConsoleReport from 'views/Finance/FinalReport/ConsoleReport';
 import ConsoleRateReport from 'views/Finance/FinalReport/ConsoleRateReport';
+import ConsolePaymentReport from 'views/Finance/FinalReport/ConsolePaymentReport';
 const TDSRegister = Loadable(lazy(() => import('views/Finance/FinalReport/TDSRegister')));
 const GSTRegister = Loadable(lazy(() => import('views/Finance/FinalReport/GSTRegister')));
 const CostEstimateReport = Loadable(lazy(() => import('views/Finance/FinalReport/CostEstimateReport')));
@@ -536,6 +537,11 @@ const FinanceRoute = {
     {
       path: '/finance/FinalReport/ConsoleCost',
       element: <ConsoleRateReport />
+    },
+
+    {
+      path: '/finance/FinalReport/ConsolePayment',
+      element: <ConsolePaymentReport />
     },
 
     {
