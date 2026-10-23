@@ -343,8 +343,8 @@ const CostInvoice = ({ selectedRow }) => {
     setShowChargeDetails(false);
   };
   const listViewColumns = [
-    { accessorKey: 'vid', header: 'Invoice No', size: 140 },
-    { accessorKey: 'vdate', header: 'Invoice Date', size: 140 },
+    { accessorKey: 'supplierBillNo', header: 'Invoice No', size: 140 },
+    { accessorKey: 'supplierBillDate', header: 'Invoice Date', size: 140 },
     { accessorKey: 'docId', header: 'Doc No', size: 140 },
     { accessorKey: 'supplierName', header: 'Supplier Name', size: 140 },
     { accessorKey: 'mode', header: 'Mode', size: 140 },
@@ -634,14 +634,14 @@ const CostInvoice = ({ selectedRow }) => {
         setChargeDetails(
           listValueVO.gstLines
             ? listValueVO.gstLines.map((row) => ({
-              id: row.id,
-              chargeCode: row.chargeCode,
-              chargeDesc: row.chargeName,
-              gChargeCode: row.govChargeCode,
-              gstPercent: row.gstpercent,
-              sac: row.sac,
-              lcAmount: row.lcAmt
-            }))
+                id: row.id,
+                chargeCode: row.chargeCode,
+                chargeDesc: row.chargeName,
+                gChargeCode: row.govChargeCode,
+                gstPercent: row.gstpercent,
+                sac: row.sac,
+                lcAmount: row.lcAmt
+              }))
             : []
         );
         setShowChargeDetails(true);
@@ -713,9 +713,7 @@ const CostInvoice = ({ selectedRow }) => {
           roundOff: costVO.roundOff,
           shipperRefNo: costVO.shipperRefNo,
           supplierBillNo: costVO.supplierBillNo,
-          supplierBillDate: costVO.supplierBillDate
-            ? dayjs(costVO.supplierBillDate)
-            : null,
+          supplierBillDate: costVO.supplierBillDate ? dayjs(costVO.supplierBillDate) : null,
           supplierCode: costVO.supplierCode,
           supplierGstIn: costVO.supplierGstIn,
           supplierId: costVO.supplierId,
@@ -756,12 +754,12 @@ const CostInvoice = ({ selectedRow }) => {
         setTdsCostInvoiceDTO(
           Array.isArray(costVO.tdsCostInvoiceVO)
             ? costVO.tdsCostInvoiceVO.map((row) => ({
-              id: row.id,
-              section: row.section,
-              tdsWithHolding: row.tdsWithHolding,
-              tdsWithHoldingPer: row.tdsWithHoldingPer,
-              totTdsWhAmnt: row.totTdsWhAmnt
-            }))
+                id: row.id,
+                section: row.section,
+                tdsWithHolding: row.tdsWithHolding,
+                tdsWithHoldingPer: row.tdsWithHoldingPer,
+                totTdsWhAmnt: row.totTdsWhAmnt
+              }))
             : []
         );
         // setTdsCostInvoiceDTO(
@@ -1143,10 +1141,7 @@ const CostInvoice = ({ selectedRow }) => {
       // }));
       setFormData((prevData) => ({
         ...prevData,
-        address:
-          response?.paramObjectsMap?.partyAddress?.length > 0
-            ? response.paramObjectsMap.partyAddress[0].address
-            : ''
+        address: response?.paramObjectsMap?.partyAddress?.length > 0 ? response.paramObjectsMap.partyAddress[0].address : ''
       }));
     } catch (error) {
       console.error('Error fetching gate passes:', error);
@@ -1697,9 +1692,7 @@ const CostInvoice = ({ selectedRow }) => {
         remarks: formData.remarks,
         shipperRefNo: formData.shipperRefNo,
         supplierBillNo: formData.supplierBillNo,
-        supplierBillDate: formData.supplierBillDate
-          ? dayjs(formData.supplierBillDate).format('YYYY-MM-DD')
-          : null,
+        supplierBillDate: formData.supplierBillDate ? dayjs(formData.supplierBillDate).format('YYYY-MM-DD') : null,
         supplierCode: formData.supplierCode,
         supplierGstIn: formData.supplierGstIn,
         supplierGstInCode: formData.supplierGstInCode,
@@ -1708,9 +1701,7 @@ const CostInvoice = ({ selectedRow }) => {
         supplierPlace: formData.supplierPlace,
         supplierType: formData.supplierType,
         vid: formData.vid,
-        vdate: formData.vdate
-          ? dayjs(formData.vdate).format('YYYY-MM-DD')
-          : null,
+        vdate: formData.vdate ? dayjs(formData.vdate).format('YYYY-MM-DD') : null,
         tdsCostInvoiceDTO: tdsVO,
         utrRef: formData.utrRef
       };
@@ -1984,7 +1975,7 @@ const CostInvoice = ({ selectedRow }) => {
                     />
                   </FormControl>
                 </div>
-                <div className="col-md-3 mb-3">
+                {/* <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
                     <TextField
                       label="V Id"
@@ -2015,7 +2006,7 @@ const CostInvoice = ({ selectedRow }) => {
                     </LocalizationProvider>
                     {fieldErrors.vdate && <p className="dateErrMsg">V Date is required</p>}
                   </FormControl>
-                </div>
+                </div> */}
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small" error={!!fieldErrors.supplierGstInCode}>
                     <InputLabel id="demo-simple-select-label">Supplier TAX Code</InputLabel>
@@ -2808,7 +2799,7 @@ const CostInvoice = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.exRate && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2850,7 +2841,7 @@ const CostInvoice = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.fcAmount ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.fcAmount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2892,7 +2883,7 @@ const CostInvoice = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.lcAmount ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.lcAmount && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2933,7 +2924,7 @@ const CostInvoice = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.billAmt ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.billAmt && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -2974,7 +2965,7 @@ const CostInvoice = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.sac ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.sac && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3032,7 +3023,7 @@ const CostInvoice = ({ selectedRow }) => {
                                                 }
                                               }}
                                               className={costInvoiceErrors[index]?.gst ? 'error form-control' : 'form-control'}
-                                            // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
+                                              // onKeyDown={(e) => handleKeyDown(e, row, chargerCostInvoice)}
                                             />
                                             {costInvoiceErrors[index]?.gst && (
                                               <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
@@ -3297,14 +3288,14 @@ const CostInvoice = ({ selectedRow }) => {
               </div>
             </>
           )}
-          {(showForm && !loading) && (
+          {showForm && !loading && (
             <CommonListViewTable
               data={data && data}
               columns={listViewColumns}
               blockEdit={true}
               toEdit={getAllCostInvoiceById}
-            // isPdf={true}
-            // GeneratePdf={GeneratePdf}
+              // isPdf={true}
+              // GeneratePdf={GeneratePdf}
             />
           )}
         </div>
@@ -3316,7 +3307,7 @@ const CostInvoice = ({ selectedRow }) => {
         message={`Are you sure you want to ${approveStatus === 'Approved' ? 'approve' : 'reject'} this invoice?`}
         onConfirm={handleConfirmAction}
         onCancel={handleCloseModal}
-      // onCancel={() => setModalOpen(false)}
+        // onCancel={() => setModalOpen(false)}
       />
     </>
   );
