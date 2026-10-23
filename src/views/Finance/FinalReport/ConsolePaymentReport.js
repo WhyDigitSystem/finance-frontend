@@ -26,6 +26,9 @@ import apiCalls from 'apicall';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
+const ALL_CATEGORY = { category: 'All' };
+const ALL_SUPPLIER = { partyName: 'All' };
+
 // Map API response to table fields
 const mapPaymentRow = (row) => ({
   partyName: row.partyname,
@@ -60,17 +63,20 @@ const ConsolePaymentReport = () => {
     control,
     handleSubmit,
     setValue,
+    watch,
     clearErrors,
     formState: { errors }
   } = useForm({
     mode: 'onChange',
     defaultValues: {
       asOnDate: dayjs(),
-      supplier: { partyName: 'All' }
+      category: ALL_CATEGORY,
+      supplier: ALL_SUPPLIER
     }
   });
 
-  const [supplierList, setSupplierList] = useState([{ partyName: 'All' }]);
+  const [categoryList, setCategoryList] = useState([ALL_CATEGORY]);
+  const [supplierList, setSupplierList] = useState([ALL_SUPPLIER]);
   const [isLoading, setIsLoading] = useState(false);
   const [getData, setGetData] = useState([]);
   const [openModal, setOpenModal] = useState(false);
@@ -78,6 +84,7 @@ const ConsolePaymentReport = () => {
   const [companyList, setCompanyList] = useState([]);
 
   const orgId = localStorage.getItem('orgId');
+  const selectedCategory = watch('category');
 
   // ================= TABLE COLUMNS =================
   const columns = useMemo(
@@ -88,6 +95,12 @@ const ConsolePaymentReport = () => {
           header: 'Party Name',
           size: 220,
           Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: 8 }}>{cell.getValue() || '-'}</div>
+        },
+        {
+          accessorKey: 'businessCate',
+          header: 'Category',
+          size: 140,
+          Cell: ({ cell }) => <div style={{ padding: 8 }}>{cell.getValue() || '-'}</div>
         },
         {
           accessorKey: 'purVoucherNo',
@@ -125,22 +138,6 @@ const ConsolePaymentReport = () => {
           size: 240,
           Cell: ({ cell }) => <div style={{ padding: 8 }}>{cell.getValue() || '-'}</div>
         },
-        // {
-        //   accessorKey: 'onAccount',
-        //   header: 'On Account',
-        //   size: 140,
-        //   Cell: ({ cell }) => (
-        //     <div
-        //       style={{
-        //         textAlign: 'right',
-        //         padding: 8,
-        //         fontWeight: 600
-        //       }}
-        //     >
-        //       {formatAmount(cell.getValue())}
-        //     </div>
-        //   )
-        // },
         {
           accessorKey: 'status',
           header: 'Status',
@@ -151,24 +148,12 @@ const ConsolePaymentReport = () => {
             const status = row.original?.status;
 
             const colors = {
-              Approved: {
-                bg: '#e8f5e9',
-                color: '#1b5e20'
-              },
-              Pending: {
-                bg: '#fff8e1',
-                color: '#b26a00'
-              },
-              Rejected: {
-                bg: '#ffebee',
-                color: '#b71c1c'
-              }
+              Approved: { bg: '#e8f5e9', color: '#1b5e20' },
+              Pending: { bg: '#fff8e1', color: '#b26a00' },
+              Rejected: { bg: '#ffebee', color: '#b71c1c' }
             };
 
-            const scheme = colors[status] || {
-              bg: '#eeeeee',
-              color: '#424242'
-            };
+            const scheme = colors[status] || { bg: '#eeeeee', color: '#424242' };
 
             return (
               <div style={{ textAlign: 'center', padding: 8 }}>
@@ -186,33 +171,15 @@ const ConsolePaymentReport = () => {
             );
           }
         },
-        {
-          accessorKey: 'entity',
-          header: 'Entity',
-          size: 150
-        },
-        {
-          accessorKey: 'billedMonthYear',
-          header: 'Billed Month',
-          size: 150
-        },
-        {
-          accessorKey: 'docId',
-          header: 'Doc ID',
-          size: 150
-        },
+        { accessorKey: 'entity', header: 'Entity', size: 150 },
+        { accessorKey: 'billedMonthYear', header: 'Billed Month', size: 150 },
+        { accessorKey: 'docId', header: 'Doc ID', size: 150 },
         {
           accessorKey: 'docDate',
           header: 'Doc Date',
           size: 120,
           Cell: ({ cell }) => <div style={{ padding: 8 }}>{formatDate(cell.getValue())}</div>
         }
-        // {
-        //   accessorKey: 'businessCate',
-        //   header: 'Business Category',
-        //   size: 180,
-        //   Cell: ({ cell }) => <div style={{ padding: 8 }}>{cell.getValue() || '-'}</div>
-        // }
       ].map((column) => ({
         ...column,
         muiTableHeadCellProps: {
@@ -229,48 +196,63 @@ const ConsolePaymentReport = () => {
     []
   );
 
-  // ================= PARTY DROPDOWN =================
+  // ================= CATEGORY DROPDOWN (getAllCategoryList) =================
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await apiCalls('get', '/reportController/getAllCategoryList');
+        const categories = response?.paramObjectsMap?.mapp || [];
+        setCategoryList([ALL_CATEGORY, ...categories]);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        showToast('error', 'Failed to load categories');
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // ================= PARTY DROPDOWN (getAllVendorListCostReport?type=<category>) =================
+  // Runs on load (type=all) and every time the Category changes.
   useEffect(() => {
     const fetchSuppliers = async () => {
+      const categoryName = selectedCategory?.category || 'All';
+      const typeParam = categoryName === 'All' ? 'all' : categoryName;
+
       try {
-        const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=vendor`);
+        const response = await apiCalls('get', `/reportController/getAllVendorListCostReport?type=${encodeURIComponent(typeParam)}`);
+        const vendors = response?.paramObjectsMap?.mapp || [];
 
-        const vendors = response?.paramObjectsMap?.partyMasterVO || [];
-
-        // Remove blanks, junk "None" record, cancelled parties and duplicates; sort A-Z
+        // Remove blanks, junk "None" record and duplicates; sort A-Z
         const seen = new Set();
         const parties = vendors
           .filter((v) => {
             const name = v?.partyName?.trim();
-            if (!name || name.toLowerCase() === 'none' || v?.cancel) return false;
+            if (!name || name.toLowerCase() === 'none') return false;
             if (seen.has(name)) return false;
             seen.add(name);
             return true;
           })
-          .map((v) => ({ partyName: v.partyName, partyCode: v.partyCode }))
+          .map((v) => ({ partyName: v.partyName }))
           .sort((a, b) => a.partyName.trim().localeCompare(b.partyName.trim()));
 
-        const allOption = { partyName: 'All' };
-
-        setSupplierList([allOption, ...parties]);
-        setValue('supplier', allOption);
+        setSupplierList([ALL_SUPPLIER, ...parties]);
+        setValue('supplier', ALL_SUPPLIER); // reset party whenever category changes
       } catch (error) {
         console.error('Error fetching payment parties:', error);
+        setSupplierList([ALL_SUPPLIER]);
         showToast('error', 'Failed to load parties');
       }
     };
 
-    if (orgId) {
-      fetchSuppliers();
-    }
-  }, [orgId, setValue]);
+    fetchSuppliers();
+  }, [selectedCategory?.category, setValue]);
 
   // ================= COMPANY DETAILS =================
   useEffect(() => {
     const fetchCompanyDetails = async () => {
       try {
         const response = await apiCalls('get', `commonmaster/company/${orgId}`);
-
         setCompanyList(response?.paramObjectsMap?.companyVO || []);
       } catch (error) {
         console.error('Error fetching company details:', error);
@@ -284,7 +266,8 @@ const ConsolePaymentReport = () => {
 
   // ================= CLEAR FORM =================
   const ClearForm = () => {
-    setValue('supplier', { partyName: 'All' });
+    setValue('category', ALL_CATEGORY);
+    setValue('supplier', ALL_SUPPLIER);
     setValue('asOnDate', dayjs());
 
     clearErrors();
@@ -301,19 +284,16 @@ const ConsolePaymentReport = () => {
       return;
     }
 
-    if (!orgId) {
-      showToast('error', 'Organization ID not found');
-      return;
-    }
-
     setIsLoading(true);
 
+    const categoryName = formData.category?.category || 'All';
     const partyName = formData.supplier?.partyName || 'All';
 
+    // partyName = "ALL" and type = "all" by default, else the selected value
     const query = new URLSearchParams({
       asonDate: dayjs(formData.asOnDate).format('YYYY/MM/DD'),
-      orgId: String(orgId),
-      partyName: partyName.trim().toLowerCase() === 'all' ? 'ALL' : partyName
+      partyName: partyName.trim().toLowerCase() === 'all' ? 'ALL' : partyName,
+      type: categoryName === 'All' ? 'all' : categoryName
     }).toString();
 
     try {
@@ -331,18 +311,10 @@ const ConsolePaymentReport = () => {
       setGetData(data);
 
       setHeaderFields([
-        {
-          label: 'As On Date',
-          value: dayjs(formData.asOnDate).format('DD-MM-YYYY')
-        },
-        {
-          label: 'Party Name',
-          value: partyName.trim()
-        },
-        {
-          label: 'Total Records',
-          value: data.length
-        },
+        { label: 'As On Date', value: dayjs(formData.asOnDate).format('DD-MM-YYYY') },
+        { label: 'Category', value: categoryName },
+        { label: 'Party Name', value: partyName.trim() },
+        { label: 'Total Records', value: data.length },
         {
           label: 'Total Payment',
           value: formatAmount(data.reduce((sum, row) => sum + (Number(row.paymentAmt) || 0), 0))
@@ -357,7 +329,6 @@ const ConsolePaymentReport = () => {
       setOpenModal(true);
     } catch (error) {
       console.error('Error fetching Console Payment Report:', error);
-
       showToast('error', 'Payment Report Fetch Failed');
     } finally {
       setIsLoading(false);
@@ -417,10 +388,7 @@ const ConsolePaymentReport = () => {
           if (base64Data.length >= 100) {
             const extension = logo.includes('jpeg') ? 'jpeg' : 'png';
 
-            const imageId = workbook.addImage({
-              base64: base64Data,
-              extension
-            });
+            const imageId = workbook.addImage({ base64: base64Data, extension });
 
             worksheet.addImage(imageId, {
               tl: { col: 0, row: 0 },
@@ -435,48 +403,22 @@ const ConsolePaymentReport = () => {
       worksheet.mergeCells('C2:G3');
 
       worksheet.getCell('C2').value = 'Console Payment';
-      worksheet.getCell('C2').font = {
-        size: 16,
-        bold: true
-      };
-
-      worksheet.getCell('C2').alignment = {
-        horizontal: 'center',
-        vertical: 'middle'
-      };
+      worksheet.getCell('C2').font = { size: 16, bold: true };
+      worksheet.getCell('C2').alignment = { horizontal: 'center', vertical: 'middle' };
 
       const excelHeaderFields = [
         ...headerFields,
-        {
-          label: 'Generated By',
-          value: localStorage.getItem('userName') || 'System'
-        },
-        {
-          label: 'Generated On',
-          value: dayjs().format('DD-MM-YYYY HH:mm')
-        }
+        { label: 'Generated By', value: localStorage.getItem('userName') || 'System' },
+        { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
       ];
 
       excelHeaderFields.forEach(({ label, value }, index) => {
         const cell = worksheet.getCell(5, index + 1);
 
         cell.value = `${label}: ${value}`;
-
-        cell.font = {
-          bold: true,
-          color: { argb: 'FFFFFFFF' }
-        };
-
-        cell.alignment = {
-          vertical: 'middle',
-          horizontal: 'center'
-        };
-
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FF593C8F' }
-        };
+        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF593C8F' } };
       });
 
       const headerRow = worksheet.addRow(columns.map((column) => column.header));
@@ -484,22 +426,9 @@ const ConsolePaymentReport = () => {
       headerRow.height = 20;
 
       headerRow.eachCell((cell) => {
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FF3B76E2' }
-        };
-
-        cell.font = {
-          color: { argb: 'FFFFFFFF' },
-          bold: true
-        };
-
-        cell.alignment = {
-          vertical: 'middle',
-          horizontal: 'center'
-        };
-
+        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3B76E2' } };
+        cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
+        cell.alignment = { vertical: 'middle', horizontal: 'center' };
         cell.border = {
           top: { style: 'thin' },
           left: { style: 'thin' },
@@ -509,7 +438,6 @@ const ConsolePaymentReport = () => {
       });
 
       const numberFields = ['paymentAmt', 'onAccount'];
-
       const dateFields = ['docDate', 'purVoucherDate', 'chequeDate'];
 
       getData.forEach((row) => {
@@ -538,9 +466,7 @@ const ConsolePaymentReport = () => {
 
       // Total row
       const totalRowData = columns.map((column) => {
-        if (column.accessorKey === 'partyName') {
-          return 'Total';
-        }
+        if (column.accessorKey === 'partyName') return 'Total';
 
         if (numberFields.includes(column.accessorKey)) {
           return getData.reduce((sum, row) => sum + (Number(row[column.accessorKey]) || 0), 0);
@@ -579,7 +505,6 @@ const ConsolePaymentReport = () => {
       saveAs(blob, `Console_Payment_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
     } catch (error) {
       console.error('Error downloading payment report:', error);
-
       showToast('error', 'Excel download failed');
     }
   };
@@ -590,13 +515,7 @@ const ConsolePaymentReport = () => {
       <ToastContainer />
 
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div
-          className="card w-full p-6 bg-base-100 shadow-xl"
-          style={{
-            padding: 20,
-            borderRadius: 10
-          }}
-        >
+        <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: 20, borderRadius: 10 }}>
           <div className="row d-flex">
             {/* As On Date */}
             <div className="col-md-3 mb-3">
@@ -605,9 +524,7 @@ const ConsolePaymentReport = () => {
                   <Controller
                     name="asOnDate"
                     control={control}
-                    rules={{
-                      required: 'As On Date is required'
-                    }}
+                    rules={{ required: 'As On Date is required' }}
                     render={({ field }) => (
                       <DatePicker
                         label="As On Date"
@@ -628,15 +545,39 @@ const ConsolePaymentReport = () => {
               </FormControl>
             </div>
 
-            {/* Party Name */}
+            {/* Category */}
+            <div className="col-md-3 mb-3">
+              <FormControl fullWidth size="small">
+                <Controller
+                  name="category"
+                  control={control}
+                  rules={{ required: 'Category is required' }}
+                  render={({ field }) => (
+                    <Autocomplete
+                      {...field}
+                      disableClearable
+                      size="small"
+                      options={categoryList}
+                      getOptionLabel={(option) => option?.category || ''}
+                      isOptionEqualToValue={(option, value) => option?.category === value?.category}
+                      value={field.value || ALL_CATEGORY}
+                      onChange={(_, value) => field.onChange(value)}
+                      renderInput={(params) => (
+                        <TextField {...params} label="Category" error={!!errors.category} helperText={errors.category?.message} />
+                      )}
+                    />
+                  )}
+                />
+              </FormControl>
+            </div>
+
+            {/* Party Name (depends on Category) */}
             <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <Controller
                   name="supplier"
                   control={control}
-                  rules={{
-                    required: 'Party Name is required'
-                  }}
+                  rules={{ required: 'Party Name is required' }}
                   render={({ field }) => (
                     <Autocomplete
                       {...field}
@@ -645,7 +586,7 @@ const ConsolePaymentReport = () => {
                       options={supplierList}
                       getOptionLabel={(option) => option?.partyName?.trim() || ''}
                       isOptionEqualToValue={(option, value) => option?.partyName === value?.partyName}
-                      value={field.value || null}
+                      value={field.value || ALL_SUPPLIER}
                       onChange={(_, value) => field.onChange(value)}
                       renderInput={(params) => (
                         <TextField {...params} label="Party Name" error={!!errors.supplier} helperText={errors.supplier?.message} />
@@ -660,7 +601,6 @@ const ConsolePaymentReport = () => {
             <div className="col-md-3 mb-2">
               <div className="d-flex flex-wrap justify-content-start mb-4 mt-1">
                 <ActionButton title="Search" icon={SearchIcon} type="submit" />
-
                 <ActionButton title="Clear" icon={ClearIcon} onClick={ClearForm} />
               </div>
             </div>
@@ -680,12 +620,7 @@ const ConsolePaymentReport = () => {
         onClose={handleCloseModal}
         fullWidth
         maxWidth="xl"
-        sx={{
-          '& .MuiDialog-paper': {
-            borderRadius: '12px',
-            overflow: 'hidden'
-          }
-        }}
+        sx={{ '& .MuiDialog-paper': { borderRadius: '12px', overflow: 'hidden' } }}
       >
         <DialogTitle
           sx={{
@@ -718,39 +653,10 @@ const ConsolePaymentReport = () => {
               showDownloadButtonsPdf={false}
             />
           ) : (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: 40,
-                color: '#666'
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 36,
-                  marginBottom: 8
-                }}
-              >
-                📭
-              </div>
-
-              <div
-                style={{
-                  fontWeight: 600,
-                  fontSize: 16
-                }}
-              >
-                No data found
-              </div>
-
-              <div
-                style={{
-                  fontSize: 13,
-                  marginTop: 4
-                }}
-              >
-                Try adjusting the As On Date or Party Name filter.
-              </div>
+            <div style={{ textAlign: 'center', padding: 40, color: '#666' }}>
+              <div style={{ fontSize: 36, marginBottom: 8 }}>📭</div>
+              <div style={{ fontWeight: 600, fontSize: 16 }}>No data found</div>
+              <div style={{ fontSize: 13, marginTop: 4 }}>Try adjusting the As On Date, Category or Party Name filter.</div>
             </div>
           )}
         </DialogContent>

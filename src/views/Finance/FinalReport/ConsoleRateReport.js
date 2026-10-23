@@ -26,28 +26,31 @@ import apiCalls from 'apicall';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 
-// The report API returns each row as an array. Index -> field name.
+const ALL_CATEGORY = { category: 'All' };
+const ALL_SUPPLIER = { partyName: 'All' };
+
+// API returns objects in paramObjectsMap.mapp. Map to the field names used by the table.
 const mapReportRow = (r) => ({
-  supplierName: r[0],
-  docId: r[1],
-  docDate: r[2],
-  vid: r[3],
-  vdate: r[4],
-  totChargesLcAmt: r[5],
-  gstInputLcAmt: r[6],
-  netBillCurrAmt: r[7],
-  status: r[8],
-  purVoucherNo: r[9],
-  purVoucherDate: r[10],
-  entity: r[11],
-  finYear: r[12],
-  billedMonthYear: r[13],
-  businessCate: r[14],
-  reportTime: r[15]
+  supplierName: r.supplierName,
+  docId: r.docId,
+  docDate: r.docDate,
+  vid: r.supplierBillNo,
+  vdate: r.supplierBillDate,
+  totChargesLcAmt: r.totalChargesLcAmt,
+  gstInputLcAmt: r.gstInputLcAmt,
+  netBillCurrAmt: r.netBillCurrAmt,
+  status: r.status,
+  purVoucherNo: r.purVoucherNo,
+  purVoucherDate: r.purVoucherDate,
+  entity: r.entity,
+  finYear: r.finYear,
+  billedMonthYear: r.billedMonthYear,
+  businessCate: r.businessCategory,
+  reportTime: r.reportTime
 });
 
 const formatAmount = (value) =>
-  value != null
+  value != null && value !== ''
     ? Number(value).toLocaleString('en-IN', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
@@ -61,17 +64,20 @@ const ConsolidationCostInvoiceReport = () => {
     control,
     handleSubmit,
     setValue,
+    watch,
     clearErrors,
     formState: { errors }
   } = useForm({
     mode: 'onChange',
     defaultValues: {
       asOnDate: dayjs(),
-      supplier: { partyName: 'All' }
+      category: ALL_CATEGORY,
+      supplier: ALL_SUPPLIER
     }
   });
 
-  const [supplierList, setSupplierList] = useState([]);
+  const [categoryList, setCategoryList] = useState([ALL_CATEGORY]);
+  const [supplierList, setSupplierList] = useState([ALL_SUPPLIER]);
   const [isLoading, setIsLoading] = useState(false);
   const [getData, setGetData] = useState([]);
   const [openModal, setOpenModal] = useState(false);
@@ -79,6 +85,7 @@ const ConsolidationCostInvoiceReport = () => {
   const [companyList, setCompanyList] = useState([]);
 
   const orgId = localStorage.getItem('orgId');
+  const selectedCategory = watch('category');
 
   // ====== TABLE COLUMNS ======
   const columns = useMemo(
@@ -90,6 +97,7 @@ const ConsolidationCostInvoiceReport = () => {
           size: 220,
           Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: 8 }}>{cell.getValue() || '-'}</div>
         },
+        { accessorKey: 'businessCate', header: 'Category', size: 130 },
         { accessorKey: 'vid', header: 'Invoice No', size: 150 },
         {
           accessorKey: 'vdate',
@@ -178,29 +186,44 @@ const ConsolidationCostInvoiceReport = () => {
     []
   );
 
-  // ====== SUPPLIER DROPDOWN (getPartyNameByPartyType, partyType=vendor) ======
+  // ====== CATEGORY DROPDOWN (getAllCategoryList) ======
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await apiCalls('get', '/reportController/getAllCategoryList');
+        const categories = response?.paramObjectsMap?.mapp || [];
+        setCategoryList([ALL_CATEGORY, ...categories]);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+        showToast('error', 'Failed to load categories');
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  // ====== SUPPLIER DROPDOWN (getAllVendorListCostReport?type=<category>) ======
+  // Runs on load (type=all) and every time the Category changes.
   useEffect(() => {
     const fetchSuppliers = async () => {
+      const categoryName = selectedCategory?.category || 'All';
+      const typeParam = categoryName === 'All' ? 'all' : categoryName;
+
       try {
-        const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=vendor`);
+        const response = await apiCalls('get', `/reportController/getAllVendorListCostReport?type=${encodeURIComponent(typeParam)}`);
+        const suppliers = response?.paramObjectsMap?.mapp || [];
 
-        const vendors = response?.paramObjectsMap?.partyMasterVO || [];
-
-        // Vendor master also holds expense heads (STAFF SALARY, FUEL EXPENSES...).
-        // Keep only real suppliers / transporters. Remove this filter to list everything.
-        const suppliers = vendors.filter((v) => ['SUPPLIER', 'TRANSPORTER'].includes(v.bussinessCate));
-
-        const allOption = { partyName: 'All' };
-        setSupplierList([allOption, ...suppliers]);
-        setValue('supplier', allOption);
+        setSupplierList([ALL_SUPPLIER, ...suppliers]);
+        setValue('supplier', ALL_SUPPLIER); // reset supplier whenever category changes
       } catch (error) {
         console.error('Error fetching suppliers:', error);
+        setSupplierList([ALL_SUPPLIER]);
         showToast('error', 'Failed to load suppliers');
       }
     };
 
-    if (orgId) fetchSuppliers();
-  }, [orgId, setValue]);
+    fetchSuppliers();
+  }, [selectedCategory?.category, setValue]);
 
   // ====== COMPANY DETAILS (for Excel logo) ======
   useEffect(() => {
@@ -218,7 +241,8 @@ const ConsolidationCostInvoiceReport = () => {
 
   // ====== CLEAR FORM ======
   const ClearForm = () => {
-    setValue('supplier', { partyName: 'All' });
+    setValue('category', ALL_CATEGORY);
+    setValue('supplier', ALL_SUPPLIER);
     setValue('asOnDate', dayjs());
     clearErrors();
     setGetData([]);
@@ -236,9 +260,11 @@ const ConsolidationCostInvoiceReport = () => {
 
     setIsLoading(true);
 
-    // API expects asondate as YYYY/MM/DD and supplier as "all" or a supplier name
+    // asondate = YYYY/MM/DD ; supplier & type = "all" by default, else the selected value
     const formattedDate = dayjs(formData.asOnDate).format('YYYY/MM/DD');
+    const categoryName = formData.category?.category || 'All';
     const partyName = formData.supplier?.partyName || 'All';
+    const typeParam = categoryName === 'All' ? 'all' : categoryName;
     const supplierParam = partyName === 'All' ? 'all' : partyName;
 
     try {
@@ -246,15 +272,16 @@ const ConsolidationCostInvoiceReport = () => {
         'get',
         `/reportController/findConsolidationCostInvoiceReports?asondate=${encodeURIComponent(
           formattedDate
-        )}&orgId=${orgId}&supplier=${encodeURIComponent(supplierParam)}`
+        )}&supplier=${encodeURIComponent(supplierParam)}&type=${encodeURIComponent(typeParam)}`
       );
 
-      const rows = response?.paramObjectsMap?.costInvoiceReportList || [];
+      const rows = response?.paramObjectsMap?.mapp || [];
       const data = rows.map(mapReportRow);
 
       setGetData(data);
       setHeaderFields([
         { label: 'As On Date', value: dayjs(formData.asOnDate).format('DD-MM-YYYY') },
+        { label: 'Category', value: categoryName },
         { label: 'Supplier', value: partyName },
         { label: 'Total Records', value: data.length }
       ]);
@@ -455,7 +482,33 @@ const ConsolidationCostInvoiceReport = () => {
               </FormControl>
             </div>
 
-            {/* Supplier */}
+            {/* Category */}
+            <div className="col-md-3 mb-3">
+              <FormControl fullWidth size="small">
+                <Controller
+                  name="category"
+                  control={control}
+                  rules={{ required: 'Category is required' }}
+                  render={({ field }) => (
+                    <Autocomplete
+                      {...field}
+                      disableClearable
+                      size="small"
+                      options={categoryList}
+                      getOptionLabel={(option) => option?.category || ''}
+                      isOptionEqualToValue={(option, value) => option?.category === value?.category}
+                      value={field.value || ALL_CATEGORY}
+                      onChange={(_, value) => field.onChange(value)}
+                      renderInput={(params) => (
+                        <TextField {...params} label="Category" error={!!errors.category} helperText={errors.category?.message} />
+                      )}
+                    />
+                  )}
+                />
+              </FormControl>
+            </div>
+
+            {/* Supplier (depends on Category) */}
             <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <Controller
@@ -470,7 +523,7 @@ const ConsolidationCostInvoiceReport = () => {
                       options={supplierList}
                       getOptionLabel={(option) => option?.partyName || ''}
                       isOptionEqualToValue={(option, value) => option?.partyName === value?.partyName}
-                      value={field.value || null}
+                      value={field.value || ALL_SUPPLIER}
                       onChange={(_, value) => field.onChange(value)}
                       renderInput={(params) => (
                         <TextField {...params} label="Supplier" error={!!errors.supplier} helperText={errors.supplier?.message} />
@@ -540,7 +593,7 @@ const ConsolidationCostInvoiceReport = () => {
             <div style={{ textAlign: 'center', padding: 40, color: '#666' }}>
               <div style={{ fontSize: 48, marginBottom: 8 }}>📭</div>
               <div style={{ fontWeight: 600, fontSize: 16 }}>No data found</div>
-              <div style={{ fontSize: 13, marginTop: 4 }}>Try adjusting the As On Date or Supplier filter.</div>
+              <div style={{ fontSize: 13, marginTop: 4 }}>Try adjusting the As On Date, Category or Supplier filter.</div>
             </div>
           )}
         </DialogContent>
