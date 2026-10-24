@@ -65,6 +65,7 @@ function MimRimRegister() {
   const [isLoading, setIsLoading] = useState(false);
   const [branchCodeList, setBranchCodeList] = useState([]);
   const [partyNameList, setPartyNameList] = useState([]);
+  const [warehouseList, setWarehouseList] = useState([]);
   const [listView, setListView] = useState(false);
   const [rowData, setRowData] = useState([]);
   const [selectedSections, setSelectedSections] = useState({
@@ -90,7 +91,8 @@ function MimRimRegister() {
         ...prev,
         mim: name === 'mim' ? checked : false,
         rim: name === 'rim' ? checked : false,
-        type: checked ? selectedType : ''
+        type: checked ? selectedType : '',
+        warehouse: 'All'
       }));
     } else {
       setSelectedSections((prevState) => ({
@@ -109,6 +111,7 @@ function MimRimRegister() {
     branchCode: 'All',
     customer: 'All',
     customerCode: 'All',
+    warehouse: 'All',
     viewMode: 'details'
   });
   const [fieldErrors, setFieldErrors] = useState({
@@ -120,15 +123,15 @@ function MimRimRegister() {
   });
   const handleClear = () => {
     setListView(false);
-    setFormData({
-      mim: true,
-      rim: false,
+    setFormData((prev) => ({
+      ...prev,
       fromDate: null,
       toDate: null,
       branchCode: 'All',
       customer: 'All',
-      customerCode: 'All'
-    });
+      customerCode: 'All',
+      warehouse: 'All'
+    }));
     setFieldErrors({
       fromDate: '',
       toDate: '',
@@ -138,28 +141,16 @@ function MimRimRegister() {
     });
     setRowData([]);
   };
+
+  // Same customer dropdown for MIM and RM (partyShortName)
   const handleSelectPartyChange = (e) => {
-    const value = e.target.value;
-    console.log('Selected employeeCode value:', value);
-    const selectedEmp = partyNameList.find((emp) => (formData.type === 'MIM' ? emp.partyShortName === value : emp.name === value));
-    if (value === 'All') {
-      setFormData((prevData) => ({
-        ...prevData,
-        customer: 'All'
-      }));
-    } else {
-      if (selectedEmp) {
-        console.log('Selected party:', selectedEmp);
-        setFormData((prevData) => ({
-          ...prevData,
-          customer: formData.type === 'MIM' ? selectedEmp.partyShortName : selectedEmp.name
-          // customerCode: selectedEmp.partyCode,
-        }));
-      } else {
-        console.log('No party found with the given code:', value);
-      }
-    }
+    setFormData((prev) => ({ ...prev, customer: e.target.value }));
   };
+
+  const handleWarehouseChange = (e) => {
+    setFormData((prev) => ({ ...prev, warehouse: e.target.value }));
+  };
+
   const handleInputChange = (e) => {
     const { name, value, type, selectionStart, selectionEnd } = e.target;
     setFieldErrors((prevErrors) => ({
@@ -198,16 +189,21 @@ function MimRimRegister() {
     const formattedDate = dayjs(date).format('YYYY-MM-DD') || null;
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
+
+  // Load branches and the customer list once (shared by MIM and RM)
   useEffect(() => {
     getAllBranches();
-    if (formData.type === 'MIM') {
-      setPartyNameList([]);
-      getPartyName();
-    } else if (formData.type === 'RIM') {
-      setPartyNameList([]);
-      getAllCustomerDetails();
+    getPartyName();
+  }, []);
+
+  // Load warehouses when RM is selected, and reload when the customer changes
+  useEffect(() => {
+    if (formData.type === 'RIM') {
+      getWarehouseLocations();
+    } else {
+      setWarehouseList([]);
     }
-  }, [formData.type]);
+  }, [formData.type, formData.customer]);
 
   const getAllBranches = async () => {
     try {
@@ -222,105 +218,118 @@ function MimRimRegister() {
       const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=customer`);
       setPartyNameList(response.paramObjectsMap.partyMasterVO);
     } catch (error) {
-      console.error('Error fetching gate passes:', error);
+      console.error('Error fetching party names:', error);
     }
   };
-  const getAllCustomerDetails = async () => {
+  const getWarehouseLocations = async () => {
     try {
-      const response = await apiCalls('get', `/warehouser/getAllWarehouseByOrgId?orgId=${orgId}`);
-      setPartyNameList(response.paramObjectsMap.warehouseVO);
+      const partyName = formData.customer === 'All' ? 'ALL' : formData.customer;
+      const response = await apiCalls(
+        'get',
+        `/reportController/getAllWareHouseLocationDetails?orgId=${orgId}&partyName=${encodeURIComponent(partyName)}`
+      );
+      setWarehouseList(response.paramObjectsMap.mapp || []);
+      setFormData((prev) => ({ ...prev, warehouse: 'All' })); // reset selection when list changes
     } catch (error) {
-      console.error('Error fetching gate passes:', error);
+      console.error('Error fetching warehouse locations:', error);
+      setWarehouseList([]);
     }
   };
-  const handleGo = async () => {
-    const errors = {};
-    if (Object.keys(errors).length === 0) {
-      setIsLoading(true);
-      setOpen(true);
-      setListView(false);
-      try {
-        let response;
-        if (formData.viewMode === 'details') {
-          if (formData.type === 'MIM')
-            if (formData.fromDate && formData.toDate) {
-              response = await apiCalls(
-                'get',
-                `/reportController/findMIMReports?customerName=${formData.customer}&finYear=${finYear}&orgId=${orgId}&type=${formData.type}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
-              );
-            } else {
-              response = await apiCalls(
-                'get',
-                `/reportController/findMIMReports?customerName=${formData.customer}&finYear=${finYear}&orgId=${orgId}&type=${formData.type}`
-              );
-            }
-          else {
-            if (formData.fromDate && formData.toDate) {
-              response = await apiCalls(
-                'get',
-                `/reportController/findRIMReports?customerName=${formData.customer}&finYear=${finYear}&orgId=${orgId}&type=${formData.type}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
-              );
-            } else {
-              response = await apiCalls(
-                'get',
-                `/reportController/findRIMReports?customerName=${formData.customer}&finYear=${finYear}&orgId=${orgId}&type=${formData.type}`
-              );
-            }
-          }
-        } else {
-          if (formData.type === 'MIM')
-            if (formData.fromDate && formData.toDate) {
-              response = await apiCalls(
-                'get',
-                `/reportController/findMimSummaryReport?customerName=${formData.customer}&finYear=${finYear}&orgId=${orgId}&type=${formData.type}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
-              );
-            } else {
-              response = await apiCalls(
-                'get',
-                `/reportController/findMimSummaryReport?customerName=${formData.customer}&finYear=${finYear}&orgId=${orgId}&type=${formData.type}`
-              );
-            }
-          else {
-            if (formData.fromDate && formData.toDate) {
-              response = await apiCalls(
-                'get',
-                `/reportController/findRimSummaryReport?customerName=${formData.customer}&finYear=${finYear}&orgId=${orgId}&type=${formData.type}&fromDate=${formData.fromDate}&toDate=${formData.toDate}`
-              );
-            } else {
-              response = await apiCalls(
-                'get',
-                `/reportController/findRimSummaryReport?customerName=${formData.customer}&finYear=${finYear}&orgId=${orgId}&type=${formData.type}`
-              );
-            }
-          }
-        }
 
-        if (response.status === true) {
-          console.log('Response:', response);
-          {
-            formData.type === 'MIM' && setRowData(response.paramObjectsMap.mimReportFillGrid || []);
-          }
-          {
-            formData.type === 'RIM' && setRowData(response.paramObjectsMap.rimReportFillGrid || []);
-          }
-          setIsLoading(false);
-          setListView(true);
-        } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Report Fetch failed');
-          setIsLoading(false);
+  // Build the correct API URL for MIM/RM and Details/Summary reports.
+  const buildReportUrl = () => {
+    const isMIM = formData.type === 'MIM';
+    const isDetails = formData.viewMode === 'details';
+
+    const endpoint = isDetails ? (isMIM ? 'findMIMReports' : 'findRIMReports') : isMIM ? 'findMimSummaryReport' : 'findRimSummaryReport';
+
+    // findRimSummaryReport has its own parameter names and lowercase values:
+    // partyName, wareHouse, type=rim. Do not send customerName/warehouse to this API.
+    if (!isMIM && !isDetails) {
+      const params = new URLSearchParams({
+        finYear: String(finYear ?? ''),
+        orgId: String(orgId ?? ''),
+        partyName: formData.customer === 'All' ? 'all' : String(formData.customer ?? 'all'),
+        type: 'rim',
+        wareHouse: formData.warehouse === 'All' ? 'all' : String(formData.warehouse ?? 'all')
+      });
+
+      if (formData.fromDate) params.set('fromDate', formData.fromDate);
+      if (formData.toDate) params.set('toDate', formData.toDate);
+
+      return `/reportController/findRimSummaryReport?${params.toString()}`;
+    }
+
+    // Preserve the existing MIM and detail-report request parameters.
+    const params = new URLSearchParams({
+      customerName: String(formData.customer ?? 'All'),
+      finYear: String(finYear ?? ''),
+      orgId: String(orgId ?? ''),
+      type: String(formData.type ?? '')
+    });
+
+    if (!isMIM) params.set('warehouse', String(formData.warehouse ?? 'All'));
+    if (formData.fromDate) params.set('fromDate', formData.fromDate);
+    if (formData.toDate) params.set('toDate', formData.toDate);
+
+    return `/reportController/${endpoint}?${params.toString()}`;
+  };
+
+  const handleGo = async () => {
+    setIsLoading(true);
+    setOpen(true);
+    setListView(false);
+    setRowData([]);
+
+    try {
+      const url = buildReportUrl();
+      console.log('Report API URL:', url);
+
+      const response = await apiCalls('get', url);
+      console.log('Report API response:', response);
+
+      if (response?.status === true) {
+        const grid = formData.type === 'MIM' ? response?.paramObjectsMap?.mimReportFillGrid : response?.paramObjectsMap?.rimReportFillGrid;
+
+        setRowData(Array.isArray(grid) ? grid : []);
+        setListView(true);
+
+        if (!Array.isArray(grid) || grid.length === 0) {
+          showToast('info', 'No report records found');
         }
-      } catch (error) {
-        console.error('Error:', error);
-        showToast('error', 'Report Fetch failed');
-        setIsLoading(false);
+      } else {
+        showToast('error', response?.paramObjectsMap?.errorMessage || response?.message || 'Report fetch failed');
       }
-    } else {
-      setFieldErrors(errors);
+    } catch (error) {
+      console.error('Error fetching report:', error);
+      showToast('error', error?.response?.data?.message || 'Report fetch failed');
+    } finally {
+      setIsLoading(false);
     }
   };
   const handleClose = () => {
     setOpen(false);
     setRowData([]);
+  };
+
+  // Header fields shared by Excel and PDF export
+  const getHeaderFields = () => {
+    const fields = [
+      {
+        label: 'From Date',
+        value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : '-'
+      },
+      {
+        label: 'To Date',
+        value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : '-'
+      },
+      { label: 'Customer', value: formData.customer },
+      { label: 'View Mode', value: formData.viewMode.toUpperCase() }
+    ];
+    if (formData.type === 'RIM') {
+      fields.push({ label: 'Warehouse', value: formData.warehouse });
+    }
+    return fields;
   };
 
   //
@@ -502,7 +511,7 @@ function MimRimRegister() {
               right: { style: 'thin' }
             };
 
-            // ✅ Right align numeric columns
+            // Right align numeric columns
             const isNumericColumn =
               (formData.viewMode === 'details' && [8, 11].includes(colNumber)) || // Kit Qty, Product Qty
               (formData.viewMode === 'summary' && [7, 8].includes(colNumber)); // Kit Qty, Amount
@@ -513,7 +522,7 @@ function MimRimRegister() {
               horizontal: isNumericColumn ? 'right' : 'left'
             };
 
-            // ✅ Add comma format
+            // Add comma format
             if (formData.viewMode === 'summary' && colNumber === 8 && typeof cell.value === 'number') {
               cell.numFmt = '#,##0.00';
             }
@@ -576,10 +585,11 @@ function MimRimRegister() {
 
       // === Header Box Design ===
       const headersList = [...headerFields];
+      const hasWarehouse = Boolean(headersList[4]);
       doc.setFontSize(9);
       doc.setTextColor('#000000');
       doc.setFillColor(231, 235, 235);
-      doc.roundedRect(5, 20, 287, 12, 2, 2, 'F'); // Full width in landscape
+      doc.roundedRect(5, 20, 287, hasWarehouse ? 18 : 12, 2, 2, 'F'); // Full width in landscape
 
       // Row 1: Labels (bold)
       doc.setFont('helvetica', 'bold');
@@ -594,6 +604,14 @@ function MimRimRegister() {
       doc.text(headersList[1]?.value || '-', 80, 30);
       doc.text(headersList[2]?.value || '-', 160, 30);
       doc.text((headersList[3]?.value || '-').toUpperCase(), 235, 30);
+
+      // Row 3: Warehouse (RM only)
+      if (hasWarehouse) {
+        doc.setFont('helvetica', 'bold');
+        doc.text(`${headersList[4].label}:`, 8, 36);
+        doc.setFont('helvetica', 'normal');
+        doc.text(headersList[4].value || '-', 30, 36);
+      }
 
       // === Table Columns ===
       const isDetails = formData.viewMode === 'details';
@@ -695,7 +713,7 @@ function MimRimRegister() {
       autoTable(doc, {
         head: [headers],
         body,
-        startY: 37,
+        startY: hasWarehouse ? 43 : 37,
         margin: { left: 10, right: 10 },
         headStyles: {
           fillColor: [31, 78, 120],
@@ -917,12 +935,35 @@ function MimRimRegister() {
                     <MenuItem value="All">All</MenuItem>
 
                     {partyNameList?.map((row) => (
-                      <MenuItem key={row.id} value={formData.type === 'MIM' ? row.partyShortName : row.name}>
-                        {formData.type === 'MIM' ? row.partyShortName : row.name}
+                      <MenuItem key={row.id} value={row.partyShortName}>
+                        {row.partyShortName}
                       </MenuItem>
                     ))}
                   </Select>
                   {fieldErrors.customer && <FormHelperText>{fieldErrors.customer}</FormHelperText>}
+                </FormControl>
+              </div>
+            )}
+            {/* Warehouse dropdown - only for RM */}
+            {formData.type === 'RIM' && (
+              <div className="col-md-3 mb-2">
+                <FormControl size="small" variant="outlined" fullWidth>
+                  <InputLabel id="warehouse-label">Warehouse</InputLabel>
+                  <Select
+                    labelId="warehouse-label"
+                    label="Warehouse"
+                    value={formData.warehouse}
+                    onChange={handleWarehouseChange}
+                    name="warehouse"
+                  >
+                    <MenuItem value="All">All</MenuItem>
+
+                    {warehouseList?.map((row) => (
+                      <MenuItem key={row.locationName} value={row.locationName}>
+                        {row.locationName}
+                      </MenuItem>
+                    ))}
+                  </Select>
                 </FormControl>
               </div>
             )}
@@ -966,18 +1007,7 @@ function MimRimRegister() {
                       onClick={() =>
                         handleDownloadExcel({
                           logo: listViewData[0]?.companyLogo,
-                          headerFields: [
-                            {
-                              label: 'From Date',
-                              value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : '-'
-                            },
-                            {
-                              label: 'To Date',
-                              value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : '-'
-                            },
-                            { label: 'Customer', value: formData.customer },
-                            { label: 'View Mode', value: formData.viewMode.toUpperCase() }
-                          ]
+                          headerFields: getHeaderFields()
                         })
                       }
                     />
@@ -991,19 +1021,8 @@ function MimRimRegister() {
                       onClick={() =>
                         handleExportToPDF({
                           logo: listViewData[0]?.companyLogo,
-                          headerFields: [
-                            {
-                              label: 'From Date',
-                              value: formData.fromDate ? dayjs(formData.fromDate).format('DD-MM-YYYY') : '-'
-                            },
-                            {
-                              label: 'To Date',
-                              value: formData.toDate ? dayjs(formData.toDate).format('DD-MM-YYYY') : '-'
-                            },
-                            { label: 'Customer', value: formData.customer },
-                            { label: 'View Mode', value: formData.viewMode.toUpperCase() }
-                          ],
-                          rowData, // ✅ This line is correct
+                          headerFields: getHeaderFields(),
+                          rowData,
                           formData
                         })
                       }
