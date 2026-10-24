@@ -196,14 +196,16 @@ function MimRimRegister() {
     getPartyName();
   }, []);
 
-  // Load warehouses when RM is selected, and reload when the customer changes
+  // Show/load Company only after RM is selected and a specific customer is chosen.
+  // This keeps Date selection independent from Customer/Company filters.
   useEffect(() => {
-    if (formData.type === 'RIM') {
+    if (formData.type === 'RIM' && selectedSections.customer && formData.customer && formData.customer !== 'All') {
       getWarehouseLocations();
     } else {
       setWarehouseList([]);
+      setFormData((prev) => ({ ...prev, warehouse: 'All' }));
     }
-  }, [formData.type, formData.customer]);
+  }, [formData.type, formData.customer, selectedSections.customer]);
 
   const getAllBranches = async () => {
     try {
@@ -327,7 +329,7 @@ function MimRimRegister() {
       { label: 'View Mode', value: formData.viewMode.toUpperCase() }
     ];
     if (formData.type === 'RIM') {
-      fields.push({ label: 'Warehouse', value: formData.warehouse });
+      fields.push({ label: 'Company', value: formData.warehouse });
     }
     return fields;
   };
@@ -811,7 +813,7 @@ function MimRimRegister() {
                   control={
                     <Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />
                   }
-                  label="Customer"
+                  label="Company"
                 />
               </div>
               <div className="col-md-1 mb-1">
@@ -924,7 +926,7 @@ function MimRimRegister() {
             {selectedSections.customer && (
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
-                  <InputLabel id="customer-label">Customer</InputLabel>
+                  <InputLabel id="customer-label">Company</InputLabel>
                   <Select
                     labelId="customer-label"
                     label="customer"
@@ -944,14 +946,14 @@ function MimRimRegister() {
                 </FormControl>
               </div>
             )}
-            {/* Warehouse dropdown - only for RM */}
-            {formData.type === 'RIM' && (
+            {/* Company dropdown: only show after a customer has been selected for RM */}
+            {formData.type === 'RIM' && selectedSections.customer && formData.customer && formData.customer !== 'All' && (
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth>
-                  <InputLabel id="warehouse-label">Warehouse</InputLabel>
+                  <InputLabel id="company-label">Warehouse</InputLabel>
                   <Select
-                    labelId="warehouse-label"
-                    label="Warehouse"
+                    labelId="company-label"
+                    label="Company"
                     value={formData.warehouse}
                     onChange={handleWarehouseChange}
                     name="warehouse"
