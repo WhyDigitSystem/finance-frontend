@@ -30,6 +30,8 @@ const ALL_CATEGORY = { category: 'All' };
 const ALL_SUPPLIER = { partyName: 'All' };
 
 // Map API response to table fields
+// NOTE: API "status" is mapped to "paymentStatus" so the shared table (CMRT2)
+// does not treat it as its own built-in "status" column (which showed "Edit").
 const mapPaymentRow = (row) => ({
   partyName: row.partyname,
   docId: row.docid,
@@ -41,7 +43,7 @@ const mapPaymentRow = (row) => ({
   chequeDate: row.chequedate,
   payTo: row.payto,
   onAccount: row.onaccount,
-  status: row.status,
+  paymentStatus: row.status,
   entity: row.entity,
   finYear: row.finyear,
   billedMonthYear: row.billedmonthyear,
@@ -57,6 +59,12 @@ const formatAmount = (value) =>
     : '-';
 
 const formatDate = (value) => (value && dayjs(value).isValid() ? dayjs(value).format('DD-MM-YYYY') : '-');
+
+const STATUS_COLORS = {
+  Approved: { bg: '#e8f5e9', color: '#1b5e20' },
+  Pending: { bg: '#fff8e1', color: '#b26a00' },
+  Rejected: { bg: '#ffebee', color: '#b71c1c' }
+};
 
 const ConsolePaymentReport = () => {
   const {
@@ -139,21 +147,15 @@ const ConsolePaymentReport = () => {
           Cell: ({ cell }) => <div style={{ padding: 8 }}>{cell.getValue() || '-'}</div>
         },
         {
-          accessorKey: 'status',
+          // renamed from 'status' -> 'paymentStatus' to avoid CMRT2 showing "Edit"
+          accessorKey: 'paymentStatus',
           header: 'Status',
           size: 110,
           enableEditing: false,
           enableColumnActions: false,
           Cell: ({ row }) => {
-            const status = row.original?.status;
-
-            const colors = {
-              Approved: { bg: '#e8f5e9', color: '#1b5e20' },
-              Pending: { bg: '#fff8e1', color: '#b26a00' },
-              Rejected: { bg: '#ffebee', color: '#b71c1c' }
-            };
-
-            const scheme = colors[status] || { bg: '#eeeeee', color: '#424242' };
+            const status = row.original?.paymentStatus;
+            const scheme = STATUS_COLORS[status] || { bg: '#eeeeee', color: '#424242' };
 
             return (
               <div style={{ textAlign: 'center', padding: 8 }}>
