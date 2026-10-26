@@ -264,13 +264,13 @@ function MimRimRegister() {
 
     // Preserve the existing MIM and detail-report request parameters.
     const params = new URLSearchParams({
-      customerName: String(formData.customer ?? 'All'),
+      company: String(formData.customer ?? 'All'),
       finYear: String(finYear ?? ''),
       orgId: String(orgId ?? ''),
       type: String(formData.type ?? '')
     });
 
-    if (!isMIM) params.set('warehouse', String(formData.warehouse ?? 'All'));
+    if (!isMIM) params.set('customer', String(formData.warehouse ?? 'All'));
     if (formData.fromDate) params.set('fromDate', formData.fromDate);
     if (formData.toDate) params.set('toDate', formData.toDate);
 
