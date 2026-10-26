@@ -239,6 +239,11 @@ function MimRimRegister() {
   };
 
   // Build the correct API URL for MIM/RM and Details/Summary reports.
+  // Parameter names follow the Swagger spec:
+  //   findMIMReports        : customerName, finYear, fromDate, orgId, toDate, type
+  //   findMimSummaryReport  : customerName, finYear, fromDate, orgId, toDate, type
+  //   findRIMReports        : company, customer, finYear, fromDate, orgId, toDate, type
+  //   findRimSummaryReport  : finYear, fromDate, orgId, partyName, toDate, type, wareHouse
   const buildReportUrl = () => {
     const isMIM = formData.type === 'MIM';
     const isDetails = formData.viewMode === 'details';
@@ -246,7 +251,7 @@ function MimRimRegister() {
     const endpoint = isDetails ? (isMIM ? 'findMIMReports' : 'findRIMReports') : isMIM ? 'findMimSummaryReport' : 'findRimSummaryReport';
 
     // findRimSummaryReport has its own parameter names and lowercase values:
-    // partyName, wareHouse, type=rim. Do not send customerName/warehouse to this API.
+    // partyName, wareHouse, type=rim.
     if (!isMIM && !isDetails) {
       const params = new URLSearchParams({
         finYear: String(finYear ?? ''),
@@ -262,15 +267,21 @@ function MimRimRegister() {
       return `/reportController/findRimSummaryReport?${params.toString()}`;
     }
 
-    // Preserve the existing MIM and detail-report request parameters.
     const params = new URLSearchParams({
-      company: String(formData.customer ?? 'All'),
       finYear: String(finYear ?? ''),
       orgId: String(orgId ?? ''),
       type: String(formData.type ?? '')
     });
 
-    if (!isMIM) params.set('customer', String(formData.warehouse ?? 'All'));
+    if (isMIM) {
+      // MIM details + MIM summary -> customerName
+      params.set('customerName', String(formData.customer ?? 'All'));
+    } else {
+      // RM details -> company + customer
+      params.set('company', String(formData.customer ?? 'All'));
+      params.set('customer', String(formData.warehouse ?? 'All'));
+    }
+
     if (formData.fromDate) params.set('fromDate', formData.fromDate);
     if (formData.toDate) params.set('toDate', formData.toDate);
 
