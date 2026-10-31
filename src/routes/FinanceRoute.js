@@ -9,6 +9,8 @@ import Dashboard2 from 'views/dashboardNew/dashboard2';
 import ConsoleReport from 'views/Finance/FinalReport/ConsoleReport';
 import ConsoleRateReport from 'views/Finance/FinalReport/ConsoleRateReport';
 import ConsolePaymentReport from 'views/Finance/FinalReport/ConsolePaymentReport';
+import ConsolidationCostInvoiceReport from 'views/Finance/FinalReport/ConsoleRateReport';
+import ConsolidationRevenueReport from 'views/Finance/FinalReport/ConsolidationRevenueReport';
 const TDSRegister = Loadable(lazy(() => import('views/Finance/FinalReport/TDSRegister')));
 const GSTRegister = Loadable(lazy(() => import('views/Finance/FinalReport/GSTRegister')));
 const CostEstimateReport = Loadable(lazy(() => import('views/Finance/FinalReport/CostEstimateReport')));
@@ -623,6 +625,10 @@ const FinanceRoute = {
     {
       path: '/Finance/Invoice/InvoicePDF',
       element: <InvoicePDF />
+    },
+    {
+      path: '/finance/FinalReport/ConsoleRevenue',
+      element: <ConsolidationRevenueReport />
     }
   ]
 };
