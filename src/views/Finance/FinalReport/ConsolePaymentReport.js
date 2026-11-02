@@ -29,7 +29,7 @@ import { saveAs } from 'file-saver';
 const ALL_CATEGORY = { category: 'All' };
 const ALL_SUPPLIER = { partyName: 'All' };
 
-// Map API response to table fields
+// ================= MAP API RESPONSE =================
 const mapPaymentRow = (row) => ({
   partyName: row.partyname,
   docId: row.docid,
@@ -48,6 +48,7 @@ const mapPaymentRow = (row) => ({
   businessCate: row.bussinesscate
 });
 
+// ================= FORMAT HELPERS =================
 const formatAmount = (value) =>
   value != null && value !== ''
     ? Number(value).toLocaleString('en-IN', {
@@ -303,12 +304,11 @@ const ConsolePaymentReport = () => {
         const response = await apiCalls('get', `/reportController/getAllVendorListCostReport?type=${encodeURIComponent(typeParam)}`);
 
         const vendors = response?.paramObjectsMap?.mapp || [];
-
         const seen = new Set();
 
         const parties = vendors
-          .filter((v) => {
-            const name = v?.partyName?.trim();
+          .filter((vendor) => {
+            const name = vendor?.partyName?.trim();
 
             if (!name || name.toLowerCase() === 'none') return false;
             if (seen.has(name)) return false;
@@ -316,7 +316,9 @@ const ConsolePaymentReport = () => {
             seen.add(name);
             return true;
           })
-          .map((v) => ({ partyName: v.partyName }))
+          .map((vendor) => ({
+            partyName: vendor.partyName
+          }))
           .sort((a, b) => a.partyName.trim().localeCompare(b.partyName.trim()));
 
         setSupplierList([ALL_SUPPLIER, ...parties]);
@@ -388,6 +390,7 @@ const ConsolePaymentReport = () => {
       }
 
       const rows = response?.paramObjectsMap?.paymentReportList || [];
+
       const data = rows.map(mapPaymentRow);
 
       setGetData(data);
@@ -466,11 +469,28 @@ const ConsolePaymentReport = () => {
   };
 
   // ================= EXCEL DOWNLOAD =================
-  const handleDownloadExcel = async () => {
+  const handleDownloadExcel = async ({ table } = {}) => {
     try {
       const workbook = new ExcelJS.Workbook();
       const worksheet = workbook.addWorksheet('Console Payment');
 
+      // Use current visible columns from CMRT2
+      const visibleTableColumns = table ? table.getVisibleLeafColumns() : columns;
+
+      const visibleColumns = visibleTableColumns
+        .map((tableColumn) => {
+          const columnId = tableColumn.columnDef?.accessorKey || tableColumn.id;
+
+          return columns.find((column) => column.accessorKey === columnId);
+        })
+        .filter(Boolean);
+
+      if (!visibleColumns.length) {
+        showToast('error', 'No visible columns available for Excel export');
+        return;
+      }
+
+      // ================= COMPANY LOGO =================
       worksheet.mergeCells('A1:B4');
 
       const logo = companyList[0]?.companyLogo;
@@ -480,7 +500,7 @@ const ConsolePaymentReport = () => {
           const base64Data = logo.split(',')[1] || logo;
 
           if (base64Data.length >= 100) {
-            const extension = logo.includes('jpeg') ? 'jpeg' : 'png';
+            const extension = logo.includes('jpeg') || logo.includes('jpg') ? 'jpeg' : 'png';
 
             const imageId = workbook.addImage({
               base64: base64Data,
@@ -497,6 +517,7 @@ const ConsolePaymentReport = () => {
         }
       }
 
+      // ================= REPORT TITLE =================
       worksheet.mergeCells('C2:G3');
 
       worksheet.getCell('C2').value = 'Console Payment';
@@ -509,6 +530,7 @@ const ConsolePaymentReport = () => {
         vertical: 'middle'
       };
 
+      // ================= FILTER DETAILS =================
       const excelHeaderFields = [
         ...headerFields,
         {
@@ -531,7 +553,8 @@ const ConsolePaymentReport = () => {
         };
         cell.alignment = {
           vertical: 'middle',
-          horizontal: 'center'
+          horizontal: 'center',
+          wrapText: true
         };
         cell.fill = {
           type: 'pattern',
@@ -540,9 +563,10 @@ const ConsolePaymentReport = () => {
         };
       });
 
-      const headerRow = worksheet.addRow(columns.map((column) => column.header));
+      // ================= TABLE HEADER =================
+      const headerRow = worksheet.addRow(visibleColumns.map((column) => column.header));
 
-      headerRow.height = 20;
+      headerRow.height = 25;
 
       headerRow.eachCell((cell) => {
         cell.fill = {
@@ -556,7 +580,8 @@ const ConsolePaymentReport = () => {
         };
         cell.alignment = {
           vertical: 'middle',
-          horizontal: 'center'
+          horizontal: 'center',
+          wrapText: true
         };
         cell.border = {
           top: { style: 'thin' },
@@ -569,50 +594,74 @@ const ConsolePaymentReport = () => {
       const numberFields = ['paymentAmt', 'onAccount'];
       const dateFields = ['docDate', 'purVoucherDate', 'chequeDate'];
 
+      // ================= DATA ROWS =================
       getData.forEach((row) => {
-        const rowData = columns.map((column) => {
+        const rowData = visibleColumns.map((column) => {
           const key = column.accessorKey;
+          const value = row[key];
 
           if (dateFields.includes(key)) {
-            return row[key] && dayjs(row[key]).isValid() ? dayjs(row[key]).format('DD-MM-YYYY') : '';
+            return value && dayjs(value).isValid() ? dayjs(value).format('DD-MM-YYYY') : '';
           }
 
           if (numberFields.includes(key)) {
-            return row[key] != null ? Number(row[key]) : '';
+            return value != null && value !== '' ? Number(value) : '';
           }
 
-          return row[key] ?? '';
+          return value ?? '';
         });
 
         const addedRow = worksheet.addRow(rowData);
 
-        columns.forEach((column, index) => {
+        visibleColumns.forEach((column, index) => {
           if (numberFields.includes(column.accessorKey)) {
             addedRow.getCell(index + 1).numFmt = '#,##0.00';
+            addedRow.getCell(index + 1).alignment = {
+              horizontal: 'right',
+              vertical: 'middle'
+            };
           }
         });
       });
 
       // ================= TOTAL ROW =================
-      const totalRowData = columns.map((column) => {
-        if (column.accessorKey === 'partyName') return 'Total';
+      const totalRowData = visibleColumns.map((column) => {
+        const key = column.accessorKey;
 
-        if (numberFields.includes(column.accessorKey)) {
-          return getData.reduce((sum, row) => sum + (Number(row[column.accessorKey]) || 0), 0);
+        if (key === 'partyName') {
+          return 'Total';
+        }
+
+        if (numberFields.includes(key)) {
+          return getData.reduce((sum, row) => sum + (Number(row[key]) || 0), 0);
         }
 
         return '';
       });
 
       const totalRow = worksheet.addRow(totalRowData);
+
       totalRow.font = { bold: true };
 
-      columns.forEach((column, index) => {
+      totalRow.eachCell((cell) => {
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FFE8EAF6' }
+        };
+        cell.border = {
+          top: { style: 'thin' },
+          bottom: { style: 'double' }
+        };
+      });
+
+      visibleColumns.forEach((column, index) => {
         if (numberFields.includes(column.accessorKey)) {
           totalRow.getCell(index + 1).numFmt = '#,##0.00';
         }
       });
 
+      // ================= COLUMN WIDTH =================
       worksheet.columns.forEach((column) => {
         let maxLength = 10;
 
@@ -620,11 +669,18 @@ const ConsolePaymentReport = () => {
           maxLength = Math.max(maxLength, String(cell.value ?? '').length);
         });
 
-        column.width = Math.min(maxLength + 2, 45);
+        column.width = Math.min(maxLength + 3, 45);
       });
 
-      worksheet.views = [{ state: 'frozen', ySplit: 6 }];
+      // ================= FREEZE HEADER =================
+      worksheet.views = [
+        {
+          state: 'frozen',
+          ySplit: 6
+        }
+      ];
 
+      // ================= DOWNLOAD =================
       const buffer = await workbook.xlsx.writeBuffer();
 
       const blob = new Blob([buffer], {
@@ -646,7 +702,7 @@ const ConsolePaymentReport = () => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: 20, borderRadius: 10 }}>
           <div className="row d-flex">
-            {/* As On Date */}
+            {/* AS ON DATE */}
             <div className="col-md-3 mb-3">
               <FormControl fullWidth>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -674,7 +730,7 @@ const ConsolePaymentReport = () => {
               </FormControl>
             </div>
 
-            {/* Category */}
+            {/* CATEGORY */}
             <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <Controller
@@ -700,7 +756,7 @@ const ConsolePaymentReport = () => {
               </FormControl>
             </div>
 
-            {/* Party Name */}
+            {/* PARTY NAME */}
             <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <Controller
@@ -726,7 +782,7 @@ const ConsolePaymentReport = () => {
               </FormControl>
             </div>
 
-            {/* Search and Clear */}
+            {/* SEARCH AND CLEAR */}
             <div className="col-md-3 mb-2">
               <div className="d-flex flex-wrap justify-content-start mb-4 mt-1">
                 <ActionButton title="Search" icon={SearchIcon} type="submit" />
@@ -778,10 +834,8 @@ const ConsolePaymentReport = () => {
         <DialogContent sx={{ padding: 0 }}>
           {getData.length > 0 ? (
             <>
-              {/* SUMMARY CARDS */}
               <SummaryBar />
 
-              {/* REPORT TABLE */}
               <CMRT2
                 data={getData}
                 columns={columns}
