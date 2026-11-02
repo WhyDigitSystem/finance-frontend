@@ -30,8 +30,6 @@ const ALL_CATEGORY = { category: 'All' };
 const ALL_SUPPLIER = { partyName: 'All' };
 
 // Map API response to table fields
-// NOTE: API "status" is mapped to "paymentStatus" so the shared table (CMRT2)
-// does not treat it as its own built-in "status" column (which showed "Edit").
 const mapPaymentRow = (row) => ({
   partyName: row.partyname,
   docId: row.docid,
@@ -66,6 +64,42 @@ const STATUS_COLORS = {
   Rejected: { bg: '#ffebee', color: '#b71c1c' }
 };
 
+// ================= SUMMARY CARD =================
+const SummaryCard = ({ label, value, color }) => (
+  <div
+    style={{
+      flex: '1 1 180px',
+      minWidth: 160,
+      background: '#fff',
+      borderRadius: 8,
+      padding: '12px 16px',
+      borderLeft: `4px solid ${color}`,
+      boxShadow: '0 2px 6px rgba(0,0,0,0.08)'
+    }}
+  >
+    <div
+      style={{
+        fontSize: 12,
+        color: '#666',
+        marginBottom: 5,
+        fontWeight: 500
+      }}
+    >
+      {label}
+    </div>
+
+    <div
+      style={{
+        fontSize: 20,
+        fontWeight: 700,
+        color
+      }}
+    >
+      {value}
+    </div>
+  </div>
+);
+
 const ConsolePaymentReport = () => {
   const {
     control,
@@ -93,6 +127,36 @@ const ConsolePaymentReport = () => {
 
   const orgId = localStorage.getItem('orgId');
   const selectedCategory = watch('category');
+
+  // ================= SUMMARY CALCULATIONS =================
+  const summary = useMemo(() => {
+    const total = (field) => getData.reduce((sum, row) => sum + (Number(row[field]) || 0), 0);
+
+    return {
+      count: getData.length,
+      totalPayment: total('paymentAmt'),
+      totalOnAccount: total('onAccount')
+    };
+  }, [getData]);
+
+  // ================= SUMMARY BAR =================
+  const SummaryBar = () => (
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 12,
+        padding: '12px 16px',
+        background: '#f5f7ff'
+      }}
+    >
+      <SummaryCard label="Total Records" value={summary.count} color="#34449B" />
+
+      <SummaryCard label="Total Payment Amount" value={formatAmount(summary.totalPayment)} color="#1b5e20" />
+
+      <SummaryCard label="Total On Account" value={formatAmount(summary.totalOnAccount)} color="#b26a00" />
+    </div>
+  );
 
   // ================= TABLE COLUMNS =================
   const columns = useMemo(
@@ -147,7 +211,6 @@ const ConsolePaymentReport = () => {
           Cell: ({ cell }) => <div style={{ padding: 8 }}>{cell.getValue() || '-'}</div>
         },
         {
-          // renamed from 'status' -> 'paymentStatus' to avoid CMRT2 showing "Edit"
           accessorKey: 'paymentStatus',
           header: 'Status',
           size: 110,
@@ -155,7 +218,10 @@ const ConsolePaymentReport = () => {
           enableColumnActions: false,
           Cell: ({ row }) => {
             const status = row.original?.paymentStatus;
-            const scheme = STATUS_COLORS[status] || { bg: '#eeeeee', color: '#424242' };
+            const scheme = STATUS_COLORS[status] || {
+              bg: '#eeeeee',
+              color: '#424242'
+            };
 
             return (
               <div style={{ textAlign: 'center', padding: 8 }}>
@@ -173,9 +239,21 @@ const ConsolePaymentReport = () => {
             );
           }
         },
-        { accessorKey: 'entity', header: 'Entity', size: 150 },
-        { accessorKey: 'billedMonthYear', header: 'Billed Month', size: 150 },
-        { accessorKey: 'docId', header: 'Doc ID', size: 150 },
+        {
+          accessorKey: 'entity',
+          header: 'Entity',
+          size: 150
+        },
+        {
+          accessorKey: 'billedMonthYear',
+          header: 'Billed Month',
+          size: 150
+        },
+        {
+          accessorKey: 'docId',
+          header: 'Doc ID',
+          size: 150
+        },
         {
           accessorKey: 'docDate',
           header: 'Doc Date',
@@ -198,11 +276,12 @@ const ConsolePaymentReport = () => {
     []
   );
 
-  // ================= CATEGORY DROPDOWN (getAllCategoryList) =================
+  // ================= CATEGORY DROPDOWN =================
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await apiCalls('get', '/reportController/getAllCategoryList');
+
         const categories = response?.paramObjectsMap?.mapp || [];
         setCategoryList([ALL_CATEGORY, ...categories]);
       } catch (error) {
@@ -214,8 +293,7 @@ const ConsolePaymentReport = () => {
     fetchCategories();
   }, []);
 
-  // ================= PARTY DROPDOWN (getAllVendorListCostReport?type=<category>) =================
-  // Runs on load (type=all) and every time the Category changes.
+  // ================= PARTY DROPDOWN =================
   useEffect(() => {
     const fetchSuppliers = async () => {
       const categoryName = selectedCategory?.category || 'All';
@@ -223,15 +301,18 @@ const ConsolePaymentReport = () => {
 
       try {
         const response = await apiCalls('get', `/reportController/getAllVendorListCostReport?type=${encodeURIComponent(typeParam)}`);
+
         const vendors = response?.paramObjectsMap?.mapp || [];
 
-        // Remove blanks, junk "None" record and duplicates; sort A-Z
         const seen = new Set();
+
         const parties = vendors
           .filter((v) => {
             const name = v?.partyName?.trim();
+
             if (!name || name.toLowerCase() === 'none') return false;
             if (seen.has(name)) return false;
+
             seen.add(name);
             return true;
           })
@@ -239,7 +320,7 @@ const ConsolePaymentReport = () => {
           .sort((a, b) => a.partyName.trim().localeCompare(b.partyName.trim()));
 
         setSupplierList([ALL_SUPPLIER, ...parties]);
-        setValue('supplier', ALL_SUPPLIER); // reset party whenever category changes
+        setValue('supplier', ALL_SUPPLIER);
       } catch (error) {
         console.error('Error fetching payment parties:', error);
         setSupplierList([ALL_SUPPLIER]);
@@ -255,6 +336,7 @@ const ConsolePaymentReport = () => {
     const fetchCompanyDetails = async () => {
       try {
         const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+
         setCompanyList(response?.paramObjectsMap?.companyVO || []);
       } catch (error) {
         console.error('Error fetching company details:', error);
@@ -291,7 +373,6 @@ const ConsolePaymentReport = () => {
     const categoryName = formData.category?.category || 'All';
     const partyName = formData.supplier?.partyName || 'All';
 
-    // partyName = "ALL" and type = "all" by default, else the selected value
     const query = new URLSearchParams({
       asonDate: dayjs(formData.asOnDate).format('YYYY/MM/DD'),
       partyName: partyName.trim().toLowerCase() === 'all' ? 'ALL' : partyName,
@@ -301,7 +382,6 @@ const ConsolePaymentReport = () => {
     try {
       const response = await apiCalls('get', `/reportController/ConsolidationPaymentReports?${query}`);
 
-      // Check failure BEFORE touching state / opening the modal
       if (response?.status === false) {
         showToast('error', response?.paramObjectsMap?.errorMessage || response?.statusFlag || 'Failed to fetch payment report');
         return;
@@ -313,10 +393,22 @@ const ConsolePaymentReport = () => {
       setGetData(data);
 
       setHeaderFields([
-        { label: 'As On Date', value: dayjs(formData.asOnDate).format('DD-MM-YYYY') },
-        { label: 'Category', value: categoryName },
-        { label: 'Party Name', value: partyName.trim() },
-        { label: 'Total Records', value: data.length },
+        {
+          label: 'As On Date',
+          value: dayjs(formData.asOnDate).format('DD-MM-YYYY')
+        },
+        {
+          label: 'Category',
+          value: categoryName
+        },
+        {
+          label: 'Party Name',
+          value: partyName.trim()
+        },
+        {
+          label: 'Total Records',
+          value: data.length
+        },
         {
           label: 'Total Payment',
           value: formatAmount(data.reduce((sum, row) => sum + (Number(row.paymentAmt) || 0), 0))
@@ -390,7 +482,10 @@ const ConsolePaymentReport = () => {
           if (base64Data.length >= 100) {
             const extension = logo.includes('jpeg') ? 'jpeg' : 'png';
 
-            const imageId = workbook.addImage({ base64: base64Data, extension });
+            const imageId = workbook.addImage({
+              base64: base64Data,
+              extension
+            });
 
             worksheet.addImage(imageId, {
               tl: { col: 0, row: 0 },
@@ -405,22 +500,44 @@ const ConsolePaymentReport = () => {
       worksheet.mergeCells('C2:G3');
 
       worksheet.getCell('C2').value = 'Console Payment';
-      worksheet.getCell('C2').font = { size: 16, bold: true };
-      worksheet.getCell('C2').alignment = { horizontal: 'center', vertical: 'middle' };
+      worksheet.getCell('C2').font = {
+        size: 16,
+        bold: true
+      };
+      worksheet.getCell('C2').alignment = {
+        horizontal: 'center',
+        vertical: 'middle'
+      };
 
       const excelHeaderFields = [
         ...headerFields,
-        { label: 'Generated By', value: localStorage.getItem('userName') || 'System' },
-        { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
+        {
+          label: 'Generated By',
+          value: localStorage.getItem('userName') || 'System'
+        },
+        {
+          label: 'Generated On',
+          value: dayjs().format('DD-MM-YYYY HH:mm')
+        }
       ];
 
       excelHeaderFields.forEach(({ label, value }, index) => {
         const cell = worksheet.getCell(5, index + 1);
 
         cell.value = `${label}: ${value}`;
-        cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF593C8F' } };
+        cell.font = {
+          bold: true,
+          color: { argb: 'FFFFFFFF' }
+        };
+        cell.alignment = {
+          vertical: 'middle',
+          horizontal: 'center'
+        };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF593C8F' }
+        };
       });
 
       const headerRow = worksheet.addRow(columns.map((column) => column.header));
@@ -428,9 +545,19 @@ const ConsolePaymentReport = () => {
       headerRow.height = 20;
 
       headerRow.eachCell((cell) => {
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3B76E2' } };
-        cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
-        cell.alignment = { vertical: 'middle', horizontal: 'center' };
+        cell.fill = {
+          type: 'pattern',
+          pattern: 'solid',
+          fgColor: { argb: 'FF3B76E2' }
+        };
+        cell.font = {
+          color: { argb: 'FFFFFFFF' },
+          bold: true
+        };
+        cell.alignment = {
+          vertical: 'middle',
+          horizontal: 'center'
+        };
         cell.border = {
           top: { style: 'thin' },
           left: { style: 'thin' },
@@ -466,7 +593,7 @@ const ConsolePaymentReport = () => {
         });
       });
 
-      // Total row
+      // ================= TOTAL ROW =================
       const totalRowData = columns.map((column) => {
         if (column.accessorKey === 'partyName') return 'Total';
 
@@ -573,7 +700,7 @@ const ConsolePaymentReport = () => {
               </FormControl>
             </div>
 
-            {/* Party Name (depends on Category) */}
+            {/* Party Name */}
             <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <Controller
@@ -616,13 +743,18 @@ const ConsolePaymentReport = () => {
         </div>
       </form>
 
-      {/* Payment Report Modal */}
+      {/* ================= PAYMENT REPORT MODAL ================= */}
       <Dialog
         open={openModal}
         onClose={handleCloseModal}
         fullWidth
         maxWidth="xl"
-        sx={{ '& .MuiDialog-paper': { borderRadius: '12px', overflow: 'hidden' } }}
+        sx={{
+          '& .MuiDialog-paper': {
+            borderRadius: '12px',
+            overflow: 'hidden'
+          }
+        }}
       >
         <DialogTitle
           sx={{
@@ -645,19 +777,33 @@ const ConsolePaymentReport = () => {
 
         <DialogContent sx={{ padding: 0 }}>
           {getData.length > 0 ? (
-            <CMRT2
-              data={getData}
-              columns={columns}
-              fileName="Console Payment"
-              tableOptions={tableOptions}
-              headerFields={headerFields}
-              handleDownloadExcel={handleDownloadExcel}
-              showDownloadButtonsPdf={false}
-            />
+            <>
+              {/* SUMMARY CARDS */}
+              <SummaryBar />
+
+              {/* REPORT TABLE */}
+              <CMRT2
+                data={getData}
+                columns={columns}
+                fileName="Console Payment"
+                tableOptions={tableOptions}
+                headerFields={headerFields}
+                handleDownloadExcel={handleDownloadExcel}
+                showDownloadButtonsPdf={false}
+              />
+            </>
           ) : (
-            <div style={{ textAlign: 'center', padding: 40, color: '#666' }}>
+            <div
+              style={{
+                textAlign: 'center',
+                padding: 40,
+                color: '#666'
+              }}
+            >
               <div style={{ fontSize: 36, marginBottom: 8 }}>📭</div>
+
               <div style={{ fontWeight: 600, fontSize: 16 }}>No data found</div>
+
               <div style={{ fontSize: 13, marginTop: 4 }}>Try adjusting the As On Date, Category or Party Name filter.</div>
             </div>
           )}

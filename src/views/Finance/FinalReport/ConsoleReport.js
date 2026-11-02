@@ -526,7 +526,38 @@ const ConsoleReport = () => {
     });
     saveAs(blob, `Console_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
   };
+  // ====== SUMMARY BAR ======
+  const SummaryBar = () => (
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 12,
+        padding: '12px 16px',
+        background: '#f5f7ff'
+      }}
+    >
+      <SummaryCard label="Total Items" value={summary.count} color="#34449B" />
 
+      <SummaryCard
+        label="Total Receipt Amount"
+        value={summary.totalReceipt.toLocaleString('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })}
+        color="#1b5e20"
+      />
+
+      <SummaryCard
+        label="Total On Account"
+        value={summary.totalOnAccount.toLocaleString('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })}
+        color="#b26a00"
+      />
+    </div>
+  );
   return (
     <>
       <ToastContainer />
@@ -639,15 +670,19 @@ const ConsoleReport = () => {
 
         <DialogContent sx={{ padding: 0 }}>
           {getData && getData.length > 0 ? (
-            <CMRT2
-              data={getData}
-              columns={consoleColumns}
-              fileName={'Console Receipt'}
-              tableOptions={tableOptions}
-              headerFields={headerFields}
-              handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
-              showDownloadButtonsPdf={false}
-            />
+            <>
+              <SummaryBar />
+
+              <CMRT2
+                data={getData}
+                columns={consoleColumns}
+                fileName={'Console Receipt'}
+                tableOptions={tableOptions}
+                headerFields={headerFields}
+                handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
+                showDownloadButtonsPdf={false}
+              />
+            </>
           ) : (
             <div style={{ textAlign: 'center', padding: '40px', color: '#666' }}>
               <div style={{ fontSize: 48, marginBottom: 8 }}>📭</div>
@@ -661,6 +696,8 @@ const ConsoleReport = () => {
       {/* Optional list view */}
       {listView && getData && getData.length > 0 && (
         <div className="mt-4">
+          <SummaryBar />
+
           <CMRT2
             data={getData}
             columns={consoleColumns}

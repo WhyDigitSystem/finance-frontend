@@ -29,7 +29,10 @@ import { saveAs } from 'file-saver';
 const ALL_CATEGORY = { category: 'All' };
 const ALL_SUPPLIER = { partyName: 'All' };
 
-// API returns objects in paramObjectsMap.mapp. Map to the field names used by the table.
+// ============================================================
+// MAP API DATA
+// ============================================================
+
 const mapReportRow = (r) => ({
   supplierName: r.supplierName,
   docId: r.docId,
@@ -49,6 +52,10 @@ const mapReportRow = (r) => ({
   reportTime: r.reportTime
 });
 
+// ============================================================
+// FORMAT HELPERS
+// ============================================================
+
 const formatAmount = (value) =>
   value != null && value !== ''
     ? Number(value).toLocaleString('en-IN', {
@@ -58,6 +65,48 @@ const formatAmount = (value) =>
     : '-';
 
 const formatDate = (value) => (value ? dayjs(value).format('DD-MM-YYYY') : '-');
+
+// ============================================================
+// SUMMARY CARD COMPONENT
+// ============================================================
+
+const SummaryCard = ({ label, value, color }) => (
+  <div
+    style={{
+      flex: '1 1 180px',
+      minWidth: 160,
+      background: '#fff',
+      borderRadius: 8,
+      padding: '12px 16px',
+      borderLeft: `4px solid ${color}`,
+      boxShadow: '0 2px 6px rgba(0,0,0,0.08)'
+    }}
+  >
+    <div
+      style={{
+        fontSize: 12,
+        color: '#666',
+        marginBottom: 5
+      }}
+    >
+      {label}
+    </div>
+
+    <div
+      style={{
+        fontSize: 20,
+        fontWeight: 700,
+        color
+      }}
+    >
+      {value}
+    </div>
+  </div>
+);
+
+// ============================================================
+// MAIN COMPONENT
+// ============================================================
 
 const ConsolidationCostInvoiceReport = () => {
   const {
@@ -87,7 +136,10 @@ const ConsolidationCostInvoiceReport = () => {
   const orgId = localStorage.getItem('orgId');
   const selectedCategory = watch('category');
 
-  // ====== TABLE COLUMNS ======
+  // ============================================================
+  // TABLE COLUMNS
+  // ============================================================
+
   const columns = useMemo(
     () =>
       [
@@ -97,8 +149,16 @@ const ConsolidationCostInvoiceReport = () => {
           size: 220,
           Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: 8 }}>{cell.getValue() || '-'}</div>
         },
-        { accessorKey: 'businessCate', header: 'Category', size: 130 },
-        { accessorKey: 'vid', header: 'Invoice No', size: 150 },
+        {
+          accessorKey: 'businessCate',
+          header: 'Category',
+          size: 130
+        },
+        {
+          accessorKey: 'vid',
+          header: 'Invoice No',
+          size: 150
+        },
         {
           accessorKey: 'vdate',
           header: 'Invoice Date',
@@ -121,7 +181,17 @@ const ConsolidationCostInvoiceReport = () => {
           accessorKey: 'netBillCurrAmt',
           header: 'Net Amt',
           size: 130,
-          Cell: ({ cell }) => <div style={{ textAlign: 'right', padding: 8, fontWeight: 600 }}>{formatAmount(cell.getValue())}</div>
+          Cell: ({ cell }) => (
+            <div
+              style={{
+                textAlign: 'right',
+                padding: 8,
+                fontWeight: 600
+              }}
+            >
+              {formatAmount(cell.getValue())}
+            </div>
+          )
         },
         {
           accessorKey: 'statusDisplay',
@@ -131,19 +201,38 @@ const ConsolidationCostInvoiceReport = () => {
           enableColumnActions: false,
           Cell: ({ row }) => {
             const status = row.original?.status;
+
             const colors = {
-              Approved: { bg: '#e8f5e9', color: '#1b5e20' },
-              Pending: { bg: '#fff8e1', color: '#b26a00' },
-              Rejected: { bg: '#ffebee', color: '#b71c1c' }
+              Approved: {
+                bg: '#e8f5e9',
+                color: '#1b5e20'
+              },
+              Pending: {
+                bg: '#fff8e1',
+                color: '#b26a00'
+              },
+              Rejected: {
+                bg: '#ffebee',
+                color: '#b71c1c'
+              }
             };
-            const scheme = colors[status] || { bg: '#eeeeee', color: '#424242' };
+
+            const scheme = colors[status] || {
+              bg: '#eeeeee',
+              color: '#424242'
+            };
 
             return (
               <div style={{ textAlign: 'center', padding: 8 }}>
                 <Chip
                   label={status || '-'}
                   size="small"
-                  sx={{ backgroundColor: scheme.bg, color: scheme.color, fontWeight: 600, fontSize: '0.72rem' }}
+                  sx={{
+                    backgroundColor: scheme.bg,
+                    color: scheme.color,
+                    fontWeight: 600,
+                    fontSize: '0.72rem'
+                  }}
                 />
               </div>
             );
@@ -161,9 +250,21 @@ const ConsolidationCostInvoiceReport = () => {
           size: 140,
           Cell: ({ cell }) => <div style={{ padding: 8 }}>{formatDate(cell.getValue())}</div>
         },
-        { accessorKey: 'entity', header: 'Entity', size: 130 },
-        { accessorKey: 'billedMonthYear', header: 'Billed Month', size: 140 },
-        { accessorKey: 'docId', header: 'Doc Id', size: 130 },
+        {
+          accessorKey: 'entity',
+          header: 'Entity',
+          size: 130
+        },
+        {
+          accessorKey: 'billedMonthYear',
+          header: 'Billed Month',
+          size: 140
+        },
+        {
+          accessorKey: 'docId',
+          header: 'Doc Id',
+          size: 130
+        },
         {
           accessorKey: 'docDate',
           header: 'Doc Date',
@@ -186,12 +287,56 @@ const ConsolidationCostInvoiceReport = () => {
     []
   );
 
-  // ====== CATEGORY DROPDOWN (getAllCategoryList) ======
+  // ============================================================
+  // SUMMARY CALCULATION
+  // ============================================================
+
+  const summary = useMemo(() => {
+    const total = (field) => getData.reduce((sum, row) => sum + (Number(row[field]) || 0), 0);
+
+    return {
+      count: getData.length,
+      totalAmount: total('totChargesLcAmt'),
+      totalGST: total('gstInputLcAmt'),
+      netAmount: total('netBillCurrAmt')
+    };
+  }, [getData]);
+
+  // ============================================================
+  // SUMMARY BAR
+  // ============================================================
+
+  const SummaryBar = () => (
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        gap: 12,
+        padding: '12px 16px',
+        background: '#f5f7ff'
+      }}
+    >
+      <SummaryCard label="Total Records" value={summary.count} color="#34449B" />
+
+      <SummaryCard label="Total Amount" value={formatAmount(summary.totalAmount)} color="#1b5e20" />
+
+      <SummaryCard label="Total GST" value={formatAmount(summary.totalGST)} color="#b26a00" />
+
+      <SummaryCard label="Net Amount" value={formatAmount(summary.netAmount)} color="#1565c0" />
+    </div>
+  );
+
+  // ============================================================
+  // CATEGORY DROPDOWN
+  // ============================================================
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const response = await apiCalls('get', '/reportController/getAllCategoryList');
+
         const categories = response?.paramObjectsMap?.mapp || [];
+
         setCategoryList([ALL_CATEGORY, ...categories]);
       } catch (error) {
         console.error('Error fetching categories:', error);
@@ -202,8 +347,10 @@ const ConsolidationCostInvoiceReport = () => {
     fetchCategories();
   }, []);
 
-  // ====== SUPPLIER DROPDOWN (getAllVendorListCostReport?type=<category>) ======
-  // Runs on load (type=all) and every time the Category changes.
+  // ============================================================
+  // SUPPLIER DROPDOWN
+  // ============================================================
+
   useEffect(() => {
     const fetchSuppliers = async () => {
       const categoryName = selectedCategory?.category || 'All';
@@ -211,10 +358,11 @@ const ConsolidationCostInvoiceReport = () => {
 
       try {
         const response = await apiCalls('get', `/reportController/getAllVendorListCostReport?type=${encodeURIComponent(typeParam)}`);
+
         const suppliers = response?.paramObjectsMap?.mapp || [];
 
         setSupplierList([ALL_SUPPLIER, ...suppliers]);
-        setValue('supplier', ALL_SUPPLIER); // reset supplier whenever category changes
+        setValue('supplier', ALL_SUPPLIER);
       } catch (error) {
         console.error('Error fetching suppliers:', error);
         setSupplierList([ALL_SUPPLIER]);
@@ -225,11 +373,15 @@ const ConsolidationCostInvoiceReport = () => {
     fetchSuppliers();
   }, [selectedCategory?.category, setValue]);
 
-  // ====== COMPANY DETAILS (for Excel logo) ======
+  // ============================================================
+  // COMPANY DETAILS FOR EXCEL LOGO
+  // ============================================================
+
   useEffect(() => {
     const fetchCompanyDetails = async () => {
       try {
         const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+
         setCompanyList(response?.paramObjectsMap?.companyVO || []);
       } catch (error) {
         console.error('Error fetching company details:', error);
@@ -239,11 +391,15 @@ const ConsolidationCostInvoiceReport = () => {
     if (orgId) fetchCompanyDetails();
   }, [orgId]);
 
-  // ====== CLEAR FORM ======
+  // ============================================================
+  // CLEAR FORM
+  // ============================================================
+
   const ClearForm = () => {
     setValue('category', ALL_CATEGORY);
     setValue('supplier', ALL_SUPPLIER);
     setValue('asOnDate', dayjs());
+
     clearErrors();
     setGetData([]);
     setHeaderFields([]);
@@ -251,7 +407,10 @@ const ConsolidationCostInvoiceReport = () => {
     setIsLoading(false);
   };
 
-  // ====== FETCH REPORT (findConsolidationCostInvoiceReports) ======
+  // ============================================================
+  // FETCH REPORT
+  // ============================================================
+
   const onSubmit = async (formData) => {
     if (!formData.asOnDate || !dayjs(formData.asOnDate).isValid()) {
       showToast('error', 'Please select a valid As On Date');
@@ -260,30 +419,45 @@ const ConsolidationCostInvoiceReport = () => {
 
     setIsLoading(true);
 
-    // asondate = YYYY/MM/DD ; supplier & type = "all" by default, else the selected value
     const formattedDate = dayjs(formData.asOnDate).format('YYYY/MM/DD');
+
     const categoryName = formData.category?.category || 'All';
     const partyName = formData.supplier?.partyName || 'All';
+
     const typeParam = categoryName === 'All' ? 'all' : categoryName;
+
     const supplierParam = partyName === 'All' ? 'all' : partyName;
 
     try {
       const response = await apiCalls(
         'get',
-        `/reportController/findConsolidationCostInvoiceReports?asondate=${encodeURIComponent(
-          formattedDate
-        )}&supplier=${encodeURIComponent(supplierParam)}&type=${encodeURIComponent(typeParam)}`
+        `/reportController/findConsolidationCostInvoiceReports?asondate=${encodeURIComponent(formattedDate)}&supplier=${encodeURIComponent(
+          supplierParam
+        )}&type=${encodeURIComponent(typeParam)}`
       );
 
       const rows = response?.paramObjectsMap?.mapp || [];
       const data = rows.map(mapReportRow);
 
       setGetData(data);
+
       setHeaderFields([
-        { label: 'As On Date', value: dayjs(formData.asOnDate).format('DD-MM-YYYY') },
-        { label: 'Category', value: categoryName },
-        { label: 'Supplier', value: partyName },
-        { label: 'Total Records', value: data.length }
+        {
+          label: 'As On Date',
+          value: dayjs(formData.asOnDate).format('DD-MM-YYYY')
+        },
+        {
+          label: 'Category',
+          value: categoryName
+        },
+        {
+          label: 'Supplier',
+          value: partyName
+        },
+        {
+          label: 'Total Records',
+          value: data.length
+        }
       ]);
 
       setOpenModal(true);
@@ -293,6 +467,7 @@ const ConsolidationCostInvoiceReport = () => {
       }
     } catch (error) {
       console.error('Error fetching Consolidation Cost Invoice Report:', error);
+
       showToast('error', 'Report Fetch Failed');
     } finally {
       setIsLoading(false);
@@ -301,7 +476,10 @@ const ConsolidationCostInvoiceReport = () => {
 
   const handleCloseModal = () => setOpenModal(false);
 
-  // ====== TABLE OPTIONS ======
+  // ============================================================
+  // TABLE OPTIONS
+  // ============================================================
+
   const tableOptions = {
     muiTablePaperProps: {
       sx: {
@@ -311,27 +489,43 @@ const ConsolidationCostInvoiceReport = () => {
         overflow: 'hidden'
       }
     },
-    muiTableContainerProps: { sx: { maxHeight: '70vh' } },
+
+    muiTableContainerProps: {
+      sx: {
+        maxHeight: '70vh'
+      }
+    },
+
     muiTableBodyRowProps: ({ row }) => ({
       sx: {
         backgroundColor: row.index % 2 ? '#f9f9f9' : '#fff',
-        '&:hover': { backgroundColor: '#f0f7ff' }
+        '&:hover': {
+          backgroundColor: '#f0f7ff'
+        }
       }
     }),
+
     enableStickyHeader: true,
     enableEditing: false,
     enableRowActions: false,
+
     muiTableProps: {
       sx: {
         borderCollapse: 'collapse',
-        '& .MuiTableCell-root': { border: '1px solid #e0e0e0 !important' }
+        '& .MuiTableCell-root': {
+          border: '1px solid #e0e0e0 !important'
+        }
       }
     }
   };
 
-  // ====== EXCEL DOWNLOAD ======
+  // ============================================================
+  // EXCEL DOWNLOAD
+  // ============================================================
+
   const handleDownloadExcel = async () => {
     const workbook = new ExcelJS.Workbook();
+
     const worksheet = workbook.addWorksheet('Console Cost Invoice');
 
     worksheet.mergeCells('A1:B4');
@@ -344,11 +538,21 @@ const ConsolidationCostInvoiceReport = () => {
 
         if (base64Data.length >= 100) {
           const extension = logo.includes('jpeg') ? 'jpeg' : 'png';
-          const imageId = workbook.addImage({ base64: base64Data, extension });
+
+          const imageId = workbook.addImage({
+            base64: base64Data,
+            extension
+          });
 
           worksheet.addImage(imageId, {
-            tl: { col: 0, row: 0 },
-            ext: { width: 140, height: 75 }
+            tl: {
+              col: 0,
+              row: 0
+            },
+            ext: {
+              width: 140,
+              height: 75
+            }
           });
         }
       } catch (error) {
@@ -357,31 +561,82 @@ const ConsolidationCostInvoiceReport = () => {
     }
 
     worksheet.mergeCells('C2:G3');
+
     worksheet.getCell('C2').value = 'Consolidation Cost';
-    worksheet.getCell('C2').font = { size: 16, bold: true };
-    worksheet.getCell('C2').alignment = { horizontal: 'center', vertical: 'middle' };
+
+    worksheet.getCell('C2').font = {
+      size: 16,
+      bold: true
+    };
+
+    worksheet.getCell('C2').alignment = {
+      horizontal: 'center',
+      vertical: 'middle'
+    };
 
     const excelHeaderFields = [
       ...headerFields,
-      { label: 'Generated By', value: localStorage.getItem('userName') || 'System' },
-      { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
+      {
+        label: 'Generated By',
+        value: localStorage.getItem('userName') || 'System'
+      },
+      {
+        label: 'Generated On',
+        value: dayjs().format('DD-MM-YYYY HH:mm')
+      }
     ];
 
     excelHeaderFields.forEach(({ label, value }, index) => {
       const cell = worksheet.getCell(5, index + 1);
+
       cell.value = `${label}: ${value}`;
-      cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
-      cell.alignment = { vertical: 'middle', horizontal: 'center' };
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF593C8F' } };
+
+      cell.font = {
+        bold: true,
+        color: {
+          argb: 'FFFFFFFF'
+        }
+      };
+
+      cell.alignment = {
+        vertical: 'middle',
+        horizontal: 'center'
+      };
+
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: {
+          argb: 'FF593C8F'
+        }
+      };
     });
 
     const headerRow = worksheet.addRow(columns.map((column) => column.header));
+
     headerRow.height = 20;
 
     headerRow.eachCell((cell) => {
-      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF3B76E2' } };
-      cell.font = { color: { argb: 'FFFFFFFF' }, bold: true };
-      cell.alignment = { vertical: 'middle', horizontal: 'center' };
+      cell.fill = {
+        type: 'pattern',
+        pattern: 'solid',
+        fgColor: {
+          argb: 'FF3B76E2'
+        }
+      };
+
+      cell.font = {
+        color: {
+          argb: 'FFFFFFFF'
+        },
+        bold: true
+      };
+
+      cell.alignment = {
+        vertical: 'middle',
+        horizontal: 'center'
+      };
+
       cell.border = {
         top: { style: 'thin' },
         left: { style: 'thin' },
@@ -391,15 +646,24 @@ const ConsolidationCostInvoiceReport = () => {
     });
 
     const numberFields = ['totChargesLcAmt', 'gstInputLcAmt', 'netBillCurrAmt'];
+
     const dateFields = ['docDate', 'vdate', 'purVoucherDate'];
 
     getData.forEach((row) => {
       const rowData = columns.map((column) => {
         const key = column.accessorKey;
 
-        if (key === 'statusDisplay') return row.status || '';
-        if (dateFields.includes(key)) return row[key] ? dayjs(row[key]).format('DD-MM-YYYY') : '';
-        if (numberFields.includes(key)) return row[key] != null ? Number(row[key]) : '';
+        if (key === 'statusDisplay') {
+          return row.status || '';
+        }
+
+        if (dateFields.includes(key)) {
+          return row[key] ? dayjs(row[key]).format('DD-MM-YYYY') : '';
+        }
+
+        if (numberFields.includes(key)) {
+          return row[key] != null ? Number(row[key]) : '';
+        }
 
         return row[key] ?? '';
       });
@@ -413,33 +677,58 @@ const ConsolidationCostInvoiceReport = () => {
       });
     });
 
-    // Total row
+    // TOTAL ROW
+
     const totalRowData = columns.map((column) => {
-      if (column.accessorKey === 'supplierName') return 'Total';
+      if (column.accessorKey === 'supplierName') {
+        return 'Total';
+      }
+
       if (numberFields.includes(column.accessorKey)) {
         return getData.reduce((sum, row) => sum + (Number(row[column.accessorKey]) || 0), 0);
       }
+
       return '';
     });
+
     const totalRow = worksheet.addRow(totalRowData);
-    totalRow.font = { bold: true };
+
+    totalRow.font = {
+      bold: true
+    };
+
     columns.forEach((column, index) => {
       if (numberFields.includes(column.accessorKey)) {
         totalRow.getCell(index + 1).numFmt = '#,##0.00';
       }
     });
 
+    // COLUMN WIDTH
+
     worksheet.columns.forEach((column) => {
       let maxLength = 10;
-      column.eachCell({ includeEmpty: true }, (cell) => {
-        maxLength = Math.max(maxLength, String(cell.value ?? '').length);
-      });
+
+      column.eachCell(
+        {
+          includeEmpty: true
+        },
+        (cell) => {
+          maxLength = Math.max(maxLength, String(cell.value ?? '').length);
+        }
+      );
+
       column.width = Math.min(maxLength + 2, 45);
     });
 
-    worksheet.views = [{ state: 'frozen', ySplit: 6 }];
+    worksheet.views = [
+      {
+        state: 'frozen',
+        ySplit: 6
+      }
+    ];
 
     const buffer = await workbook.xlsx.writeBuffer();
+
     const blob = new Blob([buffer], {
       type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     });
@@ -447,21 +736,36 @@ const ConsolidationCostInvoiceReport = () => {
     saveAs(blob, `Consolidation_Cost_Invoice_Report_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
   };
 
+  // ============================================================
+  // UI
+  // ============================================================
+
   return (
     <>
       <ToastContainer />
 
+      {/* FILTER FORM */}
+
       <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: 20, borderRadius: 10 }}>
+        <div
+          className="card w-full p-6 bg-base-100 shadow-xl"
+          style={{
+            padding: 20,
+            borderRadius: 10
+          }}
+        >
           <div className="row d-flex">
-            {/* As On Date */}
+            {/* AS ON DATE */}
+
             <div className="col-md-3 mb-3">
               <FormControl fullWidth>
                 <LocalizationProvider dateAdapter={AdapterDayjs}>
                   <Controller
                     name="asOnDate"
                     control={control}
-                    rules={{ required: 'As On Date is required' }}
+                    rules={{
+                      required: 'As On Date is required'
+                    }}
                     render={({ field }) => (
                       <DatePicker
                         label="As On Date"
@@ -482,13 +786,16 @@ const ConsolidationCostInvoiceReport = () => {
               </FormControl>
             </div>
 
-            {/* Category */}
+            {/* CATEGORY */}
+
             <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <Controller
                   name="category"
                   control={control}
-                  rules={{ required: 'Category is required' }}
+                  rules={{
+                    required: 'Category is required'
+                  }}
                   render={({ field }) => (
                     <Autocomplete
                       {...field}
@@ -508,13 +815,16 @@ const ConsolidationCostInvoiceReport = () => {
               </FormControl>
             </div>
 
-            {/* Supplier (depends on Category) */}
+            {/* SUPPLIER */}
+
             <div className="col-md-3 mb-3">
               <FormControl fullWidth size="small">
                 <Controller
                   name="supplier"
                   control={control}
-                  rules={{ required: 'Supplier is required' }}
+                  rules={{
+                    required: 'Supplier is required'
+                  }}
                   render={({ field }) => (
                     <Autocomplete
                       {...field}
@@ -534,14 +844,18 @@ const ConsolidationCostInvoiceReport = () => {
               </FormControl>
             </div>
 
-            {/* Search and Clear */}
+            {/* SEARCH AND CLEAR */}
+
             <div className="col-md-3 mb-2">
               <div className="d-flex flex-wrap justify-content-start mb-4 mt-1">
                 <ActionButton title="Search" icon={SearchIcon} type="submit" />
+
                 <ActionButton title="Clear" icon={ClearIcon} onClick={ClearForm} />
               </div>
             </div>
           </div>
+
+          {/* LOADING */}
 
           {isLoading && (
             <div className="d-flex justify-content-center align-items-center">
@@ -551,13 +865,21 @@ const ConsolidationCostInvoiceReport = () => {
         </div>
       </form>
 
-      {/* Report Modal */}
+      {/* ======================================================
+          REPORT MODAL
+      ====================================================== */}
+
       <Dialog
         open={openModal}
         onClose={handleCloseModal}
         fullWidth
         maxWidth="xl"
-        sx={{ '& .MuiDialog-paper': { borderRadius: '12px', overflow: 'hidden' } }}
+        sx={{
+          '& .MuiDialog-paper': {
+            borderRadius: '12px',
+            overflow: 'hidden'
+          }
+        }}
       >
         <DialogTitle
           sx={{
@@ -573,27 +895,70 @@ const ConsolidationCostInvoiceReport = () => {
         >
           <span>Console Cost</span>
 
-          <IconButton aria-label="close" onClick={handleCloseModal} sx={{ color: '#fff' }}>
+          <IconButton
+            aria-label="close"
+            onClick={handleCloseModal}
+            sx={{
+              color: '#fff'
+            }}
+          >
             <CloseIcon />
           </IconButton>
         </DialogTitle>
 
         <DialogContent sx={{ padding: 0 }}>
           {getData.length > 0 ? (
-            <CMRT2
-              data={getData}
-              columns={columns}
-              fileName="Console Cost"
-              tableOptions={tableOptions}
-              headerFields={headerFields}
-              handleDownloadExcel={handleDownloadExcel}
-              showDownloadButtonsPdf={false}
-            />
+            <>
+              {/* SUMMARY CARDS */}
+
+              <SummaryBar />
+
+              {/* REPORT TABLE */}
+
+              <CMRT2
+                data={getData}
+                columns={columns}
+                fileName="Console Cost"
+                tableOptions={tableOptions}
+                headerFields={headerFields}
+                handleDownloadExcel={handleDownloadExcel}
+                showDownloadButtonsPdf={false}
+              />
+            </>
           ) : (
-            <div style={{ textAlign: 'center', padding: 40, color: '#666' }}>
-              <div style={{ fontSize: 48, marginBottom: 8 }}>📭</div>
-              <div style={{ fontWeight: 600, fontSize: 16 }}>No data found</div>
-              <div style={{ fontSize: 13, marginTop: 4 }}>Try adjusting the As On Date, Category or Supplier filter.</div>
+            <div
+              style={{
+                textAlign: 'center',
+                padding: 40,
+                color: '#666'
+              }}
+            >
+              <div
+                style={{
+                  fontSize: 48,
+                  marginBottom: 8
+                }}
+              >
+                📭
+              </div>
+
+              <div
+                style={{
+                  fontWeight: 600,
+                  fontSize: 16
+                }}
+              >
+                No data found
+              </div>
+
+              <div
+                style={{
+                  fontSize: 13,
+                  marginTop: 4
+                }}
+              >
+                Try adjusting the As On Date, Category or Supplier filter.
+              </div>
             </div>
           )}
         </DialogContent>
