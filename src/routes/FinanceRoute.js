@@ -11,6 +11,8 @@ import ConsoleRateReport from 'views/Finance/FinalReport/ConsoleRateReport';
 import ConsolePaymentReport from 'views/Finance/FinalReport/ConsolePaymentReport';
 import ConsolidationCostInvoiceReport from 'views/Finance/FinalReport/ConsoleRateReport';
 import ConsolidationRevenueReport from 'views/Finance/FinalReport/ConsolidationRevenueReport';
+import ToleranceMaster from 'views/Finance/ToleranceMaster';
+import PaymentAdvice from 'views/Finance/payment/PaymentAdvice';
 const TDSRegister = Loadable(lazy(() => import('views/Finance/FinalReport/TDSRegister')));
 const GSTRegister = Loadable(lazy(() => import('views/Finance/FinalReport/GSTRegister')));
 const CostEstimateReport = Loadable(lazy(() => import('views/Finance/FinalReport/CostEstimateReport')));
@@ -199,6 +201,10 @@ const FinanceRoute = {
       element: <PartMaster />
     },
     {
+      path: '/finance/tolerance',
+      element: <ToleranceMaster />
+    },
+    {
       path: '/finance/customer',
       element: <Customer />
     },
@@ -289,6 +295,10 @@ const FinanceRoute = {
     {
       path: '/Finance/payment/Payment',
       element: <Payment />
+    },
+    {
+      path: '/finance/payment/PaymentAdvice',
+      element: <PaymentAdvice />
     },
     {
       path: '/Finance/payment/ApBillBalance',

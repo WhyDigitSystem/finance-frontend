@@ -66,6 +66,13 @@ const apChildren = [
     visible: hasScreenAccess('PT')
   },
   {
+    id: 'paymentAdvice',
+    title: 'Payment Advice',
+    type: 'item',
+    url: '/finance/payment/PaymentAdvice',
+    visible: hasScreenAccess('PT')
+  },
+  {
     id: 'apAdjustment',
     title: 'AP Offset',
     type: 'item',

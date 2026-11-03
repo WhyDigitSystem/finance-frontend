@@ -1,37 +1,34 @@
-import FormControl from '@mui/material/FormControl';
-import TextField from '@mui/material/TextField';
-import { useEffect, useState } from 'react';
 import AddIcon from '@mui/icons-material/Add';
+import CancelIcon from '@mui/icons-material/Cancel';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
+import GridOnIcon from '@mui/icons-material/GridOn';
 import SaveIcon from '@mui/icons-material/Save';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Box, FormHelperText, Grid, Tab } from '@mui/material';
+import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormHelperText, Stack, Tab } from '@mui/material';
+import Checkbox from '@mui/material/Checkbox';
+import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import MenuItem from '@mui/material/MenuItem';
 import Paper from '@mui/material/Paper';
-import Draggable from 'react-draggable';
-import { Button } from '@mui/material';
-import Checkbox from '@mui/material/Checkbox';
-import GridOnIcon from '@mui/icons-material/GridOn';
 import Select from '@mui/material/Select';
+import TextField from '@mui/material/TextField';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
+import { useEffect, useState } from 'react';
+import Draggable from 'react-draggable';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
-import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
-import { getAllActiveCurrency } from 'utils/CommonFunctions';
+import ConfirmationModal from 'utils/confirmationPopup';
 import { showToast } from 'utils/toast-component';
 import CommonTable from 'views/basicMaster/CommonTable';
-import { Chip, Stack } from '@mui/material';
-import CancelIcon from '@mui/icons-material/Cancel';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ConfirmationModal from 'utils/confirmationPopup';
+
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -39,18 +36,121 @@ function PaperComponent(props) {
     </Draggable>
   );
 }
+
+// ---------- helpers ----------
+const toNum = (v) => {
+  const n = parseFloat(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const initialFormData = () => ({
+  type: 'PARTY',
+  paymentType: 'BANK PAYMENT',
+  partyName: '',
+  ledgerName: '',
+  partyCode: '',
+  gstState: '',
+  gstIn: '',
+  bankCharges: '',
+  paymentAmt: '',
+  tdsAcc: '',
+  tdsAmt: '',
+  bankChargeAcc: '',
+  chequeNo: '',
+  chequeDate: null,
+  payTo: '',
+  currency: 'INR',
+  docId: '',
+  docDate: dayjs(),
+  netAmount: '',
+  onAccount: '',
+  remarks: '',
+  status: 'EDIT',
+  approveStatus: '',
+  approveBy: '',
+  approveOn: '',
+  bankCashAcc: ''
+});
+
+// Maps a payment VO coming from the backend to the form state shape
+const mapVoToForm = (vo) => ({
+  type: vo.type || '',
+  paymentType: vo.paymentType || '',
+  docId: vo.docId || '',
+  docDate: vo.docDate,
+  partyCode: vo.partyCode || '',
+  partyName: vo.partyName || '',
+  ledgerName: vo.ledgerName || '',
+  remarks: vo.remarks || '',
+  gstState: vo.gstState || '',
+  gstIn: vo.gstIn || '',
+  bankCashAcc: vo.bankCashAcc || '',
+  bankCharges: vo.bankCharges || '',
+  paymentAmt: vo.paymentAmt || '',
+  tdsAcc: vo.tdsAcc || '',
+  tdsAmt: vo.tdsAmt || '',
+  bankChargeAcc: vo.bankChargeAcc || '',
+  payTo: vo.payTo || '',
+  currency: vo.currency || '',
+  chequeNo: vo.chequeNo || '',
+  chequeDate: vo.chequeDate || null,
+  currencyAmt: vo.currencyAmt || '',
+  onAccount: vo.onAccount ?? '',
+  netAmount: vo.netAmount ?? '',
+  status: vo.status || '',
+  approveBy: vo.approveBy || '',
+  approveOn: vo.approveOn || '',
+  approveStatus: vo.approveStatus || ''
+});
+
+const mapVoToRows = (vo) =>
+  (vo.paymentInvDtlsVO || []).map((cl) => ({
+    id: cl.id || Date.now() + Math.random(),
+    invNo: cl.invNo || '',
+    invDate: cl.invDate ? dayjs(cl.invDate) : null,
+    refNo: cl.refNo || '',
+    refDate: cl.refDate ? dayjs(cl.refDate) : null,
+    vid: cl.vid || '',
+    vdate: cl.vdate || '',
+    currency: cl.currency || '',
+    exRate: cl.exRate ?? '',
+    chargeAmt: cl.chargeAmt ?? '',
+    gstAmount: cl.gstAmount ?? '',
+    totalAmt: cl.totalAmt ?? '', // NEW
+    amount: cl.amount ?? '',
+    outstanding: cl.outstanding ?? cl.outStanding ?? '',
+    settled: cl.settled ?? ''
+  }));
+
+// The fill-grid API mixes casing (refno / refNo, refdate / refDate). Normalize once.
+const normalizeFillGridRow = (r) => ({
+  ...r,
+  key: r.arapDetailsId ?? `${r.refno || r.refNo}-${r.refdate || r.refDate}`,
+  refNo: r.refno ?? r.refNo ?? '',
+  refDate: r.refdate ?? r.refDate ?? '',
+  vid: r.vid ?? '',
+  vdate: r.vdate ?? '',
+  billAmount: r.billamount ?? r.billAmount ?? '',
+  gstAmount: r.gstamount ?? r.gstAmount ?? '',
+  totalAmt: r.amount ?? r.totalAmt ?? '', // NEW
+  chargeAmt: r.chargeAmt ?? r.chargeamt ?? '',
+  currency: r.acccurrency ?? r.currency ?? '',
+  exRate: r.exrate ?? r.exRate ?? ''
+});
+
+const cellStyle = { whiteSpace: 'nowrap' };
+
 const Payment = ({ selectedRow }) => {
   const [value, setValue] = useState('1');
   const [showForm, setShowForm] = useState(true);
   const [data, setData] = useState([]);
-  const [orgId, setOrgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
-  const [validationErrors, setValidationErrors] = useState({});
+  const [orgId] = useState(parseInt(localStorage.getItem('orgId'), 10));
   const [isLoading, setIsLoading] = useState(false);
   const [editId, setEditId] = useState('');
-  const [loginUserName, setLoginUserName] = useState(localStorage.getItem('userName'));
-  const [branchCode, setLoginBranchCode] = useState(localStorage.getItem('branchcode'));
-  const [branch, setBranch] = useState(localStorage.getItem('branch'));
-  const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
+  const [loginUserName] = useState(localStorage.getItem('userName'));
+  const [branchCode] = useState(localStorage.getItem('branchcode'));
+  const [branch] = useState(localStorage.getItem('branch'));
+  const [finYear] = useState(localStorage.getItem('finYear'));
   const [partyName, setPartyName] = useState([]);
   const [gstState, setGSTState] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -59,142 +159,60 @@ const Payment = ({ selectedRow }) => {
   const [fillGridData, setFillGridData] = useState([]);
   const [approveStatus, setApproveStatus] = useState('');
   const [modalApprove, setModalApprove] = useState(false);
-  const [confirmData, setConfirmData] = useState([]);
-  const [listViewData, setListViewData] = useState([]);
+  const [listViewData, setListViewData] = useState({});
   const [bankName, setBankName] = useState([]);
-  const [paymentTypes, setPaymentTypes] = useState([]);
-  const [ledgerNameList, setLedgerNameList] = useState([]);
-  const handleChangeTab = (event, newValue) => {
-    setValue(newValue);
-  };
+
+  const [formData, setFormData] = useState(initialFormData());
+  const [formDataErrors, setFormDataErrors] = useState({});
+  const [withdrawalsTableData, setWithdrawalsTableData] = useState([]);
+  // errors for the "settled" input, keyed by row id
+  const [rowErrors, setRowErrors] = useState({});
+
+  const handleChangeTab = (event, newValue) => setValue(newValue);
+
+  // ---------- effects ----------
   useEffect(() => {
     if (selectedRow) {
       getPaymentById({ original: selectedRow });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRow]);
-  const [formData, setFormData] = useState({
-    type: 'PARTY',
-    paymentType: 'BANK PAYMENT',
-    partyName: '',
-    ledgerName: '',
-    partyCode: '',
-    gstState: '',
-    gstIn: '',
-    paymentAmt: '',
-    tdsAmt: '',
-    chequeNo: '',
-    chequeDate: null,
-    payTo: '',
-    currency: 'INR',
-    docId: '',
-    docDate: dayjs(),
-    netAmount: '',
-    onAccount: '',
-    remarks: '',
-    status: 'EDIT',
-    approveStatus: '',
-    approveBy: '',
-    approveOn: '',
-    bankCashAcc: ''
-  });
 
-  const [formDataErrors, setFormDataErrors] = useState({
-    type: '',
-    paymentType: '',
-    partyName: '',
-    ledgerName: '',
-    partyCode: '',
-    gstState: '',
-    gstIn: '',
-    bankCharges: '',
-    paymentAmt: '',
-    tdsAcc: '',
-    tdsAmt: '',
-    bankChargeAcc: '',
-    chequeNo: '',
-    chequeDate: null,
-    payTo: '',
-    currency: '',
-    docId: '',
-    docDate: dayjs(),
-    netAmount: '',
-    onAccount: '',
-    remarks: '',
-    status: '',
-    approveStatus: '',
-    approveBy: '',
-    approveOn: '',
-    bankCashAcc: ''
-  });
-
-  const [withdrawalsTableData, setWithdrawalsTableData] = useState([]);
-  const [withdrawalsTableErrors, setWithdrawalsTableErrors] = useState([
-    {
-      sno: '',
-      invNo: '',
-      invDate: '',
-      refNo: '',
-      refDate: '',
-      currency: '',
-      exRate: '',
-      gstAmount: '',
-      chargeAmt: '',
-      amount: '',
-      outstanding: '',
-      settled: ''
-    }
-  ]);
   useEffect(() => {
     getAllPayment();
     getPaymentDocId();
     getPartName();
     bankList();
-    getAllListOfValuesByOrgId();
-    getLedgerName();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Auto-select the party when only one exists (new entries only)
   useEffect(() => {
-    if (partyName.length === 1) {
-      const singleParty = partyName[0];
-      handleSelectChange({ target: { value: singleParty.partyName } });
+    if (!editId && partyName.length === 1 && !formData.partyName) {
+      handleSelectChange({ target: { name: 'partyName', value: partyName[0].partyName } });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [partyName]);
 
-  const getAllListOfValuesByOrgId = async () => {
-    try {
-      const result = await apiCalls('get', `/master/getListOfValuesByOrgId?orgId=${orgId}`);
+  // Net amount / on account follow the settled amounts and the payment amount
+  useEffect(() => {
+    if (formData.status !== 'EDIT') return;
+    const totalSettled = withdrawalsTableData.reduce((sum, r) => sum + toNum(r.settled), 0);
+    const paymentAmt = toNum(formData.paymentAmt);
+    const onAccount = paymentAmt >= totalSettled ? paymentAmt - totalSettled : 0;
+    setFormData((prev) => ({
+      ...prev,
+      netAmount: totalSettled.toFixed(2),
+      onAccount: onAccount.toFixed(2)
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [withdrawalsTableData, formData.paymentAmt]);
 
-      const list = result.paramObjectsMap.listOfValuesVO || [];
-
-      const payTypes = list.find((item) => item.listCode === "PAY");
-
-      if (payTypes) {
-        setPaymentTypes(payTypes.listOfValues1VO);
-      }
-
-    } catch (err) {
-      console.log('error', err);
-    }
-  };
-
-  const getLedgerName = async () => {
-    try {
-      const response = await apiCalls('get', `/master/getAllGroupLedgerByOrgId?orgId=${orgId}`);
-      if (response.status === true && response.paramObjectsMap?.groupLedgerVO) {
-        setLedgerNameList(response.paramObjectsMap.groupLedgerVO);
-      }
-    } catch (error) {
-      console.error('Error fetching account names:', error);
-      showToast('error', 'Failed to load account names');
-    }
-  };
-
+  // ---------- API calls ----------
   const getAllPayment = async () => {
     try {
       const result = await apiCalls('get', `/payable/getAllPaymentByOrgId?branchCode=${branchCode}&finYear=${finYear}&orgId=${orgId}`);
-      setData(result.paramObjectsMap.paymentVO.reverse());
-      showForm(true);
-      console.log('Test', result);
+      setData([...(result.paramObjectsMap.paymentVO || [])].reverse());
     } catch (err) {
       console.log('error', err);
     }
@@ -206,438 +224,192 @@ const Payment = ({ selectedRow }) => {
         'get',
         `/payable/getPaymentDocId?branchCode=${branchCode}&branch=${branch}&finYear=${finYear}&orgId=${orgId}`
       );
-
       const { paymentDocId, docDate } = response.paramObjectsMap;
-
       setFormData((prevData) => ({
         ...prevData,
         docId: paymentDocId,
         docDate: docDate ? dayjs(docDate) : null
       }));
     } catch (error) {
-      console.error('Error fetching gate passes:', error);
+      console.error('Error fetching doc id:', error);
     }
   };
 
   const getPartName = async () => {
     try {
       const response = await apiCalls('get', `/payable/getPartyNameAndPartyCode?orgId=${orgId}`);
-      setPartyName(response.paramObjectsMap.PartyMasterVO);
+      setPartyName(response.paramObjectsMap.PartyMasterVO || []);
     } catch (error) {
-      console.error('Error fetching gate passes:', error);
+      console.error('Error fetching parties:', error);
     }
   };
-  const getGSTState = async (pname) => {
+
+  // keepExisting = true when editing a saved payment, so saved values are not wiped
+  const getGSTState = async (pname, keepExisting = false) => {
     try {
-      const response = await apiCalls('get', `/payable/getPartyNameAndCodeForPayment?orgId=${orgId}&partyName=${pname}`);
-      setGSTState(response.paramObjectsMap.PartyMasterVO);
+      const response = await apiCalls(
+        'get',
+        `/payable/getPartyNameAndCodeForPayment?orgId=${orgId}&partyName=${encodeURIComponent(pname)}`
+      );
+      const states = response.paramObjectsMap?.PartyMasterVO || [];
+      setGSTState(states);
+
+      if (keepExisting) return;
+
+      if (states.length === 1) {
+        setFormData((prev) => ({
+          ...prev,
+          gstState: states[0].stateCode,
+          gstIn: states[0].gstin || '',
+          currency: states[0].currency || 'INR'
+        }));
+      } else {
+        setFormData((prev) => ({ ...prev, gstState: '', gstIn: '', currency: 'INR' }));
+      }
     } catch (error) {
-      console.error('Error fetching gate passes:', error);
+      console.error('Error fetching GST state:', error);
+      setGSTState([]);
     }
   };
-  const handleAddRow = () => {
-    const newRow = {
-      id: Date.now(),
-      sno: '',
-      invNo: '',
-      invDate: '',
-      refNo: '',
-      refDate: '',
-      supplierRefDate: '',
-      supplierRefNo: '',
-      currency: 'INR',
-      amount: '',
-      outstanding: '',
-      settled: ''
-    };
-    setWithdrawalsTableData([...withdrawalsTableData, newRow]);
-    setWithdrawalsTableErrors([
-      ...withdrawalsTableErrors,
-      {
-        sno: '',
-        invNo: '',
-        invDate: '',
-        refNo: '',
-        refDate: '',
-        supplierRefNo: '',
-        supplierRefDate: '',
-        currency: '',
-        amount: '',
-        outstanding: '',
-        settled: ''
+
+  const bankList = async () => {
+    try {
+      const response = await apiCalls('get', `/transaction/getBankNameForGroupLedger?orgId=${orgId}`);
+      setBankName(response.paramObjectsMap.accountName || []);
+    } catch (error) {
+      console.error('Error fetching bank list:', error);
+    }
+  };
+
+  const getAllFillGrid = async () => {
+    try {
+      const response = await apiCalls(
+        'get',
+        `/payable/getPaymentFillGrid?branchCode=${branchCode}&orgId=${orgId}&partyCode=${formData.partyCode}`
+      );
+      if (response.status === true) {
+        setFillGridData((response.paramObjectsMap.paymentfillgrid || []).map(normalizeFillGridRow));
+      } else {
+        console.error('API Error:', response);
       }
-    ]);
-  };
-
-  const handleDeleteRow = (rowId) => {
-    setWithdrawalsTableData((prev) => prev.filter((row) => row.id !== rowId));
-  };
-
-  const handleClear = () => {
-    setFormData({
-      bankCashAcc: '',
-      type: 'PARTY',
-      paymentType: 'BANK PAYMENT',
-      partyName: '',
-      ledgerName: '',
-      partyCode: '',
-      gstState: '',
-      gstIn: '',
-      bankCharges: '',
-      paymentAmt: '',
-      tdsAcc: '',
-      tdsAmt: '',
-      bankChargeAcc: '',
-      chequeNo: '',
-      chequeDate: null,
-      payTo: '',
-      currency: 'INR',
-      docId: '',
-      docDate: dayjs(),
-      netAmount: '',
-      onAccount: '',
-      remarks: '',
-      status: 'EDIT',
-      approveStatus: '',
-      approveBy: '',
-      approveOn: '',
-      bankCashAcc: ''
-    });
-    setWithdrawalsTableData([]);
-    setWithdrawalsTableErrors([
-      {
-        sno: '',
-        invNo: '',
-        invDate: '',
-        refNo: '',
-        refDate: '',
-        supplierRefDate: '',
-        supplierRefNo: '',
-        currency: '',
-        exRate: '',
-        gstAmount: '',
-        chargeAmt: '',
-        amount: '',
-        outstanding: '',
-        settled: ''
-      }
-    ]);
-    setFormDataErrors([
-      {
-        type: 'PARTY',
-        paymentType: 'BANK PAYMENT',
-        partyName: '',
-        ledgerName: '',
-        partyCode: '',
-        gstState: '',
-        gstIn: '',
-        bankCharges: '',
-        paymentAmt: '',
-        tdsAcc: '',
-        tdsAmt: '',
-        bankChargeAcc: '',
-        chequeNo: '',
-        chequeDate: null,
-        payTo: '',
-        currency: '',
-        docId: '',
-        docDate: dayjs(),
-        netAmount: '',
-        onAccount: '',
-        remarks: '',
-        status: '',
-        bankCashAcc: ''
-      }
-    ]);
-    setEditId('');
-    getPaymentDocId();
-    setListViewData('');
-  };
-  const handleList = () => {
-    setShowForm(!showForm);
-  };
-
-  const handleSave = async () => {
-    let errors = {};
-    // if (!formData.partyName) {
-    //   errors.partyName = 'Party Name is required';
-    // }
-    if (!formData.paymentAmt) {
-      errors.paymentAmt = 'Payment Amount is required';
-    }
-
-    if (!formData.status) {
-      errors.status = 'Status is required';
-    }
-
-    if (!formData.bankCashAcc) {
-      errors.bankCashAcc = 'Cash Account is required';
-    }
-    setFormDataErrors(errors);
-    if (Object.keys(errors).length > 0) {
-      return;
-    }
-    let detailsTableDataValid = true;
-    if (detailsTableDataValid) {
-      setIsLoading(true);
-
-      const detailsVo = withdrawalsTableData.map((row) => ({
-        ...(editId && { id: row.id }),
-        invNo: row.invNo,
-        invDate: row.invDate,
-        refNo: row.refNo,
-        refDate: row.refDate,
-        currency: row.currency,
-        exRate: row.exRate,
-        amount: parseInt(row.amount),
-        gstAmount: parseInt(row.gstAmount),
-        chargeAmt: parseInt(row.chargeAmt),
-        outStanding: parseInt(row.outstanding),
-        settled: parseInt(row.settled)
-      }));
-      const saveFormData = {
-        ...(editId && { id: editId }),
-        type: 'PARTY',
-        paymentType: formData.paymentType,
-        docId: formData.docId,
-        docDate: formData.docDate ? dayjs(formData.docDate).format('YYYY-MM-DD') : null,
-        partyCode: formData.partyCode,
-        partyName: formData.partyName,
-        ledgerName: formData.ledgerName,
-        gstState: formData.gstState,
-        gstIn: formData.gstIn,
-        paymentAmt: parseInt(formData.paymentAmt),
-        tdsAmt: parseInt(formData.tdsAmt),
-        payTo: formData.payTo,
-        currency: formData.currency,
-        chequeNo: formData.chequeNo,
-        chequeDate: formData.chequeDate ? dayjs(formData.chequeDate).format('YYYY-MM-DD') : null,
-        remarks: formData.remarks,
-
-        ...(formData.type === "PARTY" && { paymentInvDtlsDTO: detailsVo }),
-
-        createdBy: loginUserName,
-        orgId: orgId,
-        finYear: finYear,
-        branch: branch,
-        branchCode: branchCode,
-        status: formData.status,
-        bankCashAcc: formData.bankCashAcc,
-        approveStatus: formData.approveStatus,
-        approveBy: formData.approveBy,
-        approveOn: formData.approveOn
-      };
-
-      console.log('DATA TO SAVE IS:', saveFormData);
-
-      try {
-        const response = await apiCalls('put', '/payable/updateCreatePayment', saveFormData);
-        if (response.status === true) {
-          console.log('Response:', response);
-          showToast('success', editId ? ' Payment updated successfully' : 'Payment created successfully');
-          getAllPayment();
-          handleClear();
-          setIsLoading(false);
-        } else {
-          showToast('error', response.paramObjectsMap.errorMessage || 'Payment creation failed');
-          setIsLoading(false);
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        showToast('error', 'Payment creation failed');
-        setIsLoading(false);
-      }
-    } else {
-      setFormDataErrors(errors);
+    } catch (error) {
+      console.error('Error fetching fill grid:', error);
     }
   };
-
-  // if (formData.type === "PARTY" && withdrawalsTableData.length === 0) {
-  //   showToast("warning", "Please add invoice details");
-  //   return;
-  // }
-
-  useEffect(() => {
-    if (formData.status === 'EDIT') calculateTotals();
-  }, [formData.paymentAmt]);
 
   const getPaymentById = async (row) => {
-
     setShowForm(true);
     try {
       const result = await apiCalls('get', `/payable/getPaymentById?id=${row.original.id}`);
-
       if (result) {
-        const listValueVO = result.paramObjectsMap.paymentVO[0];
-        // setData(listValueVO);
-        setListViewData(listValueVO);
+        const vo = result.paramObjectsMap.paymentVO[0];
+        setListViewData(vo);
         setEditId(row.original.id);
-        getGSTState(listValueVO.partyName);
-        setFormData({
-          type: listValueVO.type || '',
-          paymentType: listValueVO.paymentType || '',
-          docId: listValueVO.docId || '',
-          docDate: listValueVO.docDate,
-          partyCode: listValueVO.partyCode || '',
-          partyName: listValueVO.partyName || '',
-          ledgerName: listValueVO.ledgerName || '',
-          remarks: listValueVO.remarks || '',
-          gstState: listValueVO.gstState || '',
-          gstIn: listValueVO.gstIn || '',
-          bankCashAcc: listValueVO.bankCashAcc || '',
-          bankCharges: listValueVO.bankCharges || '',
-          paymentAmt: listValueVO.paymentAmt || '',
-          tdsAcc: listValueVO.tdsAcc || '',
-          tdsAmt: listValueVO.tdsAmt || '',
-          bankChargeAcc: listValueVO.bankChargeAcc || '',
-          payTo: listValueVO.payTo || '',
-          currency: listValueVO.currency || '',
-          chequeNo: listValueVO.chequeNo || '',
-          chequeDate: listValueVO.chequeDate || '',
-          currencyAmt: listValueVO.currencyAmt || '',
-          onAccount: listValueVO.onAccount || '',
-          netAmount: listValueVO.netAmount || '',
-          status: listValueVO.status || '',
-          approveBy: listValueVO.approveBy || '',
-          approveOn: listValueVO.approveOn || '',
-          approveStatus: listValueVO.approveStatus || '',
-          bankCashAcc: listValueVO.bankCashAcc || ''
-        });
-        setWithdrawalsTableData(
-          listValueVO.paymentInvDtlsVO.map((cl) => ({
-            id: cl.id || '',
-            invNo: cl.invNo || '',
-            invDate: cl.invDate ? dayjs(cl.invDate) : null,
-            refNo: cl.refNo || '',
-            refDate: cl.refDate ? dayjs(cl.refDate) : null,
-            currency: cl.currency || '',
-            exRate: cl.exRate || '',
-            chargeAmt: cl.chargeAmt || '',
-            gstAmount: cl.gstAmount || '',
-            amount: cl.amount || '',
-            outstanding: cl.outstanding || '',
-            settled: cl.settled || ''
-          }))
-        );
-
-      } else {
-        // Handle erro
+        getGSTState(vo.partyName, true);
+        setFormData(mapVoToForm(vo));
+        setWithdrawalsTableData(mapVoToRows(vo));
+        setRowErrors({});
       }
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
 
-  const columns = [
-    // { accessorKey: 'paymentType', header: 'Payment Type', size: 140 },
-    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
-    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
-    // { accessorKey: 'type', header: 'Type', size: 140 },
-    { accessorKey: 'partyCode', header: 'Party Code', size: 140 },
-    { accessorKey: 'partyName', header: 'Party Name', size: 140 },
-    // { accessorKey: 'ledgerName', header: 'Ledger Name', size: 140 },
-    { accessorKey: 'gstState', header: 'Reg State', size: 140 },
-    { accessorKey: 'gstIn', header: 'Reg In', size: 140 },
-    { accessorKey: 'status', header: 'Status', size: 100 },
-    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 }
-  ];
+  // ---------- handlers ----------
+  const handleDeleteRow = (rowId) => {
+    setWithdrawalsTableData((prev) => prev.filter((row) => row.id !== rowId));
+    setRowErrors((prev) => {
+      const next = { ...prev };
+      delete next[rowId];
+      return next;
+    });
+  };
+
+  const handleClear = () => {
+    setFormData(initialFormData());
+    setWithdrawalsTableData([]);
+    setRowErrors({});
+    setFormDataErrors({});
+    setGSTState([]);
+    setEditId('');
+    setListViewData({});
+    getPaymentDocId();
+  };
+
+  const handleList = () => setShowForm(!showForm);
+
+  const handleView = () => {
+    setShowForm(!showForm);
+    handleClear();
+  };
+
   const handleSelectChange = (e) => {
     const { name, value } = e.target;
     if (name === 'partyName') {
-      setFormDataErrors((prevErrors) => ({
-        ...prevErrors,
-        partyName: ''
-      }));
-    }
-    console.log('Selected employeeCode value:', value);
-    partyName.forEach((emp, index) => {
-      console.log(`Employee ${index}:`, emp);
-    });
-    const selectedEmp = partyName.find((emp) => emp.partyName === value);
-    if (selectedEmp) {
-      console.log('Selected Employee:', selectedEmp);
-      setFormData((prevData) => ({
-        ...prevData,
-        partyName: selectedEmp.partyName,
-        partyCode: selectedEmp.partyCode
-      }));
-      getGSTState(selectedEmp.partyName);
-    } else {
-      console.log('No employee found with the given code:', value);
+      const selectedParty = partyName.find((emp) => emp.partyName === value);
+      if (selectedParty) {
+        setFormData((prev) => ({
+          ...prev,
+          partyName: selectedParty.partyName,
+          partyCode: selectedParty.partyCode,
+          gstState: '',
+          gstIn: '',
+          currency: 'INR'
+        }));
+        setFormDataErrors((prev) => ({ ...prev, partyName: '' }));
+        getGSTState(selectedParty.partyName);
+      }
     }
   };
+
   const handleSelectGst = (e) => {
-    const value = e.target.value;
-    const selectedEmp = gstState.find((emp) => emp.stateCode === value);
-    if (selectedEmp.length === 1) {
-      setFormData((prevData) => ({
-        ...prevData,
+    const selectedEmp = gstState.find((emp) => emp.stateCode === e.target.value);
+    if (selectedEmp) {
+      setFormData((prev) => ({
+        ...prev,
         gstState: selectedEmp.stateCode,
-        gstIn: selectedEmp.gstin,
-        currency: selectedEmp.currency
+        gstIn: selectedEmp.gstin || '',
+        currency: selectedEmp.currency || 'INR'
       }));
-    } else if (selectedEmp) {
-      setFormData((prevData) => ({
-        ...prevData,
-        gstState: selectedEmp.stateCode,
-        gstIn: selectedEmp.gstin,
-        currency: selectedEmp.currency
-      }));
-    } else {
-      console.log('No employee found with the given code:', value);
     }
   };
 
+  const handleSettledChange = (row, rawValue) => {
+    if (!/^[0-9]*\.?[0-9]*$/.test(rawValue)) {
+      setRowErrors((prev) => ({ ...prev, [row.id]: 'Only numeric characters are allowed' }));
+      return;
+    }
 
+    const settled = toNum(rawValue);
+    const updated = withdrawalsTableData.map((r) =>
+      r.id === row.id ? { ...r, settled: rawValue, outstanding: (toNum(r.chargeAmt) - settled).toFixed(2) } : r
+    );
+    setWithdrawalsTableData(updated);
 
-  const calculateTotals = () => {
-    let totalChargeAmt = 0;
-    let totalSettledAmt = 0;
-
-    const updatedInvoiceDetails = withdrawalsTableData.map((row, index) => {
-      const billAmount = parseFloat(row.amount || 0);
-      const gstAmt = parseFloat(row.gstAmt || 0);
-      const chargeAmount = parseFloat(row.chargeAmt || 0);
-      const tdsPercent = parseFloat(row.tds || 0);
-      const settledAmt = parseFloat(row.settled || 0);
-      totalSettledAmt += settledAmt;
-      const gross = billAmount + gstAmt;
-      const tdsAmt = (gross * tdsPercent) / 100;
-      const netReceivable = chargeAmount - tdsAmt;
-      const outstandingAmt = netReceivable - settledAmt;
-      totalChargeAmt += netReceivable;
-
-      return {
-        ...row,
-        // chargeAmt: netReceivable.toFixed(2),
-        tdsAmt: netReceivable.toFixed(2),
-        outstanding: outstandingAmt.toFixed(2)
-      };
-    });
-
-    const paymentAmt = parseFloat(formData.paymentAmt || 0);
-    const onAccount = paymentAmt >= totalSettledAmt ? paymentAmt - totalSettledAmt : 0;
-    setWithdrawalsTableData(updatedInvoiceDetails);
-    setFormData((prev) => ({
-      ...prev,
-      netAmount: totalSettledAmt.toFixed(2),
-      onAccount: onAccount
-    }));
+    const totalSettled = updated.reduce((sum, r) => sum + toNum(r.settled), 0);
+    let message = '';
+    if (!rawValue) {
+      message = 'Settled is required';
+    } else if (settled > toNum(row.chargeAmt)) {
+      message = `Settled can't exceed the receivable (${row.chargeAmt})`;
+    } else if (totalSettled > toNum(formData.paymentAmt)) {
+      message = `Total settled can't exceed payment amount`;
+    }
+    setRowErrors((prev) => ({ ...prev, [row.id]: message }));
   };
+
   const handleFullGrid = () => {
     if (formData.partyCode) {
-      // if (formData.partyCode && formData.gstState) {
       setModalOpen(true);
       getAllFillGrid();
     } else {
       setModalOpen(false);
-      // showToast('warning', (formData.partyName && formData.gstState) ? `${formData.partyName} has No Data` : 'Please Select Party Name & Reg State');
       showToast('warning', formData.partyName ? `${formData.partyName} has No Data` : 'Please Select Party Name');
     }
   };
-  const handleCloseModal = () => {
-    setModalOpen(false);
-  };
+
+  const handleCloseModal = () => setModalOpen(false);
+
   const handleSelectAll = () => {
     if (selectAll) {
       setSelectedRows([]);
@@ -646,58 +418,132 @@ const Payment = ({ selectedRow }) => {
     }
     setSelectAll(!selectAll);
   };
-  const handleSubmitSelectedRows = async () => {
+
+  const handleSubmitSelectedRows = () => {
     const selectedData = selectedRows.map((index) => fillGridData[index]);
+
     const newData = selectedData
-      .filter((data) => {
-        return !withdrawalsTableData.some((item) => item.invNo === data.vid && item.invDate === data.vdate);
-      })
-      .map((data) => ({
+      .filter((d) => !withdrawalsTableData.some((item) => item.invNo === d.refNo))
+      .map((d) => ({
         id: Date.now() + Math.random(),
-        invNo: data.vid || '',
-        invDate: data.vdate ? dayjs(data.vdate).format('YYYY-MM-DD') : null,
-        currency: data.acccurrency || '',
-        exRate: data.exrate || '',
-        refNo: data.refno || '',
-        refDate: data.refdate || '',
-        amount: data.billamount || '',
-        gstAmount: parseFloat(data.gstamount) || 0,
-        chargeAmt: data.chargeAmt || ''
+        invNo: d.refNo,
+        invDate: d.refDate ? dayjs(d.refDate).format('YYYY-MM-DD') : null,
+        refNo: d.refNo,
+        refDate: d.refDate ? dayjs(d.refDate).format('YYYY-MM-DD') : null,
+        vid: d.vid || '',
+        vdate: d.vdate || '',
+        currency: d.currency || 'INR',
+        exRate: d.exRate,
+        amount: d.billAmount,
+        gstAmount: toNum(d.gstAmount),
+        totalAmt: toNum(d.totalAmt), // NEW
+        chargeAmt: d.chargeAmt,
+        outstanding: toNum(d.chargeAmt).toFixed(2),
+        settled: ''
       }));
 
     if (newData.length < selectedData.length) {
       showToast('warning', 'Some of the selected items are already added!');
     }
-    if (newData.length === 0) {
-      return;
-    }
+    if (newData.length === 0) return;
+
     setWithdrawalsTableData((prev) => [...prev, ...newData]);
     setSelectedRows([]);
     setSelectAll(false);
     handleCloseModal();
   };
-  const getAllFillGrid = async () => {
+
+  const handleSave = async () => {
+    const errors = {};
+    if (!formData.paymentAmt) {
+      errors.paymentAmt = 'Payment Amount is required';
+    } else if (!/^[0-9]*\.?[0-9]*$/.test(String(formData.paymentAmt))) {
+      errors.paymentAmt = 'Only numeric characters are allowed';
+    }
+    if (!formData.status) errors.status = 'Status is required';
+    if (!formData.bankCashAcc) errors.bankCashAcc = 'Cash Account is required';
+
+    setFormDataErrors(errors);
+    if (Object.keys(errors).length > 0) return;
+
+    const totalSettled = withdrawalsTableData.reduce((sum, r) => sum + toNum(r.settled), 0);
+    if (Object.values(rowErrors).some(Boolean)) {
+      showToast('warning', 'Please fix the errors in the invoice rows');
+      return;
+    }
+    if (totalSettled > toNum(formData.paymentAmt)) {
+      showToast('warning', `Total settled amount can't exceed payment amount`);
+      return;
+    }
+
+    setIsLoading(true);
+
+    const detailsVo = withdrawalsTableData.map((row) => ({
+      ...(editId && { id: row.id }),
+      invNo: row.invNo,
+      invDate: row.invDate ? dayjs(row.invDate).format('YYYY-MM-DD') : null,
+      refNo: row.refNo,
+      refDate: row.refDate ? dayjs(row.refDate).format('YYYY-MM-DD') : null,
+      vid: row.vid,
+      vdate: row.vdate ? dayjs(row.vdate).format('YYYY-MM-DD') : null,
+      currency: row.currency,
+      exRate: toNum(row.exRate),
+      amount: toNum(row.amount),
+      gstAmount: toNum(row.gstAmount),
+      totalAmt: toNum(row.totalAmt), // NEW
+      chargeAmt: toNum(row.chargeAmt),
+      outStanding: toNum(row.outstanding),
+      settled: toNum(row.settled)
+    }));
+
+    const saveFormData = {
+      ...(editId && { id: editId }),
+      type: 'PARTY',
+      paymentType: formData.paymentType,
+      docId: formData.docId,
+      docDate: formData.docDate ? dayjs(formData.docDate).format('YYYY-MM-DD') : null,
+      partyCode: formData.partyCode,
+      partyName: formData.partyName,
+      ledgerName: formData.ledgerName,
+      gstState: formData.gstState,
+      gstIn: formData.gstIn,
+      paymentAmt: toNum(formData.paymentAmt),
+      tdsAmt: toNum(formData.tdsAmt),
+      payTo: formData.payTo,
+      currency: formData.currency,
+      chequeNo: formData.chequeNo,
+      chequeDate: formData.chequeDate ? dayjs(formData.chequeDate).format('YYYY-MM-DD') : null,
+      remarks: formData.remarks,
+      paymentInvDtlsDTO: detailsVo,
+      createdBy: loginUserName,
+      orgId: orgId,
+      finYear: finYear,
+      branch: branch,
+      branchCode: branchCode,
+      status: formData.status,
+      bankCashAcc: formData.bankCashAcc,
+      approveStatus: formData.approveStatus,
+      approveBy: formData.approveBy,
+      approveOn: formData.approveOn
+    };
+
     try {
-      const response = await apiCalls(
-        'get',
-        `/payable/getPaymentFillGrid?branchCode=${branchCode}&orgId=${orgId}&partyCode=${formData.partyCode}`
-        // `/payable/getPaymentFillGrid?branchCode=${branchCode}&orgId=${orgId}&partyCode=${formData.partyCode}&stateCode=${formData.gstState}`
-      );
+      const response = await apiCalls('put', '/payable/updateCreatePayment', saveFormData);
       if (response.status === true) {
-        setFillGridData(response.paramObjectsMap.paymentfillgrid);
+        showToast('success', editId ? ' Payment updated successfully' : 'Payment created successfully');
+        getAllPayment();
+        handleClear();
       } else {
-        console.error('API Error:', response);
+        showToast('error', response.paramObjectsMap?.errorMessage || 'Payment creation failed');
       }
     } catch (error) {
-      console.error('Error fetching data:', error);
+      console.error('Error:', error);
+      showToast('error', 'Payment creation failed');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  //
-  const handleView = () => {
-    setShowForm(!showForm);
-    handleClear();
-  };
   const handleOpenModalApprove = () => {
     setModalApprove(true);
     setApproveStatus('Approved');
@@ -714,91 +560,51 @@ const Payment = ({ selectedRow }) => {
         'put',
         `/payable/approvePayment?action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${editId}&orgId=${orgId}`
       );
-      console.log('API Response:==>', result);
       if (result.status === true) {
-        setFormData({ ...formData, approveStatus: result.paramObjectsMap.taxInvoiceVO.approveStatus });
+        // NOTE: confirm the backend really returns the payment under "taxInvoiceVO" for this endpoint
+        const vo = result.paramObjectsMap.taxInvoiceVO;
         showToast(
-          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved' ? 'success' : 'error',
-          result.paramObjectsMap.taxInvoiceVO.approveStatus === 'Approved'
-            ? ' Payment Approved Successfully'
-            : 'Payment Rejected Successfully'
+          vo.approveStatus === 'Approved' ? 'success' : 'error',
+          vo.approveStatus === 'Approved' ? ' Payment Approved Successfully' : 'Payment Rejected Successfully'
         );
-        const listValueVO = result.paramObjectsMap.taxInvoiceVO;
-        setConfirmData(result.paramObjectsMap.taxInvoiceVO);
-        setFormData({
-          type: listValueVO.type,
-          paymentType: listValueVO.paymentType,
-          docId: listValueVO.docId,
-          docDate: listValueVO.docDate,
-          partyCode: listValueVO.partyCode,
-          partyName: listValueVO.partyName,
-          ledgerName: listValueVO.ledgerName,
-          gstState: listValueVO.gstState,
-          gstIn: listValueVO.gstIn,
-          bankCashAcc: listValueVO.bankCashAcc,
-          bankCharges: listValueVO.bankCharges,
-          paymentAmt: listValueVO.paymentAmt,
-          tdsAcc: listValueVO.tdsAcc,
-          tdsAmt: listValueVO.tdsAmt,
-          bankChargeAcc: listValueVO.bankChargeAcc,
-          payTo: listValueVO.payTo,
-          currency: listValueVO.currency,
-          chequeNo: listValueVO.chequeNo,
-          chequeDate: listValueVO.chequeDate,
-          currencyAmt: listValueVO.currencyAmt,
-          onAccount: listValueVO.onAccount,
-          netAmount: listValueVO.netAmount,
-          status: listValueVO.status,
-          approveBy: listValueVO.approveBy,
-          approveOn: listValueVO.approveOn,
-          approveStatus: listValueVO.approveStatus,
-          bankCashAcc: listValueVO.bankCashAcc
-        });
-        setWithdrawalsTableData(
-          listValueVO.paymentInvDtlsVO.map((cl) => ({
-            id: cl.id,
-            invNo: cl.invNo,
-            invDate: cl.invDate ? dayjs(cl.invDate) : null,
-            refNo: cl.refNo,
-            refDate: cl.refDate ? dayjs(cl.refDate) : null,
-            currency: cl.currency,
-            exRate: cl.exRate,
-            chargeAmt: cl.chargeAmt,
-            gstAmount: cl.gstAmount,
-            amount: cl.amount,
-            outstanding: cl.outstanding,
-            settled: cl.settled
-          }))
-        );
+        setListViewData(vo);
+        setFormData(mapVoToForm(vo));
+        setWithdrawalsTableData(mapVoToRows(vo));
         handleCloseApprove();
         getAllPayment();
-        console.log('Payment:==>', result);
       } else {
-        console.error('API Error:', result.data);
+        showToast('error', result.paramObjectsMap?.errorMessage || 'Action failed');
+        handleCloseApprove();
       }
     } catch (error) {
       console.error('Error fetching data:', error);
+      showToast('error', 'Action failed');
+      handleCloseApprove();
     }
   };
 
-  const bankList = async () => {
-    try {
-      const response = await apiCalls('get', `/transaction/getBankNameForGroupLedger?orgId=${orgId}`);
-      setBankName(response.paramObjectsMap.accountName);
-    } catch (error) {
-      console.error('Error fetching gate passes:', error);
-    }
-  };
+  const columns = [
+    { accessorKey: 'docId', header: 'Doc Id', size: 140 },
+    { accessorKey: 'docDate', header: 'Doc Date', size: 140 },
+    { accessorKey: 'partyCode', header: 'Party Code', size: 140 },
+    { accessorKey: 'partyName', header: 'Party Name', size: 140 },
+    { accessorKey: 'gstState', header: 'Reg State', size: 140 },
+    { accessorKey: 'gstIn', header: 'Reg In', size: 140 },
+    { accessorKey: 'status', header: 'Status', size: 100 },
+    { accessorKey: 'approveStatus', header: 'Approve Status', size: 140 }
+  ];
 
+  const isSubmitted = formData.status === 'SUBMIT';
+
+  // ---------- render ----------
   return (
     <div>
       <ToastContainer />
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
         <div className="row d-flex">
-          {/*  */}
           <div className="row d-flex align-items-center">
             <div className="col d-flex justify-content-start align-items-center">
-              {editId && showForm && (listViewData.status === 'SUBMIT' || formData.status === 'SUBMIT') && (
+              {editId && showForm && (listViewData.status === 'SUBMIT' || isSubmitted) && (
                 <>
                   {formData.approveStatus === 'Approved' && (
                     <Stack direction="row" spacing={2}>
@@ -884,13 +690,10 @@ const Payment = ({ selectedRow }) => {
                 </Button>
               )}
 
-              {/*  */}
-              {/* <Grid container spacing={2} alignItems="center"> */}
-              {/*  */}
               <div className="d-flex flex-wrap justify-content-end ">
                 {showForm && <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />}
                 {showForm && <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />}
-                {listViewData.approveStatus === 'Approved' || !showForm ? (
+                {formData.approveStatus === 'Approved' || !showForm || isLoading ? (
                   ''
                 ) : (
                   <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
@@ -898,43 +701,18 @@ const Payment = ({ selectedRow }) => {
               </div>
             </div>
           </div>
-          {/*  */}
-
-          {/* </Grid> */}
 
           {showForm ? (
             <>
-              {' '}
               <div className="row d-flex mt-3">
-                {/* <div className="col-md-3 mb-3">
-                  <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label">Type</InputLabel>
-                    <Select
-                      label="Type"
-                      value={formData.type}
-                      onChange={(e) => setFormData({ ...formData, type: e.target.value })}
-                    >
-                      {paymentTypes.map((item) => (
-                        <MenuItem key={item.id} value={item.valueDescription}>
-                          {item.valueDescription}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                    {formDataErrors.type && (
-                      <FormHelperText error style={{ color: 'red' }}>
-                        {formDataErrors.type}
-                      </FormHelperText>
-                    )}
-                  </FormControl>
-                </div> */}
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label">Mode</InputLabel>
+                    <InputLabel id="payment-mode-label">Mode</InputLabel>
                     <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
+                      labelId="payment-mode-label"
+                      id="payment-mode"
                       label="Mode"
-                      disabled={formData.status === 'SUBMIT'}
+                      disabled={isSubmitted}
                       required
                       value={formData.paymentType}
                       onChange={(e) => setFormData({ ...formData, paymentType: e.target.value })}
@@ -962,56 +740,33 @@ const Payment = ({ selectedRow }) => {
                         label="Doc Date"
                         format="DD-MM-YYYY"
                         disabled
-                        slotProps={{
-                          textField: { size: 'small', clearable: true }
-                        }}
+                        slotProps={{ textField: { size: 'small', clearable: true } }}
                         value={formData.docDate ? dayjs(formData.docDate) : null}
                         onChange={(newValue) => setFormData({ ...formData, docDate: newValue })}
                       />
                     </LocalizationProvider>
                   </FormControl>
                 </div>
-                {/* {formData.type === "OTHERS" ? (
-                  <div className="col-md-3 mb-3">
-                    <FormControl fullWidth size="small">
-                      <InputLabel>Ledger Name</InputLabel>
-                      <Select
-                        label="Ledger Name"
-                        value={formData.ledgerName}
-                        onChange={(e) =>
-                          setFormData({ ...formData, ledgerName: e.target.value })
-                        }
-                      >
-                        {ledgerNameList.map((ledger, index) => (
-                          <MenuItem key={index} value={ledger.accountGroupName}>
-                            {ledger.accountGroupName}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                  </div>
-                ) : ( */}
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small" error={!!formDataErrors.partyName}>
-                    <InputLabel required id="demo-simple-select-label-party">
+                    <InputLabel required id="payment-party-label">
                       Party Name
                     </InputLabel>
                     <Select
-                      labelId="demo-simple-select-label-party"
-                      id="demo-simple-select-party"
+                      labelId="payment-party-label"
+                      id="payment-party"
                       label="Party Name"
                       name="partyName"
-                      disabled={!!editId && formData.status === 'SUBMIT'}
+                      disabled={!!editId && isSubmitted}
                       required
-                      value={formData.partyName || (partyName.length === 1 ? partyName[0].partyName : '')}
+                      value={formData.partyName || ''}
                       onChange={handleSelectChange}
                     >
-                      {partyName.length > 0 &&
-                        partyName.map((par, index) => (
-                          <MenuItem key={index} value={par.partyName}>
-                            {par.partyName}
-                          </MenuItem>
-                        ))}
+                      {partyName.map((par, index) => (
+                        <MenuItem key={index} value={par.partyName}>
+                          {par.partyName}
+                        </MenuItem>
+                      ))}
                     </Select>
                     {formDataErrors.partyName && (
                       <FormHelperText error style={{ color: 'red' }}>
@@ -1020,32 +775,23 @@ const Payment = ({ selectedRow }) => {
                     )}
                   </FormControl>
                 </div>
-                {/* )} */}
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small">
-                    <InputLabel id="demo-simple-select-label">Reg State</InputLabel>
+                    <InputLabel id="gst-state-label">Reg State</InputLabel>
                     <Select
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
+                      labelId="gst-state-label"
+                      id="gstState"
                       label="Reg State"
-                      // value={formData.gstState || (gstState.length === 1 ? gstState[0].gstState : '')}
-                      value={formData.gstState || gstState.length === 1}
+                      value={formData.gstState || ''}
                       onChange={handleSelectGst}
-                      disabled={formData.status === 'SUBMIT'}
-                      error={!!formDataErrors.gstState}
+                      disabled={isSubmitted || gstState.length === 0}
                     >
-                      {gstState.length > 0 &&
-                        gstState.map((par, index) => (
-                          <MenuItem key={index} value={par.stateCode}>
-                            {par.stateCode}
-                          </MenuItem>
-                        ))}
+                      {gstState.map((par, index) => (
+                        <MenuItem key={index} value={par.stateCode}>
+                          {par.stateCode}
+                        </MenuItem>
+                      ))}
                     </Select>
-                    {formDataErrors.gstState && (
-                      <FormHelperText error style={{ color: 'red' }}>
-                        {formDataErrors.gstState}
-                      </FormHelperText>
-                    )}
                   </FormControl>
                 </div>
                 <div className="col-md-3 mb-3">
@@ -1056,7 +802,6 @@ const Payment = ({ selectedRow }) => {
                       disabled
                       size="small"
                       value={formData.gstIn}
-                      onChange={(e) => setFormData({ ...formData, gstIn: e.target.value })}
                       inputProps={{ maxLength: 30 }}
                       error={!!formDataErrors.gstIn}
                       helperText={formDataErrors.gstIn}
@@ -1071,15 +816,10 @@ const Payment = ({ selectedRow }) => {
                       size="small"
                       required
                       value={formData.paymentAmt}
-                      disabled={formData.status === 'SUBMIT'}
+                      disabled={isSubmitted}
                       onChange={(e) => {
                         setFormData({ ...formData, paymentAmt: e.target.value });
-                        // if (e.target.value) {
-                        setFormDataErrors((prevErrors) => ({
-                          ...prevErrors,
-                          paymentAmt: ''
-                        }));
-                        // }
+                        setFormDataErrors((prevErrors) => ({ ...prevErrors, paymentAmt: '' }));
                       }}
                       inputProps={{ maxLength: 30 }}
                       error={!!formDataErrors.paymentAmt}
@@ -1094,12 +834,11 @@ const Payment = ({ selectedRow }) => {
                       label="TDS Amount"
                       size="small"
                       value={formData.tdsAmt}
-                      disabled={formData.status === 'SUBMIT'}
+                      disabled={isSubmitted}
                       onChange={(e) => setFormData({ ...formData, tdsAmt: e.target.value })}
                       inputProps={{ maxLength: 30 }}
                       error={!!formDataErrors.tdsAmt}
                       helperText={formDataErrors.tdsAmt}
-                    // InputLabelProps={{ shrink: true }}
                     />
                   </FormControl>
                 </div>
@@ -1111,7 +850,7 @@ const Payment = ({ selectedRow }) => {
                       label="UTR No"
                       size="small"
                       value={formData.chequeNo}
-                      disabled={formData.status === 'SUBMIT'}
+                      disabled={isSubmitted}
                       onChange={(e) => setFormData({ ...formData, chequeNo: e.target.value })}
                       inputProps={{ maxLength: 100 }}
                       error={!!formDataErrors.chequeNo}
@@ -1126,13 +865,9 @@ const Payment = ({ selectedRow }) => {
                         label="UTR Date"
                         value={formData.chequeDate ? dayjs(formData.chequeDate, 'YYYY-MM-DD') : null}
                         onChange={(newValue) => setFormData({ ...formData, chequeDate: newValue })}
-                        disabled={formData.status === 'SUBMIT'}
-                        slotProps={{
-                          textField: { size: 'small', clearable: true }
-                        }}
+                        disabled={isSubmitted}
+                        slotProps={{ textField: { size: 'small', clearable: true } }}
                         format="DD-MM-YYYY"
-                        error={!!formDataErrors.chequeDate}
-                        helperText={formDataErrors.chequeDate ? formDataErrors.chequeDate : ''}
                       />
                     </LocalizationProvider>
                   </FormControl>
@@ -1144,7 +879,7 @@ const Payment = ({ selectedRow }) => {
                       label="Pay To"
                       size="small"
                       value={formData.payTo}
-                      disabled={formData.status === 'SUBMIT'}
+                      disabled={isSubmitted}
                       onChange={(e) => setFormData({ ...formData, payTo: e.target.value })}
                       inputProps={{ maxLength: 30 }}
                     />
@@ -1161,7 +896,7 @@ const Payment = ({ selectedRow }) => {
                       label="Status"
                       name="status"
                       value={formData.status}
-                      disabled={formData.status === 'SUBMIT' || !editId}
+                      disabled={isSubmitted || !editId}
                       onChange={(e) => {
                         setFormData({ ...formData, status: e.target.value });
                         setFormDataErrors({ ...formDataErrors, status: '' });
@@ -1173,10 +908,9 @@ const Payment = ({ selectedRow }) => {
                     {formDataErrors.status && <FormHelperText>{formDataErrors.status}</FormHelperText>}
                   </FormControl>
                 </div>
-                {/*  */}
                 <div className="col-md-3 mb-3">
                   <FormControl fullWidth size="small" error={!!formDataErrors.bankCashAcc}>
-                    <InputLabel htmlFor="type" required>
+                    <InputLabel id="bankCashAcc-label" required>
                       Cash Account
                     </InputLabel>
                     <Select
@@ -1184,45 +918,24 @@ const Payment = ({ selectedRow }) => {
                       id="bankCashAcc"
                       name="bankCashAcc"
                       value={formData.bankCashAcc}
-                      disabled={formData.status === 'SUBMIT'}
+                      disabled={isSubmitted}
                       onChange={(e) => {
                         setFormData({ ...formData, bankCashAcc: e.target.value });
                         setFormDataErrors({ ...formDataErrors, bankCashAcc: '' });
                       }}
                       label="Cash Account"
                     >
-                      {bankName &&
-                        bankName.map((bank, index) => (
-                          <MenuItem key={index} value={bank.accountgroupname}>
-                            {bank.accountgroupname}
-                          </MenuItem>
-                        ))}
+                      {bankName.map((bank, index) => (
+                        <MenuItem key={index} value={bank.accountgroupname}>
+                          {bank.accountgroupname}
+                        </MenuItem>
+                      ))}
                     </Select>
                     {formDataErrors.bankCashAcc && <FormHelperText>{formDataErrors.bankCashAcc}</FormHelperText>}
                   </FormControl>
                 </div>
-                {/* {
-                  formData.type === 'OTHERS' ?
-                    <div className="col-md-6 mb-3">
-                      <FormControl fullWidth size="small">
-                        <TextField
-                          label="Remarks"
-                          size="small"
-                          multiline
-                          disabled={formData.status === 'SUBMIT'}
-                          value={formData.remarks}
-                          onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
-                        />
-                      </FormControl>
-                    </div>
-                    : null
-                } */}
-                {/*  */}
               </div>
 
-              {/* {
-                formData.type === 'OTHERS' ?
-                  '' : */}
               <div className="card w-full p-6 bg-base-100 shadow-xl mt-2" style={{ padding: '20px' }}>
                 <Box sx={{ width: '100%', typography: 'body1' }}>
                   <TabContext value={value}>
@@ -1234,11 +947,8 @@ const Payment = ({ selectedRow }) => {
                     </Box>
                     <TabPanel value="1">
                       <div className="row d-flex ml">
-                        {formData.status === 'SUBMIT' ? (
-                          ''
-                        ) : (
+                        {!isSubmitted && (
                           <div className="mb-1">
-                            {/* <ActionButton title="Add" icon={AddIcon} onClick={handleAddRow} /> */}
                             <ActionButton title="Fill Grid" icon={GridOnIcon} onClick={handleFullGrid} />
                           </div>
                         )}
@@ -1248,9 +958,7 @@ const Payment = ({ selectedRow }) => {
                               <table className="table table-bordered">
                                 <thead>
                                   <tr style={{ backgroundColor: '#673AB7' }}>
-                                    {formData.status === 'SUBMIT' ? (
-                                      ''
-                                    ) : (
+                                    {!isSubmitted && (
                                       <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                         Action
                                       </th>
@@ -1258,12 +966,13 @@ const Payment = ({ selectedRow }) => {
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                       S.No
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center"># Invoice</th>
+                                    <th className="px-2 py-2 text-white text-center">#Invoice</th>
                                     <th className="px-2 py-2 text-white text-center">Date</th>
-                                    <th className="px-2 py-2 text-white text-center">Ref No</th>
-                                    <th className="px-2 py-2 text-white text-center">Ref Date</th>
-                                    <th className="px-2 py-2 text-white text-center">Bill Amount</th>
+                                    <th className="px-2 py-2 text-white text-center">Doc Id</th>
+                                    <th className="px-2 py-2 text-white text-center">Doc Date</th>
+                                    <th className="px-2 py-2 text-white text-center">Bill amt</th>
                                     <th className="px-2 py-2 text-white text-center">TAX</th>
+                                    <th className="px-2 py-2 text-white text-center">Total Amt</th>
                                     <th className="px-2 py-2 text-white text-center">Currency</th>
                                     <th className="px-2 py-2 text-white text-center">Ex. Rate</th>
                                     <th className="px-2 py-2 text-white text-center">Amount</th>
@@ -1272,466 +981,181 @@ const Payment = ({ selectedRow }) => {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {formData.status === 'SUBMIT' ? (
-                                    <>
-                                      {Array.isArray(withdrawalsTableData) &&
-                                        withdrawalsTableData.map((row, index) => (
-                                          <tr key={row.id}>
-                                            <td className="text-center">{index + 1}</td>
-                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                              {row.invNo}
-                                            </td>
-                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                              {row.invDate ? dayjs(row.invDate).format('YYYY-MM-DD') : ''}
-                                            </td>
-                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                              {row.refNo}
-                                            </td>
-                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                              {row.refDate ? dayjs(row.refDate).format('YYYY-MM-DD') : ''}
-                                            </td>
-                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                              {row.amount}
-                                            </td>
-                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                              {row.gstAmount}
-                                            </td>
-                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                              {row.currency}
-                                            </td>
-                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                              {row.exRate}
-                                            </td>
-                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                              {row.chargeAmt}
-                                            </td>
-                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                              {row.outstanding}
-                                            </td>
-                                            <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                              {row.settled}
-                                            </td>
-                                          </tr>
-                                        ))}
-                                    </>
-                                  ) : (
-                                    <>
-                                      {Array.isArray(withdrawalsTableData) &&
-                                        withdrawalsTableData.map((row, index) => (
-                                          <tr key={row.id}>
-                                            <td className="border px-2 py-2 text-center">
-                                              <ActionButton
-                                                title="Delete"
-                                                icon={DeleteIcon}
-                                                onClick={() =>
-                                                  handleDeleteRow(
-                                                    row.id,
-                                                    withdrawalsTableData,
-                                                    setWithdrawalsTableData,
-                                                    withdrawalsTableErrors,
-                                                    setWithdrawalsTableErrors
-                                                  )
-                                                }
-                                              />
-                                            </td>
-                                            <td className="text-center">
-                                              <div className="pt-2">{index + 1}</div>
-                                            </td>
-                                            <td className="border px-2 py-2">
-                                              <input
-                                                type="text"
-                                                value={row.invNo}
-                                                style={{ width: '170px' }}
-                                                disabled
-                                                onChange={(e) => {
-                                                  const value = e.target.value;
-                                                  setWithdrawalsTableData((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, invNo: value } : r))
-                                                  );
-                                                  setWithdrawalsTableErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      invNo: !value ? 'Inv No is required' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }}
-                                                className={withdrawalsTableErrors[index]?.invNo ? 'error form-control' : 'form-control'}
-                                              />
-                                              {withdrawalsTableErrors[index]?.invNo && (
-                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                  {withdrawalsTableErrors[index].invNo}
-                                                </div>
-                                              )}
-                                            </td>
-                                            <td className="border px-2 py-2">
-                                              <input
-                                                type="date"
-                                                disabled
-                                                value={row.invDate ? dayjs(row.invDate).format('YYYY-MM-DD') : ''}
-                                                onChange={(e) => {
-                                                  const date = e.target.value;
-                                                  setWithdrawalsTableData((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, invDate: date } : r))
-                                                  );
-                                                  setWithdrawalsTableErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      invDate: !date ? 'Inv Date is required' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }}
-                                                className={withdrawalsTableErrors[index]?.invDate ? 'error form-control' : 'form-control'}
-                                              />
-                                              {withdrawalsTableErrors[index]?.invDate && (
-                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                  {withdrawalsTableErrors[index].invDate}
-                                                </div>
-                                              )}
-                                            </td>
-                                            <td className="border px-2 py-2">
-                                              <input
-                                                type="text"
-                                                disabled
-                                                value={row.refNo}
-                                                style={{ width: '170px' }}
-                                                onChange={(e) => {
-                                                  const value = e.target.value;
-                                                  setWithdrawalsTableData((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, refNo: value } : r))
-                                                  );
-                                                  setWithdrawalsTableErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = { ...newErrors[index], refNo: !value ? 'Ref No is required' : '' };
-                                                    return newErrors;
-                                                  });
-                                                }}
-                                                className={withdrawalsTableErrors[index]?.refNo ? 'error form-control' : 'form-control'}
-                                              />
-                                              {withdrawalsTableErrors[index]?.refNo && (
-                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                  {withdrawalsTableErrors[index].refNo}
-                                                </div>
-                                              )}
-                                            </td>
-                                            <td className="border px-2 py-2">
-                                              <input
-                                                type="date"
-                                                disabled
-                                                value={row.refDate ? dayjs(row.refDate).format('YYYY-MM-DD') : ''}
-                                                onChange={(e) => {
-                                                  const date = e.target.value;
-                                                  setWithdrawalsTableData((prev) =>
-                                                    prev.map((r) => (r.id === row.id ? { ...r, refDate: date } : r))
-                                                  );
-
-                                                  setWithdrawalsTableErrors((prev) => {
-                                                    const newErrors = [...prev];
-                                                    newErrors[index] = {
-                                                      ...newErrors[index],
-                                                      refDate: !date ? 'Ref Date is required' : ''
-                                                    };
-                                                    return newErrors;
-                                                  });
-                                                }}
-                                                className={withdrawalsTableErrors[index]?.refDate ? 'error form-control' : 'form-control'}
-                                              />
-                                              {withdrawalsTableErrors[index]?.refDate && (
-                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                  {withdrawalsTableErrors[index].refDate}
-                                                </div>
-                                              )}
-                                            </td>
-                                            <td className="border px-2 py-2">
-                                              <input
-                                                type="text"
-                                                value={row.amount}
-                                                disabled
-                                                style={{ width: '120px' }}
-                                                onChange={(e) => {
-                                                  const value = e.target.value;
-                                                  const numericRegex = /^[0-9]*$/;
-                                                  if (numericRegex.test(value)) {
-                                                    setWithdrawalsTableData((prev) =>
-                                                      prev.map((r) => (r.id === row.id ? { ...r, amount: value } : r))
-                                                    );
-                                                    setWithdrawalsTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = {
-                                                        ...newErrors[index],
-                                                        amount: !value ? 'Amount is required' : ''
-                                                      };
-                                                      return newErrors;
-                                                    });
-                                                  } else {
-                                                    setWithdrawalsTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = {
-                                                        ...newErrors[index],
-                                                        amount: 'Only numeric characters are allowed'
-                                                      };
-                                                      return newErrors;
-                                                    });
-                                                  }
-                                                }}
-                                                className={withdrawalsTableErrors[index]?.amount ? 'error form-control' : 'form-control'}
-                                              />
-                                              {withdrawalsTableErrors[index]?.amount && (
-                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                  {withdrawalsTableErrors[index].amount}
-                                                </div>
-                                              )}
-                                            </td>
-                                            <td className="border px-2 py-2">
-                                              <input
-                                                type="text"
-                                                value={row.gstAmount}
-                                                disabled
-                                                onChange={(e) => {
-                                                  const value = e.target.value;
-                                                  const isNumeric = /^[0-9]*$/;
-                                                  if (isNumeric.test(value)) {
-                                                    setWithdrawalsTableData((prev) =>
-                                                      prev.map((r) => (r.id === row.id ? { ...r, gstAmount: value } : r))
-                                                    );
-                                                    setWithdrawalsTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = {
-                                                        ...newErrors[index],
-                                                        gstAmount: !value ? 'Tax Amt is required' : ''
-                                                      };
-                                                      return newErrors;
-                                                    });
-                                                  } else {
-                                                    setWithdrawalsTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = {
-                                                        ...newErrors[index],
-                                                        gstAmount: 'Only numbers are allowed'
-                                                      };
-                                                      return newErrors;
-                                                    });
-                                                  }
-                                                }}
-                                                className={withdrawalsTableErrors[index]?.gstAmount ? 'error form-control' : 'form-control'}
-                                                style={{ width: '150px' }}
-                                              />
-                                              {withdrawalsTableErrors[index]?.gstAmount && (
-                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                  {withdrawalsTableErrors[index].gstAmount}
-                                                </div>
-                                              )}
-                                            </td>
-                                            <td className="border px-2 py-2">
-                                              <select
-                                                value={row.currency}
-                                                style={{ width: '100px' }}
-                                                disabled
-                                                onChange={(e) => {
-                                                  const selectedCurrency = e.target.value;
-                                                  const updatedCurrencyData = [...withdrawalsTableData];
-                                                  updatedCurrencyData[index] = {
-                                                    ...updatedCurrencyData[index],
-                                                    currency: selectedCurrency
-                                                  };
-                                                  setWithdrawalsTableData(updatedCurrencyData);
-                                                }}
-                                                className={withdrawalsTableErrors[index]?.currency ? 'error form-control' : 'form-control'}
-                                              >
-                                                {gstState?.map((currency, index) => (
-                                                  <option key={index} value={currency.currency}>
-                                                    {currency.currency}
-                                                  </option>
-                                                ))}
-                                              </select>
-                                              {withdrawalsTableErrors[index]?.currency && (
-                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                  {withdrawalsTableErrors[index].currency}
-                                                </div>
-                                              )}
-                                            </td>
-                                            <td className="border px-2 py-2">
-                                              <input
-                                                type="text"
-                                                value={row.exRate}
-                                                disabled
-                                                onChange={(e) => {
-                                                  const value = e.target.value;
-                                                  const isNumeric = /^[0-9]*$/;
-
-                                                  if (isNumeric.test(value)) {
-                                                    setWithdrawalsTableData((prev) =>
-                                                      prev.map((r) => (r.id === row.id ? { ...r, exRate: value } : r))
-                                                    );
-                                                    setWithdrawalsTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = {
-                                                        ...newErrors[index],
-                                                        exRate: !value ? 'Ex Rate is required' : ''
-                                                      };
-                                                      return newErrors;
-                                                    });
-                                                  } else {
-                                                    setWithdrawalsTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = { ...newErrors[index], exRate: 'Only numbers are allowed' };
-                                                      return newErrors;
-                                                    });
-                                                  }
-                                                }}
-                                                className={withdrawalsTableErrors[index]?.exRate ? 'error form-control' : 'form-control'}
-                                                style={{ width: '100px' }}
-                                              />
-                                              {withdrawalsTableErrors[index]?.exRate && (
-                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                  {withdrawalsTableErrors[index].exRate}
-                                                </div>
-                                              )}
-                                            </td>
-                                            <td className="border px-2 py-2">
-                                              <input
-                                                type="text"
-                                                value={row.chargeAmt}
-                                                disabled
-                                                onChange={(e) => {
-                                                  const value = e.target.value;
-                                                  const isNumeric = /^[0-9]*$/;
-                                                  if (isNumeric.test(value)) {
-                                                    setWithdrawalsTableData((prev) =>
-                                                      prev.map((r) => (r.id === row.id ? { ...r, chargeAmt: value } : r))
-                                                    );
-                                                    setWithdrawalsTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = { ...newErrors[index], chargeAmt: 'Only numbers are allowed' };
-                                                      return newErrors;
-                                                    });
-                                                  } else {
-                                                    setWithdrawalsTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = {
-                                                        ...newErrors[index],
-                                                        chargeAmt: 'Only numbers are allowed'
-                                                      };
-                                                      return newErrors;
-                                                    });
-                                                  }
-                                                }}
-                                                className={withdrawalsTableErrors[index]?.chargeAmt ? 'error form-control' : 'form-control'}
-                                                style={{ width: '130px' }}
-                                              />
-                                              {withdrawalsTableErrors[index]?.chargeAmt && (
-                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                  {withdrawalsTableErrors[index].chargeAmt}
-                                                </div>
-                                              )}
-                                            </td>
-                                            <td className="border px-2 py-2">
-                                              <input
-                                                type="text"
-                                                disabled
-                                                value={row.outstanding}
-                                                style={{ width: '120px' }}
-                                                onChange={(e) => {
-                                                  const value = e.target.value;
-                                                  const numericRegex = /^[0-9]*$/;
-                                                  if (numericRegex.test(value)) {
-                                                    setWithdrawalsTableData((prev) =>
-                                                      prev.map((r) => (r.id === row.id ? { ...r, outstanding: value } : r))
-                                                    );
-                                                    setWithdrawalsTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = {
-                                                        ...newErrors[index],
-                                                        outstanding: !value ? 'Outstanding is required' : ''
-                                                      };
-                                                      return newErrors;
-                                                    });
-                                                  } else {
-                                                    setWithdrawalsTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = {
-                                                        ...newErrors[index],
-                                                        outstanding: 'Only numeric characters are allowed'
-                                                      };
-                                                      return newErrors;
-                                                    });
-                                                  }
-                                                }}
-                                                className={
-                                                  withdrawalsTableErrors[index]?.outstanding ? 'error form-control' : 'form-control'
-                                                }
-                                              />
-                                              {withdrawalsTableErrors[index]?.outstanding && (
-                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                  {withdrawalsTableErrors[index].outstanding}
-                                                </div>
-                                              )}
-                                            </td>
-                                            <td className="border px-2 py-2">
-                                              <input
-                                                type="text"
-                                                value={row.settled}
-                                                disabled={formData.status === 'SUBMIT' || !formData.paymentAmt}
-                                                style={{ width: '100px' }}
-                                                onChange={(e) => {
-                                                  const value = e.target.value;
-                                                  const numericRegex = /^[0-9.]*$/;
-
-                                                  if (numericRegex.test(value)) {
-                                                    const settledValue = parseFloat(value || '0');
-                                                    const paymentValue = parseFloat(formData.paymentAmt || '0');
-
-                                                    const updatedData = withdrawalsTableData.map((r) =>
-                                                      r.id === row.id ? { ...r, settled: value } : r
-                                                    );
-                                                    setWithdrawalsTableData(updatedData);
-
-                                                    const totalSettled = updatedData.reduce((sum, r) => {
-                                                      const val = parseFloat(r.settled);
-                                                      return sum + (isNaN(val) ? 0 : val);
-                                                    }, 0);
-
-                                                    let errorMessage = '';
-                                                    if (!value) {
-                                                      errorMessage = 'Settled is required';
-                                                    } else if (totalSettled > paymentValue) {
-                                                      errorMessage = `Settled amount can't exceed payment amount`;
-                                                    }
-
-                                                    setWithdrawalsTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = {
-                                                        ...newErrors[index],
-                                                        settled: errorMessage
-                                                      };
-                                                      return newErrors;
-                                                    });
-                                                  } else {
-                                                    setWithdrawalsTableErrors((prev) => {
-                                                      const newErrors = [...prev];
-                                                      newErrors[index] = {
-                                                        ...newErrors[index],
-                                                        settled: 'Only numeric characters are allowed'
-                                                      };
-                                                      return newErrors;
-                                                    });
-                                                  }
-                                                }}
-                                                className={withdrawalsTableErrors[index]?.settled ? 'error form-control' : 'form-control'}
-                                              />
-                                              {withdrawalsTableErrors[index]?.settled && (
-                                                <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
-                                                  {withdrawalsTableErrors[index].settled}
-                                                </div>
-                                              )}
-                                            </td>
-                                          </tr>
-                                        ))}
-                                    </>
-                                  )}
+                                  {isSubmitted
+                                    ? withdrawalsTableData.map((row, index) => (
+                                        <tr key={row.id}>
+                                          <td className="text-center">{index + 1}</td>
+                                          <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                            {row.vid}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                            {row.vdate ? dayjs(row.vdate).format('YYYY-MM-DD') : ''}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                            {row.refNo}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                            {row.refDate ? dayjs(row.refDate).format('YYYY-MM-DD') : ''}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                            {row.amount}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                            {row.gstAmount}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                            {row.totalAmt}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                            {row.currency}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                            {row.exRate}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                            {row.chargeAmt}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                            {row.outstanding}
+                                          </td>
+                                          <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                            {row.settled}
+                                          </td>
+                                        </tr>
+                                      ))
+                                    : withdrawalsTableData.map((row, index) => (
+                                        <tr key={row.id}>
+                                          <td className="border px-2 py-2 text-center">
+                                            <ActionButton title="Delete" icon={DeleteIcon} onClick={() => handleDeleteRow(row.id)} />
+                                          </td>
+                                          <td className="text-center">
+                                            <div className="pt-2">{index + 1}</div>
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.vid ?? ''}
+                                              style={{ width: '170px' }}
+                                              disabled
+                                              readOnly
+                                              className="form-control"
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="date"
+                                              disabled
+                                              readOnly
+                                              value={row.vdate ? dayjs(row.vdate).format('YYYY-MM-DD') : ''}
+                                              className="form-control"
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.refNo ?? ''}
+                                              style={{ width: '170px' }}
+                                              disabled
+                                              readOnly
+                                              className="form-control"
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="date"
+                                              disabled
+                                              readOnly
+                                              value={row.refDate ? dayjs(row.refDate).format('YYYY-MM-DD') : ''}
+                                              className="form-control"
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.amount ?? ''}
+                                              disabled
+                                              readOnly
+                                              style={{ width: '120px' }}
+                                              className="form-control"
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.gstAmount ?? ''}
+                                              disabled
+                                              readOnly
+                                              style={{ width: '150px' }}
+                                              className="form-control"
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.totalAmt ?? ''}
+                                              disabled
+                                              readOnly
+                                              style={{ width: '130px' }}
+                                              className="form-control"
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.currency ?? ''}
+                                              disabled
+                                              readOnly
+                                              style={{ width: '100px' }}
+                                              className="form-control"
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.exRate ?? ''}
+                                              disabled
+                                              readOnly
+                                              style={{ width: '100px' }}
+                                              className="form-control"
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.chargeAmt ?? ''}
+                                              disabled
+                                              readOnly
+                                              style={{ width: '130px' }}
+                                              className="form-control"
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              disabled
+                                              readOnly
+                                              value={row.outstanding ?? ''}
+                                              style={{ width: '120px' }}
+                                              className="form-control"
+                                            />
+                                          </td>
+                                          <td className="border px-2 py-2">
+                                            <input
+                                              type="text"
+                                              value={row.settled ?? ''}
+                                              disabled={!formData.paymentAmt}
+                                              style={{ width: '100px' }}
+                                              onChange={(e) => handleSettledChange(row, e.target.value)}
+                                              className={rowErrors[row.id] ? 'error form-control' : 'form-control'}
+                                            />
+                                            {rowErrors[row.id] && (
+                                              <div className="mt-2" style={{ color: 'red', fontSize: '12px' }}>
+                                                {rowErrors[row.id]}
+                                              </div>
+                                            )}
+                                          </td>
+                                        </tr>
+                                      ))}
                                 </tbody>
                               </table>
                             </div>
@@ -1751,14 +1175,12 @@ const Payment = ({ selectedRow }) => {
                                 disabled
                                 size="small"
                                 value={formData.netAmount}
-                                onChange={(newValue) => setFormData({ ...formData, netAmount: newValue })}
                                 inputProps={{ maxLength: 30 }}
                                 error={!!formDataErrors.netAmount}
                                 helperText={formDataErrors.netAmount}
                               />
                             </FormControl>
                           </div>
-
                           <div className="col-md-3 mb-3">
                             <FormControl fullWidth variant="filled">
                               <TextField
@@ -1768,7 +1190,6 @@ const Payment = ({ selectedRow }) => {
                                 disabled
                                 size="small"
                                 value={formData.onAccount}
-                                onChange={(newValue) => setFormData({ ...formData, onAccount: newValue })}
                                 inputProps={{ maxLength: 30 }}
                                 error={!!formDataErrors.onAccount}
                                 helperText={formDataErrors.onAccount}
@@ -1780,7 +1201,7 @@ const Payment = ({ selectedRow }) => {
                               <TextField
                                 label="Remarks"
                                 size="small"
-                                disabled={formData.status === 'SUBMIT'}
+                                disabled={isSubmitted}
                                 value={formData.remarks}
                                 onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
                               />
@@ -1791,7 +1212,7 @@ const Payment = ({ selectedRow }) => {
                     </TabPanel>
                   </TabContext>
                 </Box>
-                {/* {fillGridData && fillGridData.length > 0 ?  */}
+
                 <Dialog
                   open={modalOpen}
                   maxWidth={'md'}
@@ -1812,12 +1233,7 @@ const Payment = ({ selectedRow }) => {
                               <tr style={{ backgroundColor: '#673AB7' }}>
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '68px' }}>
                                   <Checkbox
-                                    sx={{
-                                      color: 'white',
-                                      '&.Mui-checked': {
-                                        color: 'white'
-                                      }
-                                    }}
+                                    sx={{ color: 'white', '&.Mui-checked': { color: 'white' } }}
                                     checked={selectAll}
                                     onChange={handleSelectAll}
                                   />
@@ -1825,16 +1241,19 @@ const Payment = ({ selectedRow }) => {
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                   S.No
                                 </th>
-                                <th className="table-header"># Invoice</th>
+                                <th className="table-header">#Invoice</th>
                                 <th className="table-header">Date</th>
-                                <th className="table-header">Bill Amount</th>
+                                <th className="table-header">Doc Id</th>
+                                <th className="table-header">Doc Date</th>
+                                <th className="table-header">Bill amt</th>
                                 <th className="table-header">Tax</th>
+                                <th className="table-header">Total Amt</th>
                                 <th className="table-header">Net Receivable</th>
                               </tr>
                             </thead>
                             <tbody>
-                              {fillGridData?.map((row, index) => (
-                                <tr key={row.id}>
+                              {fillGridData.map((row, index) => (
+                                <tr key={row.key}>
                                   <td className="border p-0 text-center">
                                     <Checkbox
                                       checked={selectedRows.includes(index)}
@@ -1845,33 +1264,30 @@ const Payment = ({ selectedRow }) => {
                                     />
                                   </td>
                                   <td className="text-center">{index + 1}</td>
-                                  <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                    {row.vid || ''}
+                                  <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                    {row.vid}
                                   </td>
-                                  <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                  <td className="border px-2 py-2 text-center" style={cellStyle}>
                                     {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : ''}
                                   </td>
-                                  <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                    {row.billamount || ''}
+                                  <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                    {row.refNo}
                                   </td>
-                                  <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                    {row.gstamount || ''}
+                                  <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                    {row.refDate ? dayjs(row.refDate).format('DD-MM-YYYY') : ''}
                                   </td>
-                                  <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
+                                  <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                    {row.billAmount}
+                                  </td>
+                                  <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                    {row.gstAmount}
+                                  </td>
+                                  <td className="border px-2 py-2 text-center" style={cellStyle}>
+                                    {row.totalAmt}
+                                  </td>
+                                  <td className="border px-2 py-2 text-center" style={cellStyle}>
                                     {row.chargeAmt || 0}
                                   </td>
-                                  {/* <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeAmt || 0}
-                                      </td>
-                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeAmt || 0}
-                                      </td>
-                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeAmt || 0}
-                                      </td>
-                                      <td className="border px-2 py-2 text-center" style={{ whiteSpace: 'nowrap' }}>
-                                        {row.chargeAmt || 0}
-                                      </td> */}
                                 </tr>
                               ))}
                             </tbody>
@@ -1889,16 +1305,13 @@ const Payment = ({ selectedRow }) => {
                     </Button>
                   </DialogActions>
                 </Dialog>
-                {/*   : showToast('warning','No Data Found for Selected Customer')} */}
               </div>
-              {/* } */}
             </>
           ) : (
-            <CommonTable data={data && data} columns={columns} blockEdit={true} toEdit={getPaymentById} />
+            <CommonTable data={data} columns={columns} blockEdit={true} toEdit={getPaymentById} />
           )}
         </div>
       </div>
-      {/*  */}
       <ConfirmationModal
         open={modalApprove}
         title="Payment Approval"
@@ -1906,7 +1319,6 @@ const Payment = ({ selectedRow }) => {
         onConfirm={handleConfirmAction}
         onCancel={handleCloseApprove}
       />
-      {/*  */}
     </div>
   );
 };

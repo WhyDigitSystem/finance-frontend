@@ -9,7 +9,8 @@ import {
   IconIdBadge2,
   IconLayoutDashboard,
   IconBriefcase,
-  IconMapQuestion
+  IconMapQuestion,
+  TuneOutlined
 } from '@tabler/icons-react';
 import {
   GroupsOutlined,
@@ -165,6 +166,14 @@ const basicMaster = {
               url: '/finance/partyMaster',
               icon: icons10.GroupsOutlined,
               visible: hasScreenAccess('PARTY')
+            },
+            {
+              id: 'toleranceMaster',
+              title: 'Tolerance',
+              type: 'item',
+              url: '/finance/tolerance',
+              icon: icons12.ArchiveOutlined,
+              visible: hasScreenAccess('TOL')
             },
             {
               id: 'customer',
