@@ -3,11 +3,36 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ClearIcon from '@mui/icons-material/Clear';
 import DeleteIcon from '@mui/icons-material/Delete';
+import DownloadIcon from '@mui/icons-material/Download';
+import EditIcon from '@mui/icons-material/Edit';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 import GridOnIcon from '@mui/icons-material/GridOn';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import SaveIcon from '@mui/icons-material/Save';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, FormHelperText, Stack, Tab } from '@mui/material';
+import {
+  Backdrop,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormHelperText,
+  IconButton,
+  Stack,
+  Tab,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TablePagination,
+  TableRow,
+  Tooltip
+} from '@mui/material';
 import Checkbox from '@mui/material/Checkbox';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
@@ -20,14 +45,15 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
-import { useEffect, useState } from 'react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { useEffect, useRef, useState } from 'react';
 import Draggable from 'react-draggable';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
 import ConfirmationModal from 'utils/confirmationPopup';
 import { showToast } from 'utils/toast-component';
-import CommonTable from 'views/basicMaster/CommonTable';
 
 function PaperComponent(props) {
   return (
@@ -41,6 +67,21 @@ function PaperComponent(props) {
 const toNum = (v) => {
   const n = parseFloat(v);
   return Number.isFinite(n) ? n : 0;
+};
+
+// Always store / send dates as YYYY-MM-DD strings (or null)
+const toDateStr = (d) => {
+  if (!d) return null;
+  const parsed = dayjs(d);
+  return parsed.isValid() ? parsed.format('YYYY-MM-DD') : null;
+};
+
+// getPaymentById returns paymentVO as an array, the update/approve APIs return an object
+// (the approve API may also use the key taxInvoiceVO). Handle every shape in one place.
+const extractVo = (result) => {
+  const map = result?.paramObjectsMap || {};
+  const raw = map.paymentVO ?? map.taxInvoiceVO;
+  return Array.isArray(raw) ? raw[0] : raw;
 };
 
 const initialFormData = () => ({
@@ -86,9 +127,9 @@ const mapVoToForm = (vo) => ({
   gstIn: vo.gstIn || '',
   bankCashAcc: vo.bankCashAcc || '',
   bankCharges: vo.bankCharges || '',
-  paymentAmt: vo.paymentAmt || '',
+  paymentAmt: vo.paymentAmt ?? '',
   tdsAcc: vo.tdsAcc || '',
-  tdsAmt: vo.tdsAmt || '',
+  tdsAmt: vo.tdsAmt ?? '',
   bankChargeAcc: vo.bankChargeAcc || '',
   payTo: vo.payTo || '',
   currency: vo.currency || '',
@@ -103,42 +144,315 @@ const mapVoToForm = (vo) => ({
   approveStatus: vo.approveStatus || ''
 });
 
+// Backend detail row -> screen row.
+//   backend invNo / invDate  = Supplier Bill No / Supplier Bill Date  -> row.vid / row.vdate
+//   backend refNo / refDate  = #invoice / Date                        -> row.refNo / row.refDate
+// The backend does not return totalAmt, so it is calculated (amount + gst) when missing.
 const mapVoToRows = (vo) =>
-  (vo.paymentInvDtlsVO || []).map((cl) => ({
-    id: cl.id || Date.now() + Math.random(),
-    invNo: cl.invNo || '',
-    invDate: cl.invDate ? dayjs(cl.invDate) : null,
-    refNo: cl.refNo || '',
-    refDate: cl.refDate ? dayjs(cl.refDate) : null,
-    vid: cl.vid || '',
-    vdate: cl.vdate || '',
-    currency: cl.currency || '',
-    exRate: cl.exRate ?? '',
-    chargeAmt: cl.chargeAmt ?? '',
-    gstAmount: cl.gstAmount ?? '',
-    totalAmt: cl.totalAmt ?? '', // NEW
-    amount: cl.amount ?? '',
-    outstanding: cl.outstanding ?? cl.outStanding ?? '',
-    settled: cl.settled ?? ''
-  }));
+  (vo.paymentInvDtlsVO || vo.paymentInvDtlsDTO || []).map((cl) => {
+    const calcTotal = toNum(cl.amount) + toNum(cl.gstAmount);
+    return {
+      id: cl.id || Date.now() + Math.random(),
+      vid: cl.invNo ?? cl.supplierRefNo ?? cl.vid ?? '',
+      vdate: toDateStr(cl.invDate ?? cl.supplierRefDate ?? cl.vdate),
+      refNo: cl.refNo || '',
+      refDate: toDateStr(cl.refDate),
+      currency: cl.currency || '',
+      exRate: cl.exRate ?? '',
+      amount: cl.amount ?? '',
+      gstAmount: cl.gstAmount ?? '',
+      totalAmt: toNum(cl.totalAmt) || calcTotal,
+      chargeAmt: cl.chargeAmt ?? '',
+      outstanding: cl.outstanding ?? cl.outStanding ?? '',
+      settled: cl.settled ?? ''
+    };
+  });
 
 // The fill-grid API mixes casing (refno / refNo, refdate / refDate). Normalize once.
-const normalizeFillGridRow = (r) => ({
-  ...r,
-  key: r.arapDetailsId ?? `${r.refno || r.refNo}-${r.refdate || r.refDate}`,
-  refNo: r.refno ?? r.refNo ?? '',
-  refDate: r.refdate ?? r.refDate ?? '',
-  vid: r.vid ?? '',
-  vdate: r.vdate ?? '',
-  billAmount: r.billamount ?? r.billAmount ?? '',
-  gstAmount: r.gstamount ?? r.gstAmount ?? '',
-  totalAmt: r.amount ?? r.totalAmt ?? '', // NEW
-  chargeAmt: r.chargeAmt ?? r.chargeamt ?? '',
-  currency: r.acccurrency ?? r.currency ?? '',
-  exRate: r.exrate ?? r.exRate ?? ''
-});
+const normalizeFillGridRow = (r) => {
+  const billAmount = r.billamount ?? r.billAmount ?? '';
+  const gstAmount = r.gstamount ?? r.gstAmount ?? '';
+  const apiTotal = toNum(r.amount ?? r.totalAmt);
+  return {
+    ...r,
+    key: r.arapDetailsId ?? `${r.refno || r.refNo}-${r.refdate || r.refDate}`,
+    refNo: r.refno ?? r.refNo ?? '',
+    refDate: r.refdate ?? r.refDate ?? '',
+    vid: r.vid ?? r.supplierRefNo ?? r.supplierrefno ?? '',
+    vdate: r.vdate ?? r.supplierRefDate ?? r.supplierrefdate ?? '',
+    billAmount,
+    gstAmount,
+    totalAmt: apiTotal || toNum(billAmount) + toNum(gstAmount),
+    chargeAmt: r.chargeAmt ?? r.chargeamt ?? '',
+    currency: r.acccurrency ?? r.currency ?? '',
+    exRate: r.exrate ?? r.exRate ?? ''
+  };
+};
 
 const cellStyle = { whiteSpace: 'nowrap' };
+
+// Chip colours for the approval state (same palette in the form header and the list view)
+const APPROVE_CHIP_STYLES = {
+  APPROVED: { backgroundColor: '#e8f5e9', color: '#2e7d32', border: '1px solid #a5d6a7' },
+  REJECTED: { backgroundColor: '#ffebee', color: '#c62828', border: '1px solid #ef9a9a' },
+  PENDING: { backgroundColor: '#fff3e0', color: '#e65100', border: '1px solid #ffcc80' }
+};
+
+// Value shown in the list view. The list API returns approveStatus as null / "" until a payment is
+// approved or rejected, so an empty value means PENDING.
+const getListValue = (row, key) => {
+  if (key === 'approveStatus') {
+    if (row.approveStatus === 'Approved') return 'APPROVED';
+    if (row.approveStatus === 'Rejected') return 'REJECTED';
+    return 'PENDING';
+  }
+  return row[key] ?? '';
+};
+
+// ---------- PDF ----------
+// Change these two lines if the company name / address ever changes.
+const COMPANY = {
+  name: 'AIPACKS TRAX PVT LTD',
+  address: 'No.627, Hoysala Nagar, T C Palya Main Road, Ramamurthy Nagar, Bangalore North, Bangalore- 560016.'
+};
+
+// Theme colours (match the screen's #673AB7 purple)
+const PDF_BRAND = [103, 58, 183];
+const PDF_BRAND_DARK = [81, 45, 168];
+const PDF_BRAND_LIGHT = [237, 231, 246];
+const PDF_BRAND_SOFT = [247, 244, 252];
+const PDF_TEXT = [33, 33, 33];
+const PDF_MUTED = [110, 110, 120];
+const PDF_LINE = [208, 200, 228];
+const PDF_YELLOW = [255, 244, 153];
+const PDF_RED = [198, 40, 40];
+const PDF_WHITE = [255, 255, 255];
+
+const fmtMoney = (v) => toNum(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtDate = (d) => {
+  if (!d) return '';
+  const parsed = dayjs(d);
+  return parsed.isValid() ? parsed.format('DD/MM/YYYY') : '';
+};
+
+// Builds the payment advice PDF from a payment VO returned by getPaymentById
+const buildPaymentPdf = (vo) => {
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const m = 14;
+  const contentW = pageW - m * 2; // 182mm
+  const rows = mapVoToRows(vo);
+
+  // --- header band ---
+  doc.setFillColor(...PDF_BRAND);
+  doc.rect(0, 0, pageW, 32, 'F');
+  doc.setFillColor(...PDF_BRAND_DARK);
+  doc.rect(0, 32, pageW, 1.6, 'F');
+  doc.setTextColor(...PDF_WHITE);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(17);
+  doc.text(COMPANY.name, pageW / 2, 13.5, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.3);
+  doc.text(doc.splitTextToSize(COMPANY.address, contentW), pageW / 2, 20.5, { align: 'center' });
+
+  // --- title ---
+  doc.setTextColor(...PDF_BRAND);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.text('PAYMENT ADVICE', pageW / 2, 43, { align: 'center' });
+  doc.setDrawColor(...PDF_BRAND);
+  doc.setLineWidth(0.5);
+  doc.line(pageW / 2 - 18, 45, pageW / 2 + 18, 45);
+
+  // --- party card (left) + date / mode (right) ---
+  const boxY = 50;
+  const boxH = 24;
+  doc.setFillColor(...PDF_BRAND_SOFT);
+  doc.setDrawColor(...PDF_LINE);
+  doc.setLineWidth(0.3);
+  doc.roundedRect(m, boxY, contentW, boxH, 2, 2, 'FD');
+  // left accent bar
+  doc.setFillColor(...PDF_BRAND);
+  doc.roundedRect(m, boxY, 2.2, boxH, 1, 1, 'F');
+
+  doc.setTextColor(...PDF_TEXT);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.text(String(vo.partyName || ''), m + 7, boxY + 9);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9.5);
+  doc.setTextColor(...PDF_MUTED);
+  doc.text(String(vo.gstState || ''), m + 7, boxY + 16.5);
+
+  const labelX = pageW / 2 + 14;
+  const valueBoxW = 40;
+  const valueBoxX = pageW - m - valueBoxW - 3;
+  const meta = [
+    ['Date', fmtDate(vo.docDate)],
+    ['Mode', vo.paymentType || '']
+  ];
+  meta.forEach(([label, val], i) => {
+    const y = boxY + 9 + i * 8;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.5);
+    doc.setTextColor(...PDF_BRAND_DARK);
+    doc.text(label, labelX, y);
+    doc.setFillColor(...PDF_WHITE);
+    doc.setDrawColor(...PDF_LINE);
+    doc.roundedRect(valueBoxX, y - 5, valueBoxW, 7, 1.2, 1.2, 'FD');
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...PDF_TEXT);
+    doc.text(String(val), valueBoxX + valueBoxW / 2, y, { align: 'center' });
+  });
+
+  // --- greeting ---
+  const greetY = boxY + boxH + 9;
+  doc.setTextColor(...PDF_TEXT);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.text('Dear Sir/Madam,', m, greetY);
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(9.5);
+  doc.text('Please find below the payment details', m, greetY + 5.5);
+
+  // --- bill table: Bill Reference | Bill Date | Amount | GST | TOT AMT ---
+  const sumTotal = rows.reduce((s, r) => s + toNum(r.totalAmt), 0);
+
+  autoTable(doc, {
+    startY: greetY + 10,
+    margin: { left: m, right: m },
+    theme: 'grid',
+    head: [['Bill Reference', 'Bill Date', 'Amount', 'GST', 'TOT AMT']],
+    body: rows.map((r) => [
+      r.vid || r.refNo || '',
+      fmtDate(r.vdate || r.refDate),
+      fmtMoney(r.amount),
+      fmtMoney(r.gstAmount),
+      fmtMoney(r.totalAmt)
+    ]),
+    foot: [
+      [
+        { content: '', colSpan: 3, styles: { fillColor: PDF_WHITE } },
+        { content: 'Total', styles: { halign: 'right', fillColor: PDF_YELLOW } },
+        { content: fmtMoney(sumTotal), styles: { halign: 'right', fillColor: PDF_YELLOW } }
+      ]
+    ],
+    showFoot: 'lastPage',
+    styles: { fontSize: 9, cellPadding: 2.8, lineColor: PDF_LINE, lineWidth: 0.2, textColor: PDF_TEXT, valign: 'middle' },
+    headStyles: { fillColor: PDF_BRAND, textColor: PDF_WHITE, fontStyle: 'bold', halign: 'center' },
+    footStyles: { textColor: [20, 20, 20], fontStyle: 'bold' },
+    alternateRowStyles: { fillColor: PDF_BRAND_SOFT },
+    columnStyles: {
+      0: { cellWidth: 62 },
+      1: { cellWidth: 30, halign: 'center' },
+      2: { cellWidth: 30, halign: 'right' },
+      3: { cellWidth: 30, halign: 'right' },
+      4: { cellWidth: 30, halign: 'right' }
+    },
+    didParseCell: (d) => {
+      // TOT AMT column is shown in red
+      if (d.section === 'body' && d.column.index === 4) {
+        d.cell.styles.textColor = PDF_RED;
+        d.cell.styles.fontStyle = 'bold';
+      }
+    }
+  });
+
+  // --- payment details table ---
+  const transferred = [vo.payTo || '', vo.chequeNo ? `UTR No: ${vo.chequeNo}` : ''].filter(Boolean).join('\n') || '-';
+  const balance = toNum(vo.onAccount);
+  const titleHead = { fillColor: PDF_BRAND_DARK, textColor: PDF_WHITE, fontStyle: 'bold', halign: 'center' };
+  const subHead = { fillColor: PDF_BRAND_LIGHT, textColor: PDF_BRAND_DARK, fontStyle: 'bold', halign: 'center' };
+
+  autoTable(doc, {
+    startY: doc.lastAutoTable.finalY + 10,
+    margin: { left: m, right: m },
+    theme: 'grid',
+    head: [
+      [{ content: 'Payment Details', colSpan: 5, styles: titleHead }],
+      ['Payment Mode', 'Transferred To', 'Date', 'Issued From', 'Amount'].map((t) => ({ content: t, styles: subHead }))
+    ],
+    body: [
+      [
+        vo.paymentType || '',
+        transferred,
+        fmtDate(vo.chequeDate || vo.docDate),
+        vo.bankCashAcc || '',
+        { content: fmtMoney(vo.paymentAmt), styles: { fontStyle: 'bold' } }
+      ]
+    ],
+    foot: [
+      [
+        { content: 'BALANCE', colSpan: 4, styles: { halign: 'right' } },
+        { content: balance > 0 ? fmtMoney(balance) : '-', styles: { halign: 'right' } }
+      ]
+    ],
+    showFoot: 'lastPage',
+    styles: { fontSize: 9, cellPadding: 3.4, lineColor: PDF_LINE, lineWidth: 0.2, textColor: PDF_TEXT, valign: 'middle', halign: 'center' },
+    footStyles: { fillColor: PDF_BRAND_SOFT, textColor: PDF_BRAND_DARK, fontStyle: 'bold' },
+    columnStyles: {
+      0: { cellWidth: 30 },
+      1: { cellWidth: 50 },
+      2: { cellWidth: 28 },
+      3: { cellWidth: 44 },
+      4: { cellWidth: 30 }
+    }
+  });
+
+  // --- remarks / approval ---
+  let y = doc.lastAutoTable.finalY + 9;
+  doc.setFontSize(9);
+  if (vo.remarks) {
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(...PDF_BRAND_DARK);
+    doc.text('Remarks:', m, y);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(...PDF_TEXT);
+    const lines = doc.splitTextToSize(String(vo.remarks), contentW - 20);
+    doc.text(lines, m + 18, y);
+    y += lines.length * 4.5 + 3;
+  }
+  if (vo.approveStatus === 'Approved' && vo.approveBy) {
+    doc.setFont('helvetica', 'italic');
+    doc.setTextColor(46, 125, 50);
+    doc.text(`Approved by ${vo.approveBy}${vo.approveOn ? ` on ${vo.approveOn}` : ''}`, m, y);
+    y += 6;
+  }
+
+  // --- signature ---
+  if (y > pageH - 45) {
+    doc.addPage();
+    y = 30;
+  }
+  const sigY = y + 18;
+  doc.setDrawColor(...PDF_BRAND);
+  doc.setLineWidth(0.4);
+  doc.line(pageW - m - 55, sigY, pageW - m, sigY);
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(...PDF_TEXT);
+  doc.text('Authorised Signatory', pageW - m - 27.5, sigY + 5, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(...PDF_MUTED);
+  doc.text(`For ${COMPANY.name}`, pageW - m - 27.5, sigY + 10, { align: 'center' });
+
+  // --- page footer ---
+  const pages = doc.getNumberOfPages();
+  for (let i = 1; i <= pages; i += 1) {
+    doc.setPage(i);
+    doc.setFillColor(...PDF_BRAND);
+    doc.rect(0, pageH - 12, pageW, 12, 'F');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(...PDF_WHITE);
+    doc.text('This is a system generated payment advice.', m, pageH - 5, { align: 'left' });
+    doc.text(`Page ${i} of ${pages}`, pageW - m, pageH - 5, { align: 'right' });
+  }
+
+  return doc;
+};
 
 const Payment = ({ selectedRow }) => {
   const [value, setValue] = useState('1');
@@ -167,6 +481,18 @@ const Payment = ({ selectedRow }) => {
   const [withdrawalsTableData, setWithdrawalsTableData] = useState([]);
   // errors for the "settled" input, keyed by row id
   const [rowErrors, setRowErrors] = useState({});
+
+  // PDF preview
+  const [pdfOpen, setPdfOpen] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState('');
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const pdfDocRef = useRef(null);
+  const pdfNameRef = useRef('Payment.pdf');
+
+  // List view search / paging
+  const [listSearch, setListSearch] = useState('');
+  const [listPage, setListPage] = useState(0);
+  const [listRowsPerPage, setListRowsPerPage] = useState(10);
 
   const handleChangeTab = (event, newValue) => setValue(newValue);
 
@@ -207,6 +533,13 @@ const Payment = ({ selectedRow }) => {
     }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [withdrawalsTableData, formData.paymentAmt]);
+
+  // Free the preview blob URL whenever it changes or the screen unmounts
+  useEffect(() => {
+    return () => {
+      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+    };
+  }, [pdfUrl]);
 
   // ---------- API calls ----------
   const getAllPayment = async () => {
@@ -301,8 +634,8 @@ const Payment = ({ selectedRow }) => {
     setShowForm(true);
     try {
       const result = await apiCalls('get', `/payable/getPaymentById?id=${row.original.id}`);
-      if (result) {
-        const vo = result.paramObjectsMap.paymentVO[0];
+      const vo = extractVo(result);
+      if (vo) {
         setListViewData(vo);
         setEditId(row.original.id);
         getGSTState(vo.partyName, true);
@@ -313,6 +646,45 @@ const Payment = ({ selectedRow }) => {
     } catch (error) {
       console.error('Error fetching data:', error);
     }
+  };
+
+  // ---------- PDF handlers ----------
+  // Called from the list view's PDF action. Loads the payment, builds the PDF and opens the preview.
+  const handlePdfView = async (row) => {
+    const id = row?.original?.id ?? row?.id;
+    if (!id) return;
+    setPdfLoading(true);
+    try {
+      const result = await apiCalls('get', `/payable/getPaymentById?id=${id}`);
+      const vo = extractVo(result);
+      if (!vo) {
+        showToast('error', 'Unable to load payment details');
+        return;
+      }
+      const doc = buildPaymentPdf(vo);
+      pdfDocRef.current = doc;
+      pdfNameRef.current = `Payment_${String(vo.docId || id).replace(/[\\/:*?"<>|]/g, '-')}.pdf`;
+      setPdfUrl(URL.createObjectURL(doc.output('blob')));
+      setPdfOpen(true);
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      showToast('error', 'Unable to generate PDF');
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
+  const handlePdfClose = () => {
+    setPdfOpen(false);
+    setPdfUrl('');
+    pdfDocRef.current = null;
+  };
+
+  const handlePdfDownload = () => {
+    if (pdfDocRef.current) {
+      pdfDocRef.current.save(pdfNameRef.current);
+    }
+    handlePdfClose();
   };
 
   // ---------- handlers ----------
@@ -423,20 +795,20 @@ const Payment = ({ selectedRow }) => {
     const selectedData = selectedRows.map((index) => fillGridData[index]);
 
     const newData = selectedData
-      .filter((d) => !withdrawalsTableData.some((item) => item.invNo === d.refNo))
+      .filter((d) => !withdrawalsTableData.some((item) => item.refNo === d.refNo))
       .map((d) => ({
         id: Date.now() + Math.random(),
-        invNo: d.refNo,
-        invDate: d.refDate ? dayjs(d.refDate).format('YYYY-MM-DD') : null,
-        refNo: d.refNo,
-        refDate: d.refDate ? dayjs(d.refDate).format('YYYY-MM-DD') : null,
+        // Supplier Bill No / Date  (saved as invNo / invDate)
         vid: d.vid || '',
-        vdate: d.vdate || '',
+        vdate: toDateStr(d.vdate),
+        // #invoice / Date  (saved as refNo / refDate)
+        refNo: d.refNo,
+        refDate: toDateStr(d.refDate),
         currency: d.currency || 'INR',
         exRate: d.exRate,
         amount: d.billAmount,
         gstAmount: toNum(d.gstAmount),
-        totalAmt: toNum(d.totalAmt), // NEW
+        totalAmt: toNum(d.totalAmt),
         chargeAmt: d.chargeAmt,
         outstanding: toNum(d.chargeAmt).toFixed(2),
         settled: ''
@@ -480,17 +852,15 @@ const Payment = ({ selectedRow }) => {
 
     const detailsVo = withdrawalsTableData.map((row) => ({
       ...(editId && { id: row.id }),
-      invNo: row.invNo,
-      invDate: row.invDate ? dayjs(row.invDate).format('YYYY-MM-DD') : null,
-      refNo: row.refNo,
-      refDate: row.refDate ? dayjs(row.refDate).format('YYYY-MM-DD') : null,
-      vid: row.vid,
-      vdate: row.vdate ? dayjs(row.vdate).format('YYYY-MM-DD') : null,
+      invNo: row.vid || '', // Supplier Bill No
+      invDate: toDateStr(row.vdate), // Supplier Bill Date
+      refNo: row.refNo, // #invoice
+      refDate: toDateStr(row.refDate), // invoice date
       currency: row.currency,
       exRate: toNum(row.exRate),
       amount: toNum(row.amount),
       gstAmount: toNum(row.gstAmount),
-      totalAmt: toNum(row.totalAmt), // NEW
+      totalAmt: toNum(row.totalAmt) || toNum(row.amount) + toNum(row.gstAmount),
       chargeAmt: toNum(row.chargeAmt),
       outStanding: toNum(row.outstanding),
       settled: toNum(row.settled)
@@ -501,7 +871,7 @@ const Payment = ({ selectedRow }) => {
       type: 'PARTY',
       paymentType: formData.paymentType,
       docId: formData.docId,
-      docDate: formData.docDate ? dayjs(formData.docDate).format('YYYY-MM-DD') : null,
+      docDate: toDateStr(formData.docDate),
       partyCode: formData.partyCode,
       partyName: formData.partyName,
       ledgerName: formData.ledgerName,
@@ -512,7 +882,7 @@ const Payment = ({ selectedRow }) => {
       payTo: formData.payTo,
       currency: formData.currency,
       chequeNo: formData.chequeNo,
-      chequeDate: formData.chequeDate ? dayjs(formData.chequeDate).format('YYYY-MM-DD') : null,
+      chequeDate: toDateStr(formData.chequeDate),
       remarks: formData.remarks,
       paymentInvDtlsDTO: detailsVo,
       createdBy: loginUserName,
@@ -561,15 +931,16 @@ const Payment = ({ selectedRow }) => {
         `/payable/approvePayment?action=${approveStatus}&actionBy=${loginUserName}&docId=${formData.docId}&id=${editId}&orgId=${orgId}`
       );
       if (result.status === true) {
-        // NOTE: confirm the backend really returns the payment under "taxInvoiceVO" for this endpoint
-        const vo = result.paramObjectsMap.taxInvoiceVO;
-        showToast(
-          vo.approveStatus === 'Approved' ? 'success' : 'error',
-          vo.approveStatus === 'Approved' ? ' Payment Approved Successfully' : 'Payment Rejected Successfully'
-        );
-        setListViewData(vo);
-        setFormData(mapVoToForm(vo));
-        setWithdrawalsTableData(mapVoToRows(vo));
+        const vo = extractVo(result);
+        if (vo) {
+          showToast(
+            vo.approveStatus === 'Approved' ? 'success' : 'error',
+            vo.approveStatus === 'Approved' ? ' Payment Approved Successfully' : 'Payment Rejected Successfully'
+          );
+          setListViewData(vo);
+          setFormData(mapVoToForm(vo));
+          setWithdrawalsTableData(mapVoToRows(vo));
+        }
         handleCloseApprove();
         getAllPayment();
       } else {
@@ -596,6 +967,13 @@ const Payment = ({ selectedRow }) => {
 
   const isSubmitted = formData.status === 'SUBMIT';
 
+  // List view rows after search + paging
+  const searchText = listSearch.trim().toLowerCase();
+  const filteredRows = data.filter(
+    (r) => !searchText || columns.some((c) => String(getListValue(r, c.accessorKey)).toLowerCase().includes(searchText))
+  );
+  const pagedRows = filteredRows.slice(listPage * listRowsPerPage, listPage * listRowsPerPage + listRowsPerPage);
+
   // ---------- render ----------
   return (
     <div>
@@ -607,15 +985,27 @@ const Payment = ({ selectedRow }) => {
               {editId && showForm && (listViewData.status === 'SUBMIT' || isSubmitted) && (
                 <>
                   {formData.approveStatus === 'Approved' && (
-                    <Stack direction="row" spacing={2}>
-                      <Chip label={`Approved By: ${formData.approveBy}`} variant="outlined" color="success" />
-                      <Chip label={`Approved On: ${formData.approveOn}`} variant="outlined" color="success" />
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Chip
+                        icon={<CheckCircleIcon style={{ color: '#2e7d32' }} />}
+                        label="APPROVED"
+                        size="small"
+                        sx={{ ...APPROVE_CHIP_STYLES.APPROVED, fontWeight: 700 }}
+                      />
+                      <Chip label={`By: ${formData.approveBy || '-'}`} size="small" variant="outlined" />
+                      <Chip label={`On: ${formData.approveOn || '-'}`} size="small" variant="outlined" />
                     </Stack>
                   )}
                   {formData.approveStatus === 'Rejected' && (
-                    <Stack direction="row" spacing={2}>
-                      <Chip label={`Rejected By: ${formData.approveBy}`} variant="outlined" color="error" />
-                      <Chip label={`Rejected On: ${formData.approveOn}`} variant="outlined" color="error" />
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <Chip
+                        icon={<CancelIcon style={{ color: '#c62828' }} />}
+                        label="REJECTED"
+                        size="small"
+                        sx={{ ...APPROVE_CHIP_STYLES.REJECTED, fontWeight: 700 }}
+                      />
+                      <Chip label={`By: ${formData.approveBy || '-'}`} size="small" variant="outlined" />
+                      <Chip label={`On: ${formData.approveOn || '-'}`} size="small" variant="outlined" />
                     </Stack>
                   )}
 
@@ -863,7 +1253,7 @@ const Payment = ({ selectedRow }) => {
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                       <DatePicker
                         label="UTR Date"
-                        value={formData.chequeDate ? dayjs(formData.chequeDate, 'YYYY-MM-DD') : null}
+                        value={formData.chequeDate ? dayjs(formData.chequeDate) : null}
                         onChange={(newValue) => setFormData({ ...formData, chequeDate: newValue })}
                         disabled={isSubmitted}
                         slotProps={{ textField: { size: 'small', clearable: true } }}
@@ -966,10 +1356,10 @@ const Payment = ({ selectedRow }) => {
                                     <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                       S.No
                                     </th>
-                                    <th className="px-2 py-2 text-white text-center">#Invoice</th>
+                                    <th className="px-2 py-2 text-white text-center">Supplier Bill No</th>
+                                    <th className="px-2 py-2 text-white text-center">Supplier Bill Date</th>
+                                    <th className="px-2 py-2 text-white text-center">#invoice</th>
                                     <th className="px-2 py-2 text-white text-center">Date</th>
-                                    <th className="px-2 py-2 text-white text-center">Doc Id</th>
-                                    <th className="px-2 py-2 text-white text-center">Doc Date</th>
                                     <th className="px-2 py-2 text-white text-center">Bill amt</th>
                                     <th className="px-2 py-2 text-white text-center">TAX</th>
                                     <th className="px-2 py-2 text-white text-center">Total Amt</th>
@@ -989,13 +1379,13 @@ const Payment = ({ selectedRow }) => {
                                             {row.vid}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                            {row.vdate ? dayjs(row.vdate).format('YYYY-MM-DD') : ''}
+                                            {row.vdate ? dayjs(row.vdate).format('DD-MM-YYYY') : ''}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={cellStyle}>
                                             {row.refNo}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                            {row.refDate ? dayjs(row.refDate).format('YYYY-MM-DD') : ''}
+                                            {row.refDate ? dayjs(row.refDate).format('DD-MM-YYYY') : ''}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={cellStyle}>
                                             {row.amount}
@@ -1215,11 +1605,19 @@ const Payment = ({ selectedRow }) => {
 
                 <Dialog
                   open={modalOpen}
-                  maxWidth={'md'}
-                  fullWidth={true}
+                  maxWidth={false}
+                  fullWidth
                   onClose={handleCloseModal}
                   PaperComponent={PaperComponent}
                   aria-labelledby="draggable-dialog-title"
+                  PaperProps={{
+                    sx: {
+                      width: { xs: '98vw', md: '95vw' },
+                      maxWidth: '1600px',
+                      minWidth: { xs: 'auto', md: '1200px' },
+                      maxHeight: '65vh'
+                    }
+                  }}
                 >
                   <DialogTitle textAlign="center" style={{ cursor: 'move' }} id="draggable-dialog-title">
                     <h6>Grid Details</h6>
@@ -1241,14 +1639,14 @@ const Payment = ({ selectedRow }) => {
                                 <th className="px-2 py-2 text-white text-center" style={{ width: '50px' }}>
                                   S.No
                                 </th>
+                                <th className="table-header">Supplier Bill No</th>
+                                <th className="table-header">Supplier Bill Date</th>
                                 <th className="table-header">#Invoice</th>
                                 <th className="table-header">Date</th>
-                                <th className="table-header">Doc Id</th>
-                                <th className="table-header">Doc Date</th>
                                 <th className="table-header">Bill amt</th>
                                 <th className="table-header">Tax</th>
                                 <th className="table-header">Total Amt</th>
-                                <th className="table-header">Net Receivable</th>
+                                <th className="table-header">Net Payable</th>
                               </tr>
                             </thead>
                             <tbody>
@@ -1308,10 +1706,89 @@ const Payment = ({ selectedRow }) => {
               </div>
             </>
           ) : (
-            <CommonTable data={data} columns={columns} blockEdit={true} toEdit={getPaymentById} />
+            <div className="mt-3">
+              <div className="d-flex justify-content-end mb-2">
+                <TextField
+                  size="small"
+                  label="Search"
+                  value={listSearch}
+                  onChange={(e) => {
+                    setListSearch(e.target.value);
+                    setListPage(0);
+                  }}
+                />
+              </div>
+              <TableContainer component={Paper} variant="outlined">
+                <Table size="small">
+                  <TableHead>
+                    <TableRow sx={{ backgroundColor: '#673AB7' }}>
+                      <TableCell align="center" sx={{ color: '#fff', fontWeight: 600 }}>
+                        Action
+                      </TableCell>
+                      {columns.map((col) => (
+                        <TableCell key={col.accessorKey} sx={{ color: '#fff', fontWeight: 600, whiteSpace: 'nowrap' }}>
+                          {col.header}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {pagedRows.map((row) => (
+                      <TableRow hover key={row.id}>
+                        <TableCell align="center" sx={{ whiteSpace: 'nowrap' }}>
+                          <Tooltip title="Edit">
+                            <IconButton size="small" color="secondary" onClick={() => getPaymentById({ original: row })}>
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="View PDF">
+                            <IconButton size="small" color="secondary" onClick={() => handlePdfView({ original: row })}>
+                              <PictureAsPdfIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </TableCell>
+                        {columns.map((col) => (
+                          <TableCell key={col.accessorKey} sx={{ whiteSpace: 'nowrap' }}>
+                            {col.accessorKey === 'approveStatus' ? (
+                              <Chip
+                                size="small"
+                                label={getListValue(row, col.accessorKey)}
+                                sx={{ ...APPROVE_CHIP_STYLES[getListValue(row, col.accessorKey)], fontWeight: 700 }}
+                              />
+                            ) : (
+                              getListValue(row, col.accessorKey)
+                            )}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))}
+                    {filteredRows.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={columns.length + 1} align="center">
+                          No records found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+              <TablePagination
+                component="div"
+                count={filteredRows.length}
+                page={listPage}
+                onPageChange={(e, newPage) => setListPage(newPage)}
+                rowsPerPage={listRowsPerPage}
+                onRowsPerPageChange={(e) => {
+                  setListRowsPerPage(parseInt(e.target.value, 10));
+                  setListPage(0);
+                }}
+                rowsPerPageOptions={[10, 25, 50]}
+              />
+            </div>
           )}
         </div>
       </div>
+
       <ConfirmationModal
         open={modalApprove}
         title="Payment Approval"
@@ -1319,6 +1796,26 @@ const Payment = ({ selectedRow }) => {
         onConfirm={handleConfirmAction}
         onCancel={handleCloseApprove}
       />
+
+      {/* PDF preview: view first, then download or cancel */}
+      <Dialog open={pdfOpen} onClose={handlePdfClose} maxWidth="md" fullWidth>
+        <DialogTitle sx={{ color: '#673AB7', fontWeight: 600 }}>Payment Advice Preview</DialogTitle>
+        <DialogContent dividers sx={{ p: 0, backgroundColor: '#f5f5f5' }}>
+          {pdfUrl && <iframe title="Payment PDF preview" src={pdfUrl} style={{ width: '100%', height: '70vh', border: 0 }} />}
+        </DialogContent>
+        <DialogActions sx={{ p: '1rem 1.25rem' }}>
+          <Button onClick={handlePdfClose} sx={{ color: '#673AB7' }}>
+            Cancel
+          </Button>
+          <Button variant="contained" startIcon={<DownloadIcon />} onClick={handlePdfDownload} sx={{ backgroundColor: '#673AB7' }}>
+            Download
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Backdrop open={pdfLoading} sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.modal + 1 }}>
+        <CircularProgress color="inherit" />
+      </Backdrop>
     </div>
   );
 };
