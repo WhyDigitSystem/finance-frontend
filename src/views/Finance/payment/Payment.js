@@ -45,15 +45,20 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import apiCalls from 'apicall';
 import dayjs from 'dayjs';
+import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Draggable from 'react-draggable';
 import 'react-tabs/style/react-tabs.css';
 import { ToastContainer } from 'react-toastify';
 import ActionButton from 'utils/ActionButton';
 import ConfirmationModal from 'utils/confirmationPopup';
 import { showToast } from 'utils/toast-component';
+// same images / same paths as MIMpdf (change the path if this file is in a different folder)
+import companySeal from '../../../assets/images/users/aipta.png';
+import accountantSign from '../../../assets/images/icons/Sign.png';
+
+const dummyImageURL = 'https://t3.ftcdn.net/jpg/04/62/93/66/240_F_462936689_BpEEcxfgMuYPfTaIAOC1tCDurmsno7Sp.jpg';
 
 function PaperComponent(props) {
   return (
@@ -193,9 +198,21 @@ const cellStyle = { whiteSpace: 'nowrap' };
 
 // Chip colours for the approval state (same palette in the form header and the list view)
 const APPROVE_CHIP_STYLES = {
-  APPROVED: { backgroundColor: '#e8f5e9', color: '#2e7d32', border: '1px solid #a5d6a7' },
-  REJECTED: { backgroundColor: '#ffebee', color: '#c62828', border: '1px solid #ef9a9a' },
-  PENDING: { backgroundColor: '#fff3e0', color: '#e65100', border: '1px solid #ffcc80' }
+  APPROVED: {
+    backgroundColor: '#e8f5e9',
+    color: '#2e7d32',
+    border: '1px solid #a5d6a7'
+  },
+  REJECTED: {
+    backgroundColor: '#ffebee',
+    color: '#c62828',
+    border: '1px solid #ef9a9a'
+  },
+  PENDING: {
+    backgroundColor: '#e3f2fd',
+    color: '#1565c0',
+    border: '1px solid #90caf9'
+  }
 };
 
 // Value shown in the list view. The list API returns approveStatus as null / "" until a payment is
@@ -209,249 +226,510 @@ const getListValue = (row, key) => {
   return row[key] ?? '';
 };
 
-// ---------- PDF ----------
-// Change these two lines if the company name / address ever changes.
-const COMPANY = {
-  name: 'AIPACKS TRAX PVT LTD',
-  address: 'No.627, Hoysala Nagar, T C Palya Main Road, Ramamurthy Nagar, Bangalore North, Bangalore- 560016.'
+// Indian currency format: 1,00,000.00
+const formatIndianCurrency = (value) => {
+  if (value === '' || value === null || value === undefined) return '';
+
+  const num = Number(value);
+
+  if (!Number.isFinite(num)) return value;
+
+  return num.toLocaleString('en-IN', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 };
 
-// Theme colours (match the screen's #673AB7 purple)
-const PDF_BRAND = [103, 58, 183];
-const PDF_BRAND_DARK = [81, 45, 168];
-const PDF_BRAND_LIGHT = [237, 231, 246];
-const PDF_BRAND_SOFT = [247, 244, 252];
-const PDF_TEXT = [33, 33, 33];
-const PDF_MUTED = [110, 110, 120];
-const PDF_LINE = [208, 200, 228];
-const PDF_YELLOW = [255, 244, 153];
-const PDF_RED = [198, 40, 40];
-const PDF_WHITE = [255, 255, 255];
-
-const fmtMoney = (v) => toNum(v).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmtMoney = (value) => formatIndianCurrency(value || 0);
 const fmtDate = (d) => {
   if (!d) return '';
   const parsed = dayjs(d);
-  return parsed.isValid() ? parsed.format('DD/MM/YYYY') : '';
+  return parsed.isValid() ? parsed.format('DD-MM-YYYY') : '';
 };
 
-// Builds the payment advice PDF from a payment VO returned by getPaymentById
-const buildPaymentPdf = (vo) => {
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const pageW = doc.internal.pageSize.getWidth();
-  const pageH = doc.internal.pageSize.getHeight();
-  const m = 14;
-  const contentW = pageW - m * 2; // 182mm
+// Amount in words (Indian numbering) e.g. 1,25,000.50 -> "Rupees One Lakh Twenty Five Thousand and Fifty Paise Only"
+const ONES = [
+  '',
+  'One',
+  'Two',
+  'Three',
+  'Four',
+  'Five',
+  'Six',
+  'Seven',
+  'Eight',
+  'Nine',
+  'Ten',
+  'Eleven',
+  'Twelve',
+  'Thirteen',
+  'Fourteen',
+  'Fifteen',
+  'Sixteen',
+  'Seventeen',
+  'Eighteen',
+  'Nineteen'
+];
+const TENS = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+const twoDigitWords = (n) => (n < 20 ? ONES[n] : `${TENS[Math.floor(n / 10)]}${n % 10 ? ` ${ONES[n % 10]}` : ''}`);
+
+const threeDigitWords = (n) => {
+  const h = Math.floor(n / 100);
+  const rest = n % 100;
+  return [h ? `${ONES[h]} Hundred` : '', rest ? twoDigitWords(rest) : ''].filter(Boolean).join(' ');
+};
+
+const integerToWords = (num) => {
+  if (num === 0) return 'Zero';
+  const crore = Math.floor(num / 10000000);
+  const lakh = Math.floor((num % 10000000) / 100000);
+  const thousand = Math.floor((num % 100000) / 1000);
+  const rest = num % 1000;
+  return [
+    crore ? `${twoDigitWords(crore % 100) || ''}${crore >= 100 ? '' : ''} Crore`.trim() : '',
+    lakh ? `${twoDigitWords(lakh)} Lakh` : '',
+    thousand ? `${twoDigitWords(thousand)} Thousand` : '',
+    rest ? threeDigitWords(rest) : ''
+  ]
+    .filter(Boolean)
+    .join(' ');
+};
+
+const amountToWords = (value, currency) => {
+  const n = Math.abs(toNum(value));
+  if (!n) return '';
+  const whole = Math.floor(n);
+  const paise = Math.round((n - whole) * 100);
+  const isInr = !currency || currency === 'INR';
+  const unit = isInr ? 'Rupees' : currency;
+  const sub = isInr ? 'Paise' : 'Cents';
+  return `${unit} ${integerToWords(whole)}${paise ? ` and ${twoDigitWords(paise)} ${sub}` : ''} Only`;
+};
+
+// ---------- PDF content (same design as MIMpdf) ----------
+const pdfStyles = {
+  container: {
+    textAlign: 'center',
+    margin: '0px 0',
+    position: 'relative',
+    fontFamily: 'Arial, sans-serif'
+  },
+  beforeAfter: {
+    content: '""',
+    position: 'absolute',
+    top: '40%',
+    width: '42%',
+    height: '1px',
+    backgroundColor: 'rgba'
+  },
+  before: { left: '0' },
+  after: { right: '0' },
+  text: {
+    display: 'inline-block',
+    padding: '0 5px',
+    fontSize: '10px',
+    fontWeight: 'bold',
+    color: '#000000',
+    borderRadius: '1px'
+  }
+};
+
+const pdfTableSx = {
+  '& td, & th': {
+    padding: '0.5px',
+    fontSize: '10px',
+    borderRight: '1px groove #000',
+    borderBottom: '1px groove #000',
+    '&:last-child': { borderRight: 'none' }
+  }
+};
+
+const pdfHeadRowSx = {
+  borderBottom: '1px groove #000',
+  '& th': {
+    background: ' rgba(189, 186, 186, 0.74)',
+    color: 'black',
+    fontWeight: '600',
+    borderRight: '1px groove rgba(0, 0, 0, 0.5)',
+    '&:last-child': { borderRight: 'none' }
+  }
+};
+
+const center = { textAlign: 'center' };
+const right = { textAlign: 'right', paddingRight: '4px' };
+
+const PaymentPdfContent = ({ vo, companyDetails, meta }) => {
   const rows = mapVoToRows(vo);
-
-  // --- header band ---
-  doc.setFillColor(...PDF_BRAND);
-  doc.rect(0, 0, pageW, 32, 'F');
-  doc.setFillColor(...PDF_BRAND_DARK);
-  doc.rect(0, 32, pageW, 1.6, 'F');
-  doc.setTextColor(...PDF_WHITE);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(17);
-  doc.text(COMPANY.name, pageW / 2, 13.5, { align: 'center' });
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(8.3);
-  doc.text(doc.splitTextToSize(COMPANY.address, contentW), pageW / 2, 20.5, { align: 'center' });
-
-  // --- title ---
-  doc.setTextColor(...PDF_BRAND);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(12);
-  doc.text('PAYMENT ADVICE', pageW / 2, 43, { align: 'center' });
-  doc.setDrawColor(...PDF_BRAND);
-  doc.setLineWidth(0.5);
-  doc.line(pageW / 2 - 18, 45, pageW / 2 + 18, 45);
-
-  // --- party card (left) + date / mode (right) ---
-  const boxY = 50;
-  const boxH = 24;
-  doc.setFillColor(...PDF_BRAND_SOFT);
-  doc.setDrawColor(...PDF_LINE);
-  doc.setLineWidth(0.3);
-  doc.roundedRect(m, boxY, contentW, boxH, 2, 2, 'FD');
-  // left accent bar
-  doc.setFillColor(...PDF_BRAND);
-  doc.roundedRect(m, boxY, 2.2, boxH, 1, 1, 'F');
-
-  doc.setTextColor(...PDF_TEXT);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(11);
-  doc.text(String(vo.partyName || ''), m + 7, boxY + 9);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  doc.setTextColor(...PDF_MUTED);
-  doc.text(String(vo.gstState || ''), m + 7, boxY + 16.5);
-
-  const labelX = pageW / 2 + 14;
-  const valueBoxW = 40;
-  const valueBoxX = pageW - m - valueBoxW - 3;
-  const meta = [
-    ['Date', fmtDate(vo.docDate)],
-    ['Mode', vo.paymentType || '']
-  ];
-  meta.forEach(([label, val], i) => {
-    const y = boxY + 9 + i * 8;
-    doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9.5);
-    doc.setTextColor(...PDF_BRAND_DARK);
-    doc.text(label, labelX, y);
-    doc.setFillColor(...PDF_WHITE);
-    doc.setDrawColor(...PDF_LINE);
-    doc.roundedRect(valueBoxX, y - 5, valueBoxW, 7, 1.2, 1.2, 'FD');
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...PDF_TEXT);
-    doc.text(String(val), valueBoxX + valueBoxW / 2, y, { align: 'center' });
-  });
-
-  // --- greeting ---
-  const greetY = boxY + boxH + 9;
-  doc.setTextColor(...PDF_TEXT);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(10);
-  doc.text('Dear Sir/Madam,', m, greetY);
-  doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9.5);
-  doc.text('Please find below the payment details', m, greetY + 5.5);
-
-  // --- bill table: Bill Reference | Bill Date | Amount | GST | TOT AMT ---
+  const sumAmount = rows.reduce((s, r) => s + toNum(r.amount), 0);
+  const sumGst = rows.reduce((s, r) => s + toNum(r.gstAmount), 0);
   const sumTotal = rows.reduce((s, r) => s + toNum(r.totalAmt), 0);
-
-  autoTable(doc, {
-    startY: greetY + 10,
-    margin: { left: m, right: m },
-    theme: 'grid',
-    head: [['Bill Reference', 'Bill Date', 'Amount', 'GST', 'TOT AMT']],
-    body: rows.map((r) => [
-      r.vid || r.refNo || '',
-      fmtDate(r.vdate || r.refDate),
-      fmtMoney(r.amount),
-      fmtMoney(r.gstAmount),
-      fmtMoney(r.totalAmt)
-    ]),
-    foot: [
-      [
-        { content: '', colSpan: 3, styles: { fillColor: PDF_WHITE } },
-        { content: 'Total', styles: { halign: 'right', fillColor: PDF_YELLOW } },
-        { content: fmtMoney(sumTotal), styles: { halign: 'right', fillColor: PDF_YELLOW } }
-      ]
-    ],
-    showFoot: 'lastPage',
-    styles: { fontSize: 9, cellPadding: 2.8, lineColor: PDF_LINE, lineWidth: 0.2, textColor: PDF_TEXT, valign: 'middle' },
-    headStyles: { fillColor: PDF_BRAND, textColor: PDF_WHITE, fontStyle: 'bold', halign: 'center' },
-    footStyles: { textColor: [20, 20, 20], fontStyle: 'bold' },
-    alternateRowStyles: { fillColor: PDF_BRAND_SOFT },
-    columnStyles: {
-      0: { cellWidth: 62 },
-      1: { cellWidth: 30, halign: 'center' },
-      2: { cellWidth: 30, halign: 'right' },
-      3: { cellWidth: 30, halign: 'right' },
-      4: { cellWidth: 30, halign: 'right' }
-    },
-    didParseCell: (d) => {
-      // TOT AMT column is shown in red
-      if (d.section === 'body' && d.column.index === 4) {
-        d.cell.styles.textColor = PDF_RED;
-        d.cell.styles.fontStyle = 'bold';
-      }
-    }
-  });
-
-  // --- payment details table ---
-  const transferred = [vo.payTo || '', vo.chequeNo ? `UTR No: ${vo.chequeNo}` : ''].filter(Boolean).join('\n') || '-';
+  const sumSettled = rows.reduce((s, r) => s + toNum(r.settled), 0);
   const balance = toNum(vo.onAccount);
-  const titleHead = { fillColor: PDF_BRAND_DARK, textColor: PDF_WHITE, fontStyle: 'bold', halign: 'center' };
-  const subHead = { fillColor: PDF_BRAND_LIGHT, textColor: PDF_BRAND_DARK, fontStyle: 'bold', halign: 'center' };
+  const transferredTo = vo.payTo || '-';
 
-  autoTable(doc, {
-    startY: doc.lastAutoTable.finalY + 10,
-    margin: { left: m, right: m },
-    theme: 'grid',
-    head: [
-      [{ content: 'Payment Details', colSpan: 5, styles: titleHead }],
-      ['Payment Mode', 'Transferred To', 'Date', 'Issued From', 'Amount'].map((t) => ({ content: t, styles: subHead }))
-    ],
-    body: [
-      [
-        vo.paymentType || '',
-        transferred,
-        fmtDate(vo.chequeDate || vo.docDate),
-        vo.bankCashAcc || '',
-        { content: fmtMoney(vo.paymentAmt), styles: { fontStyle: 'bold' } }
-      ]
-    ],
-    foot: [
-      [
-        { content: 'BALANCE', colSpan: 4, styles: { halign: 'right' } },
-        { content: balance > 0 ? fmtMoney(balance) : '-', styles: { halign: 'right' } }
-      ]
-    ],
-    showFoot: 'lastPage',
-    styles: { fontSize: 9, cellPadding: 3.4, lineColor: PDF_LINE, lineWidth: 0.2, textColor: PDF_TEXT, valign: 'middle', halign: 'center' },
-    footStyles: { fillColor: PDF_BRAND_SOFT, textColor: PDF_BRAND_DARK, fontStyle: 'bold' },
-    columnStyles: {
-      0: { cellWidth: 30 },
-      1: { cellWidth: 50 },
-      2: { cellWidth: 28 },
-      3: { cellWidth: 44 },
-      4: { cellWidth: 30 }
-    }
-  });
+  return (
+    <div
+      id="payment-pdf-content"
+      style={{
+        padding: '10px',
+        width: '210mm',
+        height: 'auto',
+        margin: '0 auto',
+        fontFamily: 'Roboto, Arial, sans-serif',
+        position: 'relative',
+        backgroundColor: '#fff'
+      }}
+    >
+      {/* <!-- Header Section --> */}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          fontSize: '10px',
+          marginBottom: '5px',
+          borderBottom: '2px solid #000000',
+          paddingBottom: '3px',
+          color: '#333'
+        }}
+      >
+        <div className="d-flex flex-row">
+          {companyDetails.companyLogo && (
+            <img
+              src={`data:image/jpeg;base64,${companyDetails.companyLogo}`}
+              alt="Logo"
+              style={{ width: '80px', height: '97px', objectFit: 'contain' }}
+              onError={(e) => {
+                e.target.src = dummyImageURL;
+              }}
+            />
+          )}
+          <div className="ms-2">
+            <strong style={{ fontSize: '13px' }}>{meta.companyName}</strong>
+            <div style={{ width: 198 }}>
+              <p style={{ textWrap: 'auto', textOverflow: 'ellipsis', fontSize: '8px', lineHeight: '1.6', marginBottom: 0 }}>
+                {companyDetails.address}
+              </p>
+            </div>
+            {companyDetails.city && (
+              <div className="d-flex flex-row" style={{ fontSize: '10px' }}>
+                {companyDetails.city} - {companyDetails.zip}
+              </div>
+            )}
+            {companyDetails.cin && (
+              <div className="d-flex flex-row" style={{ fontSize: '12px', margin: '0px' }}>
+                CIN: {companyDetails.cin}
+              </div>
+            )}
+          </div>
+        </div>
+        <div style={{ marginRight: '100px' }}>
+          <strong style={{ fontSize: '15px' }}>Payment Advice</strong>
+        </div>
+        <div>
+          <div className="mb-0" style={{ fontSize: '10px' }}>
+            Doc No<strong>: {vo.docId}</strong>
+          </div>
+          <div className="mb-0" style={{ fontSize: '10px' }}>
+            Date<strong> : {vo.docDate ? fmtDate(vo.docDate) : 'N/A'}</strong>
+          </div>
+          <div className="mb-0" style={{ fontSize: '10px' }}>
+            Branch<strong> : {meta.branch || meta.branchCode || '-'}</strong>
+          </div>
+          <div className="mb-0" style={{ fontSize: '10px' }}>
+            Fin Year<strong> : {meta.finYear || '-'}</strong>
+          </div>
+          <div className="mb-0" style={{ fontSize: '10px' }}>
+            Type<strong>: {vo.paymentType}</strong>
+          </div>
+        </div>
+      </div>
 
-  // --- remarks / approval ---
-  let y = doc.lastAutoTable.finalY + 9;
-  doc.setFontSize(9);
-  if (vo.remarks) {
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...PDF_BRAND_DARK);
-    doc.text('Remarks:', m, y);
-    doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...PDF_TEXT);
-    const lines = doc.splitTextToSize(String(vo.remarks), contentW - 20);
-    doc.text(lines, m + 18, y);
-    y += lines.length * 4.5 + 3;
-  }
-  if (vo.approveStatus === 'Approved' && vo.approveBy) {
-    doc.setFont('helvetica', 'italic');
-    doc.setTextColor(46, 125, 50);
-    doc.text(`Approved by ${vo.approveBy}${vo.approveOn ? ` on ${vo.approveOn}` : ''}`, m, y);
-    y += 6;
-  }
+      {/* <!-- Details Section --> */}
+      <div
+        style={{
+          marginBottom: '0px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          fontSize: '10px',
+          color: '#555'
+        }}
+      >
+        <div>
+          <strong style={{ fontSize: '10px' }}>Paid By: {meta.companyName}</strong>
+          <div style={{ width: 250, marginBottom: 3, display: 'flex', alignItems: 'flex-start' }}>
+            <strong style={{ marginRight: 3, whiteSpace: 'nowrap', fontSize: '10px' }}>Issued From:</strong>
+            <p style={{ margin: 0, marginTop: 2, fontSize: '10px', lineHeight: '1.6', wordBreak: 'break-word', flex: 1 }}>
+              {vo.bankCashAcc}
+            </p>
+          </div>
+          <strong>GST In: </strong>
+          {companyDetails.gst}
+        </div>
+        <div>
+          <strong style={{ fontSize: '10px' }}>Party: {vo.partyName}</strong>
+          {vo.partyCode && (
+            <div style={{ width: 250, marginBottom: 3, display: 'flex', alignItems: 'flex-start' }}>
+              <strong style={{ marginRight: 3, whiteSpace: 'nowrap', fontSize: '10px' }}>Party Code:</strong>
+              <p style={{ margin: 0, marginTop: 2, fontSize: '10px', lineHeight: '1.6', wordBreak: 'break-word', flex: 1 }}>
+                {vo.partyCode}
+              </p>
+            </div>
+          )}
+          {vo.gstState && (
+            <div>
+              <strong>Reg State: </strong>
+              {vo.gstState}
+            </div>
+          )}
+          <div>
+            <strong>GST In: </strong>
+            {vo.gstIn}
+          </div>
+        </div>
+      </div>
 
-  // --- signature ---
-  if (y > pageH - 45) {
-    doc.addPage();
-    y = 30;
-  }
-  const sigY = y + 18;
-  doc.setDrawColor(...PDF_BRAND);
-  doc.setLineWidth(0.4);
-  doc.line(pageW - m - 55, sigY, pageW - m, sigY);
-  doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9);
-  doc.setTextColor(...PDF_TEXT);
-  doc.text('Authorised Signatory', pageW - m - 27.5, sigY + 5, { align: 'center' });
-  doc.setFont('helvetica', 'normal');
-  doc.setTextColor(...PDF_MUTED);
-  doc.text(`For ${COMPANY.name}`, pageW - m - 27.5, sigY + 10, { align: 'center' });
+      <div style={pdfStyles.container}>
+        <div style={{ ...pdfStyles.beforeAfter, ...pdfStyles.before }} />
+        <span style={pdfStyles.text}>Bill Details</span>
+        <div style={{ ...pdfStyles.beforeAfter, ...pdfStyles.after }} />
+      </div>
 
-  // --- page footer ---
-  const pages = doc.getNumberOfPages();
-  for (let i = 1; i <= pages; i += 1) {
-    doc.setPage(i);
-    doc.setFillColor(...PDF_BRAND);
-    doc.rect(0, pageH - 12, pageW, 12, 'F');
-    doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.setTextColor(...PDF_WHITE);
-    doc.text('This is a system generated payment advice.', m, pageH - 5, { align: 'left' });
-    doc.text(`Page ${i} of ${pages}`, pageW - m, pageH - 5, { align: 'right' });
-  }
+      {/* Bill table */}
+      <TableContainer component={Paper} sx={{ mt: 1, borderRadius: 0, border: '1px groove #000' }}>
+        <Table size="small" sx={pdfTableSx}>
+          <TableHead>
+            <TableRow sx={pdfHeadRowSx}>
+              <TableCell style={center}>S.No</TableCell>
+              <TableCell style={center}>Bill Reference</TableCell>
+              <TableCell style={center}>Bill Date</TableCell>
+              <TableCell style={center}>Amount</TableCell>
+              <TableCell style={center}>GST</TableCell>
+              <TableCell style={center}>Total Amt</TableCell>
+              {/* <TableCell style={center}>Settled</TableCell> */}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {rows.map((r, i) => (
+              <TableRow key={r.id}>
+                <TableCell style={center}>{i + 1}</TableCell>
+                <TableCell style={center}>{r.vid || r.refNo}</TableCell>
+                <TableCell style={center}>{fmtDate(r.vdate || r.refDate)}</TableCell>
+                <TableCell style={right}>{fmtMoney(r.amount)}</TableCell>
+                <TableCell style={right}>{fmtMoney(r.gstAmount)}</TableCell>
+                <TableCell style={right}>{fmtMoney(r.totalAmt)}</TableCell>
+                {/* <TableCell style={right}>{fmtMoney(r.settled)}</TableCell> */}
+              </TableRow>
+            ))}
+            {rows.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={7} style={center}>
+                  No bills settled (On Account payment)
+                </TableCell>
+              </TableRow>
+            )}
+            {rows.length > 0 && (
+              <TableRow>
+                <TableCell colSpan={3} style={{ ...right, fontWeight: 'bold' }}>
+                  Total
+                </TableCell>
+                <TableCell style={{ ...right, fontWeight: 'bold' }}>{fmtMoney(sumAmount)}</TableCell>
+                <TableCell style={{ ...right, fontWeight: 'bold' }}>{fmtMoney(sumGst)}</TableCell>
+                <TableCell style={{ ...right, fontWeight: 'bold' }}>{fmtMoney(sumTotal)}</TableCell>
+                {/* <TableCell style={{ ...right, fontWeight: 'bold' }}>{fmtMoney(sumSettled)}</TableCell> */}
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </TableContainer>
 
-  return doc;
+      {/* Payment details */}
+      <div style={{ ...pdfStyles.container, marginTop: '6px' }}>
+        <div style={{ ...pdfStyles.beforeAfter, ...pdfStyles.before }} />
+        <span style={pdfStyles.text}>Payment Details</span>
+        <div style={{ ...pdfStyles.beforeAfter, ...pdfStyles.after }} />
+      </div>
+      <TableContainer component={Paper} sx={{ mt: 1, borderRadius: 0, border: '1px groove #000' }}>
+        <Table size="small" sx={pdfTableSx}>
+          <TableHead>
+            <TableRow sx={pdfHeadRowSx}>
+              <TableCell style={center}>Payment Mode</TableCell>
+              <TableCell style={center}>Transferred To</TableCell>
+              <TableCell style={center}>UTR No</TableCell>
+              <TableCell style={center}>UTR Date</TableCell>
+              <TableCell style={center}>Issued From</TableCell>
+              <TableCell style={center}>Amount</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            <TableRow>
+              <TableCell style={center}>{vo.paymentType}</TableCell>
+              <TableCell style={center}>{transferredTo}</TableCell>
+              <TableCell style={center}>{vo.chequeNo || '-'}</TableCell>
+              <TableCell style={center}>{fmtDate(vo.chequeDate || vo.docDate)}</TableCell>
+              <TableCell style={center}>{vo.bankCashAcc}</TableCell>
+              <TableCell style={{ ...right, fontWeight: 'bold' }}>{fmtMoney(vo.paymentAmt)}</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
+      </TableContainer>
+
+      {/* <!-- Total Section --> */}
+      <div
+        style={{
+          textAlign: 'right',
+          fontSize: '10px',
+          color: '#333',
+          marginTop: '4px'
+        }}
+        className="d-flex justify-content-between mb-2"
+      >
+        <div style={{ textAlign: 'left', fontWeight: 'bold', fontSize: '10px', color: '#333' }}>
+          <div style={{ width: '500px', marginBottom: '2px' }}>
+            Amount in words:{' '}
+            <span style={{ fontWeight: 'normal', fontStyle: 'italic', color: '#333', fontSize: '10px' }}>
+              {amountToWords(vo.paymentAmt, vo.currency)}
+            </span>
+          </div>
+          <div style={{ width: '500px', marginBottom: '2px' }}>
+            Prepared By:{' '}
+            <span style={{ fontWeight: 'normal', color: '#333', fontSize: '10px' }}>{vo.createdBy || meta.printedBy || '-'}</span>
+          </div>
+          {vo.remarks && (
+            <div style={{ width: '500px', marginBottom: '2px' }}>
+              Remarks: <span style={{ fontWeight: 'normal', color: '#333', fontSize: '10px' }}>{vo.remarks}</span>
+            </div>
+          )}
+          {vo.approveStatus === 'Approved' && vo.approveBy && (
+            <div style={{ width: '500px', marginBottom: '2px' }}>
+              Approved By:{' '}
+              <span style={{ fontWeight: 'normal', color: '#333', fontSize: '10px' }}>
+                {vo.approveBy}
+                {vo.approveOn ? ` on ${vo.approveOn}` : ''}
+              </span>
+            </div>
+          )}
+        </div>
+        <div className="d-flex justify-content-between">
+          <div className="d-flex flex-column me-2">
+            <p className="mb-1" style={{ fontWeight: 'bold', fontSize: '10px', color: '#333', marginBottom: 0 }}>
+              Payment Amount:
+            </p>
+            {toNum(vo.tdsAmt) > 0 && (
+              <p className="mb-1" style={{ fontWeight: 'bold', fontSize: '10px', color: '#333', marginBottom: 0 }}>
+                TDS Amount:
+              </p>
+            )}
+            <p className="mb-1" style={{ fontWeight: 'bold', fontSize: '10px', color: '#333', marginBottom: 0 }}>
+              Balance (On Account):
+            </p>
+          </div>
+          <div className="d-flex flex-column">
+            <div>
+              <span style={{ fontWeight: 'normal', fontSize: '8px', color: '#333', marginLeft: 3 }}>₹{fmtMoney(vo.paymentAmt)}</span>
+            </div>
+            {toNum(vo.tdsAmt) > 0 && (
+              <div>
+                <span style={{ fontWeight: 'normal', fontSize: '8px', color: '#333', marginLeft: 3 }}>₹{fmtMoney(vo.tdsAmt)}</span>
+              </div>
+            )}
+            <div>
+              <span style={{ fontWeight: 'normal', fontSize: '8px', color: '#333', marginLeft: 3 }}>
+                {balance > 0 ? `₹${fmtMoney(balance)}` : '-'}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr style={{ margin: 0 }} />
+      <hr style={{ margin: 0 }} />
+
+      {/* Declaration */}
+      <div className="row mt-0 mb-0">
+        <div className="col-lg-1">
+          <strong style={{ width: 225, fontSize: '9px' }}>Declaration:</strong>
+        </div>
+        <div className="col-lg-10">
+          <p style={{ fontSize: '9px', margin: '0px' }}>
+            This payment advice is issued against the bills listed above. Any difference or discrepancy in the amount paid should be
+            informed to {meta.companyName} in writing within 7 days from the date of this advice, failing which the payment will be treated
+            as accepted.
+          </p>
+        </div>
+      </div>
+
+      {/* Note */}
+      <div className="row mb-1">
+        <div className="col-lg-1">
+          <strong style={{ width: 225, fontSize: '9px' }}>Note:</strong>
+        </div>
+        <div className="col-lg-10">
+          <p style={{ fontSize: '9px' }}>
+            1. The payment is made after deduction of applicable taxes (TDS), if any.
+            <br />
+            2. The balance shown as <strong>On Account</strong> will be adjusted against future bills of the party.
+            <br />
+            3. This is a system generated document and does not require a physical signature.
+          </p>
+        </div>
+      </div>
+      <hr style={{ margin: 0 }} />
+
+      {/* Signatures */}
+
+      {/* Signatures */}
+      <div className="d-flex justify-content-between mt-1 mb-1">
+        <div className="ms-5">
+          <strong style={{ fontSize: '10px' }}>Prepared By:</strong>
+        </div>
+        <div className="me-5">
+          <strong style={{ fontSize: '10px' }}>For {meta.companyName}:</strong>
+        </div>
+      </div>
+      <div className="d-flex justify-content-between mt-0 mb-0">
+        <div className="d-flex">
+          <div className="me-3 ms-5">
+            <img src={companySeal} alt="Company Seal" style={{ height: '85px', objectFit: 'contain' }} />
+          </div>
+          <div className="ms-3">
+            <img src={accountantSign} alt="Accountant Sign" style={{ height: '85px', objectFit: 'contain' }} />
+          </div>
+        </div>
+      </div>
+      <div className="d-flex justify-content-between mt-1 mb-1">
+        <div className="d-flex flex-column">
+          <div className="ms-5">
+            <strong style={{ fontSize: '10px' }}>Authorized Signature:</strong>
+          </div>
+          <div style={{ fontSize: '10px' }} className="ms-4">
+            (Company Seal & Signature)
+          </div>
+        </div>
+        <div className="d-flex flex-column">
+          <div className="ms-4">
+            <strong style={{ fontSize: '10px' }}>Authorized Signature:</strong>
+          </div>
+          <div style={{ fontSize: '10px' }} className="me-5">
+            (Company Seal & Signature)
+          </div>
+        </div>
+      </div>
+
+      {/* <!-- Footer Section --> */}
+      <div
+        style={{
+          borderTop: '1px outset',
+          paddingTop: '1px',
+          fontSize: '8px',
+          color: '#777',
+          textAlign: 'center',
+          bottom: '0',
+          width: '100%',
+          marginTop: '5%'
+        }}
+      />
+    </div>
+  );
 };
 
 const Payment = ({ selectedRow }) => {
@@ -465,6 +743,7 @@ const Payment = ({ selectedRow }) => {
   const [branchCode] = useState(localStorage.getItem('branchcode'));
   const [branch] = useState(localStorage.getItem('branch'));
   const [finYear] = useState(localStorage.getItem('finYear'));
+  const [companyName] = useState(localStorage.getItem('companyName'));
   const [partyName, setPartyName] = useState([]);
   const [gstState, setGSTState] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -482,12 +761,14 @@ const Payment = ({ selectedRow }) => {
   // errors for the "settled" input, keyed by row id
   const [rowErrors, setRowErrors] = useState({});
 
-  // PDF preview
+  // PDF preview (same approach as MIMpdf: HTML preview -> html2canvas -> jsPDF)
   const [pdfOpen, setPdfOpen] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState('');
+  const [pdfVo, setPdfVo] = useState(null);
   const [pdfLoading, setPdfLoading] = useState(false);
-  const pdfDocRef = useRef(null);
-  const pdfNameRef = useRef('Payment.pdf');
+  const [companyDetails, setCompanyDetails] = useState({});
+
+  // Common information printed on every payment advice
+  const pdfMeta = { companyName, branch, branchCode, finYear, printedBy: loginUserName };
 
   // List view search / paging
   const [listSearch, setListSearch] = useState('');
@@ -509,6 +790,7 @@ const Payment = ({ selectedRow }) => {
     getPaymentDocId();
     getPartName();
     bankList();
+    getCompanyDetails();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -534,13 +816,6 @@ const Payment = ({ selectedRow }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [withdrawalsTableData, formData.paymentAmt]);
 
-  // Free the preview blob URL whenever it changes or the screen unmounts
-  useEffect(() => {
-    return () => {
-      if (pdfUrl) URL.revokeObjectURL(pdfUrl);
-    };
-  }, [pdfUrl]);
-
   // ---------- API calls ----------
   const getAllPayment = async () => {
     try {
@@ -548,6 +823,20 @@ const Payment = ({ selectedRow }) => {
       setData([...(result.paramObjectsMap.paymentVO || [])].reverse());
     } catch (err) {
       console.log('error', err);
+    }
+  };
+
+  // Company logo / address / city / zip / CIN / GST (same API MIMpdf uses)
+  const getCompanyDetails = async () => {
+    try {
+      const response = await apiCalls('get', `commonmaster/company/${orgId}`);
+      if (response.status === true) {
+        setCompanyDetails(response.paramObjectsMap.companyVO[0] || {});
+      } else {
+        console.error('API Error:', response);
+      }
+    } catch (error) {
+      console.error('Error fetching company details:', error);
     }
   };
 
@@ -649,7 +938,8 @@ const Payment = ({ selectedRow }) => {
   };
 
   // ---------- PDF handlers ----------
-  // Called from the list view's PDF action. Loads the payment, builds the PDF and opens the preview.
+  // Used by the list view PDF icon and the form toolbar PDF button.
+  // Loads the saved payment and opens the preview (same layout as MIMpdf).
   const handlePdfView = async (row) => {
     const id = row?.original?.id ?? row?.id;
     if (!id) return;
@@ -661,10 +951,10 @@ const Payment = ({ selectedRow }) => {
         showToast('error', 'Unable to load payment details');
         return;
       }
-      const doc = buildPaymentPdf(vo);
-      pdfDocRef.current = doc;
-      pdfNameRef.current = `Payment_${String(vo.docId || id).replace(/[\\/:*?"<>|]/g, '-')}.pdf`;
-      setPdfUrl(URL.createObjectURL(doc.output('blob')));
+      if (!companyDetails.companyLogo && !companyDetails.address) {
+        await getCompanyDetails();
+      }
+      setPdfVo(vo);
       setPdfOpen(true);
     } catch (error) {
       console.error('Error generating PDF:', error);
@@ -676,15 +966,85 @@ const Payment = ({ selectedRow }) => {
 
   const handlePdfClose = () => {
     setPdfOpen(false);
-    setPdfUrl('');
-    pdfDocRef.current = null;
+    setPdfVo(null);
   };
 
-  const handlePdfDownload = () => {
-    if (pdfDocRef.current) {
-      pdfDocRef.current.save(pdfNameRef.current);
+  // Same download logic as MIMpdf: html2canvas -> jsPDF, footer on every page
+  const handlePdfDownload = async () => {
+    const input = document.getElementById('payment-pdf-content');
+    if (!input || !pdfVo) {
+      console.error('Main content element not found!');
+      return;
     }
-    handlePdfClose();
+
+    setPdfLoading(true);
+    try {
+      const canvas = await html2canvas(input, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#fff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const padding = 5;
+      const contentWidth = pdfWidth - 2 * padding;
+
+      const imgProps = pdf.getImageProperties(imgData);
+      const imgHeight = (imgProps.height * contentWidth) / imgProps.width;
+
+      const currentDateTime = `${new Date().toLocaleDateString('en-GB')} ${new Date().toLocaleTimeString('en-GB')}`;
+      let heightLeft = imgHeight;
+      let position = 0;
+      let pageNo = 1;
+      const totalPages = Math.max(1, Math.ceil(imgHeight / (pdfHeight - 2 * padding)));
+
+      // Footer on each page
+      const addFooter = () => {
+        const footerY = pdfHeight - 8;
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(8);
+        pdf.text(`${currentDateTime} | Printed By: ${localStorage.getItem('userName')}`, padding, footerY);
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'bold');
+        const text = `Page ${pageNo} of ${totalPages}`;
+        const textWidth = (pdf.getStringUnitWidth(text) * pdf.getFontSize()) / pdf.internal.scaleFactor;
+        pdf.text(text, pdfWidth - padding - textWidth, footerY);
+        pdf.setFont('helvetica', 'normal');
+        pdf.setFontSize(8);
+      };
+
+      // First page
+      pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
+      addFooter();
+      heightLeft -= pdfHeight - 2 * padding;
+      position = -pdfHeight;
+
+      // Additional pages
+      while (heightLeft > 0) {
+        pdf.addPage();
+        pageNo += 1;
+        pdf.addImage(imgData, 'PNG', padding, position + padding, contentWidth, imgHeight);
+        addFooter();
+        heightLeft -= pdfHeight - 2 * padding;
+        position -= pdfHeight;
+      }
+
+      const fileName = `Payment_${String(pdfVo.docId || '').replace(/[\\/:*?"<>|]/g, '-')}_${String(pdfVo.partyName || '').replace(
+        /[\\/:*?"<>|]/g,
+        '-'
+      )}.pdf`;
+      pdf.save(fileName);
+      handlePdfClose();
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      showToast('error', 'Unable to generate PDF');
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   // ---------- handlers ----------
@@ -827,15 +1187,27 @@ const Payment = ({ selectedRow }) => {
 
   const handleSave = async () => {
     const errors = {};
+
     if (!formData.paymentAmt) {
       errors.paymentAmt = 'Payment Amount is required';
     } else if (!/^[0-9]*\.?[0-9]*$/.test(String(formData.paymentAmt))) {
       errors.paymentAmt = 'Only numeric characters are allowed';
     }
-    if (!formData.status) errors.status = 'Status is required';
-    if (!formData.bankCashAcc) errors.bankCashAcc = 'Cash Account is required';
+
+    if (!formData.status) {
+      errors.status = 'Status is required';
+    }
+
+    if (!formData.bankCashAcc) {
+      errors.bankCashAcc = 'Cash Account is required';
+    }
+
+    if (!formData.remarks || !formData.remarks.trim()) {
+      errors.remarks = 'Remarks is required';
+    }
 
     setFormDataErrors(errors);
+
     if (Object.keys(errors).length > 0) return;
 
     const totalSettled = withdrawalsTableData.reduce((sum, r) => sum + toNum(r.settled), 0);
@@ -990,7 +1362,7 @@ const Payment = ({ selectedRow }) => {
                         icon={<CheckCircleIcon style={{ color: '#2e7d32' }} />}
                         label="APPROVED"
                         size="small"
-                        sx={{ ...APPROVE_CHIP_STYLES.APPROVED, fontWeight: 700 }}
+                        sx={{ ...APPROVE_CHIP_STYLES.APPROVED, fontWeight: 200 }}
                       />
                       <Chip label={`By: ${formData.approveBy || '-'}`} size="small" variant="outlined" />
                       <Chip label={`On: ${formData.approveOn || '-'}`} size="small" variant="outlined" />
@@ -1002,7 +1374,7 @@ const Payment = ({ selectedRow }) => {
                         icon={<CancelIcon style={{ color: '#c62828' }} />}
                         label="REJECTED"
                         size="small"
-                        sx={{ ...APPROVE_CHIP_STYLES.REJECTED, fontWeight: 700 }}
+                        sx={{ ...APPROVE_CHIP_STYLES.REJECTED, fontWeight: 200 }}
                       />
                       <Chip label={`By: ${formData.approveBy || '-'}`} size="small" variant="outlined" />
                       <Chip label={`On: ${formData.approveOn || '-'}`} size="small" variant="outlined" />
@@ -1083,6 +1455,7 @@ const Payment = ({ selectedRow }) => {
               <div className="d-flex flex-wrap justify-content-end ">
                 {showForm && <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleList} />}
                 {showForm && <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />}
+                {showForm && editId && <ActionButton title="PDF" icon={PictureAsPdfIcon} onClick={() => handlePdfView({ id: editId })} />}
                 {formData.approveStatus === 'Approved' || !showForm || isLoading ? (
                   ''
                 ) : (
@@ -1388,13 +1761,13 @@ const Payment = ({ selectedRow }) => {
                                             {row.refDate ? dayjs(row.refDate).format('DD-MM-YYYY') : ''}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                            {row.amount}
+                                            {formatIndianCurrency(row.amount)}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                            {row.gstAmount}
+                                            {formatIndianCurrency(row.gstAmount)}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                            {row.totalAmt}
+                                            {formatIndianCurrency(row.totalAmt)}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={cellStyle}>
                                             {row.currency}
@@ -1403,13 +1776,13 @@ const Payment = ({ selectedRow }) => {
                                             {row.exRate}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                            {row.chargeAmt}
+                                            {formatIndianCurrency(row.chargeAmt)}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                            {row.outstanding}
+                                            {formatIndianCurrency(row.outstanding)}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                            {row.settled}
+                                            {formatIndianCurrency(row.settled)}
                                           </td>
                                         </tr>
                                       ))
@@ -1462,7 +1835,7 @@ const Payment = ({ selectedRow }) => {
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"
-                                              value={row.amount ?? ''}
+                                              value={formatIndianCurrency(row.amount)}
                                               disabled
                                               readOnly
                                               style={{ width: '120px' }}
@@ -1472,7 +1845,7 @@ const Payment = ({ selectedRow }) => {
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"
-                                              value={row.gstAmount ?? ''}
+                                              value={formatIndianCurrency(row.gstAmount)}
                                               disabled
                                               readOnly
                                               style={{ width: '150px' }}
@@ -1482,7 +1855,7 @@ const Payment = ({ selectedRow }) => {
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"
-                                              value={row.totalAmt ?? ''}
+                                              value={formatIndianCurrency(row.totalAmt)}
                                               disabled
                                               readOnly
                                               style={{ width: '130px' }}
@@ -1492,7 +1865,7 @@ const Payment = ({ selectedRow }) => {
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"
-                                              value={row.currency ?? ''}
+                                              value={formatIndianCurrency(row.currency)}
                                               disabled
                                               readOnly
                                               style={{ width: '100px' }}
@@ -1502,7 +1875,7 @@ const Payment = ({ selectedRow }) => {
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"
-                                              value={row.exRate ?? ''}
+                                              value={formatIndianCurrency(row.exRate)}
                                               disabled
                                               readOnly
                                               style={{ width: '100px' }}
@@ -1512,7 +1885,7 @@ const Payment = ({ selectedRow }) => {
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"
-                                              value={row.chargeAmt ?? ''}
+                                              value={formatIndianCurrency(row.chargeAmt ?? '')}
                                               disabled
                                               readOnly
                                               style={{ width: '130px' }}
@@ -1524,7 +1897,7 @@ const Payment = ({ selectedRow }) => {
                                               type="text"
                                               disabled
                                               readOnly
-                                              value={row.outstanding ?? ''}
+                                              value={formatIndianCurrency(row.outstanding ?? '')}
                                               style={{ width: '120px' }}
                                               className="form-control"
                                             />
@@ -1532,7 +1905,7 @@ const Payment = ({ selectedRow }) => {
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"
-                                              value={row.settled ?? ''}
+                                              value={formatIndianCurrency(row.settled ?? '')}
                                               disabled={!formData.paymentAmt}
                                               style={{ width: '100px' }}
                                               onChange={(e) => handleSettledChange(row, e.target.value)}
@@ -1564,7 +1937,7 @@ const Payment = ({ selectedRow }) => {
                                 label="Net Amount"
                                 disabled
                                 size="small"
-                                value={formData.netAmount}
+                                value={formatIndianCurrency(formData.netAmount)}
                                 inputProps={{ maxLength: 30 }}
                                 error={!!formDataErrors.netAmount}
                                 helperText={formDataErrors.netAmount}
@@ -1579,7 +1952,7 @@ const Payment = ({ selectedRow }) => {
                                 label="On Account"
                                 disabled
                                 size="small"
-                                value={formData.onAccount}
+                                value={formatIndianCurrency(formData.onAccount)}
                                 inputProps={{ maxLength: 30 }}
                                 error={!!formDataErrors.onAccount}
                                 helperText={formDataErrors.onAccount}
@@ -1587,13 +1960,25 @@ const Payment = ({ selectedRow }) => {
                             </FormControl>
                           </div>
                           <div className="col-md-3 mb-3">
-                            <FormControl fullWidth variant="filled">
+                            <FormControl fullWidth variant="filled" error={!!formDataErrors.remarks}>
                               <TextField
+                                id="remarks"
+                                name="remarks"
                                 label="Remarks"
                                 size="small"
+                                required
                                 disabled={isSubmitted}
                                 value={formData.remarks}
-                                onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                                onChange={(e) => {
+                                  setFormData({ ...formData, remarks: e.target.value });
+                                  setFormDataErrors((prev) => ({
+                                    ...prev,
+                                    remarks: ''
+                                  }));
+                                }}
+                                inputProps={{ maxLength: 250 }}
+                                error={!!formDataErrors.remarks}
+                                helperText={formDataErrors.remarks || ''}
                               />
                             </FormControl>
                           </div>
@@ -1675,16 +2060,16 @@ const Payment = ({ selectedRow }) => {
                                     {row.refDate ? dayjs(row.refDate).format('DD-MM-YYYY') : ''}
                                   </td>
                                   <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                    {row.billAmount}
+                                    {formatIndianCurrency(row.amount)}
                                   </td>
                                   <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                    {row.gstAmount}
+                                    {formatIndianCurrency(row.gstAmount)}
                                   </td>
                                   <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                    {row.totalAmt}
+                                    {formatIndianCurrency(row.totalAmt)}
                                   </td>
                                   <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                    {row.chargeAmt || 0}
+                                    {formatIndianCurrency(row.chargeAmt || 0)}
                                   </td>
                                 </tr>
                               ))}
@@ -1753,7 +2138,7 @@ const Payment = ({ selectedRow }) => {
                               <Chip
                                 size="small"
                                 label={getListValue(row, col.accessorKey)}
-                                sx={{ ...APPROVE_CHIP_STYLES[getListValue(row, col.accessorKey)], fontWeight: 700 }}
+                                sx={{ ...APPROVE_CHIP_STYLES[getListValue(row, col.accessorKey)], fontWeight: 200 }}
                               />
                             ) : (
                               getListValue(row, col.accessorKey)
@@ -1797,18 +2182,16 @@ const Payment = ({ selectedRow }) => {
         onCancel={handleCloseApprove}
       />
 
-      {/* PDF preview: view first, then download or cancel */}
+      {/* PDF preview (same design as MIMpdf): view first, then download or close */}
       <Dialog open={pdfOpen} onClose={handlePdfClose} maxWidth="md" fullWidth>
-        <DialogTitle sx={{ color: '#673AB7', fontWeight: 600 }}>Payment Advice Preview</DialogTitle>
-        <DialogContent dividers sx={{ p: 0, backgroundColor: '#f5f5f5' }}>
-          {pdfUrl && <iframe title="Payment PDF preview" src={pdfUrl} style={{ width: '100%', height: '70vh', border: 0 }} />}
-        </DialogContent>
-        <DialogActions sx={{ p: '1rem 1.25rem' }}>
-          <Button onClick={handlePdfClose} sx={{ color: '#673AB7' }}>
-            Cancel
+        <DialogTitle>PDF Preview</DialogTitle>
+        <DialogContent>{pdfVo && <PaymentPdfContent vo={pdfVo} companyDetails={companyDetails} meta={pdfMeta} />}</DialogContent>
+        <DialogActions>
+          <Button onClick={handlePdfDownload} color="primary" variant="contained" startIcon={<DownloadIcon />}>
+            PDF
           </Button>
-          <Button variant="contained" startIcon={<DownloadIcon />} onClick={handlePdfDownload} sx={{ backgroundColor: '#673AB7' }}>
-            Download
+          <Button onClick={handlePdfClose} color="secondary">
+            Close
           </Button>
         </DialogActions>
       </Dialog>
