@@ -175,9 +175,6 @@ const mapVoToRows = (vo) =>
 
 // The fill-grid API mixes casing (refno / refNo, refdate / refDate). Normalize once.
 const normalizeFillGridRow = (r) => {
-  const billAmount = r.billamount ?? r.billAmount ?? '';
-  const gstAmount = r.gstamount ?? r.gstAmount ?? '';
-  const apiTotal = toNum(r.amount ?? r.totalAmt);
   return {
     ...r,
     key: r.arapDetailsId ?? `${r.refno || r.refNo}-${r.refdate || r.refDate}`,
@@ -185,9 +182,14 @@ const normalizeFillGridRow = (r) => {
     refDate: r.refdate ?? r.refDate ?? '',
     vid: r.vid ?? r.supplierRefNo ?? r.supplierrefno ?? '',
     vdate: r.vdate ?? r.supplierRefDate ?? r.supplierrefdate ?? '',
-    billAmount,
-    gstAmount,
-    totalAmt: apiTotal || toNum(billAmount) + toNum(gstAmount),
+
+    // Correct API mapping
+    billAmount: r.billamount ?? r.billAmount ?? '',
+    gstAmount: r.gstamount ?? r.gstAmount ?? '',
+
+    // Total Amt should come directly from API amount
+    totalAmt: r.amount ?? r.totalAmt ?? '',
+
     chargeAmt: r.chargeAmt ?? r.chargeamt ?? '',
     currency: r.acccurrency ?? r.currency ?? '',
     exRate: r.exrate ?? r.exRate ?? ''
@@ -1158,17 +1160,21 @@ const Payment = ({ selectedRow }) => {
       .filter((d) => !withdrawalsTableData.some((item) => item.refNo === d.refNo))
       .map((d) => ({
         id: Date.now() + Math.random(),
-        // Supplier Bill No / Date  (saved as invNo / invDate)
         vid: d.vid || '',
         vdate: toDateStr(d.vdate),
-        // #invoice / Date  (saved as refNo / refDate)
         refNo: d.refNo,
         refDate: toDateStr(d.refDate),
         currency: d.currency || 'INR',
         exRate: d.exRate,
+
+        // Bill Amt
         amount: d.billAmount,
+
         gstAmount: toNum(d.gstAmount),
+
+        // Total Amt
         totalAmt: toNum(d.totalAmt),
+
         chargeAmt: d.chargeAmt,
         outstanding: toNum(d.chargeAmt).toFixed(2),
         settled: ''
@@ -1761,7 +1767,7 @@ const Payment = ({ selectedRow }) => {
                                             {row.refDate ? dayjs(row.refDate).format('DD-MM-YYYY') : ''}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                            {formatIndianCurrency(row.amount)}
+                                            {formatIndianCurrency(row.billAmount)}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={cellStyle}>
                                             {formatIndianCurrency(row.gstAmount)}
@@ -2060,7 +2066,7 @@ const Payment = ({ selectedRow }) => {
                                     {row.refDate ? dayjs(row.refDate).format('DD-MM-YYYY') : ''}
                                   </td>
                                   <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                    {formatIndianCurrency(row.amount)}
+                                    {formatIndianCurrency(row.billAmount)}
                                   </td>
                                   <td className="border px-2 py-2 text-center" style={cellStyle}>
                                     {formatIndianCurrency(row.gstAmount)}
