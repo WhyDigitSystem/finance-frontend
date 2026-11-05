@@ -896,12 +896,19 @@ const Payment = ({ selectedRow }) => {
     }
   };
 
+  // Cash / Bank account names for the "Cash Account" dropdown
   const bankList = async () => {
     try {
-      const response = await apiCalls('get', `/transaction/getBankNameForGroupLedger?orgId=${orgId}`);
-      setBankName(response.paramObjectsMap.accountName || []);
+      const response = await apiCalls('get', `/payable/getPaymentAccountName?orgId=${orgId}`);
+      if (response.status === true) {
+        setBankName(response.paramObjectsMap?.mapp || []);
+      } else {
+        setBankName([]);
+        console.error('API Error:', response);
+      }
     } catch (error) {
-      console.error('Error fetching bank list:', error);
+      console.error('Error fetching account names:', error);
+      setBankName([]);
     }
   };
 
@@ -1686,19 +1693,24 @@ const Payment = ({ selectedRow }) => {
                       labelId="bankCashAcc-label"
                       id="bankCashAcc"
                       name="bankCashAcc"
-                      value={formData.bankCashAcc}
+                      label="Cash Account"
+                      value={formData.bankCashAcc || ''}
                       disabled={isSubmitted}
                       onChange={(e) => {
                         setFormData({ ...formData, bankCashAcc: e.target.value });
                         setFormDataErrors({ ...formDataErrors, bankCashAcc: '' });
                       }}
-                      label="Cash Account"
                     >
                       {bankName.map((bank, index) => (
-                        <MenuItem key={index} value={bank.accountgroupname}>
-                          {bank.accountgroupname}
+                        <MenuItem key={index} value={bank.accountName}>
+                          {bank.accountName}
                         </MenuItem>
                       ))}
+
+                      {/* Keeps a previously saved account visible if it is no longer in the API list */}
+                      {formData.bankCashAcc && !bankName.some((b) => b.accountName === formData.bankCashAcc) && (
+                        <MenuItem value={formData.bankCashAcc}>{formData.bankCashAcc}</MenuItem>
+                      )}
                     </Select>
                     {formDataErrors.bankCashAcc && <FormHelperText>{formDataErrors.bankCashAcc}</FormHelperText>}
                   </FormControl>
@@ -1788,7 +1800,7 @@ const Payment = ({ selectedRow }) => {
                                             {formatIndianCurrency(row.outstanding)}
                                           </td>
                                           <td className="border px-2 py-2 text-center" style={cellStyle}>
-                                            {formatIndianCurrency(row.settled)}
+                                            {row.settled}
                                           </td>
                                         </tr>
                                       ))
@@ -1911,7 +1923,7 @@ const Payment = ({ selectedRow }) => {
                                           <td className="border px-2 py-2">
                                             <input
                                               type="text"
-                                              value={formatIndianCurrency(row.settled ?? '')}
+                                              value={row.settled}
                                               disabled={!formData.paymentAmt}
                                               style={{ width: '100px' }}
                                               onChange={(e) => handleSettledChange(row, e.target.value)}

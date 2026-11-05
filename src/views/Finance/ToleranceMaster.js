@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { TextField, Checkbox, FormControlLabel } from '@mui/material';
+
+import { TextField, Checkbox, FormControlLabel, MenuItem } from '@mui/material';
 
 import ClearIcon from '@mui/icons-material/Clear';
 import SaveIcon from '@mui/icons-material/Save';
+import AddIcon from '@mui/icons-material/Add';
 import FormatListBulletedTwoToneIcon from '@mui/icons-material/FormatListBulletedTwoTone';
 
 import { ToastContainer } from 'react-toastify';
@@ -14,83 +16,181 @@ import { showToast } from 'utils/toast-component';
 import CommonListViewTable from 'views/basicMaster/CommonListViewTable';
 
 export const ToleranceMaster = () => {
+  // LOCAL STORAGE
   const orgId = localStorage.getItem('orgId');
   const loginUserName = localStorage.getItem('userName');
+  const branchCode = localStorage.getItem('branchcode') || '';
+  const branchName = localStorage.getItem('branchName') || localStorage.getItem('branch') || '';
 
+  // STATES
   const [editId, setEditId] = useState('');
 
   const [listView, setListView] = useState(false);
   const [listViewData, setListViewData] = useState([]);
 
-  const [formData, setFormData] = useState({
-    screenId: '',
-    screen: '',
+  // SCREEN NAME DROPDOWN DATA
+  const [screenNamesList, setScreenNamesList] = useState([]);
+
+  // INITIAL FORM DATA
+  const initialFormData = {
+    screenCode: '',
+    screenName: '',
     active: true,
-    lt: '',
-    ut: '',
-    tol: ''
+    lowerTolerance: '',
+    upperTolerance: '',
+    tolerance: ''
+  };
+
+  const [formData, setFormData] = useState(initialFormData);
+
+  // FIELD ERRORS
+  const [fieldErrors, setFieldErrors] = useState({
+    screenCode: '',
+    screenName: '',
+    lowerTolerance: '',
+    upperTolerance: '',
+    tolerance: ''
   });
 
-  const [fieldErrors, setFieldErrors] = useState({
-    screenId: '',
-    screen: '',
-    lt: '',
-    ut: '',
-    tol: ''
-  });
+  // NORMALIZE ACTIVE VALUE
+  const isRecordActive = (value) => {
+    return value === true || String(value).trim().toLowerCase() === 'true' || String(value).trim().toLowerCase() === 'active';
+  };
 
   // LIST VIEW COLUMNS
   const listViewColumns = [
-    { accessorKey: 'screen', header: 'Screen Name', size: 180 },
-    { accessorKey: 'screenId', header: 'Screen ID', size: 140 },
-    { accessorKey: 'lt', header: 'Lower Tolerance (LT)', size: 150 },
-    { accessorKey: 'ut', header: 'Upper Tolerance (UT)', size: 150 },
-    { accessorKey: 'tol', header: 'Tolerance (TOL)', size: 150 },
-    { accessorKey: 'active', header: 'Active', size: 100 }
+    {
+      accessorKey: 'screenName',
+      header: 'Screen Name',
+      size: 180
+    },
+    {
+      accessorKey: 'screenCode',
+      header: 'Screen Code',
+      size: 140
+    },
+    {
+      accessorKey: 'lowerTolerance',
+      header: 'Lower Tolerance (LT)',
+      size: 150
+    },
+    {
+      accessorKey: 'upperTolerance',
+      header: 'Upper Tolerance (UT)',
+      size: 150
+    },
+    {
+      accessorKey: 'tolerance',
+      header: 'Tolerance (TOL)',
+      size: 150
+    },
+    {
+      accessorKey: 'active',
+      header: 'Active',
+      size: 100
+    }
   ];
+
+  // GET ALL SCREEN NAMES
+  const getAllScreenNames = async () => {
+    try {
+      const response = await apiCalls('get', 'commonmaster/getAllScreenNames');
+
+      console.log('All Screen Names Response:', response);
+
+      if (response?.status === true) {
+        const records = response?.paramObjectsMap?.screenNamesVO || [];
+
+        // ONLY ACTIVE SCREEN NAMES
+        const activeRecords = records.filter((item) => isRecordActive(item.active));
+
+        setScreenNamesList(activeRecords);
+      } else {
+        setScreenNamesList([]);
+
+        showToast('error', 'Unable to fetch Screen Names');
+      }
+    } catch (error) {
+      console.error('Error fetching Screen Names:', error);
+
+      setScreenNamesList([]);
+
+      showToast('error', 'Error fetching Screen Names');
+    }
+  };
 
   // GET ALL TOLERANCE MASTER
   const getAllToleranceMaster = async () => {
     try {
-      const response = await apiCalls('get', `master/getAllToleranceMaster?orgId=${orgId}`);
+      const response = await apiCalls(
+        'get',
+        `businesscontroller/getAllToleranceMaster?branchCode=${encodeURIComponent(branchCode)}&orgid=${orgId}`
+      );
 
-      console.log('Tolerance Master Response:', response);
+      console.log('Tolerance Master List Response:', response);
 
-      if (response.status === true) {
-        setListViewData(response.paramObjectsMap.toleranceMasterVOs || []);
+      if (response?.status === true) {
+        const records = response?.paramObjectsMap?.toleranceMasterVO || [];
+
+        const formattedRecords = records.map((item) => ({
+          ...item,
+          active: isRecordActive(item.active) ? 'Active' : 'Inactive'
+        }));
+
+        setListViewData(formattedRecords);
       } else {
         setListViewData([]);
+
+        showToast('error', response?.paramObjectsMap?.errorMessage || 'Unable to fetch Tolerance Master records');
       }
     } catch (error) {
       console.error('Error fetching Tolerance Master:', error);
+
+      setListViewData([]);
+
+      showToast('error', 'Error fetching Tolerance Master records');
     }
   };
 
+  // INITIAL LOAD
   useEffect(() => {
     getAllToleranceMaster();
+    getAllScreenNames();
   }, []);
+
+  // SCREEN NAME SELECTION
+  const handleScreenChange = (e) => {
+    const selectedScreenName = e.target.value;
+
+    const selectedScreen = screenNamesList.find((item) => item.screenName === selectedScreenName);
+
+    setFormData((prev) => ({
+      ...prev,
+      screenName: selectedScreen?.screenName || '',
+      screenCode: selectedScreen?.screenCode || ''
+    }));
+
+    setFieldErrors((prev) => ({
+      ...prev,
+      screenName: '',
+      screenCode: ''
+    }));
+  };
 
   // HANDLE INPUT CHANGE
   const handleInputChange = (e) => {
     const { name, value, checked, type } = e.target;
 
-    let updatedValue = value;
-
-    if (name === 'screenId') {
-      updatedValue = value.toUpperCase();
-
-      if (updatedValue.length > 10) return;
-    }
-
-    if (name === 'screen' && value.length > 50) return;
-
-    if (['lt', 'ut', 'tol'].includes(name)) {
-      if (value !== '' && !/^-?\d*\.?\d*$/.test(value)) return;
+    // DECIMAL VALIDATION
+    if (['lowerTolerance', 'upperTolerance', 'tolerance'].includes(name)) {
+      if (value !== '' && !/^-?\d*\.?\d*$/.test(value)) {
+        return;
+      }
     }
 
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : updatedValue
+      [name]: type === 'checkbox' ? checked : value
     }));
 
     setFieldErrors((prev) => ({
@@ -104,62 +204,83 @@ export const ToleranceMaster = () => {
     setEditId('');
 
     setFormData({
-      screenId: '',
-      screen: '',
-      active: true,
-      lt: '',
-      ut: '',
-      tol: ''
+      ...initialFormData
     });
 
     setFieldErrors({
-      screenId: '',
-      screen: '',
-      lt: '',
-      ut: '',
-      tol: ''
+      screenCode: '',
+      screenName: '',
+      lowerTolerance: '',
+      upperTolerance: '',
+      tolerance: ''
     });
   };
 
-  // LIST VIEW
-  const handleView = () => {
-    setListView((prev) => !prev);
+  // NEW ENTRY
+  const handleNewEntry = () => {
+    handleClear();
+    setListView(false);
+  };
 
+  // LIST VIEW / FORM VIEW TOGGLE
+  const handleView = async () => {
     if (!listView) {
-      getAllToleranceMaster();
+      await getAllToleranceMaster();
+      setListView(true);
+    } else {
+      setListView(false);
     }
   };
 
-  // EDIT RECORD
+  // EDIT RECORD - GET BY ID
   const getToleranceMasterById = async (row) => {
-    const id = row.original.id;
+    const id = row?.original?.toleranceid;
 
-    setEditId(id);
+    if (!id) {
+      showToast('error', 'Tolerance Master ID not found');
+      return;
+    }
 
     try {
-      const response = await apiCalls('get', `master/getToleranceMasterById?id=${id}`);
+      const response = await apiCalls('get', `businesscontroller/getToleranceMasterById?toleranceid=${id}`);
 
-      console.log('Tolerance Master By ID:', response);
+      console.log('Tolerance Master By ID Response:', response);
 
-      if (response.status === true) {
-        const data = response.paramObjectsMap.toleranceMasterVO;
+      if (response?.status === true) {
+        const data = response?.paramObjectsMap?.toleranceMasterVO;
+
+        if (!data) {
+          showToast('error', 'Tolerance Master record not found');
+          return;
+        }
+
+        setEditId(data.toleranceid);
 
         setFormData({
-          screenId: data.screenId || '',
-          screen: data.screen || '',
-          active: data.active === true || data.active === 'true',
-          lt: data.lt ?? '',
-          ut: data.ut ?? '',
-          tol: data.tol ?? ''
+          screenCode: data.screenCode || '',
+          screenName: data.screenName || '',
+          active: isRecordActive(data.active),
+          lowerTolerance: data.lowerTolerance ?? '',
+          upperTolerance: data.upperTolerance ?? '',
+          tolerance: data.tolerance ?? ''
+        });
+
+        setFieldErrors({
+          screenCode: '',
+          screenName: '',
+          lowerTolerance: '',
+          upperTolerance: '',
+          tolerance: ''
         });
 
         setListView(false);
       } else {
-        showToast('error', response.paramObjectsMap?.errorMessage || 'Unable to fetch record');
+        showToast('error', response?.paramObjectsMap?.errorMessage || 'Unable to fetch Tolerance Master record');
       }
     } catch (error) {
-      console.error('Error fetching Tolerance Master:', error);
-      showToast('error', 'Error fetching Tolerance Master');
+      console.error('Error fetching Tolerance Master by ID:', error);
+
+      showToast('error', 'Error fetching Tolerance Master record');
     }
   };
 
@@ -167,40 +288,46 @@ export const ToleranceMaster = () => {
   const validateForm = () => {
     const errors = {};
 
-    if (!formData.screenId.trim()) {
-      errors.screenId = 'Screen ID is required';
-    } else if (formData.screenId.length > 10) {
-      errors.screenId = 'Maximum 10 characters allowed';
+    if (!formData.screenName.trim()) {
+      errors.screenName = 'Screen Name is required';
     }
 
-    if (!formData.screen.trim()) {
-      errors.screen = 'Screen Name is required';
-    } else if (formData.screen.length > 50) {
-      errors.screen = 'Maximum 50 characters allowed';
+    if (!formData.screenCode.trim()) {
+      errors.screenCode = 'Screen Code is required';
     }
 
-    if (formData.lt === '') {
-      errors.lt = 'Lower Tolerance is required';
+    if (formData.lowerTolerance === '') {
+      errors.lowerTolerance = 'Lower Tolerance is required';
+    } else if (!Number.isFinite(Number(formData.lowerTolerance))) {
+      errors.lowerTolerance = 'Enter a valid Lower Tolerance';
     }
 
-    if (formData.ut === '') {
-      errors.ut = 'Upper Tolerance is required';
+    if (formData.upperTolerance === '') {
+      errors.upperTolerance = 'Upper Tolerance is required';
+    } else if (!Number.isFinite(Number(formData.upperTolerance))) {
+      errors.upperTolerance = 'Enter a valid Upper Tolerance';
     }
 
-    if (formData.tol === '') {
-      errors.tol = 'Tolerance is required';
+    if (formData.tolerance === '') {
+      errors.tolerance = 'Tolerance is required';
+    } else if (!Number.isFinite(Number(formData.tolerance))) {
+      errors.tolerance = 'Enter a valid Tolerance';
     }
 
-    if (formData.lt !== '' && formData.ut !== '' && Number(formData.lt) > Number(formData.ut)) {
-      errors.lt = 'Lower Tolerance cannot exceed Upper Tolerance';
+    if (
+      formData.lowerTolerance !== '' &&
+      formData.upperTolerance !== '' &&
+      Number(formData.lowerTolerance) > Number(formData.upperTolerance)
+    ) {
+      errors.lowerTolerance = 'Lower Tolerance cannot exceed Upper Tolerance';
     }
 
     setFieldErrors({
-      screenId: errors.screenId || '',
-      screen: errors.screen || '',
-      lt: errors.lt || '',
-      ut: errors.ut || '',
-      tol: errors.tol || ''
+      screenCode: errors.screenCode || '',
+      screenName: errors.screenName || '',
+      lowerTolerance: errors.lowerTolerance || '',
+      upperTolerance: errors.upperTolerance || '',
+      tolerance: errors.tolerance || ''
     });
 
     return Object.keys(errors).length === 0;
@@ -213,40 +340,58 @@ export const ToleranceMaster = () => {
       return;
     }
 
-    const saveData = {
-      ...(editId && { id: editId }),
+    if (!orgId || !branchCode) {
+      showToast('error', 'Organization ID or Branch Code is missing');
+      return;
+    }
 
-      screenId: formData.screenId.trim(),
-      screen: formData.screen.trim(),
+    const saveData = {
+      ...(editId ? { toleranceid: Number(editId) } : {}),
 
       active: formData.active,
 
-      lt: Number(formData.lt),
-      ut: Number(formData.ut),
-      tol: Number(formData.tol),
+      branch: branchName,
+      branchCode: branchCode,
 
-      createdBy: loginUserName,
-      orgId: parseInt(orgId)
+      cancel: false,
+
+      createdBy: loginUserName || '',
+      updatedBy: loginUserName || '',
+
+      lowerTolerance: Number(formData.lowerTolerance),
+      upperTolerance: Number(formData.upperTolerance),
+      tolerance: Number(formData.tolerance),
+
+      orgid: Number(orgId),
+
+      screenCode: formData.screenCode.trim().toUpperCase(),
+      screenName: formData.screenName.trim()
     };
 
-    console.log('Tolerance Master Save Data:', saveData);
+    console.log('Tolerance Master Save Request:', saveData);
 
     try {
-      const response = await apiCalls('put', 'master/createUpdateToleranceMaster', saveData);
+      const response = await apiCalls('post', 'businesscontroller/createUpdateToleranceMaster', saveData);
 
-      console.log('Save Response:', response);
+      console.log('Tolerance Master Save Response:', response);
 
-      if (response.status === true) {
+      if (response?.status === true) {
         showToast('success', editId ? 'Tolerance Master Updated Successfully' : 'Tolerance Master Created Successfully');
 
         handleClear();
-        getAllToleranceMaster();
+
+        await getAllToleranceMaster();
+        await getAllScreenNames();
       } else {
-        showToast('error', response.paramObjectsMap?.errorMessage || 'Tolerance Master Save Failed');
+        showToast(
+          'error',
+          response?.paramObjectsMap?.errorMessage || response?.errors?.[0]?.shortMessage || 'Tolerance Master Save Failed'
+        );
       }
     } catch (error) {
       console.error('Error saving Tolerance Master:', error);
-      showToast('error', 'An error occurred while saving Tolerance Master');
+
+      showToast('error', error?.response?.data?.paramObjectsMap?.errorMessage || 'An error occurred while saving Tolerance Master');
     }
   };
 
@@ -255,118 +400,138 @@ export const ToleranceMaster = () => {
       <ToastContainer />
 
       <div className="card w-full p-6 bg-base-100 shadow-xl" style={{ padding: '20px' }}>
-        {/* ACTION BUTTONS */}
-        <div className="d-flex flex-wrap justify-content-end mb-4" style={{ marginBottom: '20px' }}>
-          <ActionButton title="List View" icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
+        {/* ACTION BUTTONS - VISIBLE IN BOTH VIEWS */}
+        <div
+          className="d-flex flex-wrap justify-content-end mb-4"
+          style={{
+            marginBottom: '20px',
+            gap: '8px'
+          }}
+        >
+          {/* NEW ENTRY BUTTON */}
+          <ActionButton title="New Entry" icon={AddIcon} onClick={handleNewEntry} />
 
-          <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+          {/* LIST VIEW / FORM VIEW BUTTON */}
+          <ActionButton title={listView ? 'Form View' : 'List View'} icon={FormatListBulletedTwoToneIcon} onClick={handleView} />
 
-          <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+          {/* CLEAR AND SAVE - ONLY FORM VIEW */}
+          {!listView && (
+            <>
+              <ActionButton title="Clear" icon={ClearIcon} onClick={handleClear} />
+
+              <ActionButton title="Save" icon={SaveIcon} onClick={handleSave} />
+            </>
+          )}
         </div>
 
+        {/* LIST VIEW */}
         {listView ? (
-          // LIST VIEW
           <div className="mt-4">
             <CommonListViewTable data={listViewData} columns={listViewColumns} blockEdit={true} toEdit={getToleranceMasterById} />
           </div>
         ) : (
-          // FORM VIEW
-          <>
-            <div className="row d-flex ml">
-              {/* SCREEN NAME */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  fullWidth
-                  size="small"
-                  name="screen"
-                  label="Screen Name"
-                  value={formData.screen}
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 50 }}
-                  error={!!fieldErrors.screen}
-                  helperText={fieldErrors.screen}
-                />
-              </div>
-              {/* SCREEN ID */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  fullWidth
-                  size="small"
-                  name="screenId"
-                  label="Screen ID"
-                  value={formData.screenId}
-                  onChange={handleInputChange}
-                  inputProps={{ maxLength: 10 }}
-                  error={!!fieldErrors.screenId}
-                  helperText={fieldErrors.screenId}
-                />
-              </div>
-              {/* LOWER TOLERANCE */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  fullWidth
-                  size="small"
-                  name="lt"
-                  label="Lower Tolerance (LT)"
-                  type="number"
-                  value={formData.lt}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.lt}
-                  helperText={fieldErrors.lt}
-                />
-              </div>
-
-              {/* UPPER TOLERANCE */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  fullWidth
-                  size="small"
-                  name="ut"
-                  label="Upper Tolerance (UT)"
-                  type="number"
-                  value={formData.ut}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.ut}
-                  helperText={fieldErrors.ut}
-                />
-              </div>
-
-              {/* TOLERANCE */}
-              <div className="col-md-3 mb-3">
-                <TextField
-                  fullWidth
-                  size="small"
-                  name="tol"
-                  label="Tolerance (TOL)"
-                  type="number"
-                  value={formData.tol}
-                  onChange={handleInputChange}
-                  error={!!fieldErrors.tol}
-                  helperText={fieldErrors.tol}
-                />
-              </div>
-
-              {/* ACTIVE */}
-              <div className="col-md-3 mb-3">
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      name="active"
-                      checked={formData.active}
-                      onChange={handleInputChange}
-                      sx={{
-                        color: '#673AB7',
-                        '&.Mui-checked': {
-                          color: '#673AB7'
-                        }
-                      }}
-                    />
-                  }
-                  label="Active"
-                />
-              </div>
+          /* FORM VIEW */
+          <div className="row d-flex ml">
+            {/* SCREEN NAME DROPDOWN */}
+            <div className="col-md-3 mb-3">
+              <TextField
+                select
+                fullWidth
+                size="small"
+                name="screenName"
+                label="Screen Name"
+                value={formData.screenName}
+                onChange={handleScreenChange}
+                error={!!fieldErrors.screenName}
+                helperText={fieldErrors.screenName}
+              >
+                {screenNamesList.map((item) => (
+                  <MenuItem key={item.id || item.screenCode} value={item.screenName}>
+                    {item.screenName}
+                  </MenuItem>
+                ))}
+              </TextField>
             </div>
-          </>
+
+            {/* SCREEN CODE - DISABLED */}
+            <div className="col-md-3 mb-3">
+              <TextField
+                fullWidth
+                size="small"
+                name="screenCode"
+                label="Screen Code"
+                value={formData.screenCode}
+                disabled
+                error={!!fieldErrors.screenCode}
+                helperText={fieldErrors.screenCode}
+              />
+            </div>
+
+            {/* LOWER TOLERANCE */}
+            <div className="col-md-3 mb-3">
+              <TextField
+                fullWidth
+                size="small"
+                name="lowerTolerance"
+                label="Lower Tolerance (LT)"
+                value={formData.lowerTolerance}
+                onChange={handleInputChange}
+                inputProps={{ inputMode: 'decimal' }}
+                error={!!fieldErrors.lowerTolerance}
+                helperText={fieldErrors.lowerTolerance}
+              />
+            </div>
+
+            {/* UPPER TOLERANCE */}
+            <div className="col-md-3 mb-3">
+              <TextField
+                fullWidth
+                size="small"
+                name="upperTolerance"
+                label="Upper Tolerance (UT)"
+                value={formData.upperTolerance}
+                onChange={handleInputChange}
+                inputProps={{ inputMode: 'decimal' }}
+                error={!!fieldErrors.upperTolerance}
+                helperText={fieldErrors.upperTolerance}
+              />
+            </div>
+
+            {/* TOLERANCE */}
+            <div className="col-md-3 mb-3">
+              <TextField
+                fullWidth
+                size="small"
+                name="tolerance"
+                label="Tolerance (TOL)"
+                value={formData.tolerance}
+                onChange={handleInputChange}
+                inputProps={{ inputMode: 'decimal' }}
+                error={!!fieldErrors.tolerance}
+                helperText={fieldErrors.tolerance}
+              />
+            </div>
+
+            {/* ACTIVE */}
+            <div className="col-md-3 mb-3">
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    name="active"
+                    checked={formData.active}
+                    onChange={handleInputChange}
+                    sx={{
+                      color: '#673AB7',
+                      '&.Mui-checked': {
+                        color: '#673AB7'
+                      }
+                    }}
+                  />
+                }
+                label="Active"
+              />
+            </div>
+          </div>
         )}
       </div>
     </>
