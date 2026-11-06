@@ -675,47 +675,8 @@ const PaymentPdfContent = ({ vo, companyDetails, meta }) => {
           </p>
         </div>
       </div>
-      <hr style={{ margin: 0 }} />
 
       {/* Signatures */}
-
-      {/* Signatures */}
-      <div className="d-flex justify-content-between mt-1 mb-1">
-        <div className="ms-5">
-          <strong style={{ fontSize: '10px' }}>Prepared By:</strong>
-        </div>
-        <div className="me-5">
-          <strong style={{ fontSize: '10px' }}>For {meta.companyName}:</strong>
-        </div>
-      </div>
-      <div className="d-flex justify-content-between mt-0 mb-0">
-        <div className="d-flex">
-          <div className="me-3 ms-5">
-            <img src={companySeal} alt="Company Seal" style={{ height: '85px', objectFit: 'contain' }} />
-          </div>
-          <div className="ms-3">
-            <img src={accountantSign} alt="Accountant Sign" style={{ height: '85px', objectFit: 'contain' }} />
-          </div>
-        </div>
-      </div>
-      <div className="d-flex justify-content-between mt-1 mb-1">
-        <div className="d-flex flex-column">
-          <div className="ms-5">
-            <strong style={{ fontSize: '10px' }}>Authorized Signature:</strong>
-          </div>
-          <div style={{ fontSize: '10px' }} className="ms-4">
-            (Company Seal & Signature)
-          </div>
-        </div>
-        <div className="d-flex flex-column">
-          <div className="ms-4">
-            <strong style={{ fontSize: '10px' }}>Authorized Signature:</strong>
-          </div>
-          <div style={{ fontSize: '10px' }} className="me-5">
-            (Company Seal & Signature)
-          </div>
-        </div>
-      </div>
 
       {/* <!-- Footer Section --> */}
       <div
