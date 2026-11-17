@@ -20,13 +20,13 @@ import { Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } 
 import { useEffect, useState } from 'react';
 import { showToast } from 'utils/toast-component';
 import CommonReportTable from 'utils/CommonReportTable';
-// import CMRT from 'utils/CMRT';
 import Paper from '@mui/material/Paper';
 import Draggable from 'react-draggable';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -34,6 +34,13 @@ function PaperComponent(props) {
     </Draggable>
   );
 }
+
+// ✅ Helper: detect if a row is a backend-provided TOTAL row
+const isTotalRow = (row) =>
+  row &&
+  ((row.Vid && String(row.Vid).trim().toUpperCase() === 'TOTAL') ||
+    (row.docId === '' && row.Vid && String(row.Vid).trim() !== ''));
+
 function TaxRegister() {
   const [totalSums, setTotalSums] = useState({});
   const [orgId, setOrgId] = useState(localStorage.getItem('orgId'));
@@ -48,18 +55,30 @@ function TaxRegister() {
   const [modalOpen, setModalOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [value, setValue] = useState('1');
+
+  // ✅ NEW: flag — backend already returned a TOTAL row inside the data
+  const [hasApiTotalRow, setHasApiTotalRow] = useState(false);
+
+  // ✅ API-provided totals (single source of truth)
+  const [apiTotals, setApiTotals] = useState({
+    BillAmount: 0,
+    TotalTaxAmountLC: 0,
+    TotalInvAmountLC: 0,
+  });
+
   const [selectedSections, setSelectedSections] = useState({
     date: false,
     branchCode: false,
-    customer: false
+    customer: false,
   });
 
   const [visibleSections, setVisibleSections] = useState({
     date: false,
     branchCode: false,
-    customer: false
+    customer: false,
   });
   const [listViewData, setListViewData] = useState([]);
+
   const getCompanyDetails = async () => {
     try {
       const response = await apiCalls('get', `commonmaster/company/${orgId}`);
@@ -69,63 +88,60 @@ function TaxRegister() {
       console.error('Error fetching data:', error);
     }
   };
+
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
     setSelectedSections((prevState) => ({
       ...prevState,
-      [name]: checked
+      [name]: checked,
     }));
   };
+
   const handleCloseModal = () => {
     setModalOpen(false);
   };
   const handleModal = () => {
     setOpen(false);
   };
+
   const [formData, setFormData] = useState({
     fromDate: null,
     toDate: null,
-    // dateRange: [null, null],
     branchCode: 'All',
     customer: 'All',
-    customerCode: 'All'
+    customerCode: 'All',
   });
+
   const [fieldErrors, setFieldErrors] = useState({
     fromDate: '',
     toDate: '',
     branchCode: '',
     customer: '',
-    customerCode: ''
+    customerCode: '',
   });
+
   const handleClear = () => {
     setListView(false);
-    // setVisibleSections({
-    //   date: false,
-    //   branchCode: false,
-    //   customer: false,
-    // });
-    // setSelectedSections({
-    //   date: false,
-    //   branchCode: false,
-    //   customer: false,
-    // });
     setFormData({
-      // dateRange: [null, null],
       fromDate: null,
       toDate: null,
       branchCode: 'All',
       customer: 'All',
-      customerCode: 'All'
+      customerCode: 'All',
     });
     setFieldErrors({
       fromDate: '',
       toDate: '',
       customer: '',
       customerCode: '',
-      branchCode: ''
+      branchCode: '',
     });
     setRowData([]);
+    // ✅ Reset API totals + total-row flag
+    setApiTotals({ BillAmount: 0, TotalTaxAmountLC: 0, TotalInvAmountLC: 0 });
+    setHasApiTotalRow(false);
   };
+
   const handleSelectPartyChange = (e) => {
     const value = e.target.value;
     console.log('Selected employeeCode value:', value);
@@ -133,7 +149,7 @@ function TaxRegister() {
     if (value === 'All') {
       setFormData((prevData) => ({
         ...prevData,
-        customer: 'All'
+        customer: 'All',
       }));
     } else {
       if (selectedEmp) {
@@ -141,7 +157,7 @@ function TaxRegister() {
         setFormData((prevData) => ({
           ...prevData,
           customer: selectedEmp.partyName,
-          customerCode: selectedEmp.partyCode
+          customerCode: selectedEmp.partyCode,
         }));
       } else {
         console.log('No party found with the given code:', value);
@@ -154,20 +170,20 @@ function TaxRegister() {
 
     setFieldErrors((prevErrors) => ({
       ...prevErrors,
-      [name]: ''
+      [name]: '',
     }));
 
     if (name === 'branchCode') {
       if (value === 'All') {
         setFormData((prevData) => ({
           ...prevData,
-          branchCode: 'All'
+          branchCode: 'All',
         }));
       } else {
         const selectedBranch = branchCodeList.find((br) => br.branchCode === value);
         setFormData((prevData) => ({
           ...prevData,
-          branchCode: selectedBranch ? selectedBranch.branchCode : ''
+          branchCode: selectedBranch ? selectedBranch.branchCode : '',
         }));
       }
     } else {
@@ -185,18 +201,12 @@ function TaxRegister() {
       }, 0);
     }
   };
-  // const handleDateChange = (newValue) => {
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     dateRange: newValue,
-  //   }));
-  //   console.log("date range",formData.dateRange);
 
-  // };
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date).format('YYYY-MM-DD') || null;
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
+
   useEffect(() => {
     getAllBranches();
     getPartyName();
@@ -211,9 +221,11 @@ function TaxRegister() {
       console.error('Error fetching country data:', error);
     }
   };
+
   const handleClose = () => {
     setOpen(false);
   };
+
   const getPartyName = async () => {
     try {
       const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=customer`);
@@ -225,13 +237,47 @@ function TaxRegister() {
 
   const formatNumber = (value) => {
     if (value === undefined || value === null) return '-';
-
     return Number(value).toLocaleString('en-IN', {
       minimumFractionDigits: 0,
-      maximumFractionDigits: 2
+      maximumFractionDigits: 2,
     });
   };
+
   const reportColumns = [
+    { accessorKey: 'Vid', header: '# Invoice', size: 100 },
+    { accessorKey: 'Vdate', header: 'Date', size: 100 },
+    { accessorKey: 'BillToParty', header: 'Customer', size: 140 },
+    {
+      accessorKey: 'BillAmount',
+      header: 'Amount',
+      size: 80,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+        </div>
+      ),
+      muiTableHeadCellProps: { align: 'right' },
+    },
+    {
+      accessorKey: 'TotalTaxAmountLC',
+      header: 'TAX',
+      size: 80,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'TotalInvAmountLC',
+      header: 'Total',
+      size: 80,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%' }}>
+          {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+        </div>
+      ),
+    },
     { accessorKey: 'JobOrderNo', header: 'Job No', size: 100 },
     {
       accessorKey: 'docId',
@@ -240,7 +286,6 @@ function TaxRegister() {
       Cell: ({ row }) => {
         const docId = row.original.docId;
         const screenCode = row.original.screenCode;
-
         return (
           <a
             href="#"
@@ -252,11 +297,10 @@ function TaxRegister() {
               color: 'crimson',
               textDecoration: 'none',
               cursor: 'pointer',
-              transition: 'color 0.2s, text-shadow 0.2s'
+              transition: 'color 0.2s, text-shadow 0.2s',
             }}
             onMouseEnter={(e) => {
               e.target.style.color = 'red';
-              // e.target.style.textShadow = '0 0 2px rgba(255, 0, 0, 0.6)';
             }}
             onMouseLeave={(e) => {
               e.target.style.color = 'crimson';
@@ -266,81 +310,13 @@ function TaxRegister() {
             {docId}
           </a>
         );
-      }
+      },
     },
-//     {
-//   accessorKey: 'docId',
-//   header: 'Doc Id',
-//   size: 100,
-//   Cell: ({ row }) => {
-//     const { docId, screenCode } = row.original;
-
-//     return (
-//       <span
-//         onClick={() => handleDocClick(docId, screenCode)}
-//         style={{
-//           color: 'crimson',
-//           cursor: 'pointer',
-//           fontWeight: 500
-//         }}
-//         onMouseEnter={(e) => (e.target.style.color = 'red')}
-//         onMouseLeave={(e) => (e.target.style.color = 'crimson')}
-//       >
-//         {docId}
-//       </span>
-//     );
-//   }
-// },
     { accessorKey: 'docDate', header: 'Doc Date', size: 100 },
-    // { accessorKey: 'screenCode', header: 'Screen', size: 100 },
-    { accessorKey: 'Vid', header: '# Invoice', size: 100 },
-    { accessorKey: 'Vdate', header: 'Date', size: 100 },
-    { accessorKey: 'BillToParty', header: 'Customer', size: 140 },
-    {
-      accessorKey: 'BillAmount',
-      header: 'Amount',
-      size: 80,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'right', width: '100%' }}>
-          {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-          {/* {formatNumber(cell.getValue())} */}
-        </div>
-      ),
-      muiTableHeadCellProps: {
-        align: 'right'
-      }
-    },
-    {
-      accessorKey: 'TotalTaxAmountLC',
-      header: 'TAX',
-      size: 80,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'right', width: '100%' }}>
-          {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-          {/* {formatNumber(cell.getValue())} */}
-        </div>
-      )
-    },
-    {
-      accessorKey: 'TotalInvAmountLC',
-      header: 'Total',
-      size: 80,
-      Cell: ({ cell }) => (
-        <div style={{ textAlign: 'right', width: '100%' }}>
-          {cell.getValue() !== undefined && cell.getValue() !== null ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
-          {/* {formatNumber(cell.getValue())} */}
-        </div>
-      )
-    }
   ];
+
   const handleGo = async () => {
     const errors = {};
-    // if (!formData.partyName) {
-    //   errors.partyName = 'Sub ledger name is required';
-    // }
-    // if (!formData.branchCode) {
-    //   errors.branchCode = 'Branch Code is required';
-    // }
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
@@ -358,9 +334,34 @@ function TaxRegister() {
             `/taxInvoice/getReportDetailsForSalesRegister?finYear=${finYear}&branchCode=${formData.branchCode}&orgId=${orgId}&partyCode=${formData.customerCode}`
           );
         }
+
         if (response.status === true) {
           console.log('Response:', response);
-          setRowData(response.paramObjectsMap.taxInvoiceVO);
+
+          const rows = response.paramObjectsMap.taxInvoiceVO || [];
+
+          // ✅ Detect backend TOTAL row
+          const totalRow = rows.find((r) => isTotalRow(r));
+          setHasApiTotalRow(!!totalRow);
+
+          // Keep TOTAL row in the table (so the table itself shows its own total row)
+          setRowData(rows);
+
+          // ✅ Totals for the below row (and PDF/Excel) come from backend
+          if (totalRow) {
+            setApiTotals({
+              BillAmount: totalRow.BillAmount ?? 0,
+              TotalTaxAmountLC: totalRow.TotalTaxAmountLC ?? 0,
+              TotalInvAmountLC: totalRow.TotalInvAmountLC ?? 0,
+            });
+          } else {
+            setApiTotals({
+              BillAmount: response.paramObjectsMap.totalBillAmount ?? 0,
+              TotalTaxAmountLC: response.paramObjectsMap.totalTaxAmount ?? 0,
+              TotalInvAmountLC: response.paramObjectsMap.totalInvAmountLC ?? 0,
+            });
+          }
+
           setIsLoading(false);
           setListView(true);
         } else {
@@ -376,9 +377,11 @@ function TaxRegister() {
       setFieldErrors(errors);
     }
   };
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
+
   const handleDocClick = async (docId, screenCode) => {
     setModalOpen(true);
     try {
@@ -390,12 +393,9 @@ function TaxRegister() {
       }
 
       if (response.status === true) {
-        // const dataKey = screenCode === 'TI' ? 'taxIn
-        {
-          screenCode === 'TI'
-            ? setFillGridData(response.paramObjectsMap.taxInvoiceVO)
-            : setFillGridData(response.paramObjectsMap.irnCreditNoteVO);
-        }
+        screenCode === 'TI'
+          ? setFillGridData(response.paramObjectsMap.taxInvoiceVO)
+          : setFillGridData(response.paramObjectsMap.irnCreditNoteVO);
       } else {
         console.error('API Error:', response);
       }
@@ -403,7 +403,10 @@ function TaxRegister() {
       console.error('Error fetching data:', error);
     }
   };
-  // pdf Download
+
+  // ============================================================
+  // PDF Download — uses apiTotals instead of recalculating
+  // ============================================================
   const handleDownloadPdf = ({ logo, columns, data, fileName = 'Sales Register', loginUserName, formData }) => {
     const doc = new jsPDF({ orientation: 'landscape' });
     const pageW = doc.internal.pageSize.getWidth();
@@ -446,7 +449,6 @@ function TaxRegister() {
     const metaY = 40;
     const metaYValue = 45;
 
-    // Only show From Date if valid
     if (fromDate && dayjs(fromDate).isValid()) {
       doc.text('From Date', metaX, metaY);
       doc.setFont(undefined, 'normal');
@@ -455,7 +457,6 @@ function TaxRegister() {
       doc.setFont(undefined, 'bold');
     }
 
-    // Only show To Date if valid
     if (toDate && dayjs(toDate).isValid()) {
       doc.text('To Date', metaX, metaY);
       doc.setFont(undefined, 'normal');
@@ -464,14 +465,12 @@ function TaxRegister() {
       doc.setFont(undefined, 'bold');
     }
 
-    // Always show Branch Code
     doc.text('Branch Code', metaX, metaY);
     doc.setFont(undefined, 'normal');
     doc.text(branchCode || '-', metaX, metaYValue);
     metaX += 34;
     doc.setFont(undefined, 'bold');
 
-    // Always show Customer
     doc.text('Customer', metaX, metaY);
     doc.setFont(undefined, 'normal');
     doc.text(customer || '-', metaX, metaYValue);
@@ -514,36 +513,17 @@ function TaxRegister() {
       })
     );
 
-    // 7) TOTAL ROW for last 3 columns
-    const totalFields = ['BillAmount', 'TotalTaxAmountLC', 'TotalInvAmountLC'];
-    const totals = totalFields.map((key) => data.reduce((sum, row) => sum + (parseFloat(row[key]) || 0), 0));
-
-    const totalRow = columns.map((col, idx) => {
-      const key = col.accessorKey;
-      if (idx === 0) return 'Total';
-      if (totalFields.includes(key)) {
-        const index = totalFields.indexOf(key);
-        return totals[index].toLocaleString('en-IN', {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2
-        });
-      }
-      return '';
-    });
-
-    body.push(totalRow);
-
     // 8) CUSTOM COLUMN WIDTHS
     const columnStyles = {
-      0: { cellWidth: 27 }, // Job No
-      1: { cellWidth: 26 }, // Doc Id
-      2: { cellWidth: 25 }, // Doc Date
-      3: { cellWidth: 23 }, // Invoice
-      4: { cellWidth: 25 }, // Date
-      5: { cellWidth: 50 }, // Customer
-      6: { cellWidth: 25 }, // Amount
-      7: { cellWidth: 25 }, // Tax
-      8: { cellWidth: 25 } // Total
+      0: { cellWidth: 27 },
+      1: { cellWidth: 26 },
+      2: { cellWidth: 25 },
+      3: { cellWidth: 23 },
+      4: { cellWidth: 25 },
+      5: { cellWidth: 50 },
+      6: { cellWidth: 25 },
+      7: { cellWidth: 25 },
+      8: { cellWidth: 25 },
     };
 
     // 9) RENDER TABLE
@@ -556,15 +536,15 @@ function TaxRegister() {
         cellPadding: 2,
         lineWidth: 0.1,
         lineColor: [220, 220, 220],
-        overflow: 'linebreak'
+        overflow: 'linebreak',
       },
       headStyles: {
         fillColor: [52, 68, 155],
         textColor: 255,
-        halign: 'center'
+        halign: 'center',
       },
       bodyStyles: {
-        halign: 'left'
+        halign: 'left',
       },
       theme: 'grid',
       margin: { left: 5, right: 5 },
@@ -576,28 +556,31 @@ function TaxRegister() {
         doc.text(`Generated By: ${loginUserName}`, 15, pageH - 10, { align: 'left' });
       },
       didParseCell: (cellHookData) => {
-        const { cell, column, section, row } = cellHookData;
+        const { cell, column, section } = cellHookData;
         const key = columns[column.index]?.accessorKey;
 
         if (section === 'body' && numericFields.includes(key)) {
           cell.styles.halign = 'right';
         }
 
-        // Highlight last row (total)
-        if (section === 'body' && row.index === body.length - 1) {
-          cell.styles.fontStyle = 'bold';
-          cell.styles.textColor = [0, 0, 0];
-          cell.styles.fillColor = [240, 240, 240];
+        // ✅ Bold the TOTAL row (detected from original data row)
+        if (section === 'body') {
+          const original = data[cellHookData.row.index];
+          if (isTotalRow(original)) {
+            cell.styles.fontStyle = 'bold';
+            cell.styles.fillColor = [231, 235, 235];
+          }
         }
-      }
+      },
     });
 
     // 10) SAVE
     doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
   };
 
-  //
-  // Excel Download
+  // ============================================================
+  // Excel Download — uses apiTotals instead of recalculating
+  // ============================================================
   const handleDownloadExcel = async ({ logo }) => {
     try {
       const workbook = new ExcelJS.Workbook();
@@ -615,7 +598,7 @@ function TaxRegister() {
             const imageId = workbook.addImage({ base64: base64Data, extension });
             sheet.addImage(imageId, {
               tl: { col: 0, row: 0 },
-              ext: { width: 120, height: 80 }
+              ext: { width: 120, height: 80 },
             });
           }
         } catch (err) {
@@ -637,7 +620,7 @@ function TaxRegister() {
         { label: 'Branch Code', value: formData.branchCode !== 'All' ? formData.branchCode : 'All' },
         { label: 'Customer', value: formData.customer },
         { label: 'Generated By', value: localStorage.getItem('userName') || 'System' },
-        { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') }
+        { label: 'Generated On', value: dayjs().format('DD-MM-YYYY HH:mm') },
       ];
 
       metadata.forEach((meta, index) => {
@@ -653,7 +636,7 @@ function TaxRegister() {
       // ====== HEADERS ======
       const headerRowIndex = 7;
       const headerRow = sheet.getRow(headerRowIndex);
-      const headers = ['Job No', 'Doc ID', 'Doc Date', '#Invoice', 'Date', 'Customer', 'Amount', 'Tax', 'Total'];
+      const headers = ['#Invoice', 'Date', 'Customer', 'Amount', 'Tax', 'Total','Job No', 'Doc ID', 'Doc Date'];
       headers.forEach((header, index) => {
         const cell = headerRow.getCell(index + 1);
         cell.value = header;
@@ -661,45 +644,35 @@ function TaxRegister() {
         cell.fill = {
           type: 'pattern',
           pattern: 'solid',
-          fgColor: { argb: 'FF34449B' }
+          fgColor: { argb: 'FF34449B' },
         };
         cell.alignment = { horizontal: 'center', vertical: 'middle' };
         cell.border = {
           top: { style: 'thin', color: { argb: 'FF000000' } },
           left: { style: 'thin', color: { argb: 'FF000000' } },
           bottom: { style: 'thin', color: { argb: 'FF000000' } },
-          right: { style: 'thin', color: { argb: 'FF000000' } }
+          right: { style: 'thin', color: { argb: 'FF000000' } },
         };
       });
       headerRow.height = 20;
-      sheet.views = [
-        { state: 'frozen', ySplit: sheet.rowCount } // This will freeze everything above this row
-      ];
+      sheet.views = [{ state: 'frozen', ySplit: sheet.rowCount }];
 
-      // ====== DATA ROWS ======
-      let totalLcAmount = 0;
-      let totalTaxAmount = 0;
-      let totalInvAmount = 0;
-
+      // ====== DATA ROWS (including backend TOTAL row, styled bold) ======
       rowData.forEach((item) => {
-        const lcAmt = parseFloat(item.LcAmount || 0);
-        // const taxAmt = parseFloat(item.TotalTaxAmountBC || 0);
+        const lcAmt = parseFloat(item.BillAmount || 0);
+        const taxAmt = parseFloat(item.TotalTaxAmountLC || 0);
         const invAmt = parseFloat(item.TotalInvAmountLC || 0);
 
-        totalLcAmount += lcAmt;
-        // totalTaxAmount += taxAmt;
-        totalInvAmount += invAmt;
-
         const row = sheet.addRow([
-          item.JobOrderNo || '',
-          item.docId || '-',
-          item.docDate ? dayjs(item.docDate).format('DD-MM-YYYY') : '-',
           item.Vid,
           item.Vdate ? dayjs(item.Vdate).format('DD-MM-YYYY') : '-',
           item.BillToParty,
           lcAmt,
-          item.TotalTaxAmountLC,
-          invAmt
+          taxAmt,
+          invAmt,
+          item.JobOrderNo || '',
+          item.docId || '-',
+          item.docDate ? dayjs(item.docDate).format('DD-MM-YYYY') : '-',
         ]);
 
         [7, 8, 9].forEach((colIndex) => {
@@ -715,53 +688,37 @@ function TaxRegister() {
             top: { style: 'thin', color: { argb: 'FF000000' } },
             left: { style: 'thin', color: { argb: 'FF000000' } },
             bottom: { style: 'thin', color: { argb: 'FF000000' } },
-            right: { style: 'thin', color: { argb: 'FF000000' } }
+            right: { style: 'thin', color: { argb: 'FF000000' } },
           };
+          // ✅ Bold + highlight the backend TOTAL row
+          if (isTotalRow(item)) {
+            cell.font = { bold: true };
+            cell.fill = {
+              type: 'pattern',
+              pattern: 'solid',
+              fgColor: { argb: 'FFE7EBEB' },
+            };
+          }
         });
-      });
-
-      // ====== TOTAL ROW ======
-      const totalRow = sheet.addRow(['Total', '', '', '', '', '', totalLcAmount, totalTaxAmount, totalInvAmount]);
-
-      totalRow.eachCell((cell, colNumber) => {
-        cell.font = { bold: true };
-        cell.border = {
-          top: { style: 'thin' },
-          bottom: { style: 'thin' },
-          left: { style: 'thin' },
-          right: { style: 'thin' }
-        };
-        cell.fill = {
-          type: 'pattern',
-          pattern: 'solid',
-          fgColor: { argb: 'FFD9D9D9' } // Light gray
-        };
-
-        if ([7, 8, 9].includes(colNumber)) {
-          cell.numFmt = '#,##0.00';
-          cell.alignment = { horizontal: 'right' };
-        } else {
-          cell.alignment = { horizontal: 'left' };
-        }
       });
 
       // ====== COLUMN WIDTHS ======
       sheet.columns = [
-        { width: 15 }, // Job No
-        { width: 15 }, // Doc ID
-        { width: 15 }, // Doc Date
-        { width: 15 }, // Invoice
-        { width: 15 }, // Date
-        { width: 30 }, // Customer
-        { width: 15 }, // Amount
-        { width: 15 }, // Tax
-        { width: 20 } // Total
+        { width: 15 },
+        { width: 15 },
+        { width: 15 },
+        { width: 15 },
+        { width: 15 },
+        { width: 30 },
+        { width: 15 },
+        { width: 15 },
+        { width: 20 },
       ];
 
       // ====== EXPORT ======
       const buffer = await workbook.xlsx.writeBuffer();
       const blob = new Blob([buffer], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       });
 
       saveAs(blob, `Sales_Register_${dayjs().format('YYYYMMDD_HHmmss')}.xlsx`);
@@ -777,10 +734,7 @@ function TaxRegister() {
         <>
           <div className="row">
             <div className="row">
-              <div
-                className="col-md-2
-               mb-2"
-              >
+              <div className="col-md-2 mb-2">
                 <FormControlLabel
                   control={<Checkbox checked={selectedSections.date} onChange={handleCheckboxChange} name="date" color="secondary" />}
                   label="Date"
@@ -788,32 +742,18 @@ function TaxRegister() {
               </div>
               <div className="col-md-2 mb-1">
                 <FormControlLabel
-                  control={
-                    <Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />
-                  }
+                  control={<Checkbox checked={selectedSections.customer} onChange={handleCheckboxChange} name="customer" color="secondary" />}
                   label="Customer"
                 />
               </div>
               <div className="col-md-2 mb-1">
                 <FormControlLabel
-                  control={
-                    <Checkbox checked={selectedSections.branchCode} onChange={handleCheckboxChange} name="branchCode" color="secondary" />
-                  }
+                  control={<Checkbox checked={selectedSections.branchCode} onChange={handleCheckboxChange} name="branchCode" color="secondary" />}
                   label="Branch Code"
                 />
               </div>
-              {/* <div className="col-md-2 mb-1">
-                <Button
-                  onClick={handleProceed}
-                  color="secondary"
-                  variant="contained"
-                  style={{ textTransform: 'none', padding: '4px 8px', marginTop: '6px' }}
-                  disabled={isLoading}
-                >
-                  Proceed
-                </Button>
-              </div> */}
             </div>
+
             {selectedSections.date && (
               <>
                 <div className="col-md-3 mb-3">
@@ -824,7 +764,7 @@ function TaxRegister() {
                         value={formData.fromDate ? dayjs(formData.fromDate, 'YYYY-MM-DD') : null}
                         onChange={(date) => handleDateChange('fromDate', date)}
                         slotProps={{
-                          textField: { size: 'small', clearable: true, error: fieldErrors.fromDate, helperText: fieldErrors.fromDate }
+                          textField: { size: 'small', clearable: true, error: fieldErrors.fromDate, helperText: fieldErrors.fromDate },
                         }}
                         format="DD-MM-YYYY"
                       />
@@ -839,7 +779,7 @@ function TaxRegister() {
                         value={formData.toDate ? dayjs(formData.toDate, 'YYYY-MM-DD') : null}
                         onChange={(date) => handleDateChange('toDate', date)}
                         slotProps={{
-                          textField: { size: 'small', clearable: true, error: fieldErrors.toDate, helperText: fieldErrors.toDate }
+                          textField: { size: 'small', clearable: true, error: fieldErrors.toDate, helperText: fieldErrors.toDate },
                         }}
                         format="DD-MM-YYYY"
                       />
@@ -848,6 +788,7 @@ function TaxRegister() {
                 </div>
               </>
             )}
+
             {selectedSections.branchCode && (
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchCode}>
@@ -860,7 +801,6 @@ function TaxRegister() {
                     name="branchCode"
                   >
                     <MenuItem value="All">All</MenuItem>
-
                     {branchCodeList?.map((row) => (
                       <MenuItem key={row.id} value={row.branchCode}>
                         {row.branchCode}
@@ -871,6 +811,7 @@ function TaxRegister() {
                 </FormControl>
               </div>
             )}
+
             {selectedSections.customer && (
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
@@ -883,7 +824,6 @@ function TaxRegister() {
                     name="customer"
                   >
                     <MenuItem value="All">All</MenuItem>
-
                     {partyNameList?.map((row) => (
                       <MenuItem key={row.id} value={row.partyName}>
                         {row.partyName}
@@ -894,6 +834,7 @@ function TaxRegister() {
                 </FormControl>
               </div>
             )}
+
             {(selectedSections.date || selectedSections.branchCode || selectedSections.customer) && (
               <div className="col-md-3 mb-2">
                 <div className="row d-flex ml">
@@ -906,6 +847,7 @@ function TaxRegister() {
             )}
           </div>
         </>
+
         {listView && (
           <div>
             <CommonReportTable
@@ -914,6 +856,8 @@ function TaxRegister() {
               isListView={listView}
               fileName={'Sales Register'}
               sumFields={['TotalInvAmountLC', 'TotalTaxAmountLC', 'BillAmount']}
+              totals={apiTotals}
+              hideTotals={hasApiTotalRow}
               handleDownloadPdf={() =>
                 handleDownloadPdf({
                   logo: listViewData[0]?.companyLogo,
@@ -921,13 +865,20 @@ function TaxRegister() {
                   data: rowData,
                   formData,
                   fileName: 'Sales Register',
-                  loginUserName
+                  loginUserName,
+                  totals: apiTotals,
                 })
               }
-              handleDownloadExcel={() => handleDownloadExcel({ logo: listViewData[0]?.companyLogo })}
+              handleDownloadExcel={() =>
+                handleDownloadExcel({
+                  logo: listViewData[0]?.companyLogo,
+                  totals: apiTotals,
+                })
+              }
             />
           </div>
         )}
+
         <>
           <Dialog
             open={modalOpen}
@@ -981,13 +932,13 @@ function TaxRegister() {
                   <strong>Amount:</strong> ₹{Number(fillGridData.totalInvAmountLc || 0).toLocaleString('en-IN')}
                 </div>
               </div>
+
               <div className="card w-full p-6 bg-base-100 shadow-xl mb-3">
                 <Box sx={{ width: '100%', typography: 'body1' }}>
                   <TabContext value={value}>
                     <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
                       <TabList onChange={handleChange} textColor="secondary" indicatorColor="secondary" aria-label="lab API tabs example">
                         <Tab label="Charge Particulars" value="1" />
-                        {/* {fillGridData.taxInvoiceAnnexureVO.length > 0 && <Tab label="Annexure" value="2" />} */}
                         <Tab label="Gst" value="2" />
                       </TabList>
                     </Box>
@@ -1020,99 +971,99 @@ function TaxRegister() {
                               <tbody>
                                 {fillGridData.taxInvoiceDetailsVO && fillGridData.taxInvoiceDetailsVO.length > 0
                                   ? fillGridData.taxInvoiceDetailsVO.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="text-center">{index + 1}</td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.chargeType || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.chargeCode || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.govChargeCode || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.ledger || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.chargeName || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.qty || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.rate || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.currency || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.exRate || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstpercent || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstAmount || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.fcAmount || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.lcAmount || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.billAmount || 0}
-                                        </td>
-                                      </tr>
-                                    ))
+                                    <tr key={row.id}>
+                                      <td className="text-center">{index + 1}</td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.chargeType || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.chargeCode || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.govChargeCode || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.ledger || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.chargeName || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.qty || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.rate || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.currency || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.exRate || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstpercent || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstAmount || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.fcAmount || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.lcAmount || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.billAmount || 0}
+                                      </td>
+                                    </tr>
+                                  ))
                                   : fillGridData.irnCreditNoteDetailsVO?.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="text-center">{index + 1}</td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.chargeType || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.chargeCode || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.govChargeCode || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.ledger || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.chargeName || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.qty || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.rate || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.currency || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.exRate || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstpercent || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstAmount || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.fcAmount || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.lcAmount || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.billAmount || 0}
-                                        </td>
-                                      </tr>
-                                    ))}
+                                    <tr key={row.id}>
+                                      <td className="text-center">{index + 1}</td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.chargeType || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.chargeCode || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.govChargeCode || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.ledger || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.chargeName || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.qty || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.rate || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.currency || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.exRate || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstpercent || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstAmount || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.fcAmount || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.lcAmount || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.billAmount || 0}
+                                      </td>
+                                    </tr>
+                                  ))}
                               </tbody>
                             </table>
                           </div>
@@ -1140,51 +1091,51 @@ function TaxRegister() {
                               <tbody>
                                 {fillGridData.irnCreditNoteGstVO && fillGridData.irnCreditNoteGstVO.length > 0
                                   ? fillGridData.irnCreditNoteGstVO.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="text-center">{index + 1}</td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstChargeAcc || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstSubledgerCode || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstDbBillAmount || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstCrBillAmount || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstDbLcAmount || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstCrLcAmount || 0}
-                                        </td>
-                                      </tr>
-                                    ))
+                                    <tr key={row.id}>
+                                      <td className="text-center">{index + 1}</td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstChargeAcc || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstSubledgerCode || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstDbBillAmount || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstCrBillAmount || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstDbLcAmount || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstCrLcAmount || 0}
+                                      </td>
+                                    </tr>
+                                  ))
                                   : fillGridData.taxInvoiceGstVO?.map((row, index) => (
-                                      <tr key={row.id}>
-                                        <td className="text-center">{index + 1}</td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstChargeAcc || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstSubledgerCode || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstDbBillAmount || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstCrBillAmount || ''}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstDbLcAmount || 0}
-                                        </td>
-                                        <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
-                                          {row.gstCrLcAmount || 0}
-                                        </td>
-                                      </tr>
-                                    ))}
+                                    <tr key={row.id}>
+                                      <td className="text-center">{index + 1}</td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstChargeAcc || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstSubledgerCode || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstDbBillAmount || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstCrBillAmount || ''}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstDbLcAmount || 0}
+                                      </td>
+                                      <td className="text-center" style={{ whiteSpace: 'nowrap' }}>
+                                        {row.gstCrLcAmount || 0}
+                                      </td>
+                                    </tr>
+                                  ))}
                               </tbody>
                             </table>
                           </div>

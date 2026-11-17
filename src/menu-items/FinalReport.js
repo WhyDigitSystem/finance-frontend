@@ -79,41 +79,41 @@ const reportChildren = [
     url: '/finance/FinalReport/BalanceSheet',
     visible: hasScreenAccess('BLS')
   },
-  {
-    id: 'paymentRegister',
-    title: 'Payment Register',
-    type: 'item',
-    url: '/finance/FinalReport/PaymentReport',
-    visible: hasScreenAccess('PYR')
-  },
-  {
-    id: 'receiptRegister',
-    title: 'Receipt Register',
-    type: 'item',
-    url: '/finance/FinalReport/ReceiptReport',
-    visible: hasScreenAccess('RR')
-  },
-  {
-    id: 'salesReport',
-    title: 'Sales Report',
-    type: 'item',
-    url: '/finance/FinalReport/SalesReport',
-    visible: hasScreenAccess('SLR')
-  },
-  {
-    id: 'costReport',
-    title: 'Cost Report',
-    type: 'item',
-    url: '/finance/FinalReport/CostReport',
-    visible: hasScreenAccess('CSTR')
-  },
-  {
-    id: 'receiptReport',
-    title: 'Receipt Report',
-    type: 'item',
-    url: '/finance/FinalReport/receiptReportD&S',
-    visible: hasScreenAccess('RCR')
-  },
+  // {
+  //   id: 'paymentRegister',
+  //   title: 'Payment Register',
+  //   type: 'item',
+  //   url: '/finance/FinalReport/PaymentReport',
+  //   visible: hasScreenAccess('PYR')
+  // },
+  // {
+  //   id: 'receiptRegister',
+  //   title: 'Receipt Register',
+  //   type: 'item',
+  //   url: '/finance/FinalReport/ReceiptReport',
+  //   visible: hasScreenAccess('RR')
+  // },
+  // {
+  //   id: 'salesReport',
+  //   title: 'Sales Report',
+  //   type: 'item',
+  //   url: '/finance/FinalReport/SalesReport',
+  //   visible: hasScreenAccess('SLR')
+  // },
+  // {
+  //   id: 'costReport',
+  //   title: 'Cost Report',
+  //   type: 'item',
+  //   url: '/finance/FinalReport/CostReport',
+  //   visible: hasScreenAccess('CSTR')
+  // },
+  // {
+  //   id: 'receiptReport',
+  //   title: 'Receipt Report',
+  //   type: 'item',
+  //   url: '/finance/FinalReport/receiptReportD&S',
+  //   visible: hasScreenAccess('RCR')
+  // },
   {
     id: 'paymentReport',
     title: 'Payment Report',

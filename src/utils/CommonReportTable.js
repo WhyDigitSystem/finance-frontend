@@ -1,13 +1,12 @@
 import React, { useState } from 'react';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
-import { Box, Typography, Chip, Stack } from '@mui/material';
+import { Box, Typography, Chip, Paper, Grid } from '@mui/material';
 import { download, generateCsv, mkConfig } from 'export-to-csv';
 import { MaterialReactTable } from 'material-react-table';
 import dayjs from 'dayjs';
 import ActionButton from 'utils/ActionButton';
 import { useTheme } from '@mui/material/styles';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
-import { padding, textAlign } from '@mui/system';
 
 const formatDate = (value) => (value ? dayjs(value).format('DD-MM-YYYY') : '-');
 
@@ -21,9 +20,16 @@ const CommonReportTable = ({
   sumFields = [],
   headerFields = [],
   showDownloadButtonsPdf = true,
-  showDownloadButtonsExcel = true, // <- add this line
+  showDownloadButtonsExcel = true,
 
-  filters = [], // [{ label, value, options, onChange }]
+  // ✅ API-provided totals + flag to suppress the bottom totals row
+  totals = {},
+  hideTotals = false,
+
+  // ✅ NEW: Show cards on top
+  showTopCards = true,
+
+  filters = [],
   onFilterDone = () => { }
 }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -59,8 +65,16 @@ const CommonReportTable = ({
     download(csvConfig)(csv);
   };
 
+  // ✅ Internal calc as fallback (only used when API totals not provided)
   const sums = sumFields.reduce((acc, field) => {
     acc[field] = data.reduce((total, row) => total + parseFloat(row[field] || 0), 0);
+    return acc;
+  }, {});
+
+  // ✅ Prefer API-provided totals; fall back to internal sums
+  const resolvedTotals = sumFields.reduce((acc, field) => {
+    const apiValue = totals?.[field];
+    acc[field] = apiValue !== undefined && apiValue !== null ? Number(apiValue) : sums[field];
     return acc;
   }, {});
 
@@ -70,25 +84,34 @@ const CommonReportTable = ({
     TotalAmount: 'Total Amount',
     Tax: 'Tax Amount',
     BillAmount: 'Bill Amount',
-    outstanding: 'OutStanding'
+    outstanding: 'OutStanding',
+    receiptAmt: 'Total Receipt Amount',
+    onAccount: 'Total On Account'
   };
 
+  // ✅ Generate Top Cards dynamically based on sumFields
+  const topCardsData = [];
+  if (showTopCards) {
+    sumFields.forEach((field, index) => {
+      const colors = ['#3f8600', '#d46b08', '#cf1322']; // Green, Orange, Red
+      topCardsData.push({
+        label: sumFieldLabels[field] || field,
+        value: (resolvedTotals[field] ?? 0).toLocaleString('en-IN', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        }),
+        color: colors[index % colors.length],
+      });
+    });
+  }
+
   const customColumns = columns.map((column) => {
-    // if (column.accessorKey?.toLowerCase().includes('date')) {
-    //   return {
-    //     ...column,
-    //     Cell: ({ cell }) => formatDate(cell.getValue());
-    //     //
-
-    //   };
-    // }
-
     if (column.accessorKey?.toLowerCase().includes('date')) {
       return {
         ...column,
         Cell: ({ cell }) => {
           const value = cell.getValue();
-          return value ? formatDate(value) : ''; // Only format if value exists
+          return value ? formatDate(value) : '';
         }
       };
     }
@@ -126,57 +149,51 @@ const CommonReportTable = ({
   };
 
   return (
-    <>
-      {/* Header Fields (Filter Info) */}
-      {/* {headerFields.length > 0 && (
-        <Box
+    // Changed gap: 0 so it sits flush inside the table container if wrapped
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0, width: '100%' }}>
+
+      {/* ✅ TOP SUMMARY CARDS */}
+      {showTopCards && topCardsData.length > 0 && (
+        <Grid
+          container
+          spacing={1.5}
           sx={{
-            margin: '3px 3px 10px',
-            padding: '10px',
-            border: '1px solid #E0E0E0',
-            borderRadius: '10px',
-            backgroundColor: '#FAFAFA',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+            mb: 1.5,
+            mt: 0.5,
+            px: 1 // slight padding to align with table
           }}
         >
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 700,
-              color: theme.palette.primary.main,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px'
-            }}
-          >
-            <span>Report Summary:</span>
-            <Chip
-              label={fileName || 'Generated Report'}
-              size="small"
-              sx={{
-                backgroundColor: theme.palette.primary.light,
-                color: theme.palette.primary.dark,
-                fontWeight: 600,
-                fontSize: '0.875rem'
-              }}
-            />
-          </Typography>
-          <Box
-            sx={{
-              display: 'flex',
-              flexWrap: 'wrap',
-              columnGap: '32px',
-              rowGap: '10px',
-            }}
-          >
-            {headerFields.map(({ label, value }, idx) => (
-              <Box key={idx} sx={{ fontSize: '14px', minWidth: '160px', marginTop: '8px' }}>
-                <strong>{label}:</strong> <span style={{ color: '#374151' }}>{value}</span>
-              </Box>
-            ))}
-          </Box>
-        </Box>
-      )} */}
+          {topCardsData.map((card, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
+              <Paper
+                elevation={0}
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  padding: '8px 14px', // Reduced padding
+                  backgroundColor: '#FFFFFF',
+                  borderRadius: '6px',
+                  border: '1px solid #E5E7EB',
+                  borderLeft: `4px solid ${card.color}`, // Thinner left border
+                  boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
+                  height: '100%',
+                  minHeight: '56px' // Reduced height
+                }}
+              >
+                {/* Smaller label font */}
+                <Typography sx={{ fontSize: '11px', color: '#6B7280', fontWeight: 500, mb: 0.25 }}>
+                  {card.label}
+                </Typography>
+                {/* Smaller value font */}
+                <Typography sx={{ fontSize: '16px', color: card.color, fontWeight: 700, lineHeight: 1.1 }}>
+                  {card.value}
+                </Typography>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
+      )}
 
       {/* Data Table */}
       <MaterialReactTable
@@ -244,37 +261,27 @@ const CommonReportTable = ({
           }
         }}
         renderTopToolbarCustomActions={({ table }) => (
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1 }}>
-            {
-              userType !== 'OPERATIONS' &&
-              userType !== 'FINANCE MANAGER' &&
-              showDownloadButtonsExcel && (
-                <Box>
-                  <ActionButton
-                    title="Download Excel"
-                    icon={FileDownloadIcon}
-                    onClick={handleDownloadExcel}
-                    isLoading={isLoading}
-                    margin="0 8px 0 8px"
-                  />
-                </Box>
-              )
-            }
-            {
-              userType !== 'OPERATIONS' &&
-              userType !== 'FINANCE MANAGER' &&
-              showDownloadButtonsPdf && (
-                <Box>
-                  <ActionButton
-                    title="Download PDF"
-                    icon={PictureAsPdfIcon}
-                    onClick={handleDownloadPdf}
-                    isLoading={isLoading}
-                    margin="0 8px 0 8px"
-                  />
-                </Box>
-              )
-            }
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 1, width: '100%' }}>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              {userType !== 'OPERATIONS' && userType !== 'FINANCE MANAGER' && showDownloadButtonsExcel && (
+                <ActionButton
+                  title="Download Excel"
+                  icon={FileDownloadIcon}
+                  onClick={handleDownloadExcel}
+                  isLoading={isLoading}
+                  margin="0 8px 0 8px"
+                />
+              )}
+              {userType !== 'OPERATIONS' && userType !== 'FINANCE MANAGER' && showDownloadButtonsPdf && (
+                <ActionButton
+                  title="Download PDF"
+                  icon={PictureAsPdfIcon}
+                  onClick={handleDownloadPdf}
+                  isLoading={isLoading}
+                  margin="0 8px 0 8px"
+                />
+              )}
+            </Box>
 
             <Box
               sx={{
@@ -299,30 +306,31 @@ const CommonReportTable = ({
             </Box>
           </Box>
         )}
-        renderBottomToolbarCustomActions={() => (
-          <Box
-            sx={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              padding: '8px 20px',
-              fontWeight: 'bold'
-              // backgroundColor: '#F3F4F6',
-              // borderTop: '1px solid #E5E7EB',
-            }}
-          >
-            {sumFields.map((field) => (
-              <Box key={field} sx={{ marginLeft: 3 }}>
-                {sumFieldLabels[field] || field}:{' '}
-                {sums[field].toLocaleString('en-IN', {
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0
-                })}
-              </Box>
-            ))}
-          </Box>
-        )}
+        // ✅ Hide the bottom totals row when API already returned a TOTAL row
+        renderBottomToolbarCustomActions={() =>
+          hideTotals ? null : (
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                padding: '8px 20px',
+                fontWeight: 'bold'
+              }}
+            >
+              {sumFields.map((field) => (
+                <Box key={field} sx={{ marginLeft: 3 }}>
+                  {sumFieldLabels[field] || field}:{' '}
+                  {(resolvedTotals[field] ?? 0).toLocaleString('en-IN', {
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0
+                  })}
+                </Box>
+              ))}
+            </Box>
+          )
+        }
       />
-    </>
+    </Box>
   );
 };
 
