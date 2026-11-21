@@ -48,70 +48,6 @@ const GSTRegister = () => {
   const [listViewData, setListViewData] = useState([]);
 
   const revenueColumns = [
-    {
-      accessorKey: 'docId',
-      header: 'Doc Id',
-      size: 110,
-      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
-      muiTableHeadCellProps: {
-        align: 'center',
-        sx: {
-          backgroundColor: '#34449B',
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: '0.875rem',
-          padding: '12px 8px'
-        }
-      }
-    },
-    {
-      accessorKey: 'docDate',
-      header: 'Date',
-      size: 110,
-      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
-      muiTableHeadCellProps: {
-        align: 'center',
-        sx: {
-          backgroundColor: '#34449B',
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: '0.875rem',
-          padding: '12px 8px'
-        }
-      }
-    },
-    {
-      accessorKey: 'refNo',
-      header: 'Ref No',
-      size: 110,
-      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
-      muiTableHeadCellProps: {
-        align: 'center',
-        sx: {
-          backgroundColor: '#34449B',
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: '0.875rem',
-          padding: '12px 8px'
-        }
-      }
-    },
-    {
-      accessorKey: 'refDate',
-      header: 'Ref Date',
-      size: 110,
-      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
-      muiTableHeadCellProps: {
-        align: 'center',
-        sx: {
-          backgroundColor: '#34449B',
-          color: 'white',
-          fontWeight: 'bold',
-          fontSize: '0.875rem',
-          padding: '12px 8px'
-        }
-      }
-    },
     //  {
     //   accessorKey: 'partyCode',
     //   header: 'Party Code',
@@ -216,11 +152,11 @@ const GSTRegister = () => {
       size: 90,
       Cell: ({ cell }) => (
         <div style={{ textAlign: 'right', padding: '8px' }}>
-          {cell.getValue() !== undefined && cell.getValue() !== null &&  cell.getValue() !== 0
+          {cell.getValue() !== undefined && cell.getValue() !== null && cell.getValue() !== 0
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2
+            })
             : ''}
         </div>
       ),
@@ -243,9 +179,9 @@ const GSTRegister = () => {
         <div style={{ textAlign: 'right', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null && cell.getValue() !== 0
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2
+            })
             : ''}
         </div>
       ),
@@ -269,9 +205,9 @@ const GSTRegister = () => {
         <div style={{ textAlign: 'right', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -311,9 +247,9 @@ const GSTRegister = () => {
         <div style={{ textAlign: 'right', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null && cell.getValue() !== 0
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -328,17 +264,11 @@ const GSTRegister = () => {
         }
       }
     },
-
-    
-  ];
-
-  const costColumns = [
     {
       accessorKey: 'docId',
       header: 'Doc Id',
       size: 110,
       Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
-      size: 110,
       muiTableHeadCellProps: {
         align: 'center',
         sx: {
@@ -352,7 +282,7 @@ const GSTRegister = () => {
     },
     {
       accessorKey: 'docDate',
-      header: 'Doc Date',
+      header: 'Date',
       size: 110,
       Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
       muiTableHeadCellProps: {
@@ -398,6 +328,11 @@ const GSTRegister = () => {
         }
       }
     },
+
+
+  ];
+
+  const costColumns = [
     // {
     //   accessorKey: 'partyCode',
     //   header: 'Party Code',
@@ -502,9 +437,9 @@ const GSTRegister = () => {
         <div style={{ textAlign: 'right', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -528,9 +463,9 @@ const GSTRegister = () => {
         <div style={{ textAlign: 'right', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -569,9 +504,9 @@ const GSTRegister = () => {
         <div style={{ textAlign: 'right', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -595,9 +530,9 @@ const GSTRegister = () => {
         <div style={{ textAlign: 'right', padding: '8px' }}>
           {cell.getValue() !== undefined && cell.getValue() !== null
             ? Number(cell.getValue()).toLocaleString('en-IN', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-              })
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2
+            })
             : '-'}
         </div>
       ),
@@ -611,7 +546,72 @@ const GSTRegister = () => {
           padding: '12px 8px'
         }
       }
-    }
+    },
+    {
+      accessorKey: 'docId',
+      header: 'Doc Id',
+      size: 110,
+      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
+      size: 110,
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'docDate',
+      header: 'Doc Date',
+      size: 110,
+      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'refNo',
+      header: 'Ref No',
+      size: 110,
+      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
+    {
+      accessorKey: 'refDate',
+      header: 'Ref Date',
+      size: 110,
+      Cell: ({ cell }) => <div style={{ textAlign: 'left', padding: '8px' }}>{cell.getValue() || '-'}</div>,
+      muiTableHeadCellProps: {
+        align: 'center',
+        sx: {
+          backgroundColor: '#34449B',
+          color: 'white',
+          fontWeight: 'bold',
+          fontSize: '0.875rem',
+          padding: '12px 8px'
+        }
+      }
+    },
   ];
 
   const reportColumns = useMemo(() => {

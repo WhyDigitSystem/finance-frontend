@@ -198,8 +198,6 @@ function PartyLedger() {
   };
 
   const reportColumns = [
-    { accessorKey: 'DocId', header: 'Doc No', size: 50 },
-    { accessorKey: 'DocDate', header: 'Doc Date', size: 50 },
     { accessorKey: 'RefNo', header: 'Reference No', size: 50 },
     { accessorKey: 'RefDate', header: 'Reference Date', size: 50 },
     // { accessorKey: 'SuppRefNo', header: 'Supplier Code', size: 30 },
@@ -215,7 +213,9 @@ function PartyLedger() {
       accessorKey: 'CrAmount',
       header: 'Credit(Base)',
       size: 50
-    }
+    },
+    { accessorKey: 'DocId', header: 'Doc No', size: 50 },
+    { accessorKey: 'DocDate', header: 'Doc Date', size: 50 },
   ];
 
   //

@@ -290,10 +290,6 @@ function PaymentReport() {
   const getColumns = () => {
     return formData.viewMode === 'details'
       ? [
-        { accessorKey: 'docid', header: 'Doc ID', size: 80 },
-        { accessorKey: 'docdate', header: 'Date', size: 80 },
-        { accessorKey: 'chequeno', header: 'Cheque No', size: 80 },
-        { accessorKey: 'chequedate', header: 'Cheque Date', size: 120 },
         { accessorKey: 'partyname', header: 'Vendor', size: 120 },
         {
           accessorKey: 'paymentamt',
@@ -415,13 +411,13 @@ function PaymentReport() {
           muiTableHeadCellProps: {
             align: 'right'
           }
-        }
+        },
+        { accessorKey: 'docid', header: 'Doc ID', size: 80 },
+        { accessorKey: 'docdate', header: 'Date', size: 80 },
+        { accessorKey: 'chequeno', header: 'Cheque No', size: 80 },
+        { accessorKey: 'chequedate', header: 'Cheque Date', size: 120 },
       ]
       : [
-        { accessorKey: 'docid', header: 'Doc Id', size: 100 },
-        { accessorKey: 'docdate', header: 'Date', size: 100 },
-        { accessorKey: 'chequeno', header: 'UTI No', size: 100 },
-        { accessorKey: 'chequedate', header: 'UTI Date', size: 100 },
         { accessorKey: 'partyname', header: 'Vendor Name', size: 200 },
         { accessorKey: 'bankcashacc', header: 'Bank Account', size: 100 },
         {
@@ -475,7 +471,11 @@ function PaymentReport() {
           muiTableHeadCellProps: {
             align: 'right'
           }
-        }
+        },
+        { accessorKey: 'docid', header: 'Doc Id', size: 100 },
+        { accessorKey: 'docdate', header: 'Date', size: 100 },
+        { accessorKey: 'chequeno', header: 'UTI No', size: 100 },
+        { accessorKey: 'chequedate', header: 'UTI Date', size: 100 }
       ];
   };
   const getSumFields = () => {

@@ -227,7 +227,13 @@ const CommonReportTable = ({
         enableColumnOrdering={false}
         enableColumnActions={false}
         enableFullScreenToggle={true}
-        initialState={{ density: 'compact' }}
+        initialState={{
+          density: 'compact',
+          pagination: {
+            pageIndex: 0,
+            pageSize: 50
+          }
+        }}
         localization={customLocalization}
         muiTableContainerProps={{
           sx: {

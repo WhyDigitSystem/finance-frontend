@@ -27,6 +27,7 @@ import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+
 function PaperComponent(props) {
   return (
     <Draggable handle="#draggable-dialog-title" cancel={'[class*="MuiDialogContent-root"]'}>
@@ -34,6 +35,12 @@ function PaperComponent(props) {
     </Draggable>
   );
 }
+
+// ✅ Helper: detect if a row is a backend-provided TOTAL row
+const isTotalRow = (row) =>
+  row &&
+  ((row.Vid && String(row.Vid).trim().toUpperCase() === 'TOTAL') ||
+    (row.DocId === '' && row.Vid && String(row.Vid).trim() !== ''));
 
 function CostRegister() {
   const [listViewData, setListViewData] = useState([]);
@@ -50,6 +57,16 @@ function CostRegister() {
   const [finYear, setFinYear] = useState(localStorage.getItem('finYear'));
   const [rowData, setRowData] = useState([]);
 
+  // ✅ NEW: API-provided totals + flag to suppress duplicate totals
+  const [apiTotals, setApiTotals] = useState({
+    BillAmount: 0,
+    OutputIgst: 0,
+    OutputCgst: 0,
+    OutputSgst: 0,
+    TotalAmount: 0,
+  });
+  const [hasApiTotalRow, setHasApiTotalRow] = useState(false);
+
   const [selectedSections, setSelectedSections] = useState({
     date: false,
     branchCode: false,
@@ -61,6 +78,7 @@ function CostRegister() {
     branchCode: false,
     customer: false
   });
+
   const handleCheckboxChange = (event) => {
     const { name, checked } = event.target;
     setSelectedSections((prevState) => ({
@@ -68,38 +86,29 @@ function CostRegister() {
       [name]: checked
     }));
   };
+
   const handleProceed = () => {
     setVisibleSections({ ...selectedSections });
   };
+
   const [formData, setFormData] = useState({
-    // dateRange: [null, null],
     fromDate: null,
     toDate: null,
     branchCode: 'All',
     customer: 'All',
     customerCode: 'All'
   });
+
   const [fieldErrors, setFieldErrors] = useState({
-    // dateRange: [null, null],
     fromDate: '',
     toDate: '',
     branchCode: '',
     customer: '',
     customerCode: ''
   });
+
   const handleClear = () => {
-    // setVisibleSections({
-    //   date: false,
-    //   branchCode: false,
-    //   customer: false,
-    // });
-    // setSelectedSections({
-    //   date: false,
-    //   branchCode: false,
-    //   customer: false,
-    // });
     setFormData({
-      // dateRange: [null, null],
       fromDate: null,
       toDate: null,
       branchCode: 'All',
@@ -107,7 +116,6 @@ function CostRegister() {
       customerCode: 'All'
     });
     setFieldErrors({
-      // dateRange: [null, null],
       fromDate: '',
       toDate: '',
       branchCode: '',
@@ -116,7 +124,11 @@ function CostRegister() {
     });
     setRowData([]);
     setListView(false);
+    // ✅ Reset API totals
+    setApiTotals({ BillAmount: 0, OutputIgst: 0, OutputCgst: 0, OutputSgst: 0, TotalAmount: 0 });
+    setHasApiTotalRow(false);
   };
+
   const handleSelectPartyChange = (e) => {
     const value = e.target.value;
     console.log('Selected party value:', value);
@@ -176,16 +188,12 @@ function CostRegister() {
       }, 0);
     }
   };
-  // const handleDateChange = (newValue) => {
-  //   setFormData((prevData) => ({
-  //     ...prevData,
-  //     dateRange: newValue,
-  //   }));
-  // };
+
   const handleDateChange = (field, date) => {
     const formattedDate = dayjs(date).format('YYYY-MM-DD') || null;
     setFormData((prevData) => ({ ...prevData, [field]: formattedDate }));
   };
+
   useEffect(() => {
     getAllBranches();
     getPartyName();
@@ -200,6 +208,7 @@ function CostRegister() {
       console.error('Error fetching country data:', error);
     }
   };
+
   const getPartyName = async () => {
     try {
       const response = await apiCalls('get', `/taxInvoice/getPartyNameByPartyType?orgId=${orgId}&partyType=VENDOR`);
@@ -208,9 +217,60 @@ function CostRegister() {
       console.error('Error fetching gate passes:', error);
     }
   };
+
   const reportColumns = [
-    { accessorKey: 'Vid', header: 'Cost Invoice No', size: 80 },
+    { accessorKey: 'Vid', header: '#Invoice', size: 80 },
     { accessorKey: 'Vdate', header: 'Date', size: 80 },
+    { accessorKey: 'SupplierName', header: 'Party Name', size: 80 },
+    {
+      accessorKey: 'BillAmount',
+      header: 'Bill Amount',
+      size: 80,
+      Cell: ({ cell }) =>
+        <div style={{ textAlign: 'right', width: '100%' }}>
+          {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+        </div>
+    },
+    {
+      accessorKey: 'OutputIgst',
+      header: 'IGST',
+      size: 80,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%' }}>
+          {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+        </div>
+      )
+    },
+    {
+      accessorKey: 'OutputCgst',
+      header: 'CGST',
+      size: 80,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%' }}>
+          {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+        </div>
+      )
+    },
+    {
+      accessorKey: 'OutputSgst',
+      header: 'SGST',
+      size: 80,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%' }}>
+          {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+        </div>
+      )
+    },
+    {
+      accessorKey: 'TotalAmount',
+      header: 'Total Amount',
+      size: 80,
+      Cell: ({ cell }) => (
+        <div style={{ textAlign: 'right', width: '100%' }}>
+          {cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-'}
+        </div>
+      )
+    },
     {
       accessorKey: 'DocId',
       header: 'Doc Id',
@@ -233,7 +293,6 @@ function CostRegister() {
             }}
             onMouseEnter={(e) => {
               e.target.style.color = 'red';
-              // e.target.style.textShadow = '0 0 2px rgba(255, 0, 0, 0.6)';
             }}
             onMouseLeave={(e) => {
               e.target.style.color = 'crimson';
@@ -246,59 +305,8 @@ function CostRegister() {
       }
     },
     { accessorKey: 'DocDate', header: 'Doc Date', size: 80 },
-    // { accessorKey: 'ScreenCode', header: 'Screen Code', size: 80 },
-    { accessorKey: 'SupplierName', header: 'Party Name', size: 80 },
-    { accessorKey: 'SupplierGstin', header: 'Reg In', size: 80 },
-    { accessorKey: 'GstType', header: 'GST Type', size: 80 },
-    {
-      accessorKey: 'BillAmount',
-      header: 'Bill Amount',
-      size: 80,
-      Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    },
-    {
-      accessorKey: 'OutputIgst',
-      header: 'IGST',
-      size: 80,
-      Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    },
-    {
-      accessorKey: 'OutputCgst',
-      header: 'CGST',
-      size: 80,
-      Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    },
-    {
-      accessorKey: 'OutputSgst',
-      header: 'SGST',
-      size: 80,
-      Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    },
-    // {
-    //   accessorKey: 'Tax',
-    //   header: 'TAX',
-    //   size: 80,
-    //   Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    // },
-    {
-      accessorKey: 'TotalAmount',
-      header: 'Total Amount',
-      size: 80,
-      Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    }
-    // {
-    //   accessorKey: 'Tds',
-    //   header: 'TDS',
-    //   size: 80,
-    //   Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    // },
-    // {
-    //   accessorKey: 'PartyPayable',
-    //   header: 'Party Payable',
-    //   size: 80,
-    //   Cell: ({ cell }) => (cell.getValue() ? Number(cell.getValue()).toLocaleString('en-IN') : '-')
-    // }
   ];
+
   const handleGo = async () => {
     const errors = {};
     if (!formData.customerCode) {
@@ -307,13 +315,6 @@ function CostRegister() {
     if (!formData.branchCode) {
       errors.branchCode = 'Branch Code is required';
     }
-    const saveFormData = {
-      branchCode: formData.branchCode,
-      customer: formData.customerCode,
-      fromDate: formData.fromDate,
-      toDate: formData.toDate
-    };
-    console.log('THE SAVE FORM DATA IS:', saveFormData);
 
     if (Object.keys(errors).length === 0) {
       setIsLoading(true);
@@ -331,11 +332,39 @@ function CostRegister() {
             `/rCostInvoiceGna/getRegisterCostInvoiceReport?branchCode=${formData.branchCode}&orgId=${orgId}&partyCode=${formData.customerCode}&finYear=${finYear}`
           );
         }
+
         if (response.status === true) {
           console.log('Response:', response);
-          setRowData(response.paramObjectsMap.rCostinvoiceReport);
+
+          const rows = response.paramObjectsMap.rCostinvoiceReport || [];
+
+          // ✅ Detect backend TOTAL row
+          const totalRow = rows.find((r) => isTotalRow(r));
+          setHasApiTotalRow(!!totalRow);
+
+          // Keep TOTAL row in the table
+          setRowData(rows);
+
+          // ✅ Set totals from API, or fallback to 0 (CommonReportTable will sum it)
+          if (totalRow) {
+            setApiTotals({
+              BillAmount: totalRow.BillAmount ?? 0,
+              OutputIgst: totalRow.OutputIgst ?? 0,
+              OutputCgst: totalRow.OutputCgst ?? 0,
+              OutputSgst: totalRow.OutputSgst ?? 0,
+              TotalAmount: totalRow.TotalAmount ?? 0,
+            });
+          } else {
+            setApiTotals({
+              BillAmount: response.paramObjectsMap.totalBillAmount ?? 0,
+              OutputIgst: response.paramObjectsMap.totalOutputIgst ?? 0,
+              OutputCgst: response.paramObjectsMap.totalOutputCgst ?? 0,
+              OutputSgst: response.paramObjectsMap.totalOutputSgst ?? 0,
+              TotalAmount: response.paramObjectsMap.totalAmount ?? 0,
+            });
+          }
+
           setIsLoading(false);
-          // showToast('succes', response.paramObjectsMap.message)
           setListView(true);
         } else {
           showToast('error', response.paramObjectsMap.errorMessage || 'Report Fetch failed');
@@ -350,6 +379,7 @@ function CostRegister() {
       setFieldErrors(errors);
     }
   };
+
   const handleDocClick = async (docId, screenCode) => {
     setModalOpen(true);
     try {
@@ -361,11 +391,9 @@ function CostRegister() {
       }
 
       if (response.status === true) {
-        {
-          screenCode === 'CI'
-            ? setFillGridData(response.paramObjectsMap.costInvoiceVO || {})
-            : setFillGridData(response.paramObjectsMap.costDebitNoteVO || {});
-        }
+        screenCode === 'CI'
+          ? setFillGridData(response.paramObjectsMap.costInvoiceVO || {})
+          : setFillGridData(response.paramObjectsMap.costDebitNoteVO || {});
       } else {
         console.error('API Error:', response);
       }
@@ -373,13 +401,15 @@ function CostRegister() {
       console.error('Error fetching data:', error);
     }
   };
+
   const handleCloseModal = () => {
     setModalOpen(false);
   };
+
   const handleChange = (event, newValue) => {
     setValue(newValue);
   };
-  //
+
   const getCompanyDetails = async () => {
     try {
       const response = await apiCalls('get', `commonmaster/company/${orgId}`);
@@ -389,7 +419,7 @@ function CostRegister() {
       console.error('Error fetching data:', error);
     }
   };
-  //
+
   // Excel Download
   const handleDownloadExcel = async ({ logo }) => {
     try {
@@ -446,18 +476,8 @@ function CostRegister() {
       // ===== HEADERS =====
       const headerRowIndex = 7;
       const headers = [
-        'Cost Invoice No',
-        'Date',
-        'Doc Id',
-        'Doc Date',
-        'Party Name',
-        'Reg In',
-        'GST Type',
-        'Bill Amount',
-        'IGST',
-        'CGST',
-        'SGST',
-        'Total Amount'
+        '#Invoice', 'Date', 'Party Name',
+        'Bill Amount', 'IGST', 'CGST', 'SGST', 'Total Amount', 'Doc Id', 'Doc Date',
       ];
 
       const headerRow = sheet.getRow(headerRowIndex);
@@ -471,8 +491,6 @@ function CostRegister() {
       });
 
       // ===== DATA ROWS =====
-      let totalBill = 0, totalIgst = 0, totalCgst = 0, totalSgst = 0, totalAmount = 0;
-
       rowData.forEach((item) => {
         const bill = parseFloat(item.BillAmount || 0);
         const igst = parseFloat(item.OutputIgst || 0);
@@ -480,29 +498,17 @@ function CostRegister() {
         const sgst = parseFloat(item.OutputSgst || 0);
         const total = parseFloat(item.TotalAmount || 0);
 
-        totalBill += bill;
-        totalIgst += igst;
-        totalCgst += cgst;
-        totalSgst += sgst;
-        totalAmount += total;
-
         const row = sheet.addRow([
           item.Vid || '',
           item.Vdate ? dayjs(item.Vdate).format('DD-MM-YYYY') : '-',
+          item.SupplierName || '',
+          bill, igst, cgst, sgst, total,
           item.DocId || '-',
           item.DocDate ? dayjs(item.DocDate).format('DD-MM-YYYY') : '-',
-          item.SupplierName || '',
-          item.SupplierGstin || '',
-          item.GstType || '',
-          bill,
-          igst,
-          cgst,
-          sgst,
-          total
         ]);
 
-        // numeric formatting
-        [8, 9, 10, 11, 12].forEach((colIndex) => {
+        // ✅ Fixed numeric formatting indices (Columns 4 to 8 represent the numeric fields)
+        [4, 5, 6, 7, 8].forEach((colIndex) => {
           const cell = row.getCell(colIndex);
           if (typeof cell.value === 'number') {
             cell.numFmt = '#,##0.00';
@@ -512,24 +518,13 @@ function CostRegister() {
 
         row.eachCell({ includeEmpty: true }, (cell) => {
           cell.border = { top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' } };
+          // ✅ Bold + highlight backend TOTAL row
+          if (isTotalRow(item)) {
+            cell.font = { bold: true };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D9D9' } };
+          }
         });
       });
-
-      // ===== TOTAL ROW =====
-      const totalRow = sheet.addRow(['Total', '', '', '', '', '', '', totalBill, totalIgst, totalCgst, totalSgst, totalAmount]);
-      totalRow.eachCell((cell, colNumber) => {
-        cell.font = { bold: true };
-        cell.alignment = { horizontal: colNumber >= 8 ? 'right' : 'left' };
-        cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFD9D9D9' } };
-        if (colNumber >= 8) cell.numFmt = '#,##0.00';
-      });
-
-      // ===== COLUMN WIDTHS =====
-      sheet.columns = [
-        { width: 18 }, { width: 12 }, { width: 17 }, { width: 12 },
-        { width: 35 }, { width: 18 }, { width: 12 },
-        { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }, { width: 15 }
-      ];
 
       // ===== EXPORT =====
       const buffer = await workbook.xlsx.writeBuffer();
@@ -542,6 +537,7 @@ function CostRegister() {
       showToast('error', 'Failed to generate Excel file');
     }
   };
+
   const handleDownloadPdf = ({ logo, columns, data, fileName = 'Cost Register', loginUserName, formData }) => {
     const doc = new jsPDF({ orientation: 'landscape' });
     const pageW = doc.internal.pageSize.getWidth();
@@ -582,41 +578,23 @@ function CostRegister() {
 
     // HEADERS
     const headerLabels = [
-      'Cost Invoice No', 'Date', 'Doc Id', 'Doc Date', 'Party Name',
-      'Reg In', 'GST Type', 'Bill Amount', 'IGST', 'CGST', 'SGST', 'Total Amount'
+      '#Invoice', 'Date', 'Party Name',
+      'Bill Amount', 'IGST', 'CGST', 'SGST', 'Total Amount', 'Doc Id', 'Doc Date'
     ];
 
     // BODY
     const body = data.map((item) => [
       item.Vid || '',
       item.Vdate ? dayjs(item.Vdate).format('DD-MM-YYYY') : '-',
-      item.DocId || '-',
-      item.DocDate ? dayjs(item.DocDate).format('DD-MM-YYYY') : '-',
       item.SupplierName || '',
-      item.SupplierGstin || '',
-      item.GstType || '',
       (item.BillAmount || 0).toLocaleString('en-IN'),
       (item.OutputIgst || 0).toLocaleString('en-IN'),
       (item.OutputCgst || 0).toLocaleString('en-IN'),
       (item.OutputSgst || 0).toLocaleString('en-IN'),
-      (item.TotalAmount || 0).toLocaleString('en-IN')
+      (item.TotalAmount || 0).toLocaleString('en-IN'),
+      item.DocId || '-',
+      item.DocDate ? dayjs(item.DocDate).format('DD-MM-YYYY') : '-',
     ]);
-
-    // TOTAL ROW
-    const totalBill = data.reduce((a, b) => a + (b.BillAmount || 0), 0);
-    const totalIgst = data.reduce((a, b) => a + (b.OutputIgst || 0), 0);
-    const totalCgst = data.reduce((a, b) => a + (b.OutputCgst || 0), 0);
-    const totalSgst = data.reduce((a, b) => a + (b.OutputSgst || 0), 0);
-    const totalAmount = data.reduce((a, b) => a + (b.TotalAmount || 0), 0);
-
-    const totalRow = ['Total', '', '', '', '', '', '',
-      totalBill.toLocaleString('en-IN'),
-      totalIgst.toLocaleString('en-IN'),
-      totalCgst.toLocaleString('en-IN'),
-      totalSgst.toLocaleString('en-IN'),
-      totalAmount.toLocaleString('en-IN')
-    ];
-    body.push(totalRow);
 
     // TABLE
     autoTable(doc, {
@@ -627,22 +605,21 @@ function CostRegister() {
       styles: { fontSize: 8, cellPadding: 2, lineColor: [220, 220, 220], lineWidth: 0.1 },
       headStyles: { fillColor: [52, 68, 155], textColor: 255, halign: 'center' },
       columnStyles: {
-        0: { cellWidth: 25 },
-        1: { cellWidth: 20 },
-        2: { cellWidth: 25 },
-        3: { cellWidth: 22 },
-        4: { cellWidth: 55 },
-        5: { cellWidth: 30 },
-        6: { cellWidth: 20 },
+        0: { cellWidth: 25, halign: 'left' },
+        1: { cellWidth: 22, halign: 'left' },
+        2: { cellWidth: 50, halign: 'left' }, // ✅ Increased Party Name width & left aligned
+        3: { halign: 'right' },
+        4: { halign: 'right' },
+        5: { halign: 'right' },
+        6: { halign: 'right' },
         7: { halign: 'right' },
-        8: { halign: 'right' },
-        9: { halign: 'right' },
-        10: { halign: 'right' },
-        11: { halign: 'right' }
+        8: { cellWidth: 25, halign: 'left' },
+        9: { cellWidth: 22, halign: 'left' },
       },
       didDrawPage: footer,
       didParseCell: (data) => {
-        if (data.row.index === body.length - 1) {
+        const original = data.row.raw;
+        if (isTotalRow(original)) {
           data.cell.styles.fontStyle = 'bold';
           data.cell.styles.fillColor = [240, 240, 240];
         }
@@ -651,7 +628,6 @@ function CostRegister() {
 
     doc.save(`${fileName}_${dayjs().format('YYYYMMDD_HHmmss')}.pdf`);
   };
-
 
   return (
     <>
@@ -681,18 +657,8 @@ function CostRegister() {
                   label="Branch"
                 />
               </div>
-              {/* <div className="col-md-2 mb-1">
-                <Button
-                  onClick={handleProceed}
-                  color="secondary"
-                  variant="contained"
-                  style={{ textTransform: 'none', padding: '4px 8px', marginTop: '6px' }}
-                  disabled={isLoading}
-                >
-                  Proceed
-                </Button>
-              </div> */}
             </div>
+
             {selectedSections.date && (
               <>
                 <div className="col-md-3 mb-3">
@@ -727,6 +693,7 @@ function CostRegister() {
                 </div>
               </>
             )}
+
             {selectedSections.branchCode && (
               <div className="col-md-3 mb-3">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.branchCode}>
@@ -739,7 +706,6 @@ function CostRegister() {
                     name="branchCode"
                   >
                     <MenuItem value="All">All</MenuItem>
-
                     {branchCodeList?.map((row) => (
                       <MenuItem key={row.id} value={row.branchCode}>
                         {row.branchCode}
@@ -750,13 +716,13 @@ function CostRegister() {
                 </FormControl>
               </div>
             )}
+
             {selectedSections.customer && (
               <div className="col-md-3 mb-2">
                 <FormControl size="small" variant="outlined" fullWidth error={!!fieldErrors.customer}>
                   <InputLabel id="customer">Vendor</InputLabel>
                   <Select labelId="customer" label="customer" value={formData.customer} onChange={handleSelectPartyChange} name="customer">
                     <MenuItem value="All">All</MenuItem>
-
                     {partyNameList?.map((row) => (
                       <MenuItem key={row.id} value={row.partyName}>
                         {row.partyName}
@@ -767,6 +733,7 @@ function CostRegister() {
                 </FormControl>
               </div>
             )}
+
             {(selectedSections.date || selectedSections.branchCode || selectedSections.customer) && (
               <div className="col-md-3 mb-2">
                 <div className="row d-flex ml">
@@ -779,6 +746,7 @@ function CostRegister() {
             )}
           </div>
         </>
+
         {listView && (
           <div>
             <CommonReportTable
@@ -786,7 +754,10 @@ function CostRegister() {
               columns={reportColumns}
               isListView={listView}
               fileName={'Cost Register'}
-              // sumFields={['TotalAmount', 'BillAmount']}
+              // ✅ Add sumFields to trigger the Top Cards and Bottom Totals Row
+              sumFields={['TotalAmount', 'BillAmount', 'OutputIgst']}
+              totals={apiTotals}
+              hideTotals={hasApiTotalRow}
               handleDownloadPdf={() =>
                 handleDownloadPdf({
                   logo: listViewData[0]?.companyLogo,
@@ -801,6 +772,7 @@ function CostRegister() {
             />
           </div>
         )}
+
         <>
           <Dialog
             open={modalOpen}
@@ -851,6 +823,7 @@ function CostRegister() {
                   <strong>Amount:</strong> ₹{Number(fillGridData.netBillLcAmt || 0).toLocaleString('en-IN')}
                 </div>
               </div>
+
               <div className="card w-full p-6 bg-base-100 shadow-xl mb-3">
                 <Box sx={{ width: '100%', typography: 'body1' }}>
                   <TabContext value={value}>
